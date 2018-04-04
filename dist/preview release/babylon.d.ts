@@ -3173,185 +3173,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Analyser {
-        SMOOTHING: number;
-        FFT_SIZE: number;
-        BARGRAPHAMPLITUDE: number;
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        constructor(scene: Scene);
-        getFrequencyBinCount(): number;
-        getByteFrequencyData(): Uint8Array;
-        getByteTimeDomainData(): Uint8Array;
-        getFloatFrequencyData(): Uint8Array;
-        drawDebugCanvas(): void;
-        stopDebugCanvas(): void;
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: Nullable<AudioContext>;
-        constructor();
-        private _unlockiOSaudio();
-        private _initializeAudioContext();
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _ouputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded(audioData);
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters();
-        private _updateSpatialParameters();
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel();
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection();
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended();
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate(node);
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph();
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -3565,7 +3386,15 @@ declare module BABYLON {
         vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
         sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
         color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        /**
+         * Defines the function to use to interpolate matrices
+         * @param startValue defines the start matrix
+         * @param endValue defines the end matrix
+         * @param gradient defines the gradient between both matrices
+         * @param result defines an optional target matrix where to store the interpolation
+         * @returns the interpolated matrix
+         */
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix;
         clone(): Animation;
         setKeys(values: Array<IAnimationKey>): void;
         serialize(): any;
@@ -3800,6 +3629,7 @@ declare module BABYLON {
         private _blendingFactor;
         private _scene;
         private _currentValue;
+        private _workValue;
         private _activeTarget;
         private _targetPath;
         private _weight;
@@ -3868,6 +3698,185 @@ declare module BABYLON {
          * @returns a boolean indicating if the animation has ended
          */
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Analyser {
+        SMOOTHING: number;
+        FFT_SIZE: number;
+        BARGRAPHAMPLITUDE: number;
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        constructor(scene: Scene);
+        getFrequencyBinCount(): number;
+        getByteFrequencyData(): Uint8Array;
+        getByteTimeDomainData(): Uint8Array;
+        getFloatFrequencyData(): Uint8Array;
+        drawDebugCanvas(): void;
+        stopDebugCanvas(): void;
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: Nullable<AudioContext>;
+        constructor();
+        private _unlockiOSaudio();
+        private _initializeAudioContext();
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _ouputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded(audioData);
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters();
+        private _updateSpatialParameters();
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel();
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended();
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate(node);
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph();
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
     }
 }
 
@@ -4373,144 +4382,128 @@ declare module BABYLON {
     }
 }
 
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Nullable<Scene>;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     */
-    class BoneAxesViewer extends AxesViewer {
-        mesh: Nullable<Mesh>;
-        bone: Nullable<Bone>;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
     }
 }
 
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
     }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh.
-     */
-    class PhysicsViewer {
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        protected _scene: Nullable<Scene>;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
     }
 }
 
 declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
     }
 }
 
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
     }
 }
 
@@ -4784,128 +4777,144 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Nullable<Scene>;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     */
+    class BoneAxesViewer extends AxesViewer {
+        mesh: Nullable<Mesh>;
+        bone: Nullable<Bone>;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
     }
 }
 
 declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
     }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh.
+     */
+    class PhysicsViewer {
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        protected _scene: Nullable<Scene>;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
     }
 }
 
 declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
     }
 }
 
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
     }
 }
 
@@ -7139,158 +7148,65 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
     }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
+    class KeyboardInfo {
         type: number;
-        private _leftStick;
-        private _rightStick;
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
     }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue(newValue, currentValue, buttonIndex);
-        update(): void;
-        dispose(): void;
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
     }
 }
 
 declare module BABYLON {
-    class GamepadManager {
-        private _scene;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad(gamepad);
-        private _startMonitoringGamepads();
-        private _stopMonitoringGamepads();
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects();
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
     }
-}
-
-declare module BABYLON {
-    enum Xbox360Button {
-        A = 0,
-        B = 1,
-        X = 2,
-        Y = 3,
-        Start = 4,
-        Back = 5,
-        LB = 6,
-        RB = 7,
-        LeftStick = 8,
-        RightStick = 9,
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
     }
-    enum Xbox360Dpad {
-        Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
     }
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        onButtonDownObservable: Observable<Xbox360Button>;
-        onButtonUpObservable: Observable<Xbox360Button>;
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        leftTrigger: number;
-        rightTrigger: number;
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue(newValue, currentValue, buttonType);
-        private _setDPadValue(newValue, currentValue, buttonType);
-        buttonA: number;
-        buttonB: number;
-        buttonX: number;
-        buttonY: number;
-        buttonStart: number;
-        buttonBack: number;
-        buttonLB: number;
-        buttonRB: number;
-        buttonLeftStick: number;
-        buttonRightStick: number;
-        dPadUp: number;
-        dPadDown: number;
-        dPadLeft: number;
-        dPadRight: number;
-        update(): void;
-        dispose(): void;
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -8075,69 +7991,6 @@ interface Gamepad {
 }
 
 declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -8494,6 +8347,162 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue(newValue, currentValue, buttonIndex);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad(gamepad);
+        private _startMonitoringGamepads();
+        private _stopMonitoringGamepads();
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects();
+    }
+}
+
+declare module BABYLON {
+    enum Xbox360Button {
+        A = 0,
+        B = 1,
+        X = 2,
+        Y = 3,
+        Start = 4,
+        Back = 5,
+        LB = 6,
+        RB = 7,
+        LeftStick = 8,
+        RightStick = 9,
+    }
+    enum Xbox360Dpad {
+        Up = 0,
+        Down = 1,
+        Left = 2,
+        Right = 3,
+    }
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        onButtonDownObservable: Observable<Xbox360Button>;
+        onButtonUpObservable: Observable<Xbox360Button>;
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        leftTrigger: number;
+        rightTrigger: number;
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue(newValue, currentValue, buttonType);
+        private _setDPadValue(newValue, currentValue, buttonType);
+        buttonA: number;
+        buttonB: number;
+        buttonX: number;
+        buttonY: number;
+        buttonStart: number;
+        buttonBack: number;
+        buttonLB: number;
+        buttonRB: number;
+        buttonLeftStick: number;
+        buttonRightStick: number;
+        dPadUp: number;
+        dPadDown: number;
+        dPadLeft: number;
+        dPadRight: number;
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
      */
@@ -8692,314 +8701,6 @@ declare module BABYLON {
         _endTimeQuery: Nullable<WebGLQuery>;
         _timeElapsedQuery: Nullable<WebGLQuery>;
         _timeElapsedQueryEnded: boolean;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Nullable<Texture>;
-        alphaMode: number;
-        private _system;
-        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
-        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    class SceneLoaderProgressEvent {
-        readonly lengthComputable: boolean;
-        readonly loaded: number;
-        readonly total: number;
-        constructor(lengthComputable: boolean, loaded: number, total: number);
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPluginFactory {
-        name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for scene and resources
-         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
-        */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded scene
-        */
-        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The given scene
-        */
-        static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded asset container
-        */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -9679,6 +9380,52 @@ declare module BABYLON {
         _rebuild(): void;
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Nullable<Texture>;
+        alphaMode: number;
+        private _system;
+        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
+        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -10616,3166 +10363,264 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Scalar {
-        /**
-         * Two pi constants convenient for computation.
-         */
-        static TwoPi: number;
-        /**
-         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
-         */
-        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
-        /**
-         * Returns a string : the upper case translation of the number i to hexadecimal.
-         */
-        static ToHex(i: number): string;
-        /**
-         * Returns -1 if value is negative and +1 is value is positive.
-         * Returns the value itself if it's equal to zero.
-         */
-        static Sign(value: number): number;
-        /**
-         * Returns the value itself if it's between min and max.
-         * Returns min if the value is lower than min.
-         * Returns max if the value is greater than max.
-         */
-        static Clamp(value: number, min?: number, max?: number): number;
-        /**
-         * Returns the log2 of value.
-         */
-        static Log2(value: number): number;
-        /**
-        * Loops the value, so that it is never larger than length and never smaller than 0.
-        *
-        * This is similar to the modulo operator but it works with floating point numbers.
-        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
-        * With t = 5 and length = 2.5, the result would be 0.0.
-        * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
-        */
-        static Repeat(value: number, length: number): number;
-        /**
-        * Normalize the value between 0.0 and 1.0 using min and max values
-        */
-        static Normalize(value: number, min: number, max: number): number;
-        /**
-        * Denormalize the value from 0.0 and 1.0 using min and max values
-        */
-        static Denormalize(normalized: number, min: number, max: number): number;
-        /**
-        * Calculates the shortest difference between two given angles given in degrees.
-        */
-        static DeltaAngle(current: number, target: number): number;
-        /**
-        * PingPongs the value t, so that it is never larger than length and never smaller than 0.
-        *
-        * The returned value will move back and forth between 0 and length
-        */
-        static PingPong(tx: number, length: number): number;
-        /**
-        * Interpolates between min and max with smoothing at the limits.
-        *
-        * This function interpolates between min and max in a similar way to Lerp. However, the interpolation will gradually speed up
-        * from the start and slow down toward the end. This is useful for creating natural-looking animation, fading and other transitions.
-        */
-        static SmoothStep(from: number, to: number, tx: number): number;
-        /**
-        * Moves a value current towards target.
-        *
-        * This is essentially the same as Mathf.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
-        * Negative values of maxDelta pushes the value away from target.
-        */
-        static MoveTowards(current: number, target: number, maxDelta: number): number;
-        /**
-        * Same as MoveTowards but makes sure the values interpolate correctly when they wrap around 360 degrees.
-        *
-        * Variables current and target are assumed to be in degrees. For optimization reasons, negative values of maxDelta
-        *  are not supported and may cause oscillation. To push current away from a target angle, add 180 to that angle instead.
-        */
-        static MoveTowardsAngle(current: number, target: number, maxDelta: number): number;
-        /**
-            * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
-            */
-        static Lerp(start: number, end: number, amount: number): number;
-        /**
-        * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
-        * The parameter t is clamped to the range [0, 1]. Variables a and b are assumed to be in degrees.
-        */
-        static LerpAngle(start: number, end: number, amount: number): number;
-        /**
-        * Calculates the linear parameter t that produces the interpolant value within the range [a, b].
-        */
-        static InverseLerp(a: number, b: number, value: number): number;
-        /**
-         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
-         */
-        static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number;
-        /**
-        * Returns a random float number between and min and max values
-        */
-        static RandomRange(min: number, max: number): number;
-        /**
-        * This function returns percentage of a number in a given range.
-        *
-        * RangeToPercent(40,20,60) will return 0.5 (50%)
-        * RangeToPercent(34,0,100) will return 0.34 (34%)
-        */
-        static RangeToPercent(number: number, min: number, max: number): number;
-        /**
-        * This function returns number that corresponds to the percentage in a given range.
-        *
-        * PercentToRange(0.34,0,100) will return 34.
-        */
-        static PercentToRange(percent: number, min: number, max: number): number;
-        /**
-         * Returns the angle converted to equivalent value between -Math.PI and Math.PI radians.
-         * @param angle The angle to normalize in radian.
-         * @return The converted angle.
-         */
-        static NormalizeRadians(angle: number): number;
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
     }
 }
 
 declare module BABYLON {
-    const ToGammaSpace: number;
-    const ToLinearSpace = 2.2;
-    const Epsilon = 0.001;
-    /**
-     * Class used to hold a RBG color
-     */
-    class Color3 {
-        /**
-         * Defines the red component (between 0 and 1, default is 0)
-         */
-        r: number;
-        /**
-         * Defines the green component (between 0 and 1, default is 0)
-         */
-        g: number;
-        /**
-         * Defines the blue component (between 0 and 1, default is 0)
-         */
-        b: number;
-        /**
-         * Creates a new Color3 object from red, green, blue values, all between 0 and 1
-         * @param r defines the red component (between 0 and 1, default is 0)
-         * @param g defines the green component (between 0 and 1, default is 0)
-         * @param b defines the blue component (between 0 and 1, default is 0)
-         */
-        constructor(
-            /**
-             * Defines the red component (between 0 and 1, default is 0)
-             */
-            r?: number, 
-            /**
-             * Defines the green component (between 0 and 1, default is 0)
-             */
-            g?: number, 
-            /**
-             * Defines the blue component (between 0 and 1, default is 0)
-             */
-            b?: number);
-        /**
-         * Creates a string with the Color3 current values
-         * @returns the string representation of the Color3 object
-         */
-        toString(): string;
-        /**
-         * Returns the string "Color3"
-         * @returns "Color3"
-         */
-        getClassName(): string;
-        /**
-         * Compute the Color3 hash code
-         * @returns an unique number that can be used to hash Color3 objects
-         */
-        getHashCode(): number;
-        /**
-         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements
-         * @param array defines the array where to store the r,g,b components
-         * @param index defines an optional index in the target array to define where to start storing values
-         * @returns the current Color3 object
-         */
-        toArray(array: FloatArray, index?: number): Color3;
-        /**
-         * Returns a new {BABYLON.Color4} object from the current Color3 and the passed alpha
-         * @param alpha defines the alpha component on the new {BABYLON.Color4} object (default is 1)
-         * @returns a new {BABYLON.Color4} object
-         */
-        toColor4(alpha?: number): Color4;
-        /**
-         * Returns a new array populated with 3 numeric elements : red, green and blue values
-         * @returns the new array
-         */
-        asArray(): number[];
-        /**
-         * Returns the luminance value
-         * @returns a float value
-         */
-        toLuminance(): number;
-        /**
-         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object
-         * @param otherColor defines the second operand
-         * @returns the new Color3 object
-         */
-        multiply(otherColor: Color3): Color3;
-        /**
-         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result"
-         * @param otherColor defines the second operand
-         * @param result defines the Color3 object where to store the result
-         * @returns the current Color3
-         */
-        multiplyToRef(otherColor: Color3, result: Color3): Color3;
-        /**
-         * Determines equality between Color3 objects
-         * @param otherColor defines the second operand
-         * @returns true if the rgb values are equal to the passed ones
-         */
-        equals(otherColor: Color3): boolean;
-        /**
-         * Determines equality between the current Color3 object and a set of r,b,g values
-         * @param r defines the red component to check
-         * @param g defines the green component to check
-         * @param b defines the blue component to check
-         * @returns true if the rgb values are equal to the passed ones
-         */
-        equalsFloats(r: number, g: number, b: number): boolean;
-        /**
-         * Multiplies in place each rgb value by scale
-         * @param scale defines the scaling factor
-         * @returns the updated Color3
-         */
-        scale(scale: number): Color3;
-        /**
-         * Multiplies the rgb values by scale and stores the result into "result"
-         * @param scale defines the scaling factor
-         * @param result defines the Color3 object where to store the result
-         * @returns the unmodified current Color3
-         */
-        scaleToRef(scale: number, result: Color3): Color3;
-        /**
-         * Scale the current Color3 values by a factor and add the result to a given Color3
-         * @param scale defines the scale factor
-         * @param result defines color to store the result into
-         * @returns the unmodified current Color3
-         */
-        scaleAndAddToRef(scale: number, result: Color3): Color3;
-        /**
-         * Clamps the rgb values by the min and max values and stores the result into "result"
-         * @param min defines minimum clamping value (default is 0)
-         * @param max defines maximum clamping value (default is 1)
-         * @param result defines color to store the result into
-         * @returns the original Color3
-         */
-        clampToRef(min: number | undefined, max: number | undefined, result: Color3): Color3;
-        /**
-         * Creates a new Color3 set with the added values of the current Color3 and of the passed one
-         * @param otherColor defines the second operand
-         * @returns the new Color3
-         */
-        add(otherColor: Color3): Color3;
-        /**
-         * Stores the result of the addition of the current Color3 and passed one rgb values into "result"
-         * @param otherColor defines the second operand
-         * @param result defines Color3 object to store the result into
-         * @returns the unmodified current Color3
-         */
-        addToRef(otherColor: Color3, result: Color3): Color3;
-        /**
-         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3
-         * @param otherColor defines the second operand
-         * @returns the new Color3
-         */
-        subtract(otherColor: Color3): Color3;
-        /**
-         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result"
-         * @param otherColor defines the second operand
-         * @param result defines Color3 object to store the result into
-         * @returns the unmodified current Color3
-         */
-        subtractToRef(otherColor: Color3, result: Color3): Color3;
-        /**
-         * Copy the current object
-         * @returns a new Color3 copied the current one
-         */
-        clone(): Color3;
-        /**
-         * Copies the rgb values from the source in the current Color3
-         * @param source defines the source Color3 object
-         * @returns the updated Color3 object
-         */
-        copyFrom(source: Color3): Color3;
-        /**
-         * Updates the Color3 rgb values from the passed floats
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @returns the current Color3 object
-         */
-        copyFromFloats(r: number, g: number, b: number): Color3;
-        /**
-         * Updates the Color3 rgb values from the passed floats
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @returns the current Color3 object
-         */
-        set(r: number, g: number, b: number): Color3;
-        /**
-         * Compute the Color3 hexadecimal code as a string
-         * @returns a string containing the hexadecimal representation of the Color3 object
-         */
-        toHexString(): string;
-        /**
-         * Computes a new Color3 converted from the current one to linear space
-         * @returns a new Color3 object
-         */
-        toLinearSpace(): Color3;
-        /**
-         * Converts the Color3 values to linear space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color3 object where to store the linear space version
-         * @returns the unmodified Color3
-         */
-        toLinearSpaceToRef(convertedColor: Color3): Color3;
-        /**
-         * Computes a new Color3 converted from the current one to gamma space
-         * @returns a new Color3 object
-         */
-        toGammaSpace(): Color3;
-        /**
-         * Converts the Color3 values to gamma space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color3 object where to store the gamma space version
-         * @returns the unmodified Color3
-         */
-        toGammaSpaceToRef(convertedColor: Color3): Color3;
-        /**
-         * Creates a new Color3 from the string containing valid hexadecimal values
-         * @param hex defines a string containing valid hexadecimal values
-         * @returns a new Color3 object
-         */
-        static FromHexString(hex: string): Color3;
-        /**
-         * Creates a new Vector3 from the starting index of the passed array
-         * @param array defines the source array
-         * @param offset defines an offset in the source array
-         * @returns a new Color3 object
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Color3;
-        /**
-         * Creates a new Color3 from integer values (< 256)
-         * @param r defines the red component to read from (value between 0 and 255)
-         * @param g defines the green component to read from (value between 0 and 255)
-         * @param b defines the blue component to read from (value between 0 and 255)
-         * @returns a new Color3 object
-         */
-        static FromInts(r: number, g: number, b: number): Color3;
-        /**
-         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
-         * @param start defines the start Color3 value
-         * @param end defines the end Color3 value
-         * @param amount defines the gradient value between start and end
-         * @returns a new Color3 object
-         */
-        static Lerp(start: Color3, end: Color3, amount: number): Color3;
-        /**
-         * Returns a Color3 value containing a red color
-         * @returns a new Color3 object
-         */
-        static Red(): Color3;
-        /**
-         * Returns a Color3 value containing a green color
-         * @returns a new Color3 object
-         */
-        static Green(): Color3;
-        /**
-         * Returns a Color3 value containing a blue color
-         * @returns a new Color3 object
-         */
-        static Blue(): Color3;
-        /**
-         * Returns a Color3 value containing a black color
-         * @returns a new Color3 object
-         */
-        static Black(): Color3;
-        /**
-         * Returns a Color3 value containing a white color
-         * @returns a new Color3 object
-         */
-        static White(): Color3;
-        /**
-         * Returns a Color3 value containing a purple color
-         * @returns a new Color3 object
-         */
-        static Purple(): Color3;
-        /**
-         * Returns a Color3 value containing a magenta color
-         * @returns a new Color3 object
-         */
-        static Magenta(): Color3;
-        /**
-         * Returns a Color3 value containing a yellow color
-         * @returns a new Color3 object
-         */
-        static Yellow(): Color3;
-        /**
-         * Returns a Color3 value containing a gray color
-         * @returns a new Color3 object
-         */
-        static Gray(): Color3;
-        /**
-         * Returns a Color3 value containing a teal color
-         * @returns a new Color3 object
-         */
-        static Teal(): Color3;
-        /**
-         * Returns a Color3 value containing a random color
-         * @returns a new Color3 object
-         */
-        static Random(): Color3;
+    class SceneLoaderProgressEvent {
+        readonly lengthComputable: boolean;
+        readonly loaded: number;
+        readonly total: number;
+        constructor(lengthComputable: boolean, loaded: number, total: number);
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
     }
-    /**
-     * Class used to hold a RBGA color
-     */
-    class Color4 {
-        /**
-         * Defines the red component (between 0 and 1, default is 0)
-         */
-        r: number;
-        /**
-         * Defines the green component (between 0 and 1, default is 0)
-         */
-        g: number;
-        /**
-         * Defines the blue component (between 0 and 1, default is 0)
-         */
-        b: number;
-        /**
-         * Defines the alpha component (between 0 and 1, default is 1)
-         */
-        a: number;
-        /**
-         * Creates a new Color4 object from red, green, blue values, all between 0 and 1
-         * @param r defines the red component (between 0 and 1, default is 0)
-         * @param g defines the green component (between 0 and 1, default is 0)
-         * @param b defines the blue component (between 0 and 1, default is 0)
-         * @param a defines the alpha component (between 0 and 1, default is 1)
-         */
-        constructor(
-            /**
-             * Defines the red component (between 0 and 1, default is 0)
-             */
-            r?: number, 
-            /**
-             * Defines the green component (between 0 and 1, default is 0)
-             */
-            g?: number, 
-            /**
-             * Defines the blue component (between 0 and 1, default is 0)
-             */
-            b?: number, 
-            /**
-             * Defines the alpha component (between 0 and 1, default is 1)
-             */
-            a?: number);
-        /**
-         * Adds in place the passed Color4 values to the current Color4 object
-         * @param right defines the second operand
-         * @returns the current updated Color4 object
-         */
-        addInPlace(right: Color4): Color4;
-        /**
-         * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
-         * @returns the new array
-         */
-        asArray(): number[];
-        /**
-         * Stores from the starting index in the passed array the Color4 successive values
-         * @param array defines the array where to store the r,g,b components
-         * @param index defines an optional index in the target array to define where to start storing values
-         * @returns the current Color4 object
-         */
-        toArray(array: number[], index?: number): Color4;
-        /**
-         * Creates a new Color4 set with the added values of the current Color4 and of the passed one
-         * @param right defines the second operand
-         * @returns a new Color4 object
-         */
-        add(right: Color4): Color4;
-        /**
-         * Creates a new Color4 set with the subtracted values of the passed one from the current Color4
-         * @param right defines the second operand
-         * @returns a new Color4 object
-         */
-        subtract(right: Color4): Color4;
-        /**
-         * Subtracts the passed ones from the current Color4 values and stores the results in "result"
-         * @param right defines the second operand
-         * @param result defines the Color4 object where to store the result
-         * @returns the current Color4 object
-         */
-        subtractToRef(right: Color4, result: Color4): Color4;
-        /**
-         * Creates a new Color4 with the current Color4 values multiplied by scale
-         * @param scale defines the scaling factor to apply
-         * @returns a new Color4 object
-         */
-        scale(scale: number): Color4;
-        /**
-         * Multiplies the current Color4 values by scale and stores the result in "result"
-         * @param scale defines the scaling factor to apply
-         * @param result defines the Color4 object where to store the result
-         * @returns the current unmodified Color4
-         */
-        scaleToRef(scale: number, result: Color4): Color4;
-        /**
-         * Scale the current Color4 values by a factor and add the result to a given Color4
-         * @param scale defines the scale factor
-         * @param result defines the Color4 object where to store the result
-         * @returns the unmodified current Color4
-         */
-        scaleAndAddToRef(scale: number, result: Color4): Color4;
-        /**
-         * Clamps the rgb values by the min and max values and stores the result into "result"
-         * @param min defines minimum clamping value (default is 0)
-         * @param max defines maximum clamping value (default is 1)
-         * @param result defines color to store the result into.
-         * @returns the cuurent Color4
-         */
-        clampToRef(min: number | undefined, max: number | undefined, result: Color4): Color4;
-        /**
-          * Multipy an Color4 value by another and return a new Color4 object
-          * @param color defines the Color4 value to multiply by
-          * @returns a new Color4 object
-          */
-        multiply(color: Color4): Color4;
-        /**
-         * Multipy a Color4 value by another and push the result in a reference value
-         * @param color defines the Color4 value to multiply by
-         * @param result defines the Color4 to fill the result in
-         * @returns the result Color4
-         */
-        multiplyToRef(color: Color4, result: Color4): Color4;
-        /**
-         * Creates a string with the Color4 current values
-         * @returns the string representation of the Color4 object
-         */
-        toString(): string;
-        /**
-         * Returns the string "Color4"
-         * @returns "Color4"
-         */
-        getClassName(): string;
-        /**
-         * Compute the Color4 hash code
-         * @returns an unique number that can be used to hash Color4 objects
-         */
-        getHashCode(): number;
-        /**
-         * Creates a new Color4 copied from the current one
-         * @returns a new Color4 object
-         */
-        clone(): Color4;
-        /**
-         * Copies the passed Color4 values into the current one
-         * @param source defines the source Color4 object
-         * @returns the current updated Color4 object
-         */
-        copyFrom(source: Color4): Color4;
-        /**
-         * Copies the passed float values into the current one
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @param a defines the alpha component to read from
-         * @returns the current updated Color4 object
-         */
-        copyFromFloats(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Copies the passed float values into the current one
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @param a defines the alpha component to read from
-         * @returns the current updated Color4 object
-         */
-        set(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Compute the Color4 hexadecimal code as a string
-         * @returns a string containing the hexadecimal representation of the Color4 object
-         */
-        toHexString(): string;
-        /**
-         * Computes a new Color4 converted from the current one to linear space
-         * @returns a new Color4 object
-         */
-        toLinearSpace(): Color4;
-        /**
-         * Converts the Color4 values to linear space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color4 object where to store the linear space version
-         * @returns the unmodified Color4
-         */
-        toLinearSpaceToRef(convertedColor: Color4): Color4;
-        /**
-         * Computes a new Color4 converted from the current one to gamma space
-         * @returns a new Color4 object
-         */
-        toGammaSpace(): Color4;
-        /**
-         * Converts the Color4 values to gamma space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color4 object where to store the gamma space version
-         * @returns the unmodified Color4
-         */
-        toGammaSpaceToRef(convertedColor: Color4): Color4;
-        /**
-         * Creates a new Color4 from the string containing valid hexadecimal values
-         * @param hex defines a string containing valid hexadecimal values
-         * @returns a new Color4 object
-         */
-        static FromHexString(hex: string): Color4;
-        /**
-         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
-         * @param left defines the start value
-         * @param right defines the end value
-         * @param amount defines the gradient factor
-         * @returns a new Color4 object
-         */
-        static Lerp(left: Color4, right: Color4, amount: number): Color4;
-        /**
-         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
-         * @param left defines the start value
-         * @param right defines the end value
-         * @param amount defines the gradient factor
-         * @param result defines the Color4 object where to store data
-         */
-        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
-        /**
-         * Creates a new Color4 from the starting index element of the passed array
-         * @param array defines the source array to read from
-         * @param offset defines the offset in the source array
-         * @returns a new Color4 object
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Color4;
-        /**
-         * Creates a new Color3 from integer values (< 256)
-         * @param r defines the red component to read from (value between 0 and 255)
-         * @param g defines the green component to read from (value between 0 and 255)
-         * @param b defines the blue component to read from (value between 0 and 255)
-         * @param a defines the alpha component to read from (value between 0 and 255)
-         * @returns a new Color3 object
-         */
-        static FromInts(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Check the content of a given array and convert it to an array containing RGBA data
-         * If the original array was already containing count * 4 values then it is returned directly
-         * @param colors defines the array to check
-         * @param count defines the number of RGBA data to expect
-         * @returns an array containing count * 4 values (RGBA)
-         */
-        static CheckColors4(colors: number[], count: number): number[];
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
     }
-    class Vector2 {
-        x: number;
-        y: number;
-        /**
-         * Creates a new Vector2 from the passed x and y coordinates.
-         */
-        constructor(x: number, y: number);
-        /**
-         * Returns a string with the Vector2 coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Vector2"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Vector2 hash code as a number.
-         */
-        getHashCode(): number;
-        /**
-         * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.
-         * Returns the Vector2.
-         */
-        toArray(array: FloatArray, index?: number): Vector2;
-        /**
-         * Returns a new array with 2 elements : the Vector2 coordinates.
-         */
-        asArray(): number[];
-        /**
-         *  Sets the Vector2 coordinates with the passed Vector2 coordinates.
-         * Returns the updated Vector2.
-         */
-        copyFrom(source: Vector2): Vector2;
-        /**
-         * Sets the Vector2 coordinates with the passed floats.
-         * Returns the updated Vector2.
-         */
-        copyFromFloats(x: number, y: number): Vector2;
-        /**
-         * Sets the Vector2 coordinates with the passed floats.
-         * Returns the updated Vector2.
-         */
-        set(x: number, y: number): Vector2;
-        /**
-         * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.
-         */
-        add(otherVector: Vector2): Vector2;
-        /**
-         * Sets the "result" coordinates with the addition of the current Vector2 and the passed one coordinates.
-         * Returns the Vector2.
-         */
-        addToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Set the Vector2 coordinates by adding the passed Vector2 coordinates.
-         * Returns the updated Vector2.
-         */
-        addInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 by adding the current Vector2 coordinates to the passed Vector3 x, y coordinates.
-         */
-        addVector3(otherVector: Vector3): Vector2;
-        /**
-         * Returns a new Vector2 set with the subtracted coordinates of the passed one from the current Vector2.
-         */
-        subtract(otherVector: Vector2): Vector2;
-        /**
-         * Sets the "result" coordinates with the subtraction of the passed one from the current Vector2 coordinates.
-         * Returns the Vector2.
-         */
-        subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Sets the current Vector2 coordinates by subtracting from it the passed one coordinates.
-         * Returns the updated Vector2.
-         */
-        subtractInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Multiplies in place the current Vector2 coordinates by the passed ones.
-         * Returns the updated Vector2.
-         */
-        multiplyInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 set with the multiplication of the current Vector2 and the passed one coordinates.
-         */
-        multiply(otherVector: Vector2): Vector2;
-        /**
-         * Sets "result" coordinates with the multiplication of the current Vector2 and the passed one coordinates.
-         * Returns the Vector2.
-         */
-        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the passed floats.
-         */
-        multiplyByFloats(x: number, y: number): Vector2;
-        /**
-         * Returns a new Vector2 set with the Vector2 coordinates divided by the passed one coordinates.
-         */
-        divide(otherVector: Vector2): Vector2;
-        /**
-         * Sets the "result" coordinates with the Vector2 divided by the passed one coordinates.
-         * Returns the Vector2.
-         */
-        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
-        /**
-         * Divides the current Vector3 coordinates by the passed ones.
-         * Returns the updated Vector3.
-         */
-        divideInPlace(otherVector: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 with current Vector2 negated coordinates.
-         */
-        negate(): Vector2;
-        /**
-         * Multiply the Vector2 coordinates by scale.
-         * Returns the updated Vector2.
-         */
-        scaleInPlace(scale: number): Vector2;
-        /**
-         * Returns a new Vector2 scaled by "scale" from the current Vector2.
-         */
-        scale(scale: number): Vector2;
-        /**
-         * Scale the current Vector2 values by a factor to a given Vector2
-         * @param scale defines the scale factor
-         * @param result defines the Vector2 object where to store the result
-         * @returns the unmodified current Vector2
-         */
-        scaleToRef(scale: number, result: Vector2): Vector2;
-        /**
-         * Scale the current Vector2 values by a factor and add the result to a given Vector2
-         * @param scale defines the scale factor
-         * @param result defines the Vector2 object where to store the result
-         * @returns the unmodified current Vector2
-         */
-        scaleAndAddToRef(scale: number, result: Vector2): Vector2;
-        /**
-         * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.
-         */
-        equals(otherVector: Vector2): boolean;
-        /**
-         * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.
-         */
-        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
-        /**
-         * Returns the vector length (float).
-         */
-        length(): number;
-        /**
-         * Returns the vector squared length (float);
-         */
-        lengthSquared(): number;
-        /**
-         * Normalize the vector.
-         * Returns the updated Vector2.
-         */
-        normalize(): Vector2;
-        /**
-         * Returns a new Vector2 copied from the Vector2.
-         */
-        clone(): Vector2;
-        /**
-         * Returns a new Vector2(0, 0)
-         */
-        static Zero(): Vector2;
-        /**
-         * Returns a new Vector2(1, 1)
-         */
-        static One(): Vector2;
-        /**
-         * Returns a new Vector2 set from the passed index element of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Vector2;
-        /**
-         * Sets "result" from the passed index element of the passed array.
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void;
-        /**
-         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the passed four Vector2.
-         */
-        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
-        /**
-         * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
-         * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
-         * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate.
-         */
-        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
-        /**
-         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
-         */
-        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
-        /**
-         * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
-         */
-        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
-        /**
-         * Returns the dot product (float) of the vector "left" and the vector "right".
-         */
-        static Dot(left: Vector2, right: Vector2): number;
-        /**
-         * Returns a new Vector2 equal to the normalized passed vector.
-         */
-        static Normalize(vector: Vector2): Vector2;
-        /**
-         * Returns a new Vecto2 set with the minimal coordinate values from the "left" and "right" vectors.
-         */
-        static Minimize(left: Vector2, right: Vector2): Vector2;
-        /**
-         * Returns a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors.
-         */
-        static Maximize(left: Vector2, right: Vector2): Vector2;
-        /**
-         * Returns a new Vecto2 set with the transformed coordinates of the passed vector by the passed transformation matrix.
-         */
-        static Transform(vector: Vector2, transformation: Matrix): Vector2;
-        /**
-         * Transforms the passed vector coordinates by the passed transformation matrix and stores the result in the vector "result" coordinates.
-         */
-        static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
-        /**
-         * Boolean : True if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
-         */
-        static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): boolean;
-        /**
-         * Returns the distance (float) between the vectors "value1" and "value2".
-         */
-        static Distance(value1: Vector2, value2: Vector2): number;
-        /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".
-         */
-        static DistanceSquared(value1: Vector2, value2: Vector2): number;
-        /**
-         * Returns a new Vecto2 located at the center of the vectors "value1" and "value2".
-         */
-        static Center(value1: Vector2, value2: Vector2): Vector2;
-        /**
-         * Returns the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
-         */
-        static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number;
-    }
-    /**
-     * Classed used to store (x,y,z) vector representation
-     * A Vector3 is the main object used in 3D geometry
-     * It can represent etiher the coordinates of a point the space, either a direction
-     * Reminder: Babylon.js uses a left handed forward facing system
-     */
-    class Vector3 {
-        /**
-         * Defines the first coordinates (on X axis)
-         */
-        x: number;
-        /**
-         * Defines the second coordinates (on Y axis)
-         */
-        y: number;
-        /**
-         * Defines the third coordinates (on Z axis)
-         */
-        z: number;
-        /**
-         * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.
-         * @param x defines the first coordinates (on X axis)
-         * @param y defines the second coordinates (on Y axis)
-         * @param z defines the third coordinates (on Z axis)
-         */
-        constructor(
-            /**
-             * Defines the first coordinates (on X axis)
-             */
-            x: number, 
-            /**
-             * Defines the second coordinates (on Y axis)
-             */
-            y: number, 
-            /**
-             * Defines the third coordinates (on Z axis)
-             */
-            z: number);
-        /**
-         * Creates a string representation of the Vector3
-         * @returns a string with the Vector3 coordinates.
-         */
-        toString(): string;
-        /**
-         * Gets the class name
-         * @returns the string "Vector3"
-         */
-        getClassName(): string;
-        /**
-         * Creates the Vector3 hash code
-         * @returns a number which tends to be unique between Vector3 instances
-         */
-        getHashCode(): number;
-        /**
-         * Creates an array containing three elements : the coordinates of the Vector3
-         * @returns a new array of numbers
-         */
-        asArray(): number[];
-        /**
-         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3
-         * @param array defines the destination array
-         * @param index defines the offset in the destination array
-         * @returns the current Vector3
-         */
-        toArray(array: FloatArray, index?: number): Vector3;
-        /**
-         * Converts the current Vector3 into a quaternion (considering that the Vector3 contains Euler angles representation of a rotation)
-         * @returns a new Quaternion object, computed from the Vector3 coordinates
-         */
-        toQuaternion(): Quaternion;
-        /**
-         * Adds the passed vector to the current Vector3
-         * @param otherVector defines the second operand
-         * @returns the current updated Vector3
-         */
-        addInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Gets a new Vector3, result of the addition the current Vector3 and the passed vector
-         * @param otherVector defines the second operand
-         * @returns the resulting Vector3
-         */
-        add(otherVector: Vector3): Vector3;
-        /**
-         * Adds the current Vector3 to the passed one and stores the result in the vector "result"
-         * @param otherVector defines the second operand
-         * @param result defines the Vector3 object where to store the result
-         * @returns the current Vector3
-         */
-        addToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Subtract the passed vector from the current Vector3
-         * @param otherVector defines the second operand
-         * @returns the current updated Vector3
-         */
-        subtractInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3
-         * @param otherVector defines the second operand
-         * @returns the resulting Vector3
-         */
-        subtract(otherVector: Vector3): Vector3;
-        /**
-         * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".
-         * @param otherVector defines the second operand
-         * @param result defines the Vector3 object where to store the result
-         * @returns the current Vector3
-         */
-        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @returns the resulting Vector3
-         */
-        subtractFromFloats(x: number, y: number, z: number): Vector3;
-        /**
-         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @param result defines the Vector3 object where to store the result
-         * @returns the current Vector3
-         */
-        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
-        /**
-         * Gets a new Vector3 set with the current Vector3 negated coordinates
-         * @returns a new Vector3
-         */
-        negate(): Vector3;
-        /**
-         * Multiplies the Vector3 coordinates by the float "scale"
-         * @param scale defines the multiplier factor
-         * @returns the current updated Vector3
-         */
-        scaleInPlace(scale: number): Vector3;
-        /**
-         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale"
-         * @param scale defines the multiplier factor
-         * @returns a new Vector3
-         */
-        scale(scale: number): Vector3;
-        /**
-         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates
-         * @param scale defines the multiplier factor
-         * @param result defines the Vector3 object where to store the result
-         * @returns the current Vector3
-         */
-        scaleToRef(scale: number, result: Vector3): Vector3;
-        /**
-         * Scale the current Vector3 values by a factor and add the result to a given Vector3
-         * @param scale defines the scale factor
-         * @param result defines the Vector3 object where to store the result
-         * @returns the unmodified current Vector3
-         */
-        scaleAndAddToRef(scale: number, result: Vector3): Vector3;
-        /**
-         * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
-         * @param otherVector defines the second operand
-         * @returns true if both vectors are equals
-         */
-        equals(otherVector: Vector3): boolean;
-        /**
-         * Returns true if the current Vector3 and the passed vector coordinates are distant less than epsilon
-         * @param otherVector defines the second operand
-         * @param epsilon defines the minimal distance to define values as equals
-         * @returns true if both vectors are distant less than epsilon
-         */
-        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
-        /**
-         * Returns true if the current Vector3 coordinates equals the passed floats
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @returns true if both vectors are equals
-         */
-        equalsToFloats(x: number, y: number, z: number): boolean;
-        /**
-         * Multiplies the current Vector3 coordinates by the passed ones
-         * @param otherVector defines the second operand
-         * @returns the current updated Vector3
-         */
-        multiplyInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector
-         * @param otherVector defines the second operand
-         * @returns the new Vector3
-         */
-        multiply(otherVector: Vector3): Vector3;
-        /**
-         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result"
-         * @param otherVector defines the second operand
-         * @param result defines the Vector3 object where to store the result
-         * @returns the current Vector3
-         */
-        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the passed floats
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @returns the new Vector3
-         */
-        multiplyByFloats(x: number, y: number, z: number): Vector3;
-        /**
-         * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the passed ones
-         * @param otherVector defines the second operand
-         * @returns the new Vector3
-         */
-        divide(otherVector: Vector3): Vector3;
-        /**
-         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result"
-         * @param otherVector defines the second operand
-         * @param result defines the Vector3 object where to store the result
-         * @returns the current Vector3
-         */
-        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
-        /**
-         * Divides the current Vector3 coordinates by the passed ones.
-         * @param otherVector defines the second operand
-         * @returns the current updated Vector3
-         */
-        divideInPlace(otherVector: Vector3): Vector3;
-        /**
-         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones
-         * @param other defines the second operand
-         * @returns the current updated Vector3
-         */
-        minimizeInPlace(other: Vector3): Vector3;
-        /**
-         * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.
-         * @param other defines the second operand
-         * @returns the current updated Vector3
-         */
-        maximizeInPlace(other: Vector3): Vector3;
-        /**
-         * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
-         */
-        readonly isNonUniform: boolean;
-        /**
-         * Gets the length of the Vector3
-         * @returns the length of the Vecto3
-         */
-        length(): number;
-        /**
-         * Gets the squared length of the Vector3
-         * @returns squared length of the Vector3
-         */
-        lengthSquared(): number;
-        /**
-         * Normalize the current Vector3.
-         * Please note that this is an in place operation.
-         * @returns the current updated Vector3
-         */
-        normalize(): Vector3;
-        /**
-         * Normalize the current Vector3 to a new vector
-         * @returns the new Vector3
-         */
-        normalizeToNew(): Vector3;
-        /**
-         * Normalize the current Vector3 to the reference
-         * @param reference define the Vector3 to update
-         * @returns the updated Vector3
-         */
-        normalizeToRef(reference: Vector3): Vector3;
-        /**
-         * Creates a new Vector3 copied from the current Vector3
-         * @returns the new Vector3
-         */
-        clone(): Vector3;
-        /**
-         * Copies the passed vector coordinates to the current Vector3 ones
-         * @param source defines the source Vector3
-         * @returns the current updated Vector3
-         */
-        copyFrom(source: Vector3): Vector3;
-        /**
-         * Copies the passed floats to the current Vector3 coordinates
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @returns the current updated Vector3
-         */
-        copyFromFloats(x: number, y: number, z: number): Vector3;
-        /**
-         * Copies the passed floats to the current Vector3 coordinates
-         * @param x defines the x coordinate of the operand
-         * @param y defines the y coordinate of the operand
-         * @param z defines the z coordinate of the operand
-         * @returns the current updated Vector3
-         */
-        set(x: number, y: number, z: number): Vector3;
-        /**
-         * Get the clip factor between two vectors
-         * @param vector0 defines the first operand
-         * @param vector1 defines the second operand
-         * @param axis defines the axis to use
-         * @param size defines the size along the axis
-         * @returns the clip factor
-         */
-        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number): number;
-        /**
-         * Get angle between two vectors
-         * @param vector0 angle between vector0 and vector1
-         * @param vector1 angle between vector0 and vector1
-         * @param normal direction of the normal
-         * @return the angle between vector0 and vector1
-         */
-        static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number;
-        /**
-         * Returns a new Vector3 set from the index "offset" of the passed array
-         * @param array defines the source array
-         * @param offset defines the offset in the source array
-         * @returns the new Vector3
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
-        /**
-         * Returns a new Vector3 set from the index "offset" of the passed Float32Array
-         * This function is deprecated.  Use FromArray instead
-         * @param array defines the source array
-         * @param offset defines the offset in the source array
-         * @returns the new Vector3
-         */
-        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
-        /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array
-         * @param array defines the source array
-         * @param offset defines the offset in the source array
-         * @param result defines the Vector3 where to store the result
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array
-         * This function is deprecated.  Use FromArrayToRef instead.
-         * @param array defines the source array
-         * @param offset defines the offset in the source array
-         * @param result defines the Vector3 where to store the result
-         */
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" with the passed floats.
-         * @param x defines the x coordinate of the source
-         * @param y defines the y coordinate of the source
-         * @param z defines the z coordinate of the source
-         * @param result defines the Vector3 where to store the result
-         */
-        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
-        /**
-         * Returns a new Vector3 set to (0.0, 0.0, 0.0)
-         * @returns a new empty Vector3
-         */
-        static Zero(): Vector3;
-        /**
-         * Returns a new Vector3 set to (1.0, 1.0, 1.0)
-         * @returns a new unit Vector3
-         */
-        static One(): Vector3;
-        /**
-         * Returns a new Vector3 set to (0.0, 1.0, 0.0)
-         * @returns a new up Vector3
-         */
-        static Up(): Vector3;
-        /**
-         * Returns a new Vector3 set to (0.0, 0.0, 1.0)
-         * @returns a new forward Vector3
-         */
-        static Forward(): Vector3;
-        /**
-         * Returns a new Vector3 set to (1.0, 0.0, 0.0)
-         * @returns a new right Vector3
-         */
-        static Right(): Vector3;
-        /**
-         * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
-         * @returns a new left Vector3
-         */
-        static Left(): Vector3;
-        /**
-         * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.
-         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
-         * @param vector defines the Vector3 to transform
-         * @param transformation defines the transformation matrix
-         * @returns the transformed Vector3
-         */
-        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
-        /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector
-         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
-         * @param vector defines the Vector3 to transform
-         * @param transformation defines the transformation matrix
-         * @param result defines the Vector3 where to store the result
-         */
-        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z)
-         * This method computes tranformed coordinates only, not transformed direction vectors
-         * @param x define the x coordinate of the source vector
-         * @param y define the y coordinate of the source vector
-         * @param z define the z coordinate of the source vector
-         * @param transformation defines the transformation matrix
-         * @param result defines the Vector3 where to store the result
-         */
-        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        /**
-         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector
-         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
-         * @param vector defines the Vector3 to transform
-         * @param transformation defines the transformation matrix
-         * @returns the new Vector3
-         */
-        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector
-         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
-         * @param vector defines the Vector3 to transform
-         * @param transformation defines the transformation matrix
-         * @param result defines the Vector3 where to store the result
-         */
-        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z)
-         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
-         * @param x define the x coordinate of the source vector
-         * @param y define the y coordinate of the source vector
-         * @param z define the z coordinate of the source vector
-         * @param transformation defines the transformation matrix
-         * @param result defines the Vector3 where to store the result
-         */
-        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        /**
-         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4"
-         * @param value1 defines the first control point
-         * @param value2 defines the second control point
-         * @param value3 defines the third control point
-         * @param value4 defines the fourth control point
-         * @param amount defines the amount on the spline to use
-         * @returns the new Vector3
-         */
-        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
-        /**
-         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
-         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
-         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
-         * @param value defines the current value
-         * @param min defines the lower range value
-         * @param max defines the upper range value
-         * @returns the new Vector3
-         */
-        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
-        /**
-         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
-         * @param value1 defines the first control point
-         * @param tangent1 defines the first tangent vector
-         * @param value2 defines the second control point
-         * @param tangent2 defines the second tangent vector
-         * @param amount defines the amount on the interpolation spline (between 0 and 1)
-         * @returns the new Vector3
-         */
-        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
-        /**
-         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
-         * @param start defines the start value
-         * @param end defines the end value
-         * @param amount max defines amount between both (between 0 and 1)
-         * @returns the new Vector3
-         */
-        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
-        /**
-         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
-         * @param start defines the start value
-         * @param end defines the end value
-         * @param amount max defines amount between both (between 0 and 1)
-         * @param result defines the Vector3 where to store the result
-         */
-        static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void;
-        /**
-         * Returns the dot product (float) between the vectors "left" and "right"
-         * @param left defines the left operand
-         * @param right defines the right operand
-         * @returns the dot product
-         */
-        static Dot(left: Vector3, right: Vector3): number;
-        /**
-         * Returns a new Vector3 as the cross product of the vectors "left" and "right"
-         * The cross product is then orthogonal to both "left" and "right"
-         * @param left defines the left operand
-         * @param right defines the right operand
-         * @returns the cross product
-         */
-        static Cross(left: Vector3, right: Vector3): Vector3;
-        /**
-         * Sets the passed vector "result" with the cross product of "left" and "right"
-         * The cross product is then orthogonal to both "left" and "right"
-         * @param left defines the left operand
-         * @param right defines the right operand
-         * @param result defines the Vector3 where to store the result
-         */
-        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
-        /**
-         * Returns a new Vector3 as the normalization of the passed vector
-         * @param vector defines the Vector3 to normalize
-         * @returns the new Vector3
-         */
-        static Normalize(vector: Vector3): Vector3;
-        /**
-         * Sets the passed vector "result" with the normalization of the passed first vector
-         * @param vector defines the Vector3 to normalize
-         * @param result defines the Vector3 where to store the result
-         */
-        static NormalizeToRef(vector: Vector3, result: Vector3): void;
-        private static _viewportMatrixCache;
-        /**
-         * Project a Vector3 onto screen space
-         * @param vector defines the Vector3 to project
-         * @param world defines the world matrix to use
-         * @param transform defines the transform (view x projection) matrix to use
-         * @param viewport defines the screen viewport to use
-         * @returns the new Vector3
-         */
-        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
-        /**
-         * Unproject from screen space to object space
-         * @param source defines the screen space Vector3 to use
-         * @param viewportWidth defines the current width of the viewport
-         * @param viewportHeight defines the current height of the viewport
-         * @param world defines the world matrix to use (can be set to Identity to go to world space)
-         * @param transform defines the transform (view x projection) matrix to use
-         * @returns the new Vector3
-         */
-        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
-        /**
-         * Unproject from screen space to object space
-         * @param source defines the screen space Vector3 to use
-         * @param viewportWidth defines the current width of the viewport
-         * @param viewportHeight defines the current height of the viewport
-         * @param world defines the world matrix to use (can be set to Identity to go to world space)
-         * @param view defines the view matrix to use
-         * @param projection defines the projection matrix to use
-         * @returns the new Vector3
-         */
-        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
-        /**
-         * Unproject from screen space to object space
-         * @param source defines the screen space Vector3 to use
-         * @param viewportWidth defines the current width of the viewport
-         * @param viewportHeight defines the current height of the viewport
-         * @param world defines the world matrix to use (can be set to Identity to go to world space)
-         * @param view defines the view matrix to use
-         * @param projection defines the projection matrix to use
-         * @param result defines the Vector3 where to store the result
-         */
-        static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void;
-        /**
-         * Unproject from screen space to object space
-         * @param sourceX defines the screen space x coordinate to use
-         * @param sourceY defines the screen space y coordinate to use
-         * @param sourceZ defines the screen space z coordinate to use
-         * @param viewportWidth defines the current width of the viewport
-         * @param viewportHeight defines the current height of the viewport
-         * @param world defines the world matrix to use (can be set to Identity to go to world space)
-         * @param view defines the view matrix to use
-         * @param projection defines the projection matrix to use
-         * @param result defines the Vector3 where to store the result
-         */
-        static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void;
-        /**
-         * Gets the minimal coordinate values between two Vector3
-         * @param left defines the first operand
-         * @param right defines the second operand
-         * @returns the new Vector3
-         */
-        static Minimize(left: Vector3, right: Vector3): Vector3;
-        /**
-         * Gets the maximal coordinate values between two Vector3
-         * @param left defines the first operand
-         * @param right defines the second operand
-         * @returns the new Vector3
-         */
-        static Maximize(left: Vector3, right: Vector3): Vector3;
-        /**
-         * Returns the distance between the vectors "value1" and "value2"
-         * @param value1 defines the first operand
-         * @param value2 defines the second operand
-         * @returns the distance
-         */
-        static Distance(value1: Vector3, value2: Vector3): number;
-        /**
-         * Returns the squared distance between the vectors "value1" and "value2"
-         * @param value1 defines the first operand
-         * @param value2 defines the second operand
-         * @returns the squared distance
-         */
-        static DistanceSquared(value1: Vector3, value2: Vector3): number;
-        /**
-         * Returns a new Vector3 located at the center between "value1" and "value2"
-         * @param value1 defines the first operand
-         * @param value2 defines the second operand
-         * @returns the new Vector3
-         */
-        static Center(value1: Vector3, value2: Vector3): Vector3;
-        /**
-         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
-         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
-         * to something in order to rotate it from its local system to the given target system
-         * Note: axis1, axis2 and axis3 are normalized during this operation
-         * @param axis1 defines the first axis
-         * @param axis2 defines the second axis
-         * @param axis3 defines the third axis
-         * @returns a new Vector3
-         */
-        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
-        /**
-         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3
-         * @param axis1 defines the first axis
-         * @param axis2 defines the second axis
-         * @param axis3 defines the third axis
-         * @param ref defines the Vector3 where to store the result
-         */
-        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
-    }
-    class Vector4 {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        /**
-         * Creates a Vector4 object from the passed floats.
-         */
-        constructor(x: number, y: number, z: number, w: number);
-        /**
-         * Returns the string with the Vector4 coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Vector4".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Vector4 hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Returns a new array populated with 4 elements : the Vector4 coordinates.
-         */
-        asArray(): number[];
-        /**
-         * Populates the passed array from the passed index with the Vector4 coordinates.
-         * Returns the Vector4.
-         */
-        toArray(array: FloatArray, index?: number): Vector4;
-        /**
-         * Adds the passed vector to the current Vector4.
-         * Returns the updated Vector4.
-         */
-        addInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 as the result of the addition of the current Vector4 and the passed one.
-         */
-        add(otherVector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" with the result of the addition of the current Vector4 and the passed one.
-         * Returns the current Vector4.
-         */
-        addToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Subtract in place the passed vector from the current Vector4.
-         * Returns the updated Vector4.
-         */
-        subtractInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 with the result of the subtraction of the passed vector from the current Vector4.
-         */
-        subtract(otherVector: Vector4): Vector4;
-        /**
-         * Sets the passed vector "result" with the result of the subtraction of the passed vector from the current Vector4.
-         * Returns the current Vector4.
-         */
-        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
-         */
-        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Sets the passed vector "result" set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
-         * Returns the current Vector4.
-         */
-        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the current Vector4 negated coordinates.
-         */
-        negate(): Vector4;
-        /**
-         * Multiplies the current Vector4 coordinates by scale (float).
-         * Returns the updated Vector4.
-         */
-        scaleInPlace(scale: number): Vector4;
-        /**
-         * Returns a new Vector4 set with the current Vector4 coordinates multiplied by scale (float).
-         */
-        scale(scale: number): Vector4;
-        /**
-         * Sets the passed vector "result" with the current Vector4 coordinates multiplied by scale (float).
-         * Returns the current Vector4.
-         */
-        scaleToRef(scale: number, result: Vector4): Vector4;
-        /**
-         * Scale the current Vector4 values by a factor and add the result to a given Vector4
-         * @param scale defines the scale factor
-         * @param result defines the Vector4 object where to store the result
-         * @returns the unmodified current Vector4
-         */
-        scaleAndAddToRef(scale: number, result: Vector4): Vector4;
-        /**
-         * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.
-         */
-        equals(otherVector: Vector4): boolean;
-        /**
-         * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the passed vector ones.
-         */
-        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
-        /**
-         * Boolean : True if the passed floats are strictly equal to the current Vector4 coordinates.
-         */
-        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
-        /**
-         * Multiplies in place the current Vector4 by the passed one.
-         * Returns the updated Vector4.
-         */
-        multiplyInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the passed one.
-         */
-        multiply(otherVector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" with the multiplication result of the current Vector4 and the passed one.
-         * Returns the current Vector4.
-         */
-        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the multiplication result of the passed floats and the current Vector4 coordinates.
-         */
-        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Returns a new Vector4 set with the division result of the current Vector4 by the passed one.
-         */
-        divide(otherVector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" with the division result of the current Vector4 by the passed one.
-         * Returns the current Vector4.
-         */
-        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
-        /**
-         * Divides the current Vector3 coordinates by the passed ones.
-         * @returns the updated Vector3.
-         */
-        divideInPlace(otherVector: Vector4): Vector4;
-        /**
-         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones
-         * @param other defines the second operand
-         * @returns the current updated Vector4
-         */
-        minimizeInPlace(other: Vector4): Vector4;
-        /**
-         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones
-         * @param other defines the second operand
-         * @returns the current updated Vector4
-         */
-        maximizeInPlace(other: Vector4): Vector4;
-        /**
-         * Returns the Vector4 length (float).
-         */
-        length(): number;
-        /**
-         * Returns the Vector4 squared length (float).
-         */
-        lengthSquared(): number;
-        /**
-         * Normalizes in place the Vector4.
-         * Returns the updated Vector4.
-         */
-        normalize(): Vector4;
-        /**
-         * Returns a new Vector3 from the Vector4 (x, y, z) coordinates.
-         */
-        toVector3(): Vector3;
-        /**
-         * Returns a new Vector4 copied from the current one.
-         */
-        clone(): Vector4;
-        /**
-         * Updates the current Vector4 with the passed one coordinates.
-         * Returns the updated Vector4.
-         */
-        copyFrom(source: Vector4): Vector4;
-        /**
-         * Updates the current Vector4 coordinates with the passed floats.
-         * Returns the updated Vector4.
-         */
-        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Updates the current Vector4 coordinates with the passed floats.
-         * Returns the updated Vector4.
-         */
-        set(x: number, y: number, z: number, w: number): Vector4;
-        /**
-         * Returns a new Vector4 set from the starting index of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Vector4;
-        /**
-         * Updates the passed vector "result" from the starting index of the passed array.
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void;
-        /**
-         * Updates the passed vector "result" from the starting index of the passed Float32Array.
-         */
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
-        /**
-         * Updates the passed vector "result" coordinates from the passed floats.
-         */
-        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
-        /**
-         * Returns a new Vector4 set to (0.0, 0.0, 0.0, 0.0)
-         */
-        static Zero(): Vector4;
-        /**
-         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
-         */
-        static One(): Vector4;
-        /**
-         * Returns a new normalized Vector4 from the passed one.
-         */
-        static Normalize(vector: Vector4): Vector4;
-        /**
-         * Updates the passed vector "result" from the normalization of the passed one.
-         */
-        static NormalizeToRef(vector: Vector4, result: Vector4): void;
-        static Minimize(left: Vector4, right: Vector4): Vector4;
-        static Maximize(left: Vector4, right: Vector4): Vector4;
-        /**
-         * Returns the distance (float) between the vectors "value1" and "value2".
-         */
-        static Distance(value1: Vector4, value2: Vector4): number;
-        /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".
-         */
-        static DistanceSquared(value1: Vector4, value2: Vector4): number;
-        /**
-         * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
-         */
-        static Center(value1: Vector4, value2: Vector4): Vector4;
-        /**
-         * Returns a new Vector4 set with the result of the normal transformation by the passed matrix of the passed vector.
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormal(vector: Vector4, transformation: Matrix): Vector4;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void;
-        /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z, w).
-         * This methods computes transformed normalized direction vectors only.
-         */
-        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void;
-    }
-    interface ISize {
-        width: number;
-        height: number;
-    }
-    class Size implements ISize {
-        width: number;
-        height: number;
-        /**
-         * Creates a Size object from the passed width and height (floats).
-         */
-        constructor(width: number, height: number);
-        toString(): string;
-        /**
-         * Returns the string "Size"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Size hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Updates the current size from the passed one.
-         * Returns the updated Size.
-         */
-        copyFrom(src: Size): void;
-        /**
-         * Updates in place the current Size from the passed floats.
-         * Returns the updated Size.
-         */
-        copyFromFloats(width: number, height: number): Size;
-        /**
-         * Updates in place the current Size from the passed floats.
-         * Returns the updated Size.
-         */
-        set(width: number, height: number): Size;
-        /**
-         * Returns a new Size set with the multiplication result of the current Size and the passed floats.
-         */
-        multiplyByFloats(w: number, h: number): Size;
-        /**
-         * Returns a new Size copied from the passed one.
-         */
-        clone(): Size;
-        /**
-         * Boolean : True if the current Size and the passed one width and height are strictly equal.
-         */
-        equals(other: Size): boolean;
-        /**
-         * Returns the surface of the Size : width * height (float).
-         */
-        readonly surface: number;
-        /**
-         * Returns a new Size set to (0.0, 0.0)
-         */
-        static Zero(): Size;
-        /**
-         * Returns a new Size set as the addition result of the current Size and the passed one.
-         */
-        add(otherSize: Size): Size;
-        /**
-         * Returns a new Size set as the subtraction result of  the passed one from the current Size.
-         */
-        subtract(otherSize: Size): Size;
-        /**
-         * Returns a new Size set at the linear interpolation "amount" between "start" and "end".
-         */
-        static Lerp(start: Size, end: Size, amount: number): Size;
-    }
-    class Quaternion {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        /**
-         * Creates a new Quaternion from the passed floats.
-         */
-        constructor(x?: number, y?: number, z?: number, w?: number);
-        /**
-         * Returns a string with the Quaternion coordinates.
-         */
-        toString(): string;
-        /**
-         * Returns the string "Quaternion".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Quaternion hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Returns a new array populated with 4 elements : the Quaternion coordinates.
-         */
-        asArray(): number[];
-        /**
-         * Boolean : True if the current Quaterion and the passed one coordinates are strictly equal.
-         */
-        equals(otherQuaternion: Quaternion): boolean;
-        /**
-         * Returns a new Quaternion copied from the current one.
-         */
-        clone(): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed one coordinates.
-         * Returns the updated Quaterion.
-         */
-        copyFrom(other: Quaternion): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed float coordinates.
-         * Returns the updated Quaterion.
-         */
-        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed float coordinates.
-         * Returns the updated Quaterion.
-         */
-        set(x: number, y: number, z: number, w: number): Quaternion;
-        /**
-         * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.
-         */
-        add(other: Quaternion): Quaternion;
-        /**
-         * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.
-         */
-        subtract(other: Quaternion): Quaternion;
-        /**
-         * Returns a new Quaternion set by multiplying the current Quaterion coordinates by the float "scale".
-         */
-        scale(value: number): Quaternion;
-        /**
-         * Scale the current Quaternion values by a factor to a given Quaternion
-         * @param scale defines the scale factor
-         * @param result defines the Quaternion object where to store the result
-         * @returns the unmodified current Quaternion
-         */
-        scaleToRef(scale: number, result: Quaternion): Quaternion;
-        /**
-         * Scale the current Quaternion values by a factor and add the result to a given Quaternion
-         * @param scale defines the scale factor
-         * @param result defines the Quaternion object where to store the result
-         * @returns the unmodified current Quaternion
-         */
-        scaleAndAddToRef(scale: number, result: Quaternion): Quaternion;
-        /**
-         * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".
-         */
-        multiply(q1: Quaternion): Quaternion;
-        /**
-         * Sets the passed "result" as the quaternion mulplication result of the current one with the passed one "q1".
-         * Returns the current Quaternion.
-         */
-        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
-        /**
-         * Updates the current Quaternion with the quaternion mulplication result of itself with the passed one "q1".
-         * Returns the updated Quaternion.
-         */
-        multiplyInPlace(q1: Quaternion): Quaternion;
-        /**
-         * Sets the passed "ref" with the conjugation of the current Quaternion.
-         * Returns the current Quaternion.
-         */
-        conjugateToRef(ref: Quaternion): Quaternion;
-        /**
-         * Conjugates in place the current Quaternion.
-         * Returns the updated Quaternion.
-         */
-        conjugateInPlace(): Quaternion;
-        /**
-         * Returns a new Quaternion as the conjugate of the current Quaternion.
-         */
-        conjugate(): Quaternion;
-        /**
-         * Returns the Quaternion length (float).
-         */
-        length(): number;
-        /**
-         * Normalize in place the current Quaternion.
-         * Returns the updated Quaternion.
-         */
-        normalize(): Quaternion;
-        /**
-         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion
-         * @param order is a reserved parameter and is ignore for now
-         * @returns the new Vector3
-         */
-        toEulerAngles(order?: string): Vector3;
-        /**
-         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion
-         * @param result defines the vector which will be filled with the Euler angles
-         * @param order is a reserved parameter and is ignore for now
-         * @returns the current Quaternion
-         */
-        toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
-        /**
-         * Updates the passed rotation matrix with the current Quaternion values.
-         * Returns the current Quaternion.
-         */
-        toRotationMatrix(result: Matrix): Quaternion;
-        /**
-         * Updates the current Quaternion from the passed rotation matrix values.
-         * Returns the updated Quaternion.
-         */
-        fromRotationMatrix(matrix: Matrix): Quaternion;
-        /**
-         * Returns a new Quaternion set from the passed rotation matrix values.
-         */
-        static FromRotationMatrix(matrix: Matrix): Quaternion;
-        /**
-         * Updates the passed quaternion "result" with the passed rotation matrix values.
-         */
-        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion set to (0.0, 0.0, 0.0).
-         */
-        static Zero(): Quaternion;
-        /**
-         * Returns a new Quaternion as the inverted current Quaternion.
-         */
-        static Inverse(q: Quaternion): Quaternion;
-        /**
-         * Returns the identity Quaternion.
-         */
-        static Identity(): Quaternion;
-        static IsIdentity(quaternion: Quaternion): boolean;
-        /**
-         * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float).
-         */
-        static RotationAxis(axis: Vector3, angle: number): Quaternion;
-        /**
-         * Sets the passed quaternion "result" from the passed axis (Vector3) and angle in radians (float).
-         */
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
-        /**
-         * Retuns a new Quaternion set from the starting index of the passed array.
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Quaternion;
-        /**
-         * Returns a new Quaternion set from the passed Euler float angles (y, x, z).
-         */
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
-        /**
-         * Sets the passed quaternion "result" from the passed float Euler angles (y, x, z).
-         */
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion from the passed float Euler angles expressed in z-x-z orientation
-         */
-        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
-        /**
-         * Sets the passed quaternion "result" from the passed float Euler angles expressed in z-x-z orientation
-         */
-        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion as the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
-         * cf to Vector3.RotationFromAxis() documentation.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
-         */
-        static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion;
-        /**
-         * Sets the passed quaternion "ref" with the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
-         * cf to Vector3.RotationFromAxis() documentation.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
-         */
-        static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void;
-        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
-        static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void;
-        /**
-         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
-         */
-        static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion;
-    }
-    /**
-     * Class used to store matrix data (4x4)
-     */
-    class Matrix {
-        private static _tempQuaternion;
-        private static _xAxis;
-        private static _yAxis;
-        private static _zAxis;
-        private static _updateFlagSeed;
-        private static _identityReadOnly;
-        private _isIdentity;
-        private _isIdentityDirty;
-        /**
-         * Gets the update flag of the matrix which is an unique number for the matrix.
-         * It will be incremented every time the matrix data change.
-         * You can use it to speed the comparison between two versions of the same matrix.
-         */
-        updateFlag: number;
-        /**
-         * Gets or sets the internal data of the matrix
-         */
-        m: Float32Array;
-        /** @ignore */
-        _markAsUpdated(): void;
-        /**
-         * Creates an empty matrix (filled with zeros)
-         */
-        constructor();
-        /**
-         * Check if the current matrix is indentity
-         * @param considerAsTextureMatrix defines if the current matrix must be considered as a texture matrix (3x2)
-         * @returns true is the matrix is the identity matrix
-         */
-        isIdentity(considerAsTextureMatrix?: boolean): boolean;
-        /**
-         * Gets the determinant of the matrix
-         * @returns the matrix determinant
-         */
-        determinant(): number;
-        /**
-         * Returns the matrix as a Float32Array
-         * @returns the matrix underlying array
-         */
-        toArray(): Float32Array;
-        /**
-         * Returns the matrix as a Float32Array
-        * @returns the matrix underlying array.
-        */
-        asArray(): Float32Array;
-        /**
-         * Inverts the current matrix in place
-         * @returns the current inverted matrix
-         */
-        invert(): Matrix;
-        /**
-         * Sets all the matrix elements to zero
-         * @returns the current matrix
-         */
-        reset(): Matrix;
-        /**
-         * Adds the current matrix with a second one
-         * @param other defines the matrix to add
-         * @returns a new matrix as the addition of the current matrix and the passed one
-         */
-        add(other: Matrix): Matrix;
-        /**
-         * Sets the passed matrix "result" to the addition of the current matrix and the passed one
-         * @param other defines the matrix to add
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        addToRef(other: Matrix, result: Matrix): Matrix;
-        /**
-         * Adds in place the passed matrix to the current matrix
-         * @param other defines the second operand
-         * @returns the current updated matrix
-         */
-        addToSelf(other: Matrix): Matrix;
-        /**
-         * Sets the passed matrix to the current inverted Matrix
-         * @param other defines the target matrix
-         * @returns the unmodified current matrix
-         */
-        invertToRef(other: Matrix): Matrix;
-        /**
-         * Inserts the translation vector (using 3 floats) in the current matrix
-         * @param x defines the 1st component of the translation
-         * @param y defines the 2nd component of the translation
-         * @param z defines the 3rd component of the translation
-         * @returns the current updated matrix
-         */
-        setTranslationFromFloats(x: number, y: number, z: number): Matrix;
-        /**
-         * Inserts the translation vector in the current matrix
-         * @param vector3 defines the translation to insert
-         * @returns the current updated matrix
-         */
-        setTranslation(vector3: Vector3): Matrix;
-        /**
-         * Gets the translation value of the current matrix
-         * @returns a new Vector3 as the extracted translation from the matrix
-         */
-        getTranslation(): Vector3;
-        /**
-         * Fill a Vector3 with the extracted translation from the matrix
-         * @param result defines the Vector3 where to store the translation
-         * @returns the current matrix
-         */
-        getTranslationToRef(result: Vector3): Matrix;
-        /**
-         * Remove rotation and scaling part from the matrix
-         * @returns the updated matrix
-         */
-        removeRotationAndScaling(): Matrix;
-        /**
-         * Multiply two matrices
-         * @param other defines the second operand
-         * @returns a new matrix set with the multiplication result of the current Matrix and the passed one
-         */
-        multiply(other: Matrix): Matrix;
-        /**
-         * Copy the current matrix from the passed one
-         * @param other defines the source matrix
-         * @returns the current updated matrix
-         */
-        copyFrom(other: Matrix): Matrix;
-        /**
-         * Populates the passed array from the starting index with the current matrix values
-         * @param array defines the target array
-         * @param offset defines the offset in the target array where to start storing values
-         * @returns the current matrix
-         */
-        copyToArray(array: Float32Array, offset?: number): Matrix;
-        /**
-         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one
-         * @param other defines the second operand
-         * @param result defines the matrix where to store the multiplication
-         * @returns the current matrix
-         */
-        multiplyToRef(other: Matrix, result: Matrix): Matrix;
-        /**
-         * Sets the Float32Array "result" from the passed index "offset" with the multiplication of the current matrix and the passed one
-         * @param other defines the second operand
-         * @param result defines the array where to store the multiplication
-         * @param offset defines the offset in the target array where to start storing values
-         * @returns the current matrix
-         */
-        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
-        /**
-         * Check equality between this matrix and a second one
-         * @param value defines the second matrix to compare
-         * @returns true is the current matrix and the passed one values are strictly equal
-         */
-        equals(value: Matrix): boolean;
-        /**
-         * Clone the current matrix
-         * @returns a new matrix from the current matrix
-         */
-        clone(): Matrix;
-        /**
-         * Returns the name of the current matrix class
-         * @returns the string "Matrix"
-         */
-        getClassName(): string;
-        /**
-         * Gets the hash code of the current matrix
-         * @returns the hash code
-         */
-        getHashCode(): number;
-        /**
-         * Decomposes the current Matrix into a translation, rotation and scaling components
-         * @param scale defines the scale vector3 passed as a reference to update
-         * @param rotation defines the rotation quaternion passed as a reference to update
-         * @param translation defines the translation vector3 passed as a reference to update
-         * @returns true if operation was successful
-         */
-        decompose(scale: Vector3, rotation?: Quaternion, translation?: Vector3): boolean;
-        /**
-         * Gets specific row of the matrix
-         * @param index defines the number of the row to get
-         * @returns the index-th row of the current matrix as a new Vector4
-         */
-        getRow(index: number): Nullable<Vector4>;
-        /**
-         * Sets the index-th row of the current matrix to the vector4 values
-         * @param index defines the number of the row to set
-         * @param row defines the target vector4
-         * @returns the updated current matrix
-         */
-        setRow(index: number, row: Vector4): Matrix;
-        /**
-         * Compute the transpose of the matrix
-         * @returns the new transposed matrix
-         */
-        transpose(): Matrix;
-        /**
-         * Compute the transpose of the matrix and store it in a given matrix
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        transposeToRef(result: Matrix): Matrix;
-        /**
-         * Sets the index-th row of the current matrix with the passed 4 x float values
-         * @param index defines the row index
-         * @param x defines the x component to set
-         * @param y defines the y component to set
-         * @param z defines the z component to set
-         * @param w defines the w component to set
-         * @returns the updated current matrix
-         */
-        setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix;
-        /**
-         * Compute a new matrix set with the current matrix values multiplied by scale (float)
-         * @param scale defines the scale factor
-         * @returns a new matrix
-         */
-        scale(scale: number): Matrix;
-        /**
-         * Scale the current matrix values by a factor to a given result matrix
-         * @param scale defines the scale factor
-         * @param result defines the matrix to store the result
-         * @returns the current matrix
-         */
-        scaleToRef(scale: number, result: Matrix): Matrix;
-        /**
-         * Scale the current matrix values by a factor and add the result to a given matrix
-         * @param scale defines the scale factor
-         * @param result defines the Matrix to store the result
-         * @returns the current matrix
-         */
-        scaleAndAddToRef(scale: number, result: Matrix): Matrix;
-        /**
-         * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).
-         * @param ref matrix to store the result
-         */
-        toNormalMatrix(ref: Matrix): void;
-        /**
-         * Gets only rotation part of the current matrix
-         * @returns a new matrix sets to the extracted rotation matrix from the current one
-         */
-        getRotationMatrix(): Matrix;
-        /**
-         * Extracts the rotation matrix from the current one and sets it as the passed "result"
-         * @param result defines the target matrix to store data to
-         * @returns the current matrix
-         */
-        getRotationMatrixToRef(result: Matrix): Matrix;
-        /**
-         * Creates a matrix from an array
-         * @param array defines the source array
-         * @param offset defines an offset in the source array
-         * @returns a new Matrix set from the starting index of the passed array
-         */
-        static FromArray(array: ArrayLike<number>, offset?: number): Matrix;
-        /**
-         * Copy the content of an array into a given matrix
-         * @param array defines the source array
-         * @param offset defines an offset in the source array
-         * @param result defines the target matrix
-         */
-        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix): void;
-        /**
-         * Stores an array into a matrix after having multiplied each component by a given factor
-         * @param array defines the source array
-         * @param offset defines the offset in the source array
-         * @param scale defines the scaling factor
-         * @param result defines the target matrix
-         */
-        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
-        /**
-         * Stores a list of values (16) inside a given matrix
-         * @param initialM11 defines 1st value of 1st row
-         * @param initialM12 defines 2nd value of 1st row
-         * @param initialM13 defines 3rd value of 1st row
-         * @param initialM14 defines 4th value of 1st row
-         * @param initialM21 defines 1st value of 2nd row
-         * @param initialM22 defines 2nd value of 2nd row
-         * @param initialM23 defines 3rd value of 2nd row
-         * @param initialM24 defines 4th value of 2nd row
-         * @param initialM31 defines 1st value of 3rd row
-         * @param initialM32 defines 2nd value of 3rd row
-         * @param initialM33 defines 3rd value of 3rd row
-         * @param initialM34 defines 4th value of 3rd row
-         * @param initialM41 defines 1st value of 4th row
-         * @param initialM42 defines 2nd value of 4th row
-         * @param initialM43 defines 3rd value of 4th row
-         * @param initialM44 defines 4th value of 4th row
-         * @param result defines the target matrix
-         */
-        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
-        /**
-         * Gets an identity matrix that must not be updated
-         */
-        static readonly IdentityReadOnly: Matrix;
-        /**
-         * Creates new matrix from a list of values (16)
-         * @param initialM11 defines 1st value of 1st row
-         * @param initialM12 defines 2nd value of 1st row
-         * @param initialM13 defines 3rd value of 1st row
-         * @param initialM14 defines 4th value of 1st row
-         * @param initialM21 defines 1st value of 2nd row
-         * @param initialM22 defines 2nd value of 2nd row
-         * @param initialM23 defines 3rd value of 2nd row
-         * @param initialM24 defines 4th value of 2nd row
-         * @param initialM31 defines 1st value of 3rd row
-         * @param initialM32 defines 2nd value of 3rd row
-         * @param initialM33 defines 3rd value of 3rd row
-         * @param initialM34 defines 4th value of 3rd row
-         * @param initialM41 defines 1st value of 4th row
-         * @param initialM42 defines 2nd value of 4th row
-         * @param initialM43 defines 3rd value of 4th row
-         * @param initialM44 defines 4th value of 4th row
-         * @returns the new matrix
-         */
-        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
-        /**
-         * Creates a new matrix composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
-         * @param scale defines the scale vector3
-         * @param rotation defines the rotation quaternion
-         * @param translation defines the translation vector3
-         * @returns a new matrix
-         */
-        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
-        /**
-         * Sets a matrix to a value composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
-         * @param scale defines the scale vector3
-         * @param rotation defines the rotation quaternion
-         * @param translation defines the translation vector3
-         * @param result defines the target matrix
-         */
-        static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void;
-        /**
-         * Creates a new identity matrix
-         * @returns a new identity matrix
-         */
-        static Identity(): Matrix;
-        /**
-         * Creates a new identity matrix and stores the result in a given matrix
-         * @param result defines the target matrix
-         */
-        static IdentityToRef(result: Matrix): void;
-        /**
-         * Creates a new zero matrix
-         * @returns a new zero matrix
-         */
-        static Zero(): Matrix;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the X axis
-         * @param angle defines the angle (in radians) to use
-         * @return the new matrix
-         */
-        static RotationX(angle: number): Matrix;
-        /**
-         * Creates a new matrix as the invert of a given matrix
-         * @param source defines the source matrix
-         * @returns the new matrix
-         */
-        static Invert(source: Matrix): Matrix;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the X axis and stores it in a given matrix
-         * @param angle defines the angle (in radians) to use
-         * @param result defines the target matrix
-         */
-        static RotationXToRef(angle: number, result: Matrix): void;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the Y axis
-         * @param angle defines the angle (in radians) to use
-         * @return the new matrix
-         */
-        static RotationY(angle: number): Matrix;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the Y axis and stores it in a given matrix
-         * @param angle defines the angle (in radians) to use
-         * @param result defines the target matrix
-         */
-        static RotationYToRef(angle: number, result: Matrix): void;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the Z axis
-         * @param angle defines the angle (in radians) to use
-         * @return the new matrix
-         */
-        static RotationZ(angle: number): Matrix;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the Z axis and stores it in a given matrix
-         * @param angle defines the angle (in radians) to use
-         * @param result defines the target matrix
-         */
-        static RotationZToRef(angle: number, result: Matrix): void;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the given axis
-         * @param axis defines the axis to use
-         * @param angle defines the angle (in radians) to use
-         * @return the new matrix
-         */
-        static RotationAxis(axis: Vector3, angle: number): Matrix;
-        /**
-         * Creates a new rotation matrix for "angle" radians around the given axis and stores it in a given matrix
-         * @param axis defines the axis to use
-         * @param angle defines the angle (in radians) to use
-         * @param result defines the target matrix
-         */
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
-        /**
-         * Creates a rotation matrix
-         * @param yaw defines the yaw angle in radians (Y axis)
-         * @param pitch defines the pitch angle in radians (X axis)
-         * @param roll defines the roll angle in radians (X axis)
-         * @returns the new rotation matrix
-         */
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
-        /**
-         * Creates a rotation matrix and stores it in a given matrix
-         * @param yaw defines the yaw angle in radians (Y axis)
-         * @param pitch defines the pitch angle in radians (X axis)
-         * @param roll defines the roll angle in radians (X axis)
-         * @param result defines the target matrix
-         */
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
-        /**
-         * Creates a scaling matrix
-         * @param x defines the scale factor on X axis
-         * @param y defines the scale factor on Y axis
-         * @param z defines the scale factor on Z axis
-         * @returns the new matrix
-         */
-        static Scaling(x: number, y: number, z: number): Matrix;
-        /**
-         * Creates a scaling matrix and stores it in a given matrix
-         * @param x defines the scale factor on X axis
-         * @param y defines the scale factor on Y axis
-         * @param z defines the scale factor on Z axis
-         * @param result defines the target matrix
-         */
-        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
-        /**
-         * Creates a translation matrix
-         * @param x defines the translation on X axis
-         * @param y defines the translation on Y axis
-         * @param z defines the translationon Z axis
-         * @returns the new matrix
-         */
-        static Translation(x: number, y: number, z: number): Matrix;
-        /**
-         * Creates a translation matrix and stores it in a given matrix
-         * @param x defines the translation on X axis
-         * @param y defines the translation on Y axis
-         * @param z defines the translationon Z axis
-         * @param result defines the target matrix
-         */
-        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
-        /**
-         * Returns a new Matrix whose values are the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
-         * @param startValue defines the start value
-         * @param endValue defines the end value
-         * @param gradient defines the gradient factor
-         * @returns the new matrix
-         */
-        static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        /**
-         * Set the passed matrix "result" as the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
-         * @param startValue defines the start value
-         * @param endValue defines the end value
-         * @param gradient defines the gradient factor
-         * @param result defines the Matrix object where to store data
-         */
-        static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void;
-        /**
-         * Builds a new matrix whose values are computed by:
-         * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
-         * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
-         * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
-         * @param startValue defines the first matrix
-         * @param endValue defines the second matrix
-         * @param gradient defines the gradient between the two matrices
-         * @returns the new matrix
-         */
-        static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        /**
-         * Update a matrix to values which are computed by:
-         * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
-         * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
-         * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
-         * @param startValue defines the first matrix
-         * @param endValue defines the second matrix
-         * @param gradient defines the gradient between the two matrices
-         * @param result defines the target matrix
-         */
-        static DecomposeLerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void;
-        /**
-         * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
-         * This function works in left handed mode
-         * @param eye defines the final position of the entity
-         * @param target defines where the entity should look at
-         * @param up defines the up vector for the entity
-         * @returns the new matrix
-         */
-        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        /**
-         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
-         * This function works in left handed mode
-         * @param eye defines the final position of the entity
-         * @param target defines where the entity should look at
-         * @param up defines the up vector for the entity
-         * @param result defines the target matrix
-         */
-        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        /**
-         * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
-         * This function works in right handed mode
-         * @param eye defines the final position of the entity
-         * @param target defines where the entity should look at
-         * @param up defines the up vector for the entity
-         * @returns the new matrix
-         */
-        static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        /**
-         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
-         * This function works in right handed mode
-         * @param eye defines the final position of the entity
-         * @param target defines where the entity should look at
-         * @param up defines the up vector for the entity
-         * @param result defines the target matrix
-         */
-        static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        /**
-         * Create a left-handed orthographic projection matrix
-         * @param width defines the viewport width
-         * @param height defines the viewport height
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @returns a new matrix as a left-handed orthographic projection matrix
-         */
-        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        /**
-         * Store a left-handed orthographic projection to a given matrix
-         * @param width defines the viewport width
-         * @param height defines the viewport height
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @param result defines the target matrix
-         */
-        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
-        /**
-         * Create a left-handed orthographic projection matrix
-         * @param left defines the viewport left coordinate
-         * @param right defines the viewport right coordinate
-         * @param bottom defines the viewport bottom coordinate
-         * @param top defines the viewport top coordinate
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @returns a new matrix as a left-handed orthographic projection matrix
-         */
-        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        /**
-         * Stores a left-handed orthographic projection into a given matrix
-         * @param left defines the viewport left coordinate
-         * @param right defines the viewport right coordinate
-         * @param bottom defines the viewport bottom coordinate
-         * @param top defines the viewport top coordinate
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @param result defines the target matrix
-         */
-        static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        /**
-         * Creates a right-handed orthographic projection matrix
-         * @param left defines the viewport left coordinate
-         * @param right defines the viewport right coordinate
-         * @param bottom defines the viewport bottom coordinate
-         * @param top defines the viewport top coordinate
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @returns a new matrix as a right-handed orthographic projection matrix
-         */
-        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        /**
-         * Stores a right-handed orthographic projection into a given matrix
-         * @param left defines the viewport left coordinate
-         * @param right defines the viewport right coordinate
-         * @param bottom defines the viewport bottom coordinate
-         * @param top defines the viewport top coordinate
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @param result defines the target matrix
-         */
-        static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        /**
-         * Creates a left-handed perspective projection matrix
-         * @param width defines the viewport width
-         * @param height defines the viewport height
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @returns a new matrix as a left-handed perspective projection matrix
-         */
-        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        /**
-         * Creates a left-handed perspective projection matrix
-         * @param fov defines the horizontal field of view
-         * @param aspect defines the aspect ratio
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @returns a new matrix as a left-handed perspective projection matrix
-         */
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        /**
-         * Stores a left-handed perspective projection into a given matrix
-         * @param fov defines the horizontal field of view
-         * @param aspect defines the aspect ratio
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @param result defines the target matrix
-         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
-         */
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        /**
-         * Creates a right-handed perspective projection matrix
-         * @param fov defines the horizontal field of view
-         * @param aspect defines the aspect ratio
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @returns a new matrix as a right-handed perspective projection matrix
-         */
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        /**
-         * Stores a right-handed perspective projection into a given matrix
-         * @param fov defines the horizontal field of view
-         * @param aspect defines the aspect ratio
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @param result defines the target matrix
-         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
-         */
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        /**
-         * Stores a perspective projection for WebVR info a given matrix
-         * @param fov defines the field of view
-         * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
-         * @param result defines the target matrix
-         * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
-         */
-        static PerspectiveFovWebVRToRef(fov: {
-            upDegrees: number;
-            downDegrees: number;
-            leftDegrees: number;
-            rightDegrees: number;
-        }, znear: number, zfar: number, result: Matrix, rightHanded?: boolean): void;
-        /**
-         * Computes a complete transformation matrix
-         * @param viewport defines the viewport to use
-         * @param world defines the world matrix
-         * @param view defines the view matrix
-         * @param projection defines the projection matrix
-         * @param zmin defines the near clip plane
-         * @param zmax defines the far clip plane
-         * @returns the transformation matrix
-         */
-        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
-        /**
-         * Extracts a 2x2 matrix from a given matrix and store the result in a Float32Array
-         * @param matrix defines the matrix to use
-         * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed matrix
-         */
-        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
-        /**
-         * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
-         * @param matrix defines the matrix to use
-         * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed matrix
-         */
-        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
-        /**
-         * Compute the transpose of a given matrix
-         * @param matrix defines the matrix to transpose
-         * @returns the new matrix
-         */
-        static Transpose(matrix: Matrix): Matrix;
-        /**
-         * Compute the transpose of a matrix and store it in a target matrix
-         * @param matrix defines the matrix to transpose
-         * @param result defines the target matrix
-         */
-        static TransposeToRef(matrix: Matrix, result: Matrix): void;
-        /**
-         * Computes a reflection matrix from a plane
-         * @param plane defines the reflection plane
-         * @returns a new matrix
-         */
-        static Reflection(plane: Plane): Matrix;
-        /**
-         * Computes a reflection matrix from a plane
-         * @param plane defines the reflection plane
-         * @param result defines the target matrix
-         */
-        static ReflectionToRef(plane: Plane, result: Matrix): void;
-        /**
-         * Sets the given matrix as a rotation matrix composed from the 3 left handed axes
-         * @param xaxis defines the value of the 1st axis
-         * @param yaxis defines the value of the 2nd axis
-         * @param zaxis defines the value of the 3rd axis
-         * @param result defines the target matrix
-         */
-        static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix): void;
-        /**
-         * Creates a rotation matrix from a quaternion and stores it in a target matrix
-         * @param quat defines the quaternion to use
-         * @param result defines the target matrix
-         */
-        static FromQuaternionToRef(quat: Quaternion, result: Matrix): void;
-    }
-    class Plane {
-        normal: Vector3;
-        d: number;
-        /**
-         * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
-         */
-        constructor(a: number, b: number, c: number, d: number);
-        /**
-         * Returns the plane coordinates as a new array of 4 elements [a, b, c, d].
-         */
-        asArray(): number[];
-        /**
-         * Returns a new plane copied from the current Plane.
-         */
-        clone(): Plane;
-        /**
-         * Returns the string "Plane".
-         */
-        getClassName(): string;
-        /**
-         * Returns the Plane hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Normalize the current Plane in place.
-         * Returns the updated Plane.
-         */
-        normalize(): Plane;
-        /**
-         * Returns a new Plane as the result of the transformation of the current Plane by the passed matrix.
-         */
-        transform(transformation: Matrix): Plane;
-        /**
-         * Returns the dot product (float) of the point coordinates and the plane normal.
-         */
-        dotCoordinate(point: Vector3): number;
-        /**
-         * Updates the current Plane from the plane defined by the three passed points.
-         * Returns the updated Plane.
-         */
-        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
-        /**
-         * Boolean : True is the vector "direction"  is the same side than the plane normal.
-         */
-        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
-        /**
-         * Returns the signed distance (float) from the passed point to the Plane.
-         */
-        signedDistanceTo(point: Vector3): number;
-        /**
-         * Returns a new Plane from the passed array.
-         */
-        static FromArray(array: ArrayLike<number>): Plane;
-        /**
-         * Returns a new Plane defined by the three passed points.
-         */
-        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
-        /**
-         * Returns a new Plane the normal vector to this plane at the passed origin point.
-         * Note : the vector "normal" is updated because normalized.
-         */
-        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
-        /**
-         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the passed other point.
-         */
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
-    }
-    class Viewport {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        /**
-         * Creates a Viewport object located at (x, y) and sized (width, height).
-         */
-        constructor(x: number, y: number, width: number, height: number);
-        toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport;
-        /**
-         * Returns a new Viewport copied from the current one.
-         */
-        clone(): Viewport;
-    }
-    class Frustum {
-        /**
-         * Returns a new array of 6 Frustum planes computed by the passed transformation matrix.
-         */
-        static GetPlanes(transform: Matrix): Plane[];
-        static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
-        static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
-        static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
-        static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
-        static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
-        static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
-        /**
-         * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
-         */
-        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
-    }
-    enum Space {
-        LOCAL = 0,
-        WORLD = 1,
-        BONE = 2,
-    }
-    class Axis {
-        static X: Vector3;
-        static Y: Vector3;
-        static Z: Vector3;
-    }
-    class BezierCurve {
-        /**
-         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the passed x1, y1, x2, y2 floats.
-         */
-        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
-    }
-    enum Orientation {
-        CW = 0,
-        CCW = 1,
-    }
-    class Angle {
-        private _radians;
-        /**
-         * Creates an Angle object of "radians" radians (float).
-         */
-        constructor(radians: number);
-        /**
-         * Returns the Angle value in degrees (float).
-         */
-        degrees: () => number;
-        /**
-         * Returns the Angle value in radians (float).
-         */
-        radians: () => number;
-        /**
-         * Returns a new Angle object valued with the angle value in radians between the two passed vectors.
-         */
-        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
-        /**
-         * Returns a new Angle object from the passed float in radians.
-         */
-        static FromRadians(radians: number): Angle;
-        /**
-         * Returns a new Angle object from the passed float in degrees.
-         */
-        static FromDegrees(degrees: number): Angle;
-    }
-    class Arc2 {
-        startPoint: Vector2;
-        midPoint: Vector2;
-        endPoint: Vector2;
-        centerPoint: Vector2;
-        radius: number;
-        angle: Angle;
-        startAngle: Angle;
-        orientation: Orientation;
-        /**
-         * Creates an Arc object from the three passed points : start, middle and end.
-         */
-        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
-    }
-    class Path2 {
-        private _points;
-        private _length;
-        closed: boolean;
-        /**
-         * Creates a Path2 object from the starting 2D coordinates x and y.
-         */
-        constructor(x: number, y: number);
-        /**
-         * Adds a new segment until the passed coordinates (x, y) to the current Path2.
-         * Returns the updated Path2.
-         */
-        addLineTo(x: number, y: number): Path2;
-        /**
-         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
-         * Returns the updated Path2.
-         */
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
-        /**
-         * Closes the Path2.
-         * Returns the Path2.
-         */
-        close(): Path2;
-        /**
-         * Returns the Path2 total length (float).
-         */
-        length(): number;
-        /**
-         * Returns the Path2 internal array of points.
-         */
-        getPoints(): Vector2[];
-        /**
-         * Returns a new Vector2 located at a percentage of the Path2 total length on this path.
-         */
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
-        /**
-         * Returns a new Path2 starting at the coordinates (x, y).
-         */
-        static StartingAt(x: number, y: number): Path2;
-    }
-    class Path3D {
-        path: Vector3[];
-        private _curve;
-        private _distances;
-        private _tangents;
-        private _normals;
-        private _binormals;
-        private _raw;
-        /**
-        * new Path3D(path, normal, raw)
-        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
-        * path : an array of Vector3, the curve axis of the Path3D
-        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
-        */
-        constructor(path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
-        /**
-         * Returns the Path3D array of successive Vector3 designing its curve.
-         */
-        getCurve(): Vector3[];
-        /**
-         * Returns an array populated with tangent vectors on each Path3D curve point.
-         */
-        getTangents(): Vector3[];
-        /**
-         * Returns an array populated with normal vectors on each Path3D curve point.
-         */
-        getNormals(): Vector3[];
-        /**
-         * Returns an array populated with binormal vectors on each Path3D curve point.
-         */
-        getBinormals(): Vector3[];
-        /**
-         * Returns an array populated with distances (float) of the i-th point from the first curve point.
-         */
-        getDistances(): number[];
-        /**
-         * Forces the Path3D tangent, normal, binormal and distance recomputation.
-         * Returns the same object updated.
-         */
-        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
-        private _compute(firstNormal);
-        private _getFirstNonNullVector(index);
-        private _getLastNonNullVector(index);
-        private _normalVector(v0, vt, va);
-    }
-    class Curve3 {
-        private _points;
-        private _length;
-        /**
-         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Quadratic Bezier
-         * @param v1 (Vector3) the control point
-         * @param v2 (Vector3) the end point of the Quadratic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Cubic Bezier
-         * @param v1 (Vector3) the first control point
-         * @param v2 (Vector3) the second control point
-         * @param v3 (Vector3) the end point of the Cubic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
-         * @param p1 (Vector3) the origin point of the Hermite Spline
-         * @param t1 (Vector3) the tangent vector at the origin point
-         * @param p2 (Vector3) the end point of the Hermite Spline
-         * @param t2 (Vector3) the tangent vector at the end point
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a CatmullRom Spline curve :
-         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.
-         * @param nbPoints (integer) the wanted number of points between each curve control points.
-         */
-        static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3;
-        /**
-         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-         * A Curve3 is designed from a series of successive Vector3.
-         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
-         */
-        constructor(points: Vector3[]);
-        /**
-         * Returns the Curve3 stored array of successive Vector3
-         */
-        getPoints(): Vector3[];
-        /**
-         * Returns the computed length (float) of the curve.
-         */
-        length(): number;
-        /**
-         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
-         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
-         * curveA and curveB keep unchanged.
-         */
-        continue(curve: Curve3): Curve3;
-        private _computeLength(path);
-    }
-    class PositionNormalVertex {
-        position: Vector3;
-        normal: Vector3;
-        constructor(position?: Vector3, normal?: Vector3);
-        clone(): PositionNormalVertex;
-    }
-    class PositionNormalTextureVertex {
-        position: Vector3;
-        normal: Vector3;
-        uv: Vector2;
-        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
-        clone(): PositionNormalTextureVertex;
-    }
-    class Tmp {
-        static Color3: Color3[];
-        static Vector2: Vector2[];
-        static Vector3: Vector3[];
-        static Vector4: Vector4[];
-        static Quaternion: Quaternion[];
-        static Matrix: Matrix[];
-    }
-}
-
-declare module BABYLON {
-    class SphericalPolynomial {
-        x: Vector3;
-        y: Vector3;
-        z: Vector3;
-        xx: Vector3;
-        yy: Vector3;
-        zz: Vector3;
-        xy: Vector3;
-        yz: Vector3;
-        zx: Vector3;
-        addAmbient(color: Color3): void;
-        static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
-        scale(scale: number): void;
-    }
-    class SphericalHarmonics {
-        L00: Vector3;
-        L1_1: Vector3;
-        L10: Vector3;
-        L11: Vector3;
-        L2_2: Vector3;
-        L2_1: Vector3;
-        L20: Vector3;
-        L21: Vector3;
-        L22: Vector3;
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        scale(scale: number): void;
-        convertIncidentRadianceToIrradiance(): void;
-        convertIrradianceToLambertianRadiance(): void;
-        static getsphericalHarmonicsFromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
-    }
-}
-
-declare module BABYLON {
-    class MorphTarget {
+    interface ISceneLoaderPluginFactory {
         name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
     }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
+    interface ISceneLoaderPlugin {
         /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
+         * The friendly name of this plugin.
          */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for scene and resources
+         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+        */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded scene
+        */
+        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The given scene
+        */
+        static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded asset container
+        */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -15801,6 +12646,16 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        /**
+         * If the reflection texture on this material is in linear color space
+         * @ignore
+         */
+        IS_REFLECTION_LINEAR: boolean;
+        /**
+         * If the refraction texture on this material is in linear color space
+         * @ignore
+         */
+        IS_REFRACTION_LINEAR: boolean;
         EXPOSURE: boolean;
         constructor();
         setReflectionMode(modeToEnable: string): void;
@@ -16275,6 +13130,3299 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class Scalar {
+        /**
+         * Two pi constants convenient for computation.
+         */
+        static TwoPi: number;
+        /**
+         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
+         */
+        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
+        /**
+         * Returns a string : the upper case translation of the number i to hexadecimal.
+         */
+        static ToHex(i: number): string;
+        /**
+         * Returns -1 if value is negative and +1 is value is positive.
+         * Returns the value itself if it's equal to zero.
+         */
+        static Sign(value: number): number;
+        /**
+         * Returns the value itself if it's between min and max.
+         * Returns min if the value is lower than min.
+         * Returns max if the value is greater than max.
+         */
+        static Clamp(value: number, min?: number, max?: number): number;
+        /**
+         * Returns the log2 of value.
+         */
+        static Log2(value: number): number;
+        /**
+        * Loops the value, so that it is never larger than length and never smaller than 0.
+        *
+        * This is similar to the modulo operator but it works with floating point numbers.
+        * For example, using 3.0 for t and 2.5 for length, the result would be 0.5.
+        * With t = 5 and length = 2.5, the result would be 0.0.
+        * Note, however, that the behaviour is not defined for negative numbers as it is for the modulo operator
+        */
+        static Repeat(value: number, length: number): number;
+        /**
+        * Normalize the value between 0.0 and 1.0 using min and max values
+        */
+        static Normalize(value: number, min: number, max: number): number;
+        /**
+        * Denormalize the value from 0.0 and 1.0 using min and max values
+        */
+        static Denormalize(normalized: number, min: number, max: number): number;
+        /**
+        * Calculates the shortest difference between two given angles given in degrees.
+        */
+        static DeltaAngle(current: number, target: number): number;
+        /**
+        * PingPongs the value t, so that it is never larger than length and never smaller than 0.
+        *
+        * The returned value will move back and forth between 0 and length
+        */
+        static PingPong(tx: number, length: number): number;
+        /**
+        * Interpolates between min and max with smoothing at the limits.
+        *
+        * This function interpolates between min and max in a similar way to Lerp. However, the interpolation will gradually speed up
+        * from the start and slow down toward the end. This is useful for creating natural-looking animation, fading and other transitions.
+        */
+        static SmoothStep(from: number, to: number, tx: number): number;
+        /**
+        * Moves a value current towards target.
+        *
+        * This is essentially the same as Mathf.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+        * Negative values of maxDelta pushes the value away from target.
+        */
+        static MoveTowards(current: number, target: number, maxDelta: number): number;
+        /**
+        * Same as MoveTowards but makes sure the values interpolate correctly when they wrap around 360 degrees.
+        *
+        * Variables current and target are assumed to be in degrees. For optimization reasons, negative values of maxDelta
+        *  are not supported and may cause oscillation. To push current away from a target angle, add 180 to that angle instead.
+        */
+        static MoveTowardsAngle(current: number, target: number, maxDelta: number): number;
+        /**
+            * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
+            */
+        static Lerp(start: number, end: number, amount: number): number;
+        /**
+        * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
+        * The parameter t is clamped to the range [0, 1]. Variables a and b are assumed to be in degrees.
+        */
+        static LerpAngle(start: number, end: number, amount: number): number;
+        /**
+        * Calculates the linear parameter t that produces the interpolant value within the range [a, b].
+        */
+        static InverseLerp(a: number, b: number, value: number): number;
+        /**
+         * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
+         */
+        static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number;
+        /**
+        * Returns a random float number between and min and max values
+        */
+        static RandomRange(min: number, max: number): number;
+        /**
+        * This function returns percentage of a number in a given range.
+        *
+        * RangeToPercent(40,20,60) will return 0.5 (50%)
+        * RangeToPercent(34,0,100) will return 0.34 (34%)
+        */
+        static RangeToPercent(number: number, min: number, max: number): number;
+        /**
+        * This function returns number that corresponds to the percentage in a given range.
+        *
+        * PercentToRange(0.34,0,100) will return 34.
+        */
+        static PercentToRange(percent: number, min: number, max: number): number;
+        /**
+         * Returns the angle converted to equivalent value between -Math.PI and Math.PI radians.
+         * @param angle The angle to normalize in radian.
+         * @return The converted angle.
+         */
+        static NormalizeRadians(angle: number): number;
+    }
+}
+
+declare module BABYLON {
+    const ToGammaSpace: number;
+    const ToLinearSpace = 2.2;
+    const Epsilon = 0.001;
+    /**
+     * Class used to hold a RBG color
+     */
+    class Color3 {
+        /**
+         * Defines the red component (between 0 and 1, default is 0)
+         */
+        r: number;
+        /**
+         * Defines the green component (between 0 and 1, default is 0)
+         */
+        g: number;
+        /**
+         * Defines the blue component (between 0 and 1, default is 0)
+         */
+        b: number;
+        /**
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0)
+         * @param b defines the blue component (between 0 and 1, default is 0)
+         */
+        constructor(
+            /**
+             * Defines the red component (between 0 and 1, default is 0)
+             */
+            r?: number, 
+            /**
+             * Defines the green component (between 0 and 1, default is 0)
+             */
+            g?: number, 
+            /**
+             * Defines the blue component (between 0 and 1, default is 0)
+             */
+            b?: number);
+        /**
+         * Creates a string with the Color3 current values
+         * @returns the string representation of the Color3 object
+         */
+        toString(): string;
+        /**
+         * Returns the string "Color3"
+         * @returns "Color3"
+         */
+        getClassName(): string;
+        /**
+         * Compute the Color3 hash code
+         * @returns an unique number that can be used to hash Color3 objects
+         */
+        getHashCode(): number;
+        /**
+         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color3 object
+         */
+        toArray(array: FloatArray, index?: number): Color3;
+        /**
+         * Returns a new {BABYLON.Color4} object from the current Color3 and the passed alpha
+         * @param alpha defines the alpha component on the new {BABYLON.Color4} object (default is 1)
+         * @returns a new {BABYLON.Color4} object
+         */
+        toColor4(alpha?: number): Color4;
+        /**
+         * Returns a new array populated with 3 numeric elements : red, green and blue values
+         * @returns the new array
+         */
+        asArray(): number[];
+        /**
+         * Returns the luminance value
+         * @returns a float value
+         */
+        toLuminance(): number;
+        /**
+         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object
+         * @param otherColor defines the second operand
+         * @returns the new Color3 object
+         */
+        multiply(otherColor: Color3): Color3;
+        /**
+         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result"
+         * @param otherColor defines the second operand
+         * @param result defines the Color3 object where to store the result
+         * @returns the current Color3
+         */
+        multiplyToRef(otherColor: Color3, result: Color3): Color3;
+        /**
+         * Determines equality between Color3 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgb values are equal to the passed ones
+         */
+        equals(otherColor: Color3): boolean;
+        /**
+         * Determines equality between the current Color3 object and a set of r,b,g values
+         * @param r defines the red component to check
+         * @param g defines the green component to check
+         * @param b defines the blue component to check
+         * @returns true if the rgb values are equal to the passed ones
+         */
+        equalsFloats(r: number, g: number, b: number): boolean;
+        /**
+         * Multiplies in place each rgb value by scale
+         * @param scale defines the scaling factor
+         * @returns the updated Color3
+         */
+        scale(scale: number): Color3;
+        /**
+         * Multiplies the rgb values by scale and stores the result into "result"
+         * @param scale defines the scaling factor
+         * @param result defines the Color3 object where to store the result
+         * @returns the unmodified current Color3
+         */
+        scaleToRef(scale: number, result: Color3): Color3;
+        /**
+         * Scale the current Color3 values by a factor and add the result to a given Color3
+         * @param scale defines the scale factor
+         * @param result defines color to store the result into
+         * @returns the unmodified current Color3
+         */
+        scaleAndAddToRef(scale: number, result: Color3): Color3;
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into
+         * @returns the original Color3
+         */
+        clampToRef(min: number | undefined, max: number | undefined, result: Color3): Color3;
+        /**
+         * Creates a new Color3 set with the added values of the current Color3 and of the passed one
+         * @param otherColor defines the second operand
+         * @returns the new Color3
+         */
+        add(otherColor: Color3): Color3;
+        /**
+         * Stores the result of the addition of the current Color3 and passed one rgb values into "result"
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
+         */
+        addToRef(otherColor: Color3, result: Color3): Color3;
+        /**
+         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3
+         * @param otherColor defines the second operand
+         * @returns the new Color3
+         */
+        subtract(otherColor: Color3): Color3;
+        /**
+         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result"
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
+         */
+        subtractToRef(otherColor: Color3, result: Color3): Color3;
+        /**
+         * Copy the current object
+         * @returns a new Color3 copied the current one
+         */
+        clone(): Color3;
+        /**
+         * Copies the rgb values from the source in the current Color3
+         * @param source defines the source Color3 object
+         * @returns the updated Color3 object
+         */
+        copyFrom(source: Color3): Color3;
+        /**
+         * Updates the Color3 rgb values from the passed floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
+         */
+        copyFromFloats(r: number, g: number, b: number): Color3;
+        /**
+         * Updates the Color3 rgb values from the passed floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
+         */
+        set(r: number, g: number, b: number): Color3;
+        /**
+         * Compute the Color3 hexadecimal code as a string
+         * @returns a string containing the hexadecimal representation of the Color3 object
+         */
+        toHexString(): string;
+        /**
+         * Computes a new Color3 converted from the current one to linear space
+         * @returns a new Color3 object
+         */
+        toLinearSpace(): Color3;
+        /**
+         * Converts the Color3 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the linear space version
+         * @returns the unmodified Color3
+         */
+        toLinearSpaceToRef(convertedColor: Color3): Color3;
+        /**
+         * Computes a new Color3 converted from the current one to gamma space
+         * @returns a new Color3 object
+         */
+        toGammaSpace(): Color3;
+        /**
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the gamma space version
+         * @returns the unmodified Color3
+         */
+        toGammaSpaceToRef(convertedColor: Color3): Color3;
+        /**
+         * Creates a new Color3 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color3 object
+         */
+        static FromHexString(hex: string): Color3;
+        /**
+         * Creates a new Vector3 from the starting index of the passed array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns a new Color3 object
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Color3;
+        /**
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @returns a new Color3 object
+         */
+        static FromInts(r: number, g: number, b: number): Color3;
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
+         * @param start defines the start Color3 value
+         * @param end defines the end Color3 value
+         * @param amount defines the gradient value between start and end
+         * @returns a new Color3 object
+         */
+        static Lerp(start: Color3, end: Color3, amount: number): Color3;
+        /**
+         * Returns a Color3 value containing a red color
+         * @returns a new Color3 object
+         */
+        static Red(): Color3;
+        /**
+         * Returns a Color3 value containing a green color
+         * @returns a new Color3 object
+         */
+        static Green(): Color3;
+        /**
+         * Returns a Color3 value containing a blue color
+         * @returns a new Color3 object
+         */
+        static Blue(): Color3;
+        /**
+         * Returns a Color3 value containing a black color
+         * @returns a new Color3 object
+         */
+        static Black(): Color3;
+        /**
+         * Returns a Color3 value containing a white color
+         * @returns a new Color3 object
+         */
+        static White(): Color3;
+        /**
+         * Returns a Color3 value containing a purple color
+         * @returns a new Color3 object
+         */
+        static Purple(): Color3;
+        /**
+         * Returns a Color3 value containing a magenta color
+         * @returns a new Color3 object
+         */
+        static Magenta(): Color3;
+        /**
+         * Returns a Color3 value containing a yellow color
+         * @returns a new Color3 object
+         */
+        static Yellow(): Color3;
+        /**
+         * Returns a Color3 value containing a gray color
+         * @returns a new Color3 object
+         */
+        static Gray(): Color3;
+        /**
+         * Returns a Color3 value containing a teal color
+         * @returns a new Color3 object
+         */
+        static Teal(): Color3;
+        /**
+         * Returns a Color3 value containing a random color
+         * @returns a new Color3 object
+         */
+        static Random(): Color3;
+    }
+    /**
+     * Class used to hold a RBGA color
+     */
+    class Color4 {
+        /**
+         * Defines the red component (between 0 and 1, default is 0)
+         */
+        r: number;
+        /**
+         * Defines the green component (between 0 and 1, default is 0)
+         */
+        g: number;
+        /**
+         * Defines the blue component (between 0 and 1, default is 0)
+         */
+        b: number;
+        /**
+         * Defines the alpha component (between 0 and 1, default is 1)
+         */
+        a: number;
+        /**
+         * Creates a new Color4 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0)
+         * @param b defines the blue component (between 0 and 1, default is 0)
+         * @param a defines the alpha component (between 0 and 1, default is 1)
+         */
+        constructor(
+            /**
+             * Defines the red component (between 0 and 1, default is 0)
+             */
+            r?: number, 
+            /**
+             * Defines the green component (between 0 and 1, default is 0)
+             */
+            g?: number, 
+            /**
+             * Defines the blue component (between 0 and 1, default is 0)
+             */
+            b?: number, 
+            /**
+             * Defines the alpha component (between 0 and 1, default is 1)
+             */
+            a?: number);
+        /**
+         * Adds in place the passed Color4 values to the current Color4 object
+         * @param right defines the second operand
+         * @returns the current updated Color4 object
+         */
+        addInPlace(right: Color4): Color4;
+        /**
+         * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
+         * @returns the new array
+         */
+        asArray(): number[];
+        /**
+         * Stores from the starting index in the passed array the Color4 successive values
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color4 object
+         */
+        toArray(array: number[], index?: number): Color4;
+        /**
+         * Creates a new Color4 set with the added values of the current Color4 and of the passed one
+         * @param right defines the second operand
+         * @returns a new Color4 object
+         */
+        add(right: Color4): Color4;
+        /**
+         * Creates a new Color4 set with the subtracted values of the passed one from the current Color4
+         * @param right defines the second operand
+         * @returns a new Color4 object
+         */
+        subtract(right: Color4): Color4;
+        /**
+         * Subtracts the passed ones from the current Color4 values and stores the results in "result"
+         * @param right defines the second operand
+         * @param result defines the Color4 object where to store the result
+         * @returns the current Color4 object
+         */
+        subtractToRef(right: Color4, result: Color4): Color4;
+        /**
+         * Creates a new Color4 with the current Color4 values multiplied by scale
+         * @param scale defines the scaling factor to apply
+         * @returns a new Color4 object
+         */
+        scale(scale: number): Color4;
+        /**
+         * Multiplies the current Color4 values by scale and stores the result in "result"
+         * @param scale defines the scaling factor to apply
+         * @param result defines the Color4 object where to store the result
+         * @returns the current unmodified Color4
+         */
+        scaleToRef(scale: number, result: Color4): Color4;
+        /**
+         * Scale the current Color4 values by a factor and add the result to a given Color4
+         * @param scale defines the scale factor
+         * @param result defines the Color4 object where to store the result
+         * @returns the unmodified current Color4
+         */
+        scaleAndAddToRef(scale: number, result: Color4): Color4;
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into.
+         * @returns the cuurent Color4
+         */
+        clampToRef(min: number | undefined, max: number | undefined, result: Color4): Color4;
+        /**
+          * Multipy an Color4 value by another and return a new Color4 object
+          * @param color defines the Color4 value to multiply by
+          * @returns a new Color4 object
+          */
+        multiply(color: Color4): Color4;
+        /**
+         * Multipy a Color4 value by another and push the result in a reference value
+         * @param color defines the Color4 value to multiply by
+         * @param result defines the Color4 to fill the result in
+         * @returns the result Color4
+         */
+        multiplyToRef(color: Color4, result: Color4): Color4;
+        /**
+         * Creates a string with the Color4 current values
+         * @returns the string representation of the Color4 object
+         */
+        toString(): string;
+        /**
+         * Returns the string "Color4"
+         * @returns "Color4"
+         */
+        getClassName(): string;
+        /**
+         * Compute the Color4 hash code
+         * @returns an unique number that can be used to hash Color4 objects
+         */
+        getHashCode(): number;
+        /**
+         * Creates a new Color4 copied from the current one
+         * @returns a new Color4 object
+         */
+        clone(): Color4;
+        /**
+         * Copies the passed Color4 values into the current one
+         * @param source defines the source Color4 object
+         * @returns the current updated Color4 object
+         */
+        copyFrom(source: Color4): Color4;
+        /**
+         * Copies the passed float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object
+         */
+        copyFromFloats(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Copies the passed float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object
+         */
+        set(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Compute the Color4 hexadecimal code as a string
+         * @returns a string containing the hexadecimal representation of the Color4 object
+         */
+        toHexString(): string;
+        /**
+         * Computes a new Color4 converted from the current one to linear space
+         * @returns a new Color4 object
+         */
+        toLinearSpace(): Color4;
+        /**
+         * Converts the Color4 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the linear space version
+         * @returns the unmodified Color4
+         */
+        toLinearSpaceToRef(convertedColor: Color4): Color4;
+        /**
+         * Computes a new Color4 converted from the current one to gamma space
+         * @returns a new Color4 object
+         */
+        toGammaSpace(): Color4;
+        /**
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the gamma space version
+         * @returns the unmodified Color4
+         */
+        toGammaSpaceToRef(convertedColor: Color4): Color4;
+        /**
+         * Creates a new Color4 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color4 object
+         */
+        static FromHexString(hex: string): Color4;
+        /**
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @returns a new Color4 object
+         */
+        static Lerp(left: Color4, right: Color4, amount: number): Color4;
+        /**
+         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @param result defines the Color4 object where to store data
+         */
+        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
+        /**
+         * Creates a new Color4 from the starting index element of the passed array
+         * @param array defines the source array to read from
+         * @param offset defines the offset in the source array
+         * @returns a new Color4 object
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Color4;
+        /**
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @param a defines the alpha component to read from (value between 0 and 255)
+         * @returns a new Color3 object
+         */
+        static FromInts(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Check the content of a given array and convert it to an array containing RGBA data
+         * If the original array was already containing count * 4 values then it is returned directly
+         * @param colors defines the array to check
+         * @param count defines the number of RGBA data to expect
+         * @returns an array containing count * 4 values (RGBA)
+         */
+        static CheckColors4(colors: number[], count: number): number[];
+    }
+    class Vector2 {
+        x: number;
+        y: number;
+        /**
+         * Creates a new Vector2 from the passed x and y coordinates.
+         */
+        constructor(x: number, y: number);
+        /**
+         * Returns a string with the Vector2 coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Vector2"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Vector2 hash code as a number.
+         */
+        getHashCode(): number;
+        /**
+         * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.
+         * Returns the Vector2.
+         */
+        toArray(array: FloatArray, index?: number): Vector2;
+        /**
+         * Returns a new array with 2 elements : the Vector2 coordinates.
+         */
+        asArray(): number[];
+        /**
+         *  Sets the Vector2 coordinates with the passed Vector2 coordinates.
+         * Returns the updated Vector2.
+         */
+        copyFrom(source: Vector2): Vector2;
+        /**
+         * Sets the Vector2 coordinates with the passed floats.
+         * Returns the updated Vector2.
+         */
+        copyFromFloats(x: number, y: number): Vector2;
+        /**
+         * Sets the Vector2 coordinates with the passed floats.
+         * Returns the updated Vector2.
+         */
+        set(x: number, y: number): Vector2;
+        /**
+         * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.
+         */
+        add(otherVector: Vector2): Vector2;
+        /**
+         * Sets the "result" coordinates with the addition of the current Vector2 and the passed one coordinates.
+         * Returns the Vector2.
+         */
+        addToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Set the Vector2 coordinates by adding the passed Vector2 coordinates.
+         * Returns the updated Vector2.
+         */
+        addInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 by adding the current Vector2 coordinates to the passed Vector3 x, y coordinates.
+         */
+        addVector3(otherVector: Vector3): Vector2;
+        /**
+         * Returns a new Vector2 set with the subtracted coordinates of the passed one from the current Vector2.
+         */
+        subtract(otherVector: Vector2): Vector2;
+        /**
+         * Sets the "result" coordinates with the subtraction of the passed one from the current Vector2 coordinates.
+         * Returns the Vector2.
+         */
+        subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Sets the current Vector2 coordinates by subtracting from it the passed one coordinates.
+         * Returns the updated Vector2.
+         */
+        subtractInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Multiplies in place the current Vector2 coordinates by the passed ones.
+         * Returns the updated Vector2.
+         */
+        multiplyInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 set with the multiplication of the current Vector2 and the passed one coordinates.
+         */
+        multiply(otherVector: Vector2): Vector2;
+        /**
+         * Sets "result" coordinates with the multiplication of the current Vector2 and the passed one coordinates.
+         * Returns the Vector2.
+         */
+        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the passed floats.
+         */
+        multiplyByFloats(x: number, y: number): Vector2;
+        /**
+         * Returns a new Vector2 set with the Vector2 coordinates divided by the passed one coordinates.
+         */
+        divide(otherVector: Vector2): Vector2;
+        /**
+         * Sets the "result" coordinates with the Vector2 divided by the passed one coordinates.
+         * Returns the Vector2.
+         */
+        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.
+         * Returns the updated Vector3.
+         */
+        divideInPlace(otherVector: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 with current Vector2 negated coordinates.
+         */
+        negate(): Vector2;
+        /**
+         * Multiply the Vector2 coordinates by scale.
+         * Returns the updated Vector2.
+         */
+        scaleInPlace(scale: number): Vector2;
+        /**
+         * Returns a new Vector2 scaled by "scale" from the current Vector2.
+         */
+        scale(scale: number): Vector2;
+        /**
+         * Scale the current Vector2 values by a factor to a given Vector2
+         * @param scale defines the scale factor
+         * @param result defines the Vector2 object where to store the result
+         * @returns the unmodified current Vector2
+         */
+        scaleToRef(scale: number, result: Vector2): Vector2;
+        /**
+         * Scale the current Vector2 values by a factor and add the result to a given Vector2
+         * @param scale defines the scale factor
+         * @param result defines the Vector2 object where to store the result
+         * @returns the unmodified current Vector2
+         */
+        scaleAndAddToRef(scale: number, result: Vector2): Vector2;
+        /**
+         * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.
+         */
+        equals(otherVector: Vector2): boolean;
+        /**
+         * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.
+         */
+        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
+        /**
+         * Returns the vector length (float).
+         */
+        length(): number;
+        /**
+         * Returns the vector squared length (float);
+         */
+        lengthSquared(): number;
+        /**
+         * Normalize the vector.
+         * Returns the updated Vector2.
+         */
+        normalize(): Vector2;
+        /**
+         * Returns a new Vector2 copied from the Vector2.
+         */
+        clone(): Vector2;
+        /**
+         * Returns a new Vector2(0, 0)
+         */
+        static Zero(): Vector2;
+        /**
+         * Returns a new Vector2(1, 1)
+         */
+        static One(): Vector2;
+        /**
+         * Returns a new Vector2 set from the passed index element of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector2;
+        /**
+         * Sets "result" from the passed index element of the passed array.
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void;
+        /**
+         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the passed four Vector2.
+         */
+        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
+        /**
+         * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
+         * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
+         * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate.
+         */
+        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
+        /**
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
+         */
+        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
+        /**
+         * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
+         */
+        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
+        /**
+         * Returns the dot product (float) of the vector "left" and the vector "right".
+         */
+        static Dot(left: Vector2, right: Vector2): number;
+        /**
+         * Returns a new Vector2 equal to the normalized passed vector.
+         */
+        static Normalize(vector: Vector2): Vector2;
+        /**
+         * Returns a new Vecto2 set with the minimal coordinate values from the "left" and "right" vectors.
+         */
+        static Minimize(left: Vector2, right: Vector2): Vector2;
+        /**
+         * Returns a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors.
+         */
+        static Maximize(left: Vector2, right: Vector2): Vector2;
+        /**
+         * Returns a new Vecto2 set with the transformed coordinates of the passed vector by the passed transformation matrix.
+         */
+        static Transform(vector: Vector2, transformation: Matrix): Vector2;
+        /**
+         * Transforms the passed vector coordinates by the passed transformation matrix and stores the result in the vector "result" coordinates.
+         */
+        static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
+        /**
+         * Boolean : True if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
+         */
+        static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): boolean;
+        /**
+         * Returns the distance (float) between the vectors "value1" and "value2".
+         */
+        static Distance(value1: Vector2, value2: Vector2): number;
+        /**
+         * Returns the squared distance (float) between the vectors "value1" and "value2".
+         */
+        static DistanceSquared(value1: Vector2, value2: Vector2): number;
+        /**
+         * Returns a new Vecto2 located at the center of the vectors "value1" and "value2".
+         */
+        static Center(value1: Vector2, value2: Vector2): Vector2;
+        /**
+         * Returns the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
+         */
+        static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number;
+    }
+    /**
+     * Classed used to store (x,y,z) vector representation
+     * A Vector3 is the main object used in 3D geometry
+     * It can represent etiher the coordinates of a point the space, either a direction
+     * Reminder: Babylon.js uses a left handed forward facing system
+     */
+    class Vector3 {
+        /**
+         * Defines the first coordinates (on X axis)
+         */
+        x: number;
+        /**
+         * Defines the second coordinates (on Y axis)
+         */
+        y: number;
+        /**
+         * Defines the third coordinates (on Z axis)
+         */
+        z: number;
+        /**
+         * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.
+         * @param x defines the first coordinates (on X axis)
+         * @param y defines the second coordinates (on Y axis)
+         * @param z defines the third coordinates (on Z axis)
+         */
+        constructor(
+            /**
+             * Defines the first coordinates (on X axis)
+             */
+            x: number, 
+            /**
+             * Defines the second coordinates (on Y axis)
+             */
+            y: number, 
+            /**
+             * Defines the third coordinates (on Z axis)
+             */
+            z: number);
+        /**
+         * Creates a string representation of the Vector3
+         * @returns a string with the Vector3 coordinates.
+         */
+        toString(): string;
+        /**
+         * Gets the class name
+         * @returns the string "Vector3"
+         */
+        getClassName(): string;
+        /**
+         * Creates the Vector3 hash code
+         * @returns a number which tends to be unique between Vector3 instances
+         */
+        getHashCode(): number;
+        /**
+         * Creates an array containing three elements : the coordinates of the Vector3
+         * @returns a new array of numbers
+         */
+        asArray(): number[];
+        /**
+         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3
+         * @param array defines the destination array
+         * @param index defines the offset in the destination array
+         * @returns the current Vector3
+         */
+        toArray(array: FloatArray, index?: number): Vector3;
+        /**
+         * Converts the current Vector3 into a quaternion (considering that the Vector3 contains Euler angles representation of a rotation)
+         * @returns a new Quaternion object, computed from the Vector3 coordinates
+         */
+        toQuaternion(): Quaternion;
+        /**
+         * Adds the passed vector to the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
+         */
+        addInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Gets a new Vector3, result of the addition the current Vector3 and the passed vector
+         * @param otherVector defines the second operand
+         * @returns the resulting Vector3
+         */
+        add(otherVector: Vector3): Vector3;
+        /**
+         * Adds the current Vector3 to the passed one and stores the result in the vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        addToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Subtract the passed vector from the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
+         */
+        subtractInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the resulting Vector3
+         */
+        subtract(otherVector: Vector3): Vector3;
+        /**
+         * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the resulting Vector3
+         */
+        subtractFromFloats(x: number, y: number, z: number): Vector3;
+        /**
+         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
+        /**
+         * Gets a new Vector3 set with the current Vector3 negated coordinates
+         * @returns a new Vector3
+         */
+        negate(): Vector3;
+        /**
+         * Multiplies the Vector3 coordinates by the float "scale"
+         * @param scale defines the multiplier factor
+         * @returns the current updated Vector3
+         */
+        scaleInPlace(scale: number): Vector3;
+        /**
+         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale"
+         * @param scale defines the multiplier factor
+         * @returns a new Vector3
+         */
+        scale(scale: number): Vector3;
+        /**
+         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates
+         * @param scale defines the multiplier factor
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        scaleToRef(scale: number, result: Vector3): Vector3;
+        /**
+         * Scale the current Vector3 values by a factor and add the result to a given Vector3
+         * @param scale defines the scale factor
+         * @param result defines the Vector3 object where to store the result
+         * @returns the unmodified current Vector3
+         */
+        scaleAndAddToRef(scale: number, result: Vector3): Vector3;
+        /**
+         * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
+         * @param otherVector defines the second operand
+         * @returns true if both vectors are equals
+         */
+        equals(otherVector: Vector3): boolean;
+        /**
+         * Returns true if the current Vector3 and the passed vector coordinates are distant less than epsilon
+         * @param otherVector defines the second operand
+         * @param epsilon defines the minimal distance to define values as equals
+         * @returns true if both vectors are distant less than epsilon
+         */
+        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
+        /**
+         * Returns true if the current Vector3 coordinates equals the passed floats
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns true if both vectors are equals
+         */
+        equalsToFloats(x: number, y: number, z: number): boolean;
+        /**
+         * Multiplies the current Vector3 coordinates by the passed ones
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
+         */
+        multiplyInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector
+         * @param otherVector defines the second operand
+         * @returns the new Vector3
+         */
+        multiply(otherVector: Vector3): Vector3;
+        /**
+         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the passed floats
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the new Vector3
+         */
+        multiplyByFloats(x: number, y: number, z: number): Vector3;
+        /**
+         * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the passed ones
+         * @param otherVector defines the second operand
+         * @returns the new Vector3
+         */
+        divide(otherVector: Vector3): Vector3;
+        /**
+         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
+         */
+        divideInPlace(otherVector: Vector3): Vector3;
+        /**
+         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector3
+         */
+        minimizeInPlace(other: Vector3): Vector3;
+        /**
+         * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.
+         * @param other defines the second operand
+         * @returns the current updated Vector3
+         */
+        maximizeInPlace(other: Vector3): Vector3;
+        /**
+         * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
+         */
+        readonly isNonUniform: boolean;
+        /**
+         * Gets the length of the Vector3
+         * @returns the length of the Vecto3
+         */
+        length(): number;
+        /**
+         * Gets the squared length of the Vector3
+         * @returns squared length of the Vector3
+         */
+        lengthSquared(): number;
+        /**
+         * Normalize the current Vector3.
+         * Please note that this is an in place operation.
+         * @returns the current updated Vector3
+         */
+        normalize(): Vector3;
+        /**
+         * Normalize the current Vector3 to a new vector
+         * @returns the new Vector3
+         */
+        normalizeToNew(): Vector3;
+        /**
+         * Normalize the current Vector3 to the reference
+         * @param reference define the Vector3 to update
+         * @returns the updated Vector3
+         */
+        normalizeToRef(reference: Vector3): Vector3;
+        /**
+         * Creates a new Vector3 copied from the current Vector3
+         * @returns the new Vector3
+         */
+        clone(): Vector3;
+        /**
+         * Copies the passed vector coordinates to the current Vector3 ones
+         * @param source defines the source Vector3
+         * @returns the current updated Vector3
+         */
+        copyFrom(source: Vector3): Vector3;
+        /**
+         * Copies the passed floats to the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
+         */
+        copyFromFloats(x: number, y: number, z: number): Vector3;
+        /**
+         * Copies the passed floats to the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
+         */
+        set(x: number, y: number, z: number): Vector3;
+        /**
+         * Get the clip factor between two vectors
+         * @param vector0 defines the first operand
+         * @param vector1 defines the second operand
+         * @param axis defines the axis to use
+         * @param size defines the size along the axis
+         * @returns the clip factor
+         */
+        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number): number;
+        /**
+         * Get angle between two vectors
+         * @param vector0 angle between vector0 and vector1
+         * @param vector1 angle between vector0 and vector1
+         * @param normal direction of the normal
+         * @return the angle between vector0 and vector1
+         */
+        static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number;
+        /**
+         * Returns a new Vector3 set from the index "offset" of the passed array
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @returns the new Vector3
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
+        /**
+         * Returns a new Vector3 set from the index "offset" of the passed Float32Array
+         * This function is deprecated.  Use FromArray instead
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @returns the new Vector3
+         */
+        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
+        /**
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed array
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param result defines the Vector3 where to store the result
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array
+         * This function is deprecated.  Use FromArrayToRef instead.
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param result defines the Vector3 where to store the result
+         */
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" with the passed floats.
+         * @param x defines the x coordinate of the source
+         * @param y defines the y coordinate of the source
+         * @param z defines the z coordinate of the source
+         * @param result defines the Vector3 where to store the result
+         */
+        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
+        /**
+         * Returns a new Vector3 set to (0.0, 0.0, 0.0)
+         * @returns a new empty Vector3
+         */
+        static Zero(): Vector3;
+        /**
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0)
+         * @returns a new unit Vector3
+         */
+        static One(): Vector3;
+        /**
+         * Returns a new Vector3 set to (0.0, 1.0, 0.0)
+         * @returns a new up Vector3
+         */
+        static Up(): Vector3;
+        /**
+         * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         * @returns a new forward Vector3
+         */
+        static Forward(): Vector3;
+        /**
+         * Returns a new Vector3 set to (1.0, 0.0, 0.0)
+         * @returns a new right Vector3
+         */
+        static Right(): Vector3;
+        /**
+         * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
+         * @returns a new left Vector3
+         */
+        static Left(): Vector3;
+        /**
+         * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the transformed Vector3
+         */
+        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
+        /**
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
+         */
+        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z)
+         * This method computes tranformed coordinates only, not transformed direction vectors
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
+         */
+        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        /**
+         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the new Vector3
+         */
+        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
+         */
+        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z)
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
+         */
+        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        /**
+         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4"
+         * @param value1 defines the first control point
+         * @param value2 defines the second control point
+         * @param value3 defines the third control point
+         * @param value4 defines the fourth control point
+         * @param amount defines the amount on the spline to use
+         * @returns the new Vector3
+         */
+        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
+        /**
+         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+         * @param value defines the current value
+         * @param min defines the lower range value
+         * @param max defines the upper range value
+         * @returns the new Vector3
+         */
+        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent vector
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent vector
+         * @param amount defines the amount on the interpolation spline (between 0 and 1)
+         * @returns the new Vector3
+         */
+        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
+        /**
+         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
+         * @param start defines the start value
+         * @param end defines the end value
+         * @param amount max defines amount between both (between 0 and 1)
+         * @returns the new Vector3
+         */
+        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
+        /**
+         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
+         * @param start defines the start value
+         * @param end defines the end value
+         * @param amount max defines amount between both (between 0 and 1)
+         * @param result defines the Vector3 where to store the result
+         */
+        static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void;
+        /**
+         * Returns the dot product (float) between the vectors "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the dot product
+         */
+        static Dot(left: Vector3, right: Vector3): number;
+        /**
+         * Returns a new Vector3 as the cross product of the vectors "left" and "right"
+         * The cross product is then orthogonal to both "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the cross product
+         */
+        static Cross(left: Vector3, right: Vector3): Vector3;
+        /**
+         * Sets the passed vector "result" with the cross product of "left" and "right"
+         * The cross product is then orthogonal to both "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @param result defines the Vector3 where to store the result
+         */
+        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
+        /**
+         * Returns a new Vector3 as the normalization of the passed vector
+         * @param vector defines the Vector3 to normalize
+         * @returns the new Vector3
+         */
+        static Normalize(vector: Vector3): Vector3;
+        /**
+         * Sets the passed vector "result" with the normalization of the passed first vector
+         * @param vector defines the Vector3 to normalize
+         * @param result defines the Vector3 where to store the result
+         */
+        static NormalizeToRef(vector: Vector3, result: Vector3): void;
+        private static _viewportMatrixCache;
+        /**
+         * Project a Vector3 onto screen space
+         * @param vector defines the Vector3 to project
+         * @param world defines the world matrix to use
+         * @param transform defines the transform (view x projection) matrix to use
+         * @param viewport defines the screen viewport to use
+         * @returns the new Vector3
+         */
+        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param transform defines the transform (view x projection) matrix to use
+         * @returns the new Vector3
+         */
+        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @returns the new Vector3
+         */
+        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param result defines the Vector3 where to store the result
+         */
+        static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void;
+        /**
+         * Unproject from screen space to object space
+         * @param sourceX defines the screen space x coordinate to use
+         * @param sourceY defines the screen space y coordinate to use
+         * @param sourceZ defines the screen space z coordinate to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param result defines the Vector3 where to store the result
+         */
+        static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void;
+        /**
+         * Gets the minimal coordinate values between two Vector3
+         * @param left defines the first operand
+         * @param right defines the second operand
+         * @returns the new Vector3
+         */
+        static Minimize(left: Vector3, right: Vector3): Vector3;
+        /**
+         * Gets the maximal coordinate values between two Vector3
+         * @param left defines the first operand
+         * @param right defines the second operand
+         * @returns the new Vector3
+         */
+        static Maximize(left: Vector3, right: Vector3): Vector3;
+        /**
+         * Returns the distance between the vectors "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the distance
+         */
+        static Distance(value1: Vector3, value2: Vector3): number;
+        /**
+         * Returns the squared distance between the vectors "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the squared distance
+         */
+        static DistanceSquared(value1: Vector3, value2: Vector3): number;
+        /**
+         * Returns a new Vector3 located at the center between "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the new Vector3
+         */
+        static Center(value1: Vector3, value2: Vector3): Vector3;
+        /**
+         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system
+         * Note: axis1, axis2 and axis3 are normalized during this operation
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @returns a new Vector3
+         */
+        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
+        /**
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @param ref defines the Vector3 where to store the result
+         */
+        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
+    }
+    class Vector4 {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        /**
+         * Creates a Vector4 object from the passed floats.
+         */
+        constructor(x: number, y: number, z: number, w: number);
+        /**
+         * Returns the string with the Vector4 coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Vector4".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Vector4 hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Returns a new array populated with 4 elements : the Vector4 coordinates.
+         */
+        asArray(): number[];
+        /**
+         * Populates the passed array from the passed index with the Vector4 coordinates.
+         * Returns the Vector4.
+         */
+        toArray(array: FloatArray, index?: number): Vector4;
+        /**
+         * Adds the passed vector to the current Vector4.
+         * Returns the updated Vector4.
+         */
+        addInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 as the result of the addition of the current Vector4 and the passed one.
+         */
+        add(otherVector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" with the result of the addition of the current Vector4 and the passed one.
+         * Returns the current Vector4.
+         */
+        addToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Subtract in place the passed vector from the current Vector4.
+         * Returns the updated Vector4.
+         */
+        subtractInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 with the result of the subtraction of the passed vector from the current Vector4.
+         */
+        subtract(otherVector: Vector4): Vector4;
+        /**
+         * Sets the passed vector "result" with the result of the subtraction of the passed vector from the current Vector4.
+         * Returns the current Vector4.
+         */
+        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
+         */
+        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Sets the passed vector "result" set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
+         * Returns the current Vector4.
+         */
+        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the current Vector4 negated coordinates.
+         */
+        negate(): Vector4;
+        /**
+         * Multiplies the current Vector4 coordinates by scale (float).
+         * Returns the updated Vector4.
+         */
+        scaleInPlace(scale: number): Vector4;
+        /**
+         * Returns a new Vector4 set with the current Vector4 coordinates multiplied by scale (float).
+         */
+        scale(scale: number): Vector4;
+        /**
+         * Sets the passed vector "result" with the current Vector4 coordinates multiplied by scale (float).
+         * Returns the current Vector4.
+         */
+        scaleToRef(scale: number, result: Vector4): Vector4;
+        /**
+         * Scale the current Vector4 values by a factor and add the result to a given Vector4
+         * @param scale defines the scale factor
+         * @param result defines the Vector4 object where to store the result
+         * @returns the unmodified current Vector4
+         */
+        scaleAndAddToRef(scale: number, result: Vector4): Vector4;
+        /**
+         * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.
+         */
+        equals(otherVector: Vector4): boolean;
+        /**
+         * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the passed vector ones.
+         */
+        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
+        /**
+         * Boolean : True if the passed floats are strictly equal to the current Vector4 coordinates.
+         */
+        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
+        /**
+         * Multiplies in place the current Vector4 by the passed one.
+         * Returns the updated Vector4.
+         */
+        multiplyInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the passed one.
+         */
+        multiply(otherVector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" with the multiplication result of the current Vector4 and the passed one.
+         * Returns the current Vector4.
+         */
+        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the multiplication result of the passed floats and the current Vector4 coordinates.
+         */
+        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Returns a new Vector4 set with the division result of the current Vector4 by the passed one.
+         */
+        divide(otherVector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" with the division result of the current Vector4 by the passed one.
+         * Returns the current Vector4.
+         */
+        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.
+         * @returns the updated Vector3.
+         */
+        divideInPlace(otherVector: Vector4): Vector4;
+        /**
+         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector4
+         */
+        minimizeInPlace(other: Vector4): Vector4;
+        /**
+         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector4
+         */
+        maximizeInPlace(other: Vector4): Vector4;
+        /**
+         * Returns the Vector4 length (float).
+         */
+        length(): number;
+        /**
+         * Returns the Vector4 squared length (float).
+         */
+        lengthSquared(): number;
+        /**
+         * Normalizes in place the Vector4.
+         * Returns the updated Vector4.
+         */
+        normalize(): Vector4;
+        /**
+         * Returns a new Vector3 from the Vector4 (x, y, z) coordinates.
+         */
+        toVector3(): Vector3;
+        /**
+         * Returns a new Vector4 copied from the current one.
+         */
+        clone(): Vector4;
+        /**
+         * Updates the current Vector4 with the passed one coordinates.
+         * Returns the updated Vector4.
+         */
+        copyFrom(source: Vector4): Vector4;
+        /**
+         * Updates the current Vector4 coordinates with the passed floats.
+         * Returns the updated Vector4.
+         */
+        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Updates the current Vector4 coordinates with the passed floats.
+         * Returns the updated Vector4.
+         */
+        set(x: number, y: number, z: number, w: number): Vector4;
+        /**
+         * Returns a new Vector4 set from the starting index of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Vector4;
+        /**
+         * Updates the passed vector "result" from the starting index of the passed array.
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void;
+        /**
+         * Updates the passed vector "result" from the starting index of the passed Float32Array.
+         */
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
+        /**
+         * Updates the passed vector "result" coordinates from the passed floats.
+         */
+        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        /**
+         * Returns a new Vector4 set to (0.0, 0.0, 0.0, 0.0)
+         */
+        static Zero(): Vector4;
+        /**
+         * Returns a new Vector4 set to (1.0, 1.0, 1.0, 1.0)
+         */
+        static One(): Vector4;
+        /**
+         * Returns a new normalized Vector4 from the passed one.
+         */
+        static Normalize(vector: Vector4): Vector4;
+        /**
+         * Updates the passed vector "result" from the normalization of the passed one.
+         */
+        static NormalizeToRef(vector: Vector4, result: Vector4): void;
+        static Minimize(left: Vector4, right: Vector4): Vector4;
+        static Maximize(left: Vector4, right: Vector4): Vector4;
+        /**
+         * Returns the distance (float) between the vectors "value1" and "value2".
+         */
+        static Distance(value1: Vector4, value2: Vector4): number;
+        /**
+         * Returns the squared distance (float) between the vectors "value1" and "value2".
+         */
+        static DistanceSquared(value1: Vector4, value2: Vector4): number;
+        /**
+         * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
+         */
+        static Center(value1: Vector4, value2: Vector4): Vector4;
+        /**
+         * Returns a new Vector4 set with the result of the normal transformation by the passed matrix of the passed vector.
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormal(vector: Vector4, transformation: Matrix): Vector4;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void;
+        /**
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z, w).
+         * This methods computes transformed normalized direction vectors only.
+         */
+        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void;
+    }
+    interface ISize {
+        width: number;
+        height: number;
+    }
+    class Size implements ISize {
+        width: number;
+        height: number;
+        /**
+         * Creates a Size object from the passed width and height (floats).
+         */
+        constructor(width: number, height: number);
+        toString(): string;
+        /**
+         * Returns the string "Size"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Size hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Updates the current size from the passed one.
+         * Returns the updated Size.
+         */
+        copyFrom(src: Size): void;
+        /**
+         * Updates in place the current Size from the passed floats.
+         * Returns the updated Size.
+         */
+        copyFromFloats(width: number, height: number): Size;
+        /**
+         * Updates in place the current Size from the passed floats.
+         * Returns the updated Size.
+         */
+        set(width: number, height: number): Size;
+        /**
+         * Returns a new Size set with the multiplication result of the current Size and the passed floats.
+         */
+        multiplyByFloats(w: number, h: number): Size;
+        /**
+         * Returns a new Size copied from the passed one.
+         */
+        clone(): Size;
+        /**
+         * Boolean : True if the current Size and the passed one width and height are strictly equal.
+         */
+        equals(other: Size): boolean;
+        /**
+         * Returns the surface of the Size : width * height (float).
+         */
+        readonly surface: number;
+        /**
+         * Returns a new Size set to (0.0, 0.0)
+         */
+        static Zero(): Size;
+        /**
+         * Returns a new Size set as the addition result of the current Size and the passed one.
+         */
+        add(otherSize: Size): Size;
+        /**
+         * Returns a new Size set as the subtraction result of  the passed one from the current Size.
+         */
+        subtract(otherSize: Size): Size;
+        /**
+         * Returns a new Size set at the linear interpolation "amount" between "start" and "end".
+         */
+        static Lerp(start: Size, end: Size, amount: number): Size;
+    }
+    class Quaternion {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        /**
+         * Creates a new Quaternion from the passed floats.
+         */
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        /**
+         * Returns a string with the Quaternion coordinates.
+         */
+        toString(): string;
+        /**
+         * Returns the string "Quaternion".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Quaternion hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Returns a new array populated with 4 elements : the Quaternion coordinates.
+         */
+        asArray(): number[];
+        /**
+         * Boolean : True if the current Quaterion and the passed one coordinates are strictly equal.
+         */
+        equals(otherQuaternion: Quaternion): boolean;
+        /**
+         * Returns a new Quaternion copied from the current one.
+         */
+        clone(): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed one coordinates.
+         * Returns the updated Quaterion.
+         */
+        copyFrom(other: Quaternion): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed float coordinates.
+         * Returns the updated Quaterion.
+         */
+        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed float coordinates.
+         * Returns the updated Quaterion.
+         */
+        set(x: number, y: number, z: number, w: number): Quaternion;
+        /**
+         * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.
+         */
+        add(other: Quaternion): Quaternion;
+        /**
+         * Add a quaternion to the current one
+         * @param other defines the quaternion to add
+         * @returns the current quaternion
+         */
+        addInPlace(other: Quaternion): Quaternion;
+        /**
+         * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.
+         */
+        subtract(other: Quaternion): Quaternion;
+        /**
+         * Returns a new Quaternion set by multiplying the current Quaterion coordinates by the float "scale".
+         */
+        scale(value: number): Quaternion;
+        /**
+         * Scale the current Quaternion values by a factor to a given Quaternion
+         * @param scale defines the scale factor
+         * @param result defines the Quaternion object where to store the result
+         * @returns the unmodified current Quaternion
+         */
+        scaleToRef(scale: number, result: Quaternion): Quaternion;
+        /**
+         * Scale the current Quaternion values by a factor and add the result to a given Quaternion
+         * @param scale defines the scale factor
+         * @param result defines the Quaternion object where to store the result
+         * @returns the unmodified current Quaternion
+         */
+        scaleAndAddToRef(scale: number, result: Quaternion): Quaternion;
+        /**
+         * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".
+         */
+        multiply(q1: Quaternion): Quaternion;
+        /**
+         * Sets the passed "result" as the quaternion mulplication result of the current one with the passed one "q1".
+         * Returns the current Quaternion.
+         */
+        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
+        /**
+         * Updates the current Quaternion with the quaternion mulplication result of itself with the passed one "q1".
+         * Returns the updated Quaternion.
+         */
+        multiplyInPlace(q1: Quaternion): Quaternion;
+        /**
+         * Sets the passed "ref" with the conjugation of the current Quaternion.
+         * Returns the current Quaternion.
+         */
+        conjugateToRef(ref: Quaternion): Quaternion;
+        /**
+         * Conjugates in place the current Quaternion.
+         * Returns the updated Quaternion.
+         */
+        conjugateInPlace(): Quaternion;
+        /**
+         * Returns a new Quaternion as the conjugate of the current Quaternion.
+         */
+        conjugate(): Quaternion;
+        /**
+         * Returns the Quaternion length (float).
+         */
+        length(): number;
+        /**
+         * Normalize in place the current Quaternion.
+         * Returns the updated Quaternion.
+         */
+        normalize(): Quaternion;
+        /**
+         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion
+         * @param order is a reserved parameter and is ignore for now
+         * @returns the new Vector3
+         */
+        toEulerAngles(order?: string): Vector3;
+        /**
+         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion
+         * @param result defines the vector which will be filled with the Euler angles
+         * @param order is a reserved parameter and is ignore for now
+         * @returns the current Quaternion
+         */
+        toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
+        /**
+         * Updates the passed rotation matrix with the current Quaternion values.
+         * Returns the current Quaternion.
+         */
+        toRotationMatrix(result: Matrix): Quaternion;
+        /**
+         * Updates the current Quaternion from the passed rotation matrix values.
+         * Returns the updated Quaternion.
+         */
+        fromRotationMatrix(matrix: Matrix): Quaternion;
+        /**
+         * Returns a new Quaternion set from the passed rotation matrix values.
+         */
+        static FromRotationMatrix(matrix: Matrix): Quaternion;
+        /**
+         * Updates the passed quaternion "result" with the passed rotation matrix values.
+         */
+        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion set to (0.0, 0.0, 0.0).
+         */
+        static Zero(): Quaternion;
+        /**
+         * Returns a new Quaternion as the inverted current Quaternion.
+         */
+        static Inverse(q: Quaternion): Quaternion;
+        /**
+         * Returns the identity Quaternion.
+         */
+        static Identity(): Quaternion;
+        static IsIdentity(quaternion: Quaternion): boolean;
+        /**
+         * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float).
+         */
+        static RotationAxis(axis: Vector3, angle: number): Quaternion;
+        /**
+         * Sets the passed quaternion "result" from the passed axis (Vector3) and angle in radians (float).
+         */
+        static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
+        /**
+         * Retuns a new Quaternion set from the starting index of the passed array.
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Quaternion;
+        /**
+         * Returns a new Quaternion set from the passed Euler float angles (y, x, z).
+         */
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
+        /**
+         * Sets the passed quaternion "result" from the passed float Euler angles (y, x, z).
+         */
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion from the passed float Euler angles expressed in z-x-z orientation
+         */
+        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
+        /**
+         * Sets the passed quaternion "result" from the passed float Euler angles expressed in z-x-z orientation
+         */
+        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion as the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
+         * cf to Vector3.RotationFromAxis() documentation.
+         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         */
+        static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion;
+        /**
+         * Sets the passed quaternion "ref" with the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
+         * cf to Vector3.RotationFromAxis() documentation.
+         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         */
+        static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void;
+        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
+        static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void;
+        /**
+         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         */
+        static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion;
+    }
+    /**
+     * Class used to store matrix data (4x4)
+     */
+    class Matrix {
+        private static _tempQuaternion;
+        private static _xAxis;
+        private static _yAxis;
+        private static _zAxis;
+        private static _updateFlagSeed;
+        private static _identityReadOnly;
+        private _isIdentity;
+        private _isIdentityDirty;
+        /**
+         * Gets the update flag of the matrix which is an unique number for the matrix.
+         * It will be incremented every time the matrix data change.
+         * You can use it to speed the comparison between two versions of the same matrix.
+         */
+        updateFlag: number;
+        /**
+         * Gets or sets the internal data of the matrix
+         */
+        m: Float32Array;
+        /** @ignore */
+        _markAsUpdated(): void;
+        /**
+         * Creates an empty matrix (filled with zeros)
+         */
+        constructor();
+        /**
+         * Check if the current matrix is indentity
+         * @param considerAsTextureMatrix defines if the current matrix must be considered as a texture matrix (3x2)
+         * @returns true is the matrix is the identity matrix
+         */
+        isIdentity(considerAsTextureMatrix?: boolean): boolean;
+        /**
+         * Gets the determinant of the matrix
+         * @returns the matrix determinant
+         */
+        determinant(): number;
+        /**
+         * Returns the matrix as a Float32Array
+         * @returns the matrix underlying array
+         */
+        toArray(): Float32Array;
+        /**
+         * Returns the matrix as a Float32Array
+        * @returns the matrix underlying array.
+        */
+        asArray(): Float32Array;
+        /**
+         * Inverts the current matrix in place
+         * @returns the current inverted matrix
+         */
+        invert(): Matrix;
+        /**
+         * Sets all the matrix elements to zero
+         * @returns the current matrix
+         */
+        reset(): Matrix;
+        /**
+         * Adds the current matrix with a second one
+         * @param other defines the matrix to add
+         * @returns a new matrix as the addition of the current matrix and the passed one
+         */
+        add(other: Matrix): Matrix;
+        /**
+         * Sets the passed matrix "result" to the addition of the current matrix and the passed one
+         * @param other defines the matrix to add
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        addToRef(other: Matrix, result: Matrix): Matrix;
+        /**
+         * Adds in place the passed matrix to the current matrix
+         * @param other defines the second operand
+         * @returns the current updated matrix
+         */
+        addToSelf(other: Matrix): Matrix;
+        /**
+         * Sets the passed matrix to the current inverted Matrix
+         * @param other defines the target matrix
+         * @returns the unmodified current matrix
+         */
+        invertToRef(other: Matrix): Matrix;
+        /**
+         * Inserts the translation vector (using 3 floats) in the current matrix
+         * @param x defines the 1st component of the translation
+         * @param y defines the 2nd component of the translation
+         * @param z defines the 3rd component of the translation
+         * @returns the current updated matrix
+         */
+        setTranslationFromFloats(x: number, y: number, z: number): Matrix;
+        /**
+         * Inserts the translation vector in the current matrix
+         * @param vector3 defines the translation to insert
+         * @returns the current updated matrix
+         */
+        setTranslation(vector3: Vector3): Matrix;
+        /**
+         * Gets the translation value of the current matrix
+         * @returns a new Vector3 as the extracted translation from the matrix
+         */
+        getTranslation(): Vector3;
+        /**
+         * Fill a Vector3 with the extracted translation from the matrix
+         * @param result defines the Vector3 where to store the translation
+         * @returns the current matrix
+         */
+        getTranslationToRef(result: Vector3): Matrix;
+        /**
+         * Remove rotation and scaling part from the matrix
+         * @returns the updated matrix
+         */
+        removeRotationAndScaling(): Matrix;
+        /**
+         * Multiply two matrices
+         * @param other defines the second operand
+         * @returns a new matrix set with the multiplication result of the current Matrix and the passed one
+         */
+        multiply(other: Matrix): Matrix;
+        /**
+         * Copy the current matrix from the passed one
+         * @param other defines the source matrix
+         * @returns the current updated matrix
+         */
+        copyFrom(other: Matrix): Matrix;
+        /**
+         * Populates the passed array from the starting index with the current matrix values
+         * @param array defines the target array
+         * @param offset defines the offset in the target array where to start storing values
+         * @returns the current matrix
+         */
+        copyToArray(array: Float32Array, offset?: number): Matrix;
+        /**
+         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one
+         * @param other defines the second operand
+         * @param result defines the matrix where to store the multiplication
+         * @returns the current matrix
+         */
+        multiplyToRef(other: Matrix, result: Matrix): Matrix;
+        /**
+         * Sets the Float32Array "result" from the passed index "offset" with the multiplication of the current matrix and the passed one
+         * @param other defines the second operand
+         * @param result defines the array where to store the multiplication
+         * @param offset defines the offset in the target array where to start storing values
+         * @returns the current matrix
+         */
+        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
+        /**
+         * Check equality between this matrix and a second one
+         * @param value defines the second matrix to compare
+         * @returns true is the current matrix and the passed one values are strictly equal
+         */
+        equals(value: Matrix): boolean;
+        /**
+         * Clone the current matrix
+         * @returns a new matrix from the current matrix
+         */
+        clone(): Matrix;
+        /**
+         * Returns the name of the current matrix class
+         * @returns the string "Matrix"
+         */
+        getClassName(): string;
+        /**
+         * Gets the hash code of the current matrix
+         * @returns the hash code
+         */
+        getHashCode(): number;
+        /**
+         * Decomposes the current Matrix into a translation, rotation and scaling components
+         * @param scale defines the scale vector3 passed as a reference to update
+         * @param rotation defines the rotation quaternion passed as a reference to update
+         * @param translation defines the translation vector3 passed as a reference to update
+         * @returns true if operation was successful
+         */
+        decompose(scale: Vector3, rotation?: Quaternion, translation?: Vector3): boolean;
+        /**
+         * Gets specific row of the matrix
+         * @param index defines the number of the row to get
+         * @returns the index-th row of the current matrix as a new Vector4
+         */
+        getRow(index: number): Nullable<Vector4>;
+        /**
+         * Sets the index-th row of the current matrix to the vector4 values
+         * @param index defines the number of the row to set
+         * @param row defines the target vector4
+         * @returns the updated current matrix
+         */
+        setRow(index: number, row: Vector4): Matrix;
+        /**
+         * Compute the transpose of the matrix
+         * @returns the new transposed matrix
+         */
+        transpose(): Matrix;
+        /**
+         * Compute the transpose of the matrix and store it in a given matrix
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        transposeToRef(result: Matrix): Matrix;
+        /**
+         * Sets the index-th row of the current matrix with the passed 4 x float values
+         * @param index defines the row index
+         * @param x defines the x component to set
+         * @param y defines the y component to set
+         * @param z defines the z component to set
+         * @param w defines the w component to set
+         * @returns the updated current matrix
+         */
+        setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix;
+        /**
+         * Compute a new matrix set with the current matrix values multiplied by scale (float)
+         * @param scale defines the scale factor
+         * @returns a new matrix
+         */
+        scale(scale: number): Matrix;
+        /**
+         * Scale the current matrix values by a factor to a given result matrix
+         * @param scale defines the scale factor
+         * @param result defines the matrix to store the result
+         * @returns the current matrix
+         */
+        scaleToRef(scale: number, result: Matrix): Matrix;
+        /**
+         * Scale the current matrix values by a factor and add the result to a given matrix
+         * @param scale defines the scale factor
+         * @param result defines the Matrix to store the result
+         * @returns the current matrix
+         */
+        scaleAndAddToRef(scale: number, result: Matrix): Matrix;
+        /**
+         * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).
+         * @param ref matrix to store the result
+         */
+        toNormalMatrix(ref: Matrix): void;
+        /**
+         * Gets only rotation part of the current matrix
+         * @returns a new matrix sets to the extracted rotation matrix from the current one
+         */
+        getRotationMatrix(): Matrix;
+        /**
+         * Extracts the rotation matrix from the current one and sets it as the passed "result"
+         * @param result defines the target matrix to store data to
+         * @returns the current matrix
+         */
+        getRotationMatrixToRef(result: Matrix): Matrix;
+        /**
+         * Creates a matrix from an array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns a new Matrix set from the starting index of the passed array
+         */
+        static FromArray(array: ArrayLike<number>, offset?: number): Matrix;
+        /**
+         * Copy the content of an array into a given matrix
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @param result defines the target matrix
+         */
+        static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix): void;
+        /**
+         * Stores an array into a matrix after having multiplied each component by a given factor
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param scale defines the scaling factor
+         * @param result defines the target matrix
+         */
+        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
+        /**
+         * Stores a list of values (16) inside a given matrix
+         * @param initialM11 defines 1st value of 1st row
+         * @param initialM12 defines 2nd value of 1st row
+         * @param initialM13 defines 3rd value of 1st row
+         * @param initialM14 defines 4th value of 1st row
+         * @param initialM21 defines 1st value of 2nd row
+         * @param initialM22 defines 2nd value of 2nd row
+         * @param initialM23 defines 3rd value of 2nd row
+         * @param initialM24 defines 4th value of 2nd row
+         * @param initialM31 defines 1st value of 3rd row
+         * @param initialM32 defines 2nd value of 3rd row
+         * @param initialM33 defines 3rd value of 3rd row
+         * @param initialM34 defines 4th value of 3rd row
+         * @param initialM41 defines 1st value of 4th row
+         * @param initialM42 defines 2nd value of 4th row
+         * @param initialM43 defines 3rd value of 4th row
+         * @param initialM44 defines 4th value of 4th row
+         * @param result defines the target matrix
+         */
+        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
+        /**
+         * Gets an identity matrix that must not be updated
+         */
+        static readonly IdentityReadOnly: Matrix;
+        /**
+         * Creates new matrix from a list of values (16)
+         * @param initialM11 defines 1st value of 1st row
+         * @param initialM12 defines 2nd value of 1st row
+         * @param initialM13 defines 3rd value of 1st row
+         * @param initialM14 defines 4th value of 1st row
+         * @param initialM21 defines 1st value of 2nd row
+         * @param initialM22 defines 2nd value of 2nd row
+         * @param initialM23 defines 3rd value of 2nd row
+         * @param initialM24 defines 4th value of 2nd row
+         * @param initialM31 defines 1st value of 3rd row
+         * @param initialM32 defines 2nd value of 3rd row
+         * @param initialM33 defines 3rd value of 3rd row
+         * @param initialM34 defines 4th value of 3rd row
+         * @param initialM41 defines 1st value of 4th row
+         * @param initialM42 defines 2nd value of 4th row
+         * @param initialM43 defines 3rd value of 4th row
+         * @param initialM44 defines 4th value of 4th row
+         * @returns the new matrix
+         */
+        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
+        /**
+         * Creates a new matrix composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
+         * @param scale defines the scale vector3
+         * @param rotation defines the rotation quaternion
+         * @param translation defines the translation vector3
+         * @returns a new matrix
+         */
+        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
+        /**
+         * Sets a matrix to a value composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
+         * @param scale defines the scale vector3
+         * @param rotation defines the rotation quaternion
+         * @param translation defines the translation vector3
+         * @param result defines the target matrix
+         */
+        static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void;
+        /**
+         * Creates a new identity matrix
+         * @returns a new identity matrix
+         */
+        static Identity(): Matrix;
+        /**
+         * Creates a new identity matrix and stores the result in a given matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix): void;
+        /**
+         * Creates a new zero matrix
+         * @returns a new zero matrix
+         */
+        static Zero(): Matrix;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the X axis
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix
+         */
+        static RotationX(angle: number): Matrix;
+        /**
+         * Creates a new matrix as the invert of a given matrix
+         * @param source defines the source matrix
+         * @returns the new matrix
+         */
+        static Invert(source: Matrix): Matrix;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the X axis and stores it in a given matrix
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix
+         */
+        static RotationXToRef(angle: number, result: Matrix): void;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the Y axis
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix
+         */
+        static RotationY(angle: number): Matrix;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the Y axis and stores it in a given matrix
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix
+         */
+        static RotationYToRef(angle: number, result: Matrix): void;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the Z axis
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix
+         */
+        static RotationZ(angle: number): Matrix;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the Z axis and stores it in a given matrix
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix
+         */
+        static RotationZToRef(angle: number, result: Matrix): void;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the given axis
+         * @param axis defines the axis to use
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix
+         */
+        static RotationAxis(axis: Vector3, angle: number): Matrix;
+        /**
+         * Creates a new rotation matrix for "angle" radians around the given axis and stores it in a given matrix
+         * @param axis defines the axis to use
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix
+         */
+        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
+        /**
+         * Creates a rotation matrix
+         * @param yaw defines the yaw angle in radians (Y axis)
+         * @param pitch defines the pitch angle in radians (X axis)
+         * @param roll defines the roll angle in radians (X axis)
+         * @returns the new rotation matrix
+         */
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
+        /**
+         * Creates a rotation matrix and stores it in a given matrix
+         * @param yaw defines the yaw angle in radians (Y axis)
+         * @param pitch defines the pitch angle in radians (X axis)
+         * @param roll defines the roll angle in radians (X axis)
+         * @param result defines the target matrix
+         */
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
+        /**
+         * Creates a scaling matrix
+         * @param x defines the scale factor on X axis
+         * @param y defines the scale factor on Y axis
+         * @param z defines the scale factor on Z axis
+         * @returns the new matrix
+         */
+        static Scaling(x: number, y: number, z: number): Matrix;
+        /**
+         * Creates a scaling matrix and stores it in a given matrix
+         * @param x defines the scale factor on X axis
+         * @param y defines the scale factor on Y axis
+         * @param z defines the scale factor on Z axis
+         * @param result defines the target matrix
+         */
+        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
+        /**
+         * Creates a translation matrix
+         * @param x defines the translation on X axis
+         * @param y defines the translation on Y axis
+         * @param z defines the translationon Z axis
+         * @returns the new matrix
+         */
+        static Translation(x: number, y: number, z: number): Matrix;
+        /**
+         * Creates a translation matrix and stores it in a given matrix
+         * @param x defines the translation on X axis
+         * @param y defines the translation on Y axis
+         * @param z defines the translationon Z axis
+         * @param result defines the target matrix
+         */
+        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
+        /**
+         * Returns a new Matrix whose values are the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
+         * @param startValue defines the start value
+         * @param endValue defines the end value
+         * @param gradient defines the gradient factor
+         * @returns the new matrix
+         */
+        static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        /**
+         * Set the passed matrix "result" as the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
+         * @param startValue defines the start value
+         * @param endValue defines the end value
+         * @param gradient defines the gradient factor
+         * @param result defines the Matrix object where to store data
+         */
+        static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void;
+        /**
+         * Builds a new matrix whose values are computed by:
+         * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
+         * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
+         * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
+         * @param startValue defines the first matrix
+         * @param endValue defines the second matrix
+         * @param gradient defines the gradient between the two matrices
+         * @returns the new matrix
+         */
+        static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        /**
+         * Update a matrix to values which are computed by:
+         * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
+         * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
+         * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
+         * @param startValue defines the first matrix
+         * @param endValue defines the second matrix
+         * @param gradient defines the gradient between the two matrices
+         * @param result defines the target matrix
+         */
+        static DecomposeLerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void;
+        /**
+         * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
+         * This function works in left handed mode
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @returns the new matrix
+         */
+        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
+         * This function works in left handed mode
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @param result defines the target matrix
+         */
+        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        /**
+         * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
+         * This function works in right handed mode
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @returns the new matrix
+         */
+        static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        /**
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
+         * This function works in right handed mode
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @param result defines the target matrix
+         */
+        static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        /**
+         * Create a left-handed orthographic projection matrix
+         * @param width defines the viewport width
+         * @param height defines the viewport height
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed orthographic projection matrix
+         */
+        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        /**
+         * Store a left-handed orthographic projection to a given matrix
+         * @param width defines the viewport width
+         * @param height defines the viewport height
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         */
+        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
+        /**
+         * Create a left-handed orthographic projection matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed orthographic projection matrix
+         */
+        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        /**
+         * Stores a left-handed orthographic projection into a given matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         */
+        static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        /**
+         * Creates a right-handed orthographic projection matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a right-handed orthographic projection matrix
+         */
+        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        /**
+         * Stores a right-handed orthographic projection into a given matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         */
+        static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        /**
+         * Creates a left-handed perspective projection matrix
+         * @param width defines the viewport width
+         * @param height defines the viewport height
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed perspective projection matrix
+         */
+        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        /**
+         * Creates a left-handed perspective projection matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed perspective projection matrix
+         */
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        /**
+         * Stores a left-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Creates a right-handed perspective projection matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a right-handed perspective projection matrix
+         */
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        /**
+         * Stores a right-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Stores a perspective projection for WebVR info a given matrix
+         * @param fov defines the field of view
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
+         */
+        static PerspectiveFovWebVRToRef(fov: {
+            upDegrees: number;
+            downDegrees: number;
+            leftDegrees: number;
+            rightDegrees: number;
+        }, znear: number, zfar: number, result: Matrix, rightHanded?: boolean): void;
+        /**
+         * Computes a complete transformation matrix
+         * @param viewport defines the viewport to use
+         * @param world defines the world matrix
+         * @param view defines the view matrix
+         * @param projection defines the projection matrix
+         * @param zmin defines the near clip plane
+         * @param zmax defines the far clip plane
+         * @returns the transformation matrix
+         */
+        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
+        /**
+         * Extracts a 2x2 matrix from a given matrix and store the result in a Float32Array
+         * @param matrix defines the matrix to use
+         * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed matrix
+         */
+        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
+        /**
+         * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
+         * @param matrix defines the matrix to use
+         * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed matrix
+         */
+        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
+        /**
+         * Compute the transpose of a given matrix
+         * @param matrix defines the matrix to transpose
+         * @returns the new matrix
+         */
+        static Transpose(matrix: Matrix): Matrix;
+        /**
+         * Compute the transpose of a matrix and store it in a target matrix
+         * @param matrix defines the matrix to transpose
+         * @param result defines the target matrix
+         */
+        static TransposeToRef(matrix: Matrix, result: Matrix): void;
+        /**
+         * Computes a reflection matrix from a plane
+         * @param plane defines the reflection plane
+         * @returns a new matrix
+         */
+        static Reflection(plane: Plane): Matrix;
+        /**
+         * Computes a reflection matrix from a plane
+         * @param plane defines the reflection plane
+         * @param result defines the target matrix
+         */
+        static ReflectionToRef(plane: Plane, result: Matrix): void;
+        /**
+         * Sets the given matrix as a rotation matrix composed from the 3 left handed axes
+         * @param xaxis defines the value of the 1st axis
+         * @param yaxis defines the value of the 2nd axis
+         * @param zaxis defines the value of the 3rd axis
+         * @param result defines the target matrix
+         */
+        static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix): void;
+        /**
+         * Creates a rotation matrix from a quaternion and stores it in a target matrix
+         * @param quat defines the quaternion to use
+         * @param result defines the target matrix
+         */
+        static FromQuaternionToRef(quat: Quaternion, result: Matrix): void;
+    }
+    class Plane {
+        normal: Vector3;
+        d: number;
+        /**
+         * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         */
+        constructor(a: number, b: number, c: number, d: number);
+        /**
+         * Returns the plane coordinates as a new array of 4 elements [a, b, c, d].
+         */
+        asArray(): number[];
+        /**
+         * Returns a new plane copied from the current Plane.
+         */
+        clone(): Plane;
+        /**
+         * Returns the string "Plane".
+         */
+        getClassName(): string;
+        /**
+         * Returns the Plane hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Normalize the current Plane in place.
+         * Returns the updated Plane.
+         */
+        normalize(): Plane;
+        /**
+         * Returns a new Plane as the result of the transformation of the current Plane by the passed matrix.
+         */
+        transform(transformation: Matrix): Plane;
+        /**
+         * Returns the dot product (float) of the point coordinates and the plane normal.
+         */
+        dotCoordinate(point: Vector3): number;
+        /**
+         * Updates the current Plane from the plane defined by the three passed points.
+         * Returns the updated Plane.
+         */
+        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
+        /**
+         * Boolean : True is the vector "direction"  is the same side than the plane normal.
+         */
+        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
+        /**
+         * Returns the signed distance (float) from the passed point to the Plane.
+         */
+        signedDistanceTo(point: Vector3): number;
+        /**
+         * Returns a new Plane from the passed array.
+         */
+        static FromArray(array: ArrayLike<number>): Plane;
+        /**
+         * Returns a new Plane defined by the three passed points.
+         */
+        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
+        /**
+         * Returns a new Plane the normal vector to this plane at the passed origin point.
+         * Note : the vector "normal" is updated because normalized.
+         */
+        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
+        /**
+         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the passed other point.
+         */
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
+    }
+    class Viewport {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        /**
+         * Creates a Viewport object located at (x, y) and sized (width, height).
+         */
+        constructor(x: number, y: number, width: number, height: number);
+        toGlobal(renderWidthOrEngine: number | Engine, renderHeight: number): Viewport;
+        /**
+         * Returns a new Viewport copied from the current one.
+         */
+        clone(): Viewport;
+    }
+    class Frustum {
+        /**
+         * Returns a new array of 6 Frustum planes computed by the passed transformation matrix.
+         */
+        static GetPlanes(transform: Matrix): Plane[];
+        static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
+        static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
+        static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
+        static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
+        static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
+        static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
+        /**
+         * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
+         */
+        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
+    }
+    enum Space {
+        LOCAL = 0,
+        WORLD = 1,
+        BONE = 2,
+    }
+    class Axis {
+        static X: Vector3;
+        static Y: Vector3;
+        static Z: Vector3;
+    }
+    class BezierCurve {
+        /**
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the passed x1, y1, x2, y2 floats.
+         */
+        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
+    enum Orientation {
+        CW = 0,
+        CCW = 1,
+    }
+    class Angle {
+        private _radians;
+        /**
+         * Creates an Angle object of "radians" radians (float).
+         */
+        constructor(radians: number);
+        /**
+         * Returns the Angle value in degrees (float).
+         */
+        degrees: () => number;
+        /**
+         * Returns the Angle value in radians (float).
+         */
+        radians: () => number;
+        /**
+         * Returns a new Angle object valued with the angle value in radians between the two passed vectors.
+         */
+        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
+        /**
+         * Returns a new Angle object from the passed float in radians.
+         */
+        static FromRadians(radians: number): Angle;
+        /**
+         * Returns a new Angle object from the passed float in degrees.
+         */
+        static FromDegrees(degrees: number): Angle;
+    }
+    class Arc2 {
+        startPoint: Vector2;
+        midPoint: Vector2;
+        endPoint: Vector2;
+        centerPoint: Vector2;
+        radius: number;
+        angle: Angle;
+        startAngle: Angle;
+        orientation: Orientation;
+        /**
+         * Creates an Arc object from the three passed points : start, middle and end.
+         */
+        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
+    }
+    class Path2 {
+        private _points;
+        private _length;
+        closed: boolean;
+        /**
+         * Creates a Path2 object from the starting 2D coordinates x and y.
+         */
+        constructor(x: number, y: number);
+        /**
+         * Adds a new segment until the passed coordinates (x, y) to the current Path2.
+         * Returns the updated Path2.
+         */
+        addLineTo(x: number, y: number): Path2;
+        /**
+         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
+         * Returns the updated Path2.
+         */
+        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        /**
+         * Closes the Path2.
+         * Returns the Path2.
+         */
+        close(): Path2;
+        /**
+         * Returns the Path2 total length (float).
+         */
+        length(): number;
+        /**
+         * Returns the Path2 internal array of points.
+         */
+        getPoints(): Vector2[];
+        /**
+         * Returns a new Vector2 located at a percentage of the Path2 total length on this path.
+         */
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        /**
+         * Returns a new Path2 starting at the coordinates (x, y).
+         */
+        static StartingAt(x: number, y: number): Path2;
+    }
+    class Path3D {
+        path: Vector3[];
+        private _curve;
+        private _distances;
+        private _tangents;
+        private _normals;
+        private _binormals;
+        private _raw;
+        /**
+        * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        constructor(path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
+        getCurve(): Vector3[];
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
+        getTangents(): Vector3[];
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
+        getNormals(): Vector3[];
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
+        getBinormals(): Vector3[];
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
+        getDistances(): number[];
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
+        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
+        private _compute(firstNormal);
+        private _getFirstNonNullVector(index);
+        private _getLastNonNullVector(index);
+        private _normalVector(v0, vt, va);
+    }
+    class Curve3 {
+        private _points;
+        private _length;
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a CatmullRom Spline curve :
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.
+         * @param nbPoints (integer) the wanted number of points between each curve control points.
+         */
+        static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3;
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
+        constructor(points: Vector3[]);
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
+        getPoints(): Vector3[];
+        /**
+         * Returns the computed length (float) of the curve.
+         */
+        length(): number;
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
+        continue(curve: Curve3): Curve3;
+        private _computeLength(path);
+    }
+    class PositionNormalVertex {
+        position: Vector3;
+        normal: Vector3;
+        constructor(position?: Vector3, normal?: Vector3);
+        clone(): PositionNormalVertex;
+    }
+    class PositionNormalTextureVertex {
+        position: Vector3;
+        normal: Vector3;
+        uv: Vector2;
+        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
+        clone(): PositionNormalTextureVertex;
+    }
+    class Tmp {
+        static Color3: Color3[];
+        static Vector2: Vector2[];
+        static Vector3: Vector3[];
+        static Vector4: Vector4[];
+        static Quaternion: Quaternion[];
+        static Matrix: Matrix[];
+    }
+}
+
+declare module BABYLON {
+    class SphericalPolynomial {
+        x: Vector3;
+        y: Vector3;
+        z: Vector3;
+        xx: Vector3;
+        yy: Vector3;
+        zz: Vector3;
+        xy: Vector3;
+        yz: Vector3;
+        zx: Vector3;
+        addAmbient(color: Color3): void;
+        static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
+        scale(scale: number): void;
+    }
+    class SphericalHarmonics {
+        L00: Vector3;
+        L1_1: Vector3;
+        L10: Vector3;
+        L11: Vector3;
+        L2_2: Vector3;
+        L2_1: Vector3;
+        L20: Vector3;
+        L21: Vector3;
+        L22: Vector3;
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        scale(scale: number): void;
+        convertIncidentRadianceToIrradiance(): void;
+        convertIrradianceToLambertianRadiance(): void;
+        static getsphericalHarmonicsFromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        influence: number;
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         */
+        constructor(
+            /** defines the name of the target */
+            name: string, influence?: number);
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        readonly hasPositions: boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        readonly hasNormals: boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        readonly hasTangents: boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        readonly uniqueId: number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        readonly vertexCount: number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        readonly supportsNormals: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -19008,6 +19156,9 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Define an interface for all classes that will get and set the data on vertices
+     */
     interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
@@ -19016,75 +19167,160 @@ declare module BABYLON {
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
+    /**
+     * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance
+     */
     class VertexData {
+        /**
+         * An array of the x, y, z position of each vertex  [...., x, y, z, .....]
+         */
         positions: Nullable<FloatArray>;
+        /**
+         * An array of the x, y, z normal vector of each vertex  [...., x, y, z, .....]
+         */
         normals: Nullable<FloatArray>;
+        /**
+         * An array of the x, y, z tangent vector of each vertex  [...., x, y, z, .....]
+         */
         tangents: Nullable<FloatArray>;
+        /**
+         * An array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+         */
         uvs: Nullable<FloatArray>;
+        /**
+         * A second array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+         */
         uvs2: Nullable<FloatArray>;
+        /**
+         * A third array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+         */
         uvs3: Nullable<FloatArray>;
+        /**
+         * A fourth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+         */
         uvs4: Nullable<FloatArray>;
+        /**
+         * A fifth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+         */
         uvs5: Nullable<FloatArray>;
+        /**
+         * A sixth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+         */
         uvs6: Nullable<FloatArray>;
+        /**
+         * An array of the r, g, b, a, color of each vertex  [...., r, g, b, a, .....]
+         */
         colors: Nullable<FloatArray>;
+        /**
+         * An array containing the list of indices to the array of matrices produced by bones, each vertex have up to 4 indices (8 if the matricesIndicesExtra is set).
+         */
         matricesIndices: Nullable<FloatArray>;
+        /**
+         * An array containing the list of weights defining the weight of each indexed matrix in the final computation
+         */
         matricesWeights: Nullable<FloatArray>;
+        /**
+         * An array extending the number of possible indices
+         */
         matricesIndicesExtra: Nullable<FloatArray>;
+        /**
+         * An array extending the number of possible weights when the number of indices is extended
+         */
         matricesWeightsExtra: Nullable<FloatArray>;
+        /**
+         * An array of i, j, k the three vertex indices required for each triangular facet  [...., i, j, k .....]
+         */
         indices: Nullable<IndicesArray>;
+        /**
+         * Uses the passed data array to set the set the values for the specified kind of data
+         * @param data a linear array of floating numbers
+         * @param kind the type of data that is being set, eg positions, colors etc
+         */
         set(data: FloatArray, kind: string): void;
         /**
          * Associates the vertexData to the passed Mesh.
-         * Sets it as updatable or not (default `false`).
-         * Returns the VertexData.
+         * Sets it as updatable or not (default `false`)
+         * @param mesh the mesh the vertexData is applied to
+         * @param updatable when used and having the value true allows new data to update the vertexData
+         * @returns the VertexData
          */
         applyToMesh(mesh: Mesh, updatable?: boolean): VertexData;
         /**
          * Associates the vertexData to the passed Geometry.
-         * Sets it as updatable or not (default `false`).
-         * Returns the VertexData.
+         * Sets it as updatable or not (default `false`)
+         * @param geometry the geometry the vertexData is applied to
+         * @param updatable when used and having the value true allows new data to update the vertexData
+         * @returns VertexData
          */
         applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData;
         /**
-         * Updates the associated mesh.
-         * Returns the VertexData.
+         * Updates the associated mesh
+         * @param mesh the mesh to be updated
+         * @param updateExtends when true the mesh BoundingInfo will be renewed when and if position kind is updated, optional with default false
+         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be  created from these positions and set to the mesh, optional with default false
+         * @returns VertexData
          */
         updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): VertexData;
         /**
-         * Updates the associated geometry.
-         * Returns the VertexData.
+         * Updates the associated geometry
+         * @param geometry the geometry to be updated
+         * @param updateExtends when true BoundingInfo will be renewed when and if position kind is updated, optional with default false
+         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be created from these positions and set to the mesh, optional with default false
+         * @returns VertexData.
          */
         updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): VertexData;
         private _applyTo(meshOrGeometry, updatable?);
         private _update(meshOrGeometry, updateExtends?, makeItUnique?);
         /**
-         * Transforms each position and each normal of the vertexData according to the passed Matrix.
-         * Returns the VertexData.
+         * Transforms each position and each normal of the vertexData according to the passed Matrix
+         * @param matrix the transforming matrix
+         * @returns the VertexData
          */
         transform(matrix: Matrix): VertexData;
         /**
-         * Merges the passed VertexData into the current one.
-         * Returns the modified VertexData.
+         * Merges the passed VertexData into the current one
+         * @param other the VertexData to be merged into the current one
+         * @returns the modified VertexData
          */
         merge(other: VertexData): VertexData;
         private _mergeElement(source, other);
         private _validate();
         /**
-         * Serializes the VertexData.
-         * Returns a serialized object.
+         * Serializes the VertexData
+         * @returns a serialized object
          */
         serialize(): any;
         /**
-         * Returns the object VertexData associated to the passed mesh.
+         * Extracts the vertexData from a mesh
+         * @param mesh the mesh from which to extract the VertexData
+         * @param copyWhenShared defines if the VertexData must be cloned when shared between multiple meshes, optional, default false
+         * @param forceCopy indicating that the VertexData must be cloned, optional, default false
+         * @returns the object VertexData associated to the passed mesh
          */
         static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean, forceCopy?: boolean): VertexData;
         /**
-         * Returns the object VertexData associated to the passed geometry.
+         * Extracts the vertexData from the geometry
+         * @param geometry the geometry from which to extract the VertexData
+         * @param copyWhenShared defines if the VertexData must be cloned when the geometrty is shared between multiple meshes, optional, default false
+         * @param forceCopy indicating that the VertexData must be cloned, optional, default false
+         * @returns the object VertexData associated to the passed mesh
          */
         static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean, forceCopy?: boolean): VertexData;
         private static _ExtractFrom(meshOrGeometry, copyWhenShared?, forceCopy?);
         /**
-         * Creates the vertexData of the Ribbon.
+         * Creates the VertexData for a Ribbon
+         * @param options an object used to set the following optional parameters for the ribbon, required but can be empty
+          * * pathArray array of paths, each of which an array of successive Vector3
+          * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false
+          * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
+          * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+          * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
+          * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
+          * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
+         * @returns the VertexData of the ribbon
          */
         static CreateRibbon(options: {
             pathArray: Vector3[][];
@@ -19099,7 +19335,18 @@ declare module BABYLON {
             colors?: Color4[];
         }): VertexData;
         /**
-         * Creates the VertexData of the Box.
+         * Creates the VertexData for a box
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * size sets the width, height and depth of the box to the value of size, optional default 1
+          * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+          * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+          * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+          * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+          * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the box
          */
         static CreateBox(options: {
             size?: number;
@@ -19113,7 +19360,19 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the Sphere.
+         * Creates the VertexData for an ellipsoid, defaults to a sphere
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * segments sets the number of horizontal strips optional, default 32
+          * * diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1
+          * * diameterX sets the diameterX (x direction) of the ellipsoid, overwrites the diameterX set by diameter, optional, default diameter
+          * * diameterY sets the diameterY (y direction) of the ellipsoid, overwrites the diameterY set by diameter, optional, default diameter
+          * * diameterZ sets the diameterZ (z direction) of the ellipsoid, overwrites the diameterZ set by diameter, optional, default diameter
+          * * arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1
+          * * slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the ellipsoid
          */
         static CreateSphere(options: {
             segments?: number;
@@ -19128,7 +19387,23 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the Cylinder or Cone.
+         * Creates the VertexData for a cylinder, cone or prism
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * height sets the height (y direction) of the cylinder, optional, default 2
+          * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
+          * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
+          * * diameter sets the diameter of the top and bottom of the cone, optional default 1
+          * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+          * * subdivisions` the number of rings along the cylinder height, optional, default 1
+          * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
+          * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+          * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+          * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+          * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the cylinder, cone or prism
          */
         static CreateCylinder(options: {
             height?: number;
@@ -19147,7 +19422,15 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the Torus.
+         * Creates the VertexData for a torus
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * diameter the diameter of the torus, optional default 1
+          * * thickness the diameter of the tube forming the torus, optional default 0.5
+          * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the torus
          */
         static CreateTorus(options: {
             diameter?: number;
@@ -19158,14 +19441,24 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the LineSystem.
+         * Creates the VertexData of the LineSystem
+         * @param options an object used to set the following optional parameters for the LineSystem, required but can be empty
+         *  - lines an array of lines, each line being an array of successive Vector3
+         *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
+         * @returns the VertexData of the LineSystem
          */
         static CreateLineSystem(options: {
             lines: Vector3[][];
             colors?: Nullable<Color4[][]>;
         }): VertexData;
         /**
-         * Create the VertexData of the DashedLines.
+         * Create the VertexData for a DashedLines
+         * @param options an object used to set the following optional parameters for the DashedLines, required but can be empty
+         *  - points an array successive Vector3
+         *  - dashSize the size of the dashes relative to the dash number, optional, default 3
+         *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
+         *  - dashNb the intended total number of dashes, optional, default 200
+         * @returns the VertexData for the DashedLines
          */
         static CreateDashedLines(options: {
             points: Vector3[];
@@ -19174,7 +19467,12 @@ declare module BABYLON {
             dashNb?: number;
         }): VertexData;
         /**
-         * Creates the VertexData of the Ground.
+         * Creates the VertexData for a Ground
+         * @param options an object used to set the following optional parameters for the Ground, required but can be empty
+         *  - width the width (x direction) of the ground, optional, default 1
+         *  - height the height (z direction) of the ground, optional, default 1
+         *  - subdivisions the number of subdivisions per side, optional, default 1
+         * @returns the VertexData of the Ground
          */
         static CreateGround(options: {
             width?: number;
@@ -19184,7 +19482,15 @@ declare module BABYLON {
             subdivisionsY?: number;
         }): VertexData;
         /**
-         * Creates the VertexData of the TiledGround.
+         * Creates the VertexData for a TiledGround by subdividing the ground into tiles
+         * @param options an object used to set the following optional parameters for the Ground, required but can be empty
+          * * xmin the ground minimum X coordinate, optional, default -1
+          * * zmin the ground minimum Z coordinate, optional, default -1
+          * * xmax the ground maximum X coordinate, optional, default 1
+          * * zmax the ground maximum Z coordinate, optional, default 1
+          * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
+          * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
+         * @returns the VertexData of the TiledGround
          */
         static CreateTiledGround(options: {
             xmin: number;
@@ -19201,7 +19507,18 @@ declare module BABYLON {
             };
         }): VertexData;
         /**
-         * Creates the VertexData of the Ground designed from a heightmap.
+         * Creates the VertexData of the Ground designed from a heightmap
+         * @param options an object used to set the following parameters for the Ground, required and provided by MeshBuilder.CreateGroundFromHeightMap
+          * * width the width (x direction) of the ground
+          * * height the height (z direction) of the ground
+          * * subdivisions the number of subdivisions per side
+          * * minHeight the minimum altitude on the ground, optional, default 0
+          * * maxHeight the maximum altitude on the ground, optional default 1
+          * * colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
+          * * buffer the array holding the image color data
+          * * bufferWidth the width of image
+          * * bufferHeight the height of image
+         * @returns the VertexData of the Ground designed from a heightmap
          */
         static CreateGroundFromHeightMap(options: {
             width: number;
@@ -19215,7 +19532,15 @@ declare module BABYLON {
             bufferHeight: number;
         }): VertexData;
         /**
-         * Creates the VertexData of the Plane.
+         * Creates the VertexData for a Plane
+         * @param options an object used to set the following optional parameters for the plane, required but can be empty
+          * * size sets the width and height of the plane to the value of size, optional default 1
+          * * width sets the width (x direction) of the plane, overwrites the width set by size, optional, default size
+          * * height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the box
          */
         static CreatePlane(options: {
             size?: number;
@@ -19226,7 +19551,15 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the Disc or regular Polygon.
+         * Creates the VertexData of the Disc or regular Polygon
+         * @param options an object used to set the following optional parameters for the disc, required but can be empty
+          * * radius the radius of the disc, optional default 0.5
+          * * tessellation the number of polygon sides, optional, default 64
+          * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the box
          */
         static CreateDisc(options: {
             radius?: number;
@@ -19237,11 +19570,30 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Re-creates the VertexData of the Polygon for sideOrientation.
+         * Creates the VertexData for an irregular Polygon in the XoZ plane using a mesh built by polygonTriangulation.build()
+         * All parameters are provided by MeshBuilder.CreatePolygon as needed
+         * @param polygon a mesh built from polygonTriangulation.build()
+         * @param sideOrientation takes the values BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * @param fUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * @param fColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * @param frontUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * @param backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the Polygon
          */
         static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4): VertexData;
         /**
-         * Creates the VertexData of the IcoSphere.
+         * Creates the VertexData of the IcoSphere
+         * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty
+          * * radius the radius of the IcoSphere, optional default 1
+          * * radiusX allows stretching in the x direction, optional, default radius
+          * * radiusY allows stretching in the y direction, optional, default radius
+          * * radiusZ allows stretching in the z direction, optional, default radius
+          * * flat when true creates a flat shaded mesh, optional, default true
+          * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the IcoSphere
          */
         static CreateIcoSphere(options: {
             radius?: number;
@@ -19255,7 +19607,24 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the Polyhedron.
+         * Creates the VertexData for a Polyhedron
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * * type provided types are:
+         *  * 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
+         *  * 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
+         * * size the size of the IcoSphere, optional default 1
+         * * sizeX allows stretching in the x direction, optional, default size
+         * * sizeY allows stretching in the y direction, optional, default size
+         * * sizeZ allows stretching in the z direction, optional, default size
+         * * custom a number that overwrites the type to create from an extended set of polyhedron from https://www.babylonjs-playground.com/#21QRSK#15 with minimised editor
+         * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+         * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+         * * flat when true creates a flat shaded mesh, optional, default true
+         * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+         * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the Polyhedron
          */
         static CreatePolyhedron(options: {
             type?: number;
@@ -19272,7 +19641,18 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * Creates the VertexData of the Torus Knot.
+         * Creates the VertexData for a TorusKnot
+         * @param options an object used to set the following optional parameters for the TorusKnot, required but can be empty
+          * * radius the radius of the torus knot, optional, default 2
+          * * tube the thickness of the tube, optional, default 0.5
+          * * radialSegments the number of sides on each tube segments, optional, default 32
+          * * tubularSegments the number of tubes to decompose the knot into, optional, default 32
+          * * p the number of windings around the z axis, optional,  default 2
+          * * q the number of windings around the x axis, optional,  default 3
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the Torus Knot
          */
         static CreateTorusKnot(options: {
             radius?: number;
@@ -19286,21 +19666,22 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
-         * @param {any} - positions (number[] or Float32Array)
-         * @param {any} - indices   (number[] or Uint16Array)
-         * @param {any} - normals   (number[] or Float32Array)
-         * options (optional) :
-         * facetPositions : optional array of facet positions (vector3)
-         * facetNormals : optional array of facet normals (vector3)
-         * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
-         * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
-         * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
-         * bbSize : optional bounding box size data, required for facetPartitioning computation
-         * bInfo : optional bounding info, required for facetPartitioning computation
-         * useRightHandedSystem: optional boolean to for right handed system computation
-         * depthSort : optional boolean to enable the facet depth sort computation
-         * distanceTo : optional Vector3 to compute the facet depth from this location
-         * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
+         * Compute normals for given positions and indices
+         * @param positions an array of vertex positions, [...., x, y, z, ......]
+         * @param indices an array of indices in groups of three for each triangular facet, [...., i, j, k, ......]
+         * @param normals an array of vertex normals, [...., x, y, z, ......]
+         * @param options an object used to set the following optional parameters for the TorusKnot, optional
+          * * facetNormals : optional array of facet normals (vector3)
+          * * facetPositions : optional array of facet positions (vector3)
+          * * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
+          * * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
+          * * bInfo : optional bounding info, required for facetPartitioning computation
+          * * bbSize : optional bounding box size data, required for facetPartitioning computation
+          * * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
+          * * useRightHandedSystem: optional boolean to for right handed system computation
+          * * depthSort : optional boolean to enable the facet depth sort computation
+          * * distanceTo : optional Vector3 to compute the facet depth from this location
+          * * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
          */
         static ComputeNormals(positions: any, indices: any, normals: any, options?: {
             facetNormals?: any;
@@ -19317,7 +19698,9 @@ declare module BABYLON {
         }): void;
         private static _ComputeSides(sideOrientation, positions, indices, normals, uvs, frontUVs?, backUVs?);
         /**
-         * Creates a new VertexData from the imported parameters.
+         * Applies VertexData created from the imported parameters to the geometry
+         * @param parsedVertexData the parsed data from an imported file
+         * @param geometry the geometry to apply the VertexData to
          */
         static ImportVertexData(parsedVertexData: any, geometry: Geometry): void;
     }
@@ -22823,6 +23206,36 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: Nullable<AbstractMesh[]>;
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -23234,36 +23647,6 @@ declare module BABYLON {
         private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: Nullable<AbstractMesh[]>;
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
         dispose(): void;
     }
 }
@@ -27192,839 +27575,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /**
-     * Google Daydream controller
-     */
-    class DaydreamController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static MODEL_FILENAME: string;
-        /**
-         * Gamepad Id prefix used to identify Daydream Controller.
-         */
-        static readonly GAMEPAD_ID_PREFIX: string;
-        /**
-         * Creates a new DaydreamController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gear VR Controller
-     */
-    class GearVRController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static MODEL_FILENAME: string;
-        /**
-         * Gamepad Id prefix used to identify this controller.
-         */
-        static readonly GAMEPAD_ID_PREFIX: string;
-        private readonly _buttonIndexToObservableNameMap;
-        /**
-         * Creates a new GearVRController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Generic Controller
-     */
-    class GenericController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static readonly MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static readonly MODEL_FILENAME: string;
-        /**
-         * Creates a new GenericController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Oculus Touch Controller
-     */
-    class OculusTouchController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the left controller model.
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * File name for the right controller model.
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * Fired when the secondary trigger on this controller is modified
-         */
-        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the thumb rest on this controller is modified
-         */
-        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Creates a new OculusTouchController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Fired when the A button on this controller is modified
-         */
-        readonly onAButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the B button on this controller is modified
-         */
-        readonly onBButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the X button on this controller is modified
-         */
-        readonly onXButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the Y button on this controller is modified
-         */
-        readonly onYButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-          * Called once for each button that changed state since the last frame
-          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
-          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
-          * 2) secondary trigger (same)
-          * 3) A (right) X (left), touch, pressed = value
-          * 4) B / Y
-          * 5) thumb rest
-          * @param buttonIdx Which button index changed
-          * @param state New state of the button
-          * @param changes Which properties on the state changed since last frame
-          */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-    * Defines the types of pose enabled controllers that are supported
-    */
-    enum PoseEnabledControllerType {
-        /**
-         * HTC Vive
-         */
-        VIVE = 0,
-        /**
-         * Oculus Rift
-         */
-        OCULUS = 1,
-        /**
-         * Windows mixed reality
-         */
-        WINDOWS = 2,
-        /**
-         * Samsung gear VR
-         */
-        GEAR_VR = 3,
-        /**
-         * Google Daydream
-         */
-        DAYDREAM = 4,
-        /**
-         * Generic
-         */
-        GENERIC = 5,
-    }
-    /**
-     * Defines the MutableGamepadButton interface for the state of a gamepad button
-     */
-    interface MutableGamepadButton {
-        /**
-         * Value of the button/trigger
-         */
-        value: number;
-        /**
-         * If the button/trigger is currently touched
-         */
-        touched: boolean;
-        /**
-         * If the button/trigger is currently pressed
-         */
-        pressed: boolean;
-    }
-    /**
-     * Defines the ExtendedGamepadButton interface for a gamepad button which includes state provided by a pose controller
-     * @ignore
-     */
-    interface ExtendedGamepadButton extends GamepadButton {
-        /**
-         * If the button/trigger is currently pressed
-         */
-        readonly pressed: boolean;
-        /**
-         * If the button/trigger is currently touched
-         */
-        readonly touched: boolean;
-        /**
-         * Value of the button/trigger
-         */
-        readonly value: number;
-    }
-    /**
-     * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
-     */
-    class PoseEnabledControllerHelper {
-        /**
-         * Initializes a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
-         * @param vrGamepad the gamepad to initialized
-         * @returns a vr controller of the type the gamepad identified as
-         */
-        static InitiateController(vrGamepad: any): OculusTouchController | WindowsMotionController | ViveController | GearVRController | DaydreamController | GenericController;
-    }
-    /**
-     * Defines the PoseEnabledController object that contains state of a vr capable controller
-     */
-    class PoseEnabledController extends Gamepad implements PoseControlled {
-        private _deviceRoomPosition;
-        private _deviceRoomRotationQuaternion;
-        /**
-         * The device position in babylon space
-         */
-        devicePosition: Vector3;
-        /**
-         * The device rotation in babylon space
-         */
-        deviceRotationQuaternion: Quaternion;
-        /**
-         * The scale factor of the device in babylon space
-         */
-        deviceScaleFactor: number;
-        /**
-         * (Likely devicePosition should be used instead) The device position in its room space
-         */
-        position: Vector3;
-        /**
-         * (Likely deviceRotationQuaternion should be used instead) The device rotation in its room space
-         */
-        rotationQuaternion: Quaternion;
-        /**
-         * The type of controller (Eg. Windows mixed reality)
-         */
-        controllerType: PoseEnabledControllerType;
-        private _calculatedPosition;
-        private _calculatedRotation;
-        /**
-         * The raw pose from the device
-         */
-        rawPose: DevicePose;
-        /**
-         * Internal, the mesh attached to the controller
-         */
-        _mesh: Nullable<AbstractMesh>;
-        private _poseControlledCamera;
-        private _leftHandSystemQuaternion;
-        /**
-         * Internal, matrix used to convert room space to babylon space
-         */
-        _deviceToWorld: Matrix;
-        /**
-         * Node to be used when casting a ray from the controller
-         */
-        _pointingPoseNode: Nullable<AbstractMesh>;
-        /**
-         * Name of the child mesh that can be used to cast a ray from the controller
-         */
-        static readonly POINTING_POSE: string;
-        /**
-         * Creates a new PoseEnabledController from a gamepad
-         * @param browserGamepad the gamepad that the PoseEnabledController should be created from
-         */
-        constructor(browserGamepad: any);
-        private _workingMatrix;
-        /**
-         * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
-         */
-        update(): void;
-        /**
-         * Updates the state of the pose enbaled controller based on the raw pose data from the device
-         * @param poseData raw pose fromthe device
-         */
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * Attaches a mesh to the controller
-         * @param mesh the mesh to be attached
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Attaches the controllers mesh to a camera
-         * @param camera the camera the mesh should be attached to
-         */
-        attachToPoseControlledCamera(camera: TargetCamera): void;
-        /**
-         * Disposes of the controller
-         */
-        dispose(): void;
-        /**
-         * The mesh that is attached to the controller
-         */
-        readonly mesh: Nullable<AbstractMesh>;
-        /**
-         * Gets the ray of the controller in the direction the controller is pointing
-         * @param length the length the resulting ray should be
-         * @returns a ray in the direction the controller is pointing
-         */
-        getForwardRay(length?: number): Ray;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Vive Controller
-     */
-    class ViveController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static MODEL_FILENAME: string;
-        /**
-         * Creates a new ViveController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Fired when the left button on this controller is modified
-         */
-        readonly onLeftButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the right button on this controller is modified
-         */
-        readonly onRightButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the menu button on this controller is modified
-         */
-        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Called once for each button that changed state since the last frame
-         * Vive mapping:
-         * 0: touchpad
-         * 1: trigger
-         * 2: left AND right buttons
-         * 3: menu button
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines the WebVRController object that represents controllers tracked in 3D space
-     */
-    abstract class WebVRController extends PoseEnabledController {
-        /**
-         * Internal, the default controller model for the controller
-         */
-        protected _defaultModel: AbstractMesh;
-        /**
-         * Fired when the trigger state has changed
-         */
-        onTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the main button state has changed
-         */
-        onMainButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the secondary button state has changed
-         */
-        onSecondaryButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the pad state has changed
-         */
-        onPadStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when controllers stick values have changed
-         */
-        onPadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * Array of button availible on the controller
-         */
-        protected _buttons: Array<MutableGamepadButton>;
-        private _onButtonStateChange;
-        /**
-         * Fired when a controller button's state has changed
-         * @param callback the callback containing the button that was modified
-         */
-        onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void): void;
-        /**
-         * X and Y axis corrisponding to the controllers joystick
-         */
-        pad: StickValues;
-        /**
-         * 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
-         */
-        hand: string;
-        /**
-         * The default controller model for the controller
-         */
-        readonly defaultModel: AbstractMesh;
-        /**
-         * Creates a new WebVRController from a gamepad
-         * @param vrGamepad the gamepad that the WebVRController should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Updates the state of the controller and mesh based on the current position and rotation of the controller
-         */
-        update(): void;
-        /**
-         * Function to be called when a button is modified
-         */
-        protected abstract _handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-        /**
-         * Loads a mesh and attaches it to the controller
-         * @param scene the scene the mesh should be added to
-         * @param meshLoaded callback for when the mesh has been loaded
-         */
-        abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        private _setButtonValue(newState, currentState, buttonIndex);
-        private _changes;
-        private _checkChanges(newState, currentState);
-        /**
-         * Disposes of th webVRCOntroller
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines the WindowsMotionController object that the state of the windows motion controller
-     */
-    class WindowsMotionController extends WebVRController {
-        /**
-         * The base url used to load the left and right controller models
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * The name of the left controller model file
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * The name of the right controller model file
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * The controller name prefix for this controller type
-         */
-        static readonly GAMEPAD_ID_PREFIX: string;
-        /**
-         * The controller id pattern for this controller type
-         */
-        private static readonly GAMEPAD_ID_PATTERN;
-        private _loadedMeshInfo;
-        private readonly _mapping;
-        /**
-         * Fired when the trackpad on this controller is clicked
-         */
-        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the trackpad on this controller is modified
-         */
-        onTrackpadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * The current x and y values of this controller's trackpad
-         */
-        trackpad: StickValues;
-        /**
-         * Creates a new WindowsMotionController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Fired when the trigger on this controller is modified
-         */
-        readonly onTriggerButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the menu button on this controller is modified
-         */
-        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the grip button on this controller is modified
-         */
-        readonly onGripButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the thumbstick button on this controller is modified
-         */
-        readonly onThumbstickButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the touchpad button on this controller is modified
-         */
-        readonly onTouchpadButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the touchpad values on this controller are modified
-         */
-        readonly onTouchpadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * Called once per frame by the engine.
-         */
-        update(): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-        /**
-         * Moves the buttons on the controller mesh based on their current state
-         * @param buttonName the name of the button to move
-         * @param buttonValue the value of the button which determines the buttons new position
-         */
-        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
-        /**
-         * Moves the axis on the controller mesh based on its current state
-         * @param axis the index of the axis
-         * @param axisValue the value of the axis which determines the meshes new position
-         * @ignore
-         */
-        protected _lerpAxisTransform(axis: number, axisValue: number): void;
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
-        /**
-         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
-         * can be transformed by button presses and axes values, based on this._mapping.
-         *
-         * @param scene scene in which the meshes exist
-         * @param meshes list of meshes that make up the controller model to process
-         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
-         */
-        private processModel(scene, meshes);
-        private createMeshInfo(rootNode);
-        /**
-         * Gets the ray of the controller in the direction the controller is pointing
-         * @param length the length the resulting ray should be
-         * @returns a ray in the direction the controller is pointing
-         */
-        getForwardRay(length?: number): Ray;
-        /**
-        * Disposes of the controller
-        */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadRotationSensibility: number;
-        gamepadMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        keysReset: number[];
-        panningSensibility: number;
-        zoomingSensibility: number;
-        useAltToZoom: boolean;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _wheel;
-        private _observer;
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        buttons: number[];
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        multiTouchPanning: boolean;
-        multiTouchPanAndZoom: boolean;
-        private _isPanClick;
-        pinchInwards: boolean;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        alphaCorrection: number;
-        betaCorrection: number;
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        constructor();
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        checkInputs(): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     */
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        constructor();
-        camera: FreeCamera;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        _onLostFocus(e: FocusEvent): void;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        touchEnabled: boolean;
-        camera: FreeCamera;
-        buttons: number[];
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        constructor(touchEnabled?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
     class VRCameraMetrics {
         hResolution: number;
         vResolution: number;
@@ -28630,6 +28180,836 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadRotationSensibility: number;
+        gamepadMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _keys;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        keysReset: number[];
+        panningSensibility: number;
+        zoomingSensibility: number;
+        useAltToZoom: boolean;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _wheel;
+        private _observer;
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        buttons: number[];
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        multiTouchPanning: boolean;
+        multiTouchPanAndZoom: boolean;
+        private _isPanClick;
+        pinchInwards: boolean;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        alphaCorrection: number;
+        betaCorrection: number;
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        constructor();
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        checkInputs(): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        constructor();
+        camera: FreeCamera;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        _onLostFocus(e: FocusEvent): void;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        touchEnabled: boolean;
+        camera: FreeCamera;
+        buttons: number[];
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        constructor(touchEnabled?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Google Daydream controller
+     */
+    class DaydreamController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        /**
+         * Gamepad Id prefix used to identify Daydream Controller.
+         */
+        static readonly GAMEPAD_ID_PREFIX: string;
+        /**
+         * Creates a new DaydreamController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gear VR Controller
+     */
+    class GearVRController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        /**
+         * Gamepad Id prefix used to identify this controller.
+         */
+        static readonly GAMEPAD_ID_PREFIX: string;
+        private readonly _buttonIndexToObservableNameMap;
+        /**
+         * Creates a new GearVRController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Generic Controller
+     */
+    class GenericController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static readonly MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static readonly MODEL_FILENAME: string;
+        /**
+         * Creates a new GenericController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Oculus Touch Controller
+     */
+    class OculusTouchController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the left controller model.
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * File name for the right controller model.
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Fired when the secondary trigger on this controller is modified
+         */
+        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumb rest on this controller is modified
+         */
+        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Creates a new OculusTouchController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the A button on this controller is modified
+         */
+        readonly onAButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the B button on this controller is modified
+         */
+        readonly onBButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the X button on this controller is modified
+         */
+        readonly onXButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the Y button on this controller is modified
+         */
+        readonly onYButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+          * Called once for each button that changed state since the last frame
+          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
+          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
+          * 2) secondary trigger (same)
+          * 3) A (right) X (left), touch, pressed = value
+          * 4) B / Y
+          * 5) thumb rest
+          * @param buttonIdx Which button index changed
+          * @param state New state of the button
+          * @param changes Which properties on the state changed since last frame
+          */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+    * Defines the types of pose enabled controllers that are supported
+    */
+    enum PoseEnabledControllerType {
+        /**
+         * HTC Vive
+         */
+        VIVE = 0,
+        /**
+         * Oculus Rift
+         */
+        OCULUS = 1,
+        /**
+         * Windows mixed reality
+         */
+        WINDOWS = 2,
+        /**
+         * Samsung gear VR
+         */
+        GEAR_VR = 3,
+        /**
+         * Google Daydream
+         */
+        DAYDREAM = 4,
+        /**
+         * Generic
+         */
+        GENERIC = 5,
+    }
+    /**
+     * Defines the MutableGamepadButton interface for the state of a gamepad button
+     */
+    interface MutableGamepadButton {
+        /**
+         * Value of the button/trigger
+         */
+        value: number;
+        /**
+         * If the button/trigger is currently touched
+         */
+        touched: boolean;
+        /**
+         * If the button/trigger is currently pressed
+         */
+        pressed: boolean;
+    }
+    /**
+     * Defines the ExtendedGamepadButton interface for a gamepad button which includes state provided by a pose controller
+     * @ignore
+     */
+    interface ExtendedGamepadButton extends GamepadButton {
+        /**
+         * If the button/trigger is currently pressed
+         */
+        readonly pressed: boolean;
+        /**
+         * If the button/trigger is currently touched
+         */
+        readonly touched: boolean;
+        /**
+         * Value of the button/trigger
+         */
+        readonly value: number;
+    }
+    /**
+     * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
+     */
+    class PoseEnabledControllerHelper {
+        /**
+         * Initializes a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
+         * @param vrGamepad the gamepad to initialized
+         * @returns a vr controller of the type the gamepad identified as
+         */
+        static InitiateController(vrGamepad: any): OculusTouchController | WindowsMotionController | ViveController | GearVRController | DaydreamController | GenericController;
+    }
+    /**
+     * Defines the PoseEnabledController object that contains state of a vr capable controller
+     */
+    class PoseEnabledController extends Gamepad implements PoseControlled {
+        private _deviceRoomPosition;
+        private _deviceRoomRotationQuaternion;
+        /**
+         * The device position in babylon space
+         */
+        devicePosition: Vector3;
+        /**
+         * The device rotation in babylon space
+         */
+        deviceRotationQuaternion: Quaternion;
+        /**
+         * The scale factor of the device in babylon space
+         */
+        deviceScaleFactor: number;
+        /**
+         * (Likely devicePosition should be used instead) The device position in its room space
+         */
+        position: Vector3;
+        /**
+         * (Likely deviceRotationQuaternion should be used instead) The device rotation in its room space
+         */
+        rotationQuaternion: Quaternion;
+        /**
+         * The type of controller (Eg. Windows mixed reality)
+         */
+        controllerType: PoseEnabledControllerType;
+        private _calculatedPosition;
+        private _calculatedRotation;
+        /**
+         * The raw pose from the device
+         */
+        rawPose: DevicePose;
+        /**
+         * Internal, the mesh attached to the controller
+         */
+        _mesh: Nullable<AbstractMesh>;
+        private _poseControlledCamera;
+        private _leftHandSystemQuaternion;
+        /**
+         * Internal, matrix used to convert room space to babylon space
+         */
+        _deviceToWorld: Matrix;
+        /**
+         * Node to be used when casting a ray from the controller
+         */
+        _pointingPoseNode: Nullable<AbstractMesh>;
+        /**
+         * Name of the child mesh that can be used to cast a ray from the controller
+         */
+        static readonly POINTING_POSE: string;
+        /**
+         * Creates a new PoseEnabledController from a gamepad
+         * @param browserGamepad the gamepad that the PoseEnabledController should be created from
+         */
+        constructor(browserGamepad: any);
+        private _workingMatrix;
+        /**
+         * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
+         */
+        update(): void;
+        /**
+         * Updates the state of the pose enbaled controller based on the raw pose data from the device
+         * @param poseData raw pose fromthe device
+         */
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * Attaches a mesh to the controller
+         * @param mesh the mesh to be attached
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Attaches the controllers mesh to a camera
+         * @param camera the camera the mesh should be attached to
+         */
+        attachToPoseControlledCamera(camera: TargetCamera): void;
+        /**
+         * Disposes of the controller
+         */
+        dispose(): void;
+        /**
+         * The mesh that is attached to the controller
+         */
+        readonly mesh: Nullable<AbstractMesh>;
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
+        getForwardRay(length?: number): Ray;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Vive Controller
+     */
+    class ViveController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        /**
+         * Creates a new ViveController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the left button on this controller is modified
+         */
+        readonly onLeftButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the right button on this controller is modified
+         */
+        readonly onRightButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Called once for each button that changed state since the last frame
+         * Vive mapping:
+         * 0: touchpad
+         * 1: trigger
+         * 2: left AND right buttons
+         * 3: menu button
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines the WebVRController object that represents controllers tracked in 3D space
+     */
+    abstract class WebVRController extends PoseEnabledController {
+        /**
+         * Internal, the default controller model for the controller
+         */
+        protected _defaultModel: AbstractMesh;
+        /**
+         * Fired when the trigger state has changed
+         */
+        onTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the main button state has changed
+         */
+        onMainButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the secondary button state has changed
+         */
+        onSecondaryButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the pad state has changed
+         */
+        onPadStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when controllers stick values have changed
+         */
+        onPadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Array of button availible on the controller
+         */
+        protected _buttons: Array<MutableGamepadButton>;
+        private _onButtonStateChange;
+        /**
+         * Fired when a controller button's state has changed
+         * @param callback the callback containing the button that was modified
+         */
+        onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void): void;
+        /**
+         * X and Y axis corrisponding to the controllers joystick
+         */
+        pad: StickValues;
+        /**
+         * 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
+         */
+        hand: string;
+        /**
+         * The default controller model for the controller
+         */
+        readonly defaultModel: AbstractMesh;
+        /**
+         * Creates a new WebVRController from a gamepad
+         * @param vrGamepad the gamepad that the WebVRController should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Updates the state of the controller and mesh based on the current position and rotation of the controller
+         */
+        update(): void;
+        /**
+         * Function to be called when a button is modified
+         */
+        protected abstract _handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        /**
+         * Loads a mesh and attaches it to the controller
+         * @param scene the scene the mesh should be added to
+         * @param meshLoaded callback for when the mesh has been loaded
+         */
+        abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        private _setButtonValue(newState, currentState, buttonIndex);
+        private _changes;
+        private _checkChanges(newState, currentState);
+        /**
+         * Disposes of th webVRCOntroller
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines the WindowsMotionController object that the state of the windows motion controller
+     */
+    class WindowsMotionController extends WebVRController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * The controller name prefix for this controller type
+         */
+        static readonly GAMEPAD_ID_PREFIX: string;
+        /**
+         * The controller id pattern for this controller type
+         */
+        private static readonly GAMEPAD_ID_PATTERN;
+        private _loadedMeshInfo;
+        private readonly _mapping;
+        /**
+         * Fired when the trackpad on this controller is clicked
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the trackpad on this controller is modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * The current x and y values of this controller's trackpad
+         */
+        trackpad: StickValues;
+        /**
+         * Creates a new WindowsMotionController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Fired when the trigger on this controller is modified
+         */
+        readonly onTriggerButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the grip button on this controller is modified
+         */
+        readonly onGripButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         */
+        readonly onThumbstickButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        readonly onTouchpadButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        readonly onTouchpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Called once per frame by the engine.
+         */
+        update(): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        /**
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
+         */
+        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
+        /**
+         * Moves the axis on the controller mesh based on its current state
+         * @param axis the index of the axis
+         * @param axisValue the value of the axis which determines the meshes new position
+         * @ignore
+         */
+        protected _lerpAxisTransform(axis: number, axisValue: number): void;
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        private processModel(scene, meshes);
+        private createMeshInfo(rootNode);
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
+        getForwardRay(length?: number): Ray;
+        /**
+        * Disposes of the controller
+        */
+        dispose(): void;
+    }
 }
 
 declare module BABYLON {
@@ -29122,6 +29502,9 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -31138,6 +31521,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     class MirrorTexture extends RenderTargetTexture {
+        private scene;
         mirrorPlane: Plane;
         private _transformMatrix;
         private _mirrorMatrix;
@@ -31155,6 +31539,8 @@ declare module BABYLON {
         blurKernelY: number;
         private _autoComputeBlurKernel();
         protected _onRatioRescale(): void;
+        private _updateGammaSpace();
+        private _imageProcessingConfigChangeObserver;
         constructor(name: string, size: number | {
             width: number;
             height: number;
@@ -31164,6 +31550,7 @@ declare module BABYLON {
         private _preparePostProcesses();
         clone(): MirrorTexture;
         serialize(): any;
+        dispose(): void;
     }
 }
 
@@ -31606,21 +31993,43 @@ declare module BABYLON {
 }
 
 declare var DracoDecoderModule: any;
+declare var WebAssembly: any;
 declare module BABYLON {
+    /**
+     * Configuration for Draco compression
+     */
+    interface IDracoCompressionConfiguration {
+        /**
+         * Configuration for the JavaScript decoder or null if not available.
+         */
+        decoder: Nullable<{
+            url: string;
+        }>;
+        /**
+         * Configuration for the WebAssembly decoder or null if not available.
+         */
+        decoderWasm: Nullable<{
+            binaryUrl: string;
+            wrapperUrl: string;
+        }>;
+    }
     /**
      * Draco compression (https://google.github.io/draco/)
      */
     class DracoCompression implements IDisposable {
-        private _workerPool;
+        private static _DecoderModulePromise;
         /**
-         * Gets the url to the draco decoder if available.
+         * Gets the configuration.
          */
-        static DecoderUrl: Nullable<string>;
+        static Configuration: IDracoCompressionConfiguration;
+        /**
+         * Returns true if the decoder is available.
+         */
+        static readonly DecoderAvailable: boolean;
         /**
          * Constructor
-         * @param numWorkers The number of workers for async operations
          */
-        constructor(numWorkers?: number);
+        constructor();
         /**
          * Stop all async operations and release resources.
          */
@@ -31634,11 +32043,10 @@ declare module BABYLON {
         decodeMeshAsync(data: ArrayBufferView, attributes: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        /**
-         * The worker function that gets converted to a blob url to pass into a worker.
-         */
-        private static _Worker();
-        private static _GetDefaultDecoderUrl();
+        private static _GetDecoderModule();
+        private static _LoadScriptAsync(url);
+        private static _LoadFileAsync(url);
+        private static _GetDefaultConfig();
     }
 }
 
