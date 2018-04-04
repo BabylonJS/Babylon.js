@@ -4058,18 +4058,19 @@
 
         /**
          * Decomposes the current Matrix into a translation, rotation and scaling components
-         * @param scale defines the scale vector3 passed as a reference to update
-         * @param rotation defines the rotation quaternion passed as a reference to update
-         * @param translation defines the translation vector3 passed as a reference to update
+         * @param scale defines the scale vector3 passed as a reference to update (optional)
+         * @param rotation defines the rotation quaternion passed as a reference to update (optional)
+         * @param translation defines the translation vector3 passed as a reference to update (optional)
          * @returns true if operation was successful
          */
-        public decompose(scale: Vector3, rotation?: Quaternion, translation?: Vector3): boolean {
+        public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean {
             if (translation) {
                 translation.x = this.m[12];
                 translation.y = this.m[13];
                 translation.z = this.m[14];
             }
 
+            scale = scale || MathTmp.Vector3[0];
             scale.x = Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
@@ -4078,15 +4079,18 @@
                 scale.y *= -1;
             }
 
-            if (rotation) {
-                if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
+            if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
+                if (rotation) {
                     rotation.x = 0;
                     rotation.y = 0;
                     rotation.z = 0;
                     rotation.w = 1;
-                    return false;
                 }
 
+                return false;
+            }
+
+            if (rotation) {
                 Matrix.FromValuesToRef(
                     this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
                     this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
@@ -4247,19 +4251,24 @@
         public getRotationMatrixToRef(result: Matrix): Matrix {
             var m = this.m;
 
-            var xs = m[0] * m[1] * m[2] * m[3] < 0 ? -1 : 1;
-            var ys = m[4] * m[5] * m[6] * m[7] < 0 ? -1 : 1;
-            var zs = m[8] * m[9] * m[10] * m[11] < 0 ? -1 : 1;
+            var sx = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+            var sy = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
+            var sz = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
-            var sx = xs * Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
-            var sy = ys * Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
-            var sz = zs * Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
+            if (this.determinant() <= 0) {
+                sy *= -1;
+            }
 
-            Matrix.FromValuesToRef(
-                m[0] / sx, m[1] / sx, m[2] / sx, 0,
-                m[4] / sy, m[5] / sy, m[6] / sy, 0,
-                m[8] / sz, m[9] / sz, m[10] / sz, 0,
-                0, 0, 0, 1, result);
+            if (sx === 0 || sy === 0 || sz === 0) {
+                Matrix.IdentityToRef(result);
+            }
+            else {
+                Matrix.FromValuesToRef(
+                    m[0] / sx, m[1] / sx, m[2] / sx, 0,
+                    m[4] / sy, m[5] / sy, m[6] / sy, 0,
+                    m[8] / sz, m[9] / sz, m[10] / sz, 0,
+                    0, 0, 0, 1, result);
+            }
 
             return this;
         }
