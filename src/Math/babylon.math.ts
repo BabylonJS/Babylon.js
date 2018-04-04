@@ -3244,7 +3244,21 @@
             result.z = this.z * scale;
             result.w = this.w * scale;
             return this;
-        }         
+        }    
+        
+        /**
+         * Multiplies in place the current quaternion by a scale factor
+         * @param value defines the scale factor
+         * @returns the current modified quaternion
+         */
+        public scaleInPlace(value: number): Quaternion {
+            this.x *= value;
+            this.y *= value;
+            this.z *= value;
+            this.w *= value;
+            
+            return this;
+        }
 
         /**
          * Scale the current quaternion values by a factor and add the result to a given quaternion  
