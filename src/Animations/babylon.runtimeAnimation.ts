@@ -15,7 +15,10 @@
         private _scene: Scene;
 
         private _currentValue: any;
-        private _workValue: any;
+        /**
+         * @ignore
+         */
+        public _workValue: any;
         private _activeTarget: any;
         private _targetPath: string = "";
         private _weight = 1.0;
