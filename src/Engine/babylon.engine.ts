@@ -2696,7 +2696,7 @@
             if (data instanceof Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, data, this._gl.STATIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.STATIC_DRAW);
             }
 
             this._resetVertexBufferBinding();
@@ -2721,7 +2721,7 @@
             if (data instanceof Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.DYNAMIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, data, this._gl.DYNAMIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.DYNAMIC_DRAW);
             }
 
             this._resetVertexBufferBinding();
@@ -2770,7 +2770,7 @@
                 if (data instanceof Array) {
                     this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
                 } else {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, data);
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
                 }
             } else {
                 if (data instanceof Array) {
@@ -2782,7 +2782,7 @@
                         data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
                     }
 
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
                 }
             }
 
@@ -4355,7 +4355,7 @@
             }
 
             if (compression && data) {
-                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, data);
+                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, <DataView>data);
             } else {
                 this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, data);
             }
@@ -5242,7 +5242,7 @@
 
         /** @ignore */
         public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
-            this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
+            this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
         /**
@@ -5663,7 +5663,7 @@
                 let faceData = data[faceIndex];
 
                 if (compression) {
-                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, (<any>(this.getCaps().s3tc))[compression], texture.width, texture.height, 0, faceData);
+                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, (<any>(this.getCaps().s3tc))[compression], texture.width, texture.height, 0, <DataView>faceData);
                 } else {
                     if (needConversion) {
                         faceData = this._convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
@@ -6939,7 +6939,7 @@
                     break;
             }
 
-            gl.readPixels(0, 0, width, height, gl.RGBA, readType, buffer);
+            gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
             return buffer;

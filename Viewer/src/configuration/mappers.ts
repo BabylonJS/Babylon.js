@@ -38,13 +38,16 @@ class HTMLMapper implements IMapper {
         let config = {};
         for (let attrIdx = 0; attrIdx < element.attributes.length; ++attrIdx) {
             let attr = element.attributes.item(attrIdx);
+            if (!attr) {
+                continue;
+            }
             // map "object.property" to the right configuration place.
             let split = attr.nodeName.split('.');
             split.reduce((currentConfig, key, idx) => {
                 //convert html-style to json-style
                 let camelKey = kebabToCamel(key);
                 if (idx === split.length - 1) {
-                    let val: any = attr.nodeValue; // firefox warns nodeValue is deprecated, but I found no sign of it anywhere.
+                    let val: any = attr!.nodeValue; // firefox warns nodeValue is deprecated, but I found no sign of it anywhere.
                     if (val === "true") {
                         val = true;
                     } else if (val === "false") {
@@ -103,10 +106,10 @@ class DOMMapper implements IMapper {
                     // use the HTML Mapper to read configuration from a single element
                     let configMapped = htmlMapper.map(item);
                     let key = kebabToCamel(item.nodeName.toLowerCase());
-                    if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array').nodeValue === 'true') {
+                    if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array')!.nodeValue === 'true') {
                         partConfig[key] = [];
                     } else {
-                        if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array').nodeValue === 'true') {
+                        if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array')!.nodeValue === 'true') {
                             partConfig.push(configMapped)
                         } else if (partConfig[key]) {
                             //exists already! probably an array
