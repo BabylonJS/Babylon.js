@@ -315,14 +315,10 @@ function init() {
 
     // Draco configuration
     var baseUrl = BABYLON.Tools.GetFolderPath(document.location.href);
-    BABYLON.DracoCompression.Configuration = {
-        decoder: {
-            url: baseUrl + "../../dist/preview%20release/draco_decoder.js"
-        },
-        decoderWasm: {
-            binaryUrl: baseUrl + "../../dist/preview%20release/draco_decoder.wasm",
-            wrapperUrl: baseUrl + "../../dist/preview%20release/draco_wasm_wrapper.js"
-        }
+    BABYLON.DracoCompression.Configuration.decoder = {
+        wasmUrl: baseUrl + "../../dist/preview%20release/draco_wasm_wrapper_gltf.js",
+        wasmBinaryUrl: baseUrl + "../../dist/preview%20release/draco_decoder_gltf.wasm",
+        fallbackUrl: baseUrl + "../../dist/preview%20release/draco_decoder_gltf.js"
     };
 
     canvas = document.createElement("canvas");
