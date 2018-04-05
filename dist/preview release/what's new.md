@@ -136,6 +136,7 @@
 - Reflection and refraction no longer apply a toLinear conversion twice when applying image processing as a post process - [#4060](https://github.com/BabylonJS/Babylon.js/issues/4060) ([trevordev](https://github.com/trevordev))
 - Fix ember.js compatibility in ```PostProcessRenderEffect``` ([sebavan](https://github.com/sebavan))
 - Fix ember.js compatibility in ```BloomEffect``` and ```Camera``` ([kaysabelle](https://github.com/kaysabelle))
+- Fix bug with glTF animation when animating bone scale. ([bghgary](https://github.com/bghgary)]
 
 ## Breaking changes
 
@@ -144,3 +145,5 @@
 - glTF 2.0 loader now creates a mesh for each primitive instead of merging the primitives together into one mesh. If a mesh only has one primitive, the behavior is the same as before. This change only affects meshes that have multiple primitives. ([bghgary](https://github.com/bghgary)]
 - Engine's onCanvasPointerOutObservable will now return a PointerEvent instead of the Engine. ([trevordev](https://github.com/trevordev))
 - Removed public references to default rendering pipeline's internal post process ([trevordev](https://github.com/trevordev))
+- Rename `setScale`, `getScale`, `getScaleToRef` of the `Bone` class to `setAdditionalScale`, `getAdditionalScale`, `getAdditionalScaleToRef`. ([bghgary](https://github.com/bghgary)]
+- Bone `scaling` now replaces the scale of the local matrix instead of adding scale. ([bghgary](https://github.com/bghgary)]

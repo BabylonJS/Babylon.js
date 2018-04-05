@@ -842,13 +842,6 @@ declare module BABYLON.GLTF2 {
     class ArrayItem {
         static Assign(values?: IArrayItem[]): void;
     }
-    class AnimationMultiTarget {
-        subTargets: any[];
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        influence: number;
-    }
 }
 
 

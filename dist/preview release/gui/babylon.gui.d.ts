@@ -58,6 +58,10 @@ declare module BABYLON.GUI {
         private _checkUpdate(camera);
         private _render();
         private _doPicking(x, y, type, pointerId, buttonIndex);
+        _cleanControlAfterRemovalFromList(list: {
+            [pointerId: number]: Control;
+        }, control: Control): void;
+        _cleanControlAfterRemoval(control: Control): void;
         attach(): void;
         attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
         moveFocusToControl(control: IFocusableControl): void;
