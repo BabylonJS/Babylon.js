@@ -63,7 +63,6 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
-    strict: true,
     types: [],
     lib: [
         "dom",
@@ -85,7 +84,6 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    strict: true,
     types: [],
     lib: [
         "dom",

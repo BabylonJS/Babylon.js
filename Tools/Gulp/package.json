@@ -57,7 +57,7 @@
         "through2": "~0.6.5",
         "ts-loader": "^2.3.7",
         "typedoc": "^0.9.0",
-        "typescript": "~2.6.2",
+        "typescript": "~2.8.1",
         "webpack-stream": "^4.0.1"
     },
     "scripts": {
