@@ -256,6 +256,20 @@
          * Gets or sets a boolean indicating if animations are enabled
          */
         public animationsEnabled = true;
+
+        private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
+
+        /**
+         * Gets or sets the animation properties override
+         */
+        public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            return this._animationPropertiesOverride;
+        }
+
+        public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+            this._animationPropertiesOverride = value;
+        }
+
         /**
          * Gets or sets a boolean indicating if a constant deltatime has to be used
          * This is mostly useful for testing purposes when you do not want the animations to scale with the framerate
