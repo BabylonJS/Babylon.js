@@ -1013,7 +1013,7 @@
         private _internalTexturesCache = new Array<InternalTexture>();
         /** @ignore */
         protected _activeChannel = 0;
-        private _currentTextureChannel = -1;
+        private _currentTextureChannel = -1;    
         /** @ignore */
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
         /** @ignore */
@@ -1662,13 +1662,16 @@
          */
         public resetTextureCache() {
             for (var key in this._boundTexturesCache) {
+                if (!this._boundTexturesCache.hasOwnProperty(key)) {
+                    continue;
+                }
                 let boundTexture = this._boundTexturesCache[key];
                 if (boundTexture) {
                     this._removeDesignatedSlot(boundTexture);
                 }
                 this._boundTexturesCache[key] = null;
-            }
-
+            }       
+            
             if (!this.disableTextureBindingOptimization) {
                 this._nextFreeTextureSlots = [];
                 for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
@@ -4457,22 +4460,16 @@
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
 
             if (texture.isCube) {
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
-
-                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+                this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             } else if (texture.is3D) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
-
-                this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-                this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
             } else {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+                this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
 
@@ -6217,7 +6214,7 @@
         }
 
         /** @ignore */
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false): void {
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): void {
             if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
                 this._activeChannel = texture._designatedSlot;
             }
@@ -6225,7 +6222,7 @@
             let currentTextureBound = this._boundTexturesCache[this._activeChannel];
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
-            if (currentTextureBound !== texture) {
+            if (currentTextureBound !== texture || force) {
                 if (currentTextureBound) {
                     this._removeDesignatedSlot(currentTextureBound);
                 }
@@ -6353,6 +6350,18 @@
             uniform._currentState = destination;
         }
 
+        private _getTextureWrapMode(mode: number): number {
+            switch(mode) {
+                case Texture.WRAP_ADDRESSMODE:
+                    return this._gl.REPEAT;
+                case Texture.CLAMP_ADDRESSMODE:
+                    return this._gl.CLAMP_TO_EDGE;
+                case Texture.MIRROR_ADDRESSMODE:
+                    return this._gl.MIRRORED_REPEAT;
+            }
+            return this._gl.REPEAT;
+        }
+
         private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
             // Not ready?
             if (!texture) {
@@ -6403,6 +6412,7 @@
                 if (!isPartOfTextureArray) {
                     this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 }
+                
                 needToBind = false;
             }
 
@@ -6415,48 +6425,17 @@
 
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-
-                    switch (texture.wrapU) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
                 }
 
                 if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
-                    switch (texture.wrapV) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
                 }
 
                 if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                     internalTexture._cachedWrapR = texture.wrapR;
-                    switch (texture.wrapR) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
@@ -6464,14 +6443,14 @@
             else if (internalTexture && internalTexture.isCube) {
                 if (needToBind) {
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
-                }
+                }                
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
                     var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
-                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode);
-                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
+                    this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode, internalTexture);
+                    this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
@@ -6482,33 +6461,12 @@
 
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-
-                    switch (texture.wrapU) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
                 }
 
                 if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
-                    switch (texture.wrapV) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
@@ -6542,7 +6500,7 @@
         }
 
         /** @ignore */
-        public _setAnisotropicLevel(key: number, texture: BaseTexture) {
+        public _setAnisotropicLevel(target: number, texture: BaseTexture) {
             var internalTexture = texture.getInternalTexture();
 
             if (!internalTexture) {
@@ -6552,7 +6510,6 @@
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
 
-
             if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST
                 && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
                 && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
@@ -6560,9 +6517,21 @@
             }
 
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
+                this._setTextureParameterFloat(target, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy), internalTexture);
                 internalTexture._cachedAnisotropicFilteringLevel = value;
             }
+        }
+
+        private _setTextureParameterFloat(target: number, parameter: number, value: number, texture: InternalTexture): void {
+            this._bindTextureDirectly(target, texture, true, true);
+            this._gl.texParameterf(target, parameter, value);
+        }
+
+        private _setTextureParameterInteger(target: number, parameter: number, value: number, texture?: InternalTexture) {
+            if (texture) {
+                this._bindTextureDirectly(target, texture, true, true);
+            }
+            this._gl.texParameteri(target, parameter, value);
         }
 
         /**

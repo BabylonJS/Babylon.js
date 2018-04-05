@@ -391,6 +391,21 @@ var BABYLON;
                 }
                 this._manageFocus();
             };
+            AdvancedDynamicTexture.prototype._cleanControlAfterRemovalFromList = function (list, control) {
+                for (var pointerId in list) {
+                    if (!list.hasOwnProperty(pointerId)) {
+                        continue;
+                    }
+                    var lastControlOver = list[pointerId];
+                    if (lastControlOver === control) {
+                        delete list[pointerId];
+                    }
+                }
+            };
+            AdvancedDynamicTexture.prototype._cleanControlAfterRemoval = function (control) {
+                this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
+                this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
+            };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
                 var scene = this.getScene();
@@ -2083,6 +2098,9 @@ var BABYLON;
                     control.parent = null;
                 }
                 control.linkWithMesh(null);
+                if (this._host) {
+                    this._host._cleanControlAfterRemoval(control);
+                }
                 this._markAsDirty();
                 return this;
             };

@@ -2689,53 +2689,6 @@ var BABYLON;
             return ArrayItem;
         }());
         GLTF2.ArrayItem = ArrayItem;
-        var AnimationMultiTarget = /** @class */ (function () {
-            function AnimationMultiTarget() {
-                this.subTargets = new Array();
-            }
-            Object.defineProperty(AnimationMultiTarget.prototype, "position", {
-                set: function (value) {
-                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
-                        var subTarget = _a[_i];
-                        subTarget.position = value;
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AnimationMultiTarget.prototype, "rotationQuaternion", {
-                set: function (value) {
-                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
-                        var subTarget = _a[_i];
-                        subTarget.rotationQuaternion = value;
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AnimationMultiTarget.prototype, "scaling", {
-                set: function (value) {
-                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
-                        var subTarget = _a[_i];
-                        subTarget.scaling = value;
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AnimationMultiTarget.prototype, "influence", {
-                set: function (value) {
-                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
-                        var subTarget = _a[_i];
-                        subTarget.influence = value;
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return AnimationMultiTarget;
-        }());
-        GLTF2.AnimationMultiTarget = AnimationMultiTarget;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
@@ -3537,12 +3490,11 @@ var BABYLON;
                                 value: key.value[targetIndex],
                                 outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                             }); }));
-                            var multiTarget = new GLTF2.AnimationMultiTarget();
+                            var morphTargets = new Array();
                             _this._forEachPrimitive(targetNode, function (babylonMesh) {
-                                var morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
-                                multiTarget.subTargets.push(morphTarget);
+                                morphTargets.push(babylonMesh.morphTargetManager.getTarget(targetIndex));
                             });
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                         };
                         for (var targetIndex = 0; targetIndex < targetNode._numMorphTargets; targetIndex++) {
                             _loop_1(targetIndex);
@@ -3553,12 +3505,7 @@ var BABYLON;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
                         if (targetNode._babylonAnimationTargets) {
-                            var multiTarget = new GLTF2.AnimationMultiTarget();
-                            for (var _i = 0, _a = targetNode._babylonAnimationTargets; _i < _a.length; _i++) {
-                                var target = _a[_i];
-                                multiTarget.subTargets.push(target);
-                            }
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                         }
                     }
                 });
