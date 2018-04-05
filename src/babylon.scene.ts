@@ -2787,14 +2787,6 @@
                             } else {
                                 finalValue += runtimeAnimation.currentValue * scale;
                             }
-
-                            startIndex = 1;
-                        }
-
-                        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
-                            var runtimeAnimation = holder.animations[animIndex];   
-                            var scale = runtimeAnimation.weight / normalizer;
-                            runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
                         }
                     }
 
