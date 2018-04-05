@@ -3223,6 +3223,7 @@
         public subtract(other: Quaternion): Quaternion {
             return new Quaternion(this.x - other.x, this.y - other.y, this.z - other.z, this.w - other.w);
         }
+
         /**
          * Multiplies the current quaternion by a scale factor
          * @param value defines the scale factor

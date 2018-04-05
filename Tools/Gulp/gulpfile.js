@@ -220,6 +220,7 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
         .pipe(replace(decorateSearchRegex, ""))
+        .pipe(addDecorateAndExtends())
         .pipe(addModuleExports("BABYLON", {
             dependencies: config.build.dependencies
         }))
