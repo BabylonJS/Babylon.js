@@ -3178,12 +3178,29 @@
         public subtract(other: Quaternion): Quaternion {
             return new Quaternion(this.x - other.x, this.y - other.y, this.z - other.z, this.w - other.w);
         }
+
         /**
-         * Returns a new Quaternion set by multiplying the current Quaterion coordinates by the float "scale".  
+         * Creates a new Quaternion set by multiplying the current Quaternion coordinates by the float "scale"
+         * @param value defines the scale factor
+         * @returns the new quaternion
          */
         public scale(value: number): Quaternion {
             return new Quaternion(this.x * value, this.y * value, this.z * value, this.w * value);
         }
+
+        /**
+         * Multiply in place the current Quaterion coordinates by the float "scale"
+         * @param value defines the scale factor
+         * @returns the current updated quaternion
+         */
+        public scaleInPlace(value: number): Quaternion {
+            this.x *= value;
+            this.y *= value;
+            this.z *= value;
+            this.w *= value;
+
+            return this;
+        }        
 
         /**
          * Scale the current Quaternion values by a factor to a given Quaternion  
