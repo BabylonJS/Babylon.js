@@ -23,7 +23,6 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -556,7 +555,6 @@ var BABYLON;
 
 //# sourceMappingURL=advancedDynamicTexture.js.map
 
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -601,7 +599,6 @@ var BABYLON;
 
 //# sourceMappingURL=measure.js.map
 
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -735,7 +732,6 @@ var BABYLON;
 
 //# sourceMappingURL=math2D.js.map
 
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -791,10 +787,10 @@ var BABYLON;
                     if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {
                         return window.innerWidth < window.innerHeight ? width : height;
                     }
-                    if (host.idealWidth) {
+                    if (host.idealWidth) { // horizontal
                         return width;
                     }
-                    if (host.idealHeight) {
+                    if (host.idealHeight) { // vertical
                         return height;
                     }
                 }
@@ -865,7 +861,6 @@ var BABYLON;
 
 //# sourceMappingURL=valueAndUnit.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1983,7 +1978,6 @@ var BABYLON;
 
 //# sourceMappingURL=control.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2232,7 +2226,6 @@ var BABYLON;
 
 //# sourceMappingURL=container.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2375,7 +2368,6 @@ var BABYLON;
 
 //# sourceMappingURL=stackPanel.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2503,7 +2495,6 @@ var BABYLON;
 
 //# sourceMappingURL=rectangle.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2581,7 +2572,6 @@ var BABYLON;
 
 //# sourceMappingURL=ellipse.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2825,7 +2815,6 @@ var BABYLON;
 
 //# sourceMappingURL=line.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3114,7 +3103,6 @@ var BABYLON;
 
 //# sourceMappingURL=slider.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3242,7 +3230,6 @@ var BABYLON;
 
 //# sourceMappingURL=checkbox.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3391,7 +3378,6 @@ var BABYLON;
 
 //# sourceMappingURL=radioButton.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3406,10 +3392,10 @@ var BABYLON;
              * @param text defines the text to display (emptry string by default)
              */
             function TextBlock(
-                /**
-                 * Defines the name of the control
-                 */
-                name, text) {
+            /**
+             * Defines the name of the control
+             */
+            name, text) {
                 if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3739,7 +3725,6 @@ var BABYLON;
 
 //# sourceMappingURL=textBlock.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var DOMImage = Image;
@@ -4000,7 +3985,7 @@ var BABYLON;
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }
-                                if (this._root && this._root.parent) {
+                                if (this._root && this._root.parent) { // Will update root size if root is not the top root
                                     this._root.width = this.width;
                                     this._root.height = this.height;
                                 }
@@ -4051,7 +4036,6 @@ var BABYLON;
 
 //# sourceMappingURL=image.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4181,7 +4165,6 @@ var BABYLON;
 
 //# sourceMappingURL=button.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4540,7 +4523,6 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4761,10 +4743,10 @@ var BABYLON;
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
-                    case 32://SPACE
+                    case 32: //SPACE
                         key = " "; //ie11 key for space is "Spacebar" 
                         break;
-                    case 8:// BACKSPACE
+                    case 8: // BACKSPACE
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {
                                 this.text = this._text.substr(0, this._text.length - 1);
@@ -4777,27 +4759,27 @@ var BABYLON;
                             }
                         }
                         return;
-                    case 46:// DELETE
+                    case 46: // DELETE
                         if (this._text && this._text.length > 0) {
                             var deletePosition = this._text.length - this._cursorOffset;
                             this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
                             this._cursorOffset--;
                         }
                         return;
-                    case 13:// RETURN
+                    case 13: // RETURN
                         this._host.focusedControl = null;
                         return;
-                    case 35:// END
+                    case 35: // END
                         this._cursorOffset = 0;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 36:// HOME
+                    case 36: // HOME
                         this._cursorOffset = this._text.length;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 37:// LEFT
+                    case 37: // LEFT
                         this._cursorOffset++;
                         if (this._cursorOffset > this._text.length) {
                             this._cursorOffset = this._text.length;
@@ -4805,7 +4787,7 @@ var BABYLON;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 39:// RIGHT
+                    case 39: // RIGHT
                         this._cursorOffset--;
                         if (this._cursorOffset < 0) {
                             this._cursorOffset = 0;
@@ -4821,7 +4803,7 @@ var BABYLON;
                     (keyCode > 64 && keyCode < 91) || // Letters
                     (keyCode > 185 && keyCode < 193) || // Special characters
                     (keyCode > 218 && keyCode < 223) || // Special characters
-                    (keyCode > 95 && keyCode < 112)) {
+                    (keyCode > 95 && keyCode < 112)) { // Numpad
                     if (this._cursorOffset === 0) {
                         this.text += key;
                     }
@@ -4984,7 +4966,6 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;

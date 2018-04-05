@@ -1,4 +1,3 @@
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -201,6 +200,7 @@ var BABYLON;
                     url += value;
                 }
             }
+            // Not from input file.
             else {
                 url += value;
             }
