@@ -23,10 +23,21 @@
          */
         public doNotSerialize = false;        
 
+        private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
+
         /**
          * Gets or sets the animation properties override
          */
-        public animationPropertiesOverride: AnimationPropertiesOverride;        
+        public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            if (!this._animationPropertiesOverride) {
+                return this._scene.animationPropertiesOverride;
+            }
+            return this._animationPropertiesOverride;
+        }
+
+        public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+            this._animationPropertiesOverride = value;
+        }    
 
         // Events
         /**

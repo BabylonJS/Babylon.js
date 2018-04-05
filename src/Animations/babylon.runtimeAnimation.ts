@@ -313,15 +313,7 @@
             }
 
             if (enableBlending && this._blendingFactor <= 1.0) {
-                if (this._originalBlendValue.prototype) { // Complex value
-                    
-                    if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
-                        this._currentValue = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
-                    } else { // Blending not supported
-                        this._currentValue = currentValue;
-                    }
-
-                } else if (this._originalBlendValue.m) { // Matrix
+                if (this._originalBlendValue.m) { // Matrix
                     if (Animation.AllowMatrixDecomposeForInterpolation) {
                         if (this._currentValue) {
                             Matrix.DecomposeLerpToRef(this._originalBlendValue, currentValue, this._blendingFactor, this._currentValue);
@@ -335,7 +327,17 @@
                             this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                         }
                     }
-                } else { // Direct value
+                } else if (this._originalBlendValue.constructor) { // Complex value
+                    let constructor = this._originalBlendValue.constructor;
+                    if (constructor.Lerp) { // Lerp supported
+                        this._currentValue = constructor.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                    } else if (constructor.Slerp) { // Slerp supported
+                        this._currentValue = constructor.Slerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                    } else { // Blending not supported
+                        this._currentValue = currentValue;
+                    }
+
+                } else  { // Direct value
                     this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
                 this._blendingFactor += blendingSpeed;

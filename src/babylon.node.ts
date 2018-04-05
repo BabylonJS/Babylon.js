@@ -109,7 +109,6 @@
         public get parent(): Nullable<Node> {
             return this._parentNode;
         }
-
         
         private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -117,6 +116,9 @@
          * Gets or sets the animation properties override
          */
         public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            if (!this._animationPropertiesOverride) {
+                return this._scene.animationPropertiesOverride;
+            }
             return this._animationPropertiesOverride;
         }
 
