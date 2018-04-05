@@ -65,12 +65,12 @@
 
 
         constructor(scene: Scene, public target: any, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?: Nullable<() => void>, animations?: any) {
+            this._scene = scene;
             if (animations) {
                 this.appendAnimations(target, animations);
             }
 
             this._speedRatio = speedRatio;
-            this._scene = scene;
             scene._activeAnimatables.push(this);
         }
 
