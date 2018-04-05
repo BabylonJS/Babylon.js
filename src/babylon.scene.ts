@@ -2746,11 +2746,6 @@
                     let originalValue = originalAnimation.originalValue;
                     let finalTarget = originalAnimation.target;   
                     
-                    // Sanity check
-                    if (!originalValue.scaleAndAddToRef) {
-                        continue;
-                    }
-
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
                     let finalValue: any;
@@ -2762,15 +2757,35 @@
 
                         if (holder.totalWeight < 1.0) {
                             // We need to mix the original value in     
-                            finalValue = originalValue.scale(1.0 - holder.totalWeight)
+                            if (originalValue.scale) {
+                                finalValue = originalValue.scale(1.0 - holder.totalWeight);
+                            } else {
+                                finalValue = originalValue * (1.0 - holder.totalWeight);
+                            }
                         } else {
                             // We need to normalize the weights
                             normalizer = holder.totalWeight;
                             let scale = originalAnimation.weight / normalizer;
                             if (scale !== 1) {
-                                finalValue = originalAnimation.currentValue.scale(scale);
+                                if (originalAnimation.currentValue.scale) {
+                                    finalValue = originalAnimation.currentValue.scale(scale);
+                                } else {
+                                    finalValue = originalAnimation.currentValue * scale;
+                                }
                             } else {
                                 finalValue = originalAnimation.currentValue;
+                            }
+
+                            startIndex = 1;
+                        }
+
+                        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
+                            var runtimeAnimation = holder.animations[animIndex];   
+                            var scale = runtimeAnimation.weight / normalizer;
+                            if (runtimeAnimation.currentValue.scaleAndAddToRef) {
+                                runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
+                            } else {
+                                finalValue += runtimeAnimation.currentValue * scale;
                             }
 
                             startIndex = 1;

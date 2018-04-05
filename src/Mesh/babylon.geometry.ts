@@ -271,15 +271,16 @@
          * @param kind defines the data kind (Position, normal, etc...)
          * @param data defines the data to use 
          * @param offset defines the offset in the target buffer where to store the data
+         * @param useBytes set to true if the offset is in bytes
          */
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
+        public updateVerticesDataDirectly(kind: string, data: DataArray, offset: number, useBytes: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
                 return;
             }
 
-            vertexBuffer.updateDirectly(data, offset);
+            vertexBuffer.updateDirectly(data, offset, useBytes);
             this.notifyUpdate(kind);
         }
 
