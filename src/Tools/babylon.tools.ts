@@ -1440,7 +1440,7 @@
                 return window.performance.now();
             }
 
-            return new Date().getTime();
+            return Date.now();
         }
 
         /**
