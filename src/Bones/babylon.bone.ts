@@ -37,6 +37,7 @@
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Nullable<Bone>;
         private _scalingDeterminant = 1;
+        private _worldTransform = new Matrix();
         
         private _localScaling: Vector3;
         private _localRotation: Quaternion;
@@ -160,6 +161,13 @@
         }
 
         /**
+         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
+         */
+        public getWorldMatrix(): Matrix {
+            return this._worldTransform;
+        }
+
+        /**
          * Sets the local matrix to rest pose matrix
          */
         public returnToRest(): void {
@@ -167,7 +175,8 @@
         }
 
         /**
-         * Gets the inverse of the absolute transform matrix
+         * Gets the inverse of the absolute transform matrix.
+         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
          * @returns a matrix
          */
         public getInvertedAbsoluteTransform(): Matrix {
@@ -175,7 +184,7 @@
         }
 
         /**
-         * Gets the absolute transform matrix (ie local matrix * parent world matrix)
+         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
          * @returns a matrix
          */
         public getAbsoluteTransform(): Matrix {
