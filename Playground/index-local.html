@@ -17,10 +17,6 @@
         <script src="../dist/preview%20release/cannon.js"></script>
         <script src="../dist/preview%20release/Oimo.js"></script>
         <script src="../dist/preview%20release/earcut.min.js"></script>
-        <!-- Draco -->
-        <script src="../dist/preview%20release/draco_decoder.js" type="text/x-draco-decoder"></script>
-        <script src="../dist/preview%20release/draco_decoder.wasm" type="text/x-draco-decoder-wasm-binary"></script>
-        <script src="../dist/preview%20release/draco_wasm_wrapper.js" type="text/x-draco-decoder-wasm-wrapper"></script>
         <!-- Monaco -->
         <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
         <!-- Babylon.js -->
@@ -470,8 +466,15 @@
         <script src="js/actions.js"></script>
         <script src="js/pbt.js"></script>
         <script>
-            BABYLONDEVTOOLS.Loader.require('js/index.js')
-                .load();
+            BABYLONDEVTOOLS.Loader
+                .require('js/index.js')
+                .load(function () {
+                    BABYLON.DracoCompression.Configuration.decoder = {
+                        wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
+                        wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
+                        fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
+                    };
+                });
         </script>
     </body>
 
