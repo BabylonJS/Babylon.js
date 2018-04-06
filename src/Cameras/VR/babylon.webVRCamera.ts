@@ -1,5 +1,3 @@
-declare var VRFrameData: any;
-
 module BABYLON {
     /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
@@ -11,28 +9,28 @@ module BABYLON {
         /**
          * The position of the device, values in array are [x,y,z].
          */
-        readonly position?: Float32Array;
+        readonly position: Nullable<Float32Array>;
         /**
          * The linearVelocity of the device, values in array are [x,y,z].
          */
-        readonly linearVelocity?: Float32Array;
+        readonly linearVelocity: Nullable<Float32Array>;
         /**
          * The linearAcceleration of the device, values in array are [x,y,z].
          */
-        readonly linearAcceleration?: Float32Array;
+        readonly linearAcceleration: Nullable<Float32Array>;
 
         /**
          * The orientation of the device in a quaternion array, values in array are [x,y,z,w].
          */
-        readonly orientation?: Float32Array;
+        readonly orientation: Nullable<Float32Array>;
         /**
          * The angularVelocity of the device, values in array are [x,y,z].
          */
-        readonly angularVelocity?: Float32Array;
+        readonly angularVelocity: Nullable<Float32Array>;
         /**
          * The angularAcceleration of the device, values in array are [x,y,z].
          */
-        readonly angularAcceleration?: Float32Array;
+        readonly angularAcceleration: Nullable<Float32Array>;
     }
 
      /**

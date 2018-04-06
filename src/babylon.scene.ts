@@ -1706,7 +1706,7 @@
 
                             if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
                                 if (this._totalPointersPressed !== 0 &&
-                                    ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
+                                    ((Date.now() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
                                     this._startingPointerTime = 0;
@@ -1832,7 +1832,7 @@
 
             this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => {
                 // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
-                if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
+                if ((Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
                     btn !== this._previousButtonPressed) {
                     this._doubleClickOccured = false;
                     clickInfo.singleClick = true;
@@ -1875,7 +1875,7 @@
 
                         if (checkSingleClickImmediately) {
                             // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
-                            if (new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
+                            if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
 
@@ -1899,7 +1899,7 @@
                         if (checkDoubleClick) {
                             // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
                             if (btn === this._previousButtonPressed &&
-                                new Date().getTime() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
+                                Date.now() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
                                 !this._doubleClickOccured
                             ) {
                                 // pointer has not moved for 2 clicks, it's a double click
@@ -2011,7 +2011,7 @@
 
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
-                this._startingPointerTime = new Date().getTime();
+                this._startingPointerTime = Date.now();
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {

@@ -680,7 +680,7 @@ module BABYLON {
             }
 
             if (this._options.skyboxTexture instanceof BaseTexture) {
-                this._skyboxMaterial.reflectionTexture = this._skyboxTexture;
+                this._skyboxMaterial.reflectionTexture = this._options.skyboxTexture;
                 return;
             }
 
