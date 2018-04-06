@@ -1,4 +1,3 @@
-"use strict";
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -51,7 +50,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
-"use strict";
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
@@ -447,7 +445,7 @@ var BABYLON;
                 if (bufferMesh) {
                     var vertexData = bufferMesh.getVerticesData(kind);
                     if (vertexData) {
-                        if (dataBuffer && vertexData) {
+                        if (dataBuffer && vertexData) { // write data to buffer
                             byteLength = this.writeAttributeData(kind, vertexData, byteOffset, dataBuffer);
                             byteOffset += byteLength;
                         }
@@ -535,7 +533,7 @@ var BABYLON;
                                         var min = null;
                                         var max = null;
                                         var bufferViewIndex = attribute.bufferViewIndex;
-                                        if (bufferViewIndex != undefined) {
+                                        if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                             if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
                                                 minMax = this.calculateMinMaxPositions(vertexData, 0, vertexData.length / stride);
                                                 min = minMax.min;
@@ -714,7 +712,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFExporter.js.map
 
-"use strict";
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -774,7 +771,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFData.js.map
 
-"use strict";
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1128,7 +1124,7 @@ var BABYLON;
                 }
                 if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
                     var alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMetalRoughMaterial);
-                    if (alphaMode !== "OPAQUE" /* OPAQUE */) {
+                    if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
                         glTFMaterial.alphaMode = alphaMode;
                         if (alphaMode === "BLEND" /* BLEND */) {
                             glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
@@ -1515,7 +1511,7 @@ var BABYLON;
                 }
                 if (babylonPBRMaterial.transparencyMode != null) {
                     var alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMaterial);
-                    if (alphaMode !== "OPAQUE" /* OPAQUE */) {
+                    if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
                         glTFMaterial.alphaMode = alphaMode;
                         if (alphaMode === "BLEND" /* BLEND */) {
                             glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;

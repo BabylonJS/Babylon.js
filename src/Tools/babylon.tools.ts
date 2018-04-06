@@ -723,7 +723,7 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): IFileRequest {
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (ev: ProgressEvent) => any): IFileRequest {
             let reader = new FileReader();
 
             let request: IFileRequest = {
@@ -747,7 +747,7 @@
             return request;
         }
 
-        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
             let reader = new FileReader();
             let request: IFileRequest = {
                 onCompleteObservable: new Observable<IFileRequest>(),
@@ -1440,7 +1440,7 @@
                 return window.performance.now();
             }
 
-            return new Date().getTime();
+            return Date.now();
         }
 
         /**

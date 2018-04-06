@@ -639,8 +639,15 @@
                     for (var subMesh of this.subMeshes) {
                         let effectiveMaterial = subMesh.getMaterial();
                         if (effectiveMaterial) {
-                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
-                                return false;
+                            if (effectiveMaterial.storeEffectOnSubMeshes) {
+                                if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                    return false;
+                                } 
+                            }
+                            else {
+                                if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+                                    return false;
+                                }
                             }
                         }
                     }

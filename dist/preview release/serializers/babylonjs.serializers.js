@@ -23,7 +23,6 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -149,7 +148,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.objSerializer.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -202,7 +200,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
-"use strict";
 
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
@@ -598,7 +595,7 @@ var BABYLON;
                 if (bufferMesh) {
                     var vertexData = bufferMesh.getVerticesData(kind);
                     if (vertexData) {
-                        if (dataBuffer && vertexData) {
+                        if (dataBuffer && vertexData) { // write data to buffer
                             byteLength = this.writeAttributeData(kind, vertexData, byteOffset, dataBuffer);
                             byteOffset += byteLength;
                         }
@@ -686,7 +683,7 @@ var BABYLON;
                                         var min = null;
                                         var max = null;
                                         var bufferViewIndex = attribute.bufferViewIndex;
-                                        if (bufferViewIndex != undefined) {
+                                        if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                             if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
                                                 minMax = this.calculateMinMaxPositions(vertexData, 0, vertexData.length / stride);
                                                 min = minMax.min;
@@ -865,7 +862,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFExporter.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -925,7 +921,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFData.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1279,7 +1274,7 @@ var BABYLON;
                 }
                 if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
                     var alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMetalRoughMaterial);
-                    if (alphaMode !== "OPAQUE" /* OPAQUE */) {
+                    if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
                         glTFMaterial.alphaMode = alphaMode;
                         if (alphaMode === "BLEND" /* BLEND */) {
                             glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
@@ -1666,7 +1661,7 @@ var BABYLON;
                 }
                 if (babylonPBRMaterial.transparencyMode != null) {
                     var alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMaterial);
-                    if (alphaMode !== "OPAQUE" /* OPAQUE */) {
+                    if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
                         glTFMaterial.alphaMode = alphaMode;
                         if (alphaMode === "BLEND" /* BLEND */) {
                             glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;

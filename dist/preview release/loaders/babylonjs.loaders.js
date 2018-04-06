@@ -23,7 +23,6 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -195,7 +194,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.stlFileLoader.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -398,6 +396,7 @@ var BABYLON;
                     url += value;
                 }
             }
+            // Not from input file.
             else {
                 url += value;
             }
@@ -943,6 +942,9 @@ var BABYLON;
                 vertexData.indices = handledMesh.indices;
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
                 vertexData.applyToMesh(babylonMesh);
+                if (OBJFileLoader.INVERT_Y) {
+                    babylonMesh.scaling.y *= -1;
+                }
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
@@ -984,6 +986,7 @@ var BABYLON;
             return babylonMeshesArray;
         };
         OBJFileLoader.OPTIMIZE_WITH_UV = false;
+        OBJFileLoader.INVERT_Y = false;
         return OBJFileLoader;
     }());
     BABYLON.OBJFileLoader = OBJFileLoader;
@@ -995,7 +998,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.objFileLoader.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1469,7 +1471,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFFileLoader.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1567,7 +1568,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderInterfaces.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1756,11 +1756,11 @@ var BABYLON;
                     // For each frame
                     for (var j = 0; j < bufferInput.length; j++) {
                         var value = null;
-                        if (targetPath === "rotationQuaternion") {
+                        if (targetPath === "rotationQuaternion") { // VEC4
                             value = BABYLON.Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
                             arrayOffset += 4;
                         }
-                        else {
+                        else { // Position and scaling are VEC3
                             value = BABYLON.Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
                             arrayOffset += 3;
                         }
@@ -2248,6 +2248,7 @@ var BABYLON;
                 var newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id, node.babylonNode);
                 lastNode = newMesh;
             }
+            // Lights
             else if (node.light && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
                 var light = gltfRuntime.lights[node.light];
                 if (light) {
@@ -2295,6 +2296,7 @@ var BABYLON;
                     }
                 }
             }
+            // Cameras
             else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
                 var camera = gltfRuntime.cameras[node.camera];
                 if (camera) {
@@ -2480,6 +2482,7 @@ var BABYLON;
                 if (type === GLTF1.EParameterType.SAMPLER_2D) {
                     GLTF1.GLTFLoaderExtension.LoadTextureAsync(gltfRuntime, material.values ? value : uniform.value, onLoadTexture(unif), function () { return onLoadTexture(null); });
                 }
+                // Others
                 else {
                     if (uniform.value && GLTF1.GLTFUtils.SetUniform(shaderMaterial, unif, material.values ? value : uniform.value, type)) {
                         // Static uniform
@@ -3071,7 +3074,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoader.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -3307,7 +3309,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderUtils.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -3456,7 +3457,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderExtension.js.map
 
-"use strict";
 
 
 var BABYLON;
@@ -3525,7 +3525,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFBinaryExtension.js.map
 
-"use strict";
 
 
 var BABYLON;
@@ -3649,7 +3648,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFMaterialsCommonExtension.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -3673,13 +3671,11 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderUtilities.js.map
 
-"use strict";
 
 
 
 //# sourceMappingURL=babylon.glTFLoaderInterfaces.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -5041,7 +5037,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoader.js.map
 
-"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -5115,7 +5110,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderExtension.js.map
 
-"use strict";
 
 
 var BABYLON;
@@ -5277,7 +5271,6 @@ var BABYLON;
 
 //# sourceMappingURL=MSFT_lod.js.map
 
-"use strict";
 
 
 var BABYLON;
@@ -5367,7 +5360,6 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_draco_mesh_compression.js.map
 
-"use strict";
 
 
 var BABYLON;
@@ -5445,7 +5437,6 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_materials_pbrSpecularGlossiness.js.map
 
-"use strict";
 
 
 var BABYLON;
@@ -5523,7 +5514,6 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_materials_unlit.js.map
 
-"use strict";
 
 
 var BABYLON;

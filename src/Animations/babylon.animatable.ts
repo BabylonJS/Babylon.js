@@ -76,7 +76,7 @@
 
         // Methods
         /**
-         * Synchronize and normalize current Animatable with a source Animatable.
+         * Synchronize and normalize current Animatable with a source Animatable
          * This is useful when using animation weights and when animations are not of the same length
          * @param root defines the root Animatable to synchronize with
          * @returns the current Animatable

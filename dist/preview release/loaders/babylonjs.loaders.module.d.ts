@@ -55,6 +55,7 @@ declare module BABYLON {
     }
     class OBJFileLoader implements ISceneLoaderPlugin {
         static OPTIMIZE_WITH_UV: boolean;
+        static INVERT_Y: boolean;
         name: string;
         extensions: string;
         obj: RegExp;

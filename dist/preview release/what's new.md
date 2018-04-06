@@ -145,5 +145,4 @@
 - glTF 2.0 loader now creates a mesh for each primitive instead of merging the primitives together into one mesh. If a mesh only has one primitive, the behavior is the same as before. This change only affects meshes that have multiple primitives. ([bghgary](https://github.com/bghgary)]
 - Engine's onCanvasPointerOutObservable will now return a PointerEvent instead of the Engine. ([trevordev](https://github.com/trevordev))
 - Removed public references to default rendering pipeline's internal post process ([trevordev](https://github.com/trevordev))
-- Rename `setScale`, `getScale`, `getScaleToRef` of the `Bone` class to `setAdditionalScale`, `getAdditionalScale`, `getAdditionalScaleToRef`. ([bghgary](https://github.com/bghgary)]
-- Bone `scaling` now replaces the scale of the local matrix instead of adding scale. ([bghgary](https://github.com/bghgary)]
+- `Bone.setScale` does not support scaleChildren property anymore. You can use `Bone.scale` to achieve the same effect ([deltakosh](https://github.com/deltakosh))
