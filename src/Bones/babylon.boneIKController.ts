@@ -84,8 +84,8 @@ module BABYLON {
             
             if (this._bone1.length) {
 
-                var boneScale1 = this._bone1.getScaling();
-                var boneScale2 = this._bone2.getScaling();
+                var boneScale1 = this._bone1.getScale();
+                var boneScale2 = this._bone2.getScale();
                 
                 this._bone1Length = this._bone1.length * boneScale1.y * this.mesh.scaling.y;
                 this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;

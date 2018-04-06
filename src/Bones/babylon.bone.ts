@@ -228,11 +228,11 @@
 
         /** Gets or sets current scaling (in local space) */
         public get scaling(): Vector3 {
-            return this.getScaling();
+            return this.getScale();
         }
 
         public set scaling(newScaling: Vector3) {
-            this.setScaling(newScaling);
+            this.setScale(newScaling, true);
         }
 
         /**
@@ -505,32 +505,71 @@
          * @param x The amount to scale the bone on the x axis
          * @param y The amount to scale the bone on the y axis
          * @param z The amount to scale the bone on the z axis
+         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
          */
-        public scale(x: number, y: number, z: number): void {
+        public scale(x: number, y: number, z: number, scaleChildren = false): void {
+            if (!scaleChildren) {
+                this._scaleOnlyLocally(x, y, z);
+                return;
+            }            
+
             this._decompose();
             this._localScaling.x *= x;
             this._localScaling.y *= y;
             this._localScaling.z *= z;
-
+            
             this._markAsDirtyAndCompose();
         }
 
         /**
          * Set the bone scaling in local space
          * @param scale defines the scaling vector
+         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
          */
-        public setScaling(scale: Vector3): void {
+        public setScale(scale: Vector3, scaleChildren = false): void {
+            if (!scaleChildren) {
+                this._scaleOnlyLocally(scale.x, scale.y, scale.z);
+                return;
+            }
+            
             this._decompose();
             this._localScaling.copyFrom(scale);
-            
             this._markAsDirtyAndCompose();
         }    
+
+        private _scaleOnlyLocally(x: number, y: number, z: number): void {
+            var locMat = this.getLocalMatrix();
+
+            // Apply new scaling on top of current local matrix
+            var scaleMat = Bone._tmpMats[0];
+            Matrix.ScalingToRef(x, y, z, scaleMat);
+            scaleMat.multiplyToRef(locMat, locMat);
+
+            // Update the absolute transform
+            var parent = this.getParent();
+
+            if (parent) {
+                locMat.multiplyToRef(parent.getAbsoluteTransform(), this.getAbsoluteTransform());
+            } else {
+                this.getAbsoluteTransform().copyFrom(locMat);
+            }
+
+            // Invert scaling matrix and apply the inverse to all children
+            scaleMat.invert();
+
+            for (var child of this.children) {
+                var cm = child.getLocalMatrix();
+                cm.multiplyToRef(scaleMat, cm);
+            }
+
+            this.markAsDirty();
+        }
         
         /**
          * Gets the current scaling in local space
          * @returns the current scaling vector
          */
-        public getScaling(): Vector3 {
+        public getScale(): Vector3 {
             this._decompose();
             return this._localScaling;
         }
@@ -539,7 +578,7 @@
          * Gets the current scaling in local space and stores it in a target vector
          * @param result defines the target vector
          */
-        public getScalingToRef(result: Vector3) {
+        public getScaleToRef(result: Vector3) {
             this._decompose();
             result.copyFrom(this._localScaling);
         }        
