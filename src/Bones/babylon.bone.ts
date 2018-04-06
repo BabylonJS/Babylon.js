@@ -60,7 +60,7 @@
         /**
          * Create a new bone
          * @param name defines the bone name
-         * @param skeleton defines the host skeleton
+         * @param skeleton defines the parent skeleton
          * @param parentBone defines the parent (can be null if the bone is the root)
          * @param localMatrix defines the local matrix
          * @param restPose defines the rest pose matrix
@@ -90,7 +90,7 @@
         // Members
 
         /**
-         * Gets host skeleton
+         * Gets the parent skeleton
          * @returns a skeleton
          */
         public getSkeleton(): Skeleton {
