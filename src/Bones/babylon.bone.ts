@@ -204,7 +204,6 @@
             this._localPosition.copyFrom(newPosition);
             
             this._markAsDirtyAndCompose();
-           // this.setPosition(newPosition);
         }
 
         /** Gets or sets current rotation (in local space) */
