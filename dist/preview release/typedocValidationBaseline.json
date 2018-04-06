@@ -16095,15 +16095,6 @@
         }
       }
     },
-    "PredicateCondition": {
-      "Property": {
-        "predicate": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "ProceduralTexture": {
       "Class": {
         "Comments": {
@@ -24328,25 +24319,6 @@
       "Class": {
         "Comments": {
           "MissingText": true
-        }
-      }
-    },
-    "ValueCondition": {
-      "Property": {
-        "operator": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "propertyPath": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "value": {
-          "Comments": {
-            "MissingText": true
-          }
         }
       }
     },
