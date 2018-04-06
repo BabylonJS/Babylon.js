@@ -746,6 +746,9 @@ var BABYLON;
                 vertexData.indices = handledMesh.indices;
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
                 vertexData.applyToMesh(babylonMesh);
+                if (OBJFileLoader.INVERT_Y) {
+                    babylonMesh.scaling.y *= -1;
+                }
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
@@ -787,6 +790,7 @@ var BABYLON;
             return babylonMeshesArray;
         };
         OBJFileLoader.OPTIMIZE_WITH_UV = false;
+        OBJFileLoader.INVERT_Y = false;
         return OBJFileLoader;
     }());
     BABYLON.OBJFileLoader = OBJFileLoader;

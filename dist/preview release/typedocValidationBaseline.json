@@ -1,7 +1,7 @@
 {
-  "errors": 5236,
+  "errors": 5142,
   "babylon.typedoc.json": {
-    "errors": 5236,
+    "errors": 5142,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -4537,11 +4537,6 @@
       }
     },
     "BoneIKController": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Constructor": {
         "new BoneIKController": {
           "Comments": {
