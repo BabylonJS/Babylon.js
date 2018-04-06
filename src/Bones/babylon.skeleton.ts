@@ -1,9 +1,25 @@
 ﻿module BABYLON {
+    /**
+     * Class used to handle skinning animations
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     */
     export class Skeleton implements IAnimatable {
+        /**
+         * Gets the list of child bones
+         */
         public bones = new Array<Bone>();
+        /**
+         * Gets an estimate of the dimension of the skeleton at rest
+         */
         public dimensionsAtRest: Vector3;
+        /**
+         * Gets a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
+         */
         public needInitialSkinMatrix = false;
 
+        /**
+         * Gets the list of animations attached to this skeleton
+         */
         public animations: Array<Animation>;
 
         private _scene: Scene;
@@ -19,7 +35,7 @@
         private _lastAbsoluteTransformsUpdateId = -1;
 
         /**
-         * Specifies if the skeleton should be serialized.
+         * Specifies if the skeleton should be serialized
          */
         public doNotSerialize = false;        
 
@@ -40,12 +56,23 @@
         }    
 
         // Events
+
         /**
-         * An event triggered before computing the skeleton's matrices
+         * An observable triggered before computing the skeleton's matrices
          */
         public onBeforeComputeObservable = new Observable<Skeleton>();
 
-        constructor(public name: string, public id: string, scene: Scene) {
+        /**
+         * Creates a new skeleton
+         * @param name defines the skeleton name
+         * @param id defines the skeleton Id
+         * @param scene defines the hosting scene
+         */
+        constructor(
+            /** defines the skeleton name */
+            public name: string, 
+            /** defines the skeleton Id */
+            public id: string, scene: Scene) {
             this.bones = [];
 
             this._scene = scene || Engine.LastCreatedScene;
@@ -57,6 +84,11 @@
         }
 
         // Members
+        /**
+         * Gets the list of transform matrices to send to shaders (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+         * @returns a Float32Array containing matrices data
+         */
         public getTransformMatrices(mesh: AbstractMesh): Float32Array {
             if (this.needInitialSkinMatrix && mesh._bonesTransformMatrices) {
                 return mesh._bonesTransformMatrices;
@@ -69,6 +101,10 @@
             return this._transformMatrices;
         }
 
+        /**
+         * Gets the current hosting scene
+         * @returns a scene object
+         */
         public getScene(): Scene {
             return this._scene;
         }
@@ -76,7 +112,9 @@
         // Methods
 
         /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * Gets a string representing the current skeleton data
+         * @param fullDetails defines a boolean indicating if we want a verbose version
+         * @returns a string representing the current skeleton data
          */
         public toString(fullDetails?: boolean): string {
             var ret = `Name: ${this.name}, nBones: ${this.bones.length}`;
@@ -98,8 +136,8 @@
 
         /**
         * Get bone's index searching by name
-        * @param {string} name is bone's name to search for
-        * @return {number} Indice of the bone. Returns -1 if not found
+        * @param name defines bone's name to search for
+        * @return the indice of the bone. Returns -1 if not found
         */
         public getBoneIndexByName(name: string): number {
             for (var boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
@@ -110,6 +148,12 @@
             return -1;
         }
 
+        /**
+         * Creater a new animation range
+         * @param name defines the name of the range
+         * @param from defines the start key
+         * @param to defines the end key
+         */
         public createAnimationRange(name: string, from: number, to: number): void {
             // check name not already in use
             if (!this._ranges[name]) {
@@ -122,6 +166,11 @@
             }
         }
 
+        /**
+         * Delete a specific animation range
+         * @param name defines the name of the range
+         * @param deleteFrames defines if frames must be removed as well
+         */
         public deleteAnimationRange(name: string, deleteFrames = true): void {
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 if (this.bones[i].animations[0]) {
@@ -131,12 +180,18 @@
             this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         }
 
+        /**
+         * Gets a specific animation range
+         * @param name defines the name of the range to look for
+         * @returns the requested animation range or null if not found
+         */
         public getAnimationRange(name: string): Nullable<AnimationRange> {
             return this._ranges[name];
         }
 
         /**
-         *  Returns as an Array, all AnimationRanges defined on this skeleton
+         * Gets the list of all animation ranges defined on this skeleton
+         * @returns an array
          */
         public getAnimationRanges(): Nullable<AnimationRange>[] {
             var animationRanges: Nullable<AnimationRange>[] = [];
@@ -150,7 +205,12 @@
         }
 
         /** 
-         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         * Copy animation range from a source skeleton. 
+         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         * @param source defines the source skeleton
+         * @param name defines the name of the range to copy
+         * @param rescaleAsRequired defines if rescaling must be applied if required
+         * @returns true if operation was successful
          */
         public copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired = false): boolean {
             if (this._ranges[name] || !source.getAnimationRange(name)) {
@@ -193,6 +253,9 @@
             return ret;
         }
 
+        /**
+         * Forces the skeleton to go to rest pose
+         */
         public returnToRest(): void {
             for (var index = 0; index < this.bones.length; index++) {
                 this.bones[index].returnToRest();
@@ -212,6 +275,14 @@
             return ret;
         }
 
+        /**
+         * Begin a specific animation range
+         * @param name defines the name of the range to start
+         * @param loop defines if looping must be turned on (false by default)
+         * @param speedRatio defines the speed ratio to apply (1 by default)
+         * @param onAnimationEnd defines a callback which will be called when animation will end
+         * @returns a new animatable
+         */
         public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable> {
             var range = this.getAnimationRange(name);
 
@@ -222,14 +293,17 @@
             return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         }
 
+        /** @ignore */
         public _markAsDirty(): void {
             this._isDirty = true;
         }
 
+        /** @ignore */
         public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
             this._meshesWithPoseMatrix.push(mesh);
         }
 
+        /** @ignore */
         public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
             var index = this._meshesWithPoseMatrix.indexOf(mesh);
 
@@ -238,6 +312,7 @@
             }
         }
 
+        /** @ignore */
         public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
 
             this.onBeforeComputeObservable.notifyObservers(this);
@@ -265,6 +340,9 @@
             this._identity.copyToArray(targetMatrix, this.bones.length * 16);
         }
 
+        /**
+         * Build all resources required to render a skeleton
+         */
         public prepare(): void {
             if (!this._isDirty) {
                 return;
@@ -310,6 +388,10 @@
             this._scene._activeBones.addCount(this.bones.length, false);
         }
 
+        /**
+         * Gets the list of animatables currently running for this skeleton
+         * @returns an array of animatables
+         */
         public getAnimatables(): IAnimatable[] {
             if (!this._animatables || this._animatables.length !== this.bones.length) {
                 this._animatables = [];
@@ -322,6 +404,12 @@
             return this._animatables;
         }
 
+        /**
+         * Clone the current skeleton
+         * @param name defines the name of the new skeleton
+         * @param id defines the id of the enw skeleton
+         * @returns the new skeleton
+         */
         public clone(name: string, id: string): Skeleton {
             var result = new Skeleton(name, id || name, this._scene);
 
@@ -357,6 +445,11 @@
             return result;
         }
 
+        /**
+         * Enable animation blending for this skeleton
+         * @param blendingSpeed defines the blending speed to apply
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
         public enableBlending(blendingSpeed = 0.01) {
             this.bones.forEach((bone) => {
                 bone.animations.forEach((animation: Animation) => {
@@ -366,6 +459,9 @@
             });
         }
 
+        /**
+         * Releases all resources associated with the current skeleton
+         */
         public dispose() {
             this._meshesWithPoseMatrix = [];
 
@@ -376,6 +472,10 @@
             this.getScene().removeSkeleton(this);
         }
 
+        /**
+         * Serialize the skeleton in a JSON object
+         * @returns a JSON object
+         */
         public serialize(): any {
             var serializationObject: any = {};
 
@@ -429,6 +529,12 @@
             return serializationObject;
         }
 
+        /**
+         * Creates a new skeleton from serialized data
+         * @param parsedSkeleton defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns a new skeleton
+         */
         public static Parse(parsedSkeleton: any, scene: Scene): Skeleton {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
             if (parsedSkeleton.dimensionsAtRest) {
@@ -467,6 +573,10 @@
             return skeleton;
         }
 
+        /**
+         * Compute all node absolute transforms
+         * @param forceUpdate defines if computation must be done even if cache is up to date
+         */
         public computeAbsoluteTransforms (forceUpdate = false): void {
 
             var renderId = this._scene.getRenderId();
@@ -478,6 +588,10 @@
             
         }
 
+        /**
+         * Gets the root pose matrix
+         * @returns a matrix
+         */
         public getPoseMatrix(): Nullable<Matrix> {        
             var poseMatrix: Nullable<Matrix> = null;
             
@@ -488,6 +602,9 @@
             return poseMatrix;
         }
 
+        /**
+         * Sorts bones per internal index
+         */
         public sortBones(): void {
             var bones = new Array<Bone>();
             var visited = new Array<boolean>(this.bones.length);
