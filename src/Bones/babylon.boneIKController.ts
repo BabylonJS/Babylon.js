@@ -1,4 +1,5 @@
 module BABYLON {
+    /** Class used to apply inverse kinematics to bones */
     export class BoneIKController {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
@@ -83,8 +84,8 @@ module BABYLON {
             
             if (this._bone1.length) {
 
-                var boneScale1 = this._bone1.getAdditionalScale();
-                var boneScale2 = this._bone2.getAdditionalScale();
+                var boneScale1 = this._bone1.getScaling();
+                var boneScale2 = this._bone2.getScaling();
                 
                 this._bone1Length = this._bone1.length * boneScale1.y * this.mesh.scaling.y;
                 this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;

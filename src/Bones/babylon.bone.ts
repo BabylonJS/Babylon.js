@@ -9,19 +9,30 @@
         private static _tmpQuat = Quaternion.Identity();
         private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity(), Matrix.Identity()];
 
+        /**
+         * Gets the list of child bones
+         */
         public children = new Array<Bone>();
+
+        /** Gets the animations associated with this bone */
         public animations = new Array<Animation>();
+
+        /**
+         * Gets or sets bone length
+         */
         public length: number;
 
-        // Set this value to map this bone to a different index in the transform matrices.
-        // Set this value to -1 to exclude the bone from the transform matrices.
+        /** 
+         * @ignore Internal only
+         * Set this value to map this bone to a different index in the transform matrices
+         * Set this value to -1 to exclude the bone from the transform matrices
+         */
         public _index: Nullable<number> = null;
 
         private _skeleton: Skeleton;
         private _localMatrix: Matrix;
         private _restPose: Matrix;
         private _baseMatrix: Matrix;
-        private _worldTransform = new Matrix();
         private _absoluteTransform = new Matrix();
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Nullable<Bone>;
@@ -33,17 +44,33 @@
         private _needToDecompose = true;
         private _needToCompose = false;
 
+        /** @ignore */
         get _matrix(): Matrix {
             this._compose();
             return this._localMatrix;
         }
 
+        /** @ignore */
         set _matrix(value: Matrix) {
             this._localMatrix.copyFrom(value);
             this._needToDecompose = true;
         }
 
-        constructor(public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
+        /**
+         * Create a new bone
+         * @param name defines the bone name
+         * @param skeleton defines the host skeleton
+         * @param parentBone defines the parent (can be null if the bone is the root)
+         * @param localMatrix defines the local matrix
+         * @param restPose defines the rest pose matrix
+         * @param baseMatrix defines the base matrix
+         * @param index defines index of the bone in the hiearchy
+         */
+        constructor(
+            /**
+             * defines the bone name
+             */
+            public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
             restPose: Nullable<Matrix> = null, baseMatrix: Nullable<Matrix> = null, index: Nullable<number> = null) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
@@ -60,14 +87,28 @@
         }
 
         // Members
+
+        /**
+         * Gets host skeleton
+         * @returns a skeleton
+         */
         public getSkeleton(): Skeleton {
             return this._skeleton;
         }
 
+        /**
+         * Gets parent bone
+         * @returns a bone or null if the bone is the root of the bone hierarchy
+         */
         public getParent(): Nullable<Bone> {
             return this._parent;
         }
 
+        /**
+         * Sets the parent bone
+         * @param parent defines the parent (can be null if the bone is the root) 
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         */
         public setParent(parent: Nullable<Bone>, updateDifferenceMatrix: boolean = true): void {
             if (this._parent === parent) {
                 return;
@@ -93,36 +134,57 @@
             this.markAsDirty();
         }
 
+        /**
+         * Gets the local matrix
+         * @returns a matrix
+         */
         public getLocalMatrix(): Matrix {
             this._compose();
             return this._localMatrix;
         }
 
+        /**
+         * Gets the base matrix (initial matrix which remains unchanged)
+         * @returns a matrix
+         */
         public getBaseMatrix(): Matrix {
             return this._baseMatrix;
         }
 
+        /**
+         * Gets the rest pose matrix
+         * @returns a matrix
+         */
         public getRestPose(): Matrix {
             return this._restPose;
         }
 
+        /**
+         * Sets the local matrix to rest pose matrix
+         */
         public returnToRest(): void {
             this.updateMatrix(this._restPose.clone());
         }
 
-        public getWorldMatrix(): Matrix {
-            return this._worldTransform;
-        }
-
+        /**
+         * Gets the inverse of the absolute transform matrix
+         * @returns a matrix
+         */
         public getInvertedAbsoluteTransform(): Matrix {
             return this._invertedAbsoluteTransform;
         }
 
+        /**
+         * Gets the absolute transform matrix (ie local matrix * parent world matrix)
+         * @returns a matrix
+         */
         public getAbsoluteTransform(): Matrix {
             return this._absoluteTransform;
         }
 
         // Properties (matches AbstractMesh properties)
+
+        /** Gets or sets current position (in local space) */
         public get position(): Vector3 {
             this._decompose();
             return this._localPosition;
@@ -136,6 +198,7 @@
            // this.setPosition(newPosition);
         }
 
+        /** Gets or sets current rotation (in local space) */
         public get rotation(): Vector3 {
             return this.getRotation();
         }
@@ -144,6 +207,7 @@
             this.setRotation(newRotation);
         }
 
+        /** Gets or sets current rotation quaternion (in local space) */
         public get rotationQuaternion() {
             this._decompose();
             return this._localRotation;
@@ -153,6 +217,7 @@
             this.setRotationQuaternion(newRotation);
         }
 
+        /** Gets or sets current scaling (in local space) */
         public get scaling(): Vector3 {
             return this.getScaling();
         }
@@ -193,6 +258,11 @@
             Matrix.ComposeToRef(this._localScaling, this._localRotation, this._localPosition, this._localMatrix);
         }
 
+        /**
+         * Update the local matrix
+         * @param matrix defines the new local matrix
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         */
         public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
             this._baseMatrix.copyFrom(matrix);
             this._localMatrix.copyFrom(matrix);
@@ -204,6 +274,7 @@
             this._markAsDirtyAndDecompose();
         }
 
+        /** @ignore */
         public _updateDifferenceMatrix(rootMatrix?: Matrix): void {
             if (!rootMatrix) {
                 rootMatrix = this._baseMatrix;
@@ -243,6 +314,15 @@
             this._needToDecompose = true;
         }
 
+        /**
+         * Copy an animation range from another bone
+         * @param source defines the source bone
+         * @param rangeName defines the range name to copy
+         * @param frameOffset defines the frame offset
+         * @param rescaleAsRequired defines if rescaling must be applied if required
+         * @param skelDimensionsRatio defines the scaling ratio
+         * @returns true if operation was successful
+         */
         public copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio: Nullable<Vector3> = null): boolean {
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
@@ -309,7 +389,7 @@
          * Translate the bone in local or world space
          * @param vec The amount to translate the bone
          * @param space The space that the translation is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
         public translate(vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
             var lm = this.getLocalMatrix();
@@ -413,17 +493,21 @@
 
         /**
          * Scale the bone on the x, y and z axes (in local space)
-         * @deprecated Please use setScaling or scaling
          * @param x The amount to scale the bone on the x axis
-         * @param x The amount to scale the bone on the y axis
+         * @param y The amount to scale the bone on the y axis
          * @param z The amount to scale the bone on the z axis
          */
         public scale(x: number, y: number, z: number): void {
-            this.setScaling(new Vector3(x, y, z));
+            this._decompose();
+            this._localScaling.x *= x;
+            this._localScaling.y *= y;
+            this._localScaling.z *= z;
+
+            this._markAsDirtyAndCompose();
         }
 
         /**
-         * Scale the bone on the x, y and z axes (local space)
+         * Set the bone scaling in local space
          * @param scale defines the scaling vector
          */
         public setScaling(scale: Vector3): void {
