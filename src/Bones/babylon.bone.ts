@@ -21,12 +21,7 @@
         private _absoluteTransform = new Matrix();
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Nullable<Bone>;
-
-        private _scaleMatrix = Matrix.Identity();
-        private _scaleVector = Vector3.One();
-        private _negateScaleChildren = Vector3.One();
         private _scalingDeterminant = 1;
-
         get _matrix(): Matrix {
             return this._localMatrix;
         }
@@ -145,9 +140,7 @@
         }
 
         public set scaling(newScaling: Vector3) {
-            this._localMatrix.decompose(undefined, Bone._tmpQuat, Bone._tmpVecs[0]);
-            Matrix.ComposeToRef(newScaling, Bone._tmpQuat, Bone._tmpVecs[0], this._localMatrix);
-            this.markAsDirty();
+            this.setScaling(newScaling);
         }
 
         /**
@@ -364,88 +357,24 @@
         }
 
         /**
-         * Adds an additional scale to the bone on the x, y and z axes
-         * @param x The additional scale of the bone on the x axis
-         * @param y The additional scale of the bone on the y axis
-         * @param z The additional scale of the bone on the z axis
-         * @param scaleChildren Set this to true if children of the bone should be scaled
+         * Scale the bone on the x, y and z axes
+         * @param x The amount to scale the bone on the x axis
+         * @param x The amount to scale the bone on the y axis
+         * @param z The amount to scale the bone on the z axis
          */
-        public setAdditionalScale(x: number, y: number, z: number, scaleChildren = false): void {
-
-            if (this.animations[0] && !this.animations[0].hasRunningRuntimeAnimations) {
-                if (!scaleChildren) {
-                    this._negateScaleChildren.x = 1 / x;
-                    this._negateScaleChildren.y = 1 / y;
-                    this._negateScaleChildren.z = 1 / z;
-                }
-                this._syncScaleVector();
-            }
-
-            this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
-
+        public scale(x: number, y: number, z: number): void {
+            this.setScaling(new Vector3(x, y, z));
         }
 
         /**
-         * Scale the bone on the x, y and z axes. 
-         * @param x The amount to scale the bone on the x axis.
-         * @param x The amount to scale the bone on the y axis.
-         * @param z The amount to scale the bone on the z axis.
-         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         * Scale the bone on the x, y and z axes
+         * @param scale defines the scaling vector
          */
-        public scale(x: number, y: number, z: number, scaleChildren = false): void {
-
-            var locMat = this.getLocalMatrix();
-            var origLocMat = Bone._tmpMats[0];
-            origLocMat.copyFrom(locMat);
-
-            var origLocMatInv = Bone._tmpMats[1];
-            origLocMatInv.copyFrom(origLocMat);
-            origLocMatInv.invert();
-
-            var scaleMat = Bone._tmpMats[2];
-            Matrix.ScalingToRef(x, y, z, scaleMat);
-            this._scaleMatrix.multiplyToRef(scaleMat, this._scaleMatrix);
-            this._scaleVector.x *= x;
-            this._scaleVector.y *= y;
-            this._scaleVector.z *= z;
-
-            locMat.multiplyToRef(origLocMatInv, locMat);
-            locMat.multiplyToRef(scaleMat, locMat);
-            locMat.multiplyToRef(origLocMat, locMat);
-
-            var parent = this.getParent();
-
-            if (parent) {
-                locMat.multiplyToRef(parent.getAbsoluteTransform(), this.getAbsoluteTransform());
-            } else {
-                this.getAbsoluteTransform().copyFrom(locMat);
-            }
-
-            var len = this.children.length;
-
-            scaleMat.invert();
-
-            for (var i = 0; i < len; i++) {
-                var child = this.children[i];
-                var cm = child.getLocalMatrix();
-                cm.multiplyToRef(scaleMat, cm);
-                var lm = child.getLocalMatrix();
-                lm.m[12] *= x;
-                lm.m[13] *= y;
-                lm.m[14] *= z;
-            }
-
-            this.computeAbsoluteTransforms();
-
-            if (scaleChildren) {
-                for (var i = 0; i < len; i++) {
-                    this.children[i].scale(x, y, z, scaleChildren);
-                }
-            }
-
+        public setScaling(scale: Vector3): void {
+            this._localMatrix.decompose(undefined, Bone._tmpQuat, Bone._tmpVecs[0]);
+            Matrix.ComposeToRef(scale, Bone._tmpQuat, Bone._tmpVecs[0], this._localMatrix);
             this.markAsDirty();
-
-        }
+        }        
 
         /**
          * Set the yaw, pitch, and roll of the bone in local or world space.
@@ -456,9 +385,13 @@
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
         public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+            if (space === Space.LOCAL) {
+                this.setRotationQuaternion(Quaternion.RotationYawPitchRoll(yaw, pitch, roll), space, mesh);
+                return;
+            }
 
             var rotMatInv = Bone._tmpMats[0];
-            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+            if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
                 return;
             }
 
@@ -496,8 +429,13 @@
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
         public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+            if (space === Space.LOCAL) {
+                this.setRotationQuaternion(Quaternion.RotationAxis(axis, angle), space, mesh);
+                return;
+            }
+
             var rotMatInv = Bone._tmpMats[0];
-            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+            if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
                 return;
             }
 
@@ -540,7 +478,7 @@
             }
 
             var rotMatInv = Bone._tmpMats[0];
-            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+            if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
                 return;
             }
 
@@ -560,9 +498,13 @@
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
         public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+            if (space === Space.LOCAL) {
+                this.setRotationQuaternion(Quaternion.FromRotationMatrix(rotMat), space, mesh);
+                return;
+            }
 
             var rotMatInv = Bone._tmpMats[0];
-            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+            if (!this._getNegativeRotationToRef(rotMatInv, mesh)) {
                 return;
             }
 
@@ -594,7 +536,7 @@
                         parentScale.copyFrom(parent.getAbsoluteTransform());
                     }
                 } else {
-                    parentScale = parent._scaleMatrix;
+                    parentScale = Matrix.Identity();
                 }
                 parentScaleInv.copyFrom(parentScale);
                 parentScaleInv.invert();
@@ -622,71 +564,26 @@
             this.markAsDirty();
         }
 
-        private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): boolean {
+        private _getNegativeRotationToRef(rotMatInv: Matrix, mesh?: AbstractMesh): boolean {
+            var scaleMatrix = Bone._tmpMats[2];
+            rotMatInv.copyFrom(this.getAbsoluteTransform());
 
-            if (space == Space.WORLD) {
-                var scaleMatrix = Bone._tmpMats[2];
-                scaleMatrix.copyFrom(this._scaleMatrix);
-                rotMatInv.copyFrom(this.getAbsoluteTransform());
-
-                if (mesh) {
-                    rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
-                    var meshScale = Bone._tmpMats[3];
-                    Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, meshScale);
-                    scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
-                }
-
-                rotMatInv.invert();
-                if (isNaN(rotMatInv.m[0])) {
-                    // Matrix failed to invert.
-                    // This can happen if scale is zero for example.
-                    return false;
-                }
-
-                scaleMatrix.m[0] *= this._scalingDeterminant;
-                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
-            } else {
-                rotMatInv.copyFrom(this.getLocalMatrix());
-                rotMatInv.invert();
-                if (isNaN(rotMatInv.m[0])) {
-                    // Matrix failed to invert.
-                    // This can happen if scale is zero for example.
-                    return false;
-                }
-
-                var scaleMatrix = Bone._tmpMats[2];
-                scaleMatrix.copyFrom(this._scaleMatrix);
-
-                if (this._parent) {
-                    var pscaleMatrix = Bone._tmpMats[3];
-                    pscaleMatrix.copyFrom(this._parent._scaleMatrix);
-                    pscaleMatrix.invert();
-                    pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
-                } else {
-                    scaleMatrix.m[0] *= this._scalingDeterminant;
-                }
-
-                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
+            if (mesh) {
+                rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
+                Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, scaleMatrix);
             }
 
+            rotMatInv.invert();
+            if (isNaN(rotMatInv.m[0])) {
+                // Matrix failed to invert.
+                // This can happen if scale is zero for example.
+                return false;
+            }
+
+            scaleMatrix.m[0] *= this._scalingDeterminant;
+            rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
+
             return true;
-
-        }
-
-        /**
-         * Get the additional scale of the bone
-         * @returns the additional scale of the bone
-         */
-        public getAdditionalScale(): Vector3 {
-            return this._scaleVector.clone();
-        }
-
-        /**
-         * Copy the additional scale of the bone to a vector3.
-         * @param result The vector3 to copy the additional scale to
-         */
-        public getAdditionalScaleToRef(result: Vector3): void {
-            result.copyFrom(this._scaleVector);
         }
 
         /**
@@ -786,30 +683,6 @@
             for (var i = 0; i < len; i++) {
                 children[i].computeAbsoluteTransforms();
             }
-        }
-
-        private _syncScaleVector(): void {
-            var lm = this.getLocalMatrix();
-
-            var xsq = (lm.m[0] * lm.m[0] + lm.m[1] * lm.m[1] + lm.m[2] * lm.m[2]);
-            var ysq = (lm.m[4] * lm.m[4] + lm.m[5] * lm.m[5] + lm.m[6] * lm.m[6]);
-            var zsq = (lm.m[8] * lm.m[8] + lm.m[9] * lm.m[9] + lm.m[10] * lm.m[10]);
-
-            var xs = lm.m[0] * lm.m[1] * lm.m[2] * lm.m[3] < 0 ? -1 : 1;
-            var ys = lm.m[4] * lm.m[5] * lm.m[6] * lm.m[7] < 0 ? -1 : 1;
-            var zs = lm.m[8] * lm.m[9] * lm.m[10] * lm.m[11] < 0 ? -1 : 1;
-
-            this._scaleVector.x = xs * Math.sqrt(xsq);
-            this._scaleVector.y = ys * Math.sqrt(ysq);
-            this._scaleVector.z = zs * Math.sqrt(zsq);
-
-            if (this._parent) {
-                this._scaleVector.x /= this._parent._negateScaleChildren.x;
-                this._scaleVector.y /= this._parent._negateScaleChildren.y;
-                this._scaleVector.z /= this._parent._negateScaleChildren.z;
-            }
-
-            Matrix.FromValuesToRef(this._scaleVector.x, 0, 0, 0, 0, this._scaleVector.y, 0, 0, 0, 0, this._scaleVector.z, 0, 0, 0, 0, 1, this._scaleMatrix);
         }
 
         /**
