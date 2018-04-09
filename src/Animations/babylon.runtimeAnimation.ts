@@ -327,18 +327,17 @@
                             this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                         }
                     }
-                } else if (this._originalBlendValue.constructor) { // Complex value
+                } else { 
                     let constructor = this._originalBlendValue.constructor;
                     if (constructor.Lerp) { // Lerp supported
                         this._currentValue = constructor.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                     } else if (constructor.Slerp) { // Slerp supported
                         this._currentValue = constructor.Slerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                    } else if (this._originalBlendValue.toFixed) { // Number
+                        this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                     } else { // Blending not supported
                         this._currentValue = currentValue;
                     }
-
-                } else  { // Direct value
-                    this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
                 this._blendingFactor += blendingSpeed;
             } else {
