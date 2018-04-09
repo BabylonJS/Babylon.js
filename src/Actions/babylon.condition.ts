@@ -160,10 +160,16 @@
          * @param actionManager manager for the action the condition applies to
          * @param target for the action
          * @param propertyPath path to specify the property of the target the conditional operator uses 
-         * @param value the vale compared by the conditional operator against the current value of the property
-         * @param operator the conditional operator, default {BABYLON.ValueCondition.IsEqual}  
+         * @param value the value compared by the conditional operator against the current value of the property
+         * @param operator the conditional operator, default ValueCondition.IsEqual
          */
-        constructor(actionManager: ActionManager, target: any, public propertyPath: string, public value: any, public operator: number = ValueCondition.IsEqual) {
+        constructor(actionManager: ActionManager, target: any, 
+            /** path to specify the property of the target the conditional operator uses  */
+            public propertyPath: string, 
+            /** the value compared by the conditional operator against the current value of the property */
+            public value: any, 
+            /** the conditional operator, default ValueCondition.IsEqual */
+            public operator: number = ValueCondition.IsEqual) {
             super(actionManager);
 
             this._target = target;
@@ -241,11 +247,13 @@
 
 
         /**
-         * Creates a new {BABYLON.PredicateCondition}
+         * Creates a new PredicateCondition
          * @param actionManager manager for the action the condition applies to
-         * @param predicate 
+         * @param predicate defines the predicate function used to validate the condition
          */
-        constructor(actionManager: ActionManager, public predicate: () => boolean) {
+        constructor(actionManager: ActionManager, 
+            /** defines the predicate function used to validate the condition */
+            public predicate: () => boolean) {
             super(actionManager);
         }
 
@@ -258,7 +266,7 @@
     }
 
     /**
-     * Defines a state condition as an extension of {BABYLON.Condition}
+     * Defines a state condition as an extension of Condition
      */
     export class StateCondition extends Condition {
         
@@ -275,7 +283,7 @@
         private _target: any;
 
         /**
-         * Creates a new {BABYLON.StateCondition}
+         * Creates a new StateCondition
          * @param actionManager manager for the action the condition applies to
          * @param target of the condition
          * @param value to compare with target state 
@@ -294,7 +302,7 @@
         }
         
         /**
-         * Serialize the {BABYLON.StateCondition} into a JSON compatible object
+         * Serialize the StateCondition into a JSON compatible object
          * @returns serialization object
          */
         public serialize(): any {

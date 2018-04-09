@@ -153,15 +153,7 @@ module BABYLON {
                 return this;
             }
 
-            for (var index = 0; index < this._targetedAnimations.length; index++) {
-                let targetedAnimation = this._targetedAnimations[index];
-                if (!targetedAnimation.target.animations) {
-                    targetedAnimation.target.animations = [];
-                }
-                if (targetedAnimation.target.animations.indexOf(targetedAnimation.animation) === -1) {
-                    targetedAnimation.target.animations.push(targetedAnimation.animation);
-                }
-                
+            for (const targetedAnimation of this._targetedAnimations) {
                 this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio, () => {
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 }));

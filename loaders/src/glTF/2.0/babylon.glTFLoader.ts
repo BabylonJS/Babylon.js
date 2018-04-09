@@ -922,7 +922,9 @@ module BABYLON.GLTF2 {
 
                         const morphTargets = new Array<any>();
                         this._forEachPrimitive(targetNode, babylonMesh => {
-                            morphTargets.push(babylonMesh.morphTargetManager!.getTarget(targetIndex));
+                            const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
+                            morphTarget.animations.push(babylonAnimation);
+                            morphTargets.push(morphTarget);
                         });
 
                         babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
@@ -934,6 +936,10 @@ module BABYLON.GLTF2 {
                     babylonAnimation.setKeys(keys);
 
                     if (targetNode._babylonAnimationTargets) {
+                        for (const babylonAnimationTarget of targetNode._babylonAnimationTargets) {
+                            babylonAnimationTarget.animations.push(babylonAnimation);
+                        }
+
                         babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                     }
                 }
