@@ -1610,7 +1610,7 @@
 
             this._uniformBuffer.update();
 
-            this._afterBind(mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         /**
