@@ -176,3 +176,4 @@ dist/preview release/package/
 /Viewer/dist/viewer.min.js
 dist/preview release/viewer/babylon.d.ts
 Viewer/dist/viewer.max.js
+Viewer/tests/**/*.js
