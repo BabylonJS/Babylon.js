@@ -1037,6 +1037,64 @@ gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
     server.start();
 });
 
+/**
+ * Transpiles viewer typescript unit tests. 
+ */
+gulp.task("tests-viewer-unit-transpile", function (done) {
+    //var tsProject = typescript.createProject('../../Viewer/tests/unit/tsconfig.json');
+
+    //var tsResult = gulp.src("../../Viewer/tests/unit/**/*.ts", { base: "../../Viewer/" })
+    //.pipe(tsProject());
+
+    /*tsResult.once("error", function () {
+        tsResult.once("finish", function () {
+            console.log("Typescript compile failed");
+            process.exit(1);
+        });
+    });*/
+
+    let wpBuild = webpack(require('../../Viewer/tests/unit/webpack.config.js'));
+
+    return wpBuild
+        .pipe(through.obj(function (file, enc, cb) {
+            // only pipe js files
+            const isJs = /\.js$/.test(file.path);
+            if (isJs) this.push(file);
+            cb();
+        }))
+        .pipe(rename("tests.js"))
+        .pipe(gulp.dest("../../Viewer/tests/unit/build/"));
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-viewer-unit-debug", ["tests-viewer-unit-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
+        singleRun: false,
+        browsers: ['Chrome']
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-viewer-unit", /*["tests-viewer-unit-transpile"],*/ function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
 gulp.task("tests-whatsnew", function (done) {
     // Only checks on Travis
     if (!process.env.TRAVIS) {
