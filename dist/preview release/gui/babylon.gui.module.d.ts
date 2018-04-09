@@ -60,6 +60,7 @@ declare module BABYLON.GUI {
         dispose(): void;
         private _onResize();
         _getGlobalViewport(scene: Scene): Viewport;
+        getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
         private _checkUpdate(camera);
         private _render();
         private _doPicking(x, y, type, pointerId, buttonIndex);

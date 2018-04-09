@@ -1,7 +1,7 @@
 {
-  "errors": 5142,
+  "errors": 5116,
   "babylon.typedoc.json": {
-    "errors": 5142,
+    "errors": 5116,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -4613,25 +4613,6 @@
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new BoundingBox": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "minimum": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maximum": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Property": {
         "center": {
           "Comments": {
@@ -5082,25 +5063,6 @@
       "Class": {
         "Comments": {
           "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new BoundingSphere": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "minimum": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maximum": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
         }
       },
       "Property": {
