@@ -309,6 +309,21 @@ module BABYLON.GUI {
             return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
         }
 
+        public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
+            var scene = this.getScene();
+
+            if (!scene) {
+                return Vector2.Zero();
+            }
+
+            var globalViewport = this._getGlobalViewport(scene);
+            var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+
+            projectedPosition.scaleInPlace(this.renderScale);
+            
+            return new Vector2(projectedPosition.x, projectedPosition.y);
+        }
+
         private _checkUpdate(camera: Camera): void {
             if (this._layerToDispose) {
                 if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {

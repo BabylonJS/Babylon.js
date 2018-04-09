@@ -1290,7 +1290,9 @@ var BABYLON;
                             }); }));
                             var morphTargets = new Array();
                             _this._forEachPrimitive(targetNode, function (babylonMesh) {
-                                morphTargets.push(babylonMesh.morphTargetManager.getTarget(targetIndex));
+                                var morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
+                                morphTarget.animations.push(babylonAnimation);
+                                morphTargets.push(morphTarget);
                             });
                             babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                         };
@@ -1303,6 +1305,10 @@ var BABYLON;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
                         if (targetNode._babylonAnimationTargets) {
+                            for (var _i = 0, _a = targetNode._babylonAnimationTargets; _i < _a.length; _i++) {
+                                var babylonAnimationTarget = _a[_i];
+                                babylonAnimationTarget.animations.push(babylonAnimation);
+                            }
                             babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                         }
                     }

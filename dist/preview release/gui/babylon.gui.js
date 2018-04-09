@@ -303,6 +303,16 @@ var BABYLON;
                 var engine = scene.getEngine();
                 return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             };
+            AdvancedDynamicTexture.prototype.getProjectedPosition = function (position, worldMatrix) {
+                var scene = this.getScene();
+                if (!scene) {
+                    return BABYLON.Vector2.Zero();
+                }
+                var globalViewport = this._getGlobalViewport(scene);
+                var projectedPosition = BABYLON.Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+                projectedPosition.scaleInPlace(this.renderScale);
+                return new BABYLON.Vector2(projectedPosition.x, projectedPosition.y);
+            };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
                 if (this._layerToDispose) {
                     if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {

@@ -520,6 +520,9 @@
             for (var child of this.children) {
                 var cm = child.getLocalMatrix();
                 cm.multiplyToRef(scaleMat, cm);
+                cm.m[12] *= x;
+                cm.m[13] *= y;
+                cm.m[14] *= z;
 
                 child._markAsDirtyAndDecompose();
             }

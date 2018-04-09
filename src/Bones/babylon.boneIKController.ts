@@ -1,19 +1,55 @@
 module BABYLON {
-    /** Class used to apply inverse kinematics to bones */
+    /** 
+     * Class used to apply inverse kinematics to bones 
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
+     */
     export class BoneIKController {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         private static _tmpQuat = Quaternion.Identity();
         private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
         
+        /**
+         * Gets or sets the target mesh
+         */
         public targetMesh: AbstractMesh;
+
+        /** Gets or sets the mesh used as pole */
         public poleTargetMesh: AbstractMesh;
+
+        /**
+         * Gets or sets the bone used as pole
+         */
         public poleTargetBone: Nullable<Bone>;
+
+        /**
+         * Gets or sets the target position
+         */
         public targetPosition = Vector3.Zero();
+
+        /**
+         * Gets or sets the pole target position
+         */
         public poleTargetPosition = Vector3.Zero();
+
+        /**
+         * Gets or sets the pole target local offset
+         */
         public poleTargetLocalOffset = Vector3.Zero();
+
+        /**
+         * Gets or sets the pole angle
+         */
         public poleAngle = 0;
+
+        /**
+         * Gets or sets the mesh associated with the controller
+         */
         public mesh: AbstractMesh;
+
+        /**
+         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
+         */
         public slerpAmount = 1;
 
         private _bone1Quat = Quaternion.Identity();
@@ -34,18 +70,23 @@ module BABYLON {
 
         private _adjustRoll = 0;
         
-        get maxAngle(): number {
-
+        /**
+         * Gets or sets maximum allowed angle
+         */
+        public get maxAngle(): number {
             return this._maxAngle;
-
         }
 
-        set maxAngle(value: number) {
-            
+        public set maxAngle(value: number) {          
             this._setMaxAngle(value);
-
         }
 
+        /**
+         * Creates a new BoneIKController
+         * @param mesh defines the mesh to control
+         * @param bone defines the bone to control
+         * @param options defines options to set up the controller
+         */
         constructor(mesh: AbstractMesh, 
                     bone: Bone, 
                     options?: { 
@@ -166,8 +207,10 @@ module BABYLON {
 
         }
 
-        public update(): void {
-	
+        /**
+         * Force the controller to update the bones
+         */
+        public update(): void {	
             var bone1 = this._bone1;
 
             if (!bone1) {
@@ -296,8 +339,6 @@ module BABYLON {
 
             this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
             this._bone2Ang = angC;
-
         }
-
     }
 }

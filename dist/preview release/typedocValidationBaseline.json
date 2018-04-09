@@ -1,7 +1,7 @@
 {
-  "errors": 5142,
+  "errors": 5116,
   "babylon.typedoc.json": {
-    "errors": 5142,
+    "errors": 5116,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -4536,98 +4536,6 @@
         }
       }
     },
-    "BoneIKController": {
-      "Constructor": {
-        "new BoneIKController": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "mesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "bone": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "options": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "maxAngle": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "mesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "poleAngle": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "poleTargetBone": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "poleTargetLocalOffset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "poleTargetMesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "poleTargetPosition": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "slerpAmount": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "targetMesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "targetPosition": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "update": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "BoneLookController": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
     "BounceEase": {
       "Class": {
         "Comments": {
@@ -4703,25 +4611,6 @@
       "Class": {
         "Comments": {
           "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new BoundingBox": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "minimum": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maximum": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
         }
       },
       "Property": {
@@ -5174,25 +5063,6 @@
       "Class": {
         "Comments": {
           "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new BoundingSphere": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "minimum": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maximum": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
         }
       },
       "Property": {
@@ -16187,15 +16057,6 @@
         }
       }
     },
-    "PredicateCondition": {
-      "Property": {
-        "predicate": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "ProceduralTexture": {
       "Class": {
         "Comments": {
@@ -24420,25 +24281,6 @@
       "Class": {
         "Comments": {
           "MissingText": true
-        }
-      }
-    },
-    "ValueCondition": {
-      "Property": {
-        "operator": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "propertyPath": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "value": {
-          "Comments": {
-            "MissingText": true
-          }
         }
       }
     },
