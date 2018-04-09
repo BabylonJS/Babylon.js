@@ -9,6 +9,7 @@ import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
 import { ModelLoader } from '../model/modelLoader';
 import { CameraBehavior } from '../interfaces';
+import { viewerGlobals } from '..';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -54,6 +55,8 @@ export abstract class AbstractViewer {
      * The ModelLoader instance connected with this viewer.
      */
     public modelLoader: ModelLoader;
+
+    public runRenderLoop: boolean = true;
 
     /**
      * the viewer configuration object
@@ -210,6 +213,20 @@ export abstract class AbstractViewer {
     }
 
     /**
+     * Is the engine currently set to rende even when the page is in background
+     */
+    public get renderInBackground() {
+        return this.engine.renderEvenInBackground;
+    }
+
+    /**
+     * Set the viewer's background rendering flag.
+     */
+    public set renderInBackground(value: boolean) {
+        this.engine.renderEvenInBackground = value;
+    }
+
+    /**
      * The resize function that will be registered with the window object
      */
     protected _resize = (): void => {
@@ -226,10 +243,19 @@ export abstract class AbstractViewer {
     }
 
     /**
+     * Force a single render loop execution.
+     */
+    public forceRender() {
+        this._render(true);
+    }
+
+    /**
      * render loop that will be executed by the engine
      */
-    protected _render = (): void => {
-        this.scene && this.scene.activeCamera && this.scene.render();
+    protected _render = (force: boolean = false): void => {
+        if (force || (this.runRenderLoop && this.scene && this.scene.activeCamera)) {
+            this.scene.render();
+        }
     }
 
     /**
@@ -779,6 +805,13 @@ export abstract class AbstractViewer {
         }
         let config = this._configuration.engine || {};
         // TDO enable further configuration
+
+        // check for webgl2 support, force-disable if needed.
+        if (viewerGlobals.disableWebGL2Support) {
+            config.engineOptions = config.engineOptions || {};
+            config.engineOptions.disableWebGL2Support = true;
+        }
+
         this.engine = new Engine(canvasElement, !!config.antialiasing, config.engineOptions);
 
         // Disable manifest checking

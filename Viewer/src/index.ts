@@ -1,5 +1,6 @@
 /// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
 import { mapperManager } from './configuration/mappers';
+import { viewerGlobals } from './configuration/globals';
 import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
@@ -13,7 +14,7 @@ import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
-import { PromisePolyfill } from 'babylonjs';
+import * as BABYLON from 'babylonjs';
 
 // load needed modules.
 import 'babylonjs-loaders';
@@ -23,13 +24,13 @@ import 'pep';
 import { InitTags } from './initializer';
 
 // promise polyfill, if needed!
-PromisePolyfill.Apply();
+BABYLON.PromisePolyfill.Apply();
 
 export let disableInit: boolean = false;
 document.addEventListener("DOMContentLoaded", init);
 function init(event) {
     document.removeEventListener("DOMContentLoaded", init);
-    if (disableInit) return;
+    if (viewerGlobals.disableInit || disableInit) return;
     InitTags();
 }
 
@@ -42,4 +43,4 @@ function disposeAll() {
 }
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
+export { BABYLON, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, viewerManager, mapperManager, disposeAll, setDisableInit, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
