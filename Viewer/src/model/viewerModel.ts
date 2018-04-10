@@ -1,4 +1,5 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, GLTFFileLoader, Quaternion } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion } from "babylonjs";
+import { GLTFFileLoader } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
 
