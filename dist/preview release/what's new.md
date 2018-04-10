@@ -146,3 +146,6 @@
 - Engine's onCanvasPointerOutObservable will now return a PointerEvent instead of the Engine. ([trevordev](https://github.com/trevordev))
 - Removed public references to default rendering pipeline's internal post process ([trevordev](https://github.com/trevordev))
 - `Bone.setScale` does not support scaleChildren property anymore. You can use `Bone.scale` to achieve the same effect ([deltakosh](https://github.com/deltakosh))
+- Vector3 &amp; Vector4:
+    - `MinimizeInPlace` has been renamed to `minimizeInPlace`
+    - `MaximizeInPlace` has been renamed to `maximizeInPlace`
