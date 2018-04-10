@@ -1,6 +1,9 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
+    /**
+     * Abstract class that can be implemented to extend existing gltf loader behavior.
+     */
     export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension, IDisposable {
         public enabled = true;
         public abstract readonly name: string;
