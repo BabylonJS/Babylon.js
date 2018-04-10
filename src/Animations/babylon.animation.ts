@@ -231,7 +231,7 @@
         private _easingFunction: IEasingFunction;
 
         /**
-         * Stores the runtime animations of the animation
+         * @ignore Internal use only
          */
         public _runtimeAnimations = new Array<RuntimeAnimation>();
 
@@ -256,16 +256,7 @@
         private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         /**
-         * Gets the animation initialized
-         * @param name Name of the animation
-         * @param targetProperty The property targeted by the animation
-         * @param framePerSecond The frames per second of the animation
-         * @param totalFrame The total number of frames in the animation
-         * @param from The starting frame of the animation
-         * @param to The ending frame of the animation
-         * @param loopMode (Optional) The loop mode of the animation
-         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
-         * @returns Nullable animation
+         * @ignore Internal use
          */
         public static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation> {
@@ -758,9 +749,7 @@
         }
 
         /**
-         * Gets the value from the key
-         * @param value The key storing the value, or the value itself
-         * @returns The value
+         * @ignore Internal use only
          */
         public _getKeyValue(value: any): any {
             if (typeof value === "function") {
@@ -771,14 +760,7 @@
         } 
 
         /**
-         * Interpolates the animation from the current frame
-         * @param currentFrame The frame to interpolate the animation to
-         * @param repeatCount The number of times that the animation should loop
-         * @param workValue A caching value used for interpolation calculations
-         * @param loopMode The type of looping mode to use
-         * @param offsetValue Animation offset value
-         * @param highLimitValue The high limit value
-         * @returns The interpolated value
+         * @ignore Internal use only
          */
         public _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
