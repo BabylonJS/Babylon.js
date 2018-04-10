@@ -43,4 +43,4 @@ function disposeAll() {
 }
 
 // public API for initialization
-export { BABYLON, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, viewerManager, mapperManager, disposeAll, setDisableInit, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
+export { BABYLON, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
