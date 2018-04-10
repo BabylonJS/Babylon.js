@@ -1,28 +1,104 @@
 ﻿module BABYLON {
 
+    /**
+     * Defines a runtime animation
+     */
     export class RuntimeAnimation {
+        /**
+         * The current frame of the runtime animation
+         */
         private _currentFrame: number = 0;
-        private _animation: Animation;
-        private _target: any;
-        private _host: Animatable;
 
+        /**
+         * The animation used by the runtime animation
+         */
+        private _animation: Animation;
+        
+        /**
+         * The target of the runtime animation
+         */
+        private _target: any;
+
+        /**
+         * The initiating animatable
+         */
+        private _host: Animatable;
+        
+        /**
+         * The original value of the runtime animation
+         */
         private _originalValue: any;
+        
+        /**
+         * The original blend value of the runtime animation
+         */
         private _originalBlendValue: any;
+        
+        /**
+         * The offsets cache of the runtime animation
+         */
         private _offsetsCache: {[key: string]: any} = {};
+        
+        /**
+         * The high limits cache of the runtime animation
+         */
         private _highLimitsCache: {[key: string]: any} = {};
+        
+        /**
+         * Specifies if the runtime animation has been stopped
+         */
         private _stopped = false;
+        
+        /**
+         * The blending factor of the runtime animation
+         */
         private _blendingFactor = 0;
+        
+        /**
+         * The BabylonJS scene
+         */
         private _scene: Scene;
 
+        /**
+         * The current value of the runtime animation
+         */
         private _currentValue: any;
+        
         /** @ignore */
         public _workValue: any;
+        
+        /**
+         * The active target of the runtime animation
+         */
         private _activeTarget: any;
+        
+        /**
+         * The target path of the runtime animation
+         */
         private _targetPath: string = "";
+        
+        /**
+         * The weight of the runtime animation
+         */
         private _weight = 1.0;
 
         /**
-         * Gets the current frame
+         * The ratio offset of the runtime animation
+         */
+        private _ratioOffset = 0;
+
+        /**
+         * The previous delay of the runtime animation
+         */
+        private _previousDelay: number = 0;
+        
+        /**
+         * The previous ratio of the runtime animation
+         */
+        private _previousRatio: number = 0;
+
+        /**
+         * Gets the current frame of the runtime animation
          */
         public get currentFrame(): number {
             return this._currentFrame;
@@ -50,7 +126,7 @@
         }
 
         /**
-         * Gets the path where to store the animated value in the target
+         * Gets the target path of the runtime animation
          */
         public get targetPath(): string {
             return this._targetPath;
@@ -66,7 +142,7 @@
         /**
          * Create a new RuntimeAnimation object
          * @param target defines the target of the animation
-         * @param animation defines the source {BABYLON.Animation} object
+         * @param animation defines the source animation object
          * @param scene defines the hosting scene
          * @param host defines the initiating Animatable
          */
@@ -79,10 +155,16 @@
             animation._runtimeAnimations.push(this);
         }
 
+        /**
+         * Gets the animation from the runtime animation
+         */
         public get animation(): Animation {
             return this._animation;
         }
 
+        /**
+         * Resets the runtime animation to the beginning
+         */
         public reset(): void {
             this._offsetsCache = {};
             this._highLimitsCache = {};
@@ -91,10 +173,17 @@
             this._originalValue = null;
         }
 
+        /**
+         * Specifies if the runtime animation is stopped
+         * @returns Boolean specifying if the runtime animation is stopped
+         */
         public isStopped(): boolean {
             return this._stopped;
         }        
 
+        /**
+         * Disposes of the runtime animation
+         */
         public dispose(): void {
             let index = this._animation.runtimeAnimations.indexOf(this);
 
@@ -102,139 +191,19 @@
                 this._animation.runtimeAnimations.splice(index, 1);
             }
         }
-
-        private _getKeyValue(value: any): any {
-            if (typeof value === "function") {
-                return value();
-            }
-
-            return value;
-        }      
         
-        private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any) {
-            if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
-                return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
-            }
-
+        /**
+         * Interpolates the animation from the current frame
+         * @param currentFrame The frame to interpolate the animation to
+         * @param repeatCount The number of times that the animation should loop
+         * @param loopMode The type of looping mode to use
+         * @param offsetValue Animation offset value
+         * @param highLimitValue The high limit value
+         * @returns The interpolated value
+         */
+        private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
             this._currentFrame = currentFrame;
-
-            let keys = this._animation.getKeys();
-
-            // Try to get a hash to find the right key
-            var startKeyIndex = Math.max(0, Math.min(keys.length - 1, Math.floor(keys.length * (currentFrame - keys[0].frame) / (keys[keys.length - 1].frame - keys[0].frame)) - 1));
-
-            if (keys[startKeyIndex].frame >= currentFrame) {
-                while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
-                    startKeyIndex--;
-                }
-            }
-
-            for (var key = startKeyIndex; key < keys.length; key++) {
-                var endKey = keys[key + 1];
-
-                if (endKey.frame >= currentFrame) {
-
-                    var startKey = keys[key];
-                    var startValue = this._getKeyValue(startKey.value);
-                    if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
-                        return startValue;
-                    }
-
-                    var endValue = this._getKeyValue(endKey.value);
-
-                    var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
-                    var frameDelta = endKey.frame - startKey.frame;
-
-                    // gradient : percent of currentFrame between the frame inf and the frame sup
-                    var gradient = (currentFrame - startKey.frame) / frameDelta;
-
-                    // check for easingFunction and correction of gradient
-                    let easingFunction = this._animation.getEasingFunction();
-                    if (easingFunction != null) {
-                        gradient = easingFunction.ease(gradient);
-                    }
-
-                    switch (this._animation.dataType) {
-                        // Float
-                        case Animation.ANIMATIONTYPE_FLOAT:
-                            var floatValue = useTangent ? this._animation.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this._animation.floatInterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return floatValue;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return offsetValue * repeatCount + floatValue;
-                            }
-                            break;
-                        // Quaternion
-                        case Animation.ANIMATIONTYPE_QUATERNION:
-                            var quatValue = useTangent ? this._animation.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.quaternionInterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return quatValue;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quatValue.addInPlace(offsetValue.scale(repeatCount));
-                            }
-
-                            return quatValue;
-                        // Vector3
-                        case Animation.ANIMATIONTYPE_VECTOR3:
-                            var vec3Value = useTangent ? this._animation.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.vector3InterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return vec3Value;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return vec3Value.add(offsetValue.scale(repeatCount));
-                            }
-                        // Vector2
-                        case Animation.ANIMATIONTYPE_VECTOR2:
-                            var vec2Value = useTangent ? this._animation.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this._animation.vector2InterpolateFunction(startValue, endValue, gradient);
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return vec2Value;
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return vec2Value.add(offsetValue.scale(repeatCount));
-                            }
-                        // Size
-                        case Animation.ANIMATIONTYPE_SIZE:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this._animation.sizeInterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this._animation.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-                        // Color3
-                        case Animation.ANIMATIONTYPE_COLOR3:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    return this._animation.color3InterpolateFunction(startValue, endValue, gradient);
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return this._animation.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
-                            }
-                        // Matrix
-                        case Animation.ANIMATIONTYPE_MATRIX:
-                            switch (loopMode) {
-                                case Animation.ANIMATIONLOOPMODE_CYCLE:
-                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                    if (Animation.AllowMatricesInterpolation) {
-                                        this._workValue = this._animation.matrixInterpolateFunction(startValue, endValue, gradient, this._workValue);
-                                        return this._workValue;
-                                    }
-                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return startValue;
-                            }
-                        default:
-                            break;
-                    }
-                    break;
-                }
-            }
-            return this._getKeyValue(keys[keys.length - 1].value);
+            return this._animation._interpolate(currentFrame, repeatCount, this._workValue, loopMode, offsetValue, highLimitValue);
         }
 
         /**
@@ -253,6 +222,12 @@
             }
         }
 
+        /**
+         * Sets the value of the runtime animation
+         * @param target The target property of the runtime animation
+         * @param currentValue The current value to use for the runtime animation
+         * @param weight The weight to use for the runtime animation (Defaults to 1.0)
+         */
         private _setValue(target: any, currentValue: any, weight = 1.0): void {
             // Set value
             var path: any;
@@ -355,6 +330,10 @@
             }
         }
 
+        /**
+         * Gets the loop pmode of the runtime animation
+         * @returns Loop Mode
+         */
         private _getCorrectLoopMode(): number | undefined {
             if ( this._target && this._target.animationPropertiesOverride) {
                 return this._target.animationPropertiesOverride.loopMode;
@@ -381,15 +360,14 @@
             this.setValue(currentValue, -1);
         }
 
+        /**
+         * @ignore Internal use only
+         */
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
             let newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;
 
             this._ratioOffset = this._previousRatio - newRatio;
         }
-
-        private _ratioOffset = 0;
-        private _previousDelay: number = 0;
-        private _previousRatio: number = 0;
 
         /**
          * Execute the current animation
@@ -445,7 +423,7 @@
 
             if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) { // If we are out of range and not looping get back to caller
                 returnValue = false;
-                highLimitValue = this._getKeyValue(keys[keys.length - 1].value);
+                highLimitValue = this._animation._getKeyValue(keys[keys.length - 1].value);
             } else {
                 // Get max value if required
 

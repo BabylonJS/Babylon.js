@@ -241,6 +241,12 @@ module BABYLON {
         @serialize()
         public invertRefractionY = true;
 
+        /**
+         * Defines the alpha limits in alpha test mode
+         */
+        @serialize()
+        public alphaCutOff = 0.4;        
+
         @serialize("useLightmapAsShadowmap")
         private _useLightmapAsShadowmap = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -876,7 +882,7 @@ module BABYLON {
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "vReflectionPosition", "vReflectionSize",
-                    "logarithmicDepthConstant", "vTangentSpaceParams"
+                    "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
@@ -1054,6 +1060,10 @@ module BABYLON {
                         if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                             MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
+
+                            if (this._diffuseTexture.hasAlpha) {
+                                effect.setFloat("alphaCutOff", this.alphaCutOff);
+                            }
                         }
 
                         if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
