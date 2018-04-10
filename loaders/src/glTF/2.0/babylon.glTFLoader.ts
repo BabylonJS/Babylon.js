@@ -527,8 +527,6 @@ module BABYLON.GLTF2 {
         }
 
         private _loadMeshAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, babylonMesh: Mesh): Promise<void> {
-            // TODO: instancing
-
             const promises = new Array<Promise<void>>();
 
             const primitives = mesh.primitives;
@@ -762,9 +760,9 @@ module BABYLON.GLTF2 {
         }
 
         private _loadSkinAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, skin: ILoaderSkin): Promise<void> {
-            const assignSkeleton = () => {
+            const assignSkeleton = (skeleton: Skeleton) => {
                 this._forEachPrimitive(node, babylonMesh => {
-                    babylonMesh.skeleton = skin._babylonSkeleton!;
+                    babylonMesh.skeleton = skeleton;
                 });
 
                 // Ignore the TRS of skinned nodes.
@@ -777,19 +775,49 @@ module BABYLON.GLTF2 {
 
             if (skin._loaded) {
                 return skin._loaded.then(() => {
-                    assignSkeleton();
+                    assignSkeleton(skin._babylonSkeleton!);
                 });
             }
 
-            // TODO: split into two parts so that bones are created before inverseBindMatricesData is loaded (for compiling materials).
+            const skeletonId = `skeleton${skin._index}`;
+            const babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+            skin._babylonSkeleton = babylonSkeleton;
+            this._loadBones(context, skin);
+            assignSkeleton(babylonSkeleton);
 
             return (skin._loaded = this._loadSkinInverseBindMatricesDataAsync(context, skin).then(inverseBindMatricesData => {
-                const skeletonId = `skeleton${skin._index}`;
-                const babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
-                skin._babylonSkeleton = babylonSkeleton;
-                this._loadBones(context, skin, inverseBindMatricesData);
-                assignSkeleton();
+                this._updateBoneMatrices(babylonSkeleton, inverseBindMatricesData);
             }));
+        }
+
+        private _loadBones(context: string, skin: ILoaderSkin): void {
+            const babylonBones: { [index: number]: Bone } = {};
+            for (const index of skin.joints) {
+                const node = GLTFLoader._GetProperty(`${context}/joints/${index}`, this._gltf.nodes, index);
+                this._loadBone(node, skin, babylonBones);
+            }
+        }
+
+        private _loadBone(node: ILoaderNode, skin: ILoaderSkin, babylonBones: { [index: number]: Bone }): Bone {
+            let babylonBone = babylonBones[node._index];
+            if (babylonBone) {
+                return babylonBone;
+            }
+
+            let babylonParentBone: Nullable<Bone> = null;
+            if (node._parent._babylonMesh !== this._rootBabylonMesh) {
+                babylonParentBone = this._loadBone(node._parent, skin, babylonBones);
+            }
+
+            const boneIndex = skin.joints.indexOf(node._index);
+
+            babylonBone = new Bone(node.name || `joint${node._index}`, skin._babylonSkeleton!, babylonParentBone, this._getNodeMatrix(node), null, null, boneIndex);
+            babylonBones[node._index] = babylonBone;
+
+            node._babylonAnimationTargets = node._babylonAnimationTargets || [];
+            node._babylonAnimationTargets.push(babylonBone);
+
+            return babylonBone;
         }
 
         private _loadSkinInverseBindMatricesDataAsync(context: string, skin: ILoaderSkin): Promise<Nullable<Float32Array>> {
@@ -803,46 +831,23 @@ module BABYLON.GLTF2 {
             });
         }
 
-        private _createBone(node: ILoaderNode, skin: ILoaderSkin, parent: Nullable<Bone>, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
-            const babylonBone = new Bone(node.name || `joint${node._index}`, skin._babylonSkeleton!, parent, localMatrix, null, baseMatrix, index);
+        private _updateBoneMatrices(babylonSkeleton: Skeleton, inverseBindMatricesData: Nullable<Float32Array>): void {
+            for (const babylonBone of babylonSkeleton.bones) {
+                let baseMatrix = Matrix.Identity();
+                const boneIndex = babylonBone._index!;
+                if (inverseBindMatricesData && boneIndex !== -1) {
+                    Matrix.FromArrayToRef(inverseBindMatricesData, boneIndex * 16, baseMatrix);
+                    baseMatrix.invertToRef(baseMatrix);
+                }
 
-            node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-            node._babylonAnimationTargets.push(babylonBone);
+                const babylonParentBone = babylonBone.getParent();
+                if (babylonParentBone) {
+                    baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
+                }
 
-            return babylonBone;
-        }
-
-        private _loadBones(context: string, skin: ILoaderSkin, inverseBindMatricesData: Nullable<Float32Array>): void {
-            const babylonBones: { [index: number]: Bone } = {};
-            for (const index of skin.joints) {
-                const node = GLTFLoader._GetProperty(`${context}/joints/${index}`, this._gltf.nodes, index);
-                this._loadBone(node, skin, inverseBindMatricesData, babylonBones);
+                babylonBone.updateMatrix(baseMatrix, false, false);
+                babylonBone._updateDifferenceMatrix(undefined, false);
             }
-        }
-
-        private _loadBone(node: ILoaderNode, skin: ILoaderSkin, inverseBindMatricesData: Nullable<Float32Array>, babylonBones: { [index: number]: Bone }): Bone {
-            let babylonBone = babylonBones[node._index];
-            if (babylonBone) {
-                return babylonBone;
-            }
-
-            const boneIndex = skin.joints.indexOf(node._index);
-
-            let baseMatrix = Matrix.Identity();
-            if (inverseBindMatricesData && boneIndex !== -1) {
-                baseMatrix = Matrix.FromArray(inverseBindMatricesData, boneIndex * 16);
-                baseMatrix.invertToRef(baseMatrix);
-            }
-
-            let babylonParentBone: Nullable<Bone> = null;
-            if (node._parent._babylonMesh !== this._rootBabylonMesh) {
-                babylonParentBone = this._loadBone(node._parent, skin, inverseBindMatricesData, babylonBones);
-                baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
-            }
-
-            babylonBone = this._createBone(node, skin, babylonParentBone, this._getNodeMatrix(node), baseMatrix, boneIndex);
-            babylonBones[node._index] = babylonBone;
-            return babylonBone;
         }
 
         private _getNodeMatrix(node: ILoaderNode): Matrix {
