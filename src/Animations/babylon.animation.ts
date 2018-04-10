@@ -37,11 +37,6 @@
         public isDone: boolean = false;
 
         /**
-         * This callback is an event to perform when triggered by a frame
-         * @callback actionCallback
-         */
-
-        /**
          * Initializes the animation event
          * @param frame The frame for which the event is triggered
          * @param action The event to perform when triggered
