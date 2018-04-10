@@ -365,8 +365,7 @@
         }
 
         /**
-         * Preps the runtime animation for a change in speed
-         * @param newSpeedRatio The new speed ratio for the runtime animation
+         * @ignore Internal use only
          */
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
             let newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;
