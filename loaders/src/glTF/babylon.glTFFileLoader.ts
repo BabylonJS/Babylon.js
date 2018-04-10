@@ -166,7 +166,7 @@ module BABYLON {
         public onParsedObservable = new Observable<IGLTFLoaderData>();
 
         private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
-        /** Method called when data has been parsed from a file */
+        /** Raised when the asset has been parsed. */
         public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
             if (this._onParsedObserver) {
                 this.onParsedObservable.remove(this._onParsedObserver);
@@ -178,12 +178,12 @@ module BABYLON {
 
         // #region V1 options
         /**
-         * If file should be loaded incrementally resulting in a callback for each node that is loaded
+         * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders. Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled. Defaults to true.
          */
         public static IncrementalLoading = true;
 
         /**
-         * If homogeneusCoordinates are used. See https://en.wikipedia.org/wiki/Homogeneous_coordinates
+         * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters. Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates
          */
         public static HomogeneousCoordinates = false;
 
@@ -192,27 +192,32 @@ module BABYLON {
         // #region V2 options
 
         /**
-         * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+         * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED). Defaults to AUTO.
+         * - AUTO - Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         * - FORCE_RIGHT_HANDED - Sets the useRightHandedSystem flag on the scene.
          */
         public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
 
         /**
-         * The animation start mode (NONE, FIRST, ALL).
-         */
+        * The animation start mode (NONE, FIRST, ALL). Defaults to FIRST.
+        * - NONE - No animation will start.
+        * - FIRST - The first animation will start.
+        * - ALL - All animations will start.
+        */
         public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
 
         /**
-         * Set to true to compile materials before raising the success callback.
+         * Set to true to compile materials before raising the success callback. Defaults to false.
          */
         public compileMaterials = false;
 
         /**
-         * Set to true to also compile materials with clip planes.
+         * Set to true to also compile materials with clip planes. Defaults to false.
          */
         public useClipPlane = false;
 
         /**
-         * Set to true to compile shadow generators before raising the success callback.
+         * Set to true to compile shadow generators before raising the success callback. Defaults to false.
          */
         public compileShadowGenerators = false;
 
