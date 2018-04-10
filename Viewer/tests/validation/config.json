@@ -1,0 +1,16 @@
+﻿{
+    "root": "https://viewer.babylonjs.com",
+    "tests": [
+        {
+            "title": "Basic Helmet",
+            "configuration": {
+                "extends": "minimal",
+                "model": {
+                    "title": "Basic Helmet",
+                    "url": "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                }
+            },
+            "referenceImage": "basicHelmet.png"
+        }
+    ]
+}
