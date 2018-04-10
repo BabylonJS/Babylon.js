@@ -1,7 +1,7 @@
 {
-  "errors": 4947,
+  "errors": 4848,
   "babylon.typedoc.json": {
-    "errors": 4947,
+    "errors": 4848,
     "AbstractMesh": {
       "Class": {
         "Comments": {
@@ -2965,30 +2965,6 @@
           }
         },
         "init": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "Axis": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "X": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "Y": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "Z": {
           "Comments": {
             "MissingText": true
           }
