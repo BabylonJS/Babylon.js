@@ -114,6 +114,7 @@
 - Added unlit material extension support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - (Viewer) Viewer's declaration file automatically generated ([RaananW](https://github.com/RaananW))
 - New serialize and parse functions for effect layers (Highlight and Glow layers) ([julien-moreau](https://github.com/julien-moreau))
+- Added alphaCutOff support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 
 ## Bug fixes
 
