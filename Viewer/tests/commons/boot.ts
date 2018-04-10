@@ -1,5 +1,5 @@
-// import webglSupport from './mockWebGL';
-import { Helper } from "./helper";
+import webglSupport from './mockWebGL';
+import { Helper, useNullEngine } from "./helper";
 import { viewerGlobals } from "../../src";
 
 export class Boot {
@@ -85,5 +85,7 @@ export class Boot {
 
 }
 
-// webglSupport();
+if (!useNullEngine) {
+    webglSupport();
+}
 export var main = Boot.main;

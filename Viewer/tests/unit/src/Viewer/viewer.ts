@@ -1,6 +1,7 @@
-import { AbstractViewer } from "../../../../src/viewer/viewer";
-import { Helper, NullEngineDefaultViewer } from "../../../commons/helper";
+import { Helper } from "../../../commons/helper";
 import { assert, expect } from "../viewerReference";
+
+export let name = "viewerTest";
 
 /**
  * To prevent test-state-leakage ensure that there is a viewer.dispose() for every new DefaultViewer
@@ -8,7 +9,7 @@ import { assert, expect } from "../viewerReference";
 
 describe('Viewer', function () {
     it('should initialize a new viewer', (done) => {
-        let viewer = new NullEngineDefaultViewer(Helper.getViewerContainer());
+        let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isTrue(viewer != undefined, "Viewer can not be instantiated.");
             viewer.dispose();
@@ -17,10 +18,9 @@ describe('Viewer', function () {
     });
 
     it('should not initialize if element is undefined', (done) => {
-        let viewer: AbstractViewer;
         try {
             // force typescript to "think" that the element exist with "!"
-            viewer = new NullEngineDefaultViewer(document.getElementById('doesntexist')!);
+            let viewer = Helper.getNewViewerInstance(document.getElementById('doesntexist')!);
             expect(viewer).not.to.exist;
             if (viewer) viewer.dispose();
         } catch (e) {
@@ -29,39 +29,8 @@ describe('Viewer', function () {
         }
         done();
     });
-
-    it('should be hidden and shown', (done) => {
-        let viewer = new NullEngineDefaultViewer(Helper.getViewerContainer());
-        viewer.onInitDoneObservable.add(() => {
-            assert.isTrue(viewer != undefined, "Viewer can not be instantiated.");
-            viewer.dispose();
-            done();
-        });
-    })
 });
 
-export default (function () {
-    /*describe('Viewer', function () {
-        it('should initialize a new viewer', () => {
-            let viewer = new DefaultViewer(Helper.getCanvas());
-            assert.isTrue(viewer != undefined, "Viewer can not be instantiated.");
-            viewer.dispose();
-        });
-
-        it('should not initialize if canvas is undefined', () => {
-            let viewer: AbstractViewer;
-            try {
-                viewer = new DefaultViewer(undefined);
-                expect(viewer).not.to.exist;
-            } catch (e) {
-                // exception was thrown, we are happy
-                assert.isTrue(true);
-            }
-
-            if (viewer) viewer.dispose();
-        });
-    })*/
-})();
 //}
 
 

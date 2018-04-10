@@ -2,7 +2,25 @@ import { AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPla
 import { ViewerConfiguration } from "../../src/configuration/configuration";
 import { IModelAnimation } from "../../src/model/modelAnimation";
 
+export const useNullEngine = true;
+
 export class Helper {
+
+    public static getNewViewerInstance(element: HTMLElement = Helper.getViewerContainer(), configuration?: ViewerConfiguration, useAbstractViewer?: boolean) {
+        if (useNullEngine) {
+            if (useAbstractViewer) {
+                return new NullEngineAbstractViewer(element, configuration);
+            } else {
+                return new NullEngineDefaultViewer(element, configuration);
+            }
+        } else {
+            if (useAbstractViewer) {
+                return new ImplementedAbstractViewer(element, configuration);
+            } else {
+                return new DefaultViewer(element, configuration);
+            }
+        }
+    }
 
     public static createViewer(options?: ViewerConfiguration): AbstractViewer {
         if (Helper.viewer != null) {
@@ -83,6 +101,55 @@ export class Helper {
 
     private static viewer: AbstractViewer;
 
+}
+
+export class ImplementedAbstractViewer extends AbstractViewer {
+    protected _prepareContainerElement() {
+        // noop
+    }
+}
+
+export class NullEngineAbstractViewer extends AbstractViewer {
+
+    protected _prepareContainerElement() {
+        // noop
+    }
+
+    protected _initEngine() {
+        let config: any = this._configuration.engine || {};
+        // TDO enable further configuration
+        config.engineOptions = config.engineOptions || {};
+
+        // check for webgl2 support, force-disable if needed.
+        if (viewerGlobals.disableWebGL2Support) {
+
+            config.engineOptions.disableWebGL2Support = true;
+        }
+
+        config.engineOptions.renderWidth = 500;
+
+        this.engine = new BABYLON.NullEngine(config.engineOptions);
+
+        // Disable manifest checking
+        BABYLON.Database.IDBStorageEnabled = false;
+
+        if (!config.disableResize) {
+            window.addEventListener('resize', this._resize);
+        }
+
+
+        this.engine.runRenderLoop(this._render);
+
+        if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
+            var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
+            this.engine.setHardwareScalingLevel(scale);
+        }
+
+        // set hardware limitations for scene initialization
+        this._handleHardwareLimitations();
+
+        return Promise.resolve(this.engine);
+    }
 }
 
 export class NullEngineDefaultViewer extends DefaultViewer {
