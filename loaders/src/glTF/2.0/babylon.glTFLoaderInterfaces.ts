@@ -29,7 +29,7 @@ module BABYLON.GLTF2 {
     }
 
     /**
-     * Asynchronous keyframe data
+     * Keyframe data
      */
     export interface ILoaderAnimationSampler extends IAnimationSampler, IArrayItem {
         _data: Promise<ILoaderAnimationSamplerData>;
@@ -46,7 +46,7 @@ module BABYLON.GLTF2 {
     }
 
     /**
-     * Asynchronous loader buffer
+     * Loader buffer
      */
     export interface ILoaderBuffer extends IBuffer, IArrayItem {
         _data?: Promise<ArrayBufferView>;
