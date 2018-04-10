@@ -885,7 +885,7 @@ export abstract class AbstractViewer {
             this.onModelLoadErrorObservable.notifyObserversWithPromise(errorObject);
         });
         model.onLoadProgressObservable.add((progressEvent) => {
-            return this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
+            this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
         });
         this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
 
@@ -944,7 +944,11 @@ export abstract class AbstractViewer {
         }).then(() => {
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
-                return this.initModel(modelConfig, clearScene);
+                try {
+                    resolve(this.initModel(modelConfig, clearScene));
+                } catch (e) {
+                    reject(e);
+                }
             });
         })
     }
