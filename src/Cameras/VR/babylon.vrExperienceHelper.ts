@@ -799,6 +799,9 @@ module BABYLON {
             }
             else if (this._vrDeviceOrientationCamera) {
                 this._vrDeviceOrientationCamera.position = this._position;
+                if(this._scene.activeCamera){
+                    this._vrDeviceOrientationCamera.minZ = this._scene.activeCamera.minZ
+                }
                 this._scene.activeCamera = this._vrDeviceOrientationCamera;
                 this._scene.getEngine().switchFullscreen(true);
                 this.updateButtonVisibility();
@@ -849,6 +852,9 @@ module BABYLON {
             if (this._interactionsEnabled) {
                 this._scene.unregisterBeforeRender(this.beforeRender);
             }
+
+            // resize to update width and height when exiting vr exits fullscreen
+            this._scene.getEngine().resize();
         }
 
         /**
