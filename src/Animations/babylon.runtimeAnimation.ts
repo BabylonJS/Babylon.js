@@ -202,10 +202,6 @@
          * @returns The interpolated value
          */
         private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
-            if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
-                return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
-            }
-
             this._currentFrame = currentFrame;
             return this._animation._interpolate(currentFrame, repeatCount, this._workValue, loopMode, offsetValue, highLimitValue);
         }
