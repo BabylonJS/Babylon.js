@@ -1,20 +1,26 @@
 ﻿module BABYLON {
     /**
-     * Represents the range of an animation.
+     * Represents the range of an animation
      */
     export class AnimationRange {
         /**
-         * Initializes the range of an animation.
-         * @param {string} name - The name of the animation range.
-         * @param {number} from - The starting frame of the animation.
-         * @param {number} to - The ending frame of the animation.
+         * Initializes the range of an animation
+         * @param name The name of the animation range
+         * @param from The starting frame of the animation
+         * @param to The ending frame of the animation
          */
-        constructor(public name: string, public from: number, public to: number) {
+        constructor(
+            /**The name of the animation range**/
+            public name: string, 
+            /**The starting frame of the animation */
+            public from: number, 
+            /**The ending frame of the animation*/
+            public to: number) {
         }
 
         /**
-         * Makes a copy of the animation range.
-         * @returns {AnimationRange} - A copy of the animation range.
+         * Makes a copy of the animation range
+         * @returns A copy of the animation range
          */
         public clone(): AnimationRange {
             return new AnimationRange(this.name, this.from, this.to);
@@ -26,54 +32,60 @@
      */
     export class AnimationEvent {
         /**
-         * Specifies if the animation event is done.
+         * Specifies if the animation event is done
          */
         public isDone: boolean = false;
 
         /**
-         * This callback is an event to perform when triggered by a frame.
+         * This callback is an event to perform when triggered by a frame
          * @callback actionCallback
          */
 
         /**
-         * Initializes the animation event.
-         * @param {number} frame - The frame for which the event is triggered.
-         * @param {actionCallback} action - The event to perform when triggered.
-         * @param {boolean} onlyOnce - Specifies if the event should be triggered only once.
+         * Initializes the animation event
+         * @param frame The frame for which the event is triggered
+         * @param action The event to perform when triggered
+         * @param onlyOnce Specifies if the event should be triggered only once
          */
-        constructor(public frame: number, public action: () => void, public onlyOnce?: boolean) {
+        constructor(
+            /** The frame for which the event is triggered **/
+            public frame: number,
+            /** The event to perform when triggered **/
+            public action: () => void , 
+            /** Specifies if the event should be triggered only once**/
+            public onlyOnce?: boolean ) {
         }
     }
 
     /**
-     * A cursor which tracks a point on a path.
+     * A cursor which tracks a point on a path
      */
     export class PathCursor {
         /**
-         * Stores path cursor callbacks for when an onchange event is triggered.
+         * Stores path cursor callbacks for when an onchange event is triggered
          */
         private _onchange = new Array<(cursor: PathCursor) => void>();
 
         /**
-         * The value of the path cursor.
+         * The value of the path cursor
          */
         value: number = 0;
 
         /**
-         * The animation array of the path cursor.
+         * The animation array of the path cursor
          */
         animations = new Array<Animation>();
 
         /**
-         * Initializes the path cursor.
-         * @param path - The path to track.
+         * Initializes the path cursor
+         * @param path The path to track
          */
         constructor(private path: Path2) {
         }
 
         /**
-         * Gets the cursor point on the path.
-         * @returns {Vector3} - A point on the path cursor at the cursor location.
+         * Gets the cursor point on the path
+         * @returns A point on the path cursor at the cursor location
          */
         public getPoint(): Vector3 {
             var point = this.path.getPointAtLengthPosition(this.value);
@@ -81,9 +93,9 @@
         }
 
         /**
-         * Moves the cursor ahead by the step amount.
-         * @param {number} step - The amount to move the cursor forward.
-         * @returns {PathCursor} - This path cursor.
+         * Moves the cursor ahead by the step amount
+         * @param step The amount to move the cursor forward
+         * @returns This path cursor
          */
         public moveAhead(step: number = 0.002): PathCursor {
             this.move(step);
@@ -92,9 +104,9 @@
         }
 
         /**
-         * Moves the cursor behind by the step amount.
-         * @param {number} step - The amount to move the cursor back.
-         * @returns {PathCursor} - This path cursor.
+         * Moves the cursor behind by the step amount
+         * @param step The amount to move the cursor back
+         * @returns This path cursor
          */
         public moveBack(step: number = 0.002): PathCursor {
             this.move(-step);
@@ -103,10 +115,10 @@
         }
 
         /**
-         * Moves the cursor by the step amount.
-         * If the step amount is greater than one, an exception is thrown.
-         * @param {number} step - The amount to move the cursor.
-         * @returns {PathCursor} - This path cursor.
+         * Moves the cursor by the step amount
+         * If the step amount is greater than one, an exception is thrown
+         * @param step The amount to move the cursor
+         * @returns This path cursor
          */
         public move(step: number): PathCursor {
 
@@ -122,8 +134,8 @@
         }
 
         /**
-         * Ensures that the value is limited between zero and one.
-         * @returns {PathCursor} - This path cursor.
+         * Ensures that the value is limited between zero and one
+         * @returns This path cursor
          */
         private ensureLimits(): PathCursor {
             while (this.value > 1) {
@@ -137,8 +149,8 @@
         }
 
         /**
-         * Runs onchange callbacks on change.  Used by the animation engine.
-         * @returns {PathCursor} - This path cursor.
+         * Runs onchange callbacks on change (used by the animation engine)
+         * @returns This path cursor
          */
         private raiseOnChange(): PathCursor {
             this._onchange.forEach(f => f(this));
@@ -147,15 +159,9 @@
         }
 
         /**
-         * This callback is performed when an onchange event is triggered in PathCursor.
-         * @callback pathCursorCallback
-         * @param {PathCursor} cursor - A cursor which tracks a point on a path.
-         */
-
-        /**
-         * Executes a function on change.
-         * @param {pathCursorCallback} f - A path cursor onchange callback.
-         * @returns {PathCursor} - This path cursor.
+         * Executes a function on change
+         * @param f A path cursor onchange callback
+         * @returns This path cursor
          */
         public onchange(f: (cursor: PathCursor) => void): PathCursor {
             this._onchange.push(f);
@@ -165,37 +171,37 @@
     }
 
     /**
-     * Defines an interface which represents an animation key frame.
+     * Defines an interface which represents an animation key frame
      */
     export interface IAnimationKey {
         /**
-         * Frame of the key frame.
+         * Frame of the key frame
          */
         frame: number;
         /**
-         * Value at the specifies key frame.
+         * Value at the specifies key frame
          */
         value: any;
         /**
-         * The input tangent for the cubic hermite spline.
+         * The input tangent for the cubic hermite spline
          */
         inTangent?: any;
         /**
-         * The output tangent for the cubic hermite spline.
+         * The output tangent for the cubic hermite spline
          */
         outTangent?: any;
         /**
-         * The animation interpolation type.
+         * The animation interpolation type
          */
         interpolation?: AnimationKeyInterpolation;
     }
 
     /**
-     * Enum for the animation key frame interpolation type.
+     * Enum for the animation key frame interpolation type
      */
     export enum AnimationKeyInterpolation {
         /**
-         * Do not interpolate between keys and use the start key value only. Tangents are ignored.
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored
          */
         STEP = 1
     }
@@ -215,51 +221,51 @@
         public static AllowMatrixDecomposeForInterpolation = true;
 
         /**
-         * Stores the key frames of the animation.
+         * Stores the key frames of the animation
          */
         private _keys: Array<IAnimationKey>;
 
         /**
-         * Stores the easing function of the animation.
+         * Stores the easing function of the animation
          */
         private _easingFunction: IEasingFunction;
 
         /**
-         * Stores the runtime animations of the animation.
+         * Stores the runtime animations of the animation
          */
         public _runtimeAnimations = new Array<RuntimeAnimation>();
 
         /**
-         * The set of event that will be linked to this animation.
+         * The set of event that will be linked to this animation
          */
         private _events = new Array<AnimationEvent>();
 
         /**
-         * Stores an array of target property paths.
+         * Stores an array of target property paths
          */
         public targetPropertyPath: string[];
 
         /**
-         * Stores the blending speed of the animation.
+         * Stores the blending speed of the animation
          */
         public blendingSpeed = 0.01;
 
         /**
-         * Stores the animation ranges for the animation.
+         * Stores the animation ranges for the animation
          */
         private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         /**
-         * Gets the animation initialized.
-         * @param name - Name of the animation.
-         * @param targetProperty - The property targeted by the animation.
-         * @param framePerSecond - The frames per second of the animation.
-         * @param totalFrame - The total number of frames in the animation.
-         * @param from - The starting frame of the animation.
-         * @param to - The ending frame of the animation.
-         * @param loopMode - (Optional) The loop mode of the animation.
-         * @param easingFunction - (Optional) The easing function of the animation, which allow custom mathematical formulas for animations.
-         * @returns {Nullable<Animation>} - Nullable animation.
+         * Gets the animation initialized
+         * @param name Name of the animation
+         * @param targetProperty The property targeted by the animation
+         * @param framePerSecond The frames per second of the animation
+         * @param totalFrame The total number of frames in the animation
+         * @param from The starting frame of the animation
+         * @param to The ending frame of the animation
+         * @param loopMode (Optional) The loop mode of the animation
+         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
+         * @returns Nullable animation
          */
         public static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation> {
@@ -296,11 +302,12 @@
         }
 
         /**
-		 * Sets up an animation.
-		 * @param property The property to animate.
-		 * @param animationType The animation type to apply.
-		 * @param easingFunction The easing function used in the animation.
-		 * @returns {Animation} The created animation.
+		 * Sets up an animation
+		 * @param property The property to animate
+		 * @param animationType The animation type to apply
+         * @param framePerSecond The frames per second of the animation
+		 * @param easingFunction The easing function used in the animation
+		 * @returns The created animation
 		 */
         public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation {
             var animation: Animation = new Animation(property + "Animation",
@@ -316,17 +323,17 @@
 
         /**
          * Create and start an animation on a node
-         * @param {string} name defines the name of the global animation that will be run on all nodes
-         * @param {BABYLON.Node} node defines the root node where the animation will take place
-         * @param {string} targetProperty defines property to animate
-         * @param {number} framePerSecond defines the number of frame per second yo use
-         * @param {number} totalFrame defines the number of frames in total
-         * @param {any} from defines the initial value
-         * @param {any} to defines the final value
-         * @param {number} loopMode defines which loop mode you want to use (off by default)
-         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param name defines the name of the global animation that will be run on all nodes
+         * @param node defines the root node where the animation will take place
+         * @param targetProperty defines property to animate
+         * @param framePerSecond defines the number of frame per second yo use
+         * @param totalFrame defines the number of frames in total
+         * @param from defines the initial value
+         * @param to defines the final value
+         * @param loopMode defines which loop mode you want to use (off by default)
+         * @param easingFunction defines the easing function to use (linear by default)
          * @param onAnimationEnd defines the callback to call when animation end
-         * @returns {Nullable<Animatable>} the animatable created for this animation
+         * @returns the animatable created for this animation
          */
         public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
@@ -342,24 +349,19 @@
         }
 
         /**
-         * This callback is triggered when the animation has completed.
-         * @callback - onAnimationEndCallback
-         */
-
-        /**
          * Create and start an animation on a node and its descendants
-         * @param {string} name defines the name of the global animation that will be run on all nodes
-         * @param {BABYLON.Node} node defines the root node where the animation will take place
-         * @param {boolean} directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-         * @param {string} targetProperty defines property to animate
-         * @param {number} framePerSecond defines the number of frame per second yo use
-         * @param {number} totalFrame defines the number of frames in total
-         * @param {any} from defines the initial value
-         * @param {any} to defines the final value
-         * @param {number} loopMode defines which loop mode you want to use (off by default)
-         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
-         * @param {onAnimationEndCallback | undefined} onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-         * @returns {Nullable<Animatable[]>}  the list of animatables created for all nodes
+         * @param name defines the name of the global animation that will be run on all nodes
+         * @param node defines the root node where the animation will take place
+         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
+         * @param targetProperty defines property to animate
+         * @param framePerSecond defines the number of frame per second to use
+         * @param totalFrame defines the number of frames in total
+         * @param from defines the initial value
+         * @param to defines the final value
+         * @param loopMode defines which loop mode you want to use (off by default)
+         * @param easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
          * @example https://www.babylonjs-playground.com/#MH0VLI
          */
         public static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string,
@@ -377,18 +379,18 @@
         }
 
         /**
-         * Creates a new animation, merges it with the existing animations and starts it.
-         * @param {string} name - Name of the animation.
-         * @param {Node} node - Node which contains the scene that begins the animations. 
-         * @param {string} targetProperty - Specifies which property to animate.
-         * @param {number} framePerSecond - The frames per second of the animation.
-         * @param {number} totalFrame - The total number of frames.
-         * @param {number} from - The frame at the beginning of the animation.
-         * @param {number} to - The frame at the end of the animation.
-         * @param {number | undefined} loopMode - Specifies the loop mode of the animation.
-         * @param {EasingFunction | undefined} easingFunction - (Optional) The easing function of the animation, which allow custom mathematical formulas for animations.
-         * @param {onAnimationEndCallback | undefined} onAnimationEnd - Callback to run once the animation is complete.
-         * @returns {Nullable<Animatable>}- Nullable animation.
+         * Creates a new animation, merges it with the existing animations and starts it
+         * @param name Name of the animation
+         * @param node Node which contains the scene that begins the animations
+         * @param targetProperty Specifies which property to animate
+         * @param framePerSecond The frames per second of the animation
+         * @param totalFrame The total number of frames
+         * @param from The frame at the beginning of the animation
+         * @param to The frame at the end of the animation
+         * @param loopMode Specifies the loop mode of the animation
+         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
+         * @param onAnimationEnd Callback to run once the animation is complete
+         * @returns Nullable animation
          */
         public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
@@ -406,16 +408,16 @@
         }
 
         /**
-		 * Transition property of the Camera to the target Value.
-		 * @param {string} property The property to transition
-		 * @param {any} targetValue The target Value of the property
-         * @param {any} host The object where the property to animate belongs
-         * @param {Scene} scene Scene used to run the animation
-         * @param {number} frameRate Framerate (in frame/s) to use
-		 * @param {Animation} transition The transition type we want to use
-		 * @param {number} duration The duration of the animation, in milliseconds
-		 * @param {Nullable<onAnimationEndCallback>} onAnimationEnd Call back trigger at the end of the animation.
-         * @returns {Nullable<Animatable>}- Nullable animation.
+		 * Transition property of the Camera to the target Value
+		 * @param property The property to transition
+		 * @param targetValue The target Value of the property
+         * @param host The object where the property to animate belongs
+         * @param scene Scene used to run the animation
+         * @param frameRate Framerate (in frame/s) to use
+		 * @param transition The transition type we want to use
+		 * @param duration The duration of the animation, in milliseconds
+		 * @param onAnimationEnd Callback trigger at the end of the animation
+         * @returns Nullable animation
 		 */
         public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
             if (duration <= 0) {
@@ -449,14 +451,14 @@
         }
 
         /**
-         * Return the array of runtime animations currently using this animation.
+         * Return the array of runtime animations currently using this animation
          */
         public get runtimeAnimations(): RuntimeAnimation[] {
             return this._runtimeAnimations;
         }
 
         /**
-         * Specifies if any of the runtime animations are currently running.
+         * Specifies if any of the runtime animations are currently running
          */
         public get hasRunningRuntimeAnimations(): boolean {
             for (var runtimeAnimation of this._runtimeAnimations) {
@@ -469,15 +471,27 @@
         }
 
         /**
-         * Initializes the animation.
-         * @param {string} name - Name of the animation.
-         * @param {string} targetProperty - Property to animate.
-         * @param {number} framePerSecond - The frames per second of the animation.
-         * @param {number} dataType - The data type of the animation.
-         * @param {number} loopMode - The loop mode of the animation.
-         * @param {boolean} enableBlendings - Specifies if blending should be enabled.
+         * Initializes the animation
+         * @param name Name of the animation
+         * @param targetProperty Property to animate
+         * @param framePerSecond The frames per second of the animation
+         * @param dataType The data type of the animation
+         * @param loopMode The loop mode of the animation
+         * @param enableBlendings Specifies if blending should be enabled
          */
-        constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number, public enableBlending?: boolean) {
+        constructor(
+            /**Name of the animation */
+            public name: string, 
+            /**Property to animate */
+            public targetProperty: string, 
+            /**The frames per second of the animation */
+            public framePerSecond: number, 
+            /**The data type of the animation */
+            public dataType: number,
+            /**The loop mode of the animation */ 
+            public loopMode?: number, 
+            /**Specifies if blending should be enabled */
+            public enableBlending?: boolean) {
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
@@ -485,8 +499,9 @@
 
         // Methods
         /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         * @returns {string} - String form of the animation.
+         * Converts the animation to a string
+         * @param fullDetails support for multiple levels of logging within scene loading
+         * @returns String form of the animation
          */
         public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name + ", property: " + this.targetProperty;
@@ -509,7 +524,8 @@
         }
 
         /**
-         * Add an event to this animation.
+         * Add an event to this animation
+         * @param event Event to add
          */
         public addEvent(event: AnimationEvent): void {
             this._events.push(event);
@@ -517,7 +533,7 @@
 
         /**
          * Remove all events found at the given frame
-         * @param {number} frame - The frame to remove events from.
+         * @param frame The frame to remove events from
          */
         public removeEvents(frame: number): void {
             for (var index = 0; index < this._events.length; index++) {
@@ -529,18 +545,18 @@
         }
 
         /**
-         * Retrieves all the events from the animation.
-         * @returns {AnimationEvent[]} - Events from the animation.
+         * Retrieves all the events from the animation
+         * @returns Events from the animation
          */
         public getEvents(): AnimationEvent[] {
             return this._events;
         }
 
         /**
-         * Creates an animation range.
-         * @param {string} name - Name of the animation range.
-         * @param {number} from - Starting frame of the animation range.
-         * @param {number} to - Ending frame of the animation.
+         * Creates an animation range
+         * @param name Name of the animation range
+         * @param from Starting frame of the animation range
+         * @param to Ending frame of the animation
          */
         public createRange(name: string, from: number, to: number): void {
             // check name not already in use; could happen for bones after serialized
@@ -550,9 +566,9 @@
         }
 
         /**
-         * Deletes an animation range by name.
-         * @param {string} name - Name of the animation range to delete.
-         * @param {boolean} deleteFrames - Specifies if the key frames for the range should also be deleted (true) or not (false). 
+         * Deletes an animation range by name
+         * @param name Name of the animation range to delete
+         * @param deleteFrames Specifies if the key frames for the range should also be deleted (true) or not (false)
          */
         public deleteRange(name: string, deleteFrames = true): void {
             let range = this._ranges[name];
@@ -576,25 +592,25 @@
         }
 
         /**
-         * Gets the animation range by name, or null if not defined.
-         * @param {string} name - Name of the animation range.
-         * @returns {Nullable<AnimationRange>}- Nullable animation range.
+         * Gets the animation range by name, or null if not defined
+         * @param name Name of the animation range
+         * @returns Nullable animation range
          */
         public getRange(name: string): Nullable<AnimationRange> {
             return this._ranges[name];
         }
 
         /**
-         * Gets the key frames from the animation.
-         * @returns {Array<IAnimationKey>} - The key frames of the animation. 
+         * Gets the key frames from the animation
+         * @returns The key frames of the animation
          */
         public getKeys(): Array<IAnimationKey> {
             return this._keys;
         }
 
         /**
-         * Gets the highest frame rate of the animation.
-         * @returns {number} - Highest frame rate of the animation.
+         * Gets the highest frame rate of the animation
+         * @returns Highest frame rate of the animation
          */
         public getHighestFrame(): number {
             var ret = 0;
@@ -608,8 +624,8 @@
         }
 
         /**
-         * Gets the easing function of the animation.
-         * @returns {IEasingFunction} - Easing function of the animation.
+         * Gets the easing function of the animation
+         * @returns Easing function of the animation
          */
         public getEasingFunction(): IEasingFunction {
             return this._easingFunction;
@@ -617,134 +633,134 @@
 
         /**
          * Sets the easing function of the animation
-         * @param {EasingFunction} easingFunction - A custom mathematical formula for animation.
+         * @param easingFunction A custom mathematical formula for animation
          */
         public setEasingFunction(easingFunction: EasingFunction): void {
             this._easingFunction = easingFunction;
         }
 
         /**
-         * Interpolates a scalar linearly.
-         * @param {number} startValue - Start value of the animation curve.
-         * @param {number} endValue - End value of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {number} - Interpolated scalar value.
+         * Interpolates a scalar linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
          */
         public floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number {
             return Scalar.Lerp(startValue, endValue, gradient);
         }
 
         /**
-         * Interpolates a scalar cubically. 
-         * @param {number} startValue - Start value of the animation curve.
-         * @param {number} outTangent - End tangent of the animation.
-         * @param {number} endValue - End value of the animation curve.
-         * @param {number} inTangent - Start tangent of the animation curve..
-         * @param {number} gradient - Scalar amount to interpolate. 
-         * @returns {number} - Interpolated scalar value.
+         * Interpolates a scalar cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
          */
         public floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number {
             return Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
         /**
-         * Interpolates a quaternion using a spherical linear interpolation.
-         * @param {Quaternion} startValue - Start value of the animation curve.
-         * @param {Quaternion} endValue - End value of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {Quaternion} - Interpolated quaternion value.
+         * Interpolates a quaternion using a spherical linear interpolation
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated quaternion value
          */
         public quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion {
             return Quaternion.Slerp(startValue, endValue, gradient);
         }
 
         /**
-         * Interpolates a quaternion cubically.
-         * @param {Quaternion} startValue - Start value of the animation curve.
-         * @param {Quaternion} outTangent - End tangent of the animation curve.
-         * @param {Quaternion} endValue - End value of the animation curve.
-         * @param {Quaternion} inTangent - Start tangent of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {Quaternion} - Interpolated quaternion value.
+         * Interpolates a quaternion cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation curve
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated quaternion value
          */
         public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
             return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient).normalize();
         }
 
         /**
-         * Interpolates a Vector3 linearly.
-         * @param {Vector3} startValue - Start value of the animation curve.
-         * @param {Vector3} endValue - End value of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {Vector3} - Interpolated scalar value.
+         * Interpolates a Vector3 linearl
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
          */
         public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
             return Vector3.Lerp(startValue, endValue, gradient);
         }
 
         /**
-         * Interpolates a Vector3 cubically. 
-         * @param {Vector3} startValue - Start value of the animation curve.
-         * @param {Vector3} outTangent - End tangent of the animation.
-         * @param {Vector3} endValue - End value of the animation curve.
-         * @param {Vector3} inTangent - Start tangent of the animation curve..
-         * @param {number} gradient - Scalar amount to interpolate. 
-         * @returns {Vector3} Interpolated Vector3 value.
+         * Interpolates a Vector3 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns InterpolatedVector3 value
          */
         public vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3 {
             return Vector3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
         /**
-         * Interpolates a Vector2 linearly.
-         * @param {Vector2} startValue - Start value of the animation curve.
-         * @param {Vector2} endValue - End value of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {Vector2} - Interpolated Vector2 value.
+         * Interpolates a Vector2 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Vector2 value
          */
         public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2 {
             return Vector2.Lerp(startValue, endValue, gradient);
         }
 
         /**
-         * Interpolates a Vector2 cubically. 
-         * @param {Vector2} startValue - Start value of the animation curve.
-         * @param {Vector2} outTangent - End tangent of the animation.
-         * @param {Vector2} endValue - End value of the animation curve.
-         * @param {Vector2} inTangent - Start tangent of the animation curve..
-         * @param {number} gradient - Scalar amount to interpolate. 
-         * @returns {Vector2} - Interpolated Vector2 value.
+         * Interpolates a Vector2 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Vector2 value
          */
         public vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2 {
             return Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
         }
 
         /**
-         * Interpolates a size linearly.
-         * @param {Size} startValue - Start value of the animation curve.
-         * @param {Size} endValue - End value of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {Size} - Interpolated Size value.
+         * Interpolates a size linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Size value
          */
         public sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size {
             return Size.Lerp(startValue, endValue, gradient);
         }
 
         /**
-         * Interpolates a Color3 linearly.
-         * @param {Color3} startValue - Start value of the animation curve.
-         * @param {Color3} endValue - End value of the animation curve.
-         * @param {number} gradient - Scalar amount to interpolate.
-         * @returns {Color3} - Interpolated Color3 value.
+         * Interpolates a Color3 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Color3 value
          */
         public color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3 {
             return Color3.Lerp(startValue, endValue, gradient);
         }
 
         /**
-         * Gets the value from the key.
-         * @param {any} value - The key storing the value, or the value itself.
-         * @returns {any} - The value. 
+         * Gets the value from the key
+         * @param value The key storing the value, or the value itself
+         * @returns The value
          */
         public _getKeyValue(value: any): any {
             if (typeof value === "function") {
@@ -755,14 +771,14 @@
         } 
 
         /**
-         * Interpolates the animation from the current frame.
-         * @param {number} currentFrame - The frame to interpolate the animation to.
-         * @param {number} repeatCount - The number of times that the animation should loop.
-         * @param {any} workValue - A caching value used for interpolation calculations.
-         * @param {number} loopMode - The type of looping mode to use.
-         * @param {any} offsetValue - Animation offset value.
-         * @param {any} highLimitValue - The high limit value.
-         * @returns {any} - The interpolated value.
+         * Interpolates the animation from the current frame
+         * @param currentFrame The frame to interpolate the animation to
+         * @param repeatCount The number of times that the animation should loop
+         * @param workValue A caching value used for interpolation calculations
+         * @param loopMode The type of looping mode to use
+         * @param offsetValue Animation offset value
+         * @param highLimitValue The high limit value
+         * @returns The interpolated value
          */
         public _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
@@ -890,11 +906,11 @@
 
         /**
          * Defines the function to use to interpolate matrices
-         * @param {Matrix} startValue defines the start matrix
-         * @param {Matrix} endValue defines the end matrix
-         * @param {number} gradient defines the gradient between both matrices 
-         * @param {Matrix} result defines an optional target matrix where to store the interpolation
-         * @returns {Matrix} the interpolated matrix
+         * @param startValue defines the start matrix
+         * @param endValue defines the end matrix
+         * @param gradient defines the gradient between both matrices 
+         * @param result defines an optional target matrix where to store the interpolation
+         * @returns the interpolated matrix
          */
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix {
             if (Animation.AllowMatrixDecomposeForInterpolation) {
@@ -913,8 +929,8 @@
         }
 
         /**
-         * Makes a copy of the animation.
-         * @returns {Animation} - Cloned animation. 
+         * Makes a copy of the animation
+         * @returns Cloned animation
          */
         public clone(): Animation {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
@@ -941,16 +957,16 @@
         }
 
         /**
-         * Sets the key frames of the animation.
-         * @param values - The animation key frames to set.
+         * Sets the key frames of the animation
+         * @param values The animation key frames to set
          */
         public setKeys(values: Array<IAnimationKey>): void {
             this._keys = values.slice(0);
         }
 
         /**
-         * Serializes the animation to an object.
-         * @returns {any} - Serialized object.
+         * Serializes the animation to an object
+         * @returns Serialized object
          */
         public serialize(): any {
             var serializationObject: any = {};
@@ -1006,120 +1022,120 @@
 
         // Statics
         /**
-         * Float animation type.
+         * Float animation type
          */
         private static _ANIMATIONTYPE_FLOAT = 0;
         /**
-         * Vector3 animation type.
+         * Vector3 animation type
          */
         private static _ANIMATIONTYPE_VECTOR3 = 1;
         /**
-         * Quaternion animation type.
+         * Quaternion animation type
          */
         private static _ANIMATIONTYPE_QUATERNION = 2;
         /**
-         * Matrix animation type.
+         * Matrix animation type
          */
         private static _ANIMATIONTYPE_MATRIX = 3;
         /**
-         * Color3 animation type.
+         * Color3 animation type
          */
         private static _ANIMATIONTYPE_COLOR3 = 4;
         /**
-         * Vector2 animation type.
+         * Vector2 animation type
          */
         private static _ANIMATIONTYPE_VECTOR2 = 5;
         /**
-         * Size animation type.
+         * Size animation type
          */
         private static _ANIMATIONTYPE_SIZE = 6;
         /**
-         * Relative Loop Mode.
+         * Relative Loop Mode
          */
         private static _ANIMATIONLOOPMODE_RELATIVE = 0;
         /**
-         * Cycle Loop Mode.
+         * Cycle Loop Mode
          */
         private static _ANIMATIONLOOPMODE_CYCLE = 1;
         /**
-         * Constant Loop Mode.
+         * Constant Loop Mode
          */
         private static _ANIMATIONLOOPMODE_CONSTANT = 2;
 
         /**
-         * Get the float animation type.
+         * Get the float animation type
          */
         public static get ANIMATIONTYPE_FLOAT(): number {
             return Animation._ANIMATIONTYPE_FLOAT;
         }
 
         /**
-         * Get the Vector3 animation type.
+         * Get the Vector3 animation type
          */
         public static get ANIMATIONTYPE_VECTOR3(): number {
             return Animation._ANIMATIONTYPE_VECTOR3;
         }
 
         /**
-         * Get the Vectpr2 animation type.
+         * Get the Vectpr2 animation type
          */
         public static get ANIMATIONTYPE_VECTOR2(): number {
             return Animation._ANIMATIONTYPE_VECTOR2;
         }
 
         /**
-         * Get the Size animation type.
+         * Get the Size animation type
          */
         public static get ANIMATIONTYPE_SIZE(): number {
             return Animation._ANIMATIONTYPE_SIZE;
         }
 
         /**
-         * Get the Quaternion animation type.
+         * Get the Quaternion animation type
          */
         public static get ANIMATIONTYPE_QUATERNION(): number {
             return Animation._ANIMATIONTYPE_QUATERNION;
         }
 
         /**
-         * Get the Matrix animation type.
+         * Get the Matrix animation type
          */
         public static get ANIMATIONTYPE_MATRIX(): number {
             return Animation._ANIMATIONTYPE_MATRIX;
         }
 
         /**
-         * Get the Color3 animation type.
+         * Get the Color3 animation type
          */
         public static get ANIMATIONTYPE_COLOR3(): number {
             return Animation._ANIMATIONTYPE_COLOR3;
         }
 
         /**
-         * Get the Relative Loop Mode.
+         * Get the Relative Loop Mode
          */
         public static get ANIMATIONLOOPMODE_RELATIVE(): number {
             return Animation._ANIMATIONLOOPMODE_RELATIVE;
         }
 
         /**
-         * Get the Cycle Loop Mode.
+         * Get the Cycle Loop Mode
          */
         public static get ANIMATIONLOOPMODE_CYCLE(): number {
             return Animation._ANIMATIONLOOPMODE_CYCLE;
         }
 
         /**
-         * Get the Constant Loop Mode.
+         * Get the Constant Loop Mode
          */
         public static get ANIMATIONLOOPMODE_CONSTANT(): number {
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
         }
 
         /**
-         * Parses an animation object and creates an animation.
-         * @param parsedAnimation - Parsed animation object.
-         * @returns {Animation} - Animation object.
+         * Parses an animation object and creates an animation
+         * @param parsedAnimation Parsed animation object
+         * @returns Animation object
          */
         public static Parse(parsedAnimation: any): Animation {
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
@@ -1205,9 +1221,9 @@
         }
 
         /**
-         * Appends the serialized animations from the source animations.
-         * @param {IAnimatable} source - Source containing the animations.
-         * @param {any} destination  - Target to store the animations.
+         * Appends the serialized animations from the source animations
+         * @param source Source containing the animations
+         * @param destination Target to store the animations
          */
         public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
             if (source.animations) {
