@@ -1037,32 +1037,31 @@ gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
     server.start();
 });
 
+var rmDir = function (dirPath) {
+    try { var files = fs.readdirSync(dirPath); }
+    catch (e) { return; }
+    if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+            var filePath = dirPath + '/' + files[i];
+            if (fs.statSync(filePath).isFile())
+                fs.unlinkSync(filePath);
+            else
+                rmDir(filePath);
+        }
+    fs.rmdirSync(dirPath);
+};
+
 /**
  * Transpiles viewer typescript unit tests. 
  */
 gulp.task("tests-viewer-unit-transpile", function (done) {
-    //var tsProject = typescript.createProject('../../Viewer/tests/unit/tsconfig.json');
-
-    //var tsResult = gulp.src("../../Viewer/tests/unit/**/*.ts", { base: "../../Viewer/" })
-    //.pipe(tsProject());
-
-    /*tsResult.once("error", function () {
-        tsResult.once("finish", function () {
-            console.log("Typescript compile failed");
-            process.exit(1);
-        });
-    });*/
 
     let wpBuild = webpack(require('../../Viewer/tests/unit/webpack.config.js'));
 
+    // clean the built directory
+    rmDir("../../Viewer/tests/unit/build/");
+
     return wpBuild
-        .pipe(through.obj(function (file, enc, cb) {
-            // only pipe js files
-            const isJs = /\.js$/.test(file.path);
-            if (isJs) this.push(file);
-            cb();
-        }))
-        .pipe(rename("tests.js"))
         .pipe(gulp.dest("../../Viewer/tests/unit/build/"));
 });
 

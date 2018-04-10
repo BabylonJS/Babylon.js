@@ -1,6 +1,6 @@
 // import webglSupport from './mockWebGL';
-import { viewerGlobals } from 'babylonjs-viewer';
 import { Helper } from "./helper";
+import { viewerGlobals } from "../../src";
 
 export class Boot {
     public static AppendResult = false;
@@ -18,7 +18,7 @@ export class Boot {
             //console.debug('> Executing "' + details.name + '"');
 
             //clear DOM and create canvas and container
-            document.getElementById('working-div').innerHTML = `<div style="font-size:30px;">WORKING CANVASES.</div> 
+            document.getElementById('working-div')!.innerHTML = `<div style="font-size:30px;">WORKING CANVASES.</div> 
 				<div id="viewer-testing" style="width:512px;height:512px;">
 					<div id="renderCanvas" width="512" height="512" style="width:512px;height:512px;"></div>
 					<canvas id="referenceCanvas" width="512" height="512" style="width:512px;height:512px;"></canvas>
@@ -27,7 +27,7 @@ export class Boot {
 
             if (Boot.AppendResult) {
                 var newResult = document.createElement('div');
-                document.getElementById('result-div').appendChild(newResult);
+                document.getElementById('result-div')!.appendChild(newResult);
 
                 newResult.innerHTML = `<div class="result">
 						<div class="resultDisplay"></div>

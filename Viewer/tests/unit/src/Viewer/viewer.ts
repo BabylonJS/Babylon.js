@@ -1,6 +1,6 @@
-import { AbstractViewer } from "babylonjs-viewer";
+import { AbstractViewer } from "../../../../src/viewer/viewer";
 import { Helper, NullEngineDefaultViewer } from "../../../commons/helper";
-import { assert, expect } from "../../viewerReference";
+import { assert, expect } from "../viewerReference";
 
 /**
  * To prevent test-state-leakage ensure that there is a viewer.dispose() for every new DefaultViewer
@@ -16,10 +16,11 @@ describe('Viewer', function () {
         });
     });
 
-    it('should not initialize if canvas is undefined', (done) => {
+    it('should not initialize if element is undefined', (done) => {
         let viewer: AbstractViewer;
         try {
-            viewer = new NullEngineDefaultViewer(undefined);
+            // force typescript to "think" that the element exist with "!"
+            viewer = new NullEngineDefaultViewer(document.getElementById('doesntexist')!);
             expect(viewer).not.to.exist;
             if (viewer) viewer.dispose();
         } catch (e) {
@@ -27,8 +28,16 @@ describe('Viewer', function () {
             assert.isTrue(true);
         }
         done();
-
     });
+
+    it('should be hidden and shown', (done) => {
+        let viewer = new NullEngineDefaultViewer(Helper.getViewerContainer());
+        viewer.onInitDoneObservable.add(() => {
+            assert.isTrue(viewer != undefined, "Viewer can not be instantiated.");
+            viewer.dispose();
+            done();
+        });
+    })
 });
 
 export default (function () {

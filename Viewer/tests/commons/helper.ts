@@ -1,6 +1,6 @@
-import { BABYLON, DefaultViewer, AbstractViewer, ViewerModel, AnimationPlayMode, AnimationState, viewerGlobals } from "babylonjs-viewer";
-import { ViewerConfiguration } from "babylonjs-viewer/configuration/configuration";
-import { IModelAnimation } from "babylonjs-viewer/model/modelAnimation";
+import { AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPlayMode, AnimationState } from "../../src";
+import { ViewerConfiguration } from "../../src/configuration/configuration";
+import { IModelAnimation } from "../../src/model/modelAnimation";
 
 export class Helper {
 
@@ -19,7 +19,7 @@ export class Helper {
     public static disposeViewer() {
         if (Helper.viewer != null) {
             Helper.viewer.dispose();
-            Helper.viewer = null;
+            delete Helper.viewer;
         }
     }
 
@@ -59,7 +59,7 @@ export class Helper {
 
     public static MockScreenCapture(viewer: AbstractViewer, data) {
         BABYLON.Tools.CreateScreenshot = function (viewer, camera, size, successCallback) {
-            successCallback(data);
+            successCallback && successCallback(data || '');
         }
     }
 
