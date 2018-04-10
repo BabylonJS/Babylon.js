@@ -3,16 +3,37 @@
 // & on Seb Lee-Delisle original work: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/ 
 
 module BABYLON {
+    /**
+     * Defines the potential axis of a Joystick
+     */
     export enum JoystickAxis {
+        /** X axis */
         X,
+        /** Y axis */
         Y,
+        /** Z axis */
         Z
     }
 
+    /**
+     * Class used to define virtual joystick (used in touch mode)
+     */
     export class VirtualJoystick {
+        /**
+         * Gets or sets a boolean indicating that left and right values must be inverted
+         */
         public reverseLeftRight: boolean;
+        /**
+         * Gets or sets a boolean indicating that up and down values must be inverted
+         */
         public reverseUpDown: boolean;
+        /**
+         * Gets the offset value for the position (ie. the change of the position value)
+         */
         public deltaPosition: Vector3;
+        /**
+         * Gets a boolean indicating if the virtual joystick was pressed
+         */
         public pressed: boolean;
 
         // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
@@ -43,6 +64,10 @@ module BABYLON {
         private _onPointerUpHandlerRef: (e: PointerEvent) => any;
         private _onResize: (e: any) => any;
 
+        /**
+         * Creates a new virtual joystick
+         * @param leftJoystick defines that the joystick is for left hand (false by default)
+         */
         constructor(leftJoystick?: boolean) {
             if (leftJoystick) {
                 this._leftJoystick = true;
@@ -140,6 +165,10 @@ module BABYLON {
             requestAnimationFrame(() => { this._drawVirtualJoystick(); });
         }
 
+        /**
+         * Defines joystick sensibility (ie. the ratio beteen a physical move and virtual joystick position change)
+         * @param newJoystickSensibility defines the new sensibility
+         */
         public setJoystickSensibility(newJoystickSensibility: number) {
             this._joystickSensibility = newJoystickSensibility;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -249,11 +278,18 @@ module BABYLON {
             this._joystickColor = newColor;
         }
 
+        /**
+         * Defines a callback to call when the joystick is touched
+         * @param action defines the callback
+         */
         public setActionOnTouch(action: () => any) {
             this._action = action;
         }
 
-        // Define which axis you'd like to control for left & right 
+        /**
+         * Defines which axis you'd like to control for left & right 
+         * @param axis defines the axis to use
+         */
         public setAxisForLeftRight(axis: JoystickAxis) {
             switch (axis) {
                 case JoystickAxis.X:
@@ -267,7 +303,10 @@ module BABYLON {
             }
         }
 
-        // Define which axis you'd like to control for up & down 
+        /**
+         * Defines which axis you'd like to control for up & down 
+         * @param axis defines the axis to use
+         */
         public setAxisForUpDown(axis: JoystickAxis) {
             switch (axis) {
                 case JoystickAxis.X:
@@ -324,6 +363,9 @@ module BABYLON {
             requestAnimationFrame(() => { this._drawVirtualJoystick(); });
         }
 
+        /**
+         * Release internal HTML canvas
+         */
         public releaseCanvas() {
             if (VirtualJoystick.vjCanvas) {
                 VirtualJoystick.vjCanvas.removeEventListener('pointerdown', this._onPointerDownHandlerRef);
