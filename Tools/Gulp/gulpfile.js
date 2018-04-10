@@ -63,7 +63,6 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
-    strict: true,
     types: [],
     lib: [
         "dom",
@@ -85,7 +84,6 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    strict: true,
     types: [],
     lib: [
         "dom",
@@ -220,6 +218,7 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
         .pipe(replace(decorateSearchRegex, ""))
+        .pipe(addDecorateAndExtends())
         .pipe(addModuleExports("BABYLON", {
             dependencies: config.build.dependencies
         }))
@@ -466,7 +465,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                         // prepend the needed reference
                         fs.readFile(settings.build.dtsBundle.out, function (err, data) {
                             if (err) throw err;
-                            data = settings.build.dtsBundle.prependText + data.toString();
+                            data = settings.build.dtsBundle.prependText + '\n' + data.toString();
                             fs.writeFile(settings.build.dtsBundle.out, data);
                         });
                     });
@@ -885,7 +884,7 @@ gulp.task("modules", ["prepare-dependency-tree"], function () {
  */
 gulp.task("typedoc-generate", function () {
     return gulp
-        .src(["../../dist/preview release/babylon.d.ts"])
+        .src(["../../dist/preview release/babylon.d.ts", "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts", "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
         .pipe(typedoc({
             // TypeScript options (see typescript docs)
             mode: "modules",

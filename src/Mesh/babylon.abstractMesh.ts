@@ -248,12 +248,10 @@
                 return;
             }
 
-            for (var subMesh of this.subMeshes) {
-                subMesh.setEffect(null);
-            }
+            this._unBindEffect();
         }
 
-        private _receiveShadows = false;
+       private _receiveShadows = false;
         public get receiveShadows(): boolean {
             return this._receiveShadows;
         }
@@ -537,6 +535,13 @@
 
             this._markSubMeshesAsLightDirty();
         }
+
+        /** @ignore */
+        public _unBindEffect() {
+            for (var subMesh of this.subMeshes) {
+                subMesh.setEffect(null);
+            }
+        }        
 
         public _removeLightSource(light: Light): void {
             var index = this._lightSources.indexOf(light);

@@ -43,5 +43,5 @@
         "**/*.d.ts": true,
         "assets":true
     },
-    "typescript.check.workspaceVersion": false
+    "typescript.tsdk": "./Tools/Gulp/node_modules/typescript/lib"
 }

@@ -229,9 +229,13 @@ float finalAlpha = alpha;
 #ifdef USERGBCOLOR
     vec3 finalColor = colorBase;
 #else
-    vec3 finalColor = colorBase.r * vPrimaryColor.rgb * vPrimaryColor.a;
-    finalColor += colorBase.g * vSecondaryColor.rgb * vSecondaryColor.a;
-    finalColor += colorBase.b * vTertiaryColor.rgb * vTertiaryColor.a;
+    #ifdef USEHIGHLIGHTANDSHADOWCOLORS
+        vec3 mainColor = mix(vPrimaryColorShadow.rgb, vPrimaryColor.rgb, colorBase);
+    #else
+        vec3 mainColor = vPrimaryColor.rgb;
+    #endif
+
+    vec3 finalColor = colorBase * mainColor;
 #endif
 
 // ___________________________ FRESNELS _______________________________________

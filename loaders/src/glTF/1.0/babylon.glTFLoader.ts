@@ -1576,6 +1576,9 @@ module BABYLON.GLTF1 {
         public onCompleteObservable = new Observable<IGLTFLoader>();
         public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
+        /**
+        * State of the loader
+        */
         public state: Nullable<GLTFLoaderState> = null;
 
         public dispose(): void {}
@@ -1644,6 +1647,15 @@ module BABYLON.GLTF1 {
             return true;
         }
 
+        /**
+        * Imports one or more meshes from a loaded gltf file and adds them to the scene
+        * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+        * @param scene the scene the meshes should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise containg the loaded meshes, particles, skeletons and animations
+        */
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return new Promise((resolve, reject) => {
                 this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, skeletons) => {
@@ -1687,6 +1699,14 @@ module BABYLON.GLTF1 {
             }, onError);
         }
 
+        /**
+        * Imports all objects from a loaded gltf file and adds them to the scene
+        * @param scene the scene the objects should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise which completes when objects have been loaded to the scene
+        */
         public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return new Promise((resolve, reject) => {
                 this._loadAsync(scene, data, rootUrl, () => {

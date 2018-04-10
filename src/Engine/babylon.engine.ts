@@ -726,7 +726,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.2.0-beta.4";
+            return "3.2.0-beta.5";
         }
 
         // Updatable statics so stick with vars here
@@ -1013,7 +1013,7 @@
         private _internalTexturesCache = new Array<InternalTexture>();
         /** @ignore */
         protected _activeChannel = 0;
-        private _currentTextureChannel = -1;
+        private _currentTextureChannel = -1;    
         /** @ignore */
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
         /** @ignore */
@@ -1662,13 +1662,16 @@
          */
         public resetTextureCache() {
             for (var key in this._boundTexturesCache) {
+                if (!this._boundTexturesCache.hasOwnProperty(key)) {
+                    continue;
+                }
                 let boundTexture = this._boundTexturesCache[key];
                 if (boundTexture) {
                     this._removeDesignatedSlot(boundTexture);
                 }
                 this._boundTexturesCache[key] = null;
-            }
-
+            }       
+            
             if (!this.disableTextureBindingOptimization) {
                 this._nextFreeTextureSlots = [];
                 for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
@@ -2693,7 +2696,7 @@
             if (data instanceof Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, data, this._gl.STATIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.STATIC_DRAW);
             }
 
             this._resetVertexBufferBinding();
@@ -2718,7 +2721,7 @@
             if (data instanceof Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.DYNAMIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, data, this._gl.DYNAMIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, this._gl.DYNAMIC_DRAW);
             }
 
             this._resetVertexBufferBinding();
@@ -2767,7 +2770,7 @@
                 if (data instanceof Array) {
                     this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
                 } else {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, data);
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
                 }
             } else {
                 if (data instanceof Array) {
@@ -2779,7 +2782,7 @@
                         data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
                     }
 
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
                 }
             }
 
@@ -4352,7 +4355,7 @@
             }
 
             if (compression && data) {
-                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, data);
+                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, <DataView>data);
             } else {
                 this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, data);
             }
@@ -4457,22 +4460,16 @@
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
 
             if (texture.isCube) {
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
-
-                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+                this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             } else if (texture.is3D) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
-
-                this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-                this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
             } else {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+                this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
 
@@ -5245,7 +5242,7 @@
 
         /** @ignore */
         public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
-            this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
+            this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
         /**
@@ -5666,7 +5663,7 @@
                 let faceData = data[faceIndex];
 
                 if (compression) {
-                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, (<any>(this.getCaps().s3tc))[compression], texture.width, texture.height, 0, faceData);
+                    gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, (<any>(this.getCaps().s3tc))[compression], texture.width, texture.height, 0, <DataView>faceData);
                 } else {
                     if (needConversion) {
                         faceData = this._convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
@@ -6217,7 +6214,7 @@
         }
 
         /** @ignore */
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false): void {
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): void {
             if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
                 this._activeChannel = texture._designatedSlot;
             }
@@ -6225,7 +6222,7 @@
             let currentTextureBound = this._boundTexturesCache[this._activeChannel];
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
-            if (currentTextureBound !== texture) {
+            if (currentTextureBound !== texture || force) {
                 if (currentTextureBound) {
                     this._removeDesignatedSlot(currentTextureBound);
                 }
@@ -6353,6 +6350,18 @@
             uniform._currentState = destination;
         }
 
+        private _getTextureWrapMode(mode: number): number {
+            switch(mode) {
+                case Texture.WRAP_ADDRESSMODE:
+                    return this._gl.REPEAT;
+                case Texture.CLAMP_ADDRESSMODE:
+                    return this._gl.CLAMP_TO_EDGE;
+                case Texture.MIRROR_ADDRESSMODE:
+                    return this._gl.MIRRORED_REPEAT;
+            }
+            return this._gl.REPEAT;
+        }
+
         private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
             // Not ready?
             if (!texture) {
@@ -6397,111 +6406,67 @@
                 channel = this._getCorrectTextureChannel(channel, internalTexture);
             }
 
+            let needToBind = true;
             if (this._boundTexturesCache[channel] === internalTexture) {
                 this._moveBoundTextureOnTop(internalTexture);
                 if (!isPartOfTextureArray) {
                     this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
                 }
-                return false;
+                
+                needToBind = false;
             }
 
             this._activeChannel = channel;
 
             if (internalTexture && internalTexture.is3D) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
+                if (needToBind) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
+                }
 
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-
-                    switch (texture.wrapU) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
                 }
 
                 if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
-                    switch (texture.wrapV) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
                 }
 
                 if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                     internalTexture._cachedWrapR = texture.wrapR;
-                    switch (texture.wrapR) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
             }
             else if (internalTexture && internalTexture.isCube) {
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
+                if (needToBind) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
+                }                
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
                     var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
-                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode);
-                    this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
+                    this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode, internalTexture);
+                    this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             } else {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture, isPartOfTextureArray);
+                if (needToBind) {               
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture, isPartOfTextureArray);
+                }
 
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
-
-                    switch (texture.wrapU) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
                 }
 
                 if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                     internalTexture._cachedWrapV = texture.wrapV;
-                    switch (texture.wrapV) {
-                        case Texture.WRAP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
-                            break;
-                        case Texture.CLAMP_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-                            break;
-                        case Texture.MIRROR_ADDRESSMODE:
-                            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.MIRRORED_REPEAT);
-                            break;
-                    }
+                    this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
@@ -6535,7 +6500,7 @@
         }
 
         /** @ignore */
-        public _setAnisotropicLevel(key: number, texture: BaseTexture) {
+        public _setAnisotropicLevel(target: number, texture: BaseTexture) {
             var internalTexture = texture.getInternalTexture();
 
             if (!internalTexture) {
@@ -6545,7 +6510,6 @@
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
 
-
             if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST
                 && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
                 && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
@@ -6553,9 +6517,21 @@
             }
 
             if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== value) {
-                this._gl.texParameterf(key, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy));
+                this._setTextureParameterFloat(target, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(value, this._caps.maxAnisotropy), internalTexture);
                 internalTexture._cachedAnisotropicFilteringLevel = value;
             }
+        }
+
+        private _setTextureParameterFloat(target: number, parameter: number, value: number, texture: InternalTexture): void {
+            this._bindTextureDirectly(target, texture, true, true);
+            this._gl.texParameterf(target, parameter, value);
+        }
+
+        private _setTextureParameterInteger(target: number, parameter: number, value: number, texture?: InternalTexture) {
+            if (texture) {
+                this._bindTextureDirectly(target, texture, true, true);
+            }
+            this._gl.texParameteri(target, parameter, value);
         }
 
         /**
@@ -6963,7 +6939,7 @@
                     break;
             }
 
-            gl.readPixels(0, 0, width, height, gl.RGBA, readType, buffer);
+            gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
             return buffer;
