@@ -1,66 +1,66 @@
 ﻿module BABYLON {
 
     /**
-     * Defines a runtime animation.
+     * Defines a runtime animation
      */
     export class RuntimeAnimation {
         /**
-         * The current frame of the runtime animation.
+         * The current frame of the runtime animation
          */
         private _currentFrame: number = 0;
 
         /**
-         * The animation used by the runtime animation.
+         * The animation used by the runtime animation
          */
         private _animation: Animation;
         
         /**
-         * The target of the runtime animation.
+         * The target of the runtime animation
          */
         private _target: any;
 
         /**
-         * The initiating animatable.
+         * The initiating animatable
          */
         private _host: Animatable;
         
         /**
-         * The original value of the runtime animation.
+         * The original value of the runtime animation
          */
         private _originalValue: any;
         
         /**
-         * The original blend value of the runtime animation.
+         * The original blend value of the runtime animation
          */
         private _originalBlendValue: any;
         
         /**
-         * The offsets cache of the runtime animation.
+         * The offsets cache of the runtime animation
          */
         private _offsetsCache: {[key: string]: any} = {};
         
         /**
-         * The high limits cache of the runtime animation.
+         * The high limits cache of the runtime animation
          */
         private _highLimitsCache: {[key: string]: any} = {};
         
         /**
-         * Specifies if the runtime animation has been stopped.
+         * Specifies if the runtime animation has been stopped
          */
         private _stopped = false;
         
         /**
-         * The blending factor of the runtime animation.
+         * The blending factor of the runtime animation
          */
         private _blendingFactor = 0;
         
         /**
-         * The BabylonJS scene.
+         * The BabylonJS scene
          */
         private _scene: Scene;
 
         /**
-         * The current value of the runtime animation.
+         * The current value of the runtime animation
          */
         private _currentValue: any;
         
@@ -68,72 +68,72 @@
         public _workValue: any;
         
         /**
-         * The active target of the runtime animation.
+         * The active target of the runtime animation
          */
         private _activeTarget: any;
         
         /**
-         * The target path of the runtime animation.
+         * The target path of the runtime animation
          */
         private _targetPath: string = "";
         
         /**
-         * The weight of the runtime animation.
+         * The weight of the runtime animation
          */
         private _weight = 1.0;
 
         /**
-         * The ratio offset of the runtime animation.
+         * The ratio offset of the runtime animation
          */
         private _ratioOffset = 0;
 
         /**
-         * The previous delay of the runtime animation.
+         * The previous delay of the runtime animation
          */
         private _previousDelay: number = 0;
         
         /**
-         * The previous ratio of the runtime animation.
+         * The previous ratio of the runtime animation
          */
         private _previousRatio: number = 0;
 
         /**
-         * Gets the current frame of the runtime animation.
+         * Gets the current frame of the runtime animation
          */
         public get currentFrame(): number {
             return this._currentFrame;
         }
 
         /**
-         * Gets the weight of the runtime animation.
+         * Gets the weight of the runtime animation
          */
         public get weight(): number {
             return this._weight;
         }           
 
         /**
-         * Gets the original value of the runtime animation.
+         * Gets the original value of the runtime animation
          */
         public get originalValue(): any {
             return this._originalValue;
         }        
 
         /**
-         * Gets the current value of the runtime animation.
+         * Gets the current value of the runtime animation
          */
         public get currentValue(): any {
             return this._currentValue;
         }
 
         /**
-         * Gets the target path of the runtime animation.
+         * Gets the target path of the runtime animation
          */
         public get targetPath(): string {
             return this._targetPath;
         }
 
         /**
-         * Gets the actual target of the runtime animation.
+         * Gets the actual target of the runtime animation
          */
         public get target(): any {
             return this._activeTarget;
@@ -141,10 +141,10 @@
 
         /**
          * Create a new RuntimeAnimation object
-         * @param {any} target defines the target of the animation
-         * @param {Animation} animation defines the source {BABYLON.Animation} object
-         * @param {Scene} scene defines the hosting scene
-         * @param {Animatable} host defines the initiating Animatable
+         * @param target defines the target of the animation
+         * @param animation defines the source animation object
+         * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
          */
         public constructor(target: any, animation: Animation, scene: Scene, host: Animatable) {
             this._animation = animation;
@@ -156,14 +156,14 @@
         }
 
         /**
-         * Gets the animation from the runtime animation.
+         * Gets the animation from the runtime animation
          */
         public get animation(): Animation {
             return this._animation;
         }
 
         /**
-         * Resets the runtime animation to the beginning.
+         * Resets the runtime animation to the beginning
          */
         public reset(): void {
             this._offsetsCache = {};
@@ -174,15 +174,15 @@
         }
 
         /**
-         * Specifies if the runtime animation is stopped.
-         * @returns {boolean} - Boolean specifying if the runtime animation is stopped.
+         * Specifies if the runtime animation is stopped
+         * @returns Boolean specifying if the runtime animation is stopped
          */
         public isStopped(): boolean {
             return this._stopped;
         }        
 
         /**
-         * Disposes of the runtime animation.
+         * Disposes of the runtime animation
          */
         public dispose(): void {
             let index = this._animation.runtimeAnimations.indexOf(this);
@@ -193,13 +193,13 @@
         }
         
         /**
-         * Interpolates the animation from the current frame.
-         * @param {number} currentFrame - The frame to interpolate the animation to.
-         * @param {number} repeatCount - The number of times that the animation should loop.
-         * @param {number} loopMode - The type of looping mode to use.
-         * @param {any} offsetValue - Animation offset value.
-         * @param {any} highLimitValue - The high limit value.
-         * @returns {any} - The interpolated value.
+         * Interpolates the animation from the current frame
+         * @param currentFrame The frame to interpolate the animation to
+         * @param repeatCount The number of times that the animation should loop
+         * @param loopMode The type of looping mode to use
+         * @param offsetValue Animation offset value
+         * @param highLimitValue The high limit value
+         * @returns The interpolated value
          */
         private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
@@ -212,8 +212,8 @@
 
         /**
          * Affect the interpolated value to the target
-         * @param {any} currentValue defines the value computed by the animation
-         * @param {number} weight defines the weight to apply to this value
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value
          */
         public setValue(currentValue: any, weight = 1.0): void {
             if (this._target instanceof Array) {
@@ -227,10 +227,10 @@
         }
 
         /**
-         * Sets the value of the runtime animation.
-         * @param {any} target - The target property of the runtime animation.
-         * @param {any} currentValue - The current value to use for the runtime animation.
-         * @param {number} [weight=1.0] - The weight to use for the runtime animation.  Defaults to 1.0.
+         * Sets the value of the runtime animation
+         * @param target The target property of the runtime animation
+         * @param currentValue The current value to use for the runtime animation
+         * @param weight The weight to use for the runtime animation (Defaults to 1.0)
          */
         private _setValue(target: any, currentValue: any, weight = 1.0): void {
             // Set value
@@ -335,8 +335,8 @@
         }
 
         /**
-         * Gets the loop pmode of the runtime animation.
-         * @returns {number | undefined} - Loop Mode.
+         * Gets the loop pmode of the runtime animation
+         * @returns Loop Mode
          */
         private _getCorrectLoopMode(): number | undefined {
             if ( this._target && this._target.animationPropertiesOverride) {
@@ -348,7 +348,7 @@
 
         /**
          * Move the current animation to a given frame
-         * @param {number} frame defines the frame to move to
+         * @param frame defines the frame to move to
          */
         public goToFrame(frame: number): void {
             let keys = this._animation.getKeys();
@@ -365,8 +365,8 @@
         }
 
         /**
-         * Preps the runtime animation for a change in speed.
-         * @param {number} newSpeedRatio - The new speed ratio for the runtime animation.
+         * Preps the runtime animation for a change in speed
+         * @param newSpeedRatio The new speed ratio for the runtime animation
          */
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
             let newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;
@@ -376,13 +376,13 @@
 
         /**
          * Execute the current animation
-         * @param {number} delay defines the delay to add to the current frame
-         * @param {number} from defines the lower bound of the animation range
-         * @param {number} to defines the upper bound of the animation range
-         * @param {boolean} loop defines if the current animation must loop
-         * @param {number} speedRatio defines the current speed ratio
-         * @param {number} weight defines the weight of the animation (default is -1 so no weight)
-         * @returns {boolean} a boolean indicating if the animation has ended
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @returns a boolean indicating if the animation has ended
          */
         public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath
