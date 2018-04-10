@@ -155,8 +155,10 @@
         public primaryColor = Color3.White();
         
         @serializeAsColor3()
-        protected _perceptualColor: Nullable<Color3>;
+        protected __perceptualColor: Nullable<Color3>;
         /**
+         * Experimental Internal Use Only.
+         * 
          * Key light Color in "perceptual value" meaning the color you would like to see on screen.
          * This acts as a helper to set the primary color to a more "human friendly" value.
          * Conversion to linear space as well as exposure and tone mapping correction will be applied to keep the
@@ -164,11 +166,11 @@
          * (This does not account for contrast color grading and color curves as they are considered post effect and not directly
          * part of lighting setup.)
          */
-        public get perceptualColor(): Nullable<Color3> {
-            return this._perceptualColor;
+        public get _perceptualColor(): Nullable<Color3> {
+            return this.__perceptualColor;
         }
-        public set perceptualColor(value: Nullable<Color3>) {
-            this._perceptualColor = value;
+        public set _perceptualColor(value: Nullable<Color3>) {
+            this.__perceptualColor = value;
             this._computePrimaryColorFromPerceptualColor();
             this._markAllSubMeshesAsLightsDirty();
         }
@@ -865,44 +867,20 @@
         }
 
         /**
-         * Tone Mapping calibration (should match image processing tone mapping calibration value).
-         */
-        private static readonly _tonemappingCalibration = 1.590579;
-
-        /**
          * Compute the primary color according to the chosen perceptual color.
          */
         private _computePrimaryColorFromPerceptualColor(): void {
-            if (!this._perceptualColor) {
+            if (!this.__perceptualColor) {
                 return;
             }
 
-            this._primaryColor.copyFrom(this._perceptualColor);
+            this._primaryColor.copyFrom(this.__perceptualColor);
 
             // Revert gamma space.
             this._primaryColor.toLinearSpaceToRef(this._primaryColor);
 
             // Revert image processing configuration.
             if (this._imageProcessingConfiguration) {
-                // Revert tone mapping.
-                if (this._imageProcessingConfiguration.toneMappingEnabled) {
-                    // shader reference.
-                    // tonemapped.rgb = 1.0 - exp2(-tonemappingCalibration * color.rgb);
-                    // providing
-                    // log2(1.0 - tonemapped.rgb) / -tonemappingCalibration = color.rgb;
-
-                    // 1.0 - tonemapped.rgb
-                    this._white.subtractToRef(this._primaryColor, this._primaryColor);
-
-                    // log2(1.0 - tonemapped.rgb)
-                    this._primaryColor.r = Scalar.Log2(this._primaryColor.r);
-                    this._primaryColor.g = Scalar.Log2(this._primaryColor.g);
-                    this._primaryColor.b = Scalar.Log2(this._primaryColor.b);
-                    
-                    // log2(1.0 - tonemapped.rgb) / -tonemappingCalibration
-                    this._primaryColor.scaleToRef(-1 / BackgroundMaterial._tonemappingCalibration, this._primaryColor);
-                }
-
                 // Revert Exposure.
                 this._primaryColor.scaleToRef(1 / this._imageProcessingConfiguration.exposure, this._primaryColor);
             }
@@ -921,13 +899,11 @@
             // Find the highlight color based on the configuration.
             this._primaryColor.scaleToRef(this._primaryColorShadowLevel, this._primaryShadowColor);
             this._primaryColor.subtractToRef(this._primaryShadowColor, this._primaryShadowColor);
-            this._primaryShadowColor.clampToRef(0, 1, this._primaryShadowColor);
 
             // Find the shadow color based on the configuration.
             this._white.subtractToRef(this._primaryColor, this._primaryHighlightColor);
             this._primaryHighlightColor.scaleToRef(this._primaryColorHighlightLevel, this._primaryHighlightColor);
             this._primaryColor.addToRef(this._primaryHighlightColor, this._primaryHighlightColor);
-            this._primaryHighlightColor.clampToRef(0, 1, this._primaryHighlightColor);
         }
 
         /**
