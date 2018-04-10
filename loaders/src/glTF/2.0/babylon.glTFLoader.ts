@@ -1,5 +1,8 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
+/**
+* Defines the GLTF2 module used to import/export GLTF 2.0 files
+*/
 module BABYLON.GLTF2 {
     interface IFileRequestInfo extends IFileRequest {
         _lengthComputable?: boolean;
@@ -7,14 +10,37 @@ module BABYLON.GLTF2 {
         _total?: number;
     }
 
+    /**
+    * Interface for a meterial with a constructor
+    */
     export interface MaterialConstructor<T extends Material> {
+        /**
+        * The material class
+        */
         readonly prototype: T;
+        /**
+        * Instatiates a material
+        * @param name name of the material
+        * @param scene the scene the material will be added to
+        */
         new(name: string, scene: Scene): T;
     }
 
+    /**
+    * Used to load from a GLTF2 file
+    */
     export class GLTFLoader implements IGLTFLoader {
+        /**
+        * @ignore
+        */
         public _gltf: ILoaderGLTF;
+        /**
+        * @ignore
+        */
         public _babylonScene: Scene;
+        /**
+        * @ignore
+        */
         public _completePromises = new Array<Promise<void>>();
 
         private _disposed = false;
@@ -29,6 +55,11 @@ module BABYLON.GLTF2 {
 
         private static _Names = new Array<string>();
         private static _Factories: { [name: string]: (loader: GLTFLoader) => GLTFLoaderExtension } = {};
+        /**
+        * @ignore, registers the loader
+        * @param name name of the loader
+        * @param factory function that converts a loader to a loader extension
+        */
         public static _Register(name: string, factory: (loader: GLTFLoader) => GLTFLoaderExtension): void {
             if (GLTFLoader._Factories[name]) {
                 Tools.Error(`Extension with the name '${name}' already exists`);
@@ -41,23 +72,62 @@ module BABYLON.GLTF2 {
             GLTFLoader._Names.push(name);
         }
 
+        /**
+        * Coordinate system that will be used when loading from the gltf file
+        */
         public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+        /**
+        * Animation mode that determines which animations should be started when a file is loaded
+        */
         public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+        /**
+        * If the materials in the file should automatically be compiled
+        */
         public compileMaterials = false;
+        /**
+        * If a clip plane should be usede when loading meshes in the file
+        */
         public useClipPlane = false;
+        /**
+        * If shadow generators should automatically be compiled
+        */
         public compileShadowGenerators = false;
 
+        /**
+        * Observable that fires when the loader is disposed
+        */
         public readonly onDisposeObservable = new Observable<IGLTFLoader>();
+        /**
+        * Observable that fires each time a mesh is loaded
+        */
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
+        /**
+        * Observable that fires each time a texture is loaded
+        */
         public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
+        /**
+        * Observable that fires each time a material is loaded
+        */
         public readonly onMaterialLoadedObservable = new Observable<Material>();
+        /**
+        * Observable that fires each time an extension is loaded
+        */
         public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
+        /**
+        * Observable that fires when the load has completed
+        */
         public readonly onCompleteObservable = new Observable<IGLTFLoader>();
 
+        /**
+        * The current state of the loader
+        */
         public get state(): Nullable<GLTFLoaderState> {
             return this._state;
         }
 
+        /**
+        * Disposes of the loader
+        */
         public dispose(): void {
             if (this._disposed) {
                 return;
@@ -71,6 +141,15 @@ module BABYLON.GLTF2 {
             this._clear();
         }
 
+        /**
+        * Imports one or more meshes from a loaded gltf file and adds them to the scene
+        * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+        * @param scene the scene the meshes should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise containg the loaded meshes, particles, skeletons and animations
+        */
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
                 let nodes: Nullable<Array<ILoaderNode>> = null;
@@ -107,6 +186,14 @@ module BABYLON.GLTF2 {
             });
         }
 
+        /**
+        * Imports all objects from a loaded gltf file and adds them to the scene
+        * @param scene the scene the objects should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise which completes when objects have been loaded to the scene
+        */
         public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return this._loadAsync(null, scene, data, rootUrl, onProgress);
         }
@@ -286,6 +373,9 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
+        /**
+        * @ignore
+        */
         public _loadSceneAsync(context: string, scene: ILoaderScene): Promise<void> {
             const promise = GLTFLoaderExtension._LoadSceneAsync(this, context, scene);
             if (promise) {
@@ -396,6 +486,9 @@ module BABYLON.GLTF2 {
             }
         }
 
+        /**
+        * @ignore
+        */
         public _loadNodeAsync(context: string, node: ILoaderNode): Promise<void> {
             const promise = GLTFLoaderExtension._LoadNodeAsync(this, context, node);
             if (promise) {
@@ -920,13 +1013,14 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        const multiTarget = new AnimationMultiTarget();
+                        const morphTargets = new Array<any>();
                         this._forEachPrimitive(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                            multiTarget.subTargets.push(morphTarget);
+                            morphTarget.animations.push(babylonAnimation);
+                            morphTargets.push(morphTarget);
                         });
 
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                     }
                 }
                 else {
@@ -935,11 +1029,11 @@ module BABYLON.GLTF2 {
                     babylonAnimation.setKeys(keys);
 
                     if (targetNode._babylonAnimationTargets) {
-                        const multiTarget = new AnimationMultiTarget();
-                        for (const target of targetNode._babylonAnimationTargets) {
-                            multiTarget.subTargets.push(target);
+                        for (const babylonAnimationTarget of targetNode._babylonAnimationTargets) {
+                            babylonAnimationTarget.animations.push(babylonAnimation);
                         }
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
+
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                     }
                 }
             });
@@ -1000,6 +1094,9 @@ module BABYLON.GLTF2 {
             return buffer._data;
         }
 
+        /**
+        * @ignore
+        */
         public _loadBufferViewAsync(context: string, bufferView: ILoaderBufferView): Promise<ArrayBufferView> {
             if (bufferView._data) {
                 return bufferView._data;
@@ -1066,6 +1163,9 @@ module BABYLON.GLTF2 {
             return accessor._data;
         }
 
+        /**
+        * @ignore
+        */
         public _loadVertexBufferViewAsync(context: string, bufferView: ILoaderBufferView, kind: string): Promise<Buffer> {
             if (bufferView._babylonBuffer) {
                 return bufferView._babylonBuffer;
@@ -1152,6 +1252,9 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
+        /**
+        * @ignore
+        */
         public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void> {
             const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, babylonDrawMode, assign);
             if (promise) {
@@ -1186,6 +1289,9 @@ module BABYLON.GLTF2 {
             return babylonData.loaded;
         }
 
+        /**
+        * @ignore
+        */
         public _createMaterial<T extends Material>(type: MaterialConstructor<T>, name: string, drawMode: number): T {
             const babylonMaterial = new type(name, this._babylonScene);
             babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
@@ -1193,6 +1299,9 @@ module BABYLON.GLTF2 {
             return babylonMaterial;
         }
 
+        /**
+        * @ignore
+        */
         public _loadMaterialBasePropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
 
@@ -1234,6 +1343,9 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
+        /**
+        * @ignore
+        */
         public _loadMaterialAlphaProperties(context: string, material: ILoaderMaterial, babylonMaterial: PBRMaterial): void {
             const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
             switch (alphaMode) {
@@ -1263,6 +1375,9 @@ module BABYLON.GLTF2 {
             }
         }
 
+        /**
+        * @ignore
+        */
         public _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Promise<void> {
             const texture = GLTFLoader._GetProperty(`${context}/index`, this._gltf.textures, textureInfo.index);
             context = `#/textures/${textureInfo.index}`;
@@ -1334,6 +1449,9 @@ module BABYLON.GLTF2 {
             return image._objectURL;
         }
 
+        /**
+        * @ignore
+        */
         public _loadUriAsync(context: string, uri: string): Promise<ArrayBufferView> {
             const promise = GLTFLoaderExtension._LoadUriAsync(this, context, uri);
             if (promise) {
@@ -1398,6 +1516,9 @@ module BABYLON.GLTF2 {
             this._progressCallback(new SceneLoaderProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
         }
 
+        /**
+        * @ignore
+        */
         public static _GetProperty<T>(context: string, array: ArrayLike<T> | undefined, index: number | undefined): T {
             if (!array || index == undefined || !array[index]) {
                 throw new Error(`${context}: Failed to find index (${index})`);
@@ -1570,6 +1691,9 @@ module BABYLON.GLTF2 {
             this.onMaterialLoadedObservable.clear();
         }
 
+        /**
+        * @ignore
+        */
         public _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>) {
             for (const name of GLTFLoader._Names) {
                 const extension = this._extensions[name];

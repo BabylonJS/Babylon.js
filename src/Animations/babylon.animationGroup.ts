@@ -153,15 +153,7 @@ module BABYLON {
                 return this;
             }
 
-            for (var index = 0; index < this._targetedAnimations.length; index++) {
-                let targetedAnimation = this._targetedAnimations[index];
-                if (!targetedAnimation.target.animations) {
-                    targetedAnimation.target.animations = [];
-                }
-                if (targetedAnimation.target.animations.indexOf(targetedAnimation.animation) === -1) {
-                    targetedAnimation.target.animations.push(targetedAnimation.animation);
-                }
-                
+            for (const targetedAnimation of this._targetedAnimations) {
                 this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio, () => {
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 }));
@@ -262,8 +254,37 @@ module BABYLON {
         }
 
         /**
+         * Set animation weight for all animatables
+         * @param weight defines the weight to use
+         * @return the animationGroup
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+         */
+        public setWeightForAllAnimatables(weight: number): AnimationGroup {
+            for (var index = 0; index < this._animatables.length; index++) {
+                let animatable = this._animatables[index];
+                animatable.weight = weight;
+            }
+
+            return this;
+        }
+
+        /**
+         * Synchronize and normalize all animatables with a source animatable
+         * @param root defines the root animatable to synchronize with
+         * @return the animationGroup
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+         */
+        public syncAllAnimationsWith(root: Animatable): AnimationGroup {
+            for (var index = 0; index < this._animatables.length; index++) {
+                let animatable = this._animatables[index];
+                animatable.syncWith(root);
+            }
+
+            return this;
+        }
+
+        /**
          * Goes to a specific frame in this animation group
-         * 
          * @param frame the frame number to go to
          * @return the animationGroup
          */

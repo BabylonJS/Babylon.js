@@ -152,7 +152,7 @@
         private _scene: Scene;
 
         constructor(scene: Scene) {
-            this._scene = scene;
+            this._scene = scene || Engine.LastCreatedScene;
 
             scene._actionManagers.push(this);
         }

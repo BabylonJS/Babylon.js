@@ -1,3 +1,7 @@
+/**
+ * @ignoreChildren
+ * @ignore
+ */
 declare module BABYLON.GLTF2 {
     const enum AccessorComponentType {
         BYTE = 5120,

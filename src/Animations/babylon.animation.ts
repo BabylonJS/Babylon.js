@@ -96,6 +96,9 @@
         STEP = 1
     }
 
+    /**
+     * Class used to store any kind of animation
+     */
     export class Animation {
         /**
          * Use matrix interpolation instead of using direct key value when animating matrices
