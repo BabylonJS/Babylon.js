@@ -180,7 +180,7 @@ function runTest(index, done) {
     var waitRing = document.createElement("img");
     waitRing.className = "waitRing";
     titleContainer.appendChild(waitRing);
-    waitRing.src = "/tests/validation/loading.gif";
+    waitRing.src = "loading.gif";
 
     var resultCanvas = document.createElement("canvas");
     resultCanvas.className = "resultImage";
@@ -198,7 +198,7 @@ function runTest(index, done) {
         resultContext.drawImage(img, 0, 0);
     }
 
-    img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
+    img.src = "ReferenceImages/" + test.referenceImage;
 
     var renderImage = new Image();
     renderImage.className = "renderImage";
