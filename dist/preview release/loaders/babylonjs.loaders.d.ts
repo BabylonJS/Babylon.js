@@ -1316,10 +1316,10 @@ declare module BABYLON.GLTF2 {
         private _loadMorphTargetVertexDataAsync(context, babylonGeometry, attributes, babylonMorphTarget);
         private static _LoadTransform(node, babylonNode);
         private _loadSkinAsync(context, node, mesh, skin);
+        private _loadBones(context, skin);
+        private _loadBone(node, skin, babylonBones);
         private _loadSkinInverseBindMatricesDataAsync(context, skin);
-        private _createBone(node, skin, parent, localMatrix, baseMatrix, index);
-        private _loadBones(context, skin, inverseBindMatricesData);
-        private _loadBone(node, skin, inverseBindMatricesData, babylonBones);
+        private _updateBoneMatrices(babylonSkeleton, inverseBindMatricesData);
         private _getNodeMatrix(node);
         private _loadAnimationsAsync();
         private _loadAnimationAsync(context, animation);

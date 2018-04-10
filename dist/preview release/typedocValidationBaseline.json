@@ -1,7 +1,7 @@
 {
-  "errors": 5116,
+  "errors": 4947,
   "babylon.typedoc.json": {
-    "errors": 5116,
+    "errors": 4947,
     "JoystickAxis": {
       "Enumeration": {
         "Comments": {
@@ -2224,7 +2224,7 @@
           }
         }
       }
-    },    
+    },
     "Arc2": {
       "Class": {
         "Comments": {
@@ -25984,40 +25984,6 @@
       },
       "Property": {
         "animations": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "IAnimationKey": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "frame": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "inTangent": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "interpolation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "outTangent": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "value": {
           "Comments": {
             "MissingText": true
           }
