@@ -6,6 +6,7 @@ import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
+import { extendClassWithConfig } from '../helper';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -21,15 +22,13 @@ export class DefaultViewer extends AbstractViewer {
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this._onModelLoaded);
-    }
+        this.sceneManager.onSceneInitObservable.add(() => {
+            extendClassWithConfig(this.sceneManager.scene, this._configuration.scene);
+            return this.sceneManager.scene;
+        });
 
-    /**
-     * Overriding the AbstractViewer's _initScene fcuntion
-     */
-    protected _initScene(): Promise<Scene> {
-        return super._initScene().then(() => {
-            this._extendClassWithConfig(this.scene, this._configuration.scene);
-            return this.scene;
+        this.sceneManager.onLightsConfiguredObservable.add((data) => {
+            this._configureLights(data.newConfiguration, data.model!);
         })
     }
 
@@ -310,8 +309,7 @@ export class DefaultViewer extends AbstractViewer {
      * @param lightsConfiguration the light configuration to use
      * @param model the model that will be used to configure the lights (if the lights are model-dependant)
      */
-    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
-        super._configureLights(lightsConfiguration, model);
+    private _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
         // labs feature - flashlight
         if (this._configuration.lab && this._configuration.lab.flashlight) {
             let pointerPosition = Vector3.Zero();
@@ -323,7 +321,7 @@ export class DefaultViewer extends AbstractViewer {
                 angle = this._configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
-                Vector3.Zero(), exponent, angle, this.scene);
+                Vector3.Zero(), exponent, angle, this.sceneManager.scene);
             if (typeof this._configuration.lab.flashlight === "object") {
                 flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
                 if (this._configuration.lab.flashlight.diffuse) {
@@ -338,8 +336,8 @@ export class DefaultViewer extends AbstractViewer {
                 }
 
             }
-            this.scene.constantlyUpdateMeshUnderPointer = true;
-            this.scene.onPointerObservable.add((eventData, eventState) => {
+            this.sceneManager.scene.constantlyUpdateMeshUnderPointer = true;
+            this.sceneManager.scene.onPointerObservable.add((eventData, eventState) => {
                 if (eventData.type === 4 && eventData.pickInfo) {
                     lightTarget = (eventData.pickInfo.pickedPoint);
                 } else {
@@ -347,14 +345,14 @@ export class DefaultViewer extends AbstractViewer {
                 }
             });
             let updateFlashlightFunction = () => {
-                if (this.camera && flashlight) {
-                    flashlight.position.copyFrom(this.camera.position);
+                if (this.sceneManager.camera && flashlight) {
+                    flashlight.position.copyFrom(this.sceneManager.camera.position);
                     if (lightTarget) {
                         lightTarget.subtractToRef(flashlight.position, flashlight.direction);
                     }
                 }
             }
-            this.scene.registerBeforeRender(updateFlashlightFunction);
+            this.sceneManager.scene.registerBeforeRender(updateFlashlightFunction);
             this._registeredOnBeforeRenderFunctions.push(updateFlashlightFunction);
         }
     }

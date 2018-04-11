@@ -44,7 +44,7 @@ export class ModelLoader {
         let base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
         let plugin = modelConfiguration.loader;
 
-        model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.scene, (meshes, particleSystems, skeletons, animationGroups) => {
+        model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.sceneManager.scene, (meshes, particleSystems, skeletons, animationGroups) => {
             meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, "viewerMesh");
                 model.addMesh(mesh);

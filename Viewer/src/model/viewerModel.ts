@@ -88,13 +88,13 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
-        this.rootMesh = new AbstractMesh("modelRootMesh", this._viewer.scene);
+        this.rootMesh = new AbstractMesh("modelRootMesh", this._viewer.sceneManager.scene);
 
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
         this._modelConfiguration = deepmerge({}, modelConfiguration);
 
-        this._viewer.models.push(this);
+        this._viewer.sceneManager.models.push(this);
         this._viewer.onModelAddedObservable.notifyObservers(this);
         this.onLoadedObservable.add(() => {
             this._configureModel();
@@ -162,7 +162,7 @@ export class ViewerModel implements IDisposable {
         // check if this is not a gltf loader and init the animations
         if (this.loader.name !== 'gltf') {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx, this._viewer.scene);
+                let ag = new AnimationGroup("animation-" + idx, this._viewer.sceneManager.scene);
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
@@ -346,7 +346,7 @@ export class ViewerModel implements IDisposable {
      * Will remove this model from the viewer (but NOT dispose it).
      */
     public remove() {
-        this._viewer.models.splice(this._viewer.models.indexOf(this), 1);
+        this._viewer.sceneManager.models.splice(this._viewer.sceneManager.models.indexOf(this), 1);
         // hide it
         this.rootMesh.isVisible = false;
         this._viewer.onModelRemovedObservable.notifyObservers(this);
