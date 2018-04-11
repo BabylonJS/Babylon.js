@@ -65,6 +65,7 @@
     },
     "dependencies": {
         "dts-bundle": "^0.7.3",
-        "gulp-clean": "^0.4.0"
+        "gulp-clean": "^0.4.0",
+        "npm": "^5.8.0"
     }
 }

@@ -87,7 +87,7 @@
                 this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
             }
             this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
-        }
+        }     
 
         // Members
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
@@ -287,6 +287,14 @@
             }
             return ret;
         }
+
+        public _unBindEffect() {
+            super._unBindEffect();
+
+            for (var instance of this.instances) {
+                instance._unBindEffect();
+            }
+        }           
 
         /**
          * True if the mesh has some Levels Of Details (LOD).  

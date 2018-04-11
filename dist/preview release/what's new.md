@@ -114,6 +114,7 @@
 - Added unlit material extension support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - (Viewer) Viewer's declaration file automatically generated ([RaananW](https://github.com/RaananW))
 - New serialize and parse functions for effect layers (Highlight and Glow layers) ([julien-moreau](https://github.com/julien-moreau))
+- Added alphaCutOff support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 
 ## Bug fixes
 
@@ -146,3 +147,6 @@
 - Engine's onCanvasPointerOutObservable will now return a PointerEvent instead of the Engine. ([trevordev](https://github.com/trevordev))
 - Removed public references to default rendering pipeline's internal post process ([trevordev](https://github.com/trevordev))
 - `Bone.setScale` does not support scaleChildren property anymore. You can use `Bone.scale` to achieve the same effect ([deltakosh](https://github.com/deltakosh))
+- Vector3 &amp; Vector4:
+    - `MinimizeInPlace` has been renamed to `minimizeInPlace`
+    - `MaximizeInPlace` has been renamed to `maximizeInPlace`

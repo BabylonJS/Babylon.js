@@ -1,5 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
+/** Module defining extensions to gltf */
 module BABYLON.GLTF2.Extensions {
     // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
 

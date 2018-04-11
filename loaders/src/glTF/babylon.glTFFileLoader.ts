@@ -1,6 +1,9 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
+    /**
+    * Coordinate system mode that will be used when loading from the gltf file
+    */
     export enum GLTFLoaderCoordinateSystemMode {
         /**
          * Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
@@ -13,6 +16,9 @@ module BABYLON {
         FORCE_RIGHT_HANDED,
     }
 
+    /**
+    * Animation mode that determines which animations should be started when a file is loaded
+    */
     export enum GLTFLoaderAnimationStartMode {
         /**
          * No animation will start.
@@ -30,11 +36,23 @@ module BABYLON {
         ALL,
     }
 
+    /**
+    * Loaded gltf data
+    */
     export interface IGLTFLoaderData {
+        /**
+        * Loaded json string converted to an object
+        */
         json: Object;
+        /**
+        * Loaded ArrayBufferView
+        */
         bin: Nullable<ArrayBufferView>;
     }
 
+    /**
+    * Gltf extension interface
+    */
     export interface IGLTFLoaderExtension {
         /**
          * The name of this extension.
@@ -47,6 +65,9 @@ module BABYLON {
         enabled: boolean;
     }
 
+    /**
+    * Loading state
+    */
     export enum GLTFLoaderState {
         /**
          * The asset is loading.
@@ -64,28 +85,75 @@ module BABYLON {
         COMPLETE
     }
 
+    /**
+    * GLTF loader interface
+    */
     export interface IGLTFLoader extends IDisposable {
+        /**
+        * Coordinate system that will be used when loading from the gltf file
+        */
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        /**
+        * Animation mode that determines which animations should be started when a file is loaded
+        */
         animationStartMode: GLTFLoaderAnimationStartMode;
+        /**
+        * If the materials in the file should automatically be compiled
+        */
         compileMaterials: boolean;
+        /**
+        * If a clip plane should be usede when loading meshes in the file
+        */
         useClipPlane: boolean;
+        /**
+        * If shadow generators should automatically be compiled
+        */
         compileShadowGenerators: boolean;
 
+        /**
+        * Observable that fires each time a mesh is loaded
+        */
         onMeshLoadedObservable: Observable<AbstractMesh>;
+        /**
+        * Observable that fires each time a texture is loaded
+        */
         onTextureLoadedObservable: Observable<BaseTexture>;
+         /**
+        * Observable that fires each time a material is loaded
+        */
         onMaterialLoadedObservable: Observable<Material>;
+        /**
+        * Observable that fires when the load has completed
+        */
         onCompleteObservable: Observable<IGLTFLoader>;
+        /**
+        * Observable that fires when the loader is disposed
+        */
         onDisposeObservable: Observable<IGLTFLoader>;
+        /**
+        * Observable that fire when an extension is loaded
+        */
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
 
+        /**
+        * Loader state
+        */
         state: Nullable<GLTFLoaderState>;
 
+        /**
+        * Imports one or more meshes from a loaded gltf file and adds them to the scene
+        */
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+        /**
+        * Imports all objects from a loaded gltf file and adds them to the scene
+        */
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
-
+    /** File loader to load gltf files into a babylon scene */
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
+        /** Creates a gltf 1.0 file loader */
         public static CreateGLTFLoaderV1: () => IGLTFLoader;
+        /** Creates a gltf 2.0 file loader */
         public static CreateGLTFLoaderV2: () => IGLTFLoader;
 
         // #region Common options
@@ -98,6 +166,7 @@ module BABYLON {
         public onParsedObservable = new Observable<IGLTFLoaderData>();
 
         private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
+        /** Raised when the asset has been parsed. */
         public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
             if (this._onParsedObserver) {
                 this.onParsedObservable.remove(this._onParsedObserver);
@@ -108,9 +177,14 @@ module BABYLON {
         // #endregion
 
         // #region V1 options
-
+        /**
+         * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders. Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled. Defaults to true.
+         */
         public static IncrementalLoading = true;
 
+        /**
+         * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters. Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates
+         */
         public static HomogeneousCoordinates = false;
 
         // #endregion
@@ -118,27 +192,32 @@ module BABYLON {
         // #region V2 options
 
         /**
-         * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+         * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED). Defaults to AUTO.
+         * - AUTO - Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         * - FORCE_RIGHT_HANDED - Sets the useRightHandedSystem flag on the scene.
          */
         public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
 
         /**
-         * The animation start mode (NONE, FIRST, ALL).
-         */
+        * The animation start mode (NONE, FIRST, ALL). Defaults to FIRST.
+        * - NONE - No animation will start.
+        * - FIRST - The first animation will start.
+        * - ALL - All animations will start.
+        */
         public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
 
         /**
-         * Set to true to compile materials before raising the success callback.
+         * Set to true to compile materials before raising the success callback. Defaults to false.
          */
         public compileMaterials = false;
 
         /**
-         * Set to true to also compile materials with clip planes.
+         * Set to true to also compile materials with clip planes. Defaults to false.
          */
         public useClipPlane = false;
 
         /**
-         * Set to true to compile shadow generators before raising the success callback.
+         * Set to true to compile shadow generators before raising the success callback. Defaults to false.
          */
         public compileShadowGenerators = false;
 
@@ -148,6 +227,9 @@ module BABYLON {
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
 
         private _onMeshLoadedObserver: Nullable<Observer<AbstractMesh>>;
+        /**
+         * Raised when the loader creates a mesh after parsing the glTF properties of the mesh. (onMeshLoadedObservable is likely desired instead.)
+         */
         public set onMeshLoaded(callback: (mesh: AbstractMesh) => void) {
             if (this._onMeshLoadedObserver) {
                 this.onMeshLoadedObservable.remove(this._onMeshLoadedObserver);
@@ -161,6 +243,9 @@ module BABYLON {
         public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
 
         private _onTextureLoadedObserver: Nullable<Observer<BaseTexture>>;
+        /**
+         * Method called when a texture has been loaded (onTextureLoadedObservable is likely desired instead.)
+         */
         public set onTextureLoaded(callback: (texture: BaseTexture) => void) {
             if (this._onTextureLoadedObserver) {
                 this.onTextureLoadedObservable.remove(this._onTextureLoadedObserver);
@@ -174,6 +259,9 @@ module BABYLON {
         public readonly onMaterialLoadedObservable = new Observable<Material>();
 
         private _onMaterialLoadedObserver: Nullable<Observer<Material>>;
+        /**
+         * Method when the loader creates a material after parsing the glTF properties of the material. (onMaterialLoadedObservable is likely desired instead.)
+         */
         public set onMaterialLoaded(callback: (material: Material) => void) {
             if (this._onMaterialLoadedObserver) {
                 this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
@@ -189,6 +277,9 @@ module BABYLON {
         public readonly onCompleteObservable = new Observable<GLTFFileLoader>();
 
         private _onCompleteObserver: Nullable<Observer<GLTFFileLoader>>;
+        /**
+         * Raised when the asset is completely loaded, immediately before the loader is disposed. (onCompleteObservable is likely desired instead.)
+         */
         public set onComplete(callback: () => void) {
             if (this._onCompleteObserver) {
                 this.onCompleteObservable.remove(this._onCompleteObserver);
@@ -202,6 +293,9 @@ module BABYLON {
         public readonly onDisposeObservable = new Observable<GLTFFileLoader>();
 
         private _onDisposeObserver: Nullable<Observer<GLTFFileLoader>>;
+        /**
+         * Raised after the loader is disposed. (onDisposeObservable is likely desired instead.)
+         */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -216,6 +310,9 @@ module BABYLON {
         public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
         private _onExtensionLoadedObserver: Nullable<Observer<IGLTFLoaderExtension>>;
+        /**
+         * Raised after a loader extension is created. (onExtensionLoadedObservable is likely desired instead.)
+         */
         public set onExtensionLoaded(callback: (extension: IGLTFLoaderExtension) => void) {
             if (this._onExtensionLoadedObserver) {
                 this.onExtensionLoadedObservable.remove(this._onExtensionLoadedObserver);
@@ -246,8 +343,14 @@ module BABYLON {
 
         private _loader: Nullable<IGLTFLoader> = null;
 
+        /**
+         * Name of the loader ("gltf")
+         */
         public name = "gltf";
 
+        /**
+         * Supported file extensions of the loader (.gltf, .glb)
+         */
         public extensions: ISceneLoaderPluginExtensions = {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
@@ -270,6 +373,15 @@ module BABYLON {
             this.onDisposeObservable.clear();
         }
 
+        /**
+        * Imports one or more meshes from a loaded gltf file and adds them to the scene
+        * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+        * @param scene the scene the meshes should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise containg the loaded meshes, particles, skeletons and animations
+        */
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
@@ -278,6 +390,14 @@ module BABYLON {
             });
         }
 
+        /**
+        * Imports all objects from a loaded gltf file and adds them to the scene
+        * @param scene the scene the objects should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise which completes when objects have been loaded to the scene
+        */
         public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
@@ -286,6 +406,14 @@ module BABYLON {
             });
         }
 
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded asset container
+         */
         public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
@@ -302,12 +430,24 @@ module BABYLON {
             });
         }
 
+        /**
+         * If the data string can be loaded directly
+         * @param data string contianing the file data
+         * @returns if the data can be loaded directly
+         */
         public canDirectLoad(data: string): boolean {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         }
 
+        /**
+         * Rewrites a url by combining a root url and response url
+         */
         public rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
 
+        /**
+         * Instantiates a gltf file loader plugin
+         * @returns the created plugin
+         */
         public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
             return new GLTFFileLoader();
         }
