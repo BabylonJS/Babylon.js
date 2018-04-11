@@ -443,6 +443,10 @@ export class Template {
             } else {
                 // flex? box? should this be configurable easier than the visibilityFunction?
                 this.parent.style.display = 'flex';
+                // support old browsers with no flex:
+                if (this.parent.style.display !== 'flex') {
+                    this.parent.style.display = '';
+                }
                 return this;
             }
         }).then(() => {
@@ -468,7 +472,7 @@ export class Template {
                 return visibilityFunction(this);
             } else {
                 // flex? box? should this be configurable easier than the visibilityFunction?
-                this.parent.style.display = 'hide';
+                this.parent.style.display = 'none';
                 return this;
             }
         }).then(() => {
