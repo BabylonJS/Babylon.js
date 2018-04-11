@@ -30,10 +30,10 @@ export class ViewerModel implements IDisposable {
     /**
      * the list of meshes that are a part of this model
      */
-    public meshes: Array<AbstractMesh> = [];
+    private _meshes: Array<AbstractMesh> = [];
     /**
      * This model's root mesh (the parent of all other meshes).
-     * This mesh also exist in the meshes array.
+     * This mesh does not(!) exist in the meshes array.
      */
     public rootMesh: AbstractMesh;
     /**
@@ -88,12 +88,39 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
+        this.rootMesh = new AbstractMesh("modelRootMesh", this._viewer.scene);
+
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
         this._modelConfiguration = deepmerge({}, modelConfiguration);
 
         this._viewer.models.push(this);
+        this._viewer.onModelAddedObservable.notifyObservers(this);
+
     }
+
+    /**
+     * Add a mesh to this model.
+     * Any mesh that has no parent will be provided with the root mesh as its new parent.
+     * 
+     * @param mesh the new mesh to add
+     */
+    public addMesh(mesh: AbstractMesh) {
+        if (!mesh.parent) {
+            mesh.parent = this.rootMesh;
+        }
+        mesh.receiveShadows = !!this.configuration.receiveShadows;
+        this._meshes.push(mesh);
+    }
+
+    /**
+     * get the list of meshes (excluding the root mesh)
+     */
+    public get meshes() {
+        return this._meshes;
+    }
+
+    public get
 
     /**
      * Get the model's configuration
@@ -215,7 +242,7 @@ export class ViewerModel implements IDisposable {
     }
 
     private _configureModel() {
-        let meshesWithNoParent: Array<AbstractMesh> = this.meshes.filter(m => !m.parent);
+        let meshesWithNoParent: Array<AbstractMesh> = this._meshes.filter(m => m === this.rootMesh);
         let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach(mesh => {
                 if (param) {
@@ -261,7 +288,7 @@ export class ViewerModel implements IDisposable {
         }
 
         if (this._modelConfiguration.castShadow) {
-            this.meshes.forEach(mesh => {
+            this._meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, 'castShadow');
             });
         }
@@ -282,7 +309,7 @@ export class ViewerModel implements IDisposable {
 
             let meshesToNormalize: Array<AbstractMesh> = [];
             if (parentIndex !== undefined) {
-                meshesToNormalize.push(this.meshes[parentIndex]);
+                meshesToNormalize.push(this._meshes[parentIndex]);
             } else {
                 meshesToNormalize = meshesWithNoParent;
             }
@@ -313,9 +340,20 @@ export class ViewerModel implements IDisposable {
     }
 
     /**
+     * Will remove this model from the viewer (but NOT dispose it).
+     */
+    public remove() {
+        this._viewer.models.splice(this._viewer.models.indexOf(this), 1);
+        // hide it
+        this.rootMesh.isVisible = false;
+        this._viewer.onModelRemovedObservable.notifyObservers(this);
+    }
+
+    /**
      * Dispose this model, including all of its associated assets.
      */
     public dispose() {
+        this.remove();
         this.onAfterConfigure.clear();
         this.onLoadedObservable.clear();
         this.onLoadErrorObservable.clear();
@@ -329,8 +367,8 @@ export class ViewerModel implements IDisposable {
         this.skeletons.length = 0;
         this._animations.forEach(ag => ag.dispose());
         this._animations.length = 0;
-        this.meshes.forEach(m => m.dispose());
-        this.meshes.length = 0;
-        this._viewer.models.splice(this._viewer.models.indexOf(this), 1);
+        this._meshes.forEach(m => m.dispose());
+        this._meshes.length = 0;
+        this.rootMesh.dispose();
     }
 }

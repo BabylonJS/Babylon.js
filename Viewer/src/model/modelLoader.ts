@@ -47,8 +47,8 @@ export class ModelLoader {
         model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.scene, (meshes, particleSystems, skeletons, animationGroups) => {
             meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, "viewerMesh");
+                model.addMesh(mesh);
             });
-            model.meshes = meshes;
             model.particleSystems = particleSystems;
             model.skeletons = skeletons;
 
