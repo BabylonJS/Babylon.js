@@ -1,6 +1,6 @@
 import { DefaultViewer } from './viewer/defaultViewer';
 import { mapperManager } from './configuration/mappers';
-import { viewerGlobals, disableInit } from 'index';
+import { viewerGlobals, disableInit } from './';
 
 
 /**
