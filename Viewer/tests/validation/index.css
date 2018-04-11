@@ -70,7 +70,7 @@ body {
 
 babylon {
     position: absolute !important;
-    transform: translateY(600px);
+    transform: translateX(-600px);
     width: 600px;
     height: 400px;
 }

@@ -71,8 +71,6 @@ function getRenderData(canvas, engine) {
         }
     }
 
-    console.log(engine, engine.getRenderingCanvas());
-
     return renderData;
 }
 
@@ -124,8 +122,6 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
     var renderB64 = saveRenderImage(renderData, currentViewer.canvas);
     renderImage.src = renderB64;
-
-
 
     done(testRes, renderB64);
 }
@@ -191,15 +187,18 @@ function runTest(index, done) {
 
     // create a new viewer
     currentViewer && currentViewer.dispose();
+    currentViewer = null;
     currentScene = null;
-    console.log("currentViewer", index);
+    viewerElement.innerHTML = '';
     currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
-    currentViewer.onModelLoadedObservable.add(() => {
-        console.log("currentViewer", index);
-        setTimeout(() => {
+    var currentFrame = 0;
+    var waitForFrame = test.waitForFrame || 80;
+    currentViewer.onFrameRenderedObservable.add(() => {
+        if (currentFrame === waitForFrame) {
             evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
-        }, 1000);
+        }
+        currentFrame++;
     });
 }
 
