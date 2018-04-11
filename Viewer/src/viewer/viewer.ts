@@ -205,6 +205,11 @@ export abstract class AbstractViewer {
     }
 
     /**
+     * The viewer's version corresponds to the engine's version
+     */
+    public static readonly Version = Engine.Version;
+
+    /**
      * get the baseId of this viewer
      */
     public getBaseId(): string {
@@ -230,6 +235,13 @@ export abstract class AbstractViewer {
      */
     public set renderInBackground(value: boolean) {
         this.engine.renderEvenInBackground = value;
+    }
+
+    /**
+     * force resizing the engine.
+     */
+    public forceResize() {
+        this._resize();
     }
 
     /**
@@ -555,7 +567,7 @@ export abstract class AbstractViewer {
      * @param cameraConfig the new camera configuration
      * @param model optionally use the model to configure the camera.
      */
-    protected _configureCamera(cameraConfig: ICameraConfiguration, model?: ViewerModel) {
+    protected _configureCamera(cameraConfig: ICameraConfiguration = {}, model?: ViewerModel) {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
 
         if (!this.scene.activeCamera) {

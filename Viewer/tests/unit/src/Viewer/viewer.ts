@@ -1,6 +1,6 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect } from "../viewerReference";
-import { DefaultViewer } from "../../../../src";
+import { DefaultViewer, AbstractViewer } from "../../../../src";
 
 export let name = "viewerTest";
 
@@ -38,16 +38,100 @@ describe('Viewer', function () {
             expect(viewer.containerElement.style.display).not.to.equal('none');
             viewer.hide().then(() => {
                 // element is hidden
-                assert.equal(viewer.containerElement.style.display, 'none');
+                assert.equal(viewer.containerElement.style.display, 'none', "Viewer is still visible");
                 viewer.show().then(() => {
                     //element is shown
-                    assert.notEqual(viewer.containerElement.style.display, 'none');
+                    assert.notEqual(viewer.containerElement.style.display, 'none', "Viewer is not visible");
                     viewer.dispose();
                     done();
                 });
             });
         });
     });
+
+    it('should execute registered functions on every rendered frame', (done) => {
+        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        let renderCount = 0;
+        let sceneRenderCount = 0;
+        viewer.onSceneInitObservable.add(() => {
+            // force-create a camera for the render loop to work
+            viewer.updateConfiguration({ camera: {} });
+            viewer.scene.registerAfterRender(() => {
+                sceneRenderCount++;
+            })
+        });
+        viewer.onFrameRenderedObservable.add(() => {
+            renderCount++;
+            assert.equal(renderCount, sceneRenderCount, "function was not executed with each frame");
+            if (renderCount === 20) {
+                viewer.dispose();
+                done();
+            }
+        });
+    });
+
+    it('should disable and enable rendering', (done) => {
+
+        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        let renderCount = 0;
+        viewer.onFrameRenderedObservable.add(() => {
+            renderCount++;
+        });
+        viewer.onInitDoneObservable.add(() => {
+            // force-create a camera for the render loop to work
+            viewer.updateConfiguration({ camera: {} });
+            assert.equal(renderCount, 0);
+            window.requestAnimationFrame(function () {
+                assert.equal(renderCount, 1);
+                viewer.runRenderLoop = false;
+                window.requestAnimationFrame(function () {
+                    assert.equal(renderCount, 1);
+                    viewer.runRenderLoop = true;
+                    window.requestAnimationFrame(function () {
+                        assert.equal(renderCount, 2);
+                        viewer.dispose();
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    it('should have a version', (done) => {
+        assert.exists(AbstractViewer.Version);
+        done();
+    });
+
+    it('should resize the viewer correctly', (done) => {
+
+        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        let resizeCount = 0;
+        //wait for the engine to init
+        viewer.onEngineInitObservable.add((engine) => {
+            engine.resize = () => {
+                resizeCount++;
+            }
+        });
+
+        viewer.onInitDoneObservable.add(() => {
+            assert.equal(resizeCount, 0);
+            viewer.forceResize();
+            assert.equal(resizeCount, 1, "Engine should resize when Viewer.forceResize() is called.");
+
+            viewer.canvas.style.width = '0px';
+            viewer.canvas.style.height = '0px';
+            viewer.forceResize();
+
+            assert.equal(resizeCount, 1, "Engine should not resize when the canvas has width/height 0.");
+
+            viewer.dispose();
+            // any since it is protected
+            viewer.forceResize();
+
+            assert.equal(resizeCount, 1, "Engine should not resize when if Viewer has been disposed.");
+            done();
+        });
+    })
 });
 
 //}
@@ -100,58 +184,6 @@ QUnit.test('Viewer LDR', function (assert) {
     });
 });
 
-
-QUnit.test('Viewer hide show', function (assert) {
-    assert.expect(2);
-    let viewer = new DefaultViewer(Helper.getCanvas());
-
-    viewer.hide();
-
-    QUnit.assert.ok(Helper.getCanvas().style.display == "none", "Viewer can be hidden.");
-
-    viewer.show();
-
-    QUnit.assert.ok(Helper.getCanvas().style.display != "none", "Viewer can be shown after hiding.");
-
-    viewer.dispose();
-});
-
-QUnit.test('Viewer disable rendering', function (assert) {
-    let done = assert.async();
-    let renderCount = 0;
-
-    let viewer = new DefaultViewer(Helper.getCanvas(), {
-        renderCallback: function () {
-            renderCount++;
-        }
-    });
-
-    window.requestAnimationFrame(function () {
-        QUnit.assert.strictEqual(renderCount, 1, "Viewer renders by default.");
-
-        viewer.DisableRender = true;
-
-        QUnit.assert.ok(viewer.DisableRender === true, "DisableRender can be set");
-
-        window.requestAnimationFrame(function () {
-
-            QUnit.assert.strictEqual(renderCount, 1, "Viewer does not render with DisableRender set to true");
-
-            viewer.DisableRender = false;
-
-            window.requestAnimationFrame(function () {
-                QUnit.assert.strictEqual(renderCount, 2, "Viewer renders again when DisableRender is set to false");
-
-                viewer.dispose();
-                done();
-            });
-
-        });
-
-    });
-
-});
-
 QUnit.test('Viewer disable render in background', function (assert) {
     let viewer = new DefaultViewer(Helper.getCanvas());
 
@@ -200,45 +232,6 @@ QUnit.test('Viewer disable ctrl for panning', function (assert) {
 
     QUnit.assert.ok(viewer.Scene.Camera._useCtrlForPanning === false, "Viewer should not use CTRL for panning with disableCameraControl set to true.");
     viewer.dispose();
-});
-
-QUnit.test('Viewer return build number', function (assert) {
-    let viewer = new DefaultViewer(Helper.getCanvas());
-
-    QUnit.assert.ok(AbstractViewer.BuildNumber, "Viewer should return a Build Number.");
-
-    viewer.dispose();
-});
-
-QUnit.test('Viewer resize', function (assert) {
-    let canvas = Helper.getCanvas();
-    let viewer = new DefaultViewer(canvas);
-
-    let resizeCount = 0;
-
-    BABYLON.Engine.prototype.resize = function () {
-        resizeCount++;
-    };
-
-    // any since it is protected
-    (<any>viewer)._resize();
-
-    QUnit.assert.equal(resizeCount, 1, "Engine should resize when Viewer.resize() is called.");
-
-    canvas.style.width = '0px';
-    canvas.style.height = '0px';
-
-    // any since it is protected
-    (<any>viewer)._resize();
-
-    QUnit.assert.equal(resizeCount, 1, "Engine should not resize when the canvas has width/height 0.");
-
-    viewer.dispose();
-    // any since it is protected
-    (<any>viewer)._resize();
-
-    QUnit.assert.equal(resizeCount, 1, "Engine should not resize when if Viewer has been disposed.");
-
 });
 
 QUnit.test('Viewer get models', function (assert) {
