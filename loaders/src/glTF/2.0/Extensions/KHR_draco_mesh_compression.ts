@@ -1,9 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
-/** Module defining extensions to gltf */
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
-
     const NAME = "KHR_draco_mesh_compression";
 
     interface IKHRDracoMeshCompression {
@@ -11,10 +8,13 @@ module BABYLON.GLTF2.Extensions {
         attributes: { [name: string]: number };
     }
 
-    interface ILoaderBufferViewDraco extends ILoaderBufferView {
+    interface ILoaderBufferViewDraco extends _ILoaderBufferView {
         _dracoBabylonGeometry?: Promise<Geometry>;
     }
 
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
+     */
     export class KHR_draco_mesh_compression extends GLTFLoaderExtension {
         public readonly name = NAME;
 
@@ -37,7 +37,7 @@ module BABYLON.GLTF2.Extensions {
             super.dispose();
         }
 
-        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
+        protected _loadVertexDataAsync(context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
             return this._loadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, (extensionContext, extension) => {
                 if (primitive.mode != undefined) {
                     if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
