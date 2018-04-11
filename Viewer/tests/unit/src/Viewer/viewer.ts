@@ -1,5 +1,6 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect } from "../viewerReference";
+import { DefaultViewer } from "../../../../src";
 
 export let name = "viewerTest";
 
@@ -28,6 +29,24 @@ describe('Viewer', function () {
             assert.isTrue(true);
         }
         done();
+    });
+
+    it('should be shown and hidden', (done) => {
+        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        viewer.onInitDoneObservable.add(() => {
+            // default visibility is not none
+            expect(viewer.containerElement.style.display).not.to.equal('none');
+            viewer.hide().then(() => {
+                // element is hidden
+                assert.equal(viewer.containerElement.style.display, 'none');
+                viewer.show().then(() => {
+                    //element is shown
+                    assert.notEqual(viewer.containerElement.style.display, 'none');
+                    viewer.dispose();
+                    done();
+                });
+            });
+        });
     });
 });
 
