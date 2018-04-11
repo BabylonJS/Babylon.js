@@ -164,7 +164,7 @@ module BABYLON.GUI {
             }
 
             if (tracker.mesh) {
-                tracker.mesh.onAfterWorldMatrixUpdateObservable.removeCallback(this.onTrackerUpdate);
+                tracker.mesh.getScene().onAfterCameraRenderObservable.removeCallback(this.onTrackerUpdate);
             }
 
             if (tracker.control) {
