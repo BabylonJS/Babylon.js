@@ -126,6 +126,11 @@ export abstract class AbstractViewer {
     public onInitDoneObservable: Observable<AbstractViewer>;
 
     /**
+     * Functions added to this observable will be executed on each frame rendered.
+     */
+    public onFrameRenderedObservable: Observable<AbstractViewer>;
+
+    /**
      * The canvas associated with this viewer
      */
     protected _canvas: HTMLCanvasElement;
@@ -162,6 +167,7 @@ export abstract class AbstractViewer {
         this.onModelLoadErrorObservable = new Observable();
         this.onInitDoneObservable = new Observable();
         this.onLoaderInitObservable = new Observable();
+        this.onFrameRenderedObservable = new Observable();
 
         this._registeredOnBeforeRenderFunctions = [];
         this.models = [];
@@ -255,6 +261,7 @@ export abstract class AbstractViewer {
     protected _render = (force: boolean = false): void => {
         if (force || (this.runRenderLoop && this.scene && this.scene.activeCamera)) {
             this.scene.render();
+            this.onFrameRenderedObservable.notifyObservers(this);
         }
     }
 
@@ -724,6 +731,8 @@ export abstract class AbstractViewer {
         delete this.onModelLoadProgressObservable;
         this.onSceneInitObservable.clear();
         delete this.onSceneInitObservable;
+        this.onFrameRenderedObservable.clear();
+        delete this.onFrameRenderedObservable;
 
         if (this.scene.activeCamera) {
             this.scene.activeCamera.detachControl(this.canvas);
@@ -767,12 +776,12 @@ export abstract class AbstractViewer {
      */
     private _onTemplateLoaded(): Promise<AbstractViewer> {
         return this._onTemplatesLoaded().then(() => {
-            let autoLoadModel = this._configuration.model;
+            let modelConfiguration = this._configuration.model;
             return this._initEngine().then((engine) => {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
-                if (autoLoadModel) {
-                    return this.loadModel().catch(e => { }).then(() => { return this.scene });
+                if (modelConfiguration) {
+                    return this.loadModel(modelConfiguration).catch(e => { }).then(() => { return this.scene });
                 } else {
                     return this.scene || this._initScene();
                 }
@@ -873,12 +882,34 @@ export abstract class AbstractViewer {
      * @param clearScene should the scene be cleared before loading this model
      * @returns a ViewerModel object that is not yet fully loaded.
      */
-    public initModel(modelConfig: IModelConfiguration, clearScene: boolean = true): ViewerModel {
+    public initModel(modelConfig: string | IModelConfiguration, clearScene: boolean = true): ViewerModel {
+        let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
+        if (!modelUrl) {
+            throw new Error("no model configuration provided");
+        }
         if (clearScene) {
             this.models.forEach(m => m.dispose());
             this.models.length = 0;
         }
-        let model = this.modelLoader.load(modelConfig);
+        let configuration: IModelConfiguration;
+        if (typeof modelConfig === 'string') {
+            configuration = {
+                url: modelConfig
+            }
+        } else {
+            configuration = modelConfig
+        }
+
+        //merge the configuration for future models:
+        if (this._configuration.model && typeof this._configuration.model === 'object') {
+            deepmerge(this._configuration.model, configuration)
+        } else {
+            this._configuration.model = configuration;
+        }
+
+        this._isLoading = true;
+
+        let model = this.modelLoader.load(configuration);
 
         this.lastUsedLoader = model.loader;
         model.onLoadErrorObservable.add((errorObject) => {
@@ -890,18 +921,17 @@ export abstract class AbstractViewer {
         this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
 
         model.onLoadedObservable.add(() => {
-            this.onModelLoadedObservable.notifyObserversWithPromise(model)
-                .then(() => {
-                    this._configureLights(this._configuration.lights);
+            Promise.resolve().then(() => {
+                this._configureLights(this._configuration.lights, model);
 
-                    if (this._configuration.camera || !this.scene.activeCamera) {
-                        this._configureCamera(this._configuration.camera || {}, model);
-                    }
-                    return this._initEnvironment(model);
-                }).then(() => {
-                    this._isLoading = false;
-                    return model;
-                });
+                if (this._configuration.camera || !this.scene.activeCamera) {
+                    this._configureCamera(this._configuration.camera || {}, model);
+                }
+                return this._initEnvironment(model);
+            }).then(() => {
+                this._isLoading = false;
+                return this.onModelLoadedObservable.notifyObserversWithPromise(model);
+            });
         });
 
 
@@ -915,40 +945,25 @@ export abstract class AbstractViewer {
      * @param clearScene Should the scene be cleared before loading the model
      * @returns a Promise the fulfills when the model finished loading successfully. 
      */
-    public loadModel(modelConfig: any = this._configuration.model, clearScene: boolean = true): Promise<ViewerModel> {
-        // no model was provided? Do nothing!
-        let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
-        if (!modelUrl) {
-            return Promise.reject("no model configuration found");
-        }
+    public loadModel(modelConfig: string | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
             return Promise.reject("another model is curently being loaded.");
-        }
-        this._isLoading = true;
-        if ((typeof modelConfig === 'string')) {
-            if (this._configuration.model && typeof this._configuration.model === 'object') {
-                this._configuration.model.url = modelConfig;
-            }
-        } else {
-            if (this._configuration.model) {
-                deepmerge(this._configuration.model, modelConfig)
-            } else {
-                this._configuration.model = modelConfig;
-            }
         }
 
         return Promise.resolve(this.scene).then((scene) => {
             if (!scene) return this._initScene();
             return scene;
         }).then(() => {
+            let model = this.initModel(modelConfig, clearScene);
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
-                try {
-                    resolve(this.initModel(modelConfig, clearScene));
-                } catch (e) {
-                    reject(e);
-                }
+                model.onLoadedObservable.add(() => {
+                    resolve(model);
+                });
+                model.onLoadErrorObservable.add((error) => {
+                    reject(error);
+                });
             });
         })
     }
