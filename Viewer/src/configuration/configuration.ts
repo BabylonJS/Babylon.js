@@ -137,10 +137,6 @@ export interface IGroundConfiguration {
 
 export interface ISceneConfiguration {
     debug?: boolean;
-    autoRotate?: boolean; // deprecated
-    rotationSpeed?: number; // deprecated
-    defaultCamera?: boolean; // deprecated
-    defaultLight?: boolean; // deprecated
     clearColor?: { r: number, g: number, b: number, a: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
@@ -184,6 +180,8 @@ export interface ICameraConfiguration {
             [propName: string]: any;
         };
     };
+    disableCameraControl?: boolean;
+    disableCtrlForPanning?: boolean;
 
     [propName: string]: any;
 }
