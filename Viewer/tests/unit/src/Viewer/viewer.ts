@@ -1,8 +1,8 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect } from "../viewerReference";
-import { DefaultViewer, AbstractViewer } from "../../../../src";
+import { DefaultViewer, AbstractViewer, Version } from "../../../../src";
 
-export let name = "viewerTest";
+export let name = "viewer Tests";
 
 /**
  * To prevent test-state-leakage ensure that there is a viewer.dispose() for every new DefaultViewer
@@ -82,13 +82,13 @@ describe('Viewer', function () {
             viewer.updateConfiguration({ camera: {} });
             assert.equal(renderCount, 0);
             window.requestAnimationFrame(function () {
-                assert.equal(renderCount, 1);
+                assert.equal(renderCount, 1, "render loop should have been executed");
                 viewer.runRenderLoop = false;
                 window.requestAnimationFrame(function () {
-                    assert.equal(renderCount, 1);
+                    assert.equal(renderCount, 1, "Render loop should not have been executed");
                     viewer.runRenderLoop = true;
                     window.requestAnimationFrame(function () {
-                        assert.equal(renderCount, 2);
+                        assert.equal(renderCount, 2, "render loop should have been executed again");
                         viewer.dispose();
                         done();
                     });
@@ -98,7 +98,8 @@ describe('Viewer', function () {
     });
 
     it('should have a version', (done) => {
-        assert.exists(AbstractViewer.Version);
+        assert.exists(Version, "Viewer should have a version");
+        assert.equal(Version, BABYLON.Engine.Version, "Viewer version should equal to Babylon's engine version");
         done();
     });
 
