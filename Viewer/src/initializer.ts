@@ -1,5 +1,20 @@
 import { DefaultViewer } from './viewer/defaultViewer';
 import { mapperManager } from './configuration/mappers';
+import { viewerGlobals, disableInit } from 'index';
+
+
+/**
+ * Will attach an init function the the DOMContentLoaded event.
+ * The init function will be removed automatically after the event was triggered.
+ */
+export function initListeners() {
+    document.addEventListener("DOMContentLoaded", init);
+    function init(event) {
+        document.removeEventListener("DOMContentLoaded", init);
+        if (viewerGlobals.disableInit || disableInit) return;
+        InitTags();
+    }
+}
 
 /**
  * Select all HTML tags on the page that match the selector and initialize a viewer

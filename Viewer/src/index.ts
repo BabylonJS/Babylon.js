@@ -20,19 +20,14 @@ import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
 import 'pep';
 
-
-import { InitTags } from './initializer';
+import { initListeners, InitTags } from './initializer';
 
 // promise polyfill, if needed!
 BABYLON.PromisePolyfill.Apply();
+initListeners();
 
-export let disableInit: boolean = false;
-document.addEventListener("DOMContentLoaded", init);
-function init(event) {
-    document.removeEventListener("DOMContentLoaded", init);
-    if (viewerGlobals.disableInit || disableInit) return;
-    InitTags();
-}
+//deprectaed, here for backwards compatibility
+let disableInit: boolean = viewerGlobals.disableInit;
 
 /**
  * Dispose all viewers currently registered
@@ -42,5 +37,7 @@ function disposeAll() {
     mapperManager.dispose();
 }
 
+const Version = BABYLON.Engine.Version;
+
 // public API for initialization
-export { BABYLON, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
+export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
