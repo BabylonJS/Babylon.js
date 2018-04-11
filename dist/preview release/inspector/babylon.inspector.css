@@ -44,11 +44,11 @@
       font-size: 1em; }
       .insp-wrapper .insp-right-panel .top-panel .tab-panel-content {
         width: 100%;
-        height: calc(100% - 32px); }
+        height: calc(100% - 40px); }
       .insp-wrapper .insp-right-panel .top-panel .more-tabs-panel {
         position: absolute;
         z-index: 10;
-        top: 32px;
+        top: 40px;
         right: 0;
         width: 100px;
         display: none;
@@ -70,7 +70,7 @@
             background-color: #454545; }
   .insp-wrapper .tooltip {
     position: absolute;
-    top: 32px;
+    top: 40px;
     right: 0;
     color: #f29766;
     display: none;
@@ -249,7 +249,7 @@
   .insp-wrapper .insp-tree {
     overflow-y: auto;
     overflow-x: hidden;
-    height: calc(50% - 32px - 30px); }
+    height: calc(50% - 40px - 30px); }
     .insp-wrapper .insp-tree .line {
       padding: 3px;
       cursor: pointer; }
@@ -368,7 +368,7 @@
           max-width: 110px;
           max-height: 110px; }
   .insp-wrapper .tabbar {
-    height: 32px;
+    height: 40px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #383838;
@@ -377,11 +377,11 @@
     overflow-y: hidden;
     box-sizing: border-box; }
     .insp-wrapper .tabbar .tab {
-      height: calc(32px - 2px);
+      height: calc(40px - 2px);
       width: auto;
       padding: 0 10px 0 10px;
       color: #ccc;
-      line-height: 32px;
+      line-height: 40px;
       text-align: center;
       cursor: pointer;
       margin: 0 5px 0 5px;
@@ -394,8 +394,8 @@
       .insp-wrapper .tabbar .tab.active {
         border-bottom: 1px solid #f29766; }
     .insp-wrapper .tabbar .more-tabs {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -412,8 +412,8 @@
   .insp-wrapper .toolbar {
     display: flex; }
     .insp-wrapper .toolbar .tool {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
