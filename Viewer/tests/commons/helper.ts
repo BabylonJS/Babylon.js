@@ -65,7 +65,7 @@ export class Helper {
     }
 
     public static createMockMesh(viewer: AbstractViewer) {
-        let scene = viewer.scene;
+        let scene = viewer.sceneManager.scene;
         let mat = new BABYLON.PBRMaterial('mock-material', scene);
         let mesh = BABYLON.MeshBuilder.CreateBox('mock-box', {
             width: 1, height: 1, depth: 1,
@@ -137,16 +137,12 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             window.addEventListener('resize', this._resize);
         }
 
-
         this.engine.runRenderLoop(this._render);
 
         if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
-
-        // set hardware limitations for scene initialization
-        this._handleHardwareLimitations();
 
         return Promise.resolve(this.engine);
     }
@@ -183,9 +179,6 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
-
-        // set hardware limitations for scene initialization
-        this._handleHardwareLimitations();
 
         return Promise.resolve(this.engine);
     }
