@@ -1622,6 +1622,7 @@
                     "../../gui/src/measure.ts",
                     "../../gui/src/math2D.ts",
                     "../../gui/src/valueAndUnit.ts",
+					"../../gui/src/tracker.ts",
                     "../../gui/src/controls/control.ts",
                     "../../gui/src/controls/container.ts",
                     "../../gui/src/controls/stackPanel.ts",
@@ -1636,7 +1637,8 @@
                     "../../gui/src/controls/button.ts",
                     "../../gui/src/controls/colorpicker.ts",
                     "../../gui/src/controls/inputText.ts",
-                    "../../gui/src/controls/virtualKeyboard.ts"
+                    "../../gui/src/controls/virtualKeyboard.ts",
+					"../../gui/src/controls/complexLine.ts"
                 ],
                 "output": "babylon.gui.js",
                 "buildAsModule": true,
