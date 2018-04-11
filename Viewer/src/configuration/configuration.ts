@@ -76,6 +76,7 @@ export interface IModelConfiguration {
     parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
 
     castShadow?: boolean;
+    receiveShadows?: boolean;
     normalize?: boolean | {
         center?: boolean;
         unitSize?: boolean;

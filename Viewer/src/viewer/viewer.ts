@@ -103,6 +103,12 @@ export abstract class AbstractViewer {
      * will notify when the engine was initialized
      */
     public onEngineInitObservable: Observable<Engine>;
+
+    /**
+     * Will notify when a new model was added to the scene.
+     * Note that added does not neccessarily mean loaded!
+     */
+    public onModelAddedObservable: Observable<ViewerModel>;
     /**
      * will notify after every model load
      */
@@ -115,6 +121,10 @@ export abstract class AbstractViewer {
      * will notify when any model load failed.
      */
     public onModelLoadErrorObservable: Observable<{ message: string; exception: any }>;
+    /**
+     * Will notify when a model was removed from the scene;
+     */
+    public onModelRemovedObservable: Observable<ViewerModel>;
     /**
      * will notify when a new loader was initialized.
      * Used mainly to know when a model starts loading.
@@ -165,6 +175,8 @@ export abstract class AbstractViewer {
         this.onModelLoadedObservable = new Observable();
         this.onModelLoadProgressObservable = new Observable();
         this.onModelLoadErrorObservable = new Observable();
+        this.onModelAddedObservable = new Observable();
+        this.onModelRemovedObservable = new Observable();
         this.onInitDoneObservable = new Observable();
         this.onLoaderInitObservable = new Observable();
         this.onFrameRenderedObservable = new Observable();
