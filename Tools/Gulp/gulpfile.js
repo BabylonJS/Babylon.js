@@ -1098,7 +1098,7 @@ gulp.task("tests-viewer-unit-debug", ["tests-viewer-unit-transpile"], function (
  * Launches the KARMA unit tests in phantomJS.
  * (Can only be launch on any branches.)
  */
-gulp.task("tests-viewer-unit", /*["tests-viewer-unit-transpile"],*/ function (done) {
+gulp.task("tests-viewer-unit", ["tests-viewer-unit-transpile"], function (done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
         singleRun: true
