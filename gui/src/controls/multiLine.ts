@@ -49,7 +49,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        add(...items: (AbstractMesh | Control | ValueAndUnitVector2)[]): void {
+        add(...items: (AbstractMesh | Control | IValueAndUnitVector2)[]): void {
             items.forEach(item => {
                 var segment: Segment = this.push();
 
@@ -59,7 +59,7 @@ module BABYLON.GUI {
                 else if (item instanceof Control) {
                     segment.control = item;
                 }
-                else if (item instanceof ValueAndUnitVector2) {
+                else if (item.x != null && item.y != null) {
                     segment.x = item.x;
                     segment.y = item.y;
                 }
