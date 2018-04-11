@@ -96,6 +96,9 @@ export class ViewerModel implements IDisposable {
 
         this._viewer.models.push(this);
         this._viewer.onModelAddedObservable.notifyObservers(this);
+        this.onLoadedObservable.add(() => {
+            this._configureModel();
+        })
 
     }
 
@@ -242,7 +245,8 @@ export class ViewerModel implements IDisposable {
     }
 
     private _configureModel() {
-        let meshesWithNoParent: Array<AbstractMesh> = this._meshes.filter(m => m === this.rootMesh);
+        // this can be changed to the meshes that have rootMesh a parent without breaking anything.
+        let meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh] //this._meshes.filter(m => m === this.rootMesh);
         let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach(mesh => {
                 if (param) {
@@ -300,7 +304,6 @@ export class ViewerModel implements IDisposable {
             if (this._modelConfiguration.normalize === true) {
                 center = true;
                 unitSize = true;
-                parentIndex = 0;
             } else {
                 center = !!this._modelConfiguration.normalize.center;
                 unitSize = !!this._modelConfiguration.normalize.unitSize;
