@@ -113,8 +113,12 @@ module BABYLON.GUI {
                 return new Vector2(this._control.centerX, this._control.centerY);
             }
             else {
-                //TODO: extract number from px and % - eventually in order to support %
-                return new Vector2(this.x as number, this.y as number); //temp - as number
+                var host: any = this._multiLine._host as any;
+
+                var xValue: number = this._x.getValueInPixel(host, Number(host._canvas.width));
+                var yValue: number = this._y.getValueInPixel(host, Number(host._canvas.height));
+                
+                return new Vector2(xValue, yValue);
             }
         }
 
@@ -125,7 +129,7 @@ module BABYLON.GUI {
 
     }
 
-    export class ValueAndUnitVector2 {
+    export interface IValueAndUnitVector2 {
 
         x: string | number;
         y: string | number;
