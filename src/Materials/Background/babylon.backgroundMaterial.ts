@@ -713,6 +713,7 @@
                         }
                     } else {
                         defines.REFLECTION = false;
+                        defines.REFLECTIONFRESNEL = false;
                         defines.REFLECTIONFALLOFF = false;
                         defines.REFLECTIONBLUR = false;
                         defines.REFLECTIONMAP_3D = false;
