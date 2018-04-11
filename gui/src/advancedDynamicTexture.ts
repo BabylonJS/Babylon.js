@@ -527,6 +527,22 @@ module BABYLON.GUI {
             this._attachToOnPointerOut(scene);
         }
 
+        public getMeshPosition(mesh: BABYLON.Mesh): BABYLON.Vector3 {
+            var scene = this.getScene();
+
+            if (!scene) {
+                return BABYLON.Vector3.Zero();
+            }
+
+            var globalViewport = this._getGlobalViewport(scene);
+            var position = mesh.getBoundingInfo().boundingSphere.center;
+            var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
+
+            projectedPosition.scaleInPlace(this.renderScale);
+            
+            return projectedPosition;
+        }
+
         public moveFocusToControl(control: IFocusableControl): void {
             this.focusedControl = control;
             this._lastPickedControl = <any>control;
