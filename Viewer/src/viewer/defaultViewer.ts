@@ -241,6 +241,30 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     /**
+     * show the viewer (in case it was hidden)
+     * 
+     * @param visibilityFunction an optional function to execute in order to show the container
+     */
+    public show(visibilityFunction?: ((template: Template) => Promise<Template>)): Promise<Template> {
+        let template = this.templateManager.getTemplate('main');
+        //not possible, but yet:
+        if (!template) return Promise.reject('Main template not found');
+        return template.show(visibilityFunction);
+    }
+
+    /**
+     * hide the viewer (in case it is visible)
+     * 
+     * @param visibilityFunction an optional function to execute in order to hide the container
+     */
+    public hide(visibilityFunction?: ((template: Template) => Promise<Template>)) {
+        let template = this.templateManager.getTemplate('main');
+        //not possible, but yet:
+        if (!template) return Promise.reject('Main template not found');
+        return template.hide(visibilityFunction);
+    }
+
+    /**
      * Show the loading screen.
      * The loading screen can be configured using the configuration object
      */
