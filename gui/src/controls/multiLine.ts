@@ -6,7 +6,7 @@ module BABYLON.GUI {
 
         private _lineWidth: number = 1;
         private _dash: number[];
-        private _segments: Nullable<Segment>[];
+        private _points: Nullable<MultiLinePoint>[];
 
         private _minX: Nullable<number>;
         private _minY: Nullable<number>;
@@ -21,7 +21,7 @@ module BABYLON.GUI {
             this._verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
             this._dash = [];
-            this._segments = [];
+            this._points = [];
         }
 
         public get dash(): Array<number> {
@@ -37,44 +37,44 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        getAt(index: number): Segment {
-            if (!this._segments[index]) {
-                this._segments[index] = new Segment(this);
+        getAt(index: number): MultiLinePoint {
+            if (!this._points[index]) {
+                this._points[index] = new MultiLinePoint(this);
             }
 
-            return this._segments[index] as Segment;
+            return this._points[index] as MultiLinePoint;
         }
 
-        onSegmentUpdate = (): void => {
+        onPointUpdate = (): void => {
             this._markAsDirty();
         }
 
         add(...items: (AbstractMesh | Control | IValueAndUnitVector2)[]): void {
             items.forEach(item => {
-                var segment: Segment = this.push();
+                var point: MultiLinePoint = this.push();
 
                 if (item instanceof AbstractMesh) {
-                    segment.mesh = item;
+                    point.mesh = item;
                 }
                 else if (item instanceof Control) {
-                    segment.control = item;
+                    point.control = item;
                 }
                 else if (item.x != null && item.y != null) {
-                    segment.x = item.x;
-                    segment.y = item.y;
+                    point.x = item.x;
+                    point.y = item.y;
                 }
             });
         }
 
-        push(): Segment {
-            return this.getAt(this._segments.length);
+        push(): MultiLinePoint {
+            return this.getAt(this._points.length);
         }
 
-        remove(value: number | Segment): void {
+        remove(value: number | MultiLinePoint): void {
             var index: number;
             
-            if (value instanceof Segment) {
-                index = this._segments.indexOf(value);
+            if (value instanceof MultiLinePoint) {
+                index = this._points.indexOf(value);
 
                 if (index === -1) {
                     return;
@@ -84,16 +84,15 @@ module BABYLON.GUI {
                 index = value;
             }
             
-            var segment: Nullable<Segment> = this._segments[index];
+            var point: Nullable<MultiLinePoint> = this._points[index];
 
-            if (!segment) {
+            if (!point) {
                 return;
             }
 
-            segment.mesh = null;
-            segment.control = null;
+            point.dispose();
 
-            this._segments.splice(index, 1);
+            this._points.splice(index, 1);
         }
         
         public get lineWidth(): number {
@@ -142,18 +141,18 @@ module BABYLON.GUI {
 
                 var first: boolean = true; //first index is not necessarily 0
 
-                this._segments.forEach(segment => {
-                    if (!segment) {
+                this._points.forEach(point => {
+                    if (!point) {
                         return;
                     }
 
                     if (first) {
-                        context.moveTo(segment._point.x, segment._point.y);
+                        context.moveTo(point._point.x, point._point.y);
 
                         first = false;
                     }
                     else {
-                        context.lineTo(segment._point.x, segment._point.y);
+                        context.lineTo(point._point.x, point._point.y);
                     }
                 });
 
@@ -169,17 +168,17 @@ module BABYLON.GUI {
             this._maxX = null;
             this._maxY = null;
             
-            this._segments.forEach((segment, index) => {
-                if (!segment) {
+            this._points.forEach((point, index) => {
+                if (!point) {
                     return;
                 }
 
-                segment.translate();
+                point.translate();
 
-                if (this._minX == null || segment._point.x < this._minX) this._minX = segment._point.x;
-                if (this._minY == null || segment._point.y < this._minY) this._minY = segment._point.y;
-                if (this._maxX == null || segment._point.x > this._maxX) this._maxX = segment._point.x;
-                if (this._maxY == null || segment._point.y > this._maxY) this._maxY = segment._point.y;
+                if (this._minX == null || point._point.x < this._minX) this._minX = point._point.x;
+                if (this._minY == null || point._point.y < this._minY) this._minY = point._point.y;
+                if (this._maxX == null || point._point.x > this._maxX) this._maxX = point._point.x;
+                if (this._maxY == null || point._point.y > this._maxY) this._maxY = point._point.y;
             });
 
             if (this._minX == null) this._minX = 0;
@@ -207,8 +206,8 @@ module BABYLON.GUI {
         }
 
         dispose(): void {
-            while (this._segments.length > 0) {
-                this.remove(this._segments.length - 1);
+            while (this._points.length > 0) {
+                this.remove(this._points.length - 1);
             }
         }
 

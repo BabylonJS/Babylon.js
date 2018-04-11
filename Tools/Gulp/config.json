@@ -1622,7 +1622,7 @@
                     "../../gui/src/measure.ts",
                     "../../gui/src/math2D.ts",
                     "../../gui/src/valueAndUnit.ts",
-                    "../../gui/src/segment.ts",
+                    "../../gui/src/multiLinePoint.ts",
                     "../../gui/src/controls/control.ts",
                     "../../gui/src/controls/container.ts",
                     "../../gui/src/controls/stackPanel.ts",

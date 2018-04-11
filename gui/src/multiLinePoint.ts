@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
 
-    export class Segment {
+    export class MultiLinePoint {
 
         private _multiLine: MultiLine;
 
@@ -71,7 +71,7 @@ module BABYLON.GUI {
             this._control = value;
 
             if (this._control) {
-                this._controlObserver = this._control.onDirtyObservable.add(this._multiLine.onSegmentUpdate);
+                this._controlObserver = this._control.onDirtyObservable.add(this._multiLine.onPointUpdate);
             }
 
             this._multiLine._markAsDirty();
@@ -93,7 +93,7 @@ module BABYLON.GUI {
             this._mesh = value;
 
             if (this._mesh) {
-                this._meshObserver = this._mesh.getScene().onAfterCameraRenderObservable.add(this._multiLine.onSegmentUpdate);
+                this._meshObserver = this._mesh.getScene().onAfterCameraRenderObservable.add(this._multiLine.onPointUpdate);
             }
 
             this._multiLine._markAsDirty();
