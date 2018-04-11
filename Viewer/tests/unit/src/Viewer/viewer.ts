@@ -109,6 +109,7 @@ describe('Viewer', function () {
         let resizeCount = 0;
         //wait for the engine to init
         viewer.onEngineInitObservable.add((engine) => {
+            // mock the resize function
             engine.resize = () => {
                 resizeCount++;
             }
@@ -118,6 +119,22 @@ describe('Viewer', function () {
             assert.equal(resizeCount, 0);
             viewer.forceResize();
             assert.equal(resizeCount, 1, "Engine should resize when Viewer.forceResize() is called.");
+
+            viewer.updateConfiguration({
+                engine: {
+                    disableResize: true
+                }
+            });
+
+            viewer.forceResize();
+
+            assert.equal(resizeCount, 1, "Engine should not resize when disableResize is enabled");
+
+            viewer.updateConfiguration({
+                engine: {
+                    disableResize: false
+                }
+            });
 
             viewer.canvas.style.width = '0px';
             viewer.canvas.style.height = '0px';

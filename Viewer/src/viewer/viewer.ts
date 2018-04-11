@@ -243,6 +243,10 @@ export abstract class AbstractViewer {
             return;
         }
 
+        if (this._configuration.engine && this._configuration.engine.disableResize) {
+            return;
+        }
+
         this.engine.resize();
     }
 

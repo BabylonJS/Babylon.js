@@ -1,4 +1,5 @@
 import { ITemplateConfiguration } from './../templateManager';
+import { EngineOptions } from 'babylonjs';
 
 export interface ViewerConfiguration {
 
@@ -33,7 +34,7 @@ export interface ViewerConfiguration {
     engine?: {
         antialiasing?: boolean;
         disableResize?: boolean;
-        engineOptions?: { [key: string]: any };
+        engineOptions?: EngineOptions;
         adaptiveQuality?: boolean;
     },
     //templateStructure?: ITemplateStructure,
