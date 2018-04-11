@@ -1052,6 +1052,20 @@ var rmDir = function (dirPath) {
 };
 
 /**
+ * Launches the viewer's KARMA validation tests in chrome in order to debug them.
+ * (Can only be launch locally.)
+ */
+gulp.task("tests-viewer-validation-karma", function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../Viewer/tests/validation/karma.conf.js",
+        singleRun: false
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
  * Transpiles viewer typescript unit tests. 
  */
 gulp.task("tests-viewer-unit-transpile", function (done) {
