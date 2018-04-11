@@ -19,10 +19,11 @@ module.exports = function (config) {
             './tests/validation/integration.js',
             './tests/validation/validation.js',
             { pattern: './tests/**/*', watched: false, included: false, served: true },
-            { pattern: '../dist/**/*', watched: false, included: false, served: true },
+            { pattern: './dist/assets/**/*', watched: false, included: false, served: true },
         ],
         proxies: {
-            '/tests/': '/base/tests/'
+            '/tests/': '/base/tests/',
+            '/dist/assets/': '/base//dist/assets/'
         },
 
         port: 3000,
