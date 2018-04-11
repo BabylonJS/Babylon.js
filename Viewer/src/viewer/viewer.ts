@@ -217,11 +217,6 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * The viewer's version corresponds to the engine's version
-     */
-    public static readonly Version = Engine.Version;
-
-    /**
      * get the baseId of this viewer
      */
     public getBaseId(): string {
