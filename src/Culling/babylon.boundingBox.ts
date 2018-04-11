@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class BoundingBox implements ICullable {
-        public vectors: Vector3[] = new Array<Vector3>();
+        public vectors: Vector3[];
         public center: Vector3;
         public centerWorld: Vector3;
         public extendSize: Vector3;
@@ -9,12 +9,32 @@
         public vectorsWorld: Vector3[] = new Array<Vector3>();
         public minimumWorld: Vector3;
         public maximumWorld: Vector3;
-
+        public minimum: Vector3;
+        public maximum: Vector3;
 
         private _worldMatrix: Matrix;
 
-        constructor(public minimum: Vector3, public maximum: Vector3) {
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3) {
+            this.reConstruct(min, max);
+        }
+
+        // Methods
+
+        /**
+         * Recreates the entire bounding box from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space) 
+         */
+        public reConstruct(min: Vector3, max: Vector3) {
+            this.minimum = min.clone();
+            this.maximum = max.clone()
             // Bounding vectors
+            this.vectors= new Array<Vector3>();
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
 
@@ -50,10 +70,9 @@
             this.centerWorld = Vector3.Zero();
             this.extendSizeWorld = Vector3.Zero();
 
-            this._update(Matrix.Identity());
+            this._update(this._worldMatrix || Matrix.Identity());
         }
 
-        // Methods
         public getWorldMatrix(): Matrix {
             return this._worldMatrix;
         }
