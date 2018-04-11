@@ -228,10 +228,6 @@ export class SceneManager {
             this.scene.environmentTexture = environmentTexture;
         }
 
-        if (sceneConfig.autoRotate) {
-            this.camera.useAutoRotationBehavior = true;
-        }
-
         this.onSceneConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.scene,
