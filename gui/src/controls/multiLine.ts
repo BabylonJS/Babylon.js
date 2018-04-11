@@ -37,7 +37,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        private _getSegment(index: number): Segment {
+        getAt(index: number): Segment {
             if (!this._segments[index]) {
                 this._segments[index] = new Segment(this);
             }
@@ -51,7 +51,7 @@ module BABYLON.GUI {
 
         add(...items: (AbstractMesh | Control | ValueAndUnitVector2)[]): void {
             items.forEach(item => {
-                var segment: Segment = this.addSegment();
+                var segment: Segment = this.push();
 
                 if (item instanceof AbstractMesh) {
                     segment.mesh = item;
@@ -66,11 +66,11 @@ module BABYLON.GUI {
             });
         }
 
-        addSegment(): Segment {
-            return this._getSegment(this._segments.length);
+        push(): Segment {
+            return this.getAt(this._segments.length);
         }
 
-        removeSegment(value: number | Segment): void {
+        remove(value: number | Segment): void {
             var index: number;
             
             if (value instanceof Segment) {
@@ -208,7 +208,7 @@ module BABYLON.GUI {
 
         dispose(): void {
             while (this._segments.length > 0) {
-                this.removeSegment(this._segments.length - 1);
+                this.remove(this._segments.length - 1);
             }
         }
 
