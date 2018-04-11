@@ -2,7 +2,7 @@
 
 module BABYLON.GLTF2 {
     /**
-     * Abstract class that can be implemented to extend existing gltf loader behavior.
+     * Abstract class that can be implemented to extend existing glTF loader behavior.
      */
     export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension, IDisposable {
         public enabled = true;
@@ -21,16 +21,16 @@ module BABYLON.GLTF2 {
         // #region Overridable Methods
 
         /** Override this method to modify the default behavior for loading scenes. */
-        protected _loadSceneAsync(context: string, node: ILoaderScene): Nullable<Promise<void>> { return null; }
+        protected _loadSceneAsync(context: string, node: _ILoaderScene): Nullable<Promise<void>> { return null; }
 
         /** Override this method to modify the default behavior for loading nodes. */
-        protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { return null; }
+        protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> { return null; }
 
         /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
-        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> { return null; }
+        protected _loadVertexDataAsync(context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> { return null; }
 
         /** Override this method to modify the default behavior for loading materials. */
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
 
         /** Override this method to modify the default behavior for loading uris. */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> { return null; }
@@ -63,22 +63,22 @@ module BABYLON.GLTF2 {
         }
 
         /** Helper method called by the loader to allow extensions to override loading scenes. */
-        public static _LoadSceneAsync(loader: GLTFLoader, context: string, scene: ILoaderScene): Nullable<Promise<void>> {
+        public static _LoadSceneAsync(loader: GLTFLoader, context: string, scene: _ILoaderScene): Nullable<Promise<void>> {
             return loader._applyExtensions(extension => extension._loadSceneAsync(context, scene));
         }
 
         /** Helper method called by the loader to allow extensions to override loading nodes. */
-        public static _LoadNodeAsync(loader: GLTFLoader, context: string, node: ILoaderNode): Nullable<Promise<void>> {
+        public static _LoadNodeAsync(loader: GLTFLoader, context: string, node: _ILoaderNode): Nullable<Promise<void>> {
             return loader._applyExtensions(extension => extension._loadNodeAsync(context, node));
         }
 
         /** Helper method called by the loader to allow extensions to override loading mesh primitive vertex data. */
-        public static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
+        public static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
             return loader._applyExtensions(extension => extension._loadVertexDataAsync(context, primitive, babylonMesh));
         }
 
         /** Helper method called by the loader to allow extensions to override loading materials. */
-        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign));
         }
 
@@ -87,4 +87,10 @@ module BABYLON.GLTF2 {
             return loader._applyExtensions(extension => extension._loadUriAsync(context, uri));
         }
     }
+}
+
+/**
+ * Defines the module of the glTF loader extensions.
+ */
+module BABYLON.GLTF2.Extensions {
 }
