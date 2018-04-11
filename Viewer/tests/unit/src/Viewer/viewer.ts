@@ -56,7 +56,7 @@ describe('Viewer', function () {
         viewer.onSceneInitObservable.add(() => {
             // force-create a camera for the render loop to work
             viewer.updateConfiguration({ camera: {} });
-            viewer.scene.registerAfterRender(() => {
+            viewer.sceneManager.scene.registerAfterRender(() => {
                 sceneRenderCount++;
             })
         });

@@ -1,4 +1,5 @@
 import { viewerManager } from './viewerManager';
+import { SceneManager } from './sceneManager';
 import { TemplateManager } from './../templateManager';
 import { ConfigurationLoader } from './../configuration/loader';
 import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
@@ -9,7 +10,8 @@ import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
 import { ModelLoader } from '../model/modelLoader';
 import { CameraBehavior } from '../interfaces';
-import { viewerGlobals } from '..';
+import { viewerGlobals } from '../configuration/globals';
+import { extendClassWithConfig } from '../helper';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -27,28 +29,13 @@ export abstract class AbstractViewer {
      */
     public engine: Engine;
     /**
-     * The Babylon Scene of this viewer
-     */
-    public scene: Scene;
-    /**
-     * The camera used in this viewer
-     */
-    public camera: ArcRotateCamera;
-    /**
-     * Babylon's scene optimizer
-     */
-    public sceneOptimizer: SceneOptimizer;
-    /**
      * The ID of this viewer. it will be generated randomly or use the HTML Element's ID.
      */
     public readonly baseId: string;
-    /**
-     * Models displayed in this viewer.
-     */
-    public models: Array<ViewerModel>;
 
     /**
      * The last loader used to load a model. 
+     * @deprecated
      */
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
     /**
@@ -56,43 +43,20 @@ export abstract class AbstractViewer {
      */
     public modelLoader: ModelLoader;
 
+    /**
+     * A flag that controls whether or not the render loop should be executed
+     */
     public runRenderLoop: boolean = true;
+
+    /**
+     * The scene manager connected with this viewer instance
+     */
+    public sceneManager: SceneManager;
 
     /**
      * the viewer configuration object
      */
     protected _configuration: ViewerConfiguration;
-    /**
-     * Babylon's environment helper of this viewer
-     */
-    public environmentHelper: EnvironmentHelper;
-
-    //The following are configuration objects, default values.
-    protected _defaultHighpTextureType: number;
-    protected _shadowGeneratorBias: number;
-    protected _defaultPipelineTextureType: number;
-
-    /**
-     * The maximum number of shadows supported by the curent viewer
-     */
-    protected _maxShadows: number;
-    /**
-     * is HDR supported?
-     */
-    private _hdrSupport: boolean;
-
-    /**
-     * is this viewer disposed?
-     */
-    protected _isDisposed: boolean = false;
-
-    /**
-     * Returns a boolean representing HDR support
-     */
-    public get isHdrSupported() {
-        return this._hdrSupport;
-    }
-
 
     // observables
     /**
@@ -152,6 +116,12 @@ export abstract class AbstractViewer {
         return this._canvas;
     }
 
+
+    /**
+     * is this viewer disposed?
+     */
+    protected _isDisposed: boolean = false;
+
     /**
      * registered onBeforeRender functions.
      * This functions are also registered at the native scene. The reference can be used to unregister them.
@@ -182,7 +152,6 @@ export abstract class AbstractViewer {
         this.onFrameRenderedObservable = new Observable();
 
         this._registeredOnBeforeRenderFunctions = [];
-        this.models = [];
         this.modelLoader = new ModelLoader(this);
 
         // add this viewer to the viewer manager
@@ -190,6 +159,7 @@ export abstract class AbstractViewer {
 
         // create a new template manager. TODO - singleton?
         this.templateManager = new TemplateManager(containerElement);
+        this.sceneManager = new SceneManager(this);
 
         this._prepareContainerElement();
 
@@ -245,6 +215,15 @@ export abstract class AbstractViewer {
     }
 
     /**
+     * Get the configuration object. This is a reference only. 
+     * The configuration can ONLY be updated using the updateConfiguration function.
+     * changing this object will have no direct effect on the scene.
+     */
+    public get configuration(): ViewerConfiguration {
+        return this._configuration;
+    }
+
+    /**
      * force resizing the engine.
      */
     public forceResize() {
@@ -278,8 +257,8 @@ export abstract class AbstractViewer {
      * render loop that will be executed by the engine
      */
     protected _render = (force: boolean = false): void => {
-        if (force || (this.runRenderLoop && this.scene && this.scene.activeCamera)) {
-            this.scene.render();
+        if (force || (this.runRenderLoop && this.sceneManager.scene && this.sceneManager.scene.activeCamera)) {
+            this.sceneManager.scene.render();
             this.onFrameRenderedObservable.notifyObservers(this);
         }
     }
@@ -295,248 +274,11 @@ export abstract class AbstractViewer {
         // update this.configuration with the new data
         this._configuration = deepmerge(this._configuration || {}, newConfiguration);
 
-        // update scene configuration
-        if (newConfiguration.scene) {
-            this._configureScene(newConfiguration.scene);
-        }
-        // optimizer
-        if (newConfiguration.optimizer) {
-            this._configureOptimizer(newConfiguration.optimizer);
-        }
+        this.sceneManager.updateConfiguration(newConfiguration, this._configuration);
 
         // observers in configuration
         if (newConfiguration.observers) {
             this._configureObservers(newConfiguration.observers);
-        }
-
-        // configure model
-        if (newConfiguration.model && typeof newConfiguration.model === 'object') {
-            this._configureModel(newConfiguration.model);
-        }
-
-        // lights
-        if (newConfiguration.lights) {
-            this._configureLights(newConfiguration.lights);
-        }
-
-        // environment
-        if (newConfiguration.skybox !== undefined || newConfiguration.ground !== undefined) {
-            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
-        }
-
-        // camera
-        if (newConfiguration.camera) {
-            this._configureCamera(newConfiguration.camera);
-        }
-    }
-
-    protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
-        if (!skyboxConifguration && !groundConfiguration) {
-            if (this.environmentHelper) {
-                this.environmentHelper.dispose();
-                delete this.environmentHelper;
-            };
-            return Promise.resolve(this.scene);
-        }
-
-        const options: Partial<IEnvironmentHelperOptions> = {
-            createGround: !!groundConfiguration,
-            createSkybox: !!skyboxConifguration,
-            setupImageProcessing: false // will be done at the scene level!
-        };
-
-        if (groundConfiguration) {
-            let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
-
-            let groundSize = groundConfig.size || (typeof skyboxConifguration === 'object' && skyboxConifguration.scale);
-            if (groundSize) {
-                options.groundSize = groundSize;
-            }
-
-            options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
-            if (groundConfig.shadowLevel !== undefined) {
-                options.groundShadowLevel = groundConfig.shadowLevel;
-            }
-            options.enableGroundMirror = !!groundConfig.mirror;
-            if (groundConfig.texture) {
-                options.groundTexture = groundConfig.texture;
-            }
-            if (groundConfig.color) {
-                options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
-            }
-
-            if (groundConfig.opacity !== undefined) {
-                options.groundOpacity = groundConfig.opacity;
-            }
-
-            if (groundConfig.mirror) {
-                options.enableGroundMirror = true;
-                // to prevent undefines
-                if (typeof groundConfig.mirror === "object") {
-                    if (groundConfig.mirror.amount !== undefined)
-                        options.groundMirrorAmount = groundConfig.mirror.amount;
-                    if (groundConfig.mirror.sizeRatio !== undefined)
-                        options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                    if (groundConfig.mirror.blurKernel !== undefined)
-                        options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                    if (groundConfig.mirror.fresnelWeight !== undefined)
-                        options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                    if (groundConfig.mirror.fallOffDistance !== undefined)
-                        options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                    if (this._defaultPipelineTextureType !== undefined)
-                        options.groundMirrorTextureType = this._defaultPipelineTextureType;
-                }
-            }
-
-        }
-
-        let postInitSkyboxMaterial = false;
-        if (skyboxConifguration) {
-            let conf = skyboxConifguration === true ? {} : skyboxConifguration;
-            if (conf.material && conf.material.imageProcessingConfiguration) {
-                options.setupImageProcessing = false; // will be configured later manually.
-            }
-            let skyboxSize = conf.scale;
-            if (skyboxSize) {
-                options.skyboxSize = skyboxSize;
-            }
-            options.sizeAuto = !options.skyboxSize;
-            if (conf.color) {
-                options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
-            }
-            if (conf.cubeTexture && conf.cubeTexture.url) {
-                if (typeof conf.cubeTexture.url === "string") {
-                    options.skyboxTexture = conf.cubeTexture.url;
-                } else {
-                    // init later!
-                    postInitSkyboxMaterial = true;
-                }
-            }
-
-            if (conf.material && conf.material.imageProcessingConfiguration) {
-                postInitSkyboxMaterial = true;
-            }
-        }
-
-        options.setupImageProcessing = false; // TMP
-
-        if (!this.environmentHelper) {
-            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
-        } else {
-            // there might be a new scene! we need to dispose.
-
-            // get the scene used by the envHelper
-            let scene: Scene = this.environmentHelper.rootMesh.getScene();
-            // is it a different scene? Oh no!
-            if (scene !== this.scene) {
-                this.environmentHelper.dispose();
-                this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
-            } else {
-                this.environmentHelper.updateOptions(options)!;
-            }
-        }
-
-        if (postInitSkyboxMaterial) {
-            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
-            if (skyboxMaterial) {
-                if (typeof skyboxConifguration === 'object' && skyboxConifguration.material && skyboxConifguration.material.imageProcessingConfiguration) {
-                    this._extendClassWithConfig(skyboxMaterial.imageProcessingConfiguration, skyboxConifguration.material.imageProcessingConfiguration);
-                }
-            }
-        }
-    }
-
-    /**
-     * internally configure the scene using the provided configuration.
-     * The scene will not be recreated, but just updated.
-     * @param sceneConfig the (new) scene configuration
-     */
-    protected _configureScene(sceneConfig: ISceneConfiguration) {
-        // sanity check!
-        if (!this.scene) {
-            return;
-        }
-        if (sceneConfig.debug) {
-            this.scene.debugLayer.show();
-        } else {
-            if (this.scene.debugLayer.isVisible()) {
-                this.scene.debugLayer.hide();
-            }
-        }
-
-        if (sceneConfig.clearColor) {
-            let cc = sceneConfig.clearColor;
-            let oldcc = this.scene.clearColor;
-            if (cc.r !== undefined) {
-                oldcc.r = cc.r;
-            }
-            if (cc.g !== undefined) {
-                oldcc.g = cc.g
-            }
-            if (cc.b !== undefined) {
-                oldcc.b = cc.b
-            }
-            if (cc.a !== undefined) {
-                oldcc.a = cc.a
-            }
-        }
-
-        // image processing configuration - optional.
-        if (sceneConfig.imageProcessingConfiguration) {
-            this._extendClassWithConfig(this.scene.imageProcessingConfiguration, sceneConfig.imageProcessingConfiguration);
-        }
-        if (sceneConfig.environmentTexture) {
-            if (this.scene.environmentTexture) {
-                this.scene.environmentTexture.dispose();
-            }
-            const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
-            this.scene.environmentTexture = environmentTexture;
-        }
-
-        if (sceneConfig.autoRotate) {
-            this.camera.useAutoRotationBehavior = true;
-        }
-    }
-
-
-    /**
-     * Configure the scene optimizer.
-     * The existing scene optimizer will be disposed and a new one will be created.
-     * @param optimizerConfig the (new) optimizer configuration
-     */
-    protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean) {
-        if (typeof optimizerConfig === 'boolean') {
-            if (this.sceneOptimizer) {
-                this.sceneOptimizer.stop();
-                this.sceneOptimizer.dispose();
-                delete this.sceneOptimizer;
-            }
-            if (optimizerConfig) {
-                this.sceneOptimizer = new SceneOptimizer(this.scene);
-                this.sceneOptimizer.start();
-            }
-        } else {
-            let optimizerOptions: SceneOptimizerOptions = new SceneOptimizerOptions(optimizerConfig.targetFrameRate, optimizerConfig.trackerDuration);
-            // check for degradation
-            if (optimizerConfig.degradation) {
-                switch (optimizerConfig.degradation) {
-                    case "low":
-                        optimizerOptions = SceneOptimizerOptions.LowDegradationAllowed(optimizerConfig.targetFrameRate);
-                        break;
-                    case "moderate":
-                        optimizerOptions = SceneOptimizerOptions.ModerateDegradationAllowed(optimizerConfig.targetFrameRate);
-                        break;
-                    case "hight":
-                        optimizerOptions = SceneOptimizerOptions.HighDegradationAllowed(optimizerConfig.targetFrameRate);
-                        break;
-                }
-            }
-            if (this.sceneOptimizer) {
-                this.sceneOptimizer.stop();
-                this.sceneOptimizer.dispose()
-            }
-            this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
-            this.sceneOptimizer.start();
         }
     }
 
@@ -570,151 +312,6 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
-     * @param cameraConfig the new camera configuration
-     * @param model optionally use the model to configure the camera.
-     */
-    protected _configureCamera(cameraConfig: ICameraConfiguration = {}, model?: ViewerModel) {
-        let focusMeshes = model ? model.meshes : this.scene.meshes;
-
-        if (!this.scene.activeCamera) {
-            this.scene.createDefaultCamera(true, true, true);
-            this.camera = <ArcRotateCamera>this.scene.activeCamera!;
-        }
-        if (cameraConfig.position) {
-            this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
-        }
-
-        if (cameraConfig.rotation) {
-            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
-        }
-
-        this._extendClassWithConfig(this.camera, cameraConfig);
-
-        this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
-        this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
-
-        if (cameraConfig.behaviors) {
-            for (let name in cameraConfig.behaviors) {
-                this._setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
-            }
-        };
-
-        const sceneExtends = this.scene.getWorldExtends((mesh) => {
-            return !this.environmentHelper || (mesh !== this.environmentHelper.ground && mesh !== this.environmentHelper.rootMesh && mesh !== this.environmentHelper.skybox);
-        });
-        const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-        const sceneDiagonalLenght = sceneDiagonal.length();
-        if (isFinite(sceneDiagonalLenght))
-            this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
-    }
-
-    /**
-     * configure the lights.
-     * 
-     * @param lightsConfiguration the (new) light(s) configuration
-     * @param model optionally use the model to configure the camera.
-     */
-    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
-        let focusMeshes = model ? model.meshes : this.scene.meshes;
-        // sanity check!
-        if (!Object.keys(lightsConfiguration).length) return;
-
-        let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
-        // compare to the global (!) configuration object and dispose unneeded:
-        let lightsToConfigure = Object.keys(this._configuration.lights || []);
-        if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
-            lightsAvailable.forEach(lName => {
-                if (lightsToConfigure.indexOf(lName) === -1) {
-                    this.scene.getLightByName(lName)!.dispose()
-                }
-            });
-        }
-
-        Object.keys(lightsConfiguration).forEach((name, idx) => {
-            let lightConfig: ILightConfiguration = { type: 0 };
-            if (typeof lightsConfiguration[name] === 'object') {
-                lightConfig = <ILightConfiguration>lightsConfiguration[name];
-            }
-
-            lightConfig.name = name;
-
-            let light: Light;
-            // light is not already available
-            if (lightsAvailable.indexOf(name) === -1) {
-                let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                if (!constructor) return;
-                light = constructor();
-            } else {
-                // available? get it from the scene
-                light = <Light>this.scene.getLightByName(name);
-                lightsAvailable = lightsAvailable.filter(ln => ln !== name);
-                if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
-                    light.dispose();
-                    let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                    if (!constructor) return;
-                    light = constructor();
-                }
-            }
-
-            // if config set the light to false, dispose it.
-            if (lightsConfiguration[name] === false) {
-                light.dispose();
-                return;
-            }
-
-            //enabled
-            var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
-            light.setEnabled(enabled);
-
-
-            this._extendClassWithConfig(light, lightConfig);
-
-            //position. Some lights don't support shadows
-            if (light instanceof ShadowLight) {
-                if (lightConfig.target) {
-                    if (light.setDirectionToTarget) {
-                        let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
-                        light.setDirectionToTarget(target);
-                    }
-                } else if (lightConfig.direction) {
-                    let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
-                    light.direction = direction;
-                }
-                let shadowGenerator = light.getShadowGenerator();
-                if (lightConfig.shadowEnabled && this._maxShadows) {
-                    if (!shadowGenerator) {
-                        shadowGenerator = new ShadowGenerator(512, light);
-                        // TODO blur kernel definition
-                    }
-                    this._extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
-                    // add the focues meshes to the shadow list
-                    let shadownMap = shadowGenerator.getShadowMap();
-                    if (!shadownMap) return;
-                    let renderList = shadownMap.renderList;
-                    for (var index = 0; index < focusMeshes.length; index++) {
-                        if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
-                            renderList && renderList.push(focusMeshes[index]);
-                        }
-                    }
-                } else if (shadowGenerator) {
-                    shadowGenerator.dispose();
-                }
-            }
-        });
-    }
-
-    /**
-     * configure all models using the configuration.
-     * @param modelConfiguration the configuration to use to reconfigure the models
-     */
-    protected _configureModel(modelConfiguration: Partial<IModelConfiguration>) {
-        this.models.forEach(model => {
-            model.updateConfiguration(modelConfiguration);
-        })
-    }
-
-    /**
      * Dispoe the entire viewer including the scene and the engine
      */
     public dispose() {
@@ -722,18 +319,6 @@ export abstract class AbstractViewer {
             return;
         }
         window.removeEventListener('resize', this._resize);
-        if (this.sceneOptimizer) {
-            this.sceneOptimizer.stop();
-            this.sceneOptimizer.dispose();
-        }
-
-        if (this.environmentHelper) {
-            this.environmentHelper.dispose();
-        }
-
-        if (this._configurationLoader) {
-            this._configurationLoader.dispose();
-        }
 
         //observers
         this.onEngineInitObservable.clear();
@@ -753,19 +338,15 @@ export abstract class AbstractViewer {
         this.onFrameRenderedObservable.clear();
         delete this.onFrameRenderedObservable;
 
-        if (this.scene.activeCamera) {
-            this.scene.activeCamera.detachControl(this.canvas);
+        if (this.sceneManager.scene.activeCamera) {
+            this.sceneManager.scene.activeCamera.detachControl(this.canvas);
         }
+
+
+        this.sceneManager.dispose();
 
         this.modelLoader.dispose();
 
-        this.models.forEach(model => {
-            model.dispose();
-        });
-
-        this.models.length = 0;
-
-        this.scene.dispose();
         this.engine.dispose();
 
         this.templateManager.dispose();
@@ -800,9 +381,9 @@ export abstract class AbstractViewer {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
                 if (modelConfiguration) {
-                    return this.loadModel(modelConfiguration).catch(e => { }).then(() => { return this.scene });
+                    return this.loadModel(modelConfiguration).catch(e => { }).then(() => { return this.sceneManager.scene });
                 } else {
-                    return this.scene || this._initScene();
+                    return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
             }).then((scene) => {
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
@@ -857,37 +438,7 @@ export abstract class AbstractViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-        // set hardware limitations for scene initialization
-        this._handleHardwareLimitations();
-
         return Promise.resolve(this.engine);
-    }
-
-    /**
-     * initialize the scene. Calling thsi function again will dispose the old scene, if exists.
-     */
-    protected _initScene(): Promise<Scene> {
-
-        // if the scen exists, dispose it.
-        if (this.scene) {
-            this.scene.dispose();
-        }
-
-        // create a new scene
-        this.scene = new Scene(this.engine);
-        // make sure there is a default camera and light.
-        this.scene.createDefaultLight(true);
-
-        if (this._configuration.scene) {
-            this._configureScene(this._configuration.scene);
-
-            // Scene optimizer
-            if (this._configuration.optimizer) {
-                this._configureOptimizer(this._configuration.optimizer);
-            }
-        }
-
-        return Promise.resolve(this.scene);
     }
 
     private _isLoading: boolean;
@@ -907,8 +458,7 @@ export abstract class AbstractViewer {
             throw new Error("no model configuration provided");
         }
         if (clearScene) {
-            this.models.forEach(m => m.dispose());
-            this.models.length = 0;
+
         }
         let configuration: IModelConfiguration;
         if (typeof modelConfig === 'string') {
@@ -940,19 +490,9 @@ export abstract class AbstractViewer {
         this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
 
         model.onLoadedObservable.add(() => {
-            Promise.resolve().then(() => {
-                this._configureLights(this._configuration.lights, model);
-
-                if (this._configuration.camera || !this.scene.activeCamera) {
-                    this._configureCamera(this._configuration.camera || {}, model);
-                }
-                return this._initEnvironment(model);
-            }).then(() => {
-                this._isLoading = false;
-                return this.onModelLoadedObservable.notifyObserversWithPromise(model);
-            });
+            this._isLoading = false;
+            return this.onModelLoadedObservable.notifyObserversWithPromise(model);
         });
-
 
         return model;
     }
@@ -970,8 +510,8 @@ export abstract class AbstractViewer {
             return Promise.reject("another model is curently being loaded.");
         }
 
-        return Promise.resolve(this.scene).then((scene) => {
-            if (!scene) return this._initScene();
+        return Promise.resolve(this.sceneManager.scene).then((scene) => {
+            if (!scene) return this.sceneManager.initScene(this._configuration.scene, this._configuration.optimizer);
             return scene;
         }).then(() => {
             let model = this.initModel(modelConfig, clearScene);
@@ -985,55 +525,6 @@ export abstract class AbstractViewer {
                 });
             });
         })
-    }
-
-    /**
-     * initialize the environment for a specific model.
-     * Per default it will use the viewer'S configuration.
-     * @param model the model to use to configure the environment.
-     * @returns a Promise that will resolve when the configuration is done.
-     */
-    protected _initEnvironment(model?: ViewerModel): Promise<Scene> {
-        this._configureEnvironment(this._configuration.skybox, this._configuration.ground);
-
-        return Promise.resolve(this.scene);
-    }
-
-    /**
-     * Alters render settings to reduce features based on hardware feature limitations
-     * @param enableHDR Allows the viewer to run in HDR mode.
-     */
-    protected _handleHardwareLimitations(enableHDR = true) {
-        //flip rendering settings switches based on hardware support
-        let maxVaryingRows = this.engine.getCaps().maxVaryingVectors;
-        let maxFragmentSamplers = this.engine.getCaps().maxTexturesImageUnits;
-
-        //shadows are disabled if there's not enough varyings for a single shadow
-        if ((maxVaryingRows < 8) || (maxFragmentSamplers < 8)) {
-            this._maxShadows = 0;
-        } else {
-            this._maxShadows = 3;
-        }
-
-        //can we render to any >= 16-bit targets (required for HDR)
-        let caps = this.engine.getCaps();
-        let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
-        let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
-
-        this._hdrSupport = enableHDR && !!(linearFloatTargets || linearHalfFloatTargets);
-
-        if (linearHalfFloatTargets) {
-            this._defaultHighpTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
-            this._shadowGeneratorBias = 0.002;
-        } else if (linearFloatTargets) {
-            this._defaultHighpTextureType = Engine.TEXTURETYPE_FLOAT;
-            this._shadowGeneratorBias = 0.001;
-        } else {
-            this._defaultHighpTextureType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            this._shadowGeneratorBias = 0.001;
-        }
-
-        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**
@@ -1056,82 +547,6 @@ export abstract class AbstractViewer {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.IncludesShadersStore[key] = customShaders!.includes![key];
             });
-        }
-    }
-
-    /**
-     * This will extend an object with configuration values.
-     * What it practically does it take the keys from the configuration and set them on the object.
-     * I the configuration is a tree, it will traverse into the tree.
-     * @param object the object to extend
-     * @param config the configuration object that will extend the object
-     */
-    protected _extendClassWithConfig(object: any, config: any) {
-        if (!config) return;
-        Object.keys(config).forEach(key => {
-            if (key in object && typeof object[key] !== 'function') {
-                // if (typeof object[key] === 'function') return;
-                // if it is an object, iterate internally until reaching basic types
-                if (typeof object[key] === 'object') {
-                    this._extendClassWithConfig(object[key], config[key]);
-                } else {
-                    if (config[key] !== undefined) {
-                        object[key] = config[key];
-                    }
-                }
-            }
-        });
-    }
-
-    private _setCameraBehavior(behaviorConfig: number | {
-        type: number;
-        [propName: string]: any;
-    }, payload: any) {
-
-        let behavior: Behavior<ArcRotateCamera> | null;
-        let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
-
-        let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
-
-        // constructing behavior
-        switch (type) {
-            case CameraBehavior.AUTOROTATION:
-                this.camera.useAutoRotationBehavior = true;
-                behavior = this.camera.autoRotationBehavior;
-                break;
-            case CameraBehavior.BOUNCING:
-                this.camera.useBouncingBehavior = true;
-                behavior = this.camera.bouncingBehavior;
-                break;
-            case CameraBehavior.FRAMING:
-                this.camera.useFramingBehavior = true;
-                behavior = this.camera.framingBehavior;
-                break;
-            default:
-                behavior = null;
-                break;
-        }
-
-        if (behavior) {
-            if (typeof behaviorConfig === "object") {
-                this._extendClassWithConfig(behavior, behaviorConfig);
-            }
-        }
-
-        // post attach configuration. Some functionalities require the attached camera.
-        switch (type) {
-            case CameraBehavior.AUTOROTATION:
-                break;
-            case CameraBehavior.BOUNCING:
-                break;
-            case CameraBehavior.FRAMING:
-                if (config.zoomOnBoundingInfo) {
-                    //payload is an array of meshes
-                    let meshes = <Array<AbstractMesh>>payload;
-                    let bounding = meshes[0].getHierarchyBoundingVectors();
-                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
-                }
-                break;
         }
     }
 }
