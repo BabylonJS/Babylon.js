@@ -341,6 +341,9 @@ export interface ILightConfiguration {
     spotAngle?: number;
     shadowFieldOfView?: number;
     shadowBufferSize?: number;
+    shadowFrustumSize?: number;
+    shadowMinZ?: number;
+    shadowMaxZ?: number;
     [propName: string]: any;
 
     // no behaviors for light at the moment, but allowing configuration for future reference.
