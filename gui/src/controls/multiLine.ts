@@ -37,7 +37,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        getAt(index: number): MultiLinePoint {
+        public getAt(index: number): MultiLinePoint {
             if (!this._points[index]) {
                 this._points[index] = new MultiLinePoint(this);
             }
@@ -45,11 +45,11 @@ module BABYLON.GUI {
             return this._points[index] as MultiLinePoint;
         }
 
-        onPointUpdate = (): void => {
+        public onPointUpdate = (): void => {
             this._markAsDirty();
         }
 
-        add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): void {
+        public add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): void {
             items.forEach(item => {
                 var point: MultiLinePoint = this.push();
 
@@ -66,11 +66,11 @@ module BABYLON.GUI {
             });
         }
 
-        push(): MultiLinePoint {
+        public push(): MultiLinePoint {
             return this.getAt(this._points.length);
         }
 
-        remove(value: number | MultiLinePoint): void {
+        public remove(value: number | MultiLinePoint): void {
             var index: number;
             
             if (value instanceof MultiLinePoint) {
@@ -205,10 +205,12 @@ module BABYLON.GUI {
             this._currentMeasure.top = this._minY - this._lineWidth / 2;  
         }
 
-        dispose(): void {
+        public dispose(): void {
             while (this._points.length > 0) {
                 this.remove(this._points.length - 1);
             }
+
+            super.dispose();
         }
 
     }    
