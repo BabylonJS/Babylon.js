@@ -2743,10 +2743,6 @@
                 currentPosition.scaleAndAddToRef(scale, finalPosition);
             }  
             
-            if (!originalAnimation._workValue) {
-                originalAnimation._workValue = Matrix.Identity();
-            }
-
             Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
             return originalAnimation._workValue;
         }

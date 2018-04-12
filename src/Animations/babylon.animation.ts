@@ -866,8 +866,7 @@
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                     if (Animation.AllowMatricesInterpolation) {
-                                        workValue = this.matrixInterpolateFunction(startValue, endValue, gradient, workValue);
-                                        return workValue;
+                                        return this.matrixInterpolateFunction(startValue, endValue, gradient, workValue);
                                     }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;

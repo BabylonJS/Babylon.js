@@ -203,6 +203,11 @@
          */
         private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
             this._currentFrame = currentFrame;
+
+            if (this._animation.dataType === Animation.ANIMATIONTYPE_MATRIX && !this._workValue) {
+                this._workValue = Matrix.Zero();
+            }
+
             return this._animation._interpolate(currentFrame, repeatCount, this._workValue, loopMode, offsetValue, highLimitValue);
         }
 
