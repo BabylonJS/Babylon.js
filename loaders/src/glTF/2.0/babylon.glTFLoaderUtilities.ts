@@ -1,14 +1,14 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    /** @ignore */
+    /** @hidden */
     export interface _IArrayItem {
         _index: number;
     }
 
-    /** @ignore */
+    /** @hidden */
     export class _ArrayItem {
-        /** @ignore */
+        /** @hidden */
         public static Assign(values?: _IArrayItem[]): void {
             if (values) {
                 for (let index = 0; index < values.length; index++) {

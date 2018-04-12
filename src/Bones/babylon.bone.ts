@@ -23,7 +23,7 @@
         public length: number;
 
         /** 
-         * @ignore Internal only
+         * @hidden Internal only
          * Set this value to map this bone to a different index in the transform matrices
          * Set this value to -1 to exclude the bone from the transform matrices
          */
@@ -45,13 +45,13 @@
         private _needToDecompose = true;
         private _needToCompose = false;
 
-        /** @ignore */
+        /** @hidden */
         get _matrix(): Matrix {
             this._compose();
             return this._localMatrix;
         }
 
-        /** @ignore */
+        /** @hidden */
         set _matrix(value: Matrix) {
             this._localMatrix.copyFrom(value);
             this._needToDecompose = true;
@@ -290,7 +290,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren = true): void {
             if (!rootMatrix) {
                 rootMatrix = this._baseMatrix;

@@ -472,7 +472,7 @@
 
         }
 
-        /** @ignore */
+        /** @hidden */
         public _recreateUpdateEffect() {
             let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
             if (this._updateEffect && this._updateEffectOptions.defines === defines) {
@@ -482,7 +482,7 @@
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
         }
 
-        /** @ignore */
+        /** @hidden */
         public _recreateRenderEffect() {
             let defines = "";
             if (this._scene.clipPlane) {

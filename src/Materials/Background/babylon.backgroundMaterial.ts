@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
      * Background material defines definition.
-     * @ignore Mainly internal Use
+     * @hidden Mainly internal Use
      */
     class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         /**

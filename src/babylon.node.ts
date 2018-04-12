@@ -39,7 +39,7 @@
          */
         public doNotSerialize = false;
         
-        /** @ignore */
+        /** @hidden */
         public _isDisposed = false;        
 
         /**
@@ -55,16 +55,16 @@
 
         private _isEnabled = true;
         private _isReady = true;
-        /** @ignore */
+        /** @hidden */
         public _currentRenderId = -1;
         private _parentRenderId = -1;
         protected _childRenderId = -1;
 
-        /** @ignore */
+        /** @hidden */
         public _waitingParentId: Nullable<string>;
 
         private _scene: Scene;
-        /** @ignore */
+        /** @hidden */
         public _cache: any;
 
         private _parentNode: Nullable<Node>;
@@ -266,13 +266,13 @@
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
-        /** @ignore */
+        /** @hidden */
         public _initCache() {
             this._cache = {};
             this._cache.parent = undefined;
         }
 
-        /** @ignore */
+        /** @hidden */
         public updateCache(force?: boolean): void {
             if (!force && this.isSynchronized())
                 return;
@@ -284,24 +284,24 @@
 
         // override it in derived class if you add new variables to the cache
         // and call the parent class method if !ignoreParentClass
-        /** @ignore */
+        /** @hidden */
         public _updateCache(ignoreParentClass?: boolean): void {
         }
 
         // override it in derived class if you add new variables to the cache
-        /** @ignore */
+        /** @hidden */
         public _isSynchronized(): boolean {
             return true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _markSyncedWithParent() {
             if (this.parent) {
                 this._parentRenderId = this.parent._childRenderId;
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public isSynchronizedWithParent(): boolean {
             if (!this.parent) {
                 return true;
@@ -314,7 +314,7 @@
             return this.parent.isSynchronized();
         }
 
-        /** @ignore */
+        /** @hidden */
         public isSynchronized(updateCache?: boolean): boolean {
             var check = this.hasNewParent();
 
@@ -328,7 +328,7 @@
             return !check;
         }
 
-        /** @ignore */
+        /** @hidden */
         public hasNewParent(update?: boolean): boolean {
             if (this._cache.parent === this.parent)
                 return false;
@@ -395,7 +395,7 @@
             return false;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _getDescendants(results: Node[], directDescendantsOnly: boolean = false, predicate?: (node: Node) => boolean): void {
             if (!this._children) {
                 return;
@@ -465,7 +465,7 @@
             return this.getDescendants(true, predicate);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _setReady(state: boolean): void {
             if (state === this._isReady) {
                 return;

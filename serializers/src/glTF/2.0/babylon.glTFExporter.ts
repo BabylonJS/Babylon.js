@@ -2,12 +2,13 @@
 
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
- * @ignore - capitalization of GLTF2 module.
+ * @hidden - capitalization of GLTF2 module.
  */
 module BABYLON.GLTF2 {
     /** 
      * Utility interface for storing vertex attribute data.
-    */
+     * @hidden
+     */
     interface _IVertexAttributeData {
         /** 
          * Specifies the Babylon Vertex Buffer Type (Position, Normal, Color, etc.)
@@ -26,6 +27,7 @@ module BABYLON.GLTF2 {
     }
     /**
      * Converts Babylon Scene into glTF 2.0.
+     * @hidden
      */
     export class _Exporter {
         /**
