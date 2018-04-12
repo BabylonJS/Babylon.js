@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4 } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -64,15 +64,7 @@ export class SceneManager {
      */
     private _hdrSupport: boolean;
 
-    private _globalConfiguration: ViewerConfiguration;
-
-
-    /**
-     * Returns a boolean representing HDR support
-     */
-    public get isHdrSupported() {
-        return this._hdrSupport;
-    }
+    private _mainColor: Color3;
 
     constructor(private _viewer: AbstractViewer) {
         this.models = [];
@@ -100,6 +92,38 @@ export class SceneManager {
     }
 
     /**
+     * Returns a boolean representing HDR support
+     */
+    public get isHdrSupported() {
+        return this._hdrSupport;
+    }
+
+    /**
+     * Return the main color defined in the configuration.
+     */
+    public get mainColor(): Color3 {
+        return this._mainColor;
+    }
+
+    /**
+     * Sets the engine flags to unlock all babylon features.
+     */
+    public unlockBabylonFeatures() {
+        this.scene.shadowsEnabled = true;
+        this.scene.particlesEnabled = true;
+        this.scene.postProcessesEnabled = true;
+        this.scene.collisionsEnabled = true;
+        this.scene.lightsEnabled = true;
+        this.scene.texturesEnabled = true;
+        this.scene.lensFlaresEnabled = true;
+        this.scene.proceduralTexturesEnabled = true;
+        this.scene.renderTargetsEnabled = true;
+        this.scene.spritesEnabled = true;
+        this.scene.skeletonsEnabled = true;
+        this.scene.audioEnabled = true;
+    }
+
+    /**
      * initialize the environment for a specific model.
      * Per default it will use the viewer's configuration.
      * @param model the model to use to configure the environment.
@@ -123,6 +147,8 @@ export class SceneManager {
 
         // create a new scene
         this.scene = new Scene(this._viewer.engine);
+
+        this._mainColor = new Color3();
 
         if (sceneConfiguration) {
             this._configureScene(sceneConfiguration);
@@ -199,21 +225,19 @@ export class SceneManager {
             }
         }
 
-        if (sceneConfig.clearColor) {
-            let cc = sceneConfig.clearColor;
-            let oldcc = this.scene.clearColor;
-            if (cc.r !== undefined) {
-                oldcc.r = cc.r;
-            }
-            if (cc.g !== undefined) {
-                oldcc.g = cc.g
-            }
-            if (cc.b !== undefined) {
-                oldcc.b = cc.b
-            }
-            if (cc.a !== undefined) {
-                oldcc.a = cc.a
-            }
+        let cc = sceneConfig.clearColor || { r: 0.9, g: 0.9, b: 0.9, a: 1.0 };
+        let oldcc = this.scene.clearColor;
+        if (cc.r !== undefined) {
+            oldcc.r = cc.r;
+        }
+        if (cc.g !== undefined) {
+            oldcc.g = cc.g
+        }
+        if (cc.b !== undefined) {
+            oldcc.b = cc.b
+        }
+        if (cc.a !== undefined) {
+            oldcc.a = cc.a
         }
 
         // image processing configuration - optional.
@@ -226,6 +250,19 @@ export class SceneManager {
             }
             const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
             this.scene.environmentTexture = environmentTexture;
+        }
+
+        if (sceneConfig.mainColor) {
+            let mc = sceneConfig.mainColor;
+            if (mc.r !== undefined) {
+                this._mainColor.r = mc.r;
+            }
+            if (mc.g !== undefined) {
+                this._mainColor.g = mc.g
+            }
+            if (mc.b !== undefined) {
+                this._mainColor.b = mc.b
+            }
         }
 
         this.onSceneConfiguredObservable.notifyObservers({
@@ -451,6 +488,10 @@ export class SceneManager {
             }
         }
 
+        if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
+            this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
+        }
+
         if (postInitSkyboxMaterial) {
             let skyboxMaterial = this.environmentHelper.skyboxMaterial;
             if (skyboxMaterial) {
@@ -536,8 +577,14 @@ export class SceneManager {
 
             extendClassWithConfig(light, lightConfig);
 
+
+
             //position. Some lights don't support shadows
             if (light instanceof ShadowLight) {
+                // set default values
+                light.shadowMinZ = light.shadowMinZ || 0.2;
+                light.shadowMaxZ = Math.min(10, light.shadowMaxZ); //large far clips reduce shadow depth precision
+
                 if (lightConfig.target) {
                     if (light.setDirectionToTarget) {
                         let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
@@ -547,8 +594,31 @@ export class SceneManager {
                     let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
                     light.direction = direction;
                 }
-                let shadowGenerator = light.getShadowGenerator();
-                if (lightConfig.shadowEnabled && this._maxShadows) {
+
+                let isShadowEnabled = false;
+                if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                    (<BABYLON.DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
+                    isShadowEnabled = true;
+                }
+                else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
+                    let spotLight: BABYLON.SpotLight = <BABYLON.SpotLight>light;
+                    if (lightConfig.spotAngle !== undefined) {
+                        spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
+                    }
+                    if (spotLight.angle && lightConfig.shadowFieldOfView) {
+                        spotLight.shadowAngleScale = lightConfig.shadowFieldOfView / spotLight.angle;
+                    }
+                    isShadowEnabled = true;
+                }
+                else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
+                    if (lightConfig.shadowFieldOfView) {
+                        (<BABYLON.PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
+                    }
+                    isShadowEnabled = true;
+                }
+
+                let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
+                if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
                     if (!shadowGenerator) {
                         shadowGenerator = new ShadowGenerator(512, light);
                         // TODO blur kernel definition
@@ -563,10 +633,29 @@ export class SceneManager {
                             renderList && renderList.push(focusMeshes[index]);
                         }
                     }
+                    let bufferSize = lightConfig.shadowBufferSize || 256;
+                    var blurKernel = this.getBlurKernel(light, bufferSize);
+
+                    shadowGenerator.useBlurCloseExponentialShadowMap = true;
+                    shadowGenerator.useKernelBlur = true;
+                    shadowGenerator.blurScale = 1.0;
+                    shadowGenerator.bias = this._shadowGeneratorBias;
+                    shadowGenerator.blurKernel = blurKernel;
+                    shadowGenerator.depthScale = 50 * (light.shadowMaxZ - light.shadowMinZ);
                 } else if (shadowGenerator) {
                     shadowGenerator.dispose();
                 }
             }
+        });
+
+        // render priority
+        let globalLightsConfiguration = this._viewer.configuration.lights || {};
+        Object.keys(globalLightsConfiguration).sort().forEach((name, idx) => {
+            let configuration = globalLightsConfiguration[name];
+            let light = this.scene.getLightByName(name);
+            // sanity check
+            if (!light) return;
+            light.renderPriority = -idx;
         });
 
         this.onLightsConfiguredObservable.notifyObservers({
@@ -575,6 +664,30 @@ export class SceneManager {
             newConfiguration: lightsConfiguration,
             model
         });
+    }
+
+    /**
+     * Gets the shadow map blur kernel according to the light configuration.
+     * @param light The light used to generate the shadows
+     * @param bufferSize The size of the shadow map
+     * @return the kernel blur size
+     */
+    public getBlurKernel(light: BABYLON.IShadowLight, bufferSize: number): number {
+        var normalizedBlurKernel = 0.03; // TODO Should come from the config.
+        if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.DirectionalLight>light).shadowFrustumSize;
+        }
+        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.PointLight>light).shadowAngle;
+        }
+        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / ((<BABYLON.SpotLight>light).angle * (<BABYLON.SpotLight>light).shadowAngleScale);
+        }
+
+        let minimumBlurKernel = 5 / (bufferSize / 256); //magic number that aims to keep away sawtooth shadows
+
+        var blurKernel = Math.max(bufferSize * normalizedBlurKernel, minimumBlurKernel);
+        return blurKernel;
     }
 
     /**

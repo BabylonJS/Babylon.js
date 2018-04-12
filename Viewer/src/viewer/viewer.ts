@@ -261,10 +261,45 @@ export abstract class AbstractViewer {
      * render loop that will be executed by the engine
      */
     protected _render = (force: boolean = false): void => {
-        if (force || (this.runRenderLoop && this.sceneManager.scene && this.sceneManager.scene.activeCamera)) {
-            this.sceneManager.scene.render();
-            this.onFrameRenderedObservable.notifyObservers(this);
+        if (force || (this.sceneManager.scene && this.sceneManager.scene.activeCamera)) {
+            if (this.runRenderLoop) {
+                this.engine.performanceMonitor.enable();
+                this.sceneManager.scene.render();
+                this.onFrameRenderedObservable.notifyObservers(this);
+            } else {
+                this.engine.performanceMonitor.disable();
+
+                // Need to update behaviors
+                this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
+            }
         }
+    }
+
+    /**
+     * Takes a screenshot of the scene and returns it as a base64 encoded png.
+     * @param callback optional callback that will be triggered when screenshot is done.
+     * @param width Optional screenshot width (default to 512).
+     * @param height Optional screenshot height (default to 512).
+     * @returns a promise with the screenshot data
+     */
+    public takeScreenshot(callback?: (data: string) => void, width = 0, height = 0): Promise<string> {
+        width = width || this.canvas.clientWidth;
+        height = height || this.canvas.clientHeight;
+
+        // Create the screenshot
+        return new Promise<string>((resolve, reject) => {
+            try {
+                BABYLON.Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
+                    if (callback) {
+                        callback(data);
+                    }
+                    resolve(data);
+                });
+            } catch (e) {
+                reject(e);
+            }
+        });
+
     }
 
     /**
@@ -495,7 +530,6 @@ export abstract class AbstractViewer {
 
         model.onLoadedObservable.add(() => {
             this._isLoading = false;
-            return this.onModelLoadedObservable.notifyObserversWithPromise(model);
         });
 
         return model;

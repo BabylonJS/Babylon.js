@@ -1,10 +1,11 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material } from "babylonjs";
 import { GLTFFileLoader } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { AbstractViewer } from "..";
+import { extendClassWithConfig } from "../helper";
 
 
 export enum ModelState {
@@ -98,6 +99,7 @@ export class ViewerModel implements IDisposable {
         this._viewer.onModelAddedObservable.notifyObservers(this);
         this.onLoadedObservable.add(() => {
             this._configureModel();
+            this._viewer.onModelLoadedObservable.notifyObservers(this);
         });
     }
 
@@ -115,7 +117,7 @@ export class ViewerModel implements IDisposable {
         mesh.receiveShadows = !!this.configuration.receiveShadows;
         this._meshes.push(mesh);
         if (triggerLoaded) {
-            this.onLoadedObservable.notifyObservers(this);
+            return this.onLoadedObservable.notifyObserversWithPromise(this);
         }
     }
 
@@ -342,7 +344,50 @@ export class ViewerModel implements IDisposable {
                 });
             }
         }
+
+        let meshes = this.rootMesh.getChildMeshes(false);
+        meshes.push(this.rootMesh);
+        meshes.filter(m => m.material).forEach((mesh) => {
+            this._applyModelMaterialConfiguration(mesh.material!);
+        });
+
         this.onAfterConfigure.notifyObservers(this);
+    }
+
+    /**
+     * Apply a material configuration to a material
+     * @param material Material to apply configuration to
+     */
+    private _applyModelMaterialConfiguration(material: Material) {
+        if (!this._modelConfiguration.material) return;
+
+        extendClassWithConfig(material, this._modelConfiguration.material);
+
+        if (material instanceof BABYLON.PBRMaterial) {
+            if (this._modelConfiguration.material.directIntensity !== undefined) {
+                material.directIntensity = this._modelConfiguration.material.directIntensity;
+            }
+
+            if (this._modelConfiguration.material.emissiveIntensity !== undefined) {
+                material.emissiveIntensity = this._modelConfiguration.material.emissiveIntensity;
+            }
+
+            if (this._modelConfiguration.material.environmentIntensity !== undefined) {
+                material.environmentIntensity = this._modelConfiguration.material.environmentIntensity;
+            }
+
+            //material.disableLighting = !this._modelConfiguration.material.directEnabled;
+
+            material.reflectionColor = this._viewer.sceneManager.mainColor;
+        }
+        else if (material instanceof BABYLON.MultiMaterial) {
+            for (let i = 0; i < material.subMaterials.length; i++) {
+                const subMaterial = material.subMaterials[i];
+                if (subMaterial) {
+                    this._applyModelMaterialConfiguration(subMaterial);
+                }
+            }
+        }
     }
 
     /**

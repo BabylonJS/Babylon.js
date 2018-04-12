@@ -1,16 +1,87 @@
 ﻿{
-    "root": "https://viewer.babylonjs.com",
+    "root": "",
     "tests": [
+        {
+            "title": "Control",
+            "createMesh": true,
+            "configuration": {
+                "extends": "minimal"
+            }
+        },
+        {
+            "title": "Diffuse",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "minimal",
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 0
+                    }
+                }
+            }
+        },
         {
             "title": "Basic Helmet",
             "configuration": {
                 "extends": "minimal",
                 "model": {
                     "title": "Basic Helmet",
-                    "url": "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                    "url": "/dist/assets/BrainStem/BrainStem.gltf"
                 }
             },
             "referenceImage": "basicHelmet.png"
+        },
+        {
+            "title": "Basic Helmet default",
+            "configuration": {
+                "extends": "default",
+                "model": {
+                    "title": "Basic Helmet",
+                    "url": "/dist/assets/BrainStem/BrainStem.gltf"
+                }
+            },
+            "waitForFrame": 300,
+            "referenceImage": "basicHelmetDefault.png"
+        },
+        {
+            "title": "Basic helmet transformation",
+            "configuration": {
+                "extends": "minimal",
+                "model": {
+                    "title": "Basic Helmet",
+                    "url": "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf",
+                    "position": {
+                        "x": 20,
+                        "y": 10
+                    },
+                    "rotation": {
+                        "y": -0.3
+                    }
+                }
+            },
+            "referenceImage": "basicHelmetTransformation.png"
+        },
+        {
+            "title": "Position",
+            "configuration": {
+                "extends": "default",
+                "model": {
+                    "title": "Basic Helmet",
+                    "url": "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                }
+            },
+            "referenceImage": "basicHelmetDefault.png"
         }
     ]
 }
