@@ -1,4 +1,4 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3 } from "babylonjs";
 import { GLTFFileLoader } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
@@ -93,7 +93,7 @@ export class ViewerModel implements IDisposable {
 
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
-        this._modelConfiguration = deepmerge({}, modelConfiguration);
+        this._modelConfiguration = deepmerge(this._viewer.configuration.model || {}, modelConfiguration);
 
         this._viewer.sceneManager.models.push(this);
         this._viewer.onModelAddedObservable.notifyObservers(this);
@@ -292,6 +292,18 @@ export class ViewerModel implements IDisposable {
                 updateXYZ('rotation', this._modelConfiguration.rotation);
             }
         }
+
+        if (this._modelConfiguration.rotationOffsetAxis) {
+            let rotationAxis = new Vector3(0, 0, 0).copyFrom(this._modelConfiguration.rotationOffsetAxis as Vector3);
+
+            meshesWithNoParent.forEach(m => {
+                if (this._modelConfiguration.rotationOffsetAngle) {
+                    m.rotate(rotationAxis, this._modelConfiguration.rotationOffsetAngle);
+                }
+            })
+
+        }
+
         if (this._modelConfiguration.scaling) {
             updateXYZ('scaling', this._modelConfiguration.scaling);
         }
