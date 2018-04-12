@@ -132,7 +132,7 @@ export interface ISkyboxConfiguration {
         imageProcessingConfiguration?: IImageProcessingConfiguration;
         [propName: string]: any;
     };
-    infiniteDIstance?: boolean;
+    infiniteDistance?: boolean;
 
 }
 
