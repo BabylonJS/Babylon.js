@@ -458,6 +458,7 @@
 
             } catch (e) {
                 showError(e.message, e);
+                console.log(e);
             }
         };
         window.addEventListener("resize",
