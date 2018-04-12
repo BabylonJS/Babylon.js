@@ -597,8 +597,8 @@ module BABYLON.GLTF2 {
             }
             else {
                 const accessor = GLTFLoader._GetProperty(context + "/indices", this._gltf.accessors, primitive.indices);
-                promises.push(this._loadAccessorAsync("#/accessors/" + accessor._index, accessor).then(data => {
-                    babylonGeometry.setIndices(data as IndicesArray);
+                promises.push(this._loadIndicesAccessorAsync("#/accessors/" + accessor._index, accessor).then(data => {
+                    babylonGeometry.setIndices(data);
                 }));
             }
 
@@ -690,11 +690,7 @@ module BABYLON.GLTF2 {
                 }
 
                 const accessor = GLTFLoader._GetProperty(`${context}/${attribute}`, this._gltf.accessors, attributes[attribute]);
-                promises.push(this._loadAccessorAsync(`#/accessors/${accessor._index}`, accessor).then(data => {
-                    if (!(data instanceof Float32Array)) {
-                        throw new Error(`${context}: Morph target accessor must have float data`);
-                    }
-
+                promises.push(this._loadFloatAccessorAsync(`#/accessors/${accessor._index}`, accessor).then(data => {
                     setData(babylonVertexBuffer, data);
                 }));
             };
@@ -818,9 +814,7 @@ module BABYLON.GLTF2 {
             }
 
             const accessor = GLTFLoader._GetProperty(`${context}/inverseBindMatrices`, this._gltf.accessors, skin.inverseBindMatrices);
-            return this._loadAccessorAsync(`#/accessors/${accessor._index}`, accessor).then(data => {
-                return data as Float32Array;
-            });
+            return this._loadFloatAccessorAsync(`#/accessors/${accessor._index}`, accessor);
         }
 
         private _updateBoneMatrices(babylonSkeleton: Skeleton, inverseBindMatricesData: Nullable<Float32Array>): void {
@@ -1053,24 +1047,17 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            let inputData: Nullable<Float32Array>;
-            let outputData: Nullable<Float32Array>;
-
             const inputAccessor = GLTFLoader._GetProperty(`${context}/input`, this._gltf.accessors, sampler.input);
             const outputAccessor = GLTFLoader._GetProperty(`${context}/output`, this._gltf.accessors, sampler.output);
 
             sampler._data = Promise.all([
-                this._loadAccessorAsync(`#/accessors/${inputAccessor._index}`, inputAccessor).then(data => {
-                    inputData = data as Float32Array;
-                }),
-                this._loadAccessorAsync(`#/accessors/${outputAccessor._index}`, outputAccessor).then(data => {
-                    outputData = data as Float32Array;
-                })
-            ]).then(() => {
+                this._loadFloatAccessorAsync(`#/accessors/${inputAccessor._index}`, inputAccessor),
+                this._loadFloatAccessorAsync(`#/accessors/${outputAccessor._index}`, outputAccessor)
+            ]).then(([inputData, outputData]) => {
                 return {
-                    input: inputData!,
+                    input: inputData,
                     interpolation: interpolation,
-                    output: outputData!,
+                    output: outputData,
                 };
             });
 
@@ -1097,8 +1084,8 @@ module BABYLON.GLTF2 {
                 return bufferView._data;
             }
 
-            const buffer = GLTFLoader._GetProperty(context + "/buffer", this._gltf.buffers, bufferView.buffer);
-            bufferView._data = this._loadBufferAsync("#/buffers/" + buffer._index, buffer).then(data => {
+            const buffer = GLTFLoader._GetProperty(`${context}/buffer`, this._gltf.buffers, bufferView.buffer);
+            bufferView._data = this._loadBufferAsync(`#/buffers/${buffer._index}`, buffer).then(data => {
                 try {
                     return new Uint8Array(data.buffer, data.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
                 }
@@ -1110,52 +1097,79 @@ module BABYLON.GLTF2 {
             return bufferView._data;
         }
 
-        private _loadAccessorAsync(context: string, accessor: _ILoaderAccessor): Promise<ArrayBufferView> {
-            if (accessor.sparse) {
-                throw new Error(`${context}: Sparse accessors are not currently supported`);
+        private _loadIndicesAccessorAsync(context: string, accessor: _ILoaderAccessor): Promise<IndicesArray> {
+            if (accessor.type !== AccessorType.SCALAR) {
+                throw new Error(`${context}: Invalid type ${accessor.type}`);
+            }
+
+            if (accessor.componentType !== AccessorComponentType.UNSIGNED_BYTE &&
+                accessor.componentType !== AccessorComponentType.UNSIGNED_SHORT &&
+                accessor.componentType !== AccessorComponentType.UNSIGNED_INT) {
+                throw new Error(`${context}: Invalid component type ${accessor.componentType}`);
             }
 
             if (accessor._data) {
-                return accessor._data;
+                return accessor._data as Promise<IndicesArray>;
             }
 
-            const bufferView = GLTFLoader._GetProperty(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._data = this._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(data => {
-                const buffer = data.buffer;
-                const byteOffset = data.byteOffset + (accessor.byteOffset || 0);
-                const length = GLTFLoader._GetNumComponents(context, accessor.type) * accessor.count;
-
-                try {
-                    switch (accessor.componentType) {
-                        case AccessorComponentType.BYTE: {
-                            return new Int8Array(buffer, byteOffset, length);
-                        }
-                        case AccessorComponentType.UNSIGNED_BYTE: {
-                            return new Uint8Array(buffer, byteOffset, length);
-                        }
-                        case AccessorComponentType.SHORT: {
-                            return new Int16Array(buffer, byteOffset, length);
-                        }
-                        case AccessorComponentType.UNSIGNED_SHORT: {
-                            return new Uint16Array(buffer, byteOffset, length);
-                        }
-                        case AccessorComponentType.UNSIGNED_INT: {
-                            return new Uint32Array(buffer, byteOffset, length);
-                        }
-                        case AccessorComponentType.FLOAT: {
-                            return new Float32Array(buffer, byteOffset, length);
-                        }
-                        default: {
-                            throw new Error(`${context}: Invalid accessor component type ${accessor.componentType}`);
-                        }
-                    }
-                }
-                catch (e) {
-                    throw new Error(`${context}: ${e}`);
-                }
+            const bufferView = GLTFLoader._GetProperty(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(data => {
+                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, accessor.count);
             });
 
-            return accessor._data;
+            return accessor._data as Promise<IndicesArray>;
+        }
+
+        private _loadFloatAccessorAsync(context: string, accessor: _ILoaderAccessor): Promise<Float32Array> {
+            // TODO: support normalized and stride
+
+            if (accessor.componentType !== AccessorComponentType.FLOAT) {
+                throw new Error(`Invalid component type ${accessor.componentType}`);
+            }
+
+            if (accessor._data) {
+                return accessor._data as Promise<Float32Array>;
+            }
+
+            const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
+            const length = numComponents * accessor.count;
+
+            if (accessor.bufferView == undefined) {
+                accessor._data = Promise.resolve(new Float32Array(length));
+            }
+            else {
+                const bufferView = GLTFLoader._GetProperty(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
+                accessor._data = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(data => {
+                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                });
+            }
+
+            if (accessor.sparse) {
+                const sparse = accessor.sparse;
+                accessor._data = accessor._data.then((data: Float32Array) => {
+                    const indicesBufferView = GLTFLoader._GetProperty(`${context}/sparse/indices/bufferView`, this._gltf.bufferViews, sparse.indices.bufferView);
+                    const valuesBufferView = GLTFLoader._GetProperty(`${context}/sparse/values/bufferView`, this._gltf.bufferViews, sparse.values.bufferView);
+                    return Promise.all([
+                        this._loadBufferViewAsync(`#/bufferViews/${indicesBufferView._index}`, indicesBufferView),
+                        this._loadBufferViewAsync(`#/bufferViews/${valuesBufferView._index}`, valuesBufferView)
+                    ]).then(([indicesData, valuesData]) => {
+                        const indices = GLTFLoader._GetTypedArray(`${context}/sparse/indices`, sparse.indices.componentType, indicesData, sparse.indices.byteOffset, sparse.count) as IndicesArray;
+                        const values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, numComponents * sparse.count) as Float32Array;
+
+                        let valuesIndex = 0;
+                        for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
+                            let dataIndex = indices[indicesIndex] * numComponents;
+                            for (let componentIndex = 0; componentIndex < numComponents; componentIndex++) {
+                                data[dataIndex++] = values[valuesIndex++];
+                            }
+                        }
+
+                        return data;
+                    });
+                });
+            }
+
+            return accessor._data as Promise<Float32Array>;
         }
 
         /** @ignore */
@@ -1172,20 +1186,23 @@ module BABYLON.GLTF2 {
         }
 
         private _loadVertexAccessorAsync(context: string, accessor: _ILoaderAccessor, kind: string): Promise<VertexBuffer> {
-            if (accessor.sparse) {
-                throw new Error(`${context}: Sparse accessors are not currently supported`);
-            }
-
             if (accessor._babylonVertexBuffer) {
                 return accessor._babylonVertexBuffer;
             }
 
-            const bufferView = GLTFLoader._GetProperty(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView, kind).then(buffer => {
-                const size = GLTFLoader._GetNumComponents(context, accessor.type);
-                return new VertexBuffer(this._babylonScene.getEngine(), buffer, kind, false, false, bufferView.byteStride,
-                    false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
-            });
+            if (accessor.sparse) {
+                accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(context, accessor).then(data => {
+                    return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
+                });
+            }
+            else {
+                const bufferView = GLTFLoader._GetProperty(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+                accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView, kind).then(buffer => {
+                    const size = GLTFLoader._GetNumComponents(context, accessor.type);
+                    return new VertexBuffer(this._babylonScene.getEngine(), buffer, kind, false, false, bufferView.byteStride,
+                        false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                });
+            }
 
             return accessor._babylonVertexBuffer;
         }
@@ -1554,6 +1571,26 @@ module BABYLON.GLTF2 {
                         Tools.Warn(`${context}: Invalid texture minification filter (${minFilter})`);
                         return Texture.NEAREST_NEAREST_MIPNEAREST;
                 }
+            }
+        }
+
+        private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): ArrayBufferView {
+            const buffer = bufferView.buffer;
+            byteOffset = bufferView.byteOffset + (byteOffset || 0);
+
+            try {
+                switch (componentType) {
+                    case AccessorComponentType.BYTE: return new Int8Array(buffer, byteOffset, length);
+                    case AccessorComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, length);
+                    case AccessorComponentType.SHORT: return new Int16Array(buffer, byteOffset, length);
+                    case AccessorComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, length);
+                    case AccessorComponentType.UNSIGNED_INT: return new Uint32Array(buffer, byteOffset, length);
+                    case AccessorComponentType.FLOAT: return new Float32Array(buffer, byteOffset, length);
+                    default: throw new Error(`Invalid component type ${componentType}`);
+                }
+            }
+            catch (e) {
+                throw new Error(`${context}: ${e}`);
             }
         }
 
