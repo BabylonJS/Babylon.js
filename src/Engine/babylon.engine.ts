@@ -7428,21 +7428,25 @@
         }
 
         // Statics
-
+        private static _isSupported:Nullable<boolean> = null;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
          * @ignoreNaming
          */
         public static isSupported(): boolean {
-            try {
-                var tempcanvas = document.createElement("canvas");
-                var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
-
-                return gl != null && !!window.WebGLRenderingContext;
-            } catch (e) {
-                return false;
+            // The result of this method is cached as calling this multiple times results in too many glContexts being created. 
+            // If the garbage collector doesnt dispose them, other contexts will be lost. (eg. pressing play multiple times in playground)
+            if(this._isSupported == null){
+                try {
+                    var tempcanvas = document.createElement("canvas");
+                    var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
+                    this._isSupported = gl != null && !!window.WebGLRenderingContext;
+                } catch (e) {
+                    this._isSupported = false;
+                }
             }
+            return this._isSupported;
         }
     }
 }
