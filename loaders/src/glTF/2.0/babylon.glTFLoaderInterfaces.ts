@@ -2,29 +2,29 @@
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 
 module BABYLON.GLTF2 {
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderAccessor extends IAccessor, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonVertexBuffer?: Promise<VertexBuffer>;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderAnimationChannel extends IAnimationChannel, _IArrayItem {
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderAnimationSamplerData {
         input: Float32Array;
         interpolation: AnimationSamplerInterpolation;
         output: Float32Array;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderAnimationSampler extends IAnimationSampler, _IArrayItem {
         _data: Promise<_ILoaderAnimationSamplerData>;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderAnimation extends IAnimation, _IArrayItem {
         channels: _ILoaderAnimationChannel[];
         samplers: _ILoaderAnimationSampler[];
@@ -32,27 +32,27 @@ module BABYLON.GLTF2 {
         _babylonAnimationGroup?: AnimationGroup;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderBuffer extends IBuffer, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderBufferView extends IBufferView, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonBuffer?: Promise<Buffer>;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderCamera extends ICamera, _IArrayItem {
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderImage extends IImage, _IArrayItem {
         _objectURL?: Promise<string>;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderMaterial extends IMaterial, _IArrayItem {
         _babylonData?: {
             [drawMode: number]: {
@@ -63,16 +63,16 @@ module BABYLON.GLTF2 {
         };
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderMesh extends IMesh, _IArrayItem {
         primitives: _ILoaderMeshPrimitive[];
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderMeshPrimitive extends IMeshPrimitive, _IArrayItem {
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderNode extends INode, _IArrayItem {
         _parent: _ILoaderNode;
         _babylonMesh?: Mesh;
@@ -81,7 +81,7 @@ module BABYLON.GLTF2 {
         _numMorphTargets?: number;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderSamplerData {
         noMipMaps: boolean;
         samplingMode: number;
@@ -89,26 +89,26 @@ module BABYLON.GLTF2 {
         wrapV: number;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderSampler extends ISampler, _IArrayItem {
         _data?: _ILoaderSamplerData;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderScene extends IScene, _IArrayItem {
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderSkin extends ISkin, _IArrayItem {
         _babylonSkeleton?: Skeleton;
         _loaded?: Promise<void>;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderTexture extends ITexture, _IArrayItem {
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _ILoaderGLTF extends IGLTF {
         accessors?: _ILoaderAccessor[];
         animations?: _ILoaderAnimation[];

@@ -130,7 +130,7 @@
             return this._facetDataEnabled;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _updateNonUniformScalingState(value: boolean): boolean {
             if (!super._updateNonUniformScalingState(value)) {
                 return false;
@@ -526,17 +526,17 @@
          * @see https://www.babylonjs-playground.com/#10OJSG#13
          */
         public edgesColor = new Color4(1, 0, 0, 1);
-        /** @ignore */
+        /** @hidden */
         public _edgesRenderer: Nullable<EdgesRenderer>;
 
         // Cache
         private _collisionsTransformMatrix = Matrix.Zero();
         private _collisionsScalingMatrix = Matrix.Zero();
-        /** @ignore */
+        /** @hidden */
         public _masterMesh: Nullable<AbstractMesh>;
-        /** @ignore */
+        /** @hidden */
         public _boundingInfo: Nullable<BoundingInfo>;
-        /** @ignore */
+        /** @hidden */
         public _renderId = 0;
 
         /** 
@@ -544,31 +544,31 @@
          * @see http://doc.babylonjs.com/how_to/multi_materials
          */
         public subMeshes: SubMesh[];
-        /** @ignore */
+        /** @hidden */
         public _submeshesOctree: Octree<SubMesh>;
-        /** @ignore */
+        /** @hidden */
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
-        /** @ignore */
+        /** @hidden */
         public _unIndexed = false;
 
-        /** @ignore */
+        /** @hidden */
         public _lightSources = new Array<Light>();
 
-        /** @ignore */
+        /** @hidden */
         public get _positions(): Nullable<Vector3[]> {
             return null;
         }
 
         // Loading properties
-        /** @ignore */
+        /** @hidden */
         public _waitingActions: any;
-        /** @ignore */
+        /** @hidden */
         public _waitingFreezeWorldMatrix: Nullable<boolean>;
 
         // Skeleton
         private _skeleton: Nullable<Skeleton>;
-        /** @ignore */
+        /** @hidden */
         public _bonesTransformMatrices: Nullable<Float32Array>;
 
         /**
@@ -638,7 +638,7 @@
             return ret;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuild(): void {
             if (this._occlusionQuery) {
                 this._occlusionQuery = null;
@@ -657,7 +657,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _resyncLightSources(): void {
             this._lightSources.length = 0;
 
@@ -674,7 +674,7 @@
             this._markSubMeshesAsLightDirty();
         }
 
-        /** @ignore */
+        /** @hidden */
         public _resyncLighSource(light: Light): void {
             var isIn = light.isEnabled() && light.canAffectMesh(this);
 
@@ -695,14 +695,14 @@
             this._markSubMeshesAsLightDirty();
         }
 
-        /** @ignore */
+        /** @hidden */
         public _unBindEffect() {
             for (var subMesh of this.subMeshes) {
                 subMesh.setEffect(null);
             }
         }        
 
-        /** @ignore */
+        /** @hidden */
         public _removeLightSource(light: Light): void {
             var index = this._lightSources.indexOf(light);
 
@@ -726,17 +726,17 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _markSubMeshesAsLightDirty() {
             this._markSubMeshesAsDirty(defines => defines.markAsLightDirty());
         }
 
-        /** @ignore */
+        /** @hidden */
         public _markSubMeshesAsAttributesDirty() {
             this._markSubMeshesAsDirty(defines => defines.markAsAttributesDirty());
         }
 
-        /** @ignore */
+        /** @hidden */
         public _markSubMeshesAsMiscDirty() {
             if (!this.subMeshes) {
                 return;
@@ -957,15 +957,15 @@
             return (<boolean>(this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)));
         }
 
-        /** @ignore */
+        /** @hidden */
         public _preActivate(): void {
         }
 
-        /** @ignore */
+        /** @hidden */
         public _preActivateForIntermediateRendering(renderId: number): void {
         }
 
-        /** @ignore */
+        /** @hidden */
         public _activate(renderId: number): void {
             this._renderId = renderId;
         }
@@ -982,7 +982,7 @@
             return super.getWorldMatrix();
         }
 
-        /** @ignore */
+        /** @hidden */
         protected _getWorldMatrixDeterminant(): number {
             if (this._masterMesh) {
                 return this._masterMesh._getWorldMatrixDeterminant();
@@ -1103,7 +1103,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _updateBoundingInfo(): AbstractMesh {
             this._boundingInfo = this._boundingInfo || new BoundingInfo(this.absolutePosition, this.absolutePosition);
             this._boundingInfo.update(this.worldMatrixFromCache);
@@ -1111,7 +1111,7 @@
             return this;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh {
             if (!this.subMeshes) {
                 return this;
@@ -1125,7 +1125,7 @@
             return this;
         }
 
-        /** @ignore */
+        /** @hidden */
         protected _afterComputeWorldMatrix(): void {
             // Bounding info
             this._updateBoundingInfo();
@@ -1353,7 +1353,7 @@
         }
 
         // Collisions
-        /** @ignore */
+        /** @hidden */
         public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
             this._generatePointsArray();
 
@@ -1380,7 +1380,7 @@
             return this;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh {
             var subMeshes: SubMesh[];
             var len: number;
@@ -1409,7 +1409,7 @@
             return this;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _checkCollision(collider: Collider): AbstractMesh {
             // Bounding box test
             if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider))
@@ -1423,7 +1423,7 @@
         }
 
         // Picking
-        /** @ignore */
+        /** @hidden */
         public _generatePointsArray(): boolean {
             return false;
         }
@@ -1686,7 +1686,7 @@
         }
 
         // Facet data
-        /** @ignore */
+        /** @hidden */
         private _initFacetData(): AbstractMesh {
             if (!this._facetNormals) {
                 this._facetNormals = new Array<Vector3>();
@@ -2092,7 +2092,7 @@
             return this;
         }
 
-        /** @ignore */
+        /** @hidden */
         protected _checkOcclusionQuery() {
             var engine = this.getEngine();
 
