@@ -69,21 +69,6 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }
     },
-    /*lights: {
-        "default": {
-            type: 1,
-            shadowEnabled: true,
-            direction: { x: -0.2, y: -0.8, z: 0 },
-            position: { x: 10, y: 10, z: 0 },
-            intensity: 4.5,
-            shadowConfig: {
-                useBlurExponentialShadowMap: true,
-                useKernelBlur: true,
-                blurKernel: 64,
-                blurScale: 4
-            }
-        }
-    },*/
     skybox: {
         /*cubeTexture: {
             url: 'https://playground.babylonjs.com/textures/environment.dds',
