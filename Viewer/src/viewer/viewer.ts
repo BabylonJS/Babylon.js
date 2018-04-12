@@ -132,6 +132,8 @@ export abstract class AbstractViewer {
      */
     protected _configurationLoader: ConfigurationLoader;
 
+    protected _isInit: boolean;
+
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
@@ -415,18 +417,19 @@ export abstract class AbstractViewer {
      */
     private _onTemplateLoaded(): Promise<AbstractViewer> {
         return this._onTemplatesLoaded().then(() => {
-            let modelConfiguration = this._configuration.model;
+            let autoLoad = typeof this._configuration.model === 'string' || (this._configuration.model && this._configuration.model.url);
             return this._initEngine().then((engine) => {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
-                if (modelConfiguration) {
-                    return this.loadModel(modelConfiguration).catch(e => { }).then(() => { return this.sceneManager.scene });
+                if (autoLoad) {
+                    return this.loadModel(this._configuration.model!).catch(e => { }).then(() => { return this.sceneManager.scene });
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
             }).then((scene) => {
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
+                this._isInit = true;
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).catch(e => {
                 Tools.Warn(e.toString());
@@ -494,7 +497,7 @@ export abstract class AbstractViewer {
     public initModel(modelConfig: string | IModelConfiguration, clearScene: boolean = true): ViewerModel {
         let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
         if (!modelUrl) {
-            throw new Error("no model configuration provided");
+            throw new Error("no model url provided");
         }
         if (clearScene) {
 
