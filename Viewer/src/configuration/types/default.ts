@@ -76,7 +76,7 @@ export let defaultConfiguration: ViewerConfiguration = {
         },*/
         pbr: true,
         blur: 0.7,
-        infiniteDIstance: false,
+        infiniteDistance: false,
         /*material: {
             imageProcessingConfiguration: {
                 colorCurves: {
