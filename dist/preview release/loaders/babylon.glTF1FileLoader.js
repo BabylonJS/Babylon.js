@@ -2,8 +2,8 @@
 var BABYLON;
 (function (BABYLON) {
     /**
-    * Coordinate system mode that will be used when loading from the gltf file
-    */
+     * Mode that determines the coordinate system to use.
+     */
     var GLTFLoaderCoordinateSystemMode;
     (function (GLTFLoaderCoordinateSystemMode) {
         /**
@@ -16,8 +16,8 @@ var BABYLON;
         GLTFLoaderCoordinateSystemMode[GLTFLoaderCoordinateSystemMode["FORCE_RIGHT_HANDED"] = 1] = "FORCE_RIGHT_HANDED";
     })(GLTFLoaderCoordinateSystemMode = BABYLON.GLTFLoaderCoordinateSystemMode || (BABYLON.GLTFLoaderCoordinateSystemMode = {}));
     /**
-    * Animation mode that determines which animations should be started when a file is loaded
-    */
+     * Mode that determines what animations will start.
+     */
     var GLTFLoaderAnimationStartMode;
     (function (GLTFLoaderAnimationStartMode) {
         /**
@@ -34,8 +34,8 @@ var BABYLON;
         GLTFLoaderAnimationStartMode[GLTFLoaderAnimationStartMode["ALL"] = 2] = "ALL";
     })(GLTFLoaderAnimationStartMode = BABYLON.GLTFLoaderAnimationStartMode || (BABYLON.GLTFLoaderAnimationStartMode = {}));
     /**
-    * Loading state
-    */
+     * Loader state.
+     */
     var GLTFLoaderState;
     (function (GLTFLoaderState) {
         /**
@@ -51,67 +51,62 @@ var BABYLON;
          */
         GLTFLoaderState[GLTFLoaderState["COMPLETE"] = 2] = "COMPLETE";
     })(GLTFLoaderState = BABYLON.GLTFLoaderState || (BABYLON.GLTFLoaderState = {}));
-    /** File loader to load gltf files into a babylon scene */
+    /**
+     * File loader for loading glTF files into a scene.
+     */
     var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
             // #region Common options
             /**
-             * Raised when the asset has been parsed.
-             * The data.json property stores the glTF JSON.
-             * The data.bin property stores the BIN chunk from a glTF binary or null if the input is not a glTF binary.
+             * Raised when the asset has been parsed
              */
             this.onParsedObservable = new BABYLON.Observable();
             // #endregion
             // #region V2 options
             /**
-             * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED). Defaults to AUTO.
-             * - AUTO - Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
-             * - FORCE_RIGHT_HANDED - Sets the useRightHandedSystem flag on the scene.
+             * The coordinate system mode. Defaults to AUTO.
              */
             this.coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
             /**
-            * The animation start mode (NONE, FIRST, ALL). Defaults to FIRST.
-            * - NONE - No animation will start.
-            * - FIRST - The first animation will start.
-            * - ALL - All animations will start.
+            * The animation start mode. Defaults to FIRST.
             */
             this.animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
             /**
-             * Set to true to compile materials before raising the success callback. Defaults to false.
+             * Defines if the loader should compile materials before raising the success callback. Defaults to false.
              */
             this.compileMaterials = false;
             /**
-             * Set to true to also compile materials with clip planes. Defaults to false.
+             * Defines if the loader should also compile materials with clip planes. Defaults to false.
              */
             this.useClipPlane = false;
             /**
-             * Set to true to compile shadow generators before raising the success callback. Defaults to false.
+             * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
              */
             this.compileShadowGenerators = false;
             /**
-             * Raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+             * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
              */
             this.onMeshLoadedObservable = new BABYLON.Observable();
             /**
-             * Raised when the loader creates a texture after parsing the glTF properties of the texture.
+             * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
              */
             this.onTextureLoadedObservable = new BABYLON.Observable();
             /**
-             * Raised when the loader creates a material after parsing the glTF properties of the material.
+             * Observable raised when the loader creates a material after parsing the glTF properties of the material.
              */
             this.onMaterialLoadedObservable = new BABYLON.Observable();
             /**
-             * Raised when the asset is completely loaded, immediately before the loader is disposed.
+             * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
              * For assets with LODs, raised when all of the LODs are complete.
              * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
              */
             this.onCompleteObservable = new BABYLON.Observable();
             /**
-            * Raised after the loader is disposed.
-            */
+             * Observable raised after the loader is disposed.
+             */
             this.onDisposeObservable = new BABYLON.Observable();
             /**
-             * Raised after a loader extension is created.
+             * Observable raised after a loader extension is created.
              * Set additional options for a loader extension in this event.
              */
             this.onExtensionLoadedObservable = new BABYLON.Observable();
@@ -130,7 +125,9 @@ var BABYLON;
             };
         }
         Object.defineProperty(GLTFFileLoader.prototype, "onParsed", {
-            /** Raised when the asset has been parsed. */
+            /**
+             * Raised when the asset has been parsed
+             */
             set: function (callback) {
                 if (this._onParsedObserver) {
                     this.onParsedObservable.remove(this._onParsedObserver);
@@ -142,7 +139,7 @@ var BABYLON;
         });
         Object.defineProperty(GLTFFileLoader.prototype, "onMeshLoaded", {
             /**
-             * Raised when the loader creates a mesh after parsing the glTF properties of the mesh. (onMeshLoadedObservable is likely desired instead.)
+             * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
              */
             set: function (callback) {
                 if (this._onMeshLoadedObserver) {
@@ -155,7 +152,7 @@ var BABYLON;
         });
         Object.defineProperty(GLTFFileLoader.prototype, "onTextureLoaded", {
             /**
-             * Method called when a texture has been loaded (onTextureLoadedObservable is likely desired instead.)
+             * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
              */
             set: function (callback) {
                 if (this._onTextureLoadedObserver) {
@@ -168,7 +165,7 @@ var BABYLON;
         });
         Object.defineProperty(GLTFFileLoader.prototype, "onMaterialLoaded", {
             /**
-             * Method when the loader creates a material after parsing the glTF properties of the material. (onMaterialLoadedObservable is likely desired instead.)
+             * Callback raised when the loader creates a material after parsing the glTF properties of the material.
              */
             set: function (callback) {
                 if (this._onMaterialLoadedObserver) {
@@ -181,7 +178,7 @@ var BABYLON;
         });
         Object.defineProperty(GLTFFileLoader.prototype, "onComplete", {
             /**
-             * Raised when the asset is completely loaded, immediately before the loader is disposed. (onCompleteObservable is likely desired instead.)
+             * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
              */
             set: function (callback) {
                 if (this._onCompleteObserver) {
@@ -194,7 +191,7 @@ var BABYLON;
         });
         Object.defineProperty(GLTFFileLoader.prototype, "onDispose", {
             /**
-             * Raised after the loader is disposed. (onDisposeObservable is likely desired instead.)
+             * Callback raised after the loader is disposed.
              */
             set: function (callback) {
                 if (this._onDisposeObserver) {
@@ -207,7 +204,7 @@ var BABYLON;
         });
         Object.defineProperty(GLTFFileLoader.prototype, "onExtensionLoaded", {
             /**
-             * Raised after a loader extension is created. (onExtensionLoadedObservable is likely desired instead.)
+             * Callback raised after a loader extension is created.
              */
             set: function (callback) {
                 if (this._onExtensionLoadedObserver) {
@@ -220,7 +217,7 @@ var BABYLON;
         });
         /**
          * Returns a promise that resolves when the asset is completely loaded.
-         * @returns A promise that resolves when the asset is completely loaded.
+         * @returns a promise that resolves when the asset is completely loaded.
          */
         GLTFFileLoader.prototype.whenCompleteAsync = function () {
             var _this = this;
@@ -232,7 +229,7 @@ var BABYLON;
         };
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
             /**
-             * The loader state (LOADING, READY, COMPLETE) or null if the loader is not active.
+             * The loader state or null if the loader is not active.
              */
             get: function () {
                 return this._loader ? this._loader.state : null;
@@ -255,14 +252,14 @@ var BABYLON;
             this.onDisposeObservable.clear();
         };
         /**
-        * Imports one or more meshes from a loaded gltf file and adds them to the scene
-        * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
-        * @param scene the scene the meshes should be added to
-        * @param data gltf data containing information of the meshes in a loaded file
-        * @param rootUrl root url to load from
-        * @param onProgress event that fires when loading progress has occured
-        * @returns a promise containg the loaded meshes, particles, skeletons and animations
-        */
+         * Imports one or more meshes from the loaded glTF data and adds them to the scene
+         * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+         * @param scene the scene the meshes should be added to
+         * @param data the glTF data to load
+         * @param rootUrl root url to load from
+         * @param onProgress event that fires when loading progress has occured
+         * @returns a promise containg the loaded meshes, particles, skeletons and animations
+         */
         GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
             var _this = this;
             return Promise.resolve().then(function () {
@@ -272,13 +269,13 @@ var BABYLON;
             });
         };
         /**
-        * Imports all objects from a loaded gltf file and adds them to the scene
-        * @param scene the scene the objects should be added to
-        * @param data gltf data containing information of the meshes in a loaded file
-        * @param rootUrl root url to load from
-        * @param onProgress event that fires when loading progress has occured
-        * @returns a promise which completes when objects have been loaded to the scene
-        */
+         * Imports all objects from the loaded glTF data and adds them to the scene
+         * @param scene the scene the objects should be added to
+         * @param data the glTF data to load
+         * @param rootUrl root url to load from
+         * @param onProgress event that fires when loading progress has occured
+         * @returns a promise which completes when objects have been loaded to the scene
+         */
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
             var _this = this;
             return Promise.resolve().then(function () {
@@ -312,7 +309,7 @@ var BABYLON;
             });
         };
         /**
-         * If the data string can be loaded directly
+         * If the data string can be loaded directly.
          * @param data string contianing the file data
          * @returns if the data can be loaded directly
          */
@@ -320,7 +317,7 @@ var BABYLON;
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
         /**
-         * Instantiates a gltf file loader plugin
+         * Instantiates a glTF file loader plugin.
          * @returns the created plugin
          */
         GLTFFileLoader.prototype.createPlugin = function () {
@@ -507,11 +504,14 @@ var BABYLON;
         // #endregion
         // #region V1 options
         /**
-         * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders. Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled. Defaults to true.
+         * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
+         * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
+         * Defaults to true.
          */
         GLTFFileLoader.IncrementalLoading = true;
         /**
-         * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters. Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates
+         * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
+         * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
          */
         GLTFFileLoader.HomogeneousCoordinates = false;
         return GLTFFileLoader;
