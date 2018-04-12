@@ -49,7 +49,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        add(...items: (AbstractMesh | Control | IValueAndUnitVector2)[]): void {
+        add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): void {
             items.forEach(item => {
                 var point: MultiLinePoint = this.push();
 

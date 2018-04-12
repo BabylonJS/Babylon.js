@@ -129,11 +129,4 @@ module BABYLON.GUI {
 
     }
 
-    export interface IValueAndUnitVector2 {
-
-        x: string | number;
-        y: string | number;
-
-    }
-
 }
