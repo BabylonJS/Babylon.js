@@ -14,7 +14,7 @@ module BABYLON.GUI {
         private _controlObserver: Nullable< Observer<Control> >;
         private _meshObserver: Nullable< Observer<Camera> >;
 
-        _point: Vector2;
+        public _point: Vector2;
 
         constructor(multiLine: MultiLine) {
             this._multiLine = multiLine;
@@ -25,11 +25,11 @@ module BABYLON.GUI {
             this._point = new Vector2(0, 0);
         }
 
-        get x(): string | number {
+        public get x(): string | number {
             return this._x.toString(this._multiLine._host);
         }
 
-        set x(value: string | number) {
+        public set x(value: string | number) {
             if (this._x.toString(this._multiLine._host) === value) {
                 return;
             }
@@ -39,11 +39,11 @@ module BABYLON.GUI {
             }
         }
 
-        get y(): string | number {
+        public get y(): string | number {
             return this._y.toString(this._multiLine._host);
         }
 
-        set y(value: string | number) {
+        public set y(value: string | number) {
             if (this._y.toString(this._multiLine._host) === value) {
                 return;
             }
@@ -53,11 +53,11 @@ module BABYLON.GUI {
             }
         }
 
-        get control(): Nullable<Control> {
+        public get control(): Nullable<Control> {
             return this._control;
         }
 
-        set control(value: Nullable<Control>) {
+        public set control(value: Nullable<Control>) {
             if (this._control === value) {
                 return;
             }
@@ -77,11 +77,11 @@ module BABYLON.GUI {
             this._multiLine._markAsDirty();
         }
 
-        get mesh(): Nullable<AbstractMesh> {
+        public get mesh(): Nullable<AbstractMesh> {
             return this._mesh;
         }
 
-        set mesh(value: Nullable<AbstractMesh>) {
+        public set mesh(value: Nullable<AbstractMesh>) {
             if (this._mesh === value) {
                 return;
             }
@@ -99,7 +99,7 @@ module BABYLON.GUI {
             this._multiLine._markAsDirty();
         }
 
-        translate(): Vector2 {
+        public translate(): Vector2 {
             this._point = this._translatePoint();
 
             return this._point;
@@ -122,7 +122,7 @@ module BABYLON.GUI {
             }
         }
 
-        dispose(): void {
+        public dispose(): void {
             this.control = null;
             this.mesh = null;
         }
