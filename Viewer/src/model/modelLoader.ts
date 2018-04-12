@@ -34,6 +34,8 @@ export class ModelLoader {
 
         const model = new ViewerModel(this._viewer, modelConfiguration);
 
+        model.loadId = this._loadId++;
+
         if (!modelConfiguration.url) {
             model.state = ModelState.ERROR;
             Tools.Error("No URL provided");
@@ -71,7 +73,6 @@ export class ModelLoader {
             gltfLoader.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE;
         }
 
-        model.loadId = this._loadId++;
         this._loaders.push(model.loader);
 
         return model;

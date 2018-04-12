@@ -98,8 +98,7 @@ export class ViewerModel implements IDisposable {
         this._viewer.onModelAddedObservable.notifyObservers(this);
         this.onLoadedObservable.add(() => {
             this._configureModel();
-        })
-
+        });
     }
 
     /**
@@ -107,13 +106,17 @@ export class ViewerModel implements IDisposable {
      * Any mesh that has no parent will be provided with the root mesh as its new parent.
      * 
      * @param mesh the new mesh to add
+     * @param triggerLoaded should this mesh trigger the onLoaded observable. Used when adding meshes manually.
      */
-    public addMesh(mesh: AbstractMesh) {
+    public addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
         if (!mesh.parent) {
             mesh.parent = this.rootMesh;
         }
         mesh.receiveShadows = !!this.configuration.receiveShadows;
         this._meshes.push(mesh);
+        if (triggerLoaded) {
+            this.onLoadedObservable.notifyObservers(this);
+        }
     }
 
     /**
