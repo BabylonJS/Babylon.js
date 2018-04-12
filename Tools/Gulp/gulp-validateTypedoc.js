@@ -698,7 +698,6 @@ function gulpValidateTypedoc(validationBaselineFileName, namespaceName, validate
         }
 
         var jsFile = new Vinyl({
-            cwd: process.cwd,
             base: null,
             path: validationBaselineFileName,
             contents: buffer

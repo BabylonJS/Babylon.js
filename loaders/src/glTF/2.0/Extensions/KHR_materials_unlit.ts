@@ -1,14 +1,15 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit
-
     const NAME = "KHR_materials_unlit";
 
+    /**
+     * [Specification](https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit) (Experimental)
+     */
     export class KHR_materials_unlit extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             return this._loadExtensionAsync<{}>(context, material, () => {
                 material._babylonData = material._babylonData || {};
                 let babylonData = material._babylonData[babylonDrawMode];
@@ -37,7 +38,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        private _loadUnlitPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
+        private _loadUnlitPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
 
             // Ensure metallic workflow
