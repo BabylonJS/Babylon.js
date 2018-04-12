@@ -11,26 +11,6 @@ xhr.addEventListener("load", function () {
         config = JSON.parse(xhr.responseText);
 
         describe("Validation Tests", function () {
-            /*before(function (done) {
-                this.timeout(180000);
-                require = null;
-                BABYLONDEVTOOLS.Loader
-                    .require('/tests/validation/validation.js')
-                    .useDist()
-                    .load(function () {
-                        var info = engine.getGlInfo();
-                        console.log("Webgl Version: " + info.version);
-                        console.log("Webgl Vendor: " + info.vendor);
-                        // Reduces error ratio on Embedded Firefox for travis.
-                        if (info.vendor === "VMware, Inc.") {
-                            errorRatio = 5;
-                        }
-
-                        console.log("Webgl Renderer: " + info.renderer);
-                        done();
-                    });
-            });*/
-
             // Run tests
             for (let index = 0; index < config.tests.length; index++) {
                 var test = config.tests[index];

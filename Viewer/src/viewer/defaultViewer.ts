@@ -91,24 +91,26 @@ export class DefaultViewer extends AbstractViewer {
             this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
             this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
 
-            // other events
-            let viewerTemplate = this.templateManager.getTemplate('viewer');
-            let viewerElement = viewerTemplate && viewerTemplate.parent;
-            // full screen
-            let triggerFullscren = (eventData: EventCallback) => {
-                if (viewerElement) {
-                    let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
-                    if (!fullscreenElement) {
-                        let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
-                        requestFullScreen.call(viewerElement);
-                    } else {
-                        let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
-                        exitFullscreen.call(document);
-                    }
-                }
-            }
+            this.templateManager.eventManager.registerCallback('navBar', this.toggleFullscreen, 'pointerdown', '#fullscreen-button');
+        }
+    }
 
-            this.templateManager.eventManager.registerCallback('navBar', triggerFullscren, 'pointerdown', '#fullscreen-button');
+    /**
+     * Toggle fullscreen of the entire viewer
+     */
+    public toggleFullscreen = () => {
+        let viewerTemplate = this.templateManager.getTemplate('viewer');
+        let viewerElement = viewerTemplate && viewerTemplate.parent;
+
+        if (viewerElement) {
+            let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            if (!fullscreenElement) {
+                let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
+                requestFullScreen.call(viewerElement);
+            } else {
+                let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
+                exitFullscreen.call(document);
+            }
         }
     }
 

@@ -192,14 +192,40 @@ function runTest(index, done) {
     viewerElement.innerHTML = '';
     currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
-    var currentFrame = 0;
-    var waitForFrame = test.waitForFrame || 80;
-    currentViewer.onFrameRenderedObservable.add(() => {
-        if (currentFrame === waitForFrame) {
-            evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+    currentViewer.onInitDoneObservable.add(() => {
+        if (test.createMesh) {
+            prepareMeshForViewer(currentViewer, configuration, test);
         }
-        currentFrame++;
+        var currentFrame = 0;
+        var waitForFrame = test.waitForFrame || 80;
+        currentViewer.onFrameRenderedObservable.add(() => {
+            if (currentFrame === waitForFrame) {
+                evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+            }
+            currentFrame++;
+        });
     });
+
+
+}
+
+function prepareMeshForViewer(viewer, configuration, test) {
+    let meshModel = new BabylonViewer.ViewerModel(viewer, configuration.model || {});
+
+    let sphereMesh = BABYLON.Mesh.CreateSphere('sphere-' + test.title, 20, 1.0, viewer.sceneManager.scene);
+    if (test.createMaterial) {
+        let material = new BABYLON.PBRMaterial("sphereMat", viewer.sceneManager.scene);
+        material.environmentBRDFTexture = null;
+        material.useAlphaFresnel = material.needAlphaBlending();
+        material.backFaceCulling = material.forceDepthWrite;
+        material.twoSidedLighting = true;
+        material.useSpecularOverAlpha = false;
+        material.useRadianceOverAlpha = false;
+        material.usePhysicalLightFalloff = true;
+        material.forceNormalForward = true;
+        sphereMesh.material = material;
+    }
+    meshModel.addMesh(sphereMesh, true);
 }
 
 function init() {
