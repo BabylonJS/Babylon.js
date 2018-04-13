@@ -97,6 +97,7 @@
         isCompressed: boolean;
         dxgiFormat: number;
         textureType: number;
+        /** Sphericle polynomial created for the dds texture */
         sphericalPolynomial?: SphericalPolynomial;
     };
 
