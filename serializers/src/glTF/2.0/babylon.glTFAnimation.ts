@@ -66,7 +66,6 @@ module BABYLON.GLTF2 {
      */
     export class _GLTFAnimation {
         /**
-         * @ignore
          * 
          * Creates glTF channel animation from BabylonJS animation.
          * @param babylonMesh - BabylonJS mesh.
@@ -165,7 +164,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
          * 
          * @param babylonMesh 
          * @param runtimeGLTFAnimation 
@@ -211,7 +209,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
          * 
          * @param babylonScene 
          * @param glTFAnimations 
@@ -580,7 +577,7 @@ module BABYLON.GLTF2 {
                         break;
                     }
                     default: {
-                        throw new Error(`glTFAnimation: Unsupported component type "${componentName}" for scale animation!`);
+                        Tools.Error(`glTFAnimation: Unsupported component type "${componentName}" for scale animation!`);
                     }
                 }
 
@@ -601,7 +598,7 @@ module BABYLON.GLTF2 {
                 outputs.push(value);
             }
             else {
-                throw new Error('glTFAnimation: Unsupported key frame values for animation!');
+                Tools.Error('glTFAnimation: Unsupported key frame values for animation!');
             }
         }
 

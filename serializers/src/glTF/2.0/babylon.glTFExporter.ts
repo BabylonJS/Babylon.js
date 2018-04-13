@@ -108,8 +108,6 @@ module BABYLON.GLTF2 {
         private shouldExportMesh: ((mesh: Mesh) => boolean);
 
         /**
-         * @ignore
-         * 
          * Creates a glTF Exporter instance, which can accept optional exporter options
          * @param babylonScene Babylon scene object
          * @param options Options to modify the behavior of the exporter
@@ -267,8 +265,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Generates data for .gltf and .bin files based on the glTF prefix string
          * @param glTFPrefix Text to use when prefixing a glTF file
          * @returns GLTFData with glTF file data
@@ -318,8 +314,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Generates a glb file from the json and binary data
          * Returns an object with the glb file name as the key and data as the value
          * @param glTFPrefix 
@@ -793,8 +787,6 @@ module BABYLON.GLTF2 {
             this._dataView = new DataView(this._arrayBuffer);
         }
         /**
-         * @ignore
-         * 
          * Get an array buffer with the length of the byte offset
          * @returns ArrayBuffer resized to the byte offset
          */
@@ -803,8 +795,6 @@ module BABYLON.GLTF2 {
             return this._arrayBuffer;
         }
         /**
-         * @ignore
-         * 
          * Get the byte offset of the array buffer
          * @returns byte offset
          */
@@ -812,8 +802,6 @@ module BABYLON.GLTF2 {
             return this._byteOffset;
         }
         /**
-         * @ignore
-         * 
          * Stores an UInt8 in the array buffer
          * @param entry 
          */
@@ -824,8 +812,6 @@ module BABYLON.GLTF2 {
             this._dataView.setUint8(this._byteOffset++, entry);
         }
         /**
-         * @ignore
-         * 
          * Stores a Float32 in the array buffer
          * @param entry 
          */
@@ -837,8 +823,6 @@ module BABYLON.GLTF2 {
             this._byteOffset += 4;
         }
         /**
-         * @ignore
-         * 
          * Stores an UInt32 in the array buffer
          * @param entry 
          */
