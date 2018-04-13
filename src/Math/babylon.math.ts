@@ -5902,6 +5902,9 @@
         CCW = 1
     }
 
+    /**
+     * Defines angle representation
+     */
     export class Angle {
         private _radians: number;
 
@@ -5914,16 +5917,26 @@
         }
 
         /**
-         * Returns the Angle value in degrees (float).  
+         * Get value in degrees
+         * @returns the Angle value in degrees (float)
          */
-        public degrees = () => this._radians * 180.0 / Math.PI;
-        /**
-         * Returns the Angle value in radians (float).  
-         */
-        public radians = () => this._radians;
+        public degrees() {
+            return this._radians * 180.0 / Math.PI;
+        }
 
         /**
-         * Returns a new Angle object valued with the angle value in radians between the two given vectors.  
+         * Get value in radians
+         * @returns the Angle value in radians (float)
+         */
+        public radians() {
+            return this._radians;
+        }
+
+        /**
+         * Gets a new Angle object valued with the angle value in radians between the two given vectors
+         * @param a defines first vector
+         * @param b defines second vector
+         * @returns a new Angle  
          */
         public static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
             var delta = b.subtract(a);
@@ -5932,13 +5945,17 @@
         }
 
         /**
-         * Returns a new Angle object from the given float in radians.  
+         * Gets a new Angle object from the given float in radians
+         * @param radians defines the angle value in radians
+         * @returns a new Angle
          */
         public static FromRadians(radians: number): Angle {
             return new Angle(radians);
         }
         /**
-         * Returns a new Angle object from the given float in degrees.  
+         * Gets a new Angle object from the given float in degrees
+         * @param degrees defines the angle value in degrees
+         * @returns a new Angle
          */
         public static FromDegrees(degrees: number): Angle {
             return new Angle(degrees * Math.PI / 180.0);
