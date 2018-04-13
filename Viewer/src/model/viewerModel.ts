@@ -100,6 +100,7 @@ export class ViewerModel implements IDisposable {
         this.onLoadedObservable.add(() => {
             this._configureModel();
             this._viewer.onModelLoadedObservable.notifyObservers(this);
+            this._initAnimations();
         });
     }
 
@@ -158,14 +159,9 @@ export class ViewerModel implements IDisposable {
     }
 
 
-    public initAnimations() {
-        this._animations.forEach(a => {
-            a.dispose();
-        });
-        this._animations.length = 0;
-
+    private _initAnimations() {
         // check if this is not a gltf loader and init the animations
-        if (this.loader.name !== 'gltf') {
+        if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
                 let ag = new AnimationGroup("animation-" + idx, this._viewer.sceneManager.scene);
                 skeleton.getAnimatables().forEach(a => {
@@ -388,7 +384,9 @@ export class ViewerModel implements IDisposable {
                 material.environmentIntensity = this._modelConfiguration.material.environmentIntensity;
             }
 
-            //material.disableLighting = !this._modelConfiguration.material.directEnabled;
+            if (this._modelConfiguration.material.directEnabled !== undefined) {
+                material.disableLighting = !this._modelConfiguration.material.directEnabled;
+            }
 
             material.reflectionColor = this._viewer.sceneManager.mainColor;
         }
