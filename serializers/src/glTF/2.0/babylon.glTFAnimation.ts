@@ -99,7 +99,7 @@ module BABYLON.GLTF2 {
                     _GLTFAnimation._CreateCubicSplineAnimation(babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
                 }
                 else {
-                    Tools.Error('Unsupported animation interpolation type!');
+                    _GLTFAnimation._CreateBakedAnimation(babylonMesh, animation, animationChannelTargetPath, minMaxKeyFrames.min, minMaxKeyFrames.max, animation.framePerSecond, animationSampleRate, inputs, outputs, minMaxKeyFrames, convertToRightHandedSystem, useQuaternion);
                 }
             }
 
