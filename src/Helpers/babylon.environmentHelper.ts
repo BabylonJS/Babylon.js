@@ -396,37 +396,18 @@ module BABYLON {
         /**
          * Sets the primary color of all the available elements.
          * @param color the main color to affect to the ground and the background
-         * @param perceptual Specifies wether the chosen color has been set as intented to be seen e.g. in gamma space not accounting for exposure and tone mapping
          */
-        public setMainColor(color: Color3, perceptual = false): void {
+        public setMainColor(color: Color3): void {
             if (this.groundMaterial) {
-                if (perceptual) {
-                    this.groundMaterial.perceptualColor = color;
-                }
-                else {
-                    this.groundMaterial.primaryColor = color;
-                }
+                this.groundMaterial.primaryColor = color;
             }
 
             if (this.skyboxMaterial) {
-                if (perceptual) {
-                    this.skyboxMaterial.perceptualColor = color;
-                }
-                else {
-                    this.skyboxMaterial.primaryColor = color;
-                }
+                this.skyboxMaterial.primaryColor = color;
             }
 
             if (this.groundMirror) {
-                if (perceptual && this.groundMaterial) {
-                    this.groundMirror.clearColor = new Color4(this.groundMaterial.primaryColor.r, 
-                        this.groundMaterial.primaryColor.g, 
-                        this.groundMaterial.primaryColor.b, 
-                        1.0);
-                }
-                else {
-                    this.groundMirror.clearColor = new Color4(color.r, color.g, color.b, 1.0);
-                }
+                this.groundMirror.clearColor = new Color4(color.r, color.g, color.b, 1.0);
             }
         }
 

@@ -77,9 +77,13 @@ module BABYLON {
         radius: Array<number>;
     }
 
+    /** Defines supported task for worker process */
     export enum WorkerTaskType {
+        /** Initialization */
         INIT,
+        /** Update of geometry */
         UPDATE,
+        /** Evaluate collision */
         COLLIDE
     }
 
@@ -113,8 +117,11 @@ module BABYLON {
         removedGeometries: Array<string>;
     }
 
+    /** Defines kind of replies returned by worker */
     export enum WorkerReplyType {
+        /** Success */
         SUCCESS,
+        /** Unkown error */
         UNKNOWN_ERROR
     }
 

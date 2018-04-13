@@ -3,7 +3,8 @@
 module BABYLON.GLTF2 {
     /** 
      * Interface for storing specular glossiness factors.
-    */
+     * @hidden
+     */
     interface _IPBRSpecularGlossiness {
         /** 
          * Represents the linear diffuse factors of the material.
@@ -21,7 +22,8 @@ module BABYLON.GLTF2 {
 
     /** 
      * Interface for storing metallic roughness factors.
-    */
+     * @hidden
+     */
     interface _IPBRMetallicRoughness {
         /** 
          * Represents the albedo color of the material.
@@ -47,6 +49,7 @@ module BABYLON.GLTF2 {
 
     /**
      * Utility methods for working with glTF material conversion properties.  This class should only be used internally.
+     * @hidden
      */
     export class _GLTFMaterial {
         /**

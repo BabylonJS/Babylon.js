@@ -31,21 +31,21 @@
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        /** @ignore */
+        /** @hidden */
         public _delayInfo: Array<string>;
         private _indexBuffer: Nullable<WebGLBuffer>;
         private _indexBufferIsUpdatable = false;
-        /** @ignore */
+        /** @hidden */
         public _boundingInfo: Nullable<BoundingInfo>;
-        /** @ignore */
+        /** @hidden */
         public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
-        /** @ignore */
+        /** @hidden */
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
         private _updatable: boolean;
 
         // Cache
-        /** @ignore */
+        /** @hidden */
         public _positions: Nullable<Vector3[]>;
 
         /**
@@ -168,7 +168,7 @@
             return true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuild(): void {
             if (this._vertexArrayObjects) {
                 this._vertexArrayObjects = {};
@@ -329,7 +329,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<WebGLBuffer>): void {
             if (!effect) {
                 return;
@@ -585,7 +585,7 @@
             return this._indexBuffer;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _releaseVertexArrayObject(effect: Nullable<Effect> = null) {
             if (!effect || !this._vertexArrayObjects) {
                 return;
@@ -790,12 +790,12 @@
         }
 
         // Cache
-        /** @ignore */
+        /** @hidden */
         public _resetPointsArrayCache(): void {
             this._positions = null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _generatePointsArray(): boolean {
             if (this._positions)
                 return true;
@@ -1076,7 +1076,7 @@
             return Tools.RandomId();
         }
 
-        /** @ignore */
+        /** @hidden */
         public static _ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
             var scene = mesh.getScene();
 
@@ -1433,6 +1433,7 @@
     /// Abstract class
     /**
      * Abstract class used to provide common services for all typed geometries
+     * @hidden
      */
     export class _PrimitiveGeometry extends Geometry {
 
@@ -1497,7 +1498,7 @@
         }
 
         // to override
-        /** @ignore */
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             throw new Error("Abstract method");
         }
@@ -1560,7 +1561,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
         }
