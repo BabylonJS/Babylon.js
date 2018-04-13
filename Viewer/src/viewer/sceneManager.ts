@@ -65,7 +65,8 @@ export class SceneManager {
      */
     private _hdrSupport: boolean;
 
-    private _mainColor: Color3;
+    private _mainColor: Color3 = Color3.White();
+    private readonly _white = Color3.White();
 
     //Labs!
     public labs: ViewerLabs;
@@ -94,7 +95,7 @@ export class SceneManager {
             return this._initEnvironment(model);
         });
 
-        this.labs = new ViewerLabs();
+        this.labs = new ViewerLabs(this);
     }
 
     /**
@@ -185,20 +186,50 @@ export class SceneManager {
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
 
-        if (globalConfiguration.lab) {
-            if (globalConfiguration.lab.environmentAssetsRootURL) {
-                this.labs.environmentAssetsRootURL = globalConfiguration.lab.environmentAssetsRootURL;
+        if (newConfiguration.lab) {
+            if (newConfiguration.lab.environmentAssetsRootURL) {
+                this.labs.environmentAssetsRootURL = newConfiguration.lab.environmentAssetsRootURL;
             }
 
-            if (globalConfiguration.lab.environmentMap) {
-                this.labs.loadEnvironment(this, globalConfiguration.lab.environmentMap);
+            if (newConfiguration.lab.environmentMap) {
+                let rot = newConfiguration.lab.environmentMap.rotationY;
+                this.labs.loadEnvironment(newConfiguration.lab.environmentMap.texture, () => {
+                    this.labs.applyEnvironmentMapConfiguration(rot);
+                });
+
+                if (!newConfiguration.lab.environmentMap.texture && newConfiguration.lab.environmentMap.rotationY) {
+                    this.labs.applyEnvironmentMapConfiguration(newConfiguration.lab.environmentMap.rotationY);
+                }
             }
         }
 
         // update scene configuration
         if (newConfiguration.scene) {
             this._configureScene(newConfiguration.scene);
+
+            // process mainColor changes:
+            if (newConfiguration.scene.mainColor) {
+                let mc = newConfiguration.scene.mainColor;
+                if (mc.r !== undefined) {
+                    this._mainColor.r = mc.r;
+                }
+                if (mc.g !== undefined) {
+                    this._mainColor.g = mc.g
+                }
+                if (mc.b !== undefined) {
+                    this._mainColor.b = mc.b
+                }
+
+                this._mainColor.toLinearSpaceToRef(this._mainColor);
+                let exposure = Math.pow(2.0, -((globalConfiguration.camera && globalConfiguration.camera.exposure) || 0.75)) * Math.PI;
+                this._mainColor.scaleToRef(1 / exposure, this._mainColor);
+                let environmentTint = (globalConfiguration.lab && globalConfiguration.lab.environmentMap && globalConfiguration.lab.environmentMap.tintLevel) || 0;
+                this._mainColor = BABYLON.Color3.Lerp(this._white, this._mainColor, environmentTint);
+            }
         }
+
+
+
         // optimizer
         if (newConfiguration.optimizer) {
             this._configureOptimizer(newConfiguration.optimizer);
@@ -266,19 +297,6 @@ export class SceneManager {
             }
             const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
             this.scene.environmentTexture = environmentTexture;
-        }
-
-        if (sceneConfig.mainColor) {
-            let mc = sceneConfig.mainColor;
-            if (mc.r !== undefined) {
-                this._mainColor.r = mc.r;
-            }
-            if (mc.g !== undefined) {
-                this._mainColor.g = mc.g
-            }
-            if (mc.b !== undefined) {
-                this._mainColor.b = mc.b
-            }
         }
 
         this.onSceneConfiguredObservable.notifyObservers({

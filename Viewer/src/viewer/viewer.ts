@@ -172,7 +172,10 @@ export abstract class AbstractViewer {
             if (this._configuration.observers) {
                 this._configureObservers(this._configuration.observers);
             }
-            //this.updateConfiguration(configuration);
+            this.onSceneInitObservable.add(() => {
+                this.updateConfiguration(configuration);
+            });
+            //
 
             // initialize the templates
             let templateConfiguration = this._configuration.templates || {};
