@@ -5572,6 +5572,7 @@
                     var height = width;
 
                     this._prepareWorkingCanvas();
+
                     if (!this._workingCanvas || !this._workingContext) {
                         return;
                     }
