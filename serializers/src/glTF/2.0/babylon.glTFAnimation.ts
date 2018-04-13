@@ -428,7 +428,7 @@ module BABYLON.GLTF2 {
             const animationType = animation.dataType;
             let cacheValue: Vector3 | Quaternion;
             inputs.push(time);
-            if (value instanceof Number) {
+            if (typeof value === "number") {
                 value = this._ConvertFactorToVector3OrQuaternion(value as number, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
             }
             if (value) {

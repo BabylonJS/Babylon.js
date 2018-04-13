@@ -149,8 +149,8 @@
         private static _tmpFloatArray = new Float32Array(1);
         /**
          * Returns the nearest 32-bit single precision float representation of a Number
-         * @param value A Number.  IF the parameter is of a different type, it will get converted
-         * to a number or to NAN if it cannot be converted
+         * @param value A Number.  If the parameter is of a different type, it will get converted
+         * to a number or to NaN if it cannot be converted
          * @returns number
          */
         public static FloatRound(value: number): number {
