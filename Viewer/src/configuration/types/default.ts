@@ -66,7 +66,8 @@ export let defaultConfiguration: ViewerConfiguration = {
                 type: 2,
                 zoomOnBoundingInfo: true,
                 zoomStopsAnimation: false
-            }
+            },
+            bouncing: 1
         }
     },
     skybox: {
@@ -95,7 +96,7 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }*/
     },
-    ground: true,
+    ground: {},
     engine: {
         antialiasing: true
     },

@@ -348,7 +348,15 @@ export class SceneManager {
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
         }
         if (cameraConfig.position) {
-            this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
+            let newPosition = this.camera.position.clone();
+            extendClassWithConfig(newPosition, cameraConfig.position);
+            this.camera.setPosition(newPosition);
+        }
+
+        if (cameraConfig.target) {
+            let newTarget = this.camera.target.clone();
+            extendClassWithConfig(newTarget, cameraConfig.position);
+            this.camera.setTarget(newTarget);
         }
 
         if (cameraConfig.rotation) {
@@ -439,7 +447,6 @@ export class SceneManager {
                         options.groundMirrorTextureType = this._defaultPipelineTextureType;
                 }
             }
-
         }
 
         let postInitSkyboxMaterial = false;
