@@ -5349,6 +5349,9 @@
                 }
 
                 let texture = loadData.texture as InternalTexture;
+                if(loadData.info.sphericalPolynomial){
+                    texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
+                }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
                 texture._lodGenerationScale = scale;
                 texture._lodGenerationOffset = offset;
@@ -5421,7 +5424,7 @@
                 }
             };
 
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, true);
         }
 
         /**
@@ -5436,7 +5439,7 @@
          * @param forcedExtension defines the extension to use to pick the right loader
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false): InternalTexture {
             var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
@@ -5527,7 +5530,10 @@
                     this._loadFile(rootUrl,
                         data => {
                             var info = DDSTools.GetDDSInfo(data);
-
+                            if(createPolynomials){
+                                info.sphericalPolynomial = new SphericalPolynomial();
+                            }
+                            
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5545,7 +5551,7 @@
                             texture.height = info.height;
                             texture.isReady = true;
                             texture.type = info.textureType;
-
+                            
                             if (onLoad) {
                                 onLoad({ isDDS: true, width: info.width, info, data, texture });
                             }
