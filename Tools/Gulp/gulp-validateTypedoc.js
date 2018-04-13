@@ -274,9 +274,6 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
     for (var a in namespace.children) {
         containerNode = namespace.children[a];
 
-        // If comment contains @ignore then skip validation completely
-        if (Validate.hasTag(containerNode, 'ignore')) continue;
-
         // Account for undefined access modifiers.
         if (!containerNode.flags.isPublic &&
             !containerNode.flags.isPrivate &&
@@ -298,12 +295,10 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
                 "Missing text for " + containerNode.kindString + " : " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(containerNode));
         }
 
-        //if comment contains tag @ignoreChildren, then don't validate children
-        var validateChildren = !Validate.hasTag(containerNode, 'ignoreChildren');
         children = containerNode.children;
 
         //Validate Properties
-        if (validateChildren && children) {
+        if (children) {
             for (var b in children) {
                 childNode = children[b];
 
@@ -317,9 +312,6 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
 
                 // Validate Naming.
                 this.validateNaming(containerNode, childNode);
-
-                //if comment contains @ignore then skip validation completely
-                if (Validate.hasTag(childNode, 'ignore')) continue;
 
                 if (isPublic) {
                     tags = this.validateTags(childNode);
@@ -339,9 +331,6 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
                     if (signatures) {
                         for (var c in signatures) {
                             signatureNode = signatures[c];
-
-                            //if node contains @ignore then skip validation completely
-                            if (Validate.hasTag(signatureNode, 'ignore')) continue;
 
                             if (isPublic) {
                                 if (!this.validateComment(signatureNode)) {
