@@ -185,6 +185,11 @@ function runTest(index, done) {
     configuration.engine.engineOptions = configuration.engine.engineOptions || {};
     configuration.engine.engineOptions.preserveDrawingBuffer = true;
 
+    //cancel camera behvaviors for the tests
+    if (configuration.camera && configuration.camera.behaviors) {
+        delete configuration.camera.behaviors;
+    }
+
     // create a new viewer
     currentViewer && currentViewer.dispose();
     currentViewer = null;
@@ -193,20 +198,29 @@ function runTest(index, done) {
     currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
     currentViewer.onInitDoneObservable.add(() => {
+
+        var currentFrame = 0;
+        var waitForFrame = test.waitForFrame || 1;
+
         if (test.createMesh) {
             prepareMeshForViewer(currentViewer, configuration, test);
+            currentViewer.sceneManager.scene.executeWhenReady(() => {
+                currentViewer.onFrameRenderedObservable.add(() => {
+                    if (currentFrame === waitForFrame) {
+                        evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    }
+                    currentFrame++;
+                });
+            });
+        } else {
+            currentViewer.onFrameRenderedObservable.add(() => {
+                if (currentFrame === waitForFrame) {
+                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                }
+                currentFrame++;
+            });
         }
-        var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 80;
-        currentViewer.onFrameRenderedObservable.add(() => {
-            if (currentFrame === waitForFrame) {
-                evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
-            }
-            currentFrame++;
-        });
     });
-
-
 }
 
 function prepareMeshForViewer(viewer, configuration, test) {

@@ -3,7 +3,12 @@ import { ViewerConfiguration } from './../configuration';
 export let extendedDefaultConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     extends: "default",
-
+    camera: {
+        radius: 2,
+        alpha: -1.5708,
+        beta: Math.PI * 0.5 - 0.2618,
+        pinchPrecision: 1500
+    },
     lights: {
         "light1": {
             type: 0,
@@ -54,6 +59,9 @@ export let extendedDefaultConfiguration: ViewerConfiguration = {
             shadowMaxZ: 10.0
         }
     },
+    ground: {
+        receiveShadows: true
+    },
     scene: {
         imageProcessingConfiguration: {
             colorCurves: {
@@ -71,6 +79,11 @@ export let extendedDefaultConfiguration: ViewerConfiguration = {
                 highlightsSaturation: -15,
 
             }
+        },
+        mainColor: {
+            r: 0.8,
+            g: 0.8,
+            b: 0.8
         }
     },
     model: {
