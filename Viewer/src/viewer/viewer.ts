@@ -271,8 +271,8 @@ export abstract class AbstractViewer {
             } else {
                 this.engine.performanceMonitor.disable();
 
-                // Need to update behaviors
-                this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
+                // TODO - is this needed?
+                // this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
             }
         }
     }
@@ -430,6 +430,7 @@ export abstract class AbstractViewer {
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 this._isInit = true;
+                this.engine.runRenderLoop(this._render);
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).catch(e => {
                 Tools.Warn(e.toString());
@@ -471,9 +472,6 @@ export abstract class AbstractViewer {
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);
         }
-
-
-        this.engine.runRenderLoop(this._render);
 
         if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
