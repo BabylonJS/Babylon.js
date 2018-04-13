@@ -5437,6 +5437,7 @@
          * @param onError defines an optional callback raised if there is an issue to load the texture
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials if a polynomial sphere should be created for the cube texture
          * @returns the cube texture as an InternalTexture
          */
         public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false): InternalTexture {
