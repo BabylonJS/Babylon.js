@@ -4,6 +4,7 @@ import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration,
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
+import { ViewerLabs } from '../labs/viewerLabs';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -66,6 +67,9 @@ export class SceneManager {
 
     private _mainColor: Color3;
 
+    //Labs!
+    public labs: ViewerLabs;
+
     constructor(private _viewer: AbstractViewer) {
         this.models = [];
 
@@ -88,7 +92,9 @@ export class SceneManager {
                 this._configureCamera(this._viewer.configuration.camera || {}, model);
             }
             return this._initEnvironment(model);
-        })
+        });
+
+        this.labs = new ViewerLabs();
     }
 
     /**
@@ -178,6 +184,16 @@ export class SceneManager {
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
+
+        if (globalConfiguration.lab) {
+            if (globalConfiguration.lab.environmentAssetsRootURL) {
+                this.labs.environmentAssetsRootURL = globalConfiguration.lab.environmentAssetsRootURL;
+            }
+
+            if (globalConfiguration.lab.environmentMap) {
+                this.labs.loadEnvironment(this, globalConfiguration.lab.environmentMap);
+            }
+        }
 
         // update scene configuration
         if (newConfiguration.scene) {
