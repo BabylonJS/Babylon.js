@@ -107,22 +107,14 @@ module BABYLON.GLTF2 {
                     inputs: inputs,
                     outputs: outputs,
                     samplerInterpolation: interpolation,
-                    inputsMin: shouldBakeAnimation ? minMaxKeyFrames.min : this.fround(minMaxKeyFrames.min / animation.framePerSecond),
-                    inputsMax: shouldBakeAnimation ? minMaxKeyFrames.max : this.fround(minMaxKeyFrames.max / animation.framePerSecond)
+                    inputsMin: shouldBakeAnimation ? minMaxKeyFrames.min : Tools.FloatRound(minMaxKeyFrames.min / animation.framePerSecond),
+                    inputsMax: shouldBakeAnimation ? minMaxKeyFrames.max : Tools.FloatRound(minMaxKeyFrames.max / animation.framePerSecond)
                 }
 
                 return result;
             }
 
             return null;
-        }
-
-        /**
-         * Math.fround is not supported in IE or PhantomJS, so this helper function is used instead
-         * @param num value to fround
-         */
-        private static fround(num: number) {
-            return new Float32Array([num])[0];
         }
 
         private static _DeduceAnimationInfo(animation: Animation): Nullable<_IAnimationInfo> {
@@ -348,7 +340,7 @@ module BABYLON.GLTF2 {
             let nextKeyFrame: Nullable<IAnimationKey> = null;
             let prevKeyFrame: Nullable<IAnimationKey> = null;
             let endFrame: Nullable<number> = null;
-            minMaxFrames.min = this.fround(minFrame / fps);
+            minMaxFrames.min = Tools.FloatRound(minFrame / fps);
 
             let keyFrames = animation.getKeys();
 
@@ -382,7 +374,7 @@ module BABYLON.GLTF2 {
                 }
                 if (endFrame) {
                     for (let f = currKeyFrame.frame; f <= endFrame; f += sampleRate) {
-                        time = this.fround(f / fps);
+                        time = Tools.FloatRound(f / fps);
                         if (time === previousTime) {
                             continue;
                         }
