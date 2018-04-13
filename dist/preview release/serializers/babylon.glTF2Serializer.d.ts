@@ -39,11 +39,12 @@ declare module BABYLON {
 
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
- * @ignore - capitalization of GLTF2 module.
+ * @hidden - capitalization of GLTF2 module.
  */
 declare module BABYLON.GLTF2 {
     /**
      * Converts Babylon Scene into glTF 2.0.
+     * @hidden
      */
     class _Exporter {
         /**
@@ -284,6 +285,7 @@ declare module BABYLON {
 declare module BABYLON.GLTF2 {
     /**
      * Utility methods for working with glTF material conversion properties.  This class should only be used internally.
+     * @hidden
      */
     class _GLTFMaterial {
         /**

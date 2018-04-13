@@ -53,7 +53,7 @@ var BABYLON;
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
- * @ignore - capitalization of GLTF2 module.
+ * @hidden - capitalization of GLTF2 module.
  */
 var BABYLON;
 (function (BABYLON) {
@@ -61,6 +61,7 @@ var BABYLON;
     (function (GLTF2) {
         /**
          * Converts Babylon Scene into glTF 2.0.
+         * @hidden
          */
         var _Exporter = /** @class */ (function () {
             /**
@@ -778,6 +779,7 @@ var BABYLON;
     (function (GLTF2) {
         /**
          * Utility methods for working with glTF material conversion properties.  This class should only be used internally.
+         * @hidden
          */
         var _GLTFMaterial = /** @class */ (function () {
             function _GLTFMaterial() {

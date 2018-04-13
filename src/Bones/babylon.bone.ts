@@ -23,7 +23,7 @@
         public length: number;
 
         /** 
-         * @ignore Internal only
+         * @hidden Internal only
          * Set this value to map this bone to a different index in the transform matrices
          * Set this value to -1 to exclude the bone from the transform matrices
          */
@@ -38,20 +38,20 @@
         private _parent: Nullable<Bone>;
         private _scalingDeterminant = 1;
         private _worldTransform = new Matrix();
-        
+
         private _localScaling: Vector3;
         private _localRotation: Quaternion;
         private _localPosition: Vector3;
         private _needToDecompose = true;
         private _needToCompose = false;
 
-        /** @ignore */
+        /** @hidden */
         get _matrix(): Matrix {
             this._compose();
             return this._localMatrix;
         }
 
-        /** @ignore */
+        /** @hidden */
         set _matrix(value: Matrix) {
             this._localMatrix.copyFrom(value);
             this._needToDecompose = true;
@@ -84,7 +84,9 @@
 
             this.setParent(parentBone, false);
 
-            this._updateDifferenceMatrix();
+            if (baseMatrix || localMatrix) {
+                this._updateDifferenceMatrix();
+            }
         }
 
         // Members
@@ -202,7 +204,7 @@
         public set position(newPosition: Vector3) {
             this._decompose();
             this._localPosition.copyFrom(newPosition);
-            
+
             this._markAsDirtyAndCompose();
         }
 
@@ -267,23 +269,29 @@
         }
 
         /**
-         * Update the local matrix
-         * @param matrix defines the new local matrix
+         * Update the base and local matrices
+         * @param matrix defines the new base or local matrix
          * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         * @param updateLocalMatrix defines if the local matrix should be updated
          */
-        public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
+        public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true, updateLocalMatrix = true): void {
             this._baseMatrix.copyFrom(matrix);
-            this._localMatrix.copyFrom(matrix);
 
             if (updateDifferenceMatrix) {
                 this._updateDifferenceMatrix();
             }
 
-            this._markAsDirtyAndDecompose();
+            if (updateLocalMatrix) {
+                this._localMatrix.copyFrom(matrix);
+                this._markAsDirtyAndDecompose();
+            }
+            else {
+                this.markAsDirty();
+            }
         }
 
-        /** @ignore */
-        public _updateDifferenceMatrix(rootMatrix?: Matrix): void {
+        /** @hidden */
+        public _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren = true): void {
             if (!rootMatrix) {
                 rootMatrix = this._baseMatrix;
             }
@@ -296,8 +304,10 @@
 
             this._absoluteTransform.invertToRef(this._invertedAbsoluteTransform);
 
-            for (var index = 0; index < this.children.length; index++) {
-                this.children[index]._updateDifferenceMatrix();
+            if (updateChildren) {
+                for (var index = 0; index < this.children.length; index++) {
+                    this.children[index]._updateDifferenceMatrix();
+                }
             }
 
             this._scalingDeterminant = (this._absoluteTransform.determinant() < 0 ? -1 : 1);
@@ -318,7 +328,7 @@
         }
 
         private _markAsDirtyAndDecompose() {
-            this.markAsDirty();            
+            this.markAsDirty();
             this._needToDecompose = true;
         }
 
@@ -540,12 +550,12 @@
          * Set the bone scaling in local space
          * @param scale defines the scaling vector
          */
-        public setScale(scale: Vector3): void {          
+        public setScale(scale: Vector3): void {
             this._decompose();
             this._localScaling.copyFrom(scale);
             this._markAsDirtyAndCompose();
-        }    
-        
+        }
+
         /**
          * Gets the current scaling in local space
          * @returns the current scaling vector
@@ -562,7 +572,7 @@
         public getScaleToRef(result: Vector3) {
             this._decompose();
             result.copyFrom(this._localScaling);
-        }        
+        }
 
         /**
          * Set the yaw, pitch, and roll of the bone in local or world space
@@ -575,7 +585,7 @@
         public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
             if (space === Space.LOCAL) {
                 var quat = Bone._tmpQuat;
-                Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, quat);                
+                Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, quat);
                 this.setRotationQuaternion(quat, space, mesh);
                 return;
             }
@@ -622,7 +632,7 @@
             if (space === Space.LOCAL) {
                 var quat = Bone._tmpQuat;
                 Quaternion.RotationAxisToRef(axis, angle, quat);
-    
+
                 this.setRotationQuaternion(quat, space, mesh);
                 return;
             }
@@ -661,7 +671,7 @@
                 this._localRotation.copyFrom(quat);
 
                 this._markAsDirtyAndCompose();
-    
+
                 return;
             }
 
