@@ -65,7 +65,22 @@ export interface ViewerConfiguration {
         }
         hideLoadingDelay?: number;
         environmentAssetsRootURL?: string;
-        environmentMap?: string;
+        environmentMap?: {
+            /**
+             * Environment map texture path in relative to the asset folder.
+             */
+            texture: string;
+
+            /**
+             * Default rotation to apply to the environment map.
+             */
+            rotationY: number;
+
+            /**
+             * Tint level of the main color on the environment map.
+             */
+            tintLevel: number;
+        }
     }
 }
 
