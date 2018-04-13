@@ -556,11 +556,11 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF2;
     (function (GLTF2) {
-        /** @ignore */
+        /** @hidden */
         var _ArrayItem = /** @class */ (function () {
             function _ArrayItem() {
             }
-            /** @ignore */
+            /** @hidden */
             _ArrayItem.Assign = function (values) {
                 if (values) {
                     for (var index = 0; index < values.length; index++) {
@@ -594,7 +594,7 @@ var BABYLON;
          */
         var GLTFLoader = /** @class */ (function () {
             function GLTFLoader() {
-                /** @ignore */
+                /** @hidden */
                 this._completePromises = new Array();
                 this._disposed = false;
                 this._state = null;
@@ -650,7 +650,7 @@ var BABYLON;
                  */
                 this.onExtensionLoadedObservable = new BABYLON.Observable();
             }
-            /** @ignore */
+            /** @hidden */
             GLTFLoader._Register = function (name, factory) {
                 if (GLTFLoader._Factories[name]) {
                     BABYLON.Tools.Error("Extension with the name '" + name + "' already exists");
@@ -889,7 +889,7 @@ var BABYLON;
                 promises.push(this._loadAnimationsAsync());
                 return Promise.all(promises).then(function () { });
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadSceneAsync = function (context, scene) {
                 var promise = GLTF2.GLTFLoaderExtension._LoadSceneAsync(this, context, scene);
                 if (promise) {
@@ -989,7 +989,7 @@ var BABYLON;
                     }
                 }
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadNodeAsync = function (context, node) {
                 var promise = GLTF2.GLTFLoaderExtension._LoadNodeAsync(this, context, node);
                 if (promise) {
@@ -1506,7 +1506,7 @@ var BABYLON;
                 buffer._data = this._loadUriAsync(context, buffer.uri);
                 return buffer._data;
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadBufferViewAsync = function (context, bufferView) {
                 if (bufferView._data) {
                     return bufferView._data;
@@ -1585,7 +1585,7 @@ var BABYLON;
                 }
                 return accessor._data;
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadVertexBufferViewAsync = function (context, bufferView, kind) {
                 var _this = this;
                 if (bufferView._babylonBuffer) {
@@ -1659,7 +1659,7 @@ var BABYLON;
                 this._loadMaterialAlphaProperties(context, material, babylonMaterial);
                 return Promise.all(promises).then(function () { });
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
                 var promise = GLTF2.GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, babylonDrawMode, assign);
                 if (promise) {
@@ -1685,14 +1685,14 @@ var BABYLON;
                 assign(babylonData.material);
                 return babylonData.loaded;
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._createMaterial = function (type, name, drawMode) {
                 var babylonMaterial = new type(name, this._babylonScene);
                 babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? BABYLON.Material.CounterClockWiseSideOrientation : BABYLON.Material.ClockWiseSideOrientation;
                 babylonMaterial.fillMode = drawMode;
                 return babylonMaterial;
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadMaterialBasePropertiesAsync = function (context, material, babylonMaterial) {
                 var promises = new Array();
                 babylonMaterial.emissiveColor = material.emissiveFactor ? BABYLON.Color3.FromArray(material.emissiveFactor) : new BABYLON.Color3(0, 0, 0);
@@ -1726,7 +1726,7 @@ var BABYLON;
                 }
                 return Promise.all(promises).then(function () { });
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadMaterialAlphaProperties = function (context, material, babylonMaterial) {
                 var alphaMode = material.alphaMode || "OPAQUE" /* OPAQUE */;
                 switch (alphaMode) {
@@ -1755,7 +1755,7 @@ var BABYLON;
                     }
                 }
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadTextureAsync = function (context, textureInfo, assign) {
                 var _this = this;
                 var texture = GLTFLoader._GetProperty(context + "/index", this._gltf.textures, textureInfo.index);
@@ -1815,7 +1815,7 @@ var BABYLON;
                 });
                 return image._objectURL;
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._loadUriAsync = function (context, uri) {
                 var _this = this;
                 var promise = GLTF2.GLTFLoaderExtension._LoadUriAsync(this, context, uri);
@@ -1873,7 +1873,7 @@ var BABYLON;
                 }
                 this._progressCallback(new BABYLON.SceneLoaderProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader._GetProperty = function (context, array, index) {
                 if (!array || index == undefined || !array[index]) {
                     throw new Error(context + ": Failed to find index (" + index + ")");
@@ -2040,7 +2040,7 @@ var BABYLON;
                 this.onTextureLoadedObservable.clear();
                 this.onMaterialLoadedObservable.clear();
             };
-            /** @ignore */
+            /** @hidden */
             GLTFLoader.prototype._applyExtensions = function (actionAsync) {
                 for (var _i = 0, _a = GLTFLoader._Names; _i < _a.length; _i++) {
                     var name_5 = _a[_i];

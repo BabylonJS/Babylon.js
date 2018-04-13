@@ -10,7 +10,7 @@ module BABYLON.GLTF2 {
         _total?: number;
     }
 
-    /** @ignore */
+    /** @hidden */
     export interface _MaterialConstructor<T extends Material> {
         readonly prototype: T;
         new(name: string, scene: Scene): T;
@@ -20,13 +20,13 @@ module BABYLON.GLTF2 {
      * Loader for loading a glTF 2.0 asset
      */
     export class GLTFLoader implements IGLTFLoader {
-        /** @ignore */
+        /** @hidden */
         public _gltf: _ILoaderGLTF;
 
-        /** @ignore */
+        /** @hidden */
         public _babylonScene: Scene;
 
-        /** @ignore */
+        /** @hidden */
         public _completePromises = new Array<Promise<void>>();
 
         private _disposed = false;
@@ -42,7 +42,7 @@ module BABYLON.GLTF2 {
         private static _Names = new Array<string>();
         private static _Factories: { [name: string]: (loader: GLTFLoader) => GLTFLoaderExtension } = {};
 
-        /** @ignore */
+        /** @hidden */
         public static _Register(name: string, factory: (loader: GLTFLoader) => GLTFLoaderExtension): void {
             if (GLTFLoader._Factories[name]) {
                 Tools.Error(`Extension with the name '${name}' already exists`);
@@ -369,7 +369,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadSceneAsync(context: string, scene: _ILoaderScene): Promise<void> {
             const promise = GLTFLoaderExtension._LoadSceneAsync(this, context, scene);
             if (promise) {
@@ -480,7 +480,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadNodeAsync(context: string, node: _ILoaderNode): Promise<void> {
             const promise = GLTFLoaderExtension._LoadNodeAsync(this, context, node);
             if (promise) {
@@ -1078,7 +1078,7 @@ module BABYLON.GLTF2 {
             return buffer._data;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadBufferViewAsync(context: string, bufferView: _ILoaderBufferView): Promise<ArrayBufferView> {
             if (bufferView._data) {
                 return bufferView._data;
@@ -1172,7 +1172,7 @@ module BABYLON.GLTF2 {
             return accessor._data as Promise<Float32Array>;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadVertexBufferViewAsync(context: string, bufferView: _ILoaderBufferView, kind: string): Promise<Buffer> {
             if (bufferView._babylonBuffer) {
                 return bufferView._babylonBuffer;
@@ -1262,7 +1262,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void> {
             const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, babylonDrawMode, assign);
             if (promise) {
@@ -1297,7 +1297,7 @@ module BABYLON.GLTF2 {
             return babylonData.loaded;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _createMaterial<T extends Material>(type: _MaterialConstructor<T>, name: string, drawMode: number): T {
             const babylonMaterial = new type(name, this._babylonScene);
             babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
@@ -1305,7 +1305,7 @@ module BABYLON.GLTF2 {
             return babylonMaterial;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadMaterialBasePropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
 
@@ -1347,7 +1347,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadMaterialAlphaProperties(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): void {
             const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
             switch (alphaMode) {
@@ -1377,7 +1377,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Promise<void> {
             const texture = GLTFLoader._GetProperty(`${context}/index`, this._gltf.textures, textureInfo.index);
             context = `#/textures/${textureInfo.index}`;
@@ -1449,7 +1449,7 @@ module BABYLON.GLTF2 {
             return image._objectURL;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadUriAsync(context: string, uri: string): Promise<ArrayBufferView> {
             const promise = GLTFLoaderExtension._LoadUriAsync(this, context, uri);
             if (promise) {
@@ -1514,7 +1514,7 @@ module BABYLON.GLTF2 {
             this._progressCallback(new SceneLoaderProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
         }
 
-        /** @ignore */
+        /** @hidden */
         public static _GetProperty<T>(context: string, array: ArrayLike<T> | undefined, index: number | undefined): T {
             if (!array || index == undefined || !array[index]) {
                 throw new Error(`${context}: Failed to find index (${index})`);
@@ -1707,7 +1707,7 @@ module BABYLON.GLTF2 {
             this.onMaterialLoadedObservable.clear();
         }
 
-        /** @ignore */
+        /** @hidden */
         public _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>) {
             for (const name of GLTFLoader._Names) {
                 const extension = this._extensions[name];

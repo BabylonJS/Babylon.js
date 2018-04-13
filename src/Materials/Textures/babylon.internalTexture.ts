@@ -133,78 +133,78 @@ module BABYLON {
         public next: Nullable<IInternalTextureTracker> = null
 
         // Private
-        /** @ignore */
+        /** @hidden */
         public _initialSlot = -1;
-        /** @ignore */
+        /** @hidden */
         public _designatedSlot = -1;
-        /** @ignore */
+        /** @hidden */
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
-        /** @ignore */
+        /** @hidden */
         public _buffer: Nullable<ArrayBuffer | HTMLImageElement>;
-        /** @ignore */
+        /** @hidden */
         public _bufferView: Nullable<ArrayBufferView>;
-        /** @ignore */
+        /** @hidden */
         public _bufferViewArray: Nullable<ArrayBufferView[]>;
-        /** @ignore */
+        /** @hidden */
         public _size: number;
-        /** @ignore */
+        /** @hidden */
         public _extension: string;
-        /** @ignore */
+        /** @hidden */
         public _files: Nullable<string[]>;
-        /** @ignore */
+        /** @hidden */
         public _workingCanvas: HTMLCanvasElement;
-        /** @ignore */
+        /** @hidden */
         public _workingContext: CanvasRenderingContext2D;
-        /** @ignore */
+        /** @hidden */
         public _framebuffer: Nullable<WebGLFramebuffer>;
-        /** @ignore */
+        /** @hidden */
         public _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
-        /** @ignore */
+        /** @hidden */
         public _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
-        /** @ignore */
+        /** @hidden */
         public _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
-        /** @ignore */
+        /** @hidden */
         public _attachments: Nullable<number[]>;
-        /** @ignore */
+        /** @hidden */
         public _cachedCoordinatesMode: Nullable<number>;
-        /** @ignore */
+        /** @hidden */
         public _cachedWrapU: Nullable<number>;
-        /** @ignore */
+        /** @hidden */
         public _cachedWrapV: Nullable<number>;
-        /** @ignore */
+        /** @hidden */
         public _cachedWrapR: Nullable<number>;
-        /** @ignore */
+        /** @hidden */
         public _cachedAnisotropicFilteringLevel: Nullable<number>;
-        /** @ignore */
+        /** @hidden */
         public _isDisabled: boolean;
-        /** @ignore */
+        /** @hidden */
         public _compression: Nullable<string>;
-        /** @ignore */
+        /** @hidden */
         public _generateStencilBuffer: boolean;
-        /** @ignore */
+        /** @hidden */
         public _generateDepthBuffer: boolean;
-        /** @ignore */
+        /** @hidden */
         public _comparisonFunction: number = 0;
-        /** @ignore */
+        /** @hidden */
         public _sphericalPolynomial: Nullable<SphericalPolynomial>;
-        /** @ignore */
+        /** @hidden */
         public _lodGenerationScale: number;
-        /** @ignore */
+        /** @hidden */
         public _lodGenerationOffset: number;
 
         // The following three fields helps sharing generated fixed LODs for texture filtering
         // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
         // They are at the level of the gl texture to benefit from the cache.
-        /** @ignore */
+        /** @hidden */
         public _lodTextureHigh: BaseTexture;
-        /** @ignore */
+        /** @hidden */
         public _lodTextureMid: BaseTexture;
-        /** @ignore */
+        /** @hidden */
         public _lodTextureLow: BaseTexture;
 
-        /** @ignore */
+        /** @hidden */
         public _webGLTexture: Nullable<WebGLTexture>;
-        /** @ignore */
+        /** @hidden */
         public _references: number = 1;
         private _engine: Engine;
 
@@ -252,7 +252,7 @@ module BABYLON {
             this._size = width * height * depth;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuild(): void {
             var proxy: InternalTexture;
             this.isReady = false;

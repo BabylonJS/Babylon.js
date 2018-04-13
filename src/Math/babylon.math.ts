@@ -3790,7 +3790,7 @@
          */
         public m: Float32Array = new Float32Array(16);
 
-        /** @ignore */
+        /** @hidden */
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;

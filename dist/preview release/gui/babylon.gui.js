@@ -1159,7 +1159,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "_isFontSizeInPercentage", {
-                /** @ignore */
+                /** @hidden */
                 get: function () {
                     return this._fontSize.isPercentage;
                 },
@@ -1426,7 +1426,7 @@ var BABYLON;
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
-            /** @ignore */
+            /** @hidden */
             Control.prototype._resetFontCache = function () {
                 this._fontSet = true;
             };
@@ -3625,7 +3625,7 @@ var BABYLON;
                 }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
-            /** @ignore */
+            /** @hidden */
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);

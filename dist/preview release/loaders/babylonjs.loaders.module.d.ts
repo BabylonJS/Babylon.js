@@ -1013,13 +1013,13 @@ declare module BABYLON.GLTF1 {
 
 
 declare module BABYLON.GLTF2 {
-    /** @ignore */
+    /** @hidden */
     interface _IArrayItem {
         _index: number;
     }
-    /** @ignore */
+    /** @hidden */
     class _ArrayItem {
-        /** @ignore */
+        /** @hidden */
         static Assign(values?: _IArrayItem[]): void;
     }
 }
@@ -1027,47 +1027,47 @@ declare module BABYLON.GLTF2 {
 
 
 declare module BABYLON.GLTF2 {
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderAccessor extends IAccessor, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonVertexBuffer?: Promise<VertexBuffer>;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderAnimationChannel extends IAnimationChannel, _IArrayItem {
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderAnimationSamplerData {
         input: Float32Array;
         interpolation: AnimationSamplerInterpolation;
         output: Float32Array;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderAnimationSampler extends IAnimationSampler, _IArrayItem {
         _data: Promise<_ILoaderAnimationSamplerData>;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderAnimation extends IAnimation, _IArrayItem {
         channels: _ILoaderAnimationChannel[];
         samplers: _ILoaderAnimationSampler[];
         _babylonAnimationGroup?: AnimationGroup;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderBuffer extends IBuffer, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderBufferView extends IBufferView, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonBuffer?: Promise<Buffer>;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderCamera extends ICamera, _IArrayItem {
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderImage extends IImage, _IArrayItem {
         _objectURL?: Promise<string>;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderMaterial extends IMaterial, _IArrayItem {
         _babylonData?: {
             [drawMode: number]: {
@@ -1077,14 +1077,14 @@ declare module BABYLON.GLTF2 {
             };
         };
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderMesh extends IMesh, _IArrayItem {
         primitives: _ILoaderMeshPrimitive[];
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderMeshPrimitive extends IMeshPrimitive, _IArrayItem {
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderNode extends INode, _IArrayItem {
         _parent: _ILoaderNode;
         _babylonMesh?: Mesh;
@@ -1092,29 +1092,29 @@ declare module BABYLON.GLTF2 {
         _babylonAnimationTargets?: Node[];
         _numMorphTargets?: number;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderSamplerData {
         noMipMaps: boolean;
         samplingMode: number;
         wrapU: number;
         wrapV: number;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderSampler extends ISampler, _IArrayItem {
         _data?: _ILoaderSamplerData;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderScene extends IScene, _IArrayItem {
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderSkin extends ISkin, _IArrayItem {
         _babylonSkeleton?: Skeleton;
         _loaded?: Promise<void>;
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderTexture extends ITexture, _IArrayItem {
     }
-    /** @ignore */
+    /** @hidden */
     interface _ILoaderGLTF extends IGLTF {
         accessors?: _ILoaderAccessor[];
         animations?: _ILoaderAnimation[];
@@ -1137,7 +1137,7 @@ declare module BABYLON.GLTF2 {
  * Defines the module used to import/export glTF 2.0 assets
  */
 declare module BABYLON.GLTF2 {
-    /** @ignore */
+    /** @hidden */
     interface _MaterialConstructor<T extends Material> {
         readonly prototype: T;
         new (name: string, scene: Scene): T;
@@ -1146,11 +1146,11 @@ declare module BABYLON.GLTF2 {
      * Loader for loading a glTF 2.0 asset
      */
     class GLTFLoader implements IGLTFLoader {
-        /** @ignore */
+        /** @hidden */
         _gltf: _ILoaderGLTF;
-        /** @ignore */
+        /** @hidden */
         _babylonScene: Scene;
-        /** @ignore */
+        /** @hidden */
         _completePromises: Promise<void>[];
         private _disposed;
         private _state;
@@ -1163,7 +1163,7 @@ declare module BABYLON.GLTF2 {
         private _requests;
         private static _Names;
         private static _Factories;
-        /** @ignore */
+        /** @hidden */
         static _Register(name: string, factory: (loader: GLTFLoader) => GLTFLoaderExtension): void;
         /**
          * Mode that determines the coordinate system to use.
@@ -1251,14 +1251,14 @@ declare module BABYLON.GLTF2 {
         private _checkExtensions();
         private _createRootNode();
         private _loadNodesAsync(nodes);
-        /** @ignore */
+        /** @hidden */
         _loadSceneAsync(context: string, scene: _ILoaderScene): Promise<void>;
         private _forEachPrimitive(node, callback);
         private _getMeshes();
         private _getSkeletons();
         private _getAnimationGroups();
         private _startAnimations();
-        /** @ignore */
+        /** @hidden */
         _loadNodeAsync(context: string, node: _ILoaderNode): Promise<void>;
         private _loadMeshAsync(context, node, mesh, babylonMesh);
         private _loadPrimitiveAsync(context, node, mesh, primitive, babylonMesh);
@@ -1278,31 +1278,31 @@ declare module BABYLON.GLTF2 {
         private _loadAnimationChannelAsync(context, animationContext, animation, channel, babylonAnimationGroup);
         private _loadAnimationSamplerAsync(context, sampler);
         private _loadBufferAsync(context, buffer);
-        /** @ignore */
+        /** @hidden */
         _loadBufferViewAsync(context: string, bufferView: _ILoaderBufferView): Promise<ArrayBufferView>;
         private _loadIndicesAccessorAsync(context, accessor);
         private _loadFloatAccessorAsync(context, accessor);
-        /** @ignore */
+        /** @hidden */
         _loadVertexBufferViewAsync(context: string, bufferView: _ILoaderBufferView, kind: string): Promise<Buffer>;
         private _loadVertexAccessorAsync(context, accessor, kind);
         private _getDefaultMaterial(drawMode);
         private _loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial);
-        /** @ignore */
+        /** @hidden */
         _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void>;
-        /** @ignore */
+        /** @hidden */
         _createMaterial<T extends Material>(type: _MaterialConstructor<T>, name: string, drawMode: number): T;
-        /** @ignore */
+        /** @hidden */
         _loadMaterialBasePropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void>;
-        /** @ignore */
+        /** @hidden */
         _loadMaterialAlphaProperties(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): void;
-        /** @ignore */
+        /** @hidden */
         _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Promise<void>;
         private _loadSampler(context, sampler);
         private _loadImageAsync(context, image);
-        /** @ignore */
+        /** @hidden */
         _loadUriAsync(context: string, uri: string): Promise<ArrayBufferView>;
         private _onProgress();
-        /** @ignore */
+        /** @hidden */
         static _GetProperty<T>(context: string, array: ArrayLike<T> | undefined, index: number | undefined): T;
         private static _GetTextureWrapMode(context, mode);
         private static _GetTextureSamplingMode(context, magFilter?, minFilter?);
@@ -1313,7 +1313,7 @@ declare module BABYLON.GLTF2 {
         private _compileMaterialsAsync();
         private _compileShadowGeneratorsAsync();
         private _clear();
-        /** @ignore */
+        /** @hidden */
         _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>): Nullable<Promise<T>>;
     }
 }

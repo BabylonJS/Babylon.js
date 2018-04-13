@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+    /**
+     * @hidden
+     **/        
     export class _InstancesBatch {
         public mustReturn = false;
         public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();

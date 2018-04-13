@@ -265,7 +265,7 @@ declare module BABYLON.GUI {
         readonly heightInPixels: number;
         fontFamily: string;
         fontStyle: string;
-        /** @ignore */
+        /** @hidden */
         readonly _isFontSizeInPercentage: boolean;
         readonly fontSizeInPixels: number;
         fontSize: string | number;
@@ -294,7 +294,7 @@ declare module BABYLON.GUI {
         readonly centerY: number;
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        /** @ignore */
+        /** @hidden */
         _resetFontCache(): void;
         getLocalCoordinates(globalCoordinates: Vector2): Vector2;
         getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control;
@@ -651,7 +651,7 @@ declare module BABYLON.GUI {
             name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
-        /** @ignore */
+        /** @hidden */
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
