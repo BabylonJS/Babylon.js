@@ -64,7 +64,7 @@
          */
         private _currentValue: any;
         
-        /** @ignore */
+        /** @hidden */
         public _workValue: any;
         
         /**
@@ -366,7 +366,7 @@
         }
 
         /**
-         * @ignore Internal use only
+         * @hidden Internal use only
          */
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
             let newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;

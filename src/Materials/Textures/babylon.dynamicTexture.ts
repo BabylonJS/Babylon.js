@@ -177,7 +177,7 @@
             return newTexture;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuild(): void {
             this.update();
         }

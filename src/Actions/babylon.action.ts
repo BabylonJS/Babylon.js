@@ -11,7 +11,7 @@
 
         /**
          * Internal only - manager for action
-         * @ignore 
+         * @hidden 
          */
         public _actionManager: ActionManager;
 
@@ -45,7 +45,7 @@
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _prepare(): void {
         }
@@ -60,7 +60,7 @@
 
         /**
          * Internal only - executes current action event
-         * @ignore 
+         * @hidden 
          */
         public _executeCurrent(evt?: ActionEvent): void {
             if (this._nextActiveAction._condition) {
@@ -131,7 +131,7 @@
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _getProperty(propertyPath: string): string {
             return this._actionManager._getProperty(propertyPath);
@@ -139,7 +139,7 @@
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
@@ -155,7 +155,7 @@
         
         /**
          * Internal only called by serialize
-         * @ignore 
+         * @hidden 
          */
         protected _serialize(serializedAction: any, parent?: any): any {
             var serializationObject: any = { 
@@ -189,7 +189,7 @@
         
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public static _SerializeValueAsString = (value: any): string => {
             if (typeof value === "number") {
@@ -219,7 +219,7 @@
         
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public static _GetTargetProperty = (target: Scene | Node) => {
             return {

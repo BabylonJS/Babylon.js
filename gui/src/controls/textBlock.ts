@@ -224,7 +224,7 @@ module BABYLON.GUI {
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 

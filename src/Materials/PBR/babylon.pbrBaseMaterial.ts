@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
      * Manages the defines for the PBR Material.
-     * @ignoreChildren
+     * @hiddenChildren
      */
     class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public PBR = true;

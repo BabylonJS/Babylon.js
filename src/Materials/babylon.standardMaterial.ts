@@ -1,5 +1,5 @@
 module BABYLON {
-    /** @ignore */
+    /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public MAINUV1 = false;
         public MAINUV2 = false;
@@ -89,12 +89,12 @@ module BABYLON {
         public IMAGEPROCESSINGPOSTPROCESS = false;
         /**
          * If the reflection texture on this material is in linear color space
-         * @ignore
+         * @hidden
          */
         public IS_REFLECTION_LINEAR = false;
         /**
          * If the refraction texture on this material is in linear color space
-         * @ignore
+         * @hidden
          */
         public IS_REFRACTION_LINEAR = false;
         public EXPOSURE = false;
