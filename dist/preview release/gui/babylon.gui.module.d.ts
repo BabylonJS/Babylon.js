@@ -157,6 +157,28 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    class MultiLinePoint {
+        private _multiLine;
+        private _x;
+        private _y;
+        private _control;
+        private _mesh;
+        private _controlObserver;
+        private _meshObserver;
+        _point: Vector2;
+        constructor(multiLine: MultiLine);
+        x: string | number;
+        y: string | number;
+        control: Nullable<Control>;
+        mesh: Nullable<AbstractMesh>;
+        translate(): Vector2;
+        private _translatePoint();
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
     class Control {
         name: string | undefined;
         private _alpha;
@@ -855,5 +877,38 @@ declare module BABYLON.GUI {
         connect(input: InputText): void;
         disconnect(): void;
         static CreateDefaultLayout(): VirtualKeyboard;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class MultiLine extends Control {
+        name: string | undefined;
+        private _lineWidth;
+        private _dash;
+        private _points;
+        private _minX;
+        private _minY;
+        private _maxX;
+        private _maxY;
+        constructor(name?: string | undefined);
+        dash: Array<number>;
+        getAt(index: number): MultiLinePoint;
+        onPointUpdate: () => void;
+        add(...items: (AbstractMesh | Control | {
+            x: string | number;
+            y: string | number;
+        })[]): void;
+        push(): MultiLinePoint;
+        remove(value: number | MultiLinePoint): void;
+        lineWidth: number;
+        horizontalAlignment: number;
+        verticalAlignment: number;
+        protected _getTypeName(): string;
+        _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        _measure(): void;
+        protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        dispose(): void;
     }
 }
