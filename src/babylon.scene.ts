@@ -5885,16 +5885,20 @@
          * @param pbr defines if PBRMaterial must be used instead of StandardMaterial
          * @param scale defines the overall scale of the skybox
          * @param blur defines if blurring must be applied to the environment texture (works only with pbr === true)
+         * @param setGlobalEnvTexture defines a boolean indicating that scene.environmentTexture must match the current skybox texture (true by default)
          * @returns a new mesh holding the sky box
          */
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0): Nullable<Mesh> {
-            if (environmentTexture) {
-                this.environmentTexture = environmentTexture;
-            }
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
-            if (!this.environmentTexture) {
+            if (!environmentTexture) {
                 Tools.Warn("Can not create default skybox without environment texture.");
                 return null;
+            }
+
+            if (setGlobalEnvTexture) {
+                if (environmentTexture) {
+                    this.environmentTexture = environmentTexture;
+                }
             }
 
             // Skybox
@@ -5902,7 +5906,7 @@
             if (pbr) {
                 let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
                 if (hdrSkyboxMaterial.reflectionTexture) {
                     hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
@@ -5915,7 +5919,7 @@
             else {
                 let skyboxMaterial = new StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
+                skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 if (skyboxMaterial.reflectionTexture) {
                     skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
