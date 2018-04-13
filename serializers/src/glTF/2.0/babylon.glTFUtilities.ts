@@ -6,8 +6,6 @@ module BABYLON.GLTF2 {
      */
     export class _GLTFUtilities {
         /**
-         * @ignore
-         * 
          * Creates a buffer view based on the supplied arguments
          * @param bufferIndex index value of the specified buffer
          * @param byteOffset byte offset value
@@ -32,8 +30,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Creates an accessor based on the supplied arguments
          * @param bufferviewIndex The index of the bufferview referenced by this accessor
          * @param name The name of the accessor
@@ -62,8 +58,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Calculates the minimum and maximum values of an array of position floats
          * @param positions Positions array of a mesh
          * @param vertexStart Starting vertex offset to calculate min and max values
@@ -104,8 +98,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a new right-handed Vector3
          * @param vector vector3 array
          * @returns right-handed Vector3
@@ -115,8 +107,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
@@ -125,8 +115,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Vector4 to right-handed
          * @param vector Vector4 to convert to right-handed
          */
@@ -136,8 +124,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */

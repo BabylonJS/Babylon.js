@@ -29,14 +29,15 @@ module BABYLON {
          * @returns Returns an object with a .gltf file and associates texture names
          * as keys and their data and paths as values
          */
-        public static GLTF(scene: Scene, filePrefix: string, options?: IExporterOptions): GLTFData {
+        public static GLTF(scene: Scene, filePrefix: string, options?: IExporterOptions): Nullable<GLTFData> {
             const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
             const gltfGenerator = new GLTF2._Exporter(scene, options);
             if (scene.isReady) {
                 return gltfGenerator._generateGLTF(glTFPrefix);
             }
             else {
-                throw new Error("glTF Serializer: Scene is not ready!");
+                Tools.Error("glTF Serializer: Scene is not ready!");
+                return null;
             } 
         }
 
@@ -47,14 +48,15 @@ module BABYLON {
          * @param options Exporter options
          * @returns Returns an object with a .glb filename as key and data as value
          */
-        public static GLB(scene: Scene, filePrefix: string, options?: IExporterOptions): GLTFData {
+        public static GLB(scene: Scene, filePrefix: string, options?: IExporterOptions): Nullable<GLTFData> {
             const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");        
             const gltfGenerator = new GLTF2._Exporter(scene, options);
             if (scene.isReady) {
                 return gltfGenerator._generateGLB(glTFPrefix);
             }
             else {
-                throw new Error("glTF Serializer: Scene is not ready!");
+                Tools.Error("glTF Serializer: Scene is not ready!");
+                return null;
             }  
         }
     }

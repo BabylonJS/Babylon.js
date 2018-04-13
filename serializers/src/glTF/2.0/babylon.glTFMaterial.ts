@@ -83,8 +83,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Gets the materials from a Babylon scene and converts them to glTF materials
          * @param scene babylonjs scene
          * @param mimeType texture mime type
@@ -107,14 +105,12 @@ module BABYLON.GLTF2 {
                     _GLTFMaterial._ConvertPBRMaterial(babylonMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords);
                 }
                 else {
-                    throw new Error("Unsupported material type: " + babylonMaterial.name);
+                    Tools.Error("Unsupported material type: " + babylonMaterial.name);
                 }
             }
         }
 
         /**
-         * @ignore
-         * 
          * Makes a copy of the glTF material without the texture parameters
          * @param originalMaterial original glTF material
          * @returns glTF material without texture parameters
@@ -139,8 +135,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Specifies if the material has any texture parameters present
          * @param material glTF Material
          * @returns boolean specifying if texture parameters are present
@@ -160,8 +154,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material
          * @param babylonStandardMaterial 
          * @returns glTF Metallic Roughness Material representation
@@ -223,8 +215,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Computes the metallic factor
          * @param diffuse diffused value
          * @param specular specular value
@@ -245,13 +235,11 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Gets the glTF alpha mode from the Babylon Material
          * @param babylonMaterial Babylon Material
          * @returns The Babylon alpha mode value
          */
-        public static _GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode {
+        public static _GetAlphaMode(babylonMaterial: Material): Nullable<MaterialAlphaMode> {
             if (babylonMaterial instanceof StandardMaterial) {
                 const babylonStandardMaterial = babylonMaterial as StandardMaterial;
                 if ((babylonStandardMaterial.alpha != 1.0) ||
@@ -281,7 +269,8 @@ module BABYLON.GLTF2 {
                         return MaterialAlphaMode.BLEND;
                     }
                     default: {
-                        throw new Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
+                        Tools.Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
+                        return null;
                     }
                 }
             }
@@ -303,18 +292,18 @@ module BABYLON.GLTF2 {
                         return MaterialAlphaMode.BLEND;
                     }
                     default: {
-                        throw new Error("Unsupported alpha mode " + babylonPBRMaterial.transparencyMode);
+                        Tools.Error("Unsupported alpha mode " + babylonPBRMaterial.transparencyMode);
+                        return null;
                     }
                 }
             }
             else {
-                throw new Error("Unsupported Babylon material type");
+                Tools.Error("Unsupported Babylon material type");
+                return null;
             }
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Babylon Standard Material to a glTF Material
          * @param babylonStandardMaterial BJS Standard Material
          * @param mimeType mime type to use for the textures
@@ -385,8 +374,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
          * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness Material
          * @param mimeType mime type to use for the textures
@@ -457,11 +444,12 @@ module BABYLON.GLTF2 {
             }
             if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
                 const alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMetalRoughMaterial);
-
-                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === MaterialAlphaMode.BLEND) {
-                        glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
+                if (alphaMode) {
+                    if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
+                        glTFMaterial.alphaMode = alphaMode;
+                        if (alphaMode === MaterialAlphaMode.BLEND) {
+                            glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
+                        }
                     }
                 }
             }
@@ -572,7 +560,8 @@ module BABYLON.GLTF2 {
 
             const scene = diffuseTexture ? diffuseTexture.getScene() : specularGlossinessTexture.getScene();
             if (!scene) {
-                throw new Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
+                Tools.Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
+                return null;
             }
 
             const resizedTextures = this._ResizeTexturesToSameDimensions(diffuseTexture, specularGlossinessTexture, scene);
@@ -590,7 +579,8 @@ module BABYLON.GLTF2 {
                 diffuseBuffer = (resizedTextures.texture1.readPixels()) as Uint8Array;
             }
             else {
-                throw new Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture1.name);
+                Tools.Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture1.name);
+                return null;
             }
             pixels = resizedTextures.texture2.readPixels();
 
@@ -598,7 +588,8 @@ module BABYLON.GLTF2 {
                 specularGlossinessBuffer = (resizedTextures.texture2.readPixels()) as Uint8Array;
             }
             else {
-                throw new Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture2.name);
+                Tools.Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture2.name);
+                return null;
             }
 
             const byteLength = specularGlossinessBuffer.byteLength;
@@ -789,14 +780,15 @@ module BABYLON.GLTF2 {
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          * @returns glTF PBR Metallic Roughness factors
          */
-        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): _IPBRMetallicRoughness {
+        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Nullable<_IPBRMetallicRoughness> {
             const specGloss: _IPBRSpecularGlossiness = {
                 diffuseColor: babylonPBRMaterial.albedoColor || Color3.White(),
                 specularColor: babylonPBRMaterial.reflectivityColor || Color3.White(),
                 glossiness: babylonPBRMaterial.microSurface || 1,
             };
             if (babylonPBRMaterial.reflectivityTexture && !babylonPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha) {
-                throw new Error("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture currently not supported");
+                Tools.Error("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture currently not supported");
+                return null;
             }
 
             let metallicRoughnessFactors = this._ConvertSpecularGlossinessTexturesToMetallicRoughness(babylonPBRMaterial.albedoTexture, babylonPBRMaterial.reflectivityTexture, specGloss, mimeType);
@@ -824,8 +816,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
-         * 
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
          * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
          * @param mimeType mime type to use for the textures
@@ -849,73 +839,75 @@ module BABYLON.GLTF2 {
             else {
                 metallicRoughness = this._ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
             }
-
-            if (!(this.FuzzyEquals(metallicRoughness.baseColor, Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
-                glTFPbrMetallicRoughness.baseColorFactor = [
-                    metallicRoughness.baseColor.r,
-                    metallicRoughness.baseColor.g,
-                    metallicRoughness.baseColor.b,
-                    babylonPBRMaterial.alpha
-                ];
-            }
-
-            if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {
-                glTFPbrMetallicRoughness.metallicFactor = metallicRoughness.metallic;
-            }
-            if (metallicRoughness.roughness != null && metallicRoughness.roughness !== 1) {
-                glTFPbrMetallicRoughness.roughnessFactor = metallicRoughness.roughness;
-            }
-
-            if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
-                if (!babylonPBRMaterial.twoSidedLighting) {
-                    Tools.Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
+            if (metallicRoughness) {
+                if (!(this.FuzzyEquals(metallicRoughness.baseColor, Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
+                    glTFPbrMetallicRoughness.baseColorFactor = [
+                        metallicRoughness.baseColor.r,
+                        metallicRoughness.baseColor.g,
+                        metallicRoughness.baseColor.b,
+                        babylonPBRMaterial.alpha
+                    ];
                 }
-                glTFMaterial.doubleSided = true;
-            }
-            if (hasTextureCoords) {
-                if (babylonPBRMaterial.bumpTexture) {
-                    const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.bumpTexture, mimeType, images, textures, imageData);
-                    if (glTFTexture) {
-                        glTFMaterial.normalTexture = glTFTexture;
+
+                if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {
+                    glTFPbrMetallicRoughness.metallicFactor = metallicRoughness.metallic;
+                }
+                if (metallicRoughness.roughness != null && metallicRoughness.roughness !== 1) {
+                    glTFPbrMetallicRoughness.roughnessFactor = metallicRoughness.roughness;
+                }
+
+                if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
+                    if (!babylonPBRMaterial.twoSidedLighting) {
+                        Tools.Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
                     }
+                    glTFMaterial.doubleSided = true;
                 }
-                if (babylonPBRMaterial.ambientTexture) {
-                    const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.ambientTexture, mimeType, images, textures, imageData);
-                    if (glTFTexture) {
-                        let occlusionTexture: IMaterialOcclusionTextureInfo = {
-                            index: glTFTexture.index
-                        };
+                if (hasTextureCoords) {
+                    if (babylonPBRMaterial.bumpTexture) {
+                        const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.bumpTexture, mimeType, images, textures, imageData);
+                        if (glTFTexture) {
+                            glTFMaterial.normalTexture = glTFTexture;
+                        }
+                    }
+                    if (babylonPBRMaterial.ambientTexture) {
+                        const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.ambientTexture, mimeType, images, textures, imageData);
+                        if (glTFTexture) {
+                            let occlusionTexture: IMaterialOcclusionTextureInfo = {
+                                index: glTFTexture.index
+                            };
 
-                        glTFMaterial.occlusionTexture = occlusionTexture;
+                            glTFMaterial.occlusionTexture = occlusionTexture;
 
-                        if (babylonPBRMaterial.ambientTextureStrength) {
-                            occlusionTexture.strength = babylonPBRMaterial.ambientTextureStrength;
+                            if (babylonPBRMaterial.ambientTextureStrength) {
+                                occlusionTexture.strength = babylonPBRMaterial.ambientTextureStrength;
+                            }
+                        }
+                    }
+                    if (babylonPBRMaterial.emissiveTexture) {
+                        const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, imageData);
+                        if (glTFTexture != null) {
+                            glTFMaterial.emissiveTexture = glTFTexture;
                         }
                     }
                 }
-                if (babylonPBRMaterial.emissiveTexture) {
-                    const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, imageData);
-                    if (glTFTexture != null) {
-                        glTFMaterial.emissiveTexture = glTFTexture;
-                    }
-                }       
-            }
-            if (!this.FuzzyEquals(babylonPBRMaterial.emissiveColor, Color3.Black(), this._epsilon)) {
-                glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
-            }
-            if (babylonPBRMaterial.transparencyMode != null) {
-                const alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMaterial);
-
-                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === MaterialAlphaMode.BLEND) {
-                        glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
+                if (!this.FuzzyEquals(babylonPBRMaterial.emissiveColor, Color3.Black(), this._epsilon)) {
+                    glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
+                }
+                if (babylonPBRMaterial.transparencyMode != null) {
+                    const alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMaterial);
+                    if (alphaMode) {
+                        if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
+                            glTFMaterial.alphaMode = alphaMode;
+                            if (alphaMode === MaterialAlphaMode.BLEND) {
+                                glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
+                            }
+                        }
                     }
                 }
-            }
 
-            glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-            materials.push(glTFMaterial);
+                glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
+                materials.push(glTFMaterial);
+            }
         }
 
         private static GetPixelsFromTexture(babylonTexture: Texture): Uint8Array | Float32Array {
@@ -952,7 +944,8 @@ module BABYLON.GLTF2 {
                 extension = ".png";
             }
             else {
-                throw new Error("Unsupported mime type " + mimeType);
+                Tools.Error("Unsupported mime type " + mimeType);
+                return null;
             }
             textureName = baseFile + extension;
 
@@ -962,7 +955,7 @@ module BABYLON.GLTF2 {
             const size = babylonTexture.getSize();
 
             const base64Data = this._CreateBase64FromCanvas(pixels, size.width, size.height, mimeType);
-   
+
             return this._GetTextureInfoFromBase64(base64Data, textureName, mimeType, images, textures, imageData);
         }
 
