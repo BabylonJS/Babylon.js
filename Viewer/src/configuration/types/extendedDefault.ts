@@ -92,6 +92,12 @@ export let extendedDefaultConfiguration: ViewerConfiguration = {
             y: 1,
             z: 0
         },
-        rotationOffsetAngle: 3.66519
+        rotationOffsetAngle: 3.66519,
+        material: {
+            directEnabled: true,
+            directIntensity: 0.884,
+            emissiveIntensity: 1.04,
+            environmentIntensity: 0.268
+        }
     }
 }

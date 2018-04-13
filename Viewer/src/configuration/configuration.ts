@@ -64,6 +64,8 @@ export interface ViewerConfiguration {
             specular?: { r: number, g: number, b: number };
         }
         hideLoadingDelay?: number;
+        environmentAssetsRootURL?: string;
+        environmentMap?: string;
     }
 }
 
