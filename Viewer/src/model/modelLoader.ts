@@ -58,7 +58,6 @@ export class ModelLoader {
                 model.addAnimationGroup(animationGroup);
             }
 
-            model.initAnimations();
             model.onLoadedObservable.notifyObserversWithPromise(model);
         }, (progressEvent) => {
             model.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
