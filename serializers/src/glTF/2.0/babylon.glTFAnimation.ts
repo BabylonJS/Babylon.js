@@ -126,7 +126,7 @@ module BABYLON.GLTF2 {
         }
 
         private static _DeduceAnimationInfo(animation: Animation): Nullable<_IAnimationInfo> {
-            let animationChannelTargetPath: AnimationChannelTargetPath | undefined;
+            let animationChannelTargetPath: Nullable<AnimationChannelTargetPath> = null;
             let dataAccessorType = AccessorType.VEC3;
             let useQuaternion: boolean = false;
             let property = animation.targetProperty.split('.');
@@ -339,10 +339,9 @@ module BABYLON.GLTF2 {
          * @param useQuaternion specifies if quaternions should be used
          */
         private static _CreateBakedAnimation(babylonMesh: Mesh, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, minFrame: number, maxFrame: number, fps: number, sampleRate: number, inputs: number[], outputs: number[][], minMaxFrames: { min: number, max: number }, convertToRightHandedSystem: boolean, useQuaternion: boolean) {
-            let value: Vector3 | Quaternion;
+            let value: number | Vector3 | Quaternion;
             let quaternionCache: Quaternion = Quaternion.Identity();
             let previousTime: Nullable<number> = null;
-            const frameDelta = maxFrame - minFrame;
             let time: number;
             let maxUsedFrame: Nullable<number> = null;
             let currKeyFrame: Nullable<IAnimationKey> = null;
@@ -351,88 +350,118 @@ module BABYLON.GLTF2 {
             let endFrame: Nullable<number> = null;
             minMaxFrames.min = this.fround(minFrame / fps);
 
-            if (frameDelta / fps > sampleRate) {
-                let keyFrames = animation.getKeys();
-                for (let i = 0, length = keyFrames.length; i < length; ++i) {
-                    endFrame = null;
-                    currKeyFrame = keyFrames[i];
+            let keyFrames = animation.getKeys();
 
-                    if (i + 1 < length) {
-                        nextKeyFrame = keyFrames[i + 1];
-                        if (_GLTFAnimation._ValuesAreEqual(currKeyFrame.value, nextKeyFrame.value)) {
-                            if (i === 0) { // set the first frame to itself
-                                endFrame = currKeyFrame.frame;
-                            }
-                            else {
-                                continue;
-                            }
+            for (let i = 0, length = keyFrames.length; i < length; ++i) {
+                endFrame = null;
+                currKeyFrame = keyFrames[i];
+
+                if (i + 1 < length) {
+                    nextKeyFrame = keyFrames[i + 1];
+                    if (currKeyFrame.value.equals(nextKeyFrame.value)) {
+                        if (i === 0) { // set the first frame to itself
+                            endFrame = currKeyFrame.frame;
                         }
                         else {
-                            endFrame = nextKeyFrame.frame;
+                            continue;
                         }
                     }
                     else {
-                        // at the last key frame
-                        prevKeyFrame = keyFrames[i - 1];
-                        if (_GLTFAnimation._ValuesAreEqual(currKeyFrame.value, prevKeyFrame.value)) {
-                            continue;
-                        }
-                        else {
-                            endFrame = maxFrame;
-                        }
+                        endFrame = nextKeyFrame.frame;
                     }
-                    if (endFrame) {
-                        for (let f = currKeyFrame.frame; f <= endFrame; f += sampleRate) {
-                            time = this.fround(f / fps);
-                            if (time === previousTime) {
-                                continue;
-                            }
-                            previousTime = time;
-                            maxUsedFrame = time;
-                            value = animation._interpolate(f, 0, undefined, animation.loopMode);
-                            _GLTFAnimation._SetInterpolatedValue(value, time, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
-                        }
-                    }
-                }
-                if (maxUsedFrame) {
-                    minMaxFrames.max = maxUsedFrame;
-                }
-            }
-            else {
-                Tools.Warn('Frame range is too small to bake animation');
-            }
-        }
-
-        /**
-         * Checks if two values are equal to each other
-         * @param value1 First value as a Vector3 or Quaternion
-         * @param value2 Second value as a Vector3 or Quaternion
-         */
-        private static _ValuesAreEqual(value1: Vector3 | Quaternion, value2: Vector3 | Quaternion): boolean {
-            return (value1 instanceof Vector3) ? (value1 as Vector3).equals(value2 as Vector3) : (value1 as Quaternion).equals(value2 as Quaternion);
-        }
-
-        private static _SetInterpolatedValue(value: Vector3 | Quaternion, time: number, animationChannelTargetPath: AnimationChannelTargetPath, quaternionCache: Quaternion, inputs: number[], outputs: number[][], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
-            inputs.push(time);
-            if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
-                if (useQuaternion) {
-                    quaternionCache = value as Quaternion;
                 }
                 else {
-                    Quaternion.RotationYawPitchRollToRef(value.y, value.x, value.z, quaternionCache);
+                    // at the last key frame
+                    prevKeyFrame = keyFrames[i - 1];
+                    if (currKeyFrame.value.equals(prevKeyFrame.value)) {
+                        continue;
+                    }
+                    else {
+                        endFrame = maxFrame;
+                    }
                 }
-                if (convertToRightHandedSystem) {
-                    quaternionCache.x *= -1;
-                    quaternionCache.y *= -1;
-                    outputs.push(quaternionCache.asArray());
+                if (endFrame) {
+                    for (let f = currKeyFrame.frame; f <= endFrame; f += sampleRate) {
+                        time = this.fround(f / fps);
+                        if (time === previousTime) {
+                            continue;
+                        }
+                        previousTime = time;
+                        maxUsedFrame = time;
+                        value = animation._interpolate(f, 0, undefined, animation.loopMode);
+
+                        _GLTFAnimation._SetInterpolatedValue(babylonMesh, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+                    }
                 }
             }
-            else {
-                if (convertToRightHandedSystem && (animationChannelTargetPath !== AnimationChannelTargetPath.SCALE)) {
-                    value.z *= -1;
-                }
+            if (maxUsedFrame) {
+                minMaxFrames.max = maxUsedFrame;
+            }
+        }
 
-                outputs.push(value.asArray());
+        private static _ConvertFactorToVector3OrQuaternion(factor: number, babylonMesh: Mesh, animation: Animation, animationType: number, animationChannelTargetPath: AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean): Nullable<Vector3 | Quaternion> {
+            let property: string[];
+            let componentName: string;
+            let value: Nullable<Quaternion | Vector3> = null;
+            const basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(babylonMesh, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+            if (animationType === Animation.ANIMATIONTYPE_FLOAT) { // handles single component x, y, z or w component animation by using a base property and animating over a component.
+                property = animation.targetProperty.split('.');
+                componentName = property ? property[1] : ''; // x, y, or z component
+                value = useQuaternion ? BABYLON.Quaternion.FromArray(basePositionRotationOrScale).normalize() : BABYLON.Vector3.FromArray(basePositionRotationOrScale);
+
+                switch (componentName) {
+                    case 'x':
+                    case 'y': {
+                        value[componentName] = (convertToRightHandedSystem && useQuaternion) ? -factor : factor;
+                        break;
+                    }
+                    case 'z': {
+                        value[componentName] = (convertToRightHandedSystem && !useQuaternion && !(animationChannelTargetPath === AnimationChannelTargetPath.SCALE)) ? -factor : factor;
+                        break;
+                    }
+                    case 'w': {
+                        (value as Quaternion).w = factor;
+                        break;
+                    }
+                    default: {
+                        Tools.Error(`glTFAnimation: Unsupported component type "${componentName}" for scale animation!`);
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        private static _SetInterpolatedValue(babylonMesh: Mesh, value: Nullable<number | Vector3 | Quaternion>, time: number, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, quaternionCache: Quaternion, inputs: number[], outputs: number[][], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
+            const animationType = animation.dataType;
+            let cacheValue: Vector3 | Quaternion;
+            inputs.push(time);
+            if (value instanceof Number) {
+                value = this._ConvertFactorToVector3OrQuaternion(value as number, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+            }
+            if (value) {
+                if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
+                    if (useQuaternion) {
+                        quaternionCache = value as Quaternion;
+                    }
+                    else {
+                        cacheValue = value as Vector3;
+                        Quaternion.RotationYawPitchRollToRef(cacheValue.y, cacheValue.x, cacheValue.z, quaternionCache);
+                    }
+                    if (convertToRightHandedSystem) {
+                        quaternionCache.x *= -1;
+                        quaternionCache.y *= -1;
+                        outputs.push(quaternionCache.asArray());
+                    }
+                }
+                else {
+                    cacheValue = value as Vector3;
+                    if (convertToRightHandedSystem && (animationChannelTargetPath !== AnimationChannelTargetPath.SCALE)) {
+                        cacheValue.z *= -1;
+                    }
+
+                    outputs.push(cacheValue.asArray());
+                }
             }
         }
 
@@ -450,8 +479,7 @@ module BABYLON.GLTF2 {
         private static _CreateLinearOrStepAnimation(babylonMesh: Mesh, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, frameDelta: number, inputs: number[], outputs: number[][], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
             animation.getKeys().forEach(function (keyFrame) {
                 inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
-                let basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(babylonMesh, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion)
-                _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, basePositionRotationOrScale, convertToRightHandedSystem, useQuaternion);
+                _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonMesh, convertToRightHandedSystem, useQuaternion);
             });
         }
 
@@ -479,8 +507,7 @@ module BABYLON.GLTF2 {
                     useQuaternion,
                     convertToRightHandedSystem
                 );
-                let basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(babylonMesh, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion)
-                _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, basePositionRotationOrScale, convertToRightHandedSystem, useQuaternion);
+                _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonMesh, convertToRightHandedSystem, useQuaternion);
 
                 _GLTFAnimation.AddSplineTangent(
                     _TangentType.OUTTANGENT,
@@ -537,12 +564,9 @@ module BABYLON.GLTF2 {
          * @param convertToRightHandedSystem 
          * @param useQuaternion 
          */
-        private static _AddKeyframeValue(keyFrame: IAnimationKey, animation: Animation, outputs: number[][], animationChannelTargetPath: AnimationChannelTargetPath, basePositionRotationOrScale: number[], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
+        private static _AddKeyframeValue(keyFrame: IAnimationKey, animation: Animation, outputs: number[][], animationChannelTargetPath: AnimationChannelTargetPath, babylonMesh: Mesh, convertToRightHandedSystem: boolean, useQuaternion: boolean) {
             let value: number[];
-            let property: Nullable<RegExpMatchArray>;
-            let factor: number;
-            let componentName: string;
-            let newPositionRotationOrScale: Vector3 | Quaternion;
+            let newPositionRotationOrScale: Nullable<Vector3 | Quaternion>;
             const animationType = animation.dataType;
             if (animationType === Animation.ANIMATIONTYPE_VECTOR3) {
                 value = keyFrame.value.asArray();
@@ -557,35 +581,14 @@ module BABYLON.GLTF2 {
                 }
             }
             else if (animationType === Animation.ANIMATIONTYPE_FLOAT) { // handles single component x, y, z or w component animation by using a base property and animating over a component.
-                property = animation.targetProperty.split('.');
-                factor = keyFrame.value as number; // the value for the x, y or z component
-                componentName = property ? property[1] : ''; // x, y, or z component
-                newPositionRotationOrScale = useQuaternion ? BABYLON.Quaternion.FromArray(basePositionRotationOrScale).normalize() : BABYLON.Vector3.FromArray(basePositionRotationOrScale);
-
-                switch (componentName) {
-                    case 'x':
-                    case 'y': {
-                        newPositionRotationOrScale[componentName] = (convertToRightHandedSystem && useQuaternion) ? -factor : factor;
-                        break;
+                newPositionRotationOrScale = this._ConvertFactorToVector3OrQuaternion(keyFrame.value as number, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion)
+                if (newPositionRotationOrScale) {
+                    if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
+                        useQuaternion ? outputs.push(newPositionRotationOrScale.normalize().asArray()) : outputs.push((newPositionRotationOrScale as Vector3).toQuaternion().normalize().asArray());
                     }
-                    case 'z': {
-                        newPositionRotationOrScale[componentName] = (convertToRightHandedSystem && !useQuaternion && !(animationChannelTargetPath === AnimationChannelTargetPath.SCALE)) ? -factor : factor;
-                        break;
+                    else {
+                        outputs.push(newPositionRotationOrScale.asArray());
                     }
-                    case 'w': {
-                        (newPositionRotationOrScale as Quaternion).w = factor;
-                        break;
-                    }
-                    default: {
-                        Tools.Error(`glTFAnimation: Unsupported component type "${componentName}" for scale animation!`);
-                    }
-                }
-
-                if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
-                    useQuaternion ? outputs.push(newPositionRotationOrScale.normalize().asArray()) : outputs.push((newPositionRotationOrScale as Vector3).toQuaternion().normalize().asArray());
-                }
-                else {
-                    outputs.push(newPositionRotationOrScale.asArray());
                 }
             }
             else if (animationType === Animation.ANIMATIONTYPE_QUATERNION) {
@@ -627,7 +630,7 @@ module BABYLON.GLTF2 {
                 }
                 else {
                     if (interpolationType) {
-                        if (interpolationType === AnimationSamplerInterpolation.CUBICSPLINE || 
+                        if (interpolationType === AnimationSamplerInterpolation.CUBICSPLINE ||
                             (key.interpolation && (key.interpolation === AnimationKeyInterpolation.STEP) && interpolationType !== AnimationSamplerInterpolation.STEP)) {
                             interpolationType = AnimationSamplerInterpolation.LINEAR;
                             shouldBakeAnimation = true;
