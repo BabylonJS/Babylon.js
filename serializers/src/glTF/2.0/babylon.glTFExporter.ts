@@ -752,7 +752,7 @@ module BABYLON.GLTF2 {
     }
 
     /**
-     * @ignore
+     * @hidden
      * 
      * Stores glTF binary data.  If the array buffer byte length is exceeded, it doubles in size dynamically
      */
