@@ -74,14 +74,11 @@ module BABYLON {
                         }
 
                         var offsetX = evt.clientX - this.previousPosition.x;
+                        if (this.camera.getScene().useRightHandedSystem) offsetX *= -1;
+                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) offsetX *= -1;
+                        this.camera.cameraRotation.y += offsetX / this.angularSensibility;
+
                         var offsetY = evt.clientY - this.previousPosition.y;
-
-                        if (this.camera.getScene().useRightHandedSystem === (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() >= 0)) {
-                            this.camera.cameraRotation.y -= offsetX / this.angularSensibility;
-                        } else {
-                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                        }
-
                         this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
                         this.previousPosition = {
@@ -106,14 +103,11 @@ module BABYLON {
                 }
 
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                if (this.camera.getScene().useRightHandedSystem) offsetX *= -1;
+                if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) offsetX *= -1;
+                this.camera.cameraRotation.y += offsetX / this.angularSensibility;
+
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-
-                if (this.camera.getScene().useRightHandedSystem === (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() >= 0)) {
-                    this.camera.cameraRotation.y -= offsetX / this.angularSensibility;
-                } else {
-                    this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                }
-
                 this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
                 this.previousPosition = null;

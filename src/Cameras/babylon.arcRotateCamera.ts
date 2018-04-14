@@ -484,12 +484,11 @@
             this.inputs.checkInputs();
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-
-                if (this.getScene().useRightHandedSystem === (this.parent && this.parent._getWorldMatrixDeterminant() >= 0)) {
-                    this.alpha -= this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
-                } else {
-                    this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
-                }
+                let inertialAlphaOffset = this.inertialAlphaOffset;
+                if (this.beta <= 0) inertialAlphaOffset *= -1;
+                if (this.getScene().useRightHandedSystem) inertialAlphaOffset *= -1;
+                if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) inertialAlphaOffset *= -1;
+                this.alpha += inertialAlphaOffset;
 
                 this.beta += this.inertialBetaOffset;
 
