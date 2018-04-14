@@ -264,6 +264,11 @@
             return Matrix.Identity();
         }
 
+        /** @hidden */
+        public _getWorldMatrixDeterminant(): number {
+            return 1;
+        }
+
         // override it in derived class if you add new variables to the cache
         // and call the parent class method
         /** @hidden */

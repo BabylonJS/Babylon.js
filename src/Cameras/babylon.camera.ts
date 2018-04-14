@@ -166,16 +166,16 @@
 
         public _activeMeshes = new SmartArray<AbstractMesh>(256);
 
-        private _globalPosition = Vector3.Zero();
+        protected _globalPosition = Vector3.Zero();
         private _frustumPlanes: Plane[];
         private _refreshFrustumPlanes = true;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
             super(name, scene);
 
             this.getScene().addCamera(this);
 
-            if (!this.getScene().activeCamera) {
+            if (setActiveOnSceneIfNoneActive && !this.getScene().activeCamera) {
                 this.getScene().activeCamera = this;
             }
 
@@ -461,23 +461,6 @@
             this._childRenderId = this._currentRenderId;
 
             this._refreshFrustumPlanes = true;
-
-            if (!this.parent || !this.parent.getWorldMatrix) {
-                this._globalPosition.copyFrom(this.position);
-            } else {
-                if (!this._worldMatrix) {
-                    this._worldMatrix = Matrix.Identity();
-                }
-
-                this._computedViewMatrix.invertToRef(this._worldMatrix);
-
-                this._worldMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._computedViewMatrix);
-                this._globalPosition.copyFromFloats(this._computedViewMatrix.m[12], this._computedViewMatrix.m[13], this._computedViewMatrix.m[14]);
-
-                this._computedViewMatrix.invert();
-
-                this._markSyncedWithParent();
-            }
 
             if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
                 this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
