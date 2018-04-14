@@ -49,25 +49,27 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        public add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): void {
-            items.forEach(item => {
-                var point: MultiLinePoint = this.push();
-
-                if (item instanceof AbstractMesh) {
-                    point.mesh = item;
-                }
-                else if (item instanceof Control) {
-                    point.control = item;
-                }
-                else if (item.x != null && item.y != null) {
-                    point.x = item.x;
-                    point.y = item.y;
-                }
-            });
+        public add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): MultiLinePoint[] {
+            return items.map(item => this.push(item));
         }
 
-        public push(): MultiLinePoint {
-            return this.getAt(this._points.length);
+        public push(item?: (AbstractMesh | Control | { x: string | number, y: string | number })): MultiLinePoint {
+            var point: MultiLinePoint = this.getAt(this._points.length);
+
+            if (item == null) return point;
+
+            if (item instanceof AbstractMesh) {
+                point.mesh = item;
+            }
+            else if (item instanceof Control) {
+                point.control = item;
+            }
+            else if (item.x != null && item.y != null) {
+                point.x = item.x;
+                point.y = item.y;
+            }
+
+            return point;
         }
 
         public remove(value: number | MultiLinePoint): void {
