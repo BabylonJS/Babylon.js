@@ -160,7 +160,7 @@
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
         private _doNotComputeProjectionMatrix = false;
-        private _worldMatrix: Matrix;
+        private _worldMatrix = Matrix.Identity();
         public _postProcesses = new Array<Nullable<PostProcess>>();
         private _transformMatrix = Matrix.Zero();
 
@@ -435,13 +435,12 @@
         }
 
         public getWorldMatrix(): Matrix {
-            if (!this._worldMatrix) {
-                this._worldMatrix = Matrix.Identity();
+            if (this._isSynchronizedViewMatrix()) {
+                return this._worldMatrix;
             }
 
-            var viewMatrix = this.getViewMatrix();
-
-            viewMatrix.invertToRef(this._worldMatrix);
+            // Getting the the view matrix will also compute the world matrix.
+            this.getViewMatrix();
 
             return this._worldMatrix;
         }
@@ -467,6 +466,8 @@
             }
 
             this.onViewMatrixChangedObservable.notifyObservers(this);
+
+            this._computedViewMatrix.invertToRef(this._worldMatrix);
 
             return this._computedViewMatrix;
         }
