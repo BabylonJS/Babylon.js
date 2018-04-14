@@ -340,8 +340,8 @@
 
         private _computationVector: Vector3 = Vector3.Zero();
 
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
-            super(name, Vector3.Zero(), scene);
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+            super(name, Vector3.Zero(), scene, setActiveOnSceneIfNoneActive);
 
             this._target = Vector3.Zero();
             if (target) {
@@ -485,7 +485,7 @@
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
 
-                if (this.getScene().useRightHandedSystem) {
+                if (this.getScene().useRightHandedSystem === (this.parent && this.parent._getWorldMatrixDeterminant() >= 0)) {
                     this.alpha -= this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 } else {
                     this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
@@ -673,11 +673,8 @@
                     up = up.negate();
                 }
 
-                if (this.getScene().useRightHandedSystem) {
-                    Matrix.LookAtRHToRef(this.position, target, up, this._viewMatrix);
-                } else {
-                    Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
-                }
+                this._computeViewMatrix(this.position, target, up);
+
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }

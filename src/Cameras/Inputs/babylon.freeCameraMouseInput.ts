@@ -76,7 +76,7 @@ module BABYLON {
                         var offsetX = evt.clientX - this.previousPosition.x;
                         var offsetY = evt.clientY - this.previousPosition.y;
 
-                        if (this.camera.getScene().useRightHandedSystem) {
+                        if (this.camera.getScene().useRightHandedSystem === (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() >= 0)) {
                             this.camera.cameraRotation.y -= offsetX / this.angularSensibility;
                         } else {
                             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
@@ -108,7 +108,7 @@ module BABYLON {
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
-                if (this.camera.getScene().useRightHandedSystem) {
+                if (this.camera.getScene().useRightHandedSystem === (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() >= 0)) {
                     this.camera.cameraRotation.y -= offsetX / this.angularSensibility;
                 } else {
                     this.camera.cameraRotation.y += offsetX / this.angularSensibility;
