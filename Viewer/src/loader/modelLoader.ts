@@ -1,8 +1,10 @@
 import { AbstractViewer } from "../viewer/viewer";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags, GLTFLoaderAnimationStartMode } from "babylonjs";
 import { GLTFFileLoader } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
-import { ViewerModel, ModelState } from "./viewerModel";
+import { ViewerModel, ModelState } from "../model/viewerModel";
+import { ILoaderPlugin } from './plugins/loaderPlugin';
+import { TelemetryLoaderPlugin } from './plugins/telemetryLoaderPlugin';
 
 /**
  * An instance of the class is in charge of loading the model correctly.
@@ -17,6 +19,8 @@ export class ModelLoader {
 
     private _loaders: Array<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
 
+    private _plugins: Array<ILoaderPlugin>;
+
     /**
      * Create a new Model loader
      * @param _viewer the viewer using this model loader
@@ -24,6 +28,13 @@ export class ModelLoader {
     constructor(private _viewer: AbstractViewer) {
         this._loaders = [];
         this._loadId = 0;
+        this._plugins = [];
+
+        this.addPlugin(new TelemetryLoaderPlugin());
+    }
+
+    public addPlugin(plugin: ILoaderPlugin) {
+        this._plugins.push(plugin);
     }
 
     /**
@@ -58,19 +69,30 @@ export class ModelLoader {
                 model.addAnimationGroup(animationGroup);
             }
 
+            this._checkAndRun("onLoaded", model);
             model.onLoadedObservable.notifyObserversWithPromise(model);
         }, (progressEvent) => {
+            this._checkAndRun("onProgress", progressEvent);
             model.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
-        }, (e, m, exception) => {
+        }, (scene, m, exception) => {
             model.state = ModelState.ERROR;
             Tools.Error("Load Error: There was an error loading the model. " + m);
+            this._checkAndRun("onError", m, exception);
             model.onLoadErrorObservable.notifyObserversWithPromise({ message: m, exception: exception });
         }, plugin)!;
 
         if (model.loader.name === "gltf") {
             let gltfLoader = (<GLTFFileLoader>model.loader);
-            gltfLoader.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE;
+            gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
+            gltfLoader.compileMaterials = true;
+            Object.keys(gltfLoader).filter(name => name.indexOf('on') === 0 && name.indexOf('Observable') !== -1).forEach(functionName => {
+                gltfLoader[functionName].add((payload) => {
+                    this._checkAndRun(functionName.replace("Observable", ''), payload);
+                });
+            });
         }
+
+        this._checkAndRun("onInit", model.loader, model);
 
         this._loaders.push(model.loader);
 
@@ -101,5 +123,13 @@ export class ModelLoader {
         });
         this._loaders.length = 0;
         this._disposed = true;
+    }
+
+    private _checkAndRun(functionName: string, ...payload: Array<any>) {
+        this._plugins.filter(p => p[functionName]).forEach(plugin => {
+            try {
+                plugin[functionName].apply(this, payload);
+            } catch (e) { }
+        })
     }
 }

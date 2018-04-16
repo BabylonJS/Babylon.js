@@ -5,7 +5,7 @@ import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
 import { telemetryManager } from './telemetryManager';
-import { ModelLoader } from './model/modelLoader';
+import { ModelLoader } from './loader/modelLoader';
 import { ViewerModel, ModelState } from './model/viewerModel';
 import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
 

@@ -8,11 +8,11 @@ import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration,
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
-import { ModelLoader } from '../model/modelLoader';
+import { ModelLoader } from '../loader/modelLoader';
 import { CameraBehavior } from '../interfaces';
 import { viewerGlobals } from '../configuration/globals';
 import { extendClassWithConfig } from '../helper';
-import { telemetryManager } from '..';
+import { telemetryManager } from '../telemetryManager';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
