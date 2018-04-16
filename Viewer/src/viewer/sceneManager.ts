@@ -381,7 +381,7 @@ export class SceneManager {
             let newTarget = this.camera.target.clone();
             extendClassWithConfig(newTarget, cameraConfig.target);
             this.camera.setTarget(newTarget);
-        } else if (model) {
+        } else if (model && !cameraConfig.disableAutoFocus) {
             const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
             const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
             const halfSizeVec = sizeVec.scale(0.5);

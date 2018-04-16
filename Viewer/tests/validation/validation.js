@@ -186,9 +186,24 @@ function runTest(index, done) {
     configuration.engine.engineOptions.preserveDrawingBuffer = true;
 
     //cancel camera behvaviors for the tests
-    if (configuration.camera && configuration.camera.behaviors) {
-        delete configuration.camera.behaviors;
+    configuration.camera = configuration.camera || {};
+    configuration.camera.behaviors = null;
+
+    // make sure we use only local assets
+    configuration.skybox = {
+        cubeTexture: {
+            url: "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds"
+        }
     }
+
+    //envirnonment directory
+    configuration.lab = configuration.lab || {};
+    configuration.lab.environmentAssetsRootURL = "/dist/assets/environment/";
+
+    //model config
+    configuration.model = configuration.model || {};
+    configuration.model.castShadow = !test.createMesh
+
 
     // create a new viewer
     currentViewer && currentViewer.dispose();
@@ -202,24 +217,23 @@ function runTest(index, done) {
         var currentFrame = 0;
         var waitForFrame = test.waitForFrame || 1;
 
-        if (test.createMesh) {
+        if (test.model) {
+            currentViewer.initModel(test.model);
+        } else if (test.createMesh) {
             prepareMeshForViewer(currentViewer, configuration, test);
-            currentViewer.sceneManager.scene.executeWhenReady(() => {
-                currentViewer.onFrameRenderedObservable.add(() => {
-                    if (currentFrame === waitForFrame) {
-                        evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
-                    }
-                    currentFrame++;
-                });
-            });
-        } else {
+        }
+
+        currentViewer.onModelLoadedObservable.add(() => {
             currentViewer.onFrameRenderedObservable.add(() => {
                 if (currentFrame === waitForFrame) {
-                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    currentViewer.sceneManager.scene.executeWhenReady(() => {
+                        evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    });
                 }
                 currentFrame++;
             });
-        }
+
+        })
     });
 }
 

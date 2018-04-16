@@ -72,6 +72,9 @@
             "title": "BrainStem transformation",
             "configuration": {
                 "extends": "extended",
+                "camera": {
+                    "disableAutoFocus": true
+                },
                 "model": {
                     "position": {
                         "x": 0.2,
