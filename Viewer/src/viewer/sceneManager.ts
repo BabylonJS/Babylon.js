@@ -786,6 +786,14 @@ export class SceneManager {
      */
     public dispose() {
 
+        // this.onCameraConfiguredObservable.clear();
+        this.onEnvironmentConfiguredObservable.clear();
+        this.onLightsConfiguredObservable.clear();
+        this.onModelsConfiguredObservable.clear();
+        this.onSceneConfiguredObservable.clear();
+        this.onSceneInitObservable.clear();
+        this.onSceneOptimizerConfiguredObservable.clear();
+
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();
             this.sceneOptimizer.dispose();
