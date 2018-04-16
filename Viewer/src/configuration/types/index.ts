@@ -1,6 +1,6 @@
 import { minimalConfiguration } from './minimal';
 import { defaultConfiguration } from './default';
-import { extendedDefaultConfiguration } from './extendedDefault';
+import { extendedConfiguration } from './extended';
 import { ViewerConfiguration } from '../configuration';
 import * as deepmerge from '../../../assets/deepmerge.min.js';
 
@@ -10,8 +10,8 @@ let getConfigurationType = function (type: string): ViewerConfiguration {
         case 'default':
             config = defaultConfiguration;
             break;
-        case 'extendedDefault':
-            config = extendedDefaultConfiguration;
+        case 'extended':
+            config = extendedConfiguration;
             break;
         case 'minimal':
             config = minimalConfiguration;

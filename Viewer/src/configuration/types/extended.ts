@@ -1,13 +1,15 @@
 import { ViewerConfiguration } from './../configuration';
 
-export let extendedDefaultConfiguration: ViewerConfiguration = {
+export let extendedConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     extends: "default",
     camera: {
-        radius: 2,
+        radius: 1.8,
         alpha: -1.5708,
         beta: Math.PI * 0.5 - 0.2618,
-        pinchPrecision: 1500
+        wheelPrecision: 300,
+        minZ: 0.1,
+        maxZ: 50,
     },
     lights: {
         "light1": {
@@ -98,7 +100,9 @@ export let extendedDefaultConfiguration: ViewerConfiguration = {
             directIntensity: 0.884,
             emissiveIntensity: 1.04,
             environmentIntensity: 0.268
-        }
+        },
+        normalize: true,
+        castShadow: true
     },
     lab: {
         environmentAssetsRootURL: '/assets/environment/',
