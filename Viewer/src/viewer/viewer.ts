@@ -12,6 +12,7 @@ import { ModelLoader } from '../model/modelLoader';
 import { CameraBehavior } from '../interfaces';
 import { viewerGlobals } from '../configuration/globals';
 import { extendClassWithConfig } from '../helper';
+import { telemetryManager } from '..';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -385,6 +386,8 @@ export abstract class AbstractViewer {
             this.sceneManager.scene.activeCamera.detachControl(this.canvas);
         }
 
+        this._fpsTimeout && clearTimeout(this._fpsTimeout);
+
 
         this.sceneManager.dispose();
 
@@ -569,6 +572,26 @@ export abstract class AbstractViewer {
                 });
             });
         })
+    }
+
+    private _fpsTimeout: number;
+
+    protected initTelemetryEvents() {
+        telemetryManager.broadcast("Engine Capabilities", this, this.engine.getCaps());
+        telemetryManager.broadcast("Platform Details", this, {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform
+        });
+
+        telemetryManager.flushWebGLErrors(this);
+
+        let trackFPS: Function = () => {
+            telemetryManager.broadcast("Current FPS", this, { fps: this.engine.getFps() });
+        };
+
+        trackFPS();
+        // Track the FPS again after 60 seconds
+        this._fpsTimeout = window.setTimeout(trackFPS, 60 * 1000);
     }
 
     /**

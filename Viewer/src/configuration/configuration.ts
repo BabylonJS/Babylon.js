@@ -85,6 +85,7 @@ export interface ViewerConfiguration {
 }
 
 export interface IModelConfiguration {
+    id?: string;
     url?: string;
     root?: string; //optional
     loader?: string; // obj, gltf?
