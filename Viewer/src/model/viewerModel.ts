@@ -104,6 +104,13 @@ export class ViewerModel implements IDisposable {
     }
 
     /**
+     * Get the viewer showing this model
+     */
+    public getViewer() {
+        return this._viewer;
+    }
+
+    /**
      * Add a mesh to this model.
      * Any mesh that has no parent will be provided with the root mesh as its new parent.
      * 
