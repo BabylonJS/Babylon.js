@@ -98,7 +98,6 @@ export class ViewerModel implements IDisposable {
         this._viewer.sceneManager.models.push(this);
         this._viewer.onModelAddedObservable.notifyObservers(this);
         this.onLoadedObservable.add(() => {
-            this._configureModel();
             this._viewer.onModelLoadedObservable.notifyObservers(this);
             this._initAnimations();
         });
@@ -247,7 +246,7 @@ export class ViewerModel implements IDisposable {
 
     private _configureModel() {
         // this can be changed to the meshes that have rootMesh a parent without breaking anything.
-        let meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh] //this._meshes.filter(m => m === this.rootMesh);
+        let meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh] //this._meshes.filter(m => m.parent === this.rootMesh);
         let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach(mesh => {
                 if (param) {
@@ -345,7 +344,7 @@ export class ViewerModel implements IDisposable {
                     mesh.position = center.scale(-1);
 
                     // Set on ground.
-                    mesh.position.y += halfSizeVec.y;
+                    //mesh.position.y = 0;
 
                     // Recompute Info.
                     mesh.computeWorldMatrix(true);
@@ -354,7 +353,6 @@ export class ViewerModel implements IDisposable {
         }
 
         let meshes = this.rootMesh.getChildMeshes(false);
-        meshes.push(this.rootMesh);
         meshes.filter(m => m.material).forEach((mesh) => {
             this._applyModelMaterialConfiguration(mesh.material!);
         });

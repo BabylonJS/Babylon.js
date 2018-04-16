@@ -86,15 +86,6 @@ export class SceneManager {
             this._handleHardwareLimitations();
         });
 
-        this._viewer.onModelLoadedObservable.add((model) => {
-            this._configureLights(this._viewer.configuration.lights, model);
-
-            if (this._viewer.configuration.camera || !this.scene.activeCamera) {
-                this._configureCamera(this._viewer.configuration.camera || {}, model);
-            }
-            return this._initEnvironment(model);
-        });
-
         this.labs = new ViewerLabs(this);
     }
 
@@ -184,7 +175,7 @@ export class SceneManager {
      * @param newConfiguration the delta that should be configured. This includes only the changes
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration, model?: ViewerModel) {
 
         if (newConfiguration.lab) {
             if (newConfiguration.lab.environmentAssetsRootURL) {
@@ -228,19 +219,9 @@ export class SceneManager {
             }
         }
 
-
-
         // optimizer
         if (newConfiguration.optimizer) {
             this._configureOptimizer(newConfiguration.optimizer);
-        }
-
-        // lights
-        this._configureLights(newConfiguration.lights);
-
-        // environment
-        if (newConfiguration.skybox !== undefined || newConfiguration.ground !== undefined) {
-            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
         }
 
         // configure model
@@ -248,8 +229,16 @@ export class SceneManager {
             this._configureModel(newConfiguration.model);
         }
 
+        // lights
+        this._configureLights(newConfiguration.lights, model);
+
+        // environment
+        if (newConfiguration.skybox !== undefined || newConfiguration.ground !== undefined) {
+            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground, model);
+        }
+
         // camera
-        this._configureCamera(newConfiguration.camera);
+        this._configureCamera(newConfiguration.camera, model);
     }
 
 
@@ -380,6 +369,7 @@ export class SceneManager {
         if (!this.scene.activeCamera) {
             this.scene.createDefaultCamera(true, true, true);
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
+            this.camera.setTarget(Vector3.Zero());
         }
         if (cameraConfig.position) {
             let newPosition = this.camera.position.clone();
@@ -389,8 +379,14 @@ export class SceneManager {
 
         if (cameraConfig.target) {
             let newTarget = this.camera.target.clone();
-            extendClassWithConfig(newTarget, cameraConfig.position);
+            extendClassWithConfig(newTarget, cameraConfig.target);
             this.camera.setTarget(newTarget);
+        } else if (model) {
+            const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
+            const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+            const halfSizeVec = sizeVec.scale(0.5);
+            const center = boundingInfo.min.add(halfSizeVec);
+            this.camera.setTarget(center);
         }
 
         if (cameraConfig.rotation) {
@@ -414,7 +410,7 @@ export class SceneManager {
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
         const sceneDiagonalLenght = sceneDiagonal.length();
         if (isFinite(sceneDiagonalLenght))
-            this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
+            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
 
         this.onCameraConfiguredObservable.notifyObservers({
             sceneManager: this,
@@ -433,11 +429,20 @@ export class SceneManager {
             return Promise.resolve(this.scene);
         }
 
+
         const options: Partial<IEnvironmentHelperOptions> = {
             createGround: !!groundConfiguration,
             createSkybox: !!skyboxConifguration,
-            setupImageProcessing: false // will be done at the scene level!
+            setupImageProcessing: false, // will be done at the scene level!,
         };
+
+        if (model) {
+            const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
+            const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+            const halfSizeVec = sizeVec.scale(0.5);
+            const center = boundingInfo.min.add(halfSizeVec);
+            options.groundYBias = -center.y;
+        }
 
         if (groundConfiguration) {
             let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
@@ -574,7 +579,7 @@ export class SceneManager {
         if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
             lightsAvailable.forEach(lName => {
                 if (lightsToConfigure.indexOf(lName) === -1) {
-                    this.scene.getLightByName(lName)!.dispose()
+                    this.scene.getLightByName(lName)!.dispose();
                 }
             });
         }
