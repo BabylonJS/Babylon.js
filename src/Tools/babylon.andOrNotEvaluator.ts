@@ -1,5 +1,14 @@
 ﻿module BABYLON {
+    /**
+     * Class used to evalaute queries containing `and` and `or` operators
+     */
     export class AndOrNotEvaluator {
+        /**
+         * Evaluate a query
+         * @param query defines the query to evaluate
+         * @param evaluateCallback defines the callback used to filter result
+         * @returns true if the query matches
+         */
         public static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean {
             if (!query.match(/\([^\(\)]*\)/g)) {
                 query = AndOrNotEvaluator._HandleParenthesisContent(query, evaluateCallback);

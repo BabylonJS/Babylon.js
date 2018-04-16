@@ -92,11 +92,6 @@ if (BABYLON.Engine.isSupported()) {
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
-        // removing glTF created camera
-        if (currentScene.activeCamera && currentPluginName === "gltf") {
-            currentScene.activeCamera.dispose();
-            currentScene.activeCamera = null;
-        }
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
@@ -265,7 +260,7 @@ if (BABYLON.Engine.isSupported()) {
 
     window.addEventListener("keydown", function (evt) {
         // Press Esc to toggle footer
-        if (evt.keyCode === 27) {
+        if (evt.keyCode === 27 &&!enableDebugLayer) {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
             }
