@@ -52,6 +52,10 @@ export interface ViewerConfiguration {
         }
     }
 
+    loaderPlugins?: {
+        [propName: string]: boolean;
+    };
+
     // features that are being tested.
     // those features' syntax will change and move out! 
     // Don't use in production (or be ready to make the changes :) )
