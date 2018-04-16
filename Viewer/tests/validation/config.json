@@ -5,15 +5,17 @@
             "title": "Control",
             "createMesh": true,
             "configuration": {
-                "extends": "minimal"
-            }
+                "extends": "extended"
+            },
+            "referenceImage": "Control.png"
         },
         {
             "title": "Diffuse",
             "createMesh": true,
             "createMaterial": true,
             "configuration": {
-                "extends": "minimal",
+                "extends": "extended",
+                "castShadow": true,
                 "model": {
                     "material": {
                         "albedoColor": {
@@ -29,59 +31,65 @@
                         "microSurface": 0
                     }
                 }
-            }
-        },
-        {
-            "title": "Basic Helmet",
-            "configuration": {
-                "extends": "minimal",
-                "model": {
-                    "title": "Basic Helmet",
-                    "url": "/dist/assets/BrainStem/BrainStem.gltf"
-                }
             },
-            "referenceImage": "basicHelmet.png"
+            "referenceImage": "Diffuse.png"
         },
         {
-            "title": "Basic Helmet default",
+            "title": "BrainStem",
             "configuration": {
-                "extends": "default",
-                "model": {
-                    "title": "Basic Helmet",
-                    "url": "/dist/assets/BrainStem/BrainStem.gltf"
-                }
-            },
-            "waitForFrame": 300,
-            "referenceImage": "basicHelmetDefault.png"
-        },
-        {
-            "title": "Basic helmet transformation",
-            "configuration": {
-                "extends": "minimal",
-                "model": {
-                    "title": "Basic Helmet",
-                    "url": "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf",
-                    "position": {
-                        "x": 20,
-                        "y": 10
-                    },
-                    "rotation": {
-                        "y": -0.3
+                "extends": "extended",
+                "skybox": {
+                    "cubeTexture": {
+                        "url": "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds",
+                        "gammaSpace": false
                     }
                 }
             },
-            "referenceImage": "basicHelmetTransformation.png"
+            "model": "/dist/assets/BrainStem/BrainStem.gltf",
+            "referenceImage": "BrainStem.png"
         },
         {
-            "title": "Position",
+            "title": "BrainStem Animation",
             "configuration": {
-                "extends": "default",
+                "extends": "extended",
+                "skybox": {
+                    "cubeTexture": {
+                        "url": "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds",
+                        "gammaSpace": false
+                    }
+                },
                 "model": {
-                    "title": "Basic Helmet",
-                    "url": "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                    "animation": {
+                        "autoStart": true
+                    }
                 }
             },
-            "referenceImage": "basicHelmetDefault.png"
+            "waitForFrame": 80,
+            "model": "/dist/assets/BrainStem/BrainStem.gltf",
+            "referenceImage": "BrainStemAnimation1.png"
+        },
+        {
+            "title": "BrainStem transformation",
+            "configuration": {
+                "extends": "extended",
+                "model": {
+                    "position": {
+                        "x": 0.2,
+                        "y": 0
+                    },
+                    "rotation": {
+                        "y": 0.9
+                    }
+                },
+                "skybox": {
+                    "cubeTexture": {
+                        "url": "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds",
+                        "gammaSpace": false
+                    }
+                }
+            },
+            "model": "/dist/assets/BrainStem/BrainStem.gltf",
+            "referenceImage": "BrainStemTransformation.png"
         }
     ]
 }
