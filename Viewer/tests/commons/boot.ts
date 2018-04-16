@@ -69,23 +69,10 @@ export class Boot {
         });
     }
 
-    /*private static loadSync(url: string): string {
-        var req = new XMLHttpRequest();
-        req.open('GET', url, false);
-        req.send();
-        if (req.status >= 200 && req.status < 300) {
-            //successful request
-            return req.responseText;
-        } else {
-            //failed request
-            console.error(req.status + ' ' + req.statusText);
-            return null;
-        }
-    }*/
-
 }
 
 if (!useNullEngine) {
+    console.log("mocking webgl");
     webglSupport();
 }
 export var main = Boot.main;

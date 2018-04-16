@@ -137,12 +137,14 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             window.addEventListener('resize', this._resize);
         }
 
-        this.engine.runRenderLoop(this._render);
-
         if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
+
+        this.engine.createCubeTexture = <any>function () { };
+
+        this.engine.dispose = function () { };
 
         return Promise.resolve(this.engine);
     }
@@ -172,13 +174,14 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             window.addEventListener('resize', this._resize);
         }
 
-
-        this.engine.runRenderLoop(this._render);
-
         if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
+
+        this.engine.createCubeTexture = <any>function () { };
+
+        this.engine.dispose = function () { };
 
         return Promise.resolve(this.engine);
     }

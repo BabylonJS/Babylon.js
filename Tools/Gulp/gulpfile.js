@@ -1055,7 +1055,7 @@ var rmDir = function (dirPath) {
  * Launches the viewer's KARMA validation tests in chrome in order to debug them.
  * (Can only be launch locally.)
  */
-gulp.task("tests-viewer-validation-karma", function (done) {
+gulp.task("tests-viewer-validation-karma", ["tests-viewer-transpile"], function (done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/validation/karma.conf.js",
         singleRun: false
@@ -1068,22 +1068,27 @@ gulp.task("tests-viewer-validation-karma", function (done) {
 /**
  * Transpiles viewer typescript unit tests. 
  */
-gulp.task("tests-viewer-unit-transpile", function (done) {
+gulp.task("tests-viewer-transpile", function (done) {
 
     let wpBuild = webpack(require('../../Viewer/tests/unit/webpack.config.js'));
 
     // clean the built directory
-    rmDir("../../Viewer/tests/unit/build/");
+    rmDir("../../Viewer/tests/build/");
 
     return wpBuild
-        .pipe(gulp.dest("../../Viewer/tests/unit/build/"));
+        .pipe(rename(function (path) {
+            if (path.extname === '.js') {
+                path.basename = "test";
+            }
+        }))
+        .pipe(gulp.dest("../../Viewer/tests/build/"));
 });
 
 /**
- * Launches the KARMA unit tests in phantomJS.
- * (Can only be launch on any branches.)
+ * Launches the KARMA unit tests in chrome.
+ * (Can be launch on any branches.)
  */
-gulp.task("tests-viewer-unit-debug", ["tests-viewer-unit-transpile"], function (done) {
+gulp.task("tests-viewer-unit-debug", ["tests-viewer-transpile"], function (done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
         singleRun: false,
@@ -1096,9 +1101,9 @@ gulp.task("tests-viewer-unit-debug", ["tests-viewer-unit-transpile"], function (
 
 /**
  * Launches the KARMA unit tests in phantomJS.
- * (Can only be launch on any branches.)
+ * (Can be launch on any branches.)
  */
-gulp.task("tests-viewer-unit", ["tests-viewer-unit-transpile"], function (done) {
+gulp.task("tests-viewer-unit", ["tests-viewer-transpile"], function (done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
         singleRun: true

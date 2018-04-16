@@ -5,11 +5,11 @@ module.exports = {
     entry: {
         'test': __dirname + '/src/index.ts'
     },
-    /*output: {
-        libraryTarget: 'var',
-        library: 'ViewerTests',
+    output: {
+        libraryTarget: 'umd',
+        library: 'BabylonViewer',
         umdNamedDefine: true
-    },*/
+    },
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
