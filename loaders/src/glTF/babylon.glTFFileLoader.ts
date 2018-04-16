@@ -131,6 +131,11 @@ module BABYLON {
         onMaterialLoadedObservable: Observable<Material>;
 
         /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        onCameraLoadedObservable: Observable<Camera>;
+
+        /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
@@ -295,6 +300,23 @@ module BABYLON {
         }
 
         /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        public readonly onCameraLoadedObservable = new Observable<Camera>();
+
+        private _onCameraLoadedObserver: Nullable<Observer<Camera>>;
+
+        /**
+         * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        public set onCameraLoaded(callback: (camera: Camera) => void) {
+            if (this._onCameraLoadedObserver) {
+                this.onCameraLoadedObservable.remove(this._onCameraLoadedObserver);
+            }
+            this._onCameraLoadedObserver = this.onCameraLoadedObservable.add(callback);
+        }
+
+        /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
@@ -396,6 +418,9 @@ module BABYLON {
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
+            this.onCameraLoadedObservable.clear();
+            this.onCompleteObservable.clear();
+            this.onExtensionLoadedObservable.clear();
 
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
@@ -538,12 +563,18 @@ module BABYLON {
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
-            loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
+            loader.onCameraLoadedObservable.add(camera => this.onCameraLoadedObservable.notifyObservers(camera));
+
+            loader.onExtensionLoadedObservable.add(extension => {
+                this.onExtensionLoadedObservable.notifyObservers(extension);
+                this.onExtensionLoadedObservable.clear();
+            });
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();
                 this.onTextureLoadedObservable.clear();
                 this.onMaterialLoadedObservable.clear();
+                this.onCameraLoadedObservable.clear();
 
                 this.onCompleteObservable.notifyObservers(this);
                 this.onCompleteObservable.clear();
