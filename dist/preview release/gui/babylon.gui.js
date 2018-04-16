@@ -5296,22 +5296,23 @@ var BABYLON;
                 for (var _i = 0; _i < arguments.length; _i++) {
                     items[_i] = arguments[_i];
                 }
-                items.forEach(function (item) {
-                    var point = _this.push();
-                    if (item instanceof BABYLON.AbstractMesh) {
-                        point.mesh = item;
-                    }
-                    else if (item instanceof GUI.Control) {
-                        point.control = item;
-                    }
-                    else if (item.x != null && item.y != null) {
-                        point.x = item.x;
-                        point.y = item.y;
-                    }
-                });
+                return items.map(function (item) { return _this.push(item); });
             };
-            MultiLine.prototype.push = function () {
-                return this.getAt(this._points.length);
+            MultiLine.prototype.push = function (item) {
+                var point = this.getAt(this._points.length);
+                if (item == null)
+                    return point;
+                if (item instanceof BABYLON.AbstractMesh) {
+                    point.mesh = item;
+                }
+                else if (item instanceof GUI.Control) {
+                    point.control = item;
+                }
+                else if (item.x != null && item.y != null) {
+                    point.x = item.x;
+                    point.y = item.y;
+                }
+                return point;
             };
             MultiLine.prototype.remove = function (value) {
                 var index;

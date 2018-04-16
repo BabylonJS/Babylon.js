@@ -110,6 +110,10 @@ declare module BABYLON {
          */
         onMaterialLoadedObservable: Observable<Material>;
         /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        onCameraLoadedObservable: Observable<Camera>;
+        /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
@@ -221,6 +225,15 @@ declare module BABYLON {
          * Callback raised when the loader creates a material after parsing the glTF properties of the material.
          */
         onMaterialLoaded: (material: Material) => void;
+        /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        readonly onCameraLoadedObservable: Observable<Camera>;
+        private _onCameraLoadedObserver;
+        /**
+         * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        onCameraLoaded: (camera: Camera) => void;
         /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -734,6 +747,7 @@ declare module BABYLON.GLTF1 {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onCameraLoadedObservable: Observable<Camera>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         /**

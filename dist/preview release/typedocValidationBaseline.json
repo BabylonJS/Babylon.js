@@ -1,8 +1,8 @@
 {
-  "errors": 4590,
+  "errors": 4354,
   "babylon.typedoc.json": {
-    "errors": 4590,
-     "Animatable": {
+    "errors": 4354,
+    "Animatable": {
       "Class": {
         "Comments": {
           "MissingText": true
@@ -19117,22 +19117,12 @@
             "MissingText": true
           }
         },
-        "_lookAtTemp": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "_referencePoint": {
           "Comments": {
             "MissingText": true
           }
         },
         "_reset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_tempMatrix": {
           "Comments": {
             "MissingText": true
           }

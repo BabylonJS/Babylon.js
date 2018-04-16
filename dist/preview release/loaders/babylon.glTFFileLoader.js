@@ -96,6 +96,10 @@ var BABYLON;
              */
             this.onMaterialLoadedObservable = new BABYLON.Observable();
             /**
+             * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+             */
+            this.onCameraLoadedObservable = new BABYLON.Observable();
+            /**
              * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
              * For assets with LODs, raised when all of the LODs are complete.
              * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
@@ -176,6 +180,19 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GLTFFileLoader.prototype, "onCameraLoaded", {
+            /**
+             * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+             */
+            set: function (callback) {
+                if (this._onCameraLoadedObserver) {
+                    this.onCameraLoadedObservable.remove(this._onCameraLoadedObserver);
+                }
+                this._onCameraLoadedObserver = this.onCameraLoadedObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GLTFFileLoader.prototype, "onComplete", {
             /**
              * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
@@ -248,6 +265,9 @@ var BABYLON;
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
+            this.onCameraLoadedObservable.clear();
+            this.onCompleteObservable.clear();
+            this.onExtensionLoadedObservable.clear();
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         };
@@ -372,11 +392,16 @@ var BABYLON;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
-            loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
+            loader.onCameraLoadedObservable.add(function (camera) { return _this.onCameraLoadedObservable.notifyObservers(camera); });
+            loader.onExtensionLoadedObservable.add(function (extension) {
+                _this.onExtensionLoadedObservable.notifyObservers(extension);
+                _this.onExtensionLoadedObservable.clear();
+            });
             loader.onCompleteObservable.add(function () {
                 _this.onMeshLoadedObservable.clear();
                 _this.onTextureLoadedObservable.clear();
                 _this.onMaterialLoadedObservable.clear();
+                _this.onCameraLoadedObservable.clear();
                 _this.onCompleteObservable.notifyObservers(_this);
                 _this.onCompleteObservable.clear();
             });
@@ -1381,7 +1406,7 @@ var BABYLON;
                 var camera = gltfRuntime.cameras[node.camera];
                 if (camera) {
                     if (camera.type === "orthographic") {
-                        var orthoCamera = new BABYLON.FreeCamera(node.camera, BABYLON.Vector3.Zero(), gltfRuntime.scene);
+                        var orthoCamera = new BABYLON.FreeCamera(node.camera, BABYLON.Vector3.Zero(), gltfRuntime.scene, false);
                         orthoCamera.name = node.name || "";
                         orthoCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
                         orthoCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
@@ -1389,7 +1414,7 @@ var BABYLON;
                     }
                     else if (camera.type === "perspective") {
                         var perspectiveCamera = camera[camera.type];
-                        var persCamera = new BABYLON.FreeCamera(node.camera, BABYLON.Vector3.Zero(), gltfRuntime.scene);
+                        var persCamera = new BABYLON.FreeCamera(node.camera, BABYLON.Vector3.Zero(), gltfRuntime.scene, false);
                         persCamera.name = node.name || "";
                         persCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
                         if (!perspectiveCamera.aspectRatio) {
@@ -1947,6 +1972,7 @@ var BABYLON;
                 this.onMeshLoadedObservable = new BABYLON.Observable();
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
+                this.onCameraLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
                 this.onExtensionLoadedObservable = new BABYLON.Observable();
                 /**
@@ -2850,6 +2876,10 @@ var BABYLON;
                  */
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
                 /**
+                 * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+                 */
+                this.onCameraLoadedObservable = new BABYLON.Observable();
+                /**
                  * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
                  * For assets with LODs, raised when all of the LODs are complete.
                  * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
@@ -3223,6 +3253,10 @@ var BABYLON;
                     var mesh = GLTFLoader._GetProperty(context + "/mesh", this._gltf.meshes, node.mesh);
                     promises.push(this._loadMeshAsync("#/meshes/" + mesh._index, node, mesh, babylonMesh));
                 }
+                if (node.camera != undefined) {
+                    var camera = GLTFLoader._GetProperty(context + "/camera", this._gltf.cameras, node.camera);
+                    this._loadCamera("#/cameras/" + camera._index, camera, babylonMesh);
+                }
                 if (node.children) {
                     for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
                         var index = _a[_i];
@@ -3509,6 +3543,40 @@ var BABYLON;
                 return node.matrix ?
                     BABYLON.Matrix.FromArray(node.matrix) :
                     BABYLON.Matrix.Compose(node.scale ? BABYLON.Vector3.FromArray(node.scale) : BABYLON.Vector3.One(), node.rotation ? BABYLON.Quaternion.FromArray(node.rotation) : BABYLON.Quaternion.Identity(), node.translation ? BABYLON.Vector3.FromArray(node.translation) : BABYLON.Vector3.Zero());
+            };
+            GLTFLoader.prototype._loadCamera = function (context, camera, babylonMesh) {
+                var babylonCamera = new BABYLON.FreeCamera(camera.name || "camera" + camera._index, BABYLON.Vector3.Zero(), this._babylonScene, false);
+                babylonCamera.parent = babylonMesh;
+                babylonCamera.rotation = new BABYLON.Vector3(0, Math.PI, 0);
+                switch (camera.type) {
+                    case "perspective" /* PERSPECTIVE */: {
+                        var perspective = camera.perspective;
+                        if (!perspective) {
+                            throw new Error(context + ": Camera perspective properties are missing");
+                        }
+                        babylonCamera.fov = perspective.yfov;
+                        babylonCamera.minZ = perspective.znear;
+                        babylonCamera.maxZ = perspective.zfar || Number.MAX_VALUE;
+                        break;
+                    }
+                    case "orthographic" /* ORTHOGRAPHIC */: {
+                        if (!camera.orthographic) {
+                            throw new Error(context + ": Camera orthographic properties are missing");
+                        }
+                        babylonCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                        babylonCamera.orthoLeft = -camera.orthographic.xmag;
+                        babylonCamera.orthoRight = camera.orthographic.xmag;
+                        babylonCamera.orthoBottom = -camera.orthographic.ymag;
+                        babylonCamera.orthoTop = camera.orthographic.ymag;
+                        babylonCamera.minZ = camera.orthographic.znear;
+                        babylonCamera.maxZ = camera.orthographic.zfar;
+                        break;
+                    }
+                    default: {
+                        throw new Error(context + ": Invalid camera type (" + camera.type + ")");
+                    }
+                }
+                this.onCameraLoadedObservable.notifyObservers(babylonCamera);
             };
             GLTFLoader.prototype._loadAnimationsAsync = function () {
                 var animations = this._gltf.animations;
@@ -4254,6 +4322,7 @@ var BABYLON;
                 this.onMeshLoadedObservable.clear();
                 this.onTextureLoadedObservable.clear();
                 this.onMaterialLoadedObservable.clear();
+                this.onCameraLoadedObservable.clear();
             };
             /** @hidden */
             GLTFLoader.prototype._applyExtensions = function (actionAsync) {

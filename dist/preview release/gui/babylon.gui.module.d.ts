@@ -898,8 +898,11 @@ declare module BABYLON.GUI {
         add(...items: (AbstractMesh | Control | {
             x: string | number;
             y: string | number;
-        })[]): void;
-        push(): MultiLinePoint;
+        })[]): MultiLinePoint[];
+        push(item?: (AbstractMesh | Control | {
+            x: string | number;
+            y: string | number;
+        })): MultiLinePoint;
         remove(value: number | MultiLinePoint): void;
         lineWidth: number;
         horizontalAlignment: number;
