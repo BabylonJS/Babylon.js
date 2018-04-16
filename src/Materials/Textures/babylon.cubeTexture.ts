@@ -164,7 +164,11 @@
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
-                return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                var prefiltered:boolean = false;
+                if (parsedTexture.prefiltered) {
+                    prefiltered = parsedTexture.prefiltered;
+                }
+                return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, null, null, null, undefined, prefiltered);
             }, parsedTexture, scene);
 
             // Local Cubemaps
