@@ -146,6 +146,14 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._viewer.engine);
 
+        var defaultMaterial = new BABYLON.PBRMaterial('default-material', this.scene);
+        defaultMaterial.environmentBRDFTexture = null;
+        defaultMaterial.usePhysicalLightFalloff = true;
+        defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        defaultMaterial.microSurface = 0.6;
+
+        this.scene.defaultMaterial = defaultMaterial;
+
         this._mainColor = new Color3();
 
         if (sceneConfiguration) {

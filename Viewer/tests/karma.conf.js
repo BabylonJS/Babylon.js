@@ -12,7 +12,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
-            './tests/unit/build/*.js',
+            './tests/build/*.js',
             { pattern: './tests/**/*', watched: false, included: false, served: true },
         ],
         proxies: {

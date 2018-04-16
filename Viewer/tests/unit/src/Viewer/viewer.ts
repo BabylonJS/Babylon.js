@@ -54,19 +54,17 @@ describe('Viewer', function () {
         let renderCount = 0;
         let sceneRenderCount = 0;
         viewer.onSceneInitObservable.add(() => {
-            // force-create a camera for the render loop to work
-            viewer.updateConfiguration({ camera: {} });
-            viewer.sceneManager.scene.registerAfterRender(() => {
+            viewer.sceneManager.scene.registerBeforeRender(() => {
                 sceneRenderCount++;
-            })
-        });
-        viewer.onFrameRenderedObservable.add(() => {
-            renderCount++;
-            assert.equal(renderCount, sceneRenderCount, "function was not executed with each frame");
-            if (renderCount === 20) {
-                viewer.dispose();
-                done();
-            }
+            });
+            viewer.onFrameRenderedObservable.add(() => {
+                renderCount++;
+                assert.equal(renderCount, sceneRenderCount, "function was not executed with each frame");
+                if (renderCount === 20) {
+                    viewer.dispose();
+                    done();
+                }
+            });
         });
     });
 
@@ -74,12 +72,11 @@ describe('Viewer', function () {
 
         let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         let renderCount = 0;
-        viewer.onFrameRenderedObservable.add(() => {
-            renderCount++;
-        });
+
         viewer.onInitDoneObservable.add(() => {
-            // force-create a camera for the render loop to work
-            viewer.updateConfiguration({ camera: {} });
+            viewer.onFrameRenderedObservable.add(() => {
+                renderCount++;
+            });
             assert.equal(renderCount, 0);
             window.requestAnimationFrame(function () {
                 assert.equal(renderCount, 1, "render loop should have been executed");
