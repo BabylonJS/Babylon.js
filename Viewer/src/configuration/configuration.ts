@@ -99,7 +99,7 @@ export interface IModelConfiguration {
         center?: boolean;
         unitSize?: boolean;
         parentIndex?: number;
-    }; // shoud the model be scaled to unit-size
+    }; // should the model be scaled to unit-size
 
     title?: string;
     subtitle?: string;
@@ -326,6 +326,7 @@ export interface ICameraConfiguration {
     };
     disableCameraControl?: boolean;
     disableCtrlForPanning?: boolean;
+    disableAutoFocus?: boolean;
 
     [propName: string]: any;
 }
