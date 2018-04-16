@@ -983,7 +983,7 @@
         }
 
         /** @hidden */
-        protected _getWorldMatrixDeterminant(): number {
+        public _getWorldMatrixDeterminant(): number {
             if (this._masterMesh) {
                 return this._masterMesh._getWorldMatrixDeterminant();
             }

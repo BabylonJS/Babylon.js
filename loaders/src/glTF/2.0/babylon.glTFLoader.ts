@@ -96,6 +96,11 @@ module BABYLON.GLTF2 {
         public readonly onMaterialLoadedObservable = new Observable<Material>();
 
         /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        public readonly onCameraLoadedObservable = new Observable<Camera>();
+
+        /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
@@ -506,6 +511,11 @@ module BABYLON.GLTF2 {
                 promises.push(this._loadMeshAsync(`#/meshes/${mesh._index}`, node, mesh, babylonMesh));
             }
 
+            if (node.camera != undefined) {
+                const camera = GLTFLoader._GetProperty(`${context}/camera`, this._gltf.cameras, node.camera);
+                this._loadCamera(`#/cameras/${camera._index}`, camera, babylonMesh);
+            }
+
             if (node.children) {
                 for (const index of node.children) {
                     const childNode = GLTFLoader._GetProperty(`${context}/children/${index}`, this._gltf.nodes, index);
@@ -843,6 +853,45 @@ module BABYLON.GLTF2 {
                     node.scale ? Vector3.FromArray(node.scale) : Vector3.One(),
                     node.rotation ? Quaternion.FromArray(node.rotation) : Quaternion.Identity(),
                     node.translation ? Vector3.FromArray(node.translation) : Vector3.Zero());
+        }
+
+        private _loadCamera(context: string, camera: _ILoaderCamera, babylonMesh: Mesh): void {
+            const babylonCamera = new FreeCamera(camera.name || `camera${camera._index}`, Vector3.Zero(), this._babylonScene, false);
+            babylonCamera.parent = babylonMesh;
+            babylonCamera.rotation = new Vector3(0, Math.PI, 0);
+
+            switch (camera.type) {
+                case CameraType.PERSPECTIVE: {
+                    const perspective = camera.perspective;
+                    if (!perspective) {
+                        throw new Error(`${context}: Camera perspective properties are missing`);
+                    }
+
+                    babylonCamera.fov = perspective.yfov;
+                    babylonCamera.minZ = perspective.znear;
+                    babylonCamera.maxZ = perspective.zfar || Number.MAX_VALUE;
+                    break;
+                }
+                case CameraType.ORTHOGRAPHIC: {
+                    if (!camera.orthographic) {
+                        throw new Error(`${context}: Camera orthographic properties are missing`);
+                    }
+
+                    babylonCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+                    babylonCamera.orthoLeft = -camera.orthographic.xmag;
+                    babylonCamera.orthoRight = camera.orthographic.xmag;
+                    babylonCamera.orthoBottom = -camera.orthographic.ymag;
+                    babylonCamera.orthoTop = camera.orthographic.ymag;
+                    babylonCamera.minZ = camera.orthographic.znear;
+                    babylonCamera.maxZ = camera.orthographic.zfar;
+                    break;
+                }
+                default: {
+                    throw new Error(`${context}: Invalid camera type (${camera.type})`);
+                }
+            }
+
+            this.onCameraLoadedObservable.notifyObservers(babylonCamera);
         }
 
         private _loadAnimationsAsync(): Promise<void> {
@@ -1705,6 +1754,7 @@ module BABYLON.GLTF2 {
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
+            this.onCameraLoadedObservable.clear();
         }
 
         /** @hidden */

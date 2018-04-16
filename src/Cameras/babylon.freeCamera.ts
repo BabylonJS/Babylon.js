@@ -106,8 +106,8 @@
         public _localDirection: Vector3;
         public _transformedDirection: Vector3;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
-            super(name, position, scene);
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+            super(name, position, scene, setActiveOnSceneIfNoneActive);
             this.inputs = new FreeCameraInputsManager(this);
             this.inputs.addKeyboard().addMouse();
         }
