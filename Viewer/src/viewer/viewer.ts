@@ -172,11 +172,6 @@ export abstract class AbstractViewer {
             if (this._configuration.observers) {
                 this._configureObservers(this._configuration.observers);
             }
-            this.onSceneInitObservable.add(() => {
-                this.updateConfiguration(configuration);
-            });
-            //
-
             // initialize the templates
             let templateConfiguration = this._configuration.templates || {};
             this.templateManager.initTemplate(templateConfiguration);
@@ -188,6 +183,10 @@ export abstract class AbstractViewer {
                 }
                 this._onTemplateLoaded();
             });
+        });
+
+        this.onModelLoadedObservable.add((model) => {
+            this.updateConfiguration(this._configuration, model);
         });
     }
 
@@ -314,11 +313,11 @@ export abstract class AbstractViewer {
      * and the entire configuration will be updated. 
      * @param newConfiguration 
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this._configuration) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this._configuration, mode?: ViewerModel) {
         // update this.configuration with the new data
         this._configuration = deepmerge(this._configuration || {}, newConfiguration);
 
-        this.sceneManager.updateConfiguration(newConfiguration, this._configuration);
+        this.sceneManager.updateConfiguration(newConfiguration, this._configuration, mode);
 
         // observers in configuration
         if (newConfiguration.observers) {
@@ -430,6 +429,9 @@ export abstract class AbstractViewer {
                     return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
             }).then((scene) => {
+                if (!autoLoad) {
+                    this.updateConfiguration();
+                }
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 this._isInit = true;
