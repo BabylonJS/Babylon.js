@@ -324,6 +324,15 @@ export abstract class AbstractViewer {
         if (newConfiguration.observers) {
             this._configureObservers(newConfiguration.observers);
         }
+
+        if (newConfiguration.loaderPlugins) {
+            // TODO should plugins be removed?
+            Object.keys(newConfiguration.loaderPlugins).forEach((name => {
+                if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
+                    this.modelLoader.addPlugin(name);
+                }
+            }))
+        }
     }
 
     /**

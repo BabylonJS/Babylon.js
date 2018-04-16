@@ -5,6 +5,7 @@ import { IModelConfiguration } from "../configuration/configuration";
 import { ViewerModel, ModelState } from "../model/viewerModel";
 import { ILoaderPlugin } from './plugins/loaderPlugin';
 import { TelemetryLoaderPlugin } from './plugins/telemetryLoaderPlugin';
+import { getLoaderPluginByName } from './plugins/';
 
 /**
  * An instance of the class is in charge of loading the model correctly.
@@ -30,11 +31,22 @@ export class ModelLoader {
         this._loadId = 0;
         this._plugins = [];
 
-        this.addPlugin(new TelemetryLoaderPlugin());
+        this.addPlugin("telemetry");
     }
 
-    public addPlugin(plugin: ILoaderPlugin) {
-        this._plugins.push(plugin);
+    public addPlugin(plugin: ILoaderPlugin | string) {
+        let actualPlugin: ILoaderPlugin = {};
+        if (typeof plugin === 'string') {
+            let loadedPlugin = getLoaderPluginByName(plugin);
+            if (loadedPlugin) {
+                actualPlugin = loadedPlugin;
+            }
+        } else {
+            actualPlugin = plugin;
+        }
+        if (actualPlugin && this._plugins.indexOf(actualPlugin) === -1) {
+            this._plugins.push(actualPlugin);
+        }
     }
 
     /**
