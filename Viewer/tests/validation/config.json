@@ -57,14 +57,9 @@
                         "url": "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds",
                         "gammaSpace": false
                     }
-                },
-                "model": {
-                    "animation": {
-                        "autoStart": true
-                    }
                 }
             },
-            "waitForFrame": 80,
+            "animationTest": true,
             "model": "/dist/assets/BrainStem/BrainStem.gltf",
             "referenceImage": "BrainStemAnimation1.png"
         },

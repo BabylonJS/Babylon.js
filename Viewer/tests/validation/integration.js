@@ -1,55 +1,60 @@
 window.__karma__.loaded = function () { };
 
-// Loading tests
-var xhr = new XMLHttpRequest();
+window.validation = true;
 
-xhr.open("GET", "/tests/validation/config.json", true);
+window.onload = function () {
+    // Loading tests
+    var xhr = new XMLHttpRequest();
 
-xhr.addEventListener("load", function () {
-    if (xhr.status === 200) {
+    xhr.open("GET", "/tests/validation/config.json", true);
 
-        config = JSON.parse(xhr.responseText);
+    xhr.addEventListener("load", function () {
+        if (xhr.status === 200) {
 
-        describe("Validation Tests", function () {
-            // Run tests
-            for (let index = 0; index < config.tests.length; index++) {
-                var test = config.tests[index];
-                if (test.onlyVisual || test.excludeFromAutomaticTesting) {
-                    continue;
-                }
+            config = JSON.parse(xhr.responseText);
 
-                it(test.title, function (done) {
-                    this.timeout(60000);
-
-                    var deferredDone = function (err) {
-                        setTimeout(function () {
-                            done(err);
-                        }, 3000);
+            describe("Validation Tests", function () {
+                // Run tests
+                for (let index = 0; index < config.tests.length; index++) {
+                    var test = config.tests[index];
+                    if (test.onlyVisual || test.excludeFromAutomaticTesting) {
+                        continue;
                     }
 
-                    try {
-                        runTest(index, function (result, screenshot) {
-                            try {
-                                expect(result).to.be.true;
-                                deferredDone();
-                            }
-                            catch (e) {
-                                if (screenshot) {
-                                    console.error(screenshot);
+                    it(test.title, function (done) {
+                        this.timeout(60000);
+
+                        var deferredDone = function (err) {
+                            setTimeout(function () {
+                                done(err);
+                            }, 1000);
+                        }
+
+                        try {
+                            runTest(index, function (result, screenshot) {
+                                try {
+                                    expect(result).to.be.true;
+                                    deferredDone();
                                 }
-                                deferredDone(e);
-                            }
-                        });
-                    }
-                    catch (e) {
-                        deferredDone(e);
-                    }
-                });
-            };
-        });
+                                catch (e) {
+                                    if (screenshot) {
+                                        console.error(screenshot);
+                                    }
+                                    deferredDone(e);
+                                }
+                            });
+                        }
+                        catch (e) {
+                            deferredDone(e);
+                        }
+                    });
+                };
+            });
 
-        window.__karma__.start();
-    }
-}, false);
+            window.__karma__.start();
+        }
+    }, false);
 
-xhr.send();
+
+    xhr.send();
+}

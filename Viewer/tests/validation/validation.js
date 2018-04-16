@@ -215,7 +215,7 @@ function runTest(index, done) {
     currentViewer.onInitDoneObservable.add(() => {
 
         var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 1;
+        var waitForFrame = test.waitForFrame || 0;
 
         if (test.model) {
             currentViewer.initModel(test.model);
@@ -223,8 +223,12 @@ function runTest(index, done) {
             prepareMeshForViewer(currentViewer, configuration, test);
         }
 
-        currentViewer.onModelLoadedObservable.add(() => {
+        currentViewer.onModelLoadedObservable.add((model) => {
             currentViewer.onFrameRenderedObservable.add(() => {
+                if (test.animationTest && !currentFrame) {
+                    console.log("animation", model.getAnimationNames()[0]);
+                    model.playAnimation(model.getAnimationNames()[0]);
+                }
                 if (currentFrame === waitForFrame) {
                     currentViewer.sceneManager.scene.executeWhenReady(() => {
                         evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
@@ -275,3 +279,4 @@ function init() {
 }
 
 init();
+
