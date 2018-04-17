@@ -95,7 +95,8 @@ export let extendedConfiguration: ViewerConfiguration = {
             environmentIntensity: 0.268
         },
         normalize: true,
-        castShadow: true
+        castShadow: true,
+        receiveShadows: true
     },
     lab: {
         environmentAssetsRootURL: '/assets/environment/',
