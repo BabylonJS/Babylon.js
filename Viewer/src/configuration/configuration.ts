@@ -90,6 +90,23 @@ export interface ViewerConfiguration {
              */
             tintLevel: number;
         }
+        renderingPipelines?: {
+            default?: boolean | {
+                [propName: string]: any;
+            };
+            standard?: boolean | {
+                [propName: string]: any;
+            };
+            /*lens?: boolean | {
+                [propName: string]: boolean | string | number | undefined;
+            };*/
+            ssao?: boolean | {
+                [propName: string]: any;
+            };
+            ssao2?: boolean | {
+                [propName: string]: any;
+            };
+        }
     }
 }
 

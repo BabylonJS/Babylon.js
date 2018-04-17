@@ -36,7 +36,6 @@ export let extendedConfiguration: ViewerConfiguration = {
             shadowFieldOfView: 80.977,
             shadowMinZ: 0.1,
             shadowMaxZ: 12.0,
-            shadowOrthoScale: 0.5,
             shadowConfig: {
                 blurKernel: 32,
                 useBlurExponentialShadowMap: true
@@ -110,6 +109,13 @@ export let extendedConfiguration: ViewerConfiguration = {
             texture: 'EnvMap_2.0-256.env',
             rotationY: 0,
             tintLevel: 0.4
+        },
+        renderingPipelines: {
+            default: {
+                bloomEnabled: true,
+                bloomThreshold: 1.0,
+                fxaaEnabled: true
+            }
         }
     }
 }
