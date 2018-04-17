@@ -226,7 +226,6 @@ function runTest(index, done) {
         currentViewer.onModelLoadedObservable.add((model) => {
             currentViewer.onFrameRenderedObservable.add(() => {
                 if (test.animationTest && !currentFrame) {
-                    console.log("animation", model.getAnimationNames()[0]);
                     model.playAnimation(model.getAnimationNames()[0]);
                 }
                 if (currentFrame === waitForFrame) {

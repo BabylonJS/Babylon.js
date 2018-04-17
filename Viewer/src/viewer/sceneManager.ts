@@ -685,8 +685,10 @@ export class SceneManager {
 
                 let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
                 if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
+                    let bufferSize = lightConfig.shadowBufferSize || 256;
+
                     if (!shadowGenerator) {
-                        shadowGenerator = new ShadowGenerator(512, light);
+                        shadowGenerator = new ShadowGenerator(bufferSize, light);
                         // TODO blur kernel definition
                     }
 
@@ -699,15 +701,14 @@ export class SceneManager {
                             renderList && renderList.push(focusMeshes[index]);
                         }
                     }
-                    let bufferSize = lightConfig.shadowBufferSize || 256;
                     var blurKernel = this.getBlurKernel(light, bufferSize);
 
-                    shadowGenerator.useBlurCloseExponentialShadowMap = true;
-                    shadowGenerator.useKernelBlur = true;
+                    //shadowGenerator.useBlurCloseExponentialShadowMap = true;
+                    //shadowGenerator.useKernelBlur = true;
                     shadowGenerator.blurScale = 1.0;
-                    shadowGenerator.bias = this._shadowGeneratorBias;
+                    //shadowGenerator.bias = this._shadowGeneratorBias;
                     shadowGenerator.blurKernel = blurKernel;
-                    shadowGenerator.depthScale = 50 * (light.shadowMaxZ - light.shadowMinZ);
+                    //shadowGenerator.depthScale = 50 * (light.shadowMaxZ - light.shadowMinZ);
                     //override defaults
                     extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                 } else if (shadowGenerator) {

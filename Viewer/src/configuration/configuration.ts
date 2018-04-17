@@ -352,6 +352,7 @@ export interface ILightConfiguration {
     shadownEnabled?: boolean; // only on specific lights!
     shadowConfig?: {
         useBlurExponentialShadowMap?: boolean;
+        useBlurCloseExponentialShadowMap?: boolean;
         useKernelBlur?: boolean;
         blurKernel?: number;
         blurScale?: number;
