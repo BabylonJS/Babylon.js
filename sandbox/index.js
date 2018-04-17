@@ -35,27 +35,23 @@ if (BABYLON.Engine.isSupported()) {
     var htmlInput = document.getElementById("files");
     var footer = document.getElementById("footer");
     var btnFullScreen = document.getElementById("btnFullscreen");
-    var btnPerf = document.getElementById("btnPerf");
-    var help01 = document.getElementById("help01");
-    var help02 = document.getElementById("help02");
+    var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
     var filesInput;
-    var currentHelpCounter;
     var currentScene;
     var currentSkybox;
     var enableDebugLayer = false;
     var currentPluginName;
     var skyboxPath = "Assets/environment.dds";
 
+    btnFullScreen.classList.add("hidden");
+    btnInspector.classList.add("hidden");
+
     canvas.addEventListener("contextmenu", function (evt) {
         evt.preventDefault();
     }, false);
 
-    currentHelpCounter = localStorage.getItem("helpcounter");
-
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
-
-    if (!currentHelpCounter) currentHelpCounter = 0;
 
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
@@ -86,6 +82,9 @@ if (BABYLON.Engine.isSupported()) {
 
         // Clear the error
         errorZone.style.display = 'none';
+
+        btnFullScreen.classList.remove("hidden");
+        btnInspector.classList.remove("hidden");        
 
         currentScene = babylonScene;
         document.title = "BabylonJS - " + sceneFile.name;
@@ -225,27 +224,12 @@ if (BABYLON.Engine.isSupported()) {
     if (kiosk) {
         footer.style.display = "none";
     }
-    else {
-        // The help tips will be displayed only 5 times
-        if (currentHelpCounter < 5) {
-            help01.className = "help shown";
-
-            setTimeout(function () {
-                help01.className = "help";
-                help02.className = "help2 shown";
-                setTimeout(function () {
-                    help02.className = "help2";
-                    localStorage.setItem("helpcounter", currentHelpCounter + 1);
-                }, 5000);
-            }, 5000);
-        }
-    }
 
     btnFullScreen.addEventListener('click', function () {
         engine.switchFullscreen(true);
     }, false);
 
-    btnPerf.addEventListener('click', function () {
+    btnInspector.addEventListener('click', function () {
         if (currentScene) {
             if (!enableDebugLayer) {
                 currentScene.debugLayer.show();
