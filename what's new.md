@@ -67,7 +67,6 @@
 - Added shadowBlur, shadowOffsetX, shadowOffsetY, shadowColor to GUI Controls ([adam](https://github.com/abow))
 - Added alignWithNormal to AbstractMesh ([adam](https://github.com/abow))
 - Added transformNode.forward/up/right ([bobalazek](https://github.com/bobalazek))
-- GUI: Introduced `MultiLine` which will draw lines between any number of meshes, controls and points. [Documentation](http://doc.babylonjs.com/how_to/gui#multiline) ([royibernthal](https://github.com/royibernthal))
 
 ## Bug fixes
 

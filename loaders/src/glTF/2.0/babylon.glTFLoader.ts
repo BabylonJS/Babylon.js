@@ -930,7 +930,10 @@ module BABYLON.GLTF2 {
 
         private _loadAnimationChannelAsync(context: string, animationContext: string, animation: _ILoaderAnimation, channel: _ILoaderAnimationChannel, babylonAnimationGroup: AnimationGroup): Promise<void> {
             const targetNode = GLTFLoader._GetProperty(`${context}/target/node`, this._gltf.nodes, channel.target.node);
-            if (!targetNode._babylonMesh) {
+
+            // Ignore animations that have no animation targets.
+            if ((channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
+                (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonAnimationTargets)) {
                 return Promise.resolve();
             }
 
