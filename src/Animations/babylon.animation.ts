@@ -226,7 +226,7 @@
         private _easingFunction: IEasingFunction;
 
         /**
-         * @ignore Internal use only
+         * @hidden Internal use only
          */
         public _runtimeAnimations = new Array<RuntimeAnimation>();
 
@@ -251,7 +251,7 @@
         private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         /**
-         * @ignore Internal use
+         * @hidden Internal use
          */
         public static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation> {
@@ -744,7 +744,7 @@
         }
 
         /**
-         * @ignore Internal use only
+         * @hidden Internal use only
          */
         public _getKeyValue(value: any): any {
             if (typeof value === "function") {
@@ -755,7 +755,7 @@
         } 
 
         /**
-         * @ignore Internal use only
+         * @hidden Internal use only
          */
         public _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
             if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
@@ -866,8 +866,7 @@
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                     if (Animation.AllowMatricesInterpolation) {
-                                        workValue = this.matrixInterpolateFunction(startValue, endValue, gradient, workValue);
-                                        return workValue;
+                                        return this.matrixInterpolateFunction(startValue, endValue, gradient, workValue);
                                     }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;

@@ -843,7 +843,7 @@
          */
         public disableUniformBuffers = false;
 
-        /** @ignore */
+        /** @hidden */
         public _uniformBuffers = new Array<UniformBuffer>();
 
         /**
@@ -890,10 +890,10 @@
             return this._webGLVersion < 2 || this.forcePOTTextures;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _badOS = false;
 
-        /** @ignore */
+        /** @hidden */
         public _badDesktopOS = false;
 
         /**
@@ -906,7 +906,7 @@
         /** 
          * Gets the audio engine 
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-         * @ignoreNaming
+         * @ignorenaming
          */
         public static audioEngine: AudioEngine;
 
@@ -942,7 +942,7 @@
         public onVRRequestPresentStart = new Observable<Engine>();
 
         private _hardwareScalingLevel: number;
-        /** @ignore */
+        /** @hidden */
         protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _isStencilEnable: boolean;
@@ -950,9 +950,9 @@
 
         private _loadingScreen: ILoadingScreen;
 
-        /** @ignore */
+        /** @hidden */
         public _drawCalls = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _textureCollisions = new PerfCounter();
 
         private _glVersion: string;
@@ -1000,42 +1000,42 @@
         }
 
         // States
-        /** @ignore */
+        /** @hidden */
         protected _depthCullingState = new _DepthCullingState();
-        /** @ignore */
+        /** @hidden */
         protected _stencilState = new _StencilState();
-        /** @ignore */
+        /** @hidden */
         protected _alphaState = new _AlphaState();
-        /** @ignore */
+        /** @hidden */
         protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
-        /** @ignore */
+        /** @hidden */
         protected _activeChannel = 0;
         private _currentTextureChannel = -1;    
-        /** @ignore */
+        /** @hidden */
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-        /** @ignore */
+        /** @hidden */
         protected _currentEffect: Nullable<Effect>;
-        /** @ignore */
+        /** @hidden */
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
         private _vertexAttribArraysEnabled: boolean[] = [];
-        /** @ignore */
+        /** @hidden */
         protected _cachedViewport: Nullable<Viewport>;
         private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
-        /** @ignore */
+        /** @hidden */
         protected _cachedVertexBuffers: any;
-        /** @ignore */
+        /** @hidden */
         protected _cachedIndexBuffer: Nullable<WebGLBuffer>;
-        /** @ignore */
+        /** @hidden */
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
-        /** @ignore */
+        /** @hidden */
         protected _currentRenderTarget: Nullable<InternalTexture>;
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
-        /** @ignore */
+        /** @hidden */
         protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
@@ -1805,13 +1805,13 @@
             return this._caps;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get drawCalls(): number {
             Tools.Warn("drawCalls is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get drawCallsPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("drawCallsPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
@@ -2030,7 +2030,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _renderLoop(): void {
             if (!this._contextWasLost) {
                 var shouldRender = true;
@@ -3123,7 +3123,7 @@
             this._gl.deleteVertexArray(vao);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _releaseBuffer(buffer: WebGLBuffer): boolean {
             buffer.references--;
 
@@ -3324,7 +3324,7 @@
 
         // Shaders
         
-        /** @ignore */
+        /** @hidden */
         public _releaseEffect(effect: Effect): void {
             if (this._compiledEffects[effect._key]) {
                 delete this._compiledEffects[effect._key];
@@ -3333,7 +3333,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _deleteProgram(program: WebGLProgram): void {
             if (program) {
                 program.__SPECTOR_rebuildProgram = null;
@@ -4084,7 +4084,7 @@
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _createTexture(): WebGLTexture {
             let texture = this._gl.createTexture();
 
@@ -5235,12 +5235,12 @@
             return samples;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView) {
             this._gl.texImage2D(target, lod, internalFormat, width, height, 0, format, type, data);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
@@ -5349,6 +5349,9 @@
                 }
 
                 let texture = loadData.texture as InternalTexture;
+                if(loadData.info.sphericalPolynomial){
+                    texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
+                }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
                 texture._lodGenerationScale = scale;
                 texture._lodGenerationOffset = offset;
@@ -5421,7 +5424,7 @@
                 }
             };
 
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, true);
         }
 
         /**
@@ -5434,9 +5437,10 @@
          * @param onError defines an optional callback raised if there is an issue to load the texture
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials if a polynomial sphere should be created for the cube texture
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false): InternalTexture {
             var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
@@ -5527,7 +5531,10 @@
                     this._loadFile(rootUrl,
                         data => {
                             var info = DDSTools.GetDDSInfo(data);
-
+                            if(createPolynomials){
+                                info.sphericalPolynomial = new SphericalPolynomial();
+                            }
+                            
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5545,7 +5552,7 @@
                             texture.height = info.height;
                             texture.isReady = true;
                             texture.type = info.textureType;
-
+                            
                             if (onLoad) {
                                 onLoad({ isDDS: true, width: info.width, info, data, texture });
                             }
@@ -5565,6 +5572,7 @@
                     var height = width;
 
                     this._prepareWorkingCanvas();
+
                     if (!this._workingCanvas || !this._workingContext) {
                         return;
                     }
@@ -6035,7 +6043,7 @@
             return rgbaData;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _releaseFramebufferObjects(texture: InternalTexture): void {
             var gl = this._gl;
 
@@ -6060,7 +6068,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _releaseTexture(texture: InternalTexture): void {
             var gl = this._gl;
 
@@ -6213,7 +6221,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): void {
             if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
                 this._activeChannel = texture._designatedSlot;
@@ -6254,7 +6262,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _bindTexture(channel: number, texture: Nullable<InternalTexture>): void {
             if (channel < 0) {
                 return;
@@ -6499,7 +6507,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _setAnisotropicLevel(target: number, texture: BaseTexture) {
             var internalTexture = texture.getInternalTexture();
 
@@ -6905,7 +6913,7 @@
             this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
@@ -7010,7 +7018,7 @@
             return successful;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _getWebGLTextureType(type: number): number {
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 return this._gl.FLOAT;
@@ -7054,7 +7062,7 @@
             return internalFormat;
         }        
 
-        /** @ignore */
+        /** @hidden */
         public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 if (format) {
@@ -7092,7 +7100,7 @@
             return this._gl.RGBA;
         };
 
-        /** @ignore */
+        /** @hidden */
         public _getRGBAMultiSampleBufferFormat(type: number): number {
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 return this._gl.RGBA32F;
@@ -7378,7 +7386,7 @@
             this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
@@ -7388,7 +7396,7 @@
             return request;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {
@@ -7432,7 +7440,7 @@
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
-         * @ignoreNaming
+         * @ignorenaming
          */
         public static isSupported(): boolean {
             try {

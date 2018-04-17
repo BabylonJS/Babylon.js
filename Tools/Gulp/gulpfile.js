@@ -884,7 +884,10 @@ gulp.task("modules", ["prepare-dependency-tree"], function () {
  */
 gulp.task("typedoc-generate", function () {
     return gulp
-        .src(["../../dist/preview release/babylon.d.ts", "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts", "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
+        .src(["../../dist/preview release/babylon.d.ts", 
+            "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts", 
+            "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
+            "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
         .pipe(typedoc({
             // TypeScript options (see typescript docs)
             mode: "modules",

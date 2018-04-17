@@ -144,9 +144,9 @@ declare module BABYLON.GLTF2 {
         znear: number;
     }
     interface ICameraPerspective extends IProperty {
-        aspectRatio: number;
+        aspectRatio?: number;
         yfov: number;
-        zfar: number;
+        zfar?: number;
         znear: number;
     }
     interface ICamera extends IChildRootProperty {

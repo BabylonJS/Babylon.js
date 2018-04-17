@@ -25,7 +25,7 @@
         readonly checksIsEnabled: boolean;
     }
 
-    /** @ignore */
+    /** @hidden */
     class ClickInfo {
         private _singleClick = false;
         private _doubleClick = false;
@@ -171,10 +171,10 @@
          */        
         public ambientColor = new Color3(0, 0, 0);
 
-        /** @ignore */
+        /** @hidden */
         public _environmentBRDFTexture: BaseTexture;
 
-        /** @ignore */
+        /** @hidden */
         protected _environmentTexture: BaseTexture;
         /**
          * Texture used in all pbr material as the reflection texture.
@@ -198,7 +198,7 @@
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
-        /** @ignore */
+        /** @hidden */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Default image processing configuration used either in the rendering
@@ -648,7 +648,7 @@
         private _currentInternalStep: number = 0;
 
         // Mirror
-        /** @ignore */
+        /** @hidden */
         public _mirroredCameraPosition: Nullable<Vector3>;
 
         // Keyboard
@@ -967,7 +967,7 @@
         */           
         public collisionsEnabled = true;
         private _workerCollisions: boolean;
-        /** @ignore */
+        /** @hidden */
         public collisionCoordinator: ICollisionCoordinator;
         /** 
          * Defines the gravity applied to this scene (used only for collisions)
@@ -1041,7 +1041,7 @@
 
         // Database
         /**
-         * @ignore
+         * @hidden
          */
         public database: Database;
 
@@ -1051,7 +1051,7 @@
         */
         public actionManager: ActionManager;
 
-        /** @ignore */
+        /** @hidden */
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
@@ -1090,7 +1090,7 @@
         /**
          * Gets or sets the VRExperienceHelper attached to the scene
          * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @ignoreNaming
+         * @ignorenaming
          */
         public VRHelper: VRExperienceHelper;
 
@@ -1105,11 +1105,11 @@
 
         // Performance counters
         private _totalVertices = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _activeIndices = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _activeParticles = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _activeBones = new PerfCounter();
 
         private _animationRatio: number;
@@ -1122,11 +1122,11 @@
          */
         public animationTimeScale: number = 1;
 
-        /** @ignore */
+        /** @hidden */
         public _cachedMaterial: Nullable<Material>;
-        /** @ignore */
+        /** @hidden */
         public _cachedEffect: Nullable<Effect>;
-        /** @ignore */
+        /** @hidden */
         public _cachedVisibility: Nullable<number>;
 
         private _renderId = 0;
@@ -1138,7 +1138,7 @@
         private _alternateViewUpdateFlag = -1;
         private _alternateProjectionUpdateFlag = -1;
 
-        /** @ignore */
+        /** @hidden */
         public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
         private _activeRequests = new Array<IFileRequest>();
         private _pendingData = new Array();
@@ -1152,7 +1152,7 @@
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
-        /** @ignore */
+        /** @hidden */
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
         private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
         private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
@@ -1160,7 +1160,7 @@
         private _renderingManager: RenderingManager;
         private _physicsEngine: Nullable<PhysicsEngine>;
 
-        /** @ignore */
+        /** @hidden */
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
@@ -1179,10 +1179,10 @@
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
-        /** @ignore */
+        /** @hidden */
         public _forcedViewPosition: Nullable<Vector3>;
 
-        /** @ignore */
+        /** @hidden */
         public get _isAlternateRenderingEnabled(): boolean {
             return this._alternateRendering;
         }
@@ -1461,37 +1461,37 @@
             return this._activeBones;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getInterFramePerfCounter(): number {
             Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get interFramePerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getLastFrameDuration(): number {
             Tools.Warn("getLastFrameDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get lastFramePerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("lastFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getEvaluateActiveMeshesDuration(): number {
             Tools.Warn("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
@@ -1505,43 +1505,43 @@
             return this._activeMeshes;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getRenderTargetsDuration(): number {
             Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getRenderDuration(): number {
             Tools.Warn("getRenderDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get renderDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("renderDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getParticlesDuration(): number {
             Tools.Warn("getParticlesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get particlesDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("particlesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getSpritesDuration(): number {
             Tools.Warn("getSpritesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get spriteDuractionPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("spriteDuractionPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
@@ -2403,12 +2403,12 @@
             }
         }
 
-        /** @ignore */            
+        /** @hidden */            
         public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _removePendingData(data: any): void {
             var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
@@ -2465,7 +2465,7 @@
             });
         }
 
-        /** @ignore */
+        /** @hidden */
         public _checkIsReady() {
             if (this.isReady()) {
                 this.onReadyObservable.notifyObservers(this);
@@ -2679,7 +2679,7 @@
             this._processLateAnimationBindings();
         }
 
-        /** @ignore */
+        /** @hidden */
         public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
             let target = runtimeAnimation.target;
             this._registeredForLateAnimationBindings.pushNoDuplicate(target);
@@ -2813,7 +2813,7 @@
         }
 
         // Matrix
-        /** @ignore */
+        /** @hidden */
         public _switchToAlternateCameraConfiguration(active: boolean): void {
             this._useAlternateCameraConfiguration = active;
         }
@@ -2879,7 +2879,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void {
             if (this._alternateViewUpdateFlag === view.updateFlag && this._alternateProjectionUpdateFlag === projection.updateFlag) {
                 return;
@@ -4113,7 +4113,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }
@@ -5752,7 +5752,7 @@
         }
 
         // Misc.
-        /** @ignore */
+        /** @hidden */
         public _rebuildGeometries(): void {
             for (var geometry of this._geometries) {
                 geometry._rebuild();
@@ -5787,7 +5787,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuildTextures(): void {
             for (var texture of this.textures) {
                 texture._rebuild();
@@ -5885,16 +5885,20 @@
          * @param pbr defines if PBRMaterial must be used instead of StandardMaterial
          * @param scale defines the overall scale of the skybox
          * @param blur defines if blurring must be applied to the environment texture (works only with pbr === true)
+         * @param setGlobalEnvTexture defines a boolean indicating that scene.environmentTexture must match the current skybox texture (true by default)
          * @returns a new mesh holding the sky box
          */
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0): Nullable<Mesh> {
-            if (environmentTexture) {
-                this.environmentTexture = environmentTexture;
-            }
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
-            if (!this.environmentTexture) {
+            if (!environmentTexture) {
                 Tools.Warn("Can not create default skybox without environment texture.");
                 return null;
+            }
+
+            if (setGlobalEnvTexture) {
+                if (environmentTexture) {
+                    this.environmentTexture = environmentTexture;
+                }
             }
 
             // Skybox
@@ -5902,7 +5906,7 @@
             if (pbr) {
                 let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
                 if (hdrSkyboxMaterial.reflectionTexture) {
                     hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
@@ -5915,7 +5919,7 @@
             else {
                 let skyboxMaterial = new StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
+                skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 if (skyboxMaterial.reflectionTexture) {
                     skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
@@ -6060,7 +6064,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useDatabase?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             let request = Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
             this._activeRequests.push(request);
@@ -6070,7 +6074,7 @@
             return request;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFileAsync(url: string, useDatabase?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {

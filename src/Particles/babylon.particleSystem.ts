@@ -522,7 +522,7 @@
         }
 
         /**
-         * @ignore (for internal use only)
+         * @hidden (for internal use only)
          */
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
             var offset = index * this._vertexBufferSize;
@@ -540,7 +540,7 @@
         }
 
         /**
-         * @ignore (for internal use only)
+         * @hidden (for internal use only)
          */
         public _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number): void {
             if (offsetX === 0)
