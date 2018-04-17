@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -70,6 +70,8 @@ export class SceneManager {
 
     //Labs!
     public labs: ViewerLabs;
+
+    private _piplines: { [key: string]: PostProcessRenderPipeline } = {};
 
     constructor(private _viewer: AbstractViewer) {
         this.models = [];
@@ -166,14 +168,14 @@ export class SceneManager {
             var gl = new BABYLON.GlowLayer("glow", this.scene, options);
         }
 
-        if (sceneConfiguration) {
+        /*if (sceneConfiguration) {
             this._configureScene(sceneConfiguration);
 
             // Scene optimizer
             if (optimizerConfiguration) {
                 this._configureOptimizer(optimizerConfiguration);
             }
-        }
+        }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
     }
@@ -194,23 +196,6 @@ export class SceneManager {
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration, model?: ViewerModel) {
-
-        if (newConfiguration.lab) {
-            if (newConfiguration.lab.environmentAssetsRootURL) {
-                this.labs.environmentAssetsRootURL = newConfiguration.lab.environmentAssetsRootURL;
-            }
-
-            if (newConfiguration.lab.environmentMap) {
-                let rot = newConfiguration.lab.environmentMap.rotationY;
-                this.labs.loadEnvironment(newConfiguration.lab.environmentMap.texture, () => {
-                    this.labs.applyEnvironmentMapConfiguration(rot);
-                });
-
-                if (!newConfiguration.lab.environmentMap.texture && newConfiguration.lab.environmentMap.rotationY) {
-                    this.labs.applyEnvironmentMapConfiguration(newConfiguration.lab.environmentMap.rotationY);
-                }
-            }
-        }
 
         // update scene configuration
         if (newConfiguration.scene) {
@@ -257,6 +242,59 @@ export class SceneManager {
 
         // camera
         this._configureCamera(newConfiguration.camera, model);
+
+        if (newConfiguration.lab) {
+            if (newConfiguration.lab.environmentAssetsRootURL) {
+                this.labs.environmentAssetsRootURL = newConfiguration.lab.environmentAssetsRootURL;
+            }
+
+            if (newConfiguration.lab.environmentMap) {
+                let rot = newConfiguration.lab.environmentMap.rotationY;
+                this.labs.loadEnvironment(newConfiguration.lab.environmentMap.texture, () => {
+                    this.labs.applyEnvironmentMapConfiguration(rot);
+                });
+
+                if (!newConfiguration.lab.environmentMap.texture && newConfiguration.lab.environmentMap.rotationY) {
+                    this.labs.applyEnvironmentMapConfiguration(newConfiguration.lab.environmentMap.rotationY);
+                }
+            }
+
+            // rendering piplines
+            if (newConfiguration.lab.renderingPipelines) {
+                Object.keys(newConfiguration.lab.renderingPipelines).forEach((name => {
+                    // disabled
+                    if (!newConfiguration.lab!.renderingPipelines![name]) {
+                        if (this._piplines[name]) {
+                            this._piplines[name].dispose();
+                            delete this._piplines[name];
+                        }
+                    } else {
+                        if (!this._piplines[name]) {
+                            const cameras = [this.camera];
+                            const ratio = newConfiguration.lab!.renderingPipelines![name].ratio || 0.5;
+                            switch (name) {
+                                case 'default':
+                                    this._piplines[name] = new DefaultRenderingPipeline('defaultPipeline', this._hdrSupport, this.scene, cameras);
+                                    break;
+                                case 'standard':
+                                    this._piplines[name] = new StandardRenderingPipeline('standardPipline', this.scene, ratio, undefined, cameras);
+                                    break;
+                                case 'ssao':
+                                    this._piplines[name] = new SSAORenderingPipeline('ssao', this.scene, ratio, cameras);
+                                    break;
+                                case 'ssao2':
+                                    this._piplines[name] = new SSAO2RenderingPipeline('ssao', this.scene, ratio, cameras);
+                                    break;
+                            }
+                        }
+                        // make sure it was generated
+                        if (this._piplines[name] && typeof newConfiguration.lab!.renderingPipelines![name] !== 'boolean') {
+                            extendClassWithConfig(this._piplines[name], newConfiguration.lab!.renderingPipelines![name]);
+                        }
+                    }
+                }));
+            }
+        }
     }
 
 
@@ -705,8 +743,8 @@ export class SceneManager {
 
                     //shadowGenerator.useBlurCloseExponentialShadowMap = true;
                     //shadowGenerator.useKernelBlur = true;
-                    shadowGenerator.blurScale = 1.0;
-                    //shadowGenerator.bias = this._shadowGeneratorBias;
+                    //shadowGenerator.blurScale = 1.0;
+                    shadowGenerator.bias = this._shadowGeneratorBias;
                     shadowGenerator.blurKernel = blurKernel;
                     //shadowGenerator.depthScale = 50 * (light.shadowMaxZ - light.shadowMinZ);
                     //override defaults
