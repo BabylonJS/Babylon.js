@@ -157,10 +157,8 @@ module BABYLON {
             return this._worldMatrix;
         }
 
-        /**
-         * Returns the latest update of the World matrix determinant.
-         */
-        protected _getWorldMatrixDeterminant(): number {
+        /** @hidden */
+        public _getWorldMatrixDeterminant(): number {
             return this._worldMatrixDeterminant;
         }
 

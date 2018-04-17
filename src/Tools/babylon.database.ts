@@ -74,7 +74,7 @@ module BABYLON {
             if (navigator.onLine) {
                 // Adding a timestamp to by-pass browsers' cache
                 timeStampUsed = true;
-                manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
+                manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + Date.now();
             }
             xhr.open("GET", manifestURL, true);
 

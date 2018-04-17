@@ -53,8 +53,7 @@
         '.navbar .select .toDisplayBig a',
         '.navbar .select .toDisplayBig ul li',
         '.navbarBottom',
-        '.navbarBottom .links .link',
-        '.save-message'];
+        '.navbarBottom .links .link'];
 
     var run = function () {
         var blockEditorChange = false;
@@ -297,17 +296,14 @@
             }
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveFormButtonOk").style.display = "inline-block";
-            document.getElementById("saveMessage").style.display = "block";
         };
         showNoMetadata();
-        document.getElementById("saveMessage").style.display = "none";
 
         var hideNoMetadata = function () {
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
             document.getElementById("saveFormButtonOk").style.display = "none";
-            document.getElementById("saveMessage").style.display = "none";
             setToMultipleID("metadataButton", "display", "inline-block");
         };
 
@@ -863,9 +859,6 @@
         });
         document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
-        });
-        document.getElementById("saveMessage").addEventListener("click", function () {
-            document.getElementById("saveMessage").style.display = "none";
         });
         document.getElementById("mainTitle").innerHTML = "v" + BABYLON.Engine.Version;
 

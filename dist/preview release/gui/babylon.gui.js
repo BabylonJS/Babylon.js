@@ -871,6 +871,119 @@ var BABYLON;
 
 //# sourceMappingURL=valueAndUnit.js.map
 
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var MultiLinePoint = /** @class */ (function () {
+            function MultiLinePoint(multiLine) {
+                this._multiLine = multiLine;
+                this._x = new GUI.ValueAndUnit(0);
+                this._y = new GUI.ValueAndUnit(0);
+                this._point = new BABYLON.Vector2(0, 0);
+            }
+            Object.defineProperty(MultiLinePoint.prototype, "x", {
+                get: function () {
+                    return this._x.toString(this._multiLine._host);
+                },
+                set: function (value) {
+                    if (this._x.toString(this._multiLine._host) === value) {
+                        return;
+                    }
+                    if (this._x.fromString(value)) {
+                        this._multiLine._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLinePoint.prototype, "y", {
+                get: function () {
+                    return this._y.toString(this._multiLine._host);
+                },
+                set: function (value) {
+                    if (this._y.toString(this._multiLine._host) === value) {
+                        return;
+                    }
+                    if (this._y.fromString(value)) {
+                        this._multiLine._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLinePoint.prototype, "control", {
+                get: function () {
+                    return this._control;
+                },
+                set: function (value) {
+                    if (this._control === value) {
+                        return;
+                    }
+                    if (this._control && this._controlObserver) {
+                        this._control.onDirtyObservable.remove(this._controlObserver);
+                        this._controlObserver = null;
+                    }
+                    this._control = value;
+                    if (this._control) {
+                        this._controlObserver = this._control.onDirtyObservable.add(this._multiLine.onPointUpdate);
+                    }
+                    this._multiLine._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLinePoint.prototype, "mesh", {
+                get: function () {
+                    return this._mesh;
+                },
+                set: function (value) {
+                    if (this._mesh === value) {
+                        return;
+                    }
+                    if (this._mesh && this._meshObserver) {
+                        this._mesh.getScene().onAfterCameraRenderObservable.remove(this._meshObserver);
+                    }
+                    this._mesh = value;
+                    if (this._mesh) {
+                        this._meshObserver = this._mesh.getScene().onAfterCameraRenderObservable.add(this._multiLine.onPointUpdate);
+                    }
+                    this._multiLine._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            MultiLinePoint.prototype.translate = function () {
+                this._point = this._translatePoint();
+                return this._point;
+            };
+            MultiLinePoint.prototype._translatePoint = function () {
+                if (this._mesh != null) {
+                    return this._multiLine._host.getProjectedPosition(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
+                }
+                else if (this._control != null) {
+                    return new BABYLON.Vector2(this._control.centerX, this._control.centerY);
+                }
+                else {
+                    var host = this._multiLine._host;
+                    var xValue = this._x.getValueInPixel(host, Number(host._canvas.width));
+                    var yValue = this._y.getValueInPixel(host, Number(host._canvas.height));
+                    return new BABYLON.Vector2(xValue, yValue);
+                }
+            };
+            MultiLinePoint.prototype.dispose = function () {
+                this.control = null;
+                this.mesh = null;
+            };
+            return MultiLinePoint;
+        }());
+        GUI.MultiLinePoint = MultiLinePoint;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=multiLinePoint.js.map
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1159,7 +1272,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "_isFontSizeInPercentage", {
-                /** @ignore */
+                /** @hidden */
                 get: function () {
                     return this._fontSize.isPercentage;
                 },
@@ -1426,7 +1539,7 @@ var BABYLON;
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
-            /** @ignore */
+            /** @hidden */
             Control.prototype._resetFontCache = function () {
                 this._fontSet = true;
             };
@@ -3625,7 +3738,7 @@ var BABYLON;
                 }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
-            /** @ignore */
+            /** @hidden */
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -4172,8 +4285,6 @@ var BABYLON;
         GUI.Button = Button;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=button.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
@@ -5134,6 +5245,207 @@ var BABYLON;
             return VirtualKeyboard;
         }(GUI.StackPanel));
         GUI.VirtualKeyboard = VirtualKeyboard;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var MultiLine = /** @class */ (function (_super) {
+            __extends(MultiLine, _super);
+            function MultiLine(name) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._lineWidth = 1;
+                _this.onPointUpdate = function () {
+                    _this._markAsDirty();
+                };
+                _this.isHitTestVisible = false;
+                _this._horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                _this._verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                _this._dash = [];
+                _this._points = [];
+                return _this;
+            }
+            Object.defineProperty(MultiLine.prototype, "dash", {
+                get: function () {
+                    return this._dash;
+                },
+                set: function (value) {
+                    if (this._dash === value) {
+                        return;
+                    }
+                    this._dash = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            MultiLine.prototype.getAt = function (index) {
+                if (!this._points[index]) {
+                    this._points[index] = new GUI.MultiLinePoint(this);
+                }
+                return this._points[index];
+            };
+            MultiLine.prototype.add = function () {
+                var _this = this;
+                var items = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    items[_i] = arguments[_i];
+                }
+                return items.map(function (item) { return _this.push(item); });
+            };
+            MultiLine.prototype.push = function (item) {
+                var point = this.getAt(this._points.length);
+                if (item == null)
+                    return point;
+                if (item instanceof BABYLON.AbstractMesh) {
+                    point.mesh = item;
+                }
+                else if (item instanceof GUI.Control) {
+                    point.control = item;
+                }
+                else if (item.x != null && item.y != null) {
+                    point.x = item.x;
+                    point.y = item.y;
+                }
+                return point;
+            };
+            MultiLine.prototype.remove = function (value) {
+                var index;
+                if (value instanceof GUI.MultiLinePoint) {
+                    index = this._points.indexOf(value);
+                    if (index === -1) {
+                        return;
+                    }
+                }
+                else {
+                    index = value;
+                }
+                var point = this._points[index];
+                if (!point) {
+                    return;
+                }
+                point.dispose();
+                this._points.splice(index, 1);
+            };
+            Object.defineProperty(MultiLine.prototype, "lineWidth", {
+                get: function () {
+                    return this._lineWidth;
+                },
+                set: function (value) {
+                    if (this._lineWidth === value) {
+                        return;
+                    }
+                    this._lineWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLine.prototype, "horizontalAlignment", {
+                set: function (value) {
+                    return;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLine.prototype, "verticalAlignment", {
+                set: function (value) {
+                    return;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            MultiLine.prototype._getTypeName = function () {
+                return "MultiLine";
+            };
+            MultiLine.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+                this._applyStates(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    context.strokeStyle = this.color;
+                    context.lineWidth = this._lineWidth;
+                    context.setLineDash(this._dash);
+                    context.beginPath();
+                    var first = true; //first index is not necessarily 0
+                    this._points.forEach(function (point) {
+                        if (!point) {
+                            return;
+                        }
+                        if (first) {
+                            context.moveTo(point._point.x, point._point.y);
+                            first = false;
+                        }
+                        else {
+                            context.lineTo(point._point.x, point._point.y);
+                        }
+                    });
+                    context.stroke();
+                }
+                context.restore();
+            };
+            MultiLine.prototype._additionalProcessing = function (parentMeasure, context) {
+                var _this = this;
+                this._minX = null;
+                this._minY = null;
+                this._maxX = null;
+                this._maxY = null;
+                this._points.forEach(function (point, index) {
+                    if (!point) {
+                        return;
+                    }
+                    point.translate();
+                    if (_this._minX == null || point._point.x < _this._minX)
+                        _this._minX = point._point.x;
+                    if (_this._minY == null || point._point.y < _this._minY)
+                        _this._minY = point._point.y;
+                    if (_this._maxX == null || point._point.x > _this._maxX)
+                        _this._maxX = point._point.x;
+                    if (_this._maxY == null || point._point.y > _this._maxY)
+                        _this._maxY = point._point.y;
+                });
+                if (this._minX == null)
+                    this._minX = 0;
+                if (this._minY == null)
+                    this._minY = 0;
+                if (this._maxX == null)
+                    this._maxX = 0;
+                if (this._maxY == null)
+                    this._maxY = 0;
+            };
+            MultiLine.prototype._measure = function () {
+                if (this._minX == null || this._maxX == null || this._minY == null || this._maxY == null) {
+                    return;
+                }
+                this._currentMeasure.width = Math.abs(this._maxX - this._minX) + this._lineWidth;
+                this._currentMeasure.height = Math.abs(this._maxY - this._minY) + this._lineWidth;
+            };
+            MultiLine.prototype._computeAlignment = function (parentMeasure, context) {
+                if (this._minX == null || this._minY == null) {
+                    return;
+                }
+                this._currentMeasure.left = this._minX - this._lineWidth / 2;
+                this._currentMeasure.top = this._minY - this._lineWidth / 2;
+            };
+            MultiLine.prototype.dispose = function () {
+                while (this._points.length > 0) {
+                    this.remove(this._points.length - 1);
+                }
+                _super.prototype.dispose.call(this);
+            };
+            return MultiLine;
+        }(GUI.Control));
+        GUI.MultiLine = MultiLine;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

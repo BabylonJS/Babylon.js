@@ -73,7 +73,7 @@ module BABYLON {
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _setErrorObject(message?: string, exception?: any) {
             if (this._errorObject) {

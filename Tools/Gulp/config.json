@@ -13,6 +13,7 @@
             "../../dist/preview release/babylon.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
+            "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
             "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
@@ -1592,7 +1593,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts"
+                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
                 ],
                 "output": "babylon.glTF2Serializer.js"
             }

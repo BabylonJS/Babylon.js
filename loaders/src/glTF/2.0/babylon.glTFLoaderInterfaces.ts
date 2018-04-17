@@ -1,82 +1,59 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 
-/**
- * GLTF2 module for babylon
- */
 module BABYLON.GLTF2 {
-    /**
-     * Interface to access data and vertex buffer associated with a file
-     */
-    export interface ILoaderAccessor extends IAccessor, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderAccessor extends IAccessor, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonVertexBuffer?: Promise<VertexBuffer>;
     }
 
-    /**
-     * Loader's animation channel
-     */
-    export interface ILoaderAnimationChannel extends IAnimationChannel, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderAnimationChannel extends IAnimationChannel, _IArrayItem {
     }
 
-    /**
-     * Container for animation keyframe data
-     */
-    export interface ILoaderAnimationSamplerData {
+    /** @hidden */
+    export interface _ILoaderAnimationSamplerData {
         input: Float32Array;
         interpolation: AnimationSamplerInterpolation;
         output: Float32Array;
     }
 
-    /**
-     * Keyframe data
-     */
-    export interface ILoaderAnimationSampler extends IAnimationSampler, IArrayItem {
-        _data: Promise<ILoaderAnimationSamplerData>;
+    /** @hidden */
+    export interface _ILoaderAnimationSampler extends IAnimationSampler, _IArrayItem {
+        _data: Promise<_ILoaderAnimationSamplerData>;
     }
 
-    /**
-     * Loader animation
-     */
-    export interface ILoaderAnimation extends IAnimation, IArrayItem {
-        channels: ILoaderAnimationChannel[];
-        samplers: ILoaderAnimationSampler[];
+    /** @hidden */
+    export interface _ILoaderAnimation extends IAnimation, _IArrayItem {
+        channels: _ILoaderAnimationChannel[];
+        samplers: _ILoaderAnimationSampler[];
 
         _babylonAnimationGroup?: AnimationGroup;
     }
 
-    /**
-     * Loader buffer
-     */
-    export interface ILoaderBuffer extends IBuffer, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderBuffer extends IBuffer, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
     }
 
-    /**
-     * Loader's buffer data
-     */
-    export interface ILoaderBufferView extends IBufferView, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderBufferView extends IBufferView, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonBuffer?: Promise<Buffer>;
     }
 
-    /**
-     * Loader's loaded camera data
-     */
-    export interface ILoaderCamera extends ICamera, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderCamera extends ICamera, _IArrayItem {
     }
 
-    /**
-     * Loaded image specified by url
-     */
-    export interface ILoaderImage extends IImage, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderImage extends IImage, _IArrayItem {
         _objectURL?: Promise<string>;
     }
 
-    /**
-     * Loaded material data
-     */
-    export interface ILoaderMaterial extends IMaterial, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderMaterial extends IMaterial, _IArrayItem {
         _babylonData?: {
             [drawMode: number]: {
                 material: Material;
@@ -86,83 +63,65 @@ module BABYLON.GLTF2 {
         };
     }
 
-    /**
-     * Loader mesh data
-     */
-    export interface ILoaderMesh extends IMesh, IArrayItem {
-        primitives: ILoaderMeshPrimitive[];
+    /** @hidden */
+    export interface _ILoaderMesh extends IMesh, _IArrayItem {
+        primitives: _ILoaderMeshPrimitive[];
     }
 
-    /**
-     * Loader mesh data
-     */
-    export interface ILoaderMeshPrimitive extends IMeshPrimitive, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderMeshPrimitive extends IMeshPrimitive, _IArrayItem {
     }
 
-    /**
-     * Node for traversing loader data
-     */
-    export interface ILoaderNode extends INode, IArrayItem {
-        _parent: ILoaderNode;
+    /** @hidden */
+    export interface _ILoaderNode extends INode, _IArrayItem {
+        _parent: _ILoaderNode;
         _babylonMesh?: Mesh;
         _primitiveBabylonMeshes?: Mesh[];
         _babylonAnimationTargets?: Node[];
         _numMorphTargets?: number;
     }
 
-    /**
-     * Sampler data
-     */
-    export interface ILoaderSamplerData {
+    /** @hidden */
+    export interface _ILoaderSamplerData {
         noMipMaps: boolean;
         samplingMode: number;
         wrapU: number;
         wrapV: number;
     }
 
-    /**
-     * Sampler data
-     */
-    export interface ILoaderSampler extends ISampler, IArrayItem {
-        _data?: ILoaderSamplerData;
+    /** @hidden */
+    export interface _ILoaderSampler extends ISampler, _IArrayItem {
+        _data?: _ILoaderSamplerData;
     }
 
-    /**
-     * Loader's scene
-     */
-    export interface ILoaderScene extends IScene, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderScene extends IScene, _IArrayItem {
     }
 
-    /**
-     * Loader's skeleton data
-     */
-    export interface ILoaderSkin extends ISkin, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderSkin extends ISkin, _IArrayItem {
         _babylonSkeleton?: Skeleton;
         _loaded?: Promise<void>;
     }
 
-    /**
-     * Loader's texture
-     */
-    export interface ILoaderTexture extends ITexture, IArrayItem {
+    /** @hidden */
+    export interface _ILoaderTexture extends ITexture, _IArrayItem {
     }
 
-    /**
-     * Loaded GLTF data
-     */
-    export interface ILoaderGLTF extends IGLTF {
-        accessors?: ILoaderAccessor[];
-        animations?: ILoaderAnimation[];
-        buffers?: ILoaderBuffer[];
-        bufferViews?: ILoaderBufferView[];
-        cameras?: ILoaderCamera[];
-        images?: ILoaderImage[];
-        materials?: ILoaderMaterial[];
-        meshes?: ILoaderMesh[];
-        nodes?: ILoaderNode[];
-        samplers?: ILoaderSampler[];
-        scenes?: ILoaderScene[];
-        skins?: ILoaderSkin[];
-        textures?: ILoaderTexture[];
+    /** @hidden */
+    export interface _ILoaderGLTF extends IGLTF {
+        accessors?: _ILoaderAccessor[];
+        animations?: _ILoaderAnimation[];
+        buffers?: _ILoaderBuffer[];
+        bufferViews?: _ILoaderBufferView[];
+        cameras?: _ILoaderCamera[];
+        images?: _ILoaderImage[];
+        materials?: _ILoaderMaterial[];
+        meshes?: _ILoaderMesh[];
+        nodes?: _ILoaderNode[];
+        samplers?: _ILoaderSampler[];
+        scenes?: _ILoaderScene[];
+        skins?: _ILoaderSkin[];
+        textures?: _ILoaderTexture[];
     }
 }
