@@ -602,7 +602,7 @@
 
         /**
          * Rebuild the required buffers.
-         * @ignore Internal use only.
+         * @hidden Internal use only.
          */
         public _rebuild(): void {
             let vb = this._vertexBuffers[VertexBuffer.PositionKind];

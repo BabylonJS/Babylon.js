@@ -858,27 +858,41 @@
         }
     }
 
+    /**
+     * Class representing a vector containing 2 coordinates
+     */
     export class Vector2 {
         /**
-         * Creates a new Vector2 from the given x and y coordinates.  
+         * Creates a new Vector2 from the given x and y coordinates
+         * @param x defines the first coordinate
+         * @param y defines the second coordinate
          */
-        constructor(public x: number, public y: number) {
+        constructor(
+            /** defines the first coordinate */
+            public x: number, 
+            /** defines the second coordinate */
+            public y: number) {
         }
+
         /**
-         * Returns a string with the Vector2 coordinates.  
+         * Gets a string with the Vector2 coordinates
+         * @returns a string with the Vector2 coordinates
          */
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + "}";
         }
+
         /**
-         * Returns the string "Vector2"
+         * Gets class name
+         * @returns the string "Vector2"
          */
         public getClassName(): string {
             return "Vector2";
         }
 
         /**
-         * Returns the Vector2 hash code as a number. 
+         * Gets current vector hash code
+         * @returns the Vector2 hash code as a number
          */
         public getHashCode(): number {
             let hash = this.x || 0;
@@ -887,88 +901,116 @@
         }
 
         // Operators
+
         /**
          * Sets the Vector2 coordinates in the given array or Float32Array from the given index.  
-         * Returns the Vector2.  
+         * @param array defines the source array
+         * @param index defines the offset in source array
+         * @returns the current Vector2
          */
         public toArray(array: FloatArray, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
             return this;
         }
+
         /**
-         * Returns a new array with 2 elements : the Vector2 coordinates.  
+         * Copy the current vector to an array
+         * @returns a new array with 2 elements: the Vector2 coordinates.  
          */
         public asArray(): number[] {
             var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
+
         /**
-         *  Sets the Vector2 coordinates with the given Vector2 coordinates.  
-         * Returns the updated Vector2.  
+         * Sets the Vector2 coordinates with the given Vector2 coordinates
+         * @param source defines the source Vector2
+         * @returns the current updated Vector2
          */
         public copyFrom(source: Vector2): Vector2 {
             this.x = source.x;
             this.y = source.y;
             return this;
         }
+
         /**
-         * Sets the Vector2 coordinates with the given floats.  
-         * Returns the updated Vector2.  
+         * Sets the Vector2 coordinates with the given floats
+         * @param x defines the first coordinate
+         * @param y defines the second coordinate
+         * @returns the current updated Vector2  
          */
         public copyFromFloats(x: number, y: number): Vector2 {
             this.x = x;
             this.y = y;
             return this;
         }
+
         /**
-         * Sets the Vector2 coordinates with the given floats.  
-         * Returns the updated Vector2.  
+         * Sets the Vector2 coordinates with the given floats
+         * @param x defines the first coordinate
+         * @param y defines the second coordinate
+         * @returns the current updated Vector2
          */
         public set(x: number, y: number): Vector2 {
             return this.copyFromFloats(x, y);
         }
         /**
-         * Returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates.  
+         * Add another vector with the current one
+         * @param otherVector defines the other vector
+         * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
          */
         public add(otherVector: Vector2): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
+
         /**
-         * Sets the "result" coordinates with the addition of the current Vector2 and the given one coordinates. 
-         * Returns the Vector2.   
+         * Sets the "result" coordinates with the addition of the current Vector2 and the given one coordinates
+         * @param otherVector defines the other vector
+         * @param result defines the target vector
+         * @returns the unmodified current Vector2 
          */
         public addToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
             return this;
         }
+
         /**
-         * Set the Vector2 coordinates by adding the given Vector2 coordinates.  
-         * Returns the updated Vector2.  
+         * Set the Vector2 coordinates by adding the given Vector2 coordinates
+         * @param otherVector defines the other vector 
+         * @returns the current updated Vector2
          */
         public addInPlace(otherVector: Vector2): Vector2 {
             this.x += otherVector.x;
             this.y += otherVector.y;
             return this;
         }
+
         /**
-         * Returns a new Vector2 by adding the current Vector2 coordinates to the given Vector3 x, y coordinates.  
+         * Gets a new Vector2 by adding the current Vector2 coordinates to the given Vector3 x, y coordinates
+         * @param otherVector defines the other vector 
+         * @returns a new Vector2
          */
         public addVector3(otherVector: Vector3): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
         /**
-         * Returns a new Vector2 set with the subtracted coordinates of the given one from the current Vector2.  
+         * Gets a new Vector2 set with the subtracted coordinates of the given one from the current Vector2
+         * @param otherVector defines the other vector 
+         * @returns a new Vector2
          */
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
+
         /**
          * Sets the "result" coordinates with the subtraction of the given one from the current Vector2 coordinates.  
-         * Returns the Vector2.  
+         * @param otherVector defines the other vector
+         * @param result defines the target vector
+         * @returns the unmodified current Vector2 
          */
         public subtractToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x - otherVector.x;
@@ -976,53 +1018,72 @@
             return this;
         }
         /**
-         * Sets the current Vector2 coordinates by subtracting from it the given one coordinates.  
-         * Returns the updated Vector2.  
+         * Sets the current Vector2 coordinates by subtracting from it the given one coordinates
+         * @param otherVector defines the other vector 
+         * @returns the current updated Vector2
          */
         public subtractInPlace(otherVector: Vector2): Vector2 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
             return this;
         }
+
         /**
-         * Multiplies in place the current Vector2 coordinates by the given ones.  
-         * Returns the updated Vector2.  
+         * Multiplies in place the current Vector2 coordinates by the given ones
+         * @param otherVector defines the other vector 
+         * @returns the current updated Vector2 
          */
         public multiplyInPlace(otherVector: Vector2): Vector2 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
             return this;
         }
+
         /**
-         * Returns a new Vector2 set with the multiplication of the current Vector2 and the given one coordinates.  
+         * Returns a new Vector2 set with the multiplication of the current Vector2 and the given one coordinates
+         * @param otherVector defines the other vector 
+         * @returns a new Vector2
          */
         public multiply(otherVector: Vector2): Vector2 {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
         }
+        
         /**
-         * Sets "result" coordinates with the multiplication of the current Vector2 and the given one coordinates.  
-         * Returns the Vector2.  
+         * Sets "result" coordinates with the multiplication of the current Vector2 and the given one coordinates
+         * @param otherVector defines the other vector
+         * @param result defines the target vector
+         * @returns the unmodified current Vector2 
          */
         public multiplyToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
             return this;
         }
+
         /**
-         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the given floats.  
+         * Gets a new Vector2 set with the Vector2 coordinates multiplied by the given floats
+         * @param x defines the first coordinate
+         * @param y defines the second coordinate 
+         * @returns a new Vector2 
          */
         public multiplyByFloats(x: number, y: number): Vector2 {
             return new Vector2(this.x * x, this.y * y);
         }
+
         /**
-         * Returns a new Vector2 set with the Vector2 coordinates divided by the given one coordinates.  
+         * Returns a new Vector2 set with the Vector2 coordinates divided by the given one coordinates
+         * @param otherVector defines the other vector
+         * @returns a new Vector2
          */
         public divide(otherVector: Vector2): Vector2 {
             return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
         }
+
         /**
-         * Sets the "result" coordinates with the Vector2 divided by the given one coordinates.   
-         * Returns the Vector2.  
+         * Sets the "result" coordinates with the Vector2 divided by the given one coordinates
+         * @param otherVector defines the other vector
+         * @param result defines the target vector
+         * @returns the unmodified current Vector2 
          */
         public divideToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x / otherVector.x;
@@ -1031,22 +1092,26 @@
         }
 
         /**
-         * Divides the current Vector3 coordinates by the given ones.  
-         * Returns the updated Vector3.  
+         * Divides the current Vector3 coordinates by the given ones
+         * @param otherVector defines the other vector
+         * @returns the current updated Vector2
          */
         public divideInPlace(otherVector: Vector2): Vector2 {
             return this.divideToRef(otherVector, this);
         }
 
         /**
-         * Returns a new Vector2 with current Vector2 negated coordinates.  
+         * Gets a new Vector2 with current Vector2 negated coordinates
+         * @returns a new Vector2 
          */
         public negate(): Vector2 {
             return new Vector2(-this.x, -this.y);
         }
+
         /**
-         * Multiply the Vector2 coordinates by scale.  
-         * Returns the updated Vector2.  
+         * Multiply the Vector2 coordinates by scale
+         * @param scale defines the scaling factor
+         * @returns the current updated Vector2
          */
         public scaleInPlace(scale: number): Vector2 {
             this.x *= scale;
@@ -1055,7 +1120,9 @@
         }
 
         /**
-         * Returns a new Vector2 scaled by "scale" from the current Vector2.  
+         * Returns a new Vector2 scaled by "scale" from the current Vector2
+         * @param scale defines the scaling factor 
+         * @returns a new Vector2 
          */
         public scale(scale: number): Vector2 {
             let result = new Vector2(0, 0);
@@ -1088,36 +1155,47 @@
         } 
 
         /**
-         * Boolean : True if the given vector coordinates strictly equal the current Vector2 ones.  
+         * Gets a boolean if two vectors are equals
+         * @param otherVector defines the other vector
+         * @returns true if the given vector coordinates strictly equal the current Vector2 ones 
          */
         public equals(otherVector: Vector2): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
+
         /**
-         * Boolean : True if the given vector coordinates are close to the current ones by a distance of epsilon.  
+         * Gets a boolean if two vectors are equals (using an epsilon value)
+         * @param otherVector defines the other vector
+         * @param epsilon defines the minimal distance to consider equality
+         * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.  
          */
         public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
         // Properties
+
         /**
-         * Returns the vector length (float).  
+         * Gets the length of the vector
+         * @returns the vector length (float)
          */
         public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y);
         }
+
         /**
-         * Returns the vector squared length (float);
+         * Gets the vector squared length
+         * @returns the vector squared length (float)
          */
         public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y);
         }
 
         // Methods
+
         /**
-         * Normalize the vector.  
-         * Returns the updated Vector2.  
+         * Normalize the vector 
+         * @returns the current updated Vector2
          */
         public normalize(): Vector2 {
             var len = this.length();
@@ -1132,34 +1210,48 @@
 
             return this;
         }
+
         /**
-         * Returns a new Vector2 copied from the Vector2.  
+         * Gets a new Vector2 copied from the Vector2
+         * @returns a new Vector2
          */
         public clone(): Vector2 {
             return new Vector2(this.x, this.y);
         }
 
         // Statics
+
         /**
-         * Returns a new Vector2(0, 0)
+         * Gets a new Vector2(0, 0)
+         * @returns a new Vector2
          */
         public static Zero(): Vector2 {
             return new Vector2(0, 0);
         }
+
         /**
-         * Returns a new Vector2(1, 1)
+         * Gets a new Vector2(1, 1)
+         * @returns a new Vector2
          */
         public static One(): Vector2 {
             return new Vector2(1, 1);
         }
+
         /**
-         * Returns a new Vector2 set from the given index element of the given array.
+         * Gets a new Vector2 set from the given index element of the given array
+         * @param array defines the data source
+         * @param offset defines the offset in the data source
+         * @returns a new Vector2
          */
         public static FromArray(array: ArrayLike<number>, offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
+
         /**
-         * Sets "result" from the given index element of the given array.
+         * Sets "result" from the given index element of the given array
+         * @param array defines the data source
+         * @param offset defines the offset in the data source
+         * @param result defines the target vector
          */
         public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void {
             result.x = array[offset];
@@ -1167,7 +1259,13 @@
         }
 
         /**
-         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the given four Vector2.  
+         * Gets a new Vector2 located for "amount" (float) on the CatmullRom spline defined by the given four Vector2
+         * @param value1 defines 1st point of control
+         * @param value2 defines 2nd point of control
+         * @param value3 defines 3rd point of control
+         * @param value4 defines 4th point of control
+         * @param amount defines the interpolation factor
+         * @returns a new Vector2
          */
         public static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
@@ -1187,7 +1285,11 @@
         /**
          * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".  
          * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.  
-         * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate.
+         * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate
+         * @param value defines the value to clamp
+         * @param min defines the lower limit
+         * @param max defines the upper limit
+         * @returns a new Vector2
          */
         public static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2 {
             var x = value.x;
@@ -1202,7 +1304,13 @@
         }
 
         /**
-         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2".
+         * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2"
+         * @param value1 defines the 1st control point
+         * @param tangent1 defines the outgoing tangent
+         * @param value2 defines the 2nd control point
+         * @param tangent2 defines the incoming tangent
+         * @param amount defines the interpolation factor
+         * @returns a new Vector2
          */
         public static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2 {
             var squared = amount * amount;
@@ -1220,6 +1328,10 @@
 
         /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".          
+         * @param start defines the start vector
+         * @param end defines the end vector 
+         * @param amount defines the interpolation factor
+         * @returns a new Vector2
          */
         public static Lerp(start: Vector2, end: Vector2, amount: number): Vector2 {
             var x = start.x + ((end.x - start.x) * amount);
@@ -1228,14 +1340,19 @@
         }
 
         /**
-         * Returns the dot product (float) of the vector "left" and the vector "right".  
+         * Gets the dot product of the vector "left" and the vector "right"
+         * @param left defines first vector
+         * @param right defines second vector
+         * @returns the dot product (float)
          */
         public static Dot(left: Vector2, right: Vector2): number {
             return left.x * right.x + left.y * right.y;
         }
 
         /**
-         * Returns a new Vector2 equal to the normalized given vector.  
+         * Returns a new Vector2 equal to the normalized given vector
+         * @param vector defines the vector to normalize
+         * @returns a new Vector2 
          */
         public static Normalize(vector: Vector2): Vector2 {
             var newVector = vector.clone();
@@ -1244,7 +1361,10 @@
         }
 
         /**
-         * Returns a new Vecto2 set with the minimal coordinate values from the "left" and "right" vectors.  
+         * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
+         * @param left defines 1st vector
+         * @param right defines 2nd vector
+         * @returns a new Vector2 
          */
         public static Minimize(left: Vector2, right: Vector2): Vector2 {
             var x = (left.x < right.x) ? left.x : right.x;
@@ -1253,7 +1373,10 @@
         }
 
         /**
-         * Returns a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors. 
+         * Gets a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors
+         * @param left defines 1st vector
+         * @param right defines 2nd vector
+         * @returns a new Vector2 
          */
         public static Maximize(left: Vector2, right: Vector2): Vector2 {
             var x = (left.x > right.x) ? left.x : right.x;
@@ -1262,7 +1385,10 @@
         }
 
         /**
-         * Returns a new Vecto2 set with the transformed coordinates of the given vector by the given transformation matrix.  
+         * Gets a new Vector2 set with the transformed coordinates of the given vector by the given transformation matrix
+         * @param vector defines the vector to transform
+         * @param transformation defines the matrix to apply
+         * @returns a new Vector2
          */
         public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
             let r = Vector2.Zero();
@@ -1271,7 +1397,10 @@
         }
 
         /**
-         * Transforms the given vector coordinates by the given transformation matrix and stores the result in the vector "result" coordinates.  
+         * Transforms the given vector coordinates by the given transformation matrix and stores the result in the vector "result" coordinates
+         * @param vector defines the vector to transform
+         * @param transformation defines the matrix to apply
+         * @param result defines the target vector
          */
         public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
@@ -1281,7 +1410,12 @@
         }
 
         /**
-         * Boolean : True if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
+         * Determines if a given vector is included in a triangle
+         * @param p defines the vector to test
+         * @param p0 defines 1st triangle point
+         * @param p1 defines 2nd triangle point
+         * @param p2 defines 3rd triangle point
+         * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
          */
         public static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2) {
             let a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
@@ -1293,14 +1427,20 @@
         }
 
         /**
-         * Returns the distance (float) between the vectors "value1" and "value2".  
+         * Gets the distance between the vectors "value1" and "value2"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @returns the distance between vectors
          */
         public static Distance(value1: Vector2, value2: Vector2): number {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         }
 
         /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".  
+         * Returns the squared distance between the vectors "value1" and "value2"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @returns the squared distance between vectors
          */
         public static DistanceSquared(value1: Vector2, value2: Vector2): number {
             var x = value1.x - value2.x;
@@ -1309,7 +1449,10 @@
         }
 
         /**
-         * Returns a new Vecto2 located at the center of the vectors "value1" and "value2".  
+         * Gets a new Vector2 located at the center of the vectors "value1" and "value2"
+         * @param value1 defines first vector
+         * @param value2 defines second vector
+         * @returns a new Vector2
          */
         public static Center(value1: Vector2, value2: Vector2): Vector2 {
             var center = value1.add(value2);
@@ -1318,7 +1461,11 @@
         }
 
         /**
-         * Returns the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".  
+         * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".  
+         * @param p defines the middle point 
+         * @param segA defines one point of the segment
+         * @param segB defines the other point of the segment
+         * @returns the shortest distance
          */
         public static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number {
             let l2 = Vector2.DistanceSquared(segA, segB);
@@ -3790,7 +3937,7 @@
          */
         public m: Float32Array = new Float32Array(16);
 
-        /** @ignore */
+        /** @hidden */
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;
@@ -5902,6 +6049,9 @@
         CCW = 1
     }
 
+    /**
+     * Defines angle representation
+     */
     export class Angle {
         private _radians: number;
 
@@ -5914,16 +6064,26 @@
         }
 
         /**
-         * Returns the Angle value in degrees (float).  
+         * Get value in degrees
+         * @returns the Angle value in degrees (float)
          */
-        public degrees = () => this._radians * 180.0 / Math.PI;
-        /**
-         * Returns the Angle value in radians (float).  
-         */
-        public radians = () => this._radians;
+        public degrees() {
+            return this._radians * 180.0 / Math.PI;
+        }
 
         /**
-         * Returns a new Angle object valued with the angle value in radians between the two given vectors.  
+         * Get value in radians
+         * @returns the Angle value in radians (float)
+         */
+        public radians() {
+            return this._radians;
+        }
+
+        /**
+         * Gets a new Angle object valued with the angle value in radians between the two given vectors
+         * @param a defines first vector
+         * @param b defines second vector
+         * @returns a new Angle  
          */
         public static BetweenTwoPoints(a: Vector2, b: Vector2): Angle {
             var delta = b.subtract(a);
@@ -5932,13 +6092,17 @@
         }
 
         /**
-         * Returns a new Angle object from the given float in radians.  
+         * Gets a new Angle object from the given float in radians
+         * @param radians defines the angle value in radians
+         * @returns a new Angle
          */
         public static FromRadians(radians: number): Angle {
             return new Angle(radians);
         }
         /**
-         * Returns a new Angle object from the given float in degrees.  
+         * Gets a new Angle object from the given float in degrees
+         * @param degrees defines the angle value in degrees
+         * @returns a new Angle
          */
         public static FromDegrees(degrees: number): Angle {
             return new Angle(degrees * Math.PI / 180.0);

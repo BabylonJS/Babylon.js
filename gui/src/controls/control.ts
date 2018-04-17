@@ -278,7 +278,7 @@ module BABYLON.GUI {
             this._fontSet = true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get _isFontSizeInPercentage(): boolean {
             return this._fontSize.isPercentage;
         }
@@ -493,7 +493,7 @@ module BABYLON.GUI {
             return "Control";
         }
 
-        /** @ignore */
+        /** @hidden */
         public _resetFontCache(): void {
             this._fontSet = true;
         }

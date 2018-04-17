@@ -293,17 +293,17 @@
             return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _markAsDirty(): void {
             this._isDirty = true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
             this._meshesWithPoseMatrix.push(mesh);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
             var index = this._meshesWithPoseMatrix.indexOf(mesh);
 
@@ -312,7 +312,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
 
             this.onBeforeComputeObservable.notifyObservers(this);

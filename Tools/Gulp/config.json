@@ -13,6 +13,7 @@
             "../../dist/preview release/babylon.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
+            "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
             "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
@@ -1592,7 +1593,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts"
+                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
                 ],
                 "output": "babylon.glTF2Serializer.js"
             }
@@ -1622,6 +1625,7 @@
                     "../../gui/src/measure.ts",
                     "../../gui/src/math2D.ts",
                     "../../gui/src/valueAndUnit.ts",
+                    "../../gui/src/multiLinePoint.ts",
                     "../../gui/src/controls/control.ts",
                     "../../gui/src/controls/container.ts",
                     "../../gui/src/controls/stackPanel.ts",
@@ -1636,7 +1640,8 @@
                     "../../gui/src/controls/button.ts",
                     "../../gui/src/controls/colorpicker.ts",
                     "../../gui/src/controls/inputText.ts",
-                    "../../gui/src/controls/virtualKeyboard.ts"
+                    "../../gui/src/controls/virtualKeyboard.ts",
+                    "../../gui/src/controls/multiLine.ts"
                 ],
                 "output": "babylon.gui.js",
                 "buildAsModule": true,

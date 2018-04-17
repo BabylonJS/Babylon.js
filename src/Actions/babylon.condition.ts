@@ -5,19 +5,19 @@
     export class Condition {
         /**
          * Internal only - manager for action
-         * @ignore 
+         * @hidden 
          */
         public _actionManager: ActionManager;
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _evaluationId: number;
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _currentResult: boolean;
 
@@ -39,7 +39,7 @@
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         public _getProperty(propertyPath: string): string {
             return this._actionManager._getProperty(propertyPath);
@@ -47,7 +47,7 @@
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
@@ -62,7 +62,7 @@
         
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         protected _serialize(serializedCondition: any): any {
             return { 
@@ -81,25 +81,25 @@
         
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private static _IsEqual = 0;
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private static _IsDifferent = 1;
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private static _IsGreater = 2;
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private static _IsLesser = 3;
 
@@ -133,25 +133,25 @@
 
         /**
          * Internal only The action manager for the condition
-         * @ignore 
+         * @hidden 
          */
         public _actionManager: ActionManager;
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private _target: any;
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private _effectiveTarget: any;
 
         /**
          * Internal only 
-         * @ignore 
+         * @hidden 
          */
         private _property: string;
 
@@ -241,7 +241,7 @@
         
         /**
          * Internal only - manager for action
-         * @ignore 
+         * @hidden 
          */
         public _actionManager: ActionManager;
 
@@ -272,13 +272,13 @@
         
         /**
          * Internal only - manager for action
-         * @ignore 
+         * @hidden 
          */
         public _actionManager: ActionManager;
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         private _target: any;
 
