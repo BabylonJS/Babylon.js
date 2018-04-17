@@ -30,8 +30,6 @@ export class ModelLoader {
         this._loaders = [];
         this._loadId = 0;
         this._plugins = [];
-
-        this.addPlugin("telemetry");
     }
 
     public addPlugin(plugin: ILoaderPlugin | string) {
@@ -97,11 +95,21 @@ export class ModelLoader {
             let gltfLoader = (<GLTFFileLoader>model.loader);
             gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
             gltfLoader.compileMaterials = true;
+            // if ground is set to "mirror":
+            if (this._viewer.configuration.ground && typeof this._viewer.configuration.ground === 'object' && this._viewer.configuration.ground.mirror) {
+                gltfLoader.useClipPlane = true;
+            }
             Object.keys(gltfLoader).filter(name => name.indexOf('on') === 0 && name.indexOf('Observable') !== -1).forEach(functionName => {
                 gltfLoader[functionName].add((payload) => {
                     this._checkAndRun(functionName.replace("Observable", ''), payload);
                 });
             });
+
+            gltfLoader.onParsedObservable.add((data) => {
+                if (data && data.json && data.json['asset']) {
+                    model.loadInfo = data.json['asset'];
+                }
+            })
         }
 
         this._checkAndRun("onInit", model.loader, model);
@@ -138,6 +146,7 @@ export class ModelLoader {
     }
 
     private _checkAndRun(functionName: string, ...payload: Array<any>) {
+        if (this._disposed) return;
         this._plugins.filter(p => p[functionName]).forEach(plugin => {
             try {
                 plugin[functionName].apply(this, payload);

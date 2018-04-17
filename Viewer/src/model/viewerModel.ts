@@ -1,5 +1,5 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride } from "babylonjs";
-import { GLTFFileLoader } from "babylonjs-loaders";
+import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
 
@@ -78,6 +78,8 @@ export class ViewerModel implements IDisposable {
      * A loadID provided by the modelLoader, unique to ths (Abstract)Viewer instance.
      */
     public loadId: number;
+
+    public loadInfo: GLTF2.IAsset;
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
