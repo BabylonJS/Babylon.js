@@ -1,4 +1,4 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3 } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride } from "babylonjs";
 import { GLTFFileLoader } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
@@ -166,6 +166,11 @@ export class ViewerModel implements IDisposable {
 
 
     private _initAnimations() {
+        Animation.AllowMatricesInterpolation = true;
+        this._viewer.sceneManager.scene.animationPropertiesOverride = new AnimationPropertiesOverride();
+        this._viewer.sceneManager.scene.animationPropertiesOverride.enableBlending = true;
+        this._viewer.sceneManager.scene.animationPropertiesOverride.blendingSpeed = 0.02;
+        this._viewer.sceneManager.scene.animationPropertiesOverride.loopMode = 1;
         // check if this is not a gltf loader and init the animations
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {

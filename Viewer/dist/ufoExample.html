@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - UFO</title>
+        <style>
+            babylon,
+            #viewport {
+                max-width: 1000px;
+                max-height: 800px;
+                width: 100%;
+                height: 800px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon id="babylon-viewer" extends="extended" templates.nav-bar.params.disable-on-fullscreen="true">
+            <scene glow="true">
+                <main-color r="0.5" g="0.2" b="0.2"></main-color>
+            </scene>
+            <model url="https://models.babylonjs.com/ufo.glb">
+                <animation auto-start="true"></animation>
+            </model>
+            <lights>
+                <light2 shadow-ortho-scale="0.5">
+                    <position x="0" y="6" z="6"></position>
+                </light2>
+            </lights>
+        </babylon>
+        <script src="viewer.js"></script>
+        <script>
+        </script>
+    </body>
+
+</html>

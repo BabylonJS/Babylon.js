@@ -92,6 +92,10 @@ export class DefaultViewer extends AbstractViewer {
             this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
 
             this.templateManager.eventManager.registerCallback('navBar', this.toggleFullscreen, 'pointerdown', '#fullscreen-button');
+            this.templateManager.eventManager.registerCallback('navBar', (data) => {
+                if (data && data.event && data.event.target)
+                    this.sceneManager.models[0].playAnimation(data.event.target['value']);
+            }, 'change', '#animation-selector');
         }
     }
 
@@ -130,6 +134,10 @@ export class DefaultViewer extends AbstractViewer {
     protected _configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
+
+        if (model.getAnimationNames().length > 1) {
+            navbar.updateParams({ animations: model.getAnimationNames() });
+        }
 
         let modelConfiguration = model.configuration;
 

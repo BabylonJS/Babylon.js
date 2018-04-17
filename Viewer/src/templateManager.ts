@@ -1,6 +1,7 @@
 
 import { Observable, IFileRequest, Tools } from 'babylonjs';
 import { isUrl, camelToKebab, kebabToCamel } from './helper';
+import * as deepmerge from '../assets/deepmerge.min.js';
 
 /**
  * A single template configuration object
@@ -294,6 +295,7 @@ export class Template {
     public initPromise: Promise<Template>;
 
     private _fragment: DocumentFragment | Element;
+    private _addedFragment: DocumentFragment | Element;
     private _htmlTemplate: string;
     private _rawHtml: string;
 
@@ -341,11 +343,15 @@ export class Template {
      * 
      * @param params the new template parameters
      */
-    public updateParams(params: { [key: string]: string | number | boolean | object }) {
-        this._configuration.params = params;
+    public updateParams(params: { [key: string]: string | number | boolean | object }, append: boolean = true) {
+        if (append) {
+            this._configuration.params = deepmerge(this._configuration.params, params);
+        } else {
+            this._configuration.params = params;
+        }
         // update the template
         if (this.isLoaded) {
-            this.dispose();
+            // this.dispose();
         }
         let compiledTemplate = Handlebars.compile(this._htmlTemplate);
         let config = this._configuration.params || {};
@@ -401,8 +407,11 @@ export class Template {
      */
     public appendTo(parent: HTMLElement, forceRemove?: boolean) {
         if (this.parent) {
-            if (forceRemove && this._fragment) {
-                this.parent.removeChild(this._fragment);
+            if (forceRemove && this._addedFragment) {
+                /*let fragement = this.parent.querySelector(this.name)
+                if (fragement)
+                    this.parent.removeChild(fragement);*/
+                this.parent.innerHTML = '';
             } else {
                 return;
             }
@@ -413,7 +422,8 @@ export class Template {
             this.parent.id = this._configuration.id;
         }
         if (this._fragment) {
-            this._fragment = this.parent.appendChild(this._fragment);
+            this.parent.appendChild(this._fragment);
+            this._addedFragment = this._fragment;
         } else {
             this.parent.insertAdjacentHTML("beforeend", this._rawHtml);
         }

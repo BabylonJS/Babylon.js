@@ -38,7 +38,8 @@ export let defaultConfiguration: ViewerConfiguration = {
             },
             events: {
                 pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ },
-                pointerover: true
+                pointerover: true,
+                change: { 'animation-selector': true }
             }
         },
         overlay: {
@@ -68,7 +69,8 @@ export let defaultConfiguration: ViewerConfiguration = {
                 zoomStopsAnimation: false
             },
             bouncing: 1
-        }
+        },
+        wheelPrecision: 200,
     },
     skybox: {
         /*cubeTexture: {

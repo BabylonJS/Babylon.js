@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4 } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -136,7 +136,7 @@ export class SceneManager {
     /**
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      */
-    public initScene(sceneConfiguration?: ISceneConfiguration, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
+    public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
 
         // if the scen exists, dispose it.
         if (this.scene) {
@@ -155,6 +155,16 @@ export class SceneManager {
         this.scene.defaultMaterial = defaultMaterial;
 
         this._mainColor = new Color3();
+
+        if (sceneConfiguration.glow) {
+            let options: Partial<IGlowLayerOptions> = {
+                mainTextureFixedSize: 512
+            };
+            if (typeof sceneConfiguration.glow === 'object') {
+                options = sceneConfiguration.glow
+            }
+            var gl = new BABYLON.GlowLayer("glow", this.scene, options);
+        }
 
         if (sceneConfiguration) {
             this._configureScene(sceneConfiguration);
@@ -219,11 +229,11 @@ export class SceneManager {
                     this._mainColor.b = mc.b
                 }
 
-                this._mainColor.toLinearSpaceToRef(this._mainColor);
+                /*this._mainColor.toLinearSpaceToRef(this._mainColor);
                 let exposure = Math.pow(2.0, -((globalConfiguration.camera && globalConfiguration.camera.exposure) || 0.75)) * Math.PI;
                 this._mainColor.scaleToRef(1 / exposure, this._mainColor);
                 let environmentTint = (globalConfiguration.lab && globalConfiguration.lab.environmentMap && globalConfiguration.lab.environmentMap.tintLevel) || 0;
-                this._mainColor = BABYLON.Color3.Lerp(this._white, this._mainColor, environmentTint);
+                this._mainColor = Color3.Lerp(this._white, this._mainColor, environmentTint);*/
             }
         }
 
@@ -542,6 +552,8 @@ export class SceneManager {
             }
         }
 
+        this.environmentHelper.setMainColor(this._mainColor);
+
         if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
             this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
         }
@@ -677,7 +689,7 @@ export class SceneManager {
                         shadowGenerator = new ShadowGenerator(512, light);
                         // TODO blur kernel definition
                     }
-                    extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
+
                     // add the focues meshes to the shadow list
                     let shadownMap = shadowGenerator.getShadowMap();
                     if (!shadownMap) return;
@@ -696,6 +708,8 @@ export class SceneManager {
                     shadowGenerator.bias = this._shadowGeneratorBias;
                     shadowGenerator.blurKernel = blurKernel;
                     shadowGenerator.depthScale = 50 * (light.shadowMaxZ - light.shadowMinZ);
+                    //override defaults
+                    extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                 } else if (shadowGenerator) {
                     shadowGenerator.dispose();
                 }
@@ -727,7 +741,7 @@ export class SceneManager {
      * @return the kernel blur size
      */
     public getBlurKernel(light: BABYLON.IShadowLight, bufferSize: number): number {
-        var normalizedBlurKernel = 0.03; // TODO Should come from the config.
+        var normalizedBlurKernel = 0.05; // TODO Should come from the config.
         if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
             normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.DirectionalLight>light).shadowFrustumSize;
         }
