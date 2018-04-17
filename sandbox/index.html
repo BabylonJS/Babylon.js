@@ -44,16 +44,15 @@
         <div class="footerLeft">
         </div>
         <div class="footerRight">
-            <div class="icon-bar">
-                <a class="active" href="#"><i class="fa fa-home"></i></a> 
-                <a href="#"><img src="./Assets/Icon_Fullscreen.svg" alt="Switch the scene to full screen" title="Switch the scene to full screen" /></a> 
-                <a href="#"><img src="./Assets/Icon_Dashboard.svg" alt="Display inspector" title="Display inspector" /></i></a> 
+            <div class="footerRight">
+                <a href="#" id="btnFullscreen" class="hidden"><img src="./Assets/Icon_Fullscreen.svg" alt="Switch the scene to full screen" title="Switch the scene to full screen" /></a> 
+                <a href="#" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg" alt="Display inspector" title="Display inspector" /></i></a> 
                 <a href="#">
                     <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
                         <input type="file" id="files" multiple />
                     </div>
                 </a>
-            </div>             
+            </div>          
         </div>
     </div>
     <div id="errorZone"></div>
