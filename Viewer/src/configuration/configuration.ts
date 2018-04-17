@@ -53,7 +53,12 @@ export interface ViewerConfiguration {
     }
 
     loaderPlugins?: {
-        [propName: string]: boolean;
+        extendedMaterial?: boolean;
+        msftLod?: boolean;
+        telemetry?: boolean;
+        minecraft?: boolean;
+
+        [propName: string]: boolean | undefined;
     };
 
     // features that are being tested.
@@ -136,6 +141,11 @@ export interface IModelConfiguration {
      * the offset angle
      */
     rotationOffsetAngle?: number;
+
+    loaderConfiguration?: {
+        maxLODsToLoad?: number;
+        progressiveLoading?: boolean;
+    }
 
     // [propName: string]: any; // further configuration, like title and creator
 }

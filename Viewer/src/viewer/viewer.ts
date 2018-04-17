@@ -173,6 +173,14 @@ export abstract class AbstractViewer {
             if (this._configuration.observers) {
                 this._configureObservers(this._configuration.observers);
             }
+            if (this._configuration.loaderPlugins) {
+                // TODO should plugins be removed?
+                Object.keys(this._configuration.loaderPlugins).forEach((name => {
+                    if (this._configuration.loaderPlugins && this._configuration.loaderPlugins[name]) {
+                        this.modelLoader.addPlugin(name);
+                    }
+                }))
+            }
             // initialize the templates
             let templateConfiguration = this._configuration.templates || {};
             this.templateManager.initTemplate(templateConfiguration);

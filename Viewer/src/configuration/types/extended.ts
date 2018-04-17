@@ -81,6 +81,12 @@ export let extendedConfiguration: ViewerConfiguration = {
             b: 0.8
         }
     },
+    loaderPlugins: {
+        extendedMaterial: true,
+        minecraft: true,
+        msftLod: true,
+        telemetry: true
+    },
     model: {
         rotationOffsetAxis: {
             x: 0,
