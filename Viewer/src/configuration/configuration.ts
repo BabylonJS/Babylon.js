@@ -1,5 +1,5 @@
 import { ITemplateConfiguration } from './../templateManager';
-import { EngineOptions } from 'babylonjs';
+import { EngineOptions, IGlowLayerOptions } from 'babylonjs';
 
 export interface ViewerConfiguration {
 
@@ -187,6 +187,7 @@ export interface ISceneConfiguration {
     environmentTexture?: string;
     colorGrading?: IColorGradingConfiguration;
     environmentRotationY?: number;
+    glow?: boolean | IGlowLayerOptions;
 }
 
 /**

@@ -56,7 +56,8 @@
         font-size: 90%;
     }
 
-    div.button-container {
+    div.button-container,
+    div.animation-container {
         align-items: center;
         justify-content: flex-end;
     }
@@ -100,6 +101,14 @@
         <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
     </div>
 </div>
+{{#if animations}}
+<div class="animation-container flex-container">
+    <select id="animation-selector" name="animations">
+        {{#each animations}}
+        <option value="{{this}}">{{this}}</option>> {{/each}}
+    </select>
+</div>
+{{/if}}
 <div class="button-container flex-container">
     <!-- holding the buttons -->
     {{#eachInMap buttons}}
