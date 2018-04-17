@@ -3607,7 +3607,9 @@ var BABYLON;
             GLTFLoader.prototype._loadAnimationChannelAsync = function (context, animationContext, animation, channel, babylonAnimationGroup) {
                 var _this = this;
                 var targetNode = GLTFLoader._GetProperty(context + "/target/node", this._gltf.nodes, channel.target.node);
-                if (!targetNode._babylonMesh) {
+                // Ignore animations that have no animation targets.
+                if ((channel.target.path === "weights" /* WEIGHTS */ && !targetNode._numMorphTargets) ||
+                    (channel.target.path !== "weights" /* WEIGHTS */ && !targetNode._babylonAnimationTargets)) {
                     return Promise.resolve();
                 }
                 // Ignore animations targeting TRS of skinned nodes.

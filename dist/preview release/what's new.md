@@ -114,6 +114,7 @@
 - Added unlit material extension support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - (Viewer) Viewer's declaration file automatically generated ([RaananW](https://github.com/RaananW))
 - New serialize and parse functions for effect layers (Highlight and Glow layers) ([julien-moreau](https://github.com/julien-moreau))
+- GUI: Introduced `MultiLine` which will draw lines between any number of meshes, controls and points. [Documentation](http://doc.babylonjs.com/how_to/gui#multiline) ([royibernthal](https://github.com/royibernthal))
 - Added alphaCutOff support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - Add support for sparse accessors to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - Add support for cameras to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
