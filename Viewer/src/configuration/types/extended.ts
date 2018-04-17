@@ -4,7 +4,7 @@ export let extendedConfiguration: ViewerConfiguration = {
     version: "3.2.0",
     extends: "default",
     camera: {
-        radius: 1.8,
+        radius: 2,
         alpha: -1.5708,
         beta: Math.PI * 0.5 - 0.2618,
         wheelPrecision: 300,
@@ -22,26 +22,24 @@ export let extendedConfiguration: ViewerConfiguration = {
             intensityMode: 0,
             radius: 0.135,
             spotAngle: 59.9967,
-            shadowBufferSize: 512,
-            shadowFieldOfView: 80.977,
-            shadowFrustumSize: 8.0,
-            shadowMinZ: 1.0,
-            shadowMaxZ: 10.0
         },
         "light2": {
             type: 1,
             shadowEnabled: true,
-            target: { x: 0, y: -0.5, z: -1 },
-            position: { x: 1.49, y: 1.39, z: -1.33 },
+            target: { x: 0, y: 0, z: 1 },
+            position: { x: 1.49, y: 2.39, z: -1.33 },
             diffuse: { r: 0.867, g: 0.816, b: 0.788 },
             intensity: 2.887,
             intensityMode: 0,
             shadowBufferSize: 1024,
-            shadowFrustumSize: 3.0,
+            shadowFrustumSize: 4.0,
+            shadowFieldOfView: 80.977,
             shadowMinZ: 0.1,
             shadowMaxZ: 12.0,
+            shadowOrthoScale: 0.5,
             shadowConfig: {
-                blurKernel: 32
+                blurKernel: 32,
+                useBlurExponentialShadowMap: true
             }
         },
         "light3": {
@@ -53,12 +51,7 @@ export let extendedConfiguration: ViewerConfiguration = {
             intensity: 3.052,
             intensityMode: 0,
             radius: 0.5,
-            spotAngle: 42.85,
-            shadowBufferSize: 512,
-            shadowFieldOfView: 80,
-            shadowFrustumSize: 8.0,
-            shadowMinZ: 0.2,
-            shadowMaxZ: 10.0
+            spotAngle: 42.85
         }
     },
     ground: {
