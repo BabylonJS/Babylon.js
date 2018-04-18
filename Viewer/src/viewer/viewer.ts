@@ -604,7 +604,7 @@ export abstract class AbstractViewer {
             platform: navigator.platform
         });
 
-        // telemetryManager.flushWebGLErrors(this);
+        telemetryManager.flushWebGLErrors(this);
 
         let trackFPS: Function = () => {
             telemetryManager.broadcast("Current FPS", this, { fps: this.engine.getFps() });
