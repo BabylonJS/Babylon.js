@@ -782,6 +782,11 @@
          **/
         public enableOfflineSupport = false;
 
+        /** 
+         * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (Babylon.js will always consider the database is up to date)
+         **/
+        public disableManifestCheck = false;        
+
         /**
          * Gets the list of created scenes
          */
