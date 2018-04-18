@@ -215,6 +215,9 @@ export interface ISceneConfiguration {
     colorGrading?: IColorGradingConfiguration;
     environmentRotationY?: number;
     glow?: boolean | IGlowLayerOptions;
+    disableHdr?: boolean;
+    renderInBackground?: boolean;
+    disableCameraControl?: boolean;
     animationPropertiesOverride?: {
         [propName: string]: any;
     }

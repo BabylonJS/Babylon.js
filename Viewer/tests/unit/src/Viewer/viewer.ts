@@ -1,5 +1,5 @@
 import { Helper } from "../../../commons/helper";
-import { assert, expect } from "../viewerReference";
+import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version } from "../../../../src";
 
 export let name = "viewer Tests";
@@ -146,92 +146,89 @@ describe('Viewer', function () {
             assert.equal(resizeCount, 1, "Engine should not resize when if Viewer has been disposed.");
             done();
         });
-    })
+    });
+
+    it('should render in background if set to true', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        viewer.onInitDoneObservable.add(() => {
+            assert.isFalse(viewer.engine.renderEvenInBackground, "Engine is rendering in background");
+            viewer.updateConfiguration({
+                scene: {
+                    renderInBackground: true
+                }
+            });
+            assert.isTrue(viewer.engine.renderEvenInBackground, "Engine is not rendering in background");
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it('should attach and detach camera control correctly', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        viewer.onInitDoneObservable.add(() => {
+            assert.isDefined(viewer.sceneManager.camera.inputs.attachedElement, "Camera is not attached per default");
+            viewer.updateConfiguration({
+                scene: {
+                    disableCameraControl: true
+                }
+            });
+            assert.isNull(viewer.sceneManager.camera.inputs.attachedElement, "Camera is still attached");
+            viewer.updateConfiguration({
+                scene: {
+                    disableCameraControl: false
+                }
+            });
+            assert.isDefined(viewer.sceneManager.camera.inputs.attachedElement, "Camera not attached");
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it('should take screenshot when called', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        viewer.onInitDoneObservable.add(() => {
+            Helper.MockScreenCapture(viewer, Helper.mockScreenCaptureData());
+
+            viewer.takeScreenshot(function (data) {
+                assert.equal(data, Helper.mockScreenCaptureData(), "Screenshot failed.");
+
+                viewer.dispose();
+                done();
+            });
+        });
+    });
+
+    it('should notify observers correctly during init', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+
+        let shouldBeRendering = false;
+
+        viewer.onFrameRenderedObservable.add(() => {
+            assert.isTrue(shouldBeRendering, "rendered before init done");
+            viewer.dispose();
+            done();
+        });
+
+        viewer.onEngineInitObservable.add((engine) => {
+            assert.equal(engine, viewer.engine, "engine instance is not the same");
+            assert.isUndefined(viewer.sceneManager.scene, "scene exists before initScene");
+        });
+
+        viewer.onSceneInitObservable.add((scene) => {
+            assert.equal(scene, viewer.sceneManager.scene, "scene instance is not the same");
+        })
+
+        viewer.onInitDoneObservable.add((viewerInstance) => {
+            assert.isDefined(viewerInstance.sceneManager.scene, "scene is not defined");
+            //scene exists, it should now start rendering
+            shouldBeRendering = true;
+        });
+    });
 });
 
 //}
+/*
 
-
-
-/*QUnit.test('Viewer HDR', function (assert) {
-    let done = assert.async();
-
-    //override _handleHardwareLimitations with no-op to ensure HDR isn't disabled
-    (<any>AbstractViewer.prototype)._handleHardwareLimitations = () => { };
-
-    let viewer: AbstractViewer;
-
-    let frameCount = 0;
-    viewer = new DefaultViewer(Helper.getCanvas(), {
-        hdr: true,
-        renderCallback: () => {
-            frameCount++;
-            if (frameCount === 30) {
-                viewer.dispose();
-                viewer = null;
-                assert.ok(true, 'Successfully rendered 30 HDR frames and disposed');
-                done();
-            }
-        }
-    });
-    viewer.onInitDoneObservable.add(() => {
-        assert.ok(true, "not initialized");
-    });
-});
-
-QUnit.test('Viewer LDR', function (assert) {
-    let done = assert.async();
-
-    let viewer: AbstractViewer;
-
-    let frameCount = 0;
-    viewer = new DefaultViewer(Helper.getCanvas(), {
-        hdr: false,
-        renderCallback: () => {
-            frameCount++;
-            if (frameCount === 30) {
-                viewer.dispose();
-                viewer = null;
-                assert.ok(true, 'Successfully rendered 30 LDR frames and disposed');
-                done();
-            }
-        }
-    });
-});
-
-QUnit.test('Viewer disable render in background', function (assert) {
-    let viewer = new DefaultViewer(Helper.getCanvas());
-
-    QUnit.assert.ok(viewer.RenderInBackground, "Viewer renders in background default.");
-
-    viewer.dispose();
-    viewer = null;
-
-    viewer = new DefaultViewer(Helper.getCanvas(), {
-        disableRenderInBackground: true
-    });
-
-    QUnit.assert.ok(viewer.RenderInBackground === false, "Viewer does not render in background with disableRenderInBackground set to true.");
-
-    viewer.dispose();
-});
-
-QUnit.test('Viewer disable camera control', function (assert) {
-    let viewer = new DefaultViewer(Helper.getCanvas());
-
-    QUnit.assert.ok(viewer.Scene.Camera.inputs.attachedElement, "Viewer should attach camera control by default.");
-
-    viewer.dispose();
-    viewer = null;
-
-    viewer = new DefaultViewer(Helper.getCanvas(), {
-        disableCameraControl: true
-    });
-
-    QUnit.assert.ok(!viewer.Scene.Camera.inputs.attachedElement, "Viewer should not attach camera control with disableCameraControl set to true.");
-
-    viewer.dispose();
-});
 
 QUnit.test('Viewer disable ctrl for panning', function (assert) {
     let viewer = new DefaultViewer(Helper.getCanvas());
@@ -397,15 +394,4 @@ QUnit.test('unlockBabylonFeatures', function () {
     QUnit.assert.ok(viewer.Scene.EngineScene.audioEnabled, "audioEnabled");
 });
 
-QUnit.test('Take Screenshot', function (assert) {
-    let viewer = Helper.createViewer();
-    let done = assert.async();
-
-    Helper.MockScreenCapture(viewer, Helper.mockScreenCaptureData());
-
-    viewer.takeScreenshot(function (data) {
-        QUnit.assert.ok(data === Helper.mockScreenCaptureData(), "Screenshot failed.");
-        done();
-    });
-});
 */
