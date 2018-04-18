@@ -1,6 +1,6 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
-import { DefaultViewer, AbstractViewer, Version } from "../../../../src";
+import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
 
 export let name = "viewer Tests";
 
@@ -9,10 +9,33 @@ export let name = "viewer Tests";
  */
 
 describe('Viewer', function () {
-    it('should initialize a new viewer', (done) => {
+    it('should initialize a new viewer and its internal variables', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        assert.isDefined(viewer.baseId, "base id should be defined");
+        assert.isDefined(viewer.templateManager, "template manager should be defined");
+        assert.isDefined(viewer.sceneManager, "scene manager should be defined");
+        assert.isDefined(viewer.modelLoader, "model loader should be defined");
+        viewer.onInitDoneObservable.add(() => {
+            assert.isDefined(viewer, "Viewer can not be instantiated.");
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it('should be added to the viewer manager', (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isTrue(viewer != undefined, "Viewer can not be instantiated.");
+            assert.isDefined(viewerManager.getViewerById(viewer.baseId), "Viewer was not added to the viewer manager.");
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it('should have a defined canvas', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        viewer.onInitDoneObservable.add(() => {
+            assert.isDefined(viewer.canvas, "Canvas is not defined");
+            assert.isTrue(viewer.canvas instanceof HTMLCanvasElement, "Canvas is not a canvas");
             viewer.dispose();
             done();
         });
@@ -222,6 +245,19 @@ describe('Viewer', function () {
             assert.isDefined(viewerInstance.sceneManager.scene, "scene is not defined");
             //scene exists, it should now start rendering
             shouldBeRendering = true;
+        });
+    });
+
+    it('should render if forceRender was called', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        viewer.runRenderLoop = false;
+        viewer.onInitDoneObservable.add(() => {
+            viewer.onFrameRenderedObservable.add(() => {
+                assert.isTrue(true, "not rendered");
+                viewer.dispose();
+                done();
+            });
+            viewer.forceRender();
         });
     });
 });
