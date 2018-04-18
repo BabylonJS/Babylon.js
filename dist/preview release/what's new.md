@@ -118,6 +118,7 @@
 - Added alphaCutOff support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - Add support for sparse accessors to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - Add support for cameras to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Add support for preprocessing urls to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
 

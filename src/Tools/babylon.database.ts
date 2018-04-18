@@ -1,4 +1,8 @@
 module BABYLON {
+    /**
+     * Class used to enable access to IndexedDB
+     * @see @https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
+     */
     export class Database {
         private callbackManifestChecked: (check: boolean) => any;
         private currentSceneUrl: string;
@@ -13,20 +17,35 @@ module BABYLON {
         // Handling various flavors of prefixed version of IndexedDB
         private idbFactory = <IDBFactory>(window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
 
+        /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
         static IsUASupportingBlobStorage = true;
+
+        /** Gets a boolean indicating if Database storate is enabled */
         static IDBStorageEnabled = true;
 
+        /**
+         * Gets a boolean indicating if scene must be saved in the database
+         */
         public get enableSceneOffline(): boolean {
             return this._enableSceneOffline;
         }
 
+        /**
+         * Gets a boolean indicating if textures must be saved in the database
+         */
         public get enableTexturesOffline(): boolean {
             return this._enableTexturesOffline;
         }
 
-        constructor(urlToScene: string, callbackManifestChecked: (checked: boolean) => any) {
+        /**
+         * Creates a new Database
+         * @param urlToScene defines the url to load the scene
+         * @param callbackManifestChecked defines the callback to use when manifest is checked
+         * @param disableManifestCheck defines a boolean indicating that we want to skip the manifest validation (it will be considered validated and up to date)
+         */
+        constructor(urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) {
             this.callbackManifestChecked = callbackManifestChecked;
-            this.currentSceneUrl = Database.ReturnFullUrlLocation(urlToScene);
+            this.currentSceneUrl = Database._ReturnFullUrlLocation(urlToScene);
             this.db = null;
             this._enableSceneOffline = false;
             this._enableTexturesOffline = false;
@@ -37,11 +56,21 @@ module BABYLON {
             if (!Database.IDBStorageEnabled) {
                 this.callbackManifestChecked(true);
             } else {
-                this.checkManifestFile();
+                if (disableManifestCheck) {
+                    this._enableSceneOffline = true;
+                    this._enableTexturesOffline = true;
+                    this.manifestVersionFound = 1;
+                    Tools.SetImmediate(() => {
+                        this.callbackManifestChecked(true);
+                    });
+                }
+                else {
+                    this._checkManifestFile();
+                }
             }
         }
 
-        static parseURL = (url: string) => {
+        private static _ParseURL = (url: string) => {
             var a = document.createElement('a');
             a.href = url;
             var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
@@ -50,16 +79,16 @@ module BABYLON {
             return absLocation;
         }
 
-        static ReturnFullUrlLocation = (url: string): string => {
+        private static _ReturnFullUrlLocation = (url: string): string => {
             if (url.indexOf("http:/") === -1 && url.indexOf("https:/") === -1) {
-                return (Database.parseURL(window.location.href) + url);
+                return (Database._ParseURL(window.location.href) + url);
             }
             else {
                 return url;
             }
         }
 
-        public checkManifestFile() {
+        private _checkManifestFile() {
             var noManifestFile = () => {
                 this._enableSceneOffline = false;
                 this._enableTexturesOffline = false;
@@ -123,6 +152,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Open the database and make it available
+         * @param successCallback defines the callback to call on success
+         * @param errorCallback defines the callback to call on error
+         */
         public openAsync(successCallback: () => void, errorCallback: () => void) {
             let handleError = () => {
                 this.isSupported = false;
@@ -182,8 +216,13 @@ module BABYLON {
             }
         }
 
+        /**
+         * Loads an image from the database
+         * @param url defines the url to load from
+         * @param image defines the target DOM image
+         */
         public loadImageFromDB(url: string, image: HTMLImageElement) {
-            var completeURL = Database.ReturnFullUrlLocation(url);
+            var completeURL = Database._ReturnFullUrlLocation(url);
 
             var saveAndLoadImage = () => {
                 if (!this.hasReachedQuota && this.db !== null) {
@@ -442,8 +481,16 @@ module BABYLON {
             }
         }
 
+        /**
+         * Loads a file from database
+         * @param url defines the URL to load from
+         * @param sceneLoaded defines a callback to call on success
+         * @param progressCallBack defines a callback to call when progress changed
+         * @param errorCallback defines a callback to call on error
+         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
+         */
         public loadFileFromDB(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean) {
-            var completeUrl = Database.ReturnFullUrlLocation(url);
+            var completeUrl = Database._ReturnFullUrlLocation(url);
 
             var saveAndLoadFile = () => {
                 // the scene is not yet in the DB, let's try to save it

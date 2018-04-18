@@ -84,6 +84,10 @@ var BABYLON;
              */
             this.compileShadowGenerators = false;
             /**
+             * Function called before loading a url referenced by the asset.
+             */
+            this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
+            /**
              * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
              */
             this.onMeshLoadedObservable = new BABYLON.Observable();
@@ -262,6 +266,7 @@ var BABYLON;
                 this._loader.dispose();
                 this._loader = null;
             }
+            this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
@@ -389,6 +394,7 @@ var BABYLON;
             loader.compileMaterials = this.compileMaterials;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
@@ -1968,16 +1974,14 @@ var BABYLON;
                 this.compileMaterials = false;
                 this.useClipPlane = false;
                 this.compileShadowGenerators = false;
-                this.onDisposeObservable = new BABYLON.Observable();
+                this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
                 this.onMeshLoadedObservable = new BABYLON.Observable();
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
                 this.onCameraLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
+                this.onDisposeObservable = new BABYLON.Observable();
                 this.onExtensionLoadedObservable = new BABYLON.Observable();
-                /**
-                * State of the loader
-                */
                 this.state = null;
             }
             GLTFLoader.RegisterExtension = function (extension) {
