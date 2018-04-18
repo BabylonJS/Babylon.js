@@ -21,12 +21,33 @@ export interface IPostConfigurationCallback<OBJ, CONF> {
 export class SceneManager {
 
     //Observers
+    /**
+     * Will notify when the scene was initialized
+     */
     onSceneInitObservable: Observable<Scene>;
+    /**
+     * Will notify after the scene was configured. Can be used to further configure the scene
+     */
     onSceneConfiguredObservable: Observable<IPostConfigurationCallback<Scene, ISceneConfiguration>>;
+    /**
+     * Will notify after the scene optimized was configured. Can be used to further configure the scene optimizer
+     */
     onSceneOptimizerConfiguredObservable: Observable<IPostConfigurationCallback<SceneOptimizer, ISceneOptimizerConfiguration | boolean>>;
+    /**
+     * Will notify after the camera was configured. Can be used to further configure the camera
+     */
     onCameraConfiguredObservable: Observable<IPostConfigurationCallback<ArcRotateCamera, ICameraConfiguration>>;
+    /**
+     * Will notify after the lights were configured. Can be used to further configure lights
+     */
     onLightsConfiguredObservable: Observable<IPostConfigurationCallback<Array<Light>, { [name: string]: ILightConfiguration | boolean }>>;
+    /**
+     * Will notify after the model(s) were configured. Can be used to further configure models
+     */
     onModelsConfiguredObservable: Observable<IPostConfigurationCallback<Array<ViewerModel>, IModelConfiguration>>;
+    /**
+     * Will notify after the envirnoment was configured. Can be used to further configure the environment
+     */
     onEnvironmentConfiguredObservable: Observable<IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean, ground?: IGroundConfiguration | boolean }>>;
 
     /**
@@ -68,7 +89,10 @@ export class SceneManager {
     private _mainColor: Color3 = Color3.White();
     private readonly _white = Color3.White();
 
-    //Labs!
+    /**
+     * The labs variable consists of objects that will have their API change.
+     * Please be careful when using labs in production.
+     */
     public labs: ViewerLabs;
 
     private _piplines: { [key: string]: PostProcessRenderPipeline } = {};
