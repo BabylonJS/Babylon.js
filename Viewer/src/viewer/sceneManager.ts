@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -103,6 +103,40 @@ export class SceneManager {
      */
     public get mainColor(): Color3 {
         return this._mainColor;
+    }
+
+    private _processShadows: boolean = true;
+
+    /**
+     * The flag defining whether shadows are rendered constantly or once.
+     */
+    public get processShadows() {
+        return this._processShadows;
+    }
+
+    /**
+     * Should shadows be rendered every frame, or only once and stop.
+     * This can be used to optimize a scene.
+     * 
+     * Not that the shadows will NOT disapear but will remain in place.
+     * @param process if true shadows will be updated once every frame. if false they will stop being updated.
+     */
+    public set processShadows(process: boolean) {
+
+        let refreshType = process ? RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME : RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+
+        for (let light of this.scene.lights) {
+            let generator = light.getShadowGenerator();
+
+            if (generator) {
+                let shadowMap = generator.getShadowMap();
+                if (shadowMap) {
+                    shadowMap.refreshRate = refreshType;
+                }
+            }
+        }
+
+        this._processShadows = process;
     }
 
     /**
