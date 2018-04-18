@@ -349,13 +349,6 @@ export class SceneManager {
         if (!this.scene) {
             return;
         }
-        if (sceneConfig.debug) {
-            this.scene.debugLayer.show();
-        } else {
-            if (this.scene.debugLayer.isVisible()) {
-                this.scene.debugLayer.hide();
-            }
-        }
 
         let cc = sceneConfig.clearColor || { r: 0.9, g: 0.9, b: 0.9, a: 1.0 };
         let oldcc = this.scene.clearColor;
@@ -386,6 +379,14 @@ export class SceneManager {
             }
             const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
             this.scene.environmentTexture = environmentTexture;
+        }
+
+        if (sceneConfig.debug) {
+            this.scene.debugLayer.show();
+        } else {
+            if (this.scene.debugLayer.isVisible()) {
+                this.scene.debugLayer.hide();
+            }
         }
 
         this.onSceneConfiguredObservable.notifyObservers({
@@ -731,7 +732,7 @@ export class SceneManager {
             if (light instanceof ShadowLight) {
                 // set default values
                 light.shadowMinZ = light.shadowMinZ || 0.2;
-                light.shadowMaxZ = Math.min(10, light.shadowMaxZ); //large far clips reduce shadow depth precision
+                light.shadowMaxZ = Math.min(100, light.shadowMaxZ); //large far clips reduce shadow depth precision
 
                 if (lightConfig.target) {
                     if (light.setDirectionToTarget) {

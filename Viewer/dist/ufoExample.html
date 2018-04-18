@@ -18,22 +18,15 @@
     </head>
 
     <body>
-        <babylon id="babylon-viewer" extends="extended" templates.nav-bar.params.disable-on-fullscreen="true">
+        <babylon extends="extended, shadowSpotLight" templates.nav-bar.params.disable-on-fullscreen="true">
             <scene glow="true">
                 <main-color r="0.5" g="0.2" b="0.2"></main-color>
             </scene>
             <model url="https://models.babylonjs.com/ufo.glb">
                 <animation auto-start="true"></animation>
             </model>
-            <lights>
-                <light2 shadow-ortho-scale="0.5">
-                    <position y="1.2"></position>
-                </light2>
-            </lights>
         </babylon>
         <script src="viewer.js"></script>
-        <script>
-        </script>
     </body>
 
 </html>

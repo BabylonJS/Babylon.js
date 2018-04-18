@@ -23,24 +23,6 @@ export let extendedConfiguration: ViewerConfiguration = {
             radius: 0.135,
             spotAngle: 59.9967,
         },
-        "light2": {
-            type: 1,
-            shadowEnabled: true,
-            target: { x: 0, y: 0, z: 1 },
-            position: { x: 1.49, y: 2.39, z: -1.33 },
-            diffuse: { r: 0.867, g: 0.816, b: 0.788 },
-            intensity: 2.887,
-            intensityMode: 0,
-            shadowBufferSize: 1024,
-            shadowFrustumSize: 4.0,
-            shadowFieldOfView: 80.977,
-            shadowMinZ: 0.1,
-            shadowMaxZ: 12.0,
-            shadowConfig: {
-                blurKernel: 32,
-                useBlurExponentialShadowMap: true
-            }
-        },
         "light3": {
             type: 2,
             shadowEnabled: false,
