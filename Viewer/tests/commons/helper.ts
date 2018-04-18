@@ -1,4 +1,4 @@
-import { AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPlayMode, AnimationState } from "../../src";
+import { BABYLON, AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPlayMode, AnimationState } from "../../src";
 import { ViewerConfiguration } from "../../src/configuration/configuration";
 import { IModelAnimation } from "../../src/model/modelAnimation";
 
@@ -130,6 +130,10 @@ export class NullEngineAbstractViewer extends AbstractViewer {
 
         this.engine = new BABYLON.NullEngine(config.engineOptions);
 
+        this.engine.getRenderingCanvas = () => {
+            return this.canvas;
+        }
+
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;
 
@@ -166,6 +170,9 @@ export class NullEngineDefaultViewer extends DefaultViewer {
         config.engineOptions.renderWidth = 500;
 
         this.engine = new BABYLON.NullEngine(config.engineOptions);
+        this.engine.getRenderingCanvas = () => {
+            return this.canvas;
+        }
 
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;

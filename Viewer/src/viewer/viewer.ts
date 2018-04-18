@@ -197,6 +197,11 @@ export abstract class AbstractViewer {
         this.onModelLoadedObservable.add((model) => {
             this.updateConfiguration(this._configuration, model);
         });
+
+        this.onInitDoneObservable.add(() => {
+            this._isInit = true;
+            this.engine.runRenderLoop(this._render);
+        });
     }
 
     /**
@@ -283,7 +288,7 @@ export abstract class AbstractViewer {
                 this.engine.performanceMonitor.disable();
 
                 // TODO - is this needed?
-                // this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
+                this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
             }
         }
     }
@@ -454,8 +459,6 @@ export abstract class AbstractViewer {
                 }
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
-                this._isInit = true;
-                this.engine.runRenderLoop(this._render);
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).catch(e => {
                 Tools.Warn(e.toString());

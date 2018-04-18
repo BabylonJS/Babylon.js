@@ -389,6 +389,18 @@ export class SceneManager {
             }
         }
 
+        if (sceneConfig.disableHdr) {
+            this._handleHardwareLimitations(false);
+        }
+
+        this._viewer.renderInBackground = !!sceneConfig.renderInBackground;
+
+        if (this.camera && sceneConfig.disableCameraControl) {
+            this.camera.detachControl(this._viewer.canvas);
+        } else if (this.camera && sceneConfig.disableCameraControl === false) {
+            this.camera.attachControl(this._viewer.canvas);
+        }
+
         this.onSceneConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.scene,
@@ -468,7 +480,11 @@ export class SceneManager {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
 
         if (!this.scene.activeCamera) {
-            this.scene.createDefaultCamera(true, true, true);
+            let attachControl = true;
+            if (this._viewer.configuration.scene && this._viewer.configuration.scene.disableCameraControl) {
+                attachControl = false;
+            }
+            this.scene.createDefaultCamera(true, true, attachControl);
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
             this.camera.setTarget(Vector3.Zero());
         }

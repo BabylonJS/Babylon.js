@@ -31,7 +31,7 @@ export const shadowSpotlLightConfiguration: ViewerConfiguration = {
             target: { x: 0, y: 0, z: 0 },
             position: { x: 0, y: 2.1, z: 2.7 },
             angle: 1,
-            shadowOrthoScale: 0.1,
+            shadowOrthoScale: 0.5,
             shadowBufferSize: 1024,
             shadowMinZ: 0.1,
             shadowMaxZ: 50.0,

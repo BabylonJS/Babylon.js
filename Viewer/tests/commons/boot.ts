@@ -6,7 +6,6 @@ export class Boot {
     public static AppendResult = false;
 
     public static main() {
-        console.log("main")
         //let babylonSource = Boot.loadSync('base/js/babylon.viewer.max.js');
         //let spectreSource = Boot.loadSync('base/js/spectreonly.js');
 
@@ -20,7 +19,8 @@ export class Boot {
             //clear DOM and create canvas and container
             document.getElementById('working-div')!.innerHTML = `<div style="font-size:30px;">WORKING CANVASES.</div> 
 				<div id="viewer-testing" style="width:512px;height:512px;">
-					<div id="renderCanvas" width="512" height="512" style="width:512px;height:512px;"></div>
+                    <div id="renderCanvas" width="512" height="512" style="width:512px;height:512px;">
+                    <canvas width="512" height="512" style="width:512px;height:512px;"></canvas></div>
 					<canvas id="referenceCanvas" width="512" height="512" style="width:512px;height:512px;"></canvas>
 				</div>
 			`;
