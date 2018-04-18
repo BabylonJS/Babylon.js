@@ -280,7 +280,7 @@ export abstract class AbstractViewer {
      */
     protected _render = (force: boolean = false): void => {
         if (force || (this.sceneManager.scene && this.sceneManager.scene.activeCamera)) {
-            if (this.runRenderLoop) {
+            if (this.runRenderLoop || force) {
                 this.engine.performanceMonitor.enable();
                 this.sceneManager.scene.render();
                 this.onFrameRenderedObservable.notifyObservers(this);
@@ -344,7 +344,7 @@ export abstract class AbstractViewer {
                 if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
                 }
-            }))
+            }));
         }
     }
 
@@ -448,6 +448,7 @@ export abstract class AbstractViewer {
             return this._initEngine().then((engine) => {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
+                this._initTelemetryEvents();
                 if (autoLoad) {
                     return this.loadModel(this._configuration.model!).catch(e => { }).then(() => { return this.sceneManager.scene });
                 } else {
@@ -596,14 +597,14 @@ export abstract class AbstractViewer {
 
     private _fpsTimeout: number;
 
-    protected initTelemetryEvents() {
+    protected _initTelemetryEvents() {
         telemetryManager.broadcast("Engine Capabilities", this, this.engine.getCaps());
         telemetryManager.broadcast("Platform Details", this, {
             userAgent: navigator.userAgent,
             platform: navigator.platform
         });
 
-        telemetryManager.flushWebGLErrors(this);
+        // telemetryManager.flushWebGLErrors(this);
 
         let trackFPS: Function = () => {
             telemetryManager.broadcast("Current FPS", this, { fps: this.engine.getFps() });
