@@ -116,6 +116,11 @@ module BABYLON {
         compileShadowGenerators: boolean;
 
         /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -247,6 +252,11 @@ module BABYLON {
          * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
          */
         public compileShadowGenerators = false;
+
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -415,6 +425,8 @@ module BABYLON {
                 this._loader = null;
             }
 
+            this.preprocessUrlAsync = url => Promise.resolve(url);
+
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
@@ -560,6 +572,7 @@ module BABYLON {
             loader.compileMaterials = this.compileMaterials;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
