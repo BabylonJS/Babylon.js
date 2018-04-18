@@ -168,11 +168,6 @@ export class ViewerModel implements IDisposable {
 
 
     private _initAnimations() {
-        Animation.AllowMatricesInterpolation = true;
-        this._viewer.sceneManager.scene.animationPropertiesOverride = new AnimationPropertiesOverride();
-        this._viewer.sceneManager.scene.animationPropertiesOverride.enableBlending = true;
-        this._viewer.sceneManager.scene.animationPropertiesOverride.blendingSpeed = 0.02;
-        this._viewer.sceneManager.scene.animationPropertiesOverride.loopMode = 1;
         // check if this is not a gltf loader and init the animations
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {

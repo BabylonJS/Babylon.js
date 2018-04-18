@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -182,6 +182,7 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._viewer.engine);
 
+        // default material should be a PBRMaterial
         var defaultMaterial = new BABYLON.PBRMaterial('default-material', this.scene);
         defaultMaterial.environmentBRDFTexture = null;
         defaultMaterial.usePhysicalLightFalloff = true;
@@ -189,6 +190,11 @@ export class SceneManager {
         defaultMaterial.microSurface = 0.6;
 
         this.scene.defaultMaterial = defaultMaterial;
+
+        this.scene.animationPropertiesOverride = new AnimationPropertiesOverride();
+        this.scene.animationPropertiesOverride.enableBlending = true;
+
+        Animation.AllowMatricesInterpolation = true;
 
         this._mainColor = new Color3();
 
@@ -369,6 +375,10 @@ export class SceneManager {
         // image processing configuration - optional.
         if (sceneConfig.imageProcessingConfiguration) {
             extendClassWithConfig(this.scene.imageProcessingConfiguration, sceneConfig.imageProcessingConfiguration);
+        }
+        //animation properties override
+        if (sceneConfig.animationPropertiesOverride) {
+            extendClassWithConfig(this.scene.animationPropertiesOverride, sceneConfig.animationPropertiesOverride);
         }
         if (sceneConfig.environmentTexture) {
             if (this.scene.environmentTexture) {
