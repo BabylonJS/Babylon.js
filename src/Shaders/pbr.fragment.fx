@@ -1,4 +1,4 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(GEOMETRYAA)
+﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -226,7 +226,9 @@ void main(void) {
     vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
 #endif
 
-#ifdef GEOMETRYAA
+#include<bumpFragment>
+
+#ifdef SPECULARAA
     vec3 nDfdx = dFdx(normalW.xyz);
     vec3 nDfdy = dFdy(normalW.xyz);
     float slopeSquare = max(dot(nDfdx, nDfdx), dot(nDfdy, nDfdy));
@@ -237,8 +239,6 @@ void main(void) {
 #else
     float geometricRoughnessFactor = 0.;
 #endif
-
-#include<bumpFragment>
 
 #if defined(FORCENORMALFORWARD) && defined(NORMAL)
     vec3 faceNormal = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
@@ -434,7 +434,7 @@ void main(void) {
         float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
         float alphaG = convertRoughnessToAverageSlope(roughness);
 
-        #ifdef GEOMETRYAA
+        #ifdef SPECULARAA
             // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
             // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
             alphaG += (0.75 * geometricAlphaGFactor);
