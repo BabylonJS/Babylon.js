@@ -268,6 +268,12 @@ declare module BABYLON.GUI {
        * An event triggered after the control is drawn
        */
         onAfterDrawObservable: Observable<Control>;
+        /** Gets or set information about font offsets (used to render and align text) */
+        fontOffset: {
+            ascent: number;
+            height: number;
+            descent: number;
+        };
         alpha: number;
         scaleX: number;
         scaleY: number;
