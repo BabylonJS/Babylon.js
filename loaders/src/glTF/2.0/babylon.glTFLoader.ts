@@ -39,20 +39,20 @@ module BABYLON.GLTF2 {
         private _progressCallback?: (event: SceneLoaderProgressEvent) => void;
         private _requests = new Array<IFileRequestInfo>();
 
-        private static _Names = new Array<string>();
-        private static _Factories: { [name: string]: (loader: GLTFLoader) => GLTFLoaderExtension } = {};
+        private static _ExtensionNames = new Array<string>();
+        private static _ExtensionFactories: { [name: string]: (loader: GLTFLoader) => GLTFLoaderExtension } = {};
 
         /** @hidden */
         public static _Register(name: string, factory: (loader: GLTFLoader) => GLTFLoaderExtension): void {
-            if (GLTFLoader._Factories[name]) {
+            if (GLTFLoader._ExtensionFactories[name]) {
                 Tools.Error(`Extension with the name '${name}' already exists`);
                 return;
             }
 
-            GLTFLoader._Factories[name] = factory;
+            GLTFLoader._ExtensionFactories[name] = factory;
 
             // Keep the order of registration so that extensions registered first are called first.
-            GLTFLoader._Names.push(name);
+            GLTFLoader._ExtensionNames.push(name);
         }
 
         /**
@@ -79,6 +79,11 @@ module BABYLON.GLTF2 {
          * Defines if the loader should compile shadow generators.
          */
         public compileShadowGenerators = false;
+
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -117,7 +122,6 @@ module BABYLON.GLTF2 {
          * Set additional options for a loader extension in this event.
          */
         public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
-
 
         /**
          * Loader state or null if the loader is not active.
@@ -254,15 +258,17 @@ module BABYLON.GLTF2 {
 
                 return resultPromise;
             }).catch(error => {
-                Tools.Error(`glTF Loader: ${error.message}`);
-                this._clear();
-                throw error;
+                if (!this._disposed) {
+                    Tools.Error(`glTF Loader: ${error.message}`);
+                    this._clear();
+                    throw error;
+                }
             });
         }
 
         private _loadExtensions(): void {
-            for (const name of GLTFLoader._Names) {
-                const extension = GLTFLoader._Factories[name](this);
+            for (const name of GLTFLoader._ExtensionNames) {
+                const extension = GLTFLoader._ExtensionFactories[name](this);
                 this._extensions[name] = extension;
 
                 this.onExtensionLoadedObservable.notifyObservers(extension);
@@ -1516,33 +1522,37 @@ module BABYLON.GLTF2 {
                 return Promise.resolve(new Uint8Array(Tools.DecodeBase64(uri)));
             }
 
-            return new Promise((resolve, reject) => {
-                const request = Tools.LoadFile(this._rootUrl + uri, data => {
+            return this.preprocessUrlAsync(this._rootUrl + uri).then(url => {
+                return new Promise<ArrayBufferView>((resolve, reject) => {
                     if (!this._disposed) {
-                        resolve(new Uint8Array(data as ArrayBuffer));
-                    }
-                }, event => {
-                    if (!this._disposed) {
-                        try {
-                            if (request && this._state === GLTFLoaderState.LOADING) {
-                                request._lengthComputable = event.lengthComputable;
-                                request._loaded = event.loaded;
-                                request._total = event.total;
-                                this._onProgress();
+                        const request = Tools.LoadFile(url, data => {
+                            if (!this._disposed) {
+                                resolve(new Uint8Array(data as ArrayBuffer));
                             }
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    }
-                }, this._babylonScene.database, true, (request, exception) => {
-                    if (!this._disposed) {
-                        reject(new LoadFileError(`${context}: Failed to load '${uri}'${request ? ": " + request.status + " " + request.statusText : ""}`, request));
-                    }
-                }) as IFileRequestInfo;
+                        }, event => {
+                            if (!this._disposed) {
+                                try {
+                                    if (request && this._state === GLTFLoaderState.LOADING) {
+                                        request._lengthComputable = event.lengthComputable;
+                                        request._loaded = event.loaded;
+                                        request._total = event.total;
+                                        this._onProgress();
+                                    }
+                                }
+                                catch (e) {
+                                    reject(e);
+                                }
+                            }
+                        }, this._babylonScene.database, true, (request, exception) => {
+                            if (!this._disposed) {
+                                reject(new LoadFileError(`${context}: Failed to load '${uri}'${request ? ": " + request.status + " " + request.statusText : ""}`, request));
+                            }
+                        }) as IFileRequestInfo;
 
-                this._requests.push(request);
-            })
+                        this._requests.push(request);
+                    }
+                });
+            });
         }
 
         private _onProgress(): void {
@@ -1762,7 +1772,7 @@ module BABYLON.GLTF2 {
 
         /** @hidden */
         public _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>) {
-            for (const name of GLTFLoader._Names) {
+            for (const name of GLTFLoader._ExtensionNames) {
                 const extension = this._extensions[name];
                 if (extension.enabled) {
                     const promise = actionAsync(extension);

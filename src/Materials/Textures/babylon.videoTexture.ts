@@ -32,6 +32,7 @@
 
         private _generateMipMaps: boolean;
         private _engine: Engine;
+        private _stillImageCaptured = false;
 
         /**
          * Creates a video texture.
@@ -141,8 +142,8 @@
             );
 
             this._texture.isReady = true;
-            this._updateInternalTexture();
 
+            this._updateInternalTexture();
             if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
             }
@@ -183,9 +184,10 @@
             if (!isVisible) {
                 return;
             }
-            if (this.video.paused) {
+            if (this.video.paused && this._stillImageCaptured) {
                 return;
             }
+            this._stillImageCaptured = true;
             this._updateInternalTexture();
         }
 
