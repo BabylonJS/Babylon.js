@@ -1017,6 +1017,17 @@ declare module INSPECTOR {
     }
 }
 
+
+
+declare module INSPECTOR {
+    class GLTFTab extends Tab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        dispose(): void;
+        private _addExport(inspector, actions);
+        private static _IsSkyBox(transformNode);
+    }
+}
+
 declare module INSPECTOR {
     /**
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...

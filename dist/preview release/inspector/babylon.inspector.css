@@ -242,6 +242,36 @@
   .insp-wrapper .tab-panel .stat-infos {
     width: 100%;
     padding: 4px; }
+  .insp-wrapper .tab-panel .gltf-actions {
+    overflow-y: auto;
+    padding-left: 5px; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-title {
+      font-size: 1.1em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #5db0d7;
+      margin: 10px 0 10px 0; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-input {
+      background-color: #2c2c2c;
+      border: none;
+      outline: none;
+      font-family: "Inconsolata", sans-serif;
+      color: #b3b3b3;
+      padding: 5px;
+      margin: 0px 6px 0px 0; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-input:hover {
+        background-color: #383838; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-button {
+      background-color: #2c2c2c;
+      border: none;
+      outline: none;
+      font-family: "Inconsolata", sans-serif;
+      color: #ccc;
+      padding: 5px 10px;
+      margin: 0px 6px 0px 0; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-button:hover {
+        background-color: #383838; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-button:active {
+        background-color: #454545; }
   .insp-wrapper .property-type {
     color: #5db0d7; }
   .insp-wrapper .property-name, .insp-wrapper .insp-details .base-row .prop-name, .insp-wrapper .insp-details .row .prop-name, .insp-wrapper .insp-details .header-row .prop-name {
