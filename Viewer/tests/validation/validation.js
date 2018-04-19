@@ -7,7 +7,7 @@ var config;
 var justOnce;
 
 var threshold = 25;
-var errorRatio = 2.5;
+var errorRatio = 1.5;
 
 // Overload the random to make it deterministic
 var seed = 100000,
@@ -131,7 +131,14 @@ function runTest(index, done) {
         done(false);
     }
 
-    var test = config.tests[index];
+
+    var test = Object.assign({}, config.tests[index]);
+
+    //process params
+    /*if (params) {
+        processTest(test, "", params);
+    }*/
+
     var container = document.createElement("div");
     container.id = "container#" + index;
     container.className = "container";
@@ -204,7 +211,6 @@ function runTest(index, done) {
     configuration.model = configuration.model || {};
     configuration.model.castShadow = !test.createMesh
 
-
     // create a new viewer
     currentViewer && currentViewer.dispose();
     currentViewer = null;
@@ -215,7 +221,7 @@ function runTest(index, done) {
     currentViewer.onInitDoneObservable.add(() => {
 
         var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 0;
+        var waitForFrame = test.waitForFrame || 1;
 
         if (test.model) {
             currentViewer.initModel(test.model);
