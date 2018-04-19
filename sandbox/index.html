@@ -40,31 +40,17 @@
     <canvas id="renderCanvas"></canvas>
     <div id="logo">
     </div>
-    <div id="help01" class="help">
-        <span class="helpText">Press this button to open your assets' files</span>
-        <img id="helpArrow" src="./Assets/FlecheTuto.png" />
-    </div>
-    <div id="help02" class="help2">
-        <span class="helpText">Or directly drag'n'drop your files (in .babylon, .gltf, .glb, .obj format) in the browser</span>
-    </div>
     <div id="footer" class="footer">
         <div class="footerLeft">
-            Powered by <a href="http://www.babylonjs.com/" target="_blank">Babylon.js</a><br />
         </div>
         <div class="footerRight">
-            <ul>
-                <li id="btnFullscreen">
-                    <img src="./Assets/BtnFullscreen.png" alt="Switch the scene to full screen" title="Switch the scene to full screen" />
-                </li>
-                <li id="btnPerf">
-                    <img src="./Assets/BtnPerf.png" alt="Display inspector" title="Display inspector" />
-                </li>
-                <li id="btnFiles">
-                    <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
-                        <input type="file" id="files" multiple />
-                    </div>
-                </li>
-            </ul>
+            <a href="#" id="btnFullscreen" class="hidden"><img src="./Assets/Icon_Fullscreen.svg" alt="Switch the scene to full screen" title="Switch the scene to full screen" /></a> 
+            <a href="#" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg" alt="Display inspector" title="Display inspector" /></i></a> 
+            <a href="#">
+                <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
+                    <input type="file" id="files" multiple />
+                </div>
+            </a>
         </div>
     </div>
     <div id="errorZone"></div>

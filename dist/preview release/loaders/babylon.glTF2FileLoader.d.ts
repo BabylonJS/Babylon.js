@@ -98,6 +98,10 @@ declare module BABYLON {
          */
         compileShadowGenerators: boolean;
         /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -198,6 +202,10 @@ declare module BABYLON {
          * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
@@ -495,8 +503,8 @@ declare module BABYLON.GLTF2 {
         private _defaultBabylonMaterials;
         private _progressCallback?;
         private _requests;
-        private static _Names;
-        private static _Factories;
+        private static _ExtensionNames;
+        private static _ExtensionFactories;
         /** @hidden */
         static _Register(name: string, factory: (loader: GLTFLoader) => GLTFLoaderExtension): void;
         /**
@@ -519,6 +527,10 @@ declare module BABYLON.GLTF2 {
          * Defines if the loader should compile shadow generators.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */

@@ -132,7 +132,7 @@
 
         public FORCENORMALFORWARD = false;
 
-        public GEOMETRYAA = false;
+        public SPECULARAA = false;
 
         public UNLIT = false;
 
@@ -1211,7 +1211,7 @@
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
                 defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
 
-                defines.GEOMETRYAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
+                defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
             }
 
             if (defines._areImageProcessingDirty) {

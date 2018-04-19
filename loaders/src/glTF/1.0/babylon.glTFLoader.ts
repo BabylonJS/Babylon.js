@@ -1568,18 +1568,16 @@ module BABYLON.GLTF1 {
         public compileMaterials = false;
         public useClipPlane = false;
         public compileShadowGenerators = false;
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
-        public onDisposeObservable = new Observable<IGLTFLoader>();
-        public onMeshLoadedObservable = new Observable<AbstractMesh>();
-        public onTextureLoadedObservable = new Observable<BaseTexture>();
-        public onMaterialLoadedObservable = new Observable<Material>();
-        public onCameraLoadedObservable = new Observable<Camera>();
-        public onCompleteObservable = new Observable<IGLTFLoader>();
-        public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
+        public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
+        public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
+        public readonly onMaterialLoadedObservable = new Observable<Material>();
+        public readonly onCameraLoadedObservable = new Observable<Camera>();
+        public readonly onCompleteObservable = new Observable<IGLTFLoader>();
+        public readonly onDisposeObservable = new Observable<IGLTFLoader>();
+        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
-        /**
-        * State of the loader
-        */
         public state: Nullable<GLTFLoaderState> = null;
 
         public dispose(): void {}

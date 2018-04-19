@@ -98,6 +98,10 @@ declare module BABYLON {
          */
         compileShadowGenerators: boolean;
         /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -198,6 +202,10 @@ declare module BABYLON {
          * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
@@ -743,16 +751,14 @@ declare module BABYLON.GLTF1 {
         compileMaterials: boolean;
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
-        onDisposeObservable: Observable<IGLTFLoader>;
-        onMeshLoadedObservable: Observable<AbstractMesh>;
-        onTextureLoadedObservable: Observable<BaseTexture>;
-        onMaterialLoadedObservable: Observable<Material>;
-        onCameraLoadedObservable: Observable<Camera>;
-        onCompleteObservable: Observable<IGLTFLoader>;
-        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
-        /**
-        * State of the loader
-        */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+        readonly onMeshLoadedObservable: Observable<AbstractMesh>;
+        readonly onTextureLoadedObservable: Observable<BaseTexture>;
+        readonly onMaterialLoadedObservable: Observable<Material>;
+        readonly onCameraLoadedObservable: Observable<Camera>;
+        readonly onCompleteObservable: Observable<IGLTFLoader>;
+        readonly onDisposeObservable: Observable<IGLTFLoader>;
+        readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
         dispose(): void;
         private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress?, onError?);
@@ -1072,8 +1078,8 @@ declare module BABYLON.GLTF2 {
         private _defaultBabylonMaterials;
         private _progressCallback?;
         private _requests;
-        private static _Names;
-        private static _Factories;
+        private static _ExtensionNames;
+        private static _ExtensionFactories;
         /** @hidden */
         static _Register(name: string, factory: (loader: GLTFLoader) => GLTFLoaderExtension): void;
         /**
@@ -1096,6 +1102,10 @@ declare module BABYLON.GLTF2 {
          * Defines if the loader should compile shadow generators.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
