@@ -279,6 +279,59 @@ export class ViewerModel implements IDisposable {
                 updateMeshesWithNoParent(variable, configValues.w, 'w');
             }
         }
+
+        if (this._modelConfiguration.normalize) {
+            let center = false;
+            let unitSize = false;
+            let parentIndex;
+            if (this._modelConfiguration.normalize === true) {
+                center = true;
+                unitSize = true;
+            } else {
+                center = !!this._modelConfiguration.normalize.center;
+                unitSize = !!this._modelConfiguration.normalize.unitSize;
+                parentIndex = this._modelConfiguration.normalize.parentIndex;
+            }
+
+            let meshesToNormalize: Array<AbstractMesh> = [];
+            if (parentIndex !== undefined) {
+                meshesToNormalize.push(this._meshes[parentIndex]);
+            } else {
+                meshesToNormalize = meshesWithNoParent;
+            }
+
+            if (unitSize) {
+                meshesToNormalize.forEach(mesh => {
+                    mesh.normalizeToUnitCube(true);
+                    mesh.computeWorldMatrix(true);
+                });
+            }
+            if (center) {
+                meshesToNormalize.forEach(mesh => {
+                    const boundingInfo = mesh.getHierarchyBoundingVectors(true);
+                    const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+                    const halfSizeVec = sizeVec.scale(0.5);
+                    const center = boundingInfo.min.add(halfSizeVec);
+                    mesh.position = center.scale(-1);
+
+                    // Recompute Info.
+                    mesh.computeWorldMatrix(true);
+                });
+            }
+        } else {
+            //center automatically
+            meshesWithNoParent.forEach(mesh => {
+                const boundingInfo = mesh.getHierarchyBoundingVectors(true);
+                const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+                const halfSizeVec = sizeVec.scale(0.5);
+                const center = boundingInfo.min.add(halfSizeVec);
+                mesh.position = center.scale(-1);
+
+                // Recompute Info.
+                mesh.computeWorldMatrix(true);
+            });
+        }
+
         // position?
         if (this._modelConfiguration.position) {
             updateXYZ('position', this._modelConfiguration.position);
@@ -318,49 +371,6 @@ export class ViewerModel implements IDisposable {
             });
         }
 
-        if (this._modelConfiguration.normalize) {
-            let center = false;
-            let unitSize = false;
-            let parentIndex;
-            if (this._modelConfiguration.normalize === true) {
-                center = true;
-                unitSize = true;
-            } else {
-                center = !!this._modelConfiguration.normalize.center;
-                unitSize = !!this._modelConfiguration.normalize.unitSize;
-                parentIndex = this._modelConfiguration.normalize.parentIndex;
-            }
-
-            let meshesToNormalize: Array<AbstractMesh> = [];
-            if (parentIndex !== undefined) {
-                meshesToNormalize.push(this._meshes[parentIndex]);
-            } else {
-                meshesToNormalize = meshesWithNoParent;
-            }
-
-            if (unitSize) {
-                meshesToNormalize.forEach(mesh => {
-                    mesh.normalizeToUnitCube(true);
-                    mesh.computeWorldMatrix(true);
-                });
-            }
-            if (center) {
-                meshesToNormalize.forEach(mesh => {
-                    const boundingInfo = mesh.getHierarchyBoundingVectors(true);
-                    const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
-                    const halfSizeVec = sizeVec.scale(0.5);
-                    const center = boundingInfo.min.add(halfSizeVec);
-                    mesh.position = center.scale(-1);
-
-                    // Set on ground.
-                    //mesh.position.y = 0;
-
-                    // Recompute Info.
-                    mesh.computeWorldMatrix(true);
-                });
-            }
-        }
-
         let meshes = this.rootMesh.getChildMeshes(false);
         meshes.filter(m => m.material).forEach((mesh) => {
             this._applyModelMaterialConfiguration(mesh.material!);
@@ -394,8 +404,9 @@ export class ViewerModel implements IDisposable {
             if (this._modelConfiguration.material.directEnabled !== undefined) {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
-
-            material.reflectionColor = this._viewer.sceneManager.mainColor;
+            if (this._viewer.sceneManager.mainColor) {
+                material.reflectionColor = this._viewer.sceneManager.mainColor;
+            }
         }
         else if (material instanceof BABYLON.MultiMaterial) {
             for (let i = 0; i < material.subMaterials.length; i++) {
