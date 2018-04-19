@@ -206,6 +206,7 @@ function runTest(index, done) {
     //envirnonment directory
     configuration.lab = configuration.lab || {};
     configuration.lab.environmentAssetsRootURL = "/dist/assets/environment/";
+    configuration.lab.environmentMap = false;
 
     //model config
     configuration.model = configuration.model || {};
@@ -221,7 +222,7 @@ function runTest(index, done) {
     currentViewer.onInitDoneObservable.add(() => {
 
         var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 1;
+        var waitForFrame = test.waitForFrame || 4;
 
         if (test.model) {
             currentViewer.initModel(test.model);

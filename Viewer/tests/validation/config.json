@@ -78,8 +78,7 @@
                 },
                 "model": {
                     "position": {
-                        "x": 0.2,
-                        "y": 0
+                        "x": 0.2
                     },
                     "rotation": {
                         "y": 0.9

@@ -1,5 +1,6 @@
 import { main } from '../../commons/boot';
-if (window && !window['validation'])
+if (window && !window['validation']) {
     main();
-export * from './Viewer/viewer';
+}
+export * from './viewer/viewer';
 export * from '../../../src'
