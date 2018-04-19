@@ -25,7 +25,7 @@
                 "../dist/preview release/babylon.d.ts"
             ],
             "babylonjs-loaders": [
-                "../dist/preview release/loaders/babylonjs.loaders.d.ts"
+                "externalModules.d.ts"
             ]
         }
     },
