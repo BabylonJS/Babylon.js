@@ -201,7 +201,7 @@ export interface IGroundConfiguration {
     texture?: string;
     color?: { r: number, g: number, b: number };
     opacity?: number;
-    material?: { // deprecated!
+    material?: {
         [propName: string]: any;
     };
 }
@@ -357,6 +357,7 @@ export interface ICameraConfiguration {
     minZ?: number;
     maxZ?: number;
     inertia?: number;
+    exposure?: number;
     behaviors?: {
         [name: string]: number | {
             type: number;
