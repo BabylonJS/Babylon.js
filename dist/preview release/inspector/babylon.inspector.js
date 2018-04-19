@@ -2801,7 +2801,7 @@ var INSPECTOR;
                     node.active(false);
                 }
             }
-            item.getDiv().scrollIntoView();
+            //  item.getDiv().scrollIntoView();
             item.active(true);
         };
         /** Returns the treeitem corersponding to the given obj, null if not found */
@@ -4021,6 +4021,65 @@ var INSPECTOR;
     INSPECTOR.StatsTab = StatsTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+/// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var GLTFTab = /** @class */ (function (_super) {
+        __extends(GLTFTab, _super);
+        function GLTFTab(tabbar, inspector) {
+            var _this = _super.call(this, tabbar, 'GLTF') || this;
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            var actions = INSPECTOR.Helpers.CreateDiv('gltf-actions', _this._panel);
+            _this._addExport(inspector, actions);
+            return _this;
+        }
+        GLTFTab.prototype.dispose = function () {
+            // Nothing to dispose
+        };
+        GLTFTab.prototype._addExport = function (inspector, actions) {
+            var title = INSPECTOR.Helpers.CreateDiv('gltf-title', actions);
+            title.textContent = 'Export';
+            var name = INSPECTOR.Helpers.CreateInput('gltf-input', actions);
+            name.placeholder = "File name...";
+            var button = INSPECTOR.Helpers.CreateElement('button', 'gltf-button', actions);
+            button.innerText = 'Export GLB';
+            button.addEventListener('click', function () {
+                var data = BABYLON.GLTF2Export.GLB(inspector.scene, name.value || "scene", {
+                    shouldExportMesh: function (mesh) { return !GLTFTab._IsSkyBox(mesh); }
+                });
+                if (data) {
+                    data.downloadFiles();
+                }
+            });
+        };
+        GLTFTab._IsSkyBox = function (transformNode) {
+            if (transformNode instanceof BABYLON.Mesh) {
+                if (transformNode.material) {
+                    var material = transformNode.material;
+                    var reflectionTexture = material.reflectionTexture;
+                    if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        return GLTFTab;
+    }(INSPECTOR.Tab));
+    INSPECTOR.GLTFTab = GLTFTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4056,6 +4115,9 @@ var INSPECTOR;
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            if (BABYLON.GLTF2Export) {
+                _this._tabs.push(new INSPECTOR.GLTFTab(_this, _this._inspector));
+            }
             if (BABYLON.GUI) {
                 _this._tabs.push(new INSPECTOR.GUITab(_this, _this._inspector));
             }

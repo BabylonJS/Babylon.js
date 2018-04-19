@@ -1081,6 +1081,17 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "fontOffset", {
+                /** Gets or set information about font offsets (used to render and align text) */
+                get: function () {
+                    return this._fontOffset;
+                },
+                set: function (offset) {
+                    this._fontOffset = offset;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "alpha", {
                 get: function () {
                     return this._alpha;
