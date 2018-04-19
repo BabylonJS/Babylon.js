@@ -18,27 +18,29 @@
     </head>
 
     <body>
-        <babylon id="babylon-viewer" extends="extended"></babylon>
+        <babylon id="babylon-viewer" scene.environment-texture="/environment.dds" extends="extended, shadowDirectionalLight" lab.environmentMap.texture=""></babylon>
         <div id="viewport" touch-action="none"></div>
         <script src="viewer.js"></script>
         <script>
             BabylonViewer.viewerManager.onViewerAdded = function (viewer) {
                 console.log('Using viewerManager.onViewerAdded: ', 'viewer - ' + viewer.getBaseId());
 
+                let specular = 0.6;
+                let ms = 0.6;
                 viewer.onInitDoneObservable.add(() => {
                     let meshModel = new BabylonViewer.ViewerModel(viewer, {
-                        "material": {
-                            "albedoColor": {
-                                "r": 1,
-                                "g": 1,
-                                "b": 1
+                        material: {
+                            albedoColor: {
+                                r: 0,
+                                g: 0,
+                                b: 1
                             },
-                            "reflectivityColor": {
-                                "r": 1,
-                                "g": 1,
-                                "b": 1
+                            reflectivityColor: {
+                                r: specular,
+                                g: specular,
+                                b: specular,
                             },
-                            "microSurface": 0
+                            microSurface: ms
                         }
                     });
 

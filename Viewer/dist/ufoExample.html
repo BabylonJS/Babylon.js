@@ -18,13 +18,14 @@
     </head>
 
     <body>
-        <babylon extends="extended, shadowSpotLight" templates.nav-bar.params.disable-on-fullscreen="true">
+        <babylon extends="default, shadowDirectionalLight, environmentMap" templates.nav-bar.params.hide-animations="true" templates.nav-bar.params.disable-on-fullscreen="true">
             <scene glow="true">
                 <main-color r="0.5" g="0.2" b="0.2"></main-color>
             </scene>
             <model url="https://models.babylonjs.com/ufo.glb">
                 <animation auto-start="true"></animation>
             </model>
+            <camera beta="0.8"></camera>
         </babylon>
         <script src="viewer.js"></script>
     </body>
