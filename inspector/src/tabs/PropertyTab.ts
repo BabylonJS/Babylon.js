@@ -101,7 +101,7 @@ module INSPECTOR {
                     node.active(false);
                 }
             }
-            item.getDiv().scrollIntoView();
+          //  item.getDiv().scrollIntoView();
             item.active(true);
         }
 

@@ -7100,6 +7100,8 @@
                 switch(format) {
                     case Engine.TEXTUREFORMAT_LUMINANCE:
                         return this._gl.LUMINANCE;
+                    case Engine.TEXTUREFORMAT_RGB:
+                        return this._gl.RGB;                        
                 }                    
             }
             return this._gl.RGBA;
