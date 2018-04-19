@@ -178,6 +178,7 @@ dist/preview release/viewer/babylon.d.ts
 dist/preview release/viewer/babylonjs.loaders.d.ts
 dist/preview release/viewer/babylon.glTF2Interface.d.ts
 Viewer/dist/viewer.max.js
+!Viewer/src/externalModules.d.ts
 Viewer/tests/unit/src/**/*.js
 Viewer/tests/Lib/**/*.js
 Viewer/tests/commons/**/*.js

@@ -1,6 +1,6 @@
 import { AbstractViewer } from "../viewer/viewer";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags, GLTFLoaderAnimationStartMode } from "babylonjs";
-import { GLTFFileLoader } from "babylonjs-loaders";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags } from "babylonjs";
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { ViewerModel, ModelState } from "../model/viewerModel";
 import { ILoaderPlugin } from './plugins/loaderPlugin';
