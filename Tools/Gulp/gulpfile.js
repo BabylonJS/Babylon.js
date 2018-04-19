@@ -34,6 +34,9 @@ var dtsBundle = require('dts-bundle');
 const through = require('through2');
 var karmaServer = require('karma').Server;
 
+//viewer declaration
+var processViewerDeclaration = require('./processViewerDeclaration');
+
 var config = require("./config.json");
 
 var del = require("del");
@@ -467,6 +470,8 @@ var buildExternalLibrary = function (library, settings, watch) {
                             if (err) throw err;
                             data = settings.build.dtsBundle.prependText + '\n' + data.toString();
                             fs.writeFile(settings.build.dtsBundle.out, data);
+                            var newData = processViewerDeclaration(data);
+                            fs.writeFile(settings.build.dtsBundle.out.replace('.module', ''), newData);
                         });
                     });
                 }
@@ -502,7 +507,16 @@ var buildExternalLibrary = function (library, settings, watch) {
 
                     if (library.babylonIncluded && dest.addBabylonDeclaration) {
                         // include the babylon declaration
-                        sequence.unshift(gulp.src(config.build.outputDirectory + '/' + config.build.declarationFilename)
+                        if (dest.addBabylonDeclaration === true) {
+                            dest.addBabylonDeclaration = [config.build.declarationFilename];
+                        }
+                        var decsToAdd = dest.addBabylonDeclaration.map(function (dec) {
+                            return config.build.outputDirectory + '/' + dec;
+                        });
+                        sequence.unshift(gulp.src(decsToAdd)
+                            .pipe(rename(function (path) {
+                                path.dirname = '';
+                            }))
                             .pipe(gulp.dest(outputDirectory)))
                     }
                 }
@@ -884,8 +898,8 @@ gulp.task("modules", ["prepare-dependency-tree"], function () {
  */
 gulp.task("typedoc-generate", function () {
     return gulp
-        .src(["../../dist/preview release/babylon.d.ts", 
-            "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts", 
+        .src(["../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
             "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
             "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
         .pipe(typedoc({
