@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -220,7 +220,7 @@ export class SceneManager {
 
         Animation.AllowMatricesInterpolation = true;
 
-        this._mainColor = new Color3();
+        this._mainColor = Color3.White();
 
         if (sceneConfiguration.glow) {
             let options: Partial<IGlowLayerOptions> = {
@@ -267,6 +267,7 @@ export class SceneManager {
 
             // process mainColor changes:
             if (newConfiguration.scene.mainColor) {
+                this._mainColor = this._mainColor || Color3.White();
                 let mc = newConfiguration.scene.mainColor;
                 if (mc.r !== undefined) {
                     this._mainColor.r = mc.r;
@@ -398,11 +399,13 @@ export class SceneManager {
             extendClassWithConfig(this.scene.animationPropertiesOverride, sceneConfig.animationPropertiesOverride);
         }
         if (sceneConfig.environmentTexture) {
-            if (this.scene.environmentTexture) {
-                this.scene.environmentTexture.dispose();
+            if (!(this.scene.environmentTexture && (<CubeTexture>this.scene.environmentTexture).url === sceneConfig.environmentTexture)) {
+                if (this.scene.environmentTexture && this.scene.environmentTexture.dispose) {
+                    this.scene.environmentTexture.dispose();
+                }
+                const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
+                this.scene.environmentTexture = environmentTexture;
             }
-            const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
-            this.scene.environmentTexture = environmentTexture;
         }
 
         if (sceneConfig.debug) {
@@ -415,6 +418,8 @@ export class SceneManager {
 
         if (sceneConfig.disableHdr) {
             this._handleHardwareLimitations(false);
+        } else {
+            this._handleHardwareLimitations(true);
         }
 
         this._viewer.renderInBackground = !!sceneConfig.renderInBackground;
@@ -534,11 +539,6 @@ export class SceneManager {
             this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
         }
 
-        extendClassWithConfig(this.camera, cameraConfig);
-
-        this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
-        this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
-
         if (cameraConfig.behaviors) {
             for (let name in cameraConfig.behaviors) {
                 this._setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
@@ -552,6 +552,8 @@ export class SceneManager {
         const sceneDiagonalLenght = sceneDiagonal.length();
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+
+        extendClassWithConfig(this.camera, cameraConfig);
 
         this.onCameraConfiguredObservable.notifyObservers({
             sceneManager: this,
@@ -675,17 +677,52 @@ export class SceneManager {
             }
         }
 
-        this.environmentHelper.setMainColor(this._mainColor);
+        this.environmentHelper.setMainColor(this._mainColor || Color3.White());
 
         if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
             this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
         }
 
+        let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
+        if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
+            if (!this.environmentHelper.groundMaterial._perceptualColor) {
+                this.environmentHelper.groundMaterial._perceptualColor = Color3.Black();
+            }
+            this.environmentHelper.groundMaterial._perceptualColor.copyFrom(this.mainColor);
+            // to be configured using the configuration object
+
+            /*this.environmentHelper.groundMaterial.primaryColorHighlightLevel = groundConfig.material.highlightLevel;
+            this.environmentHelper.groundMaterial.primaryColorShadowLevel = groundConfig.material.shadowLevel;
+            this.environmentHelper.groundMaterial.enableNoise = true;
+            if (this.environmentHelper.groundMaterial.diffuseTexture) {
+                this.environmentHelper.groundMaterial.diffuseTexture.gammaSpace = true;
+            }
+            this.environmentHelper.groundMaterial.useRGBColor = false;
+            this.environmentHelper.groundMaterial.maxSimultaneousLights = 1;*/
+            extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
+
+            if (this.environmentHelper.groundMirror) {
+                const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
+                //let exposure = Math.pow(2.0, -this.configuration.camera.exposure) * Math.PI;
+                //mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
+
+                // TODO use highlight if required
+                this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
+                this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
+                this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
+                this.environmentHelper.groundMirror.clearColor.a = 1;
+
+                /*if (this.Scene.DisableReflection) {
+                    this.environmentHelper.groundMaterial.reflectionTexture = null;
+                }*/
+            }
+        }
+
         if (postInitSkyboxMaterial) {
             let skyboxMaterial = this.environmentHelper.skyboxMaterial;
             if (skyboxMaterial) {
-                if (typeof skyboxConifguration === 'object' && skyboxConifguration.material && skyboxConifguration.material.imageProcessingConfiguration) {
-                    extendClassWithConfig(skyboxMaterial.imageProcessingConfiguration, skyboxConifguration.material.imageProcessingConfiguration);
+                if (typeof skyboxConifguration === 'object' && skyboxConifguration.material) {
+                    extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
                 }
             }
         }
@@ -771,8 +808,8 @@ export class SceneManager {
             //position. Some lights don't support shadows
             if (light instanceof ShadowLight) {
                 // set default values
-                light.shadowMinZ = light.shadowMinZ || 0.2;
-                light.shadowMaxZ = Math.min(100, light.shadowMaxZ); //large far clips reduce shadow depth precision
+                light.shadowMinZ = light.shadowMinZ || 0.1;
+                light.shadowMaxZ = Math.min(20, light.shadowMaxZ || 20); //large far clips reduce shadow depth precision
 
                 if (lightConfig.target) {
                     if (light.setDirectionToTarget) {

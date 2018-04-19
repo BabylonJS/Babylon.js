@@ -15,21 +15,18 @@ export let extendedConfiguration: ViewerConfiguration = {
         "light1": {
             type: 0,
             shadowEnabled: false,
-            target: { x: 0, y: 0, z: 0 },
-            position: { x: -0.78, y: 1.298, z: 1.62 },
-            diffuse: { r: 1.0, g: 1.0, b: 1.0 },
-            intensity: 2,
+            position: { x: -1.78, y: 2.298, z: 2.62 },
+            diffuse: { r: 0.8, g: 0.8, b: 0.8 },
+            intensity: 3,
             intensityMode: 0,
-            radius: 0.135,
-            spotAngle: 59.9967,
+            radius: 3.135,
         },
         "light3": {
             type: 2,
             shadowEnabled: false,
-            target: { x: 0, y: 1, z: 0 },
-            position: { x: -4, y: 2, z: 2.23 },
+            position: { x: -4, y: 2, z: -2.23 },
             diffuse: { r: 0.718, g: 0.772, b: 0.749 },
-            intensity: 3.052,
+            intensity: 2.052,
             intensityMode: 0,
             radius: 0.5,
             spotAngle: 42.85
@@ -52,14 +49,13 @@ export let extendedConfiguration: ViewerConfiguration = {
                 highlightsHue: 37.2,
                 highlightsDensity: -22.43,
                 highlightsExposure: 45.0,
-                highlightsSaturation: -15,
-
+                highlightsSaturation: -15
             }
         },
         mainColor: {
-            r: 0.8,
-            g: 0.8,
-            b: 0.8
+            r: 0.7,
+            g: 0.7,
+            b: 0.7
         }
     },
     loaderPlugins: {
@@ -79,19 +75,13 @@ export let extendedConfiguration: ViewerConfiguration = {
             directEnabled: true,
             directIntensity: 0.884,
             emissiveIntensity: 1.04,
-            environmentIntensity: 0.268
+            environmentIntensity: 0.868
         },
         normalize: true,
         castShadow: true,
         receiveShadows: true
     },
     lab: {
-        environmentAssetsRootURL: '/assets/environment/',
-        environmentMap: {
-            texture: 'EnvMap_2.0-256.env',
-            rotationY: 0,
-            tintLevel: 0.4
-        },
         renderingPipelines: {
             default: {
                 bloomEnabled: true,

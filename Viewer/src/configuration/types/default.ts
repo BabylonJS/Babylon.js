@@ -98,7 +98,9 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }*/
     },
-    ground: {},
+    ground: {
+        receiveShadows: true
+    },
     engine: {
         antialiasing: true
     },

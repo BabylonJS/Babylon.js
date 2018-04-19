@@ -1,18 +1,25 @@
 import { ViewerConfiguration } from './../configuration';
 
 export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
+    model: {
+        receiveShadows: true,
+        castShadow: true
+    },
+    ground: {
+        receiveShadows: true
+    },
     lights: {
         shadowDirectionalLight: {
             type: 1,
             shadowEnabled: true,
-            target: { x: 0, y: 0, z: 1 },
+            target: { x: 0, y: 0, z: 0.5 },
             position: { x: 1.49, y: 2.39, z: -1.33 },
             diffuse: { r: 0.867, g: 0.816, b: 0.788 },
-            intensity: 2.887,
+            intensity: 4.887,
             intensityMode: 0,
             shadowBufferSize: 1024,
-            shadowFrustumSize: 4.0,
-            shadowFieldOfView: 80.977,
+            shadowFrustumSize: 8.0,
+            shadowFieldOfView: 50.977,
             shadowMinZ: 0.1,
             shadowMaxZ: 12.0,
             shadowConfig: {
@@ -24,12 +31,20 @@ export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
 }
 
 export const shadowSpotlLightConfiguration: ViewerConfiguration = {
+    model: {
+        receiveShadows: true,
+        castShadow: true
+    },
+    ground: {
+        receiveShadows: true
+    },
     lights: {
         shadowSpotLight: {
             type: 2,
+            intensity: 2,
             shadowEnabled: true,
-            target: { x: 0, y: 0, z: 0 },
-            position: { x: 0, y: 2.1, z: 2.7 },
+            target: { x: 0, y: 0, z: 0.5 },
+            position: { x: 0, y: 3.5, z: 3.7 },
             angle: 1,
             shadowOrthoScale: 0.5,
             shadowBufferSize: 1024,

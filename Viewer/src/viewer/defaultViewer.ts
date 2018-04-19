@@ -23,7 +23,7 @@ export class DefaultViewer extends AbstractViewer {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this._onModelLoaded);
         this.sceneManager.onSceneInitObservable.add(() => {
-            extendClassWithConfig(this.sceneManager.scene, this._configuration.scene);
+            // extendClassWithConfig(this.sceneManager.scene, this._configuration.scene);
             return this.sceneManager.scene;
         });
 
