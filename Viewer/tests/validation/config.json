@@ -5,7 +5,7 @@
             "title": "Control",
             "createMesh": true,
             "configuration": {
-                "extends": "extended"
+                "extends": "extended, shadowDirectionalLight"
             },
             "referenceImage": "Control.png"
         },
@@ -14,7 +14,7 @@
             "createMesh": true,
             "createMaterial": true,
             "configuration": {
-                "extends": "extended",
+                "extends": "extended, shadowDirectionalLight",
                 "castShadow": true,
                 "model": {
                     "material": {
@@ -35,15 +35,36 @@
             "referenceImage": "Diffuse.png"
         },
         {
-            "title": "BrainStem",
+            "title": "Specular {{glos * 20}} - {{spec * 20}}",
+            "createMesh": true,
+            "createMaterial": true,
+            "repeatVariables": "glos,spec",
+            "repeatTimes": "6,6",
             "configuration": {
-                "extends": "extended",
-                "skybox": {
-                    "cubeTexture": {
-                        "url": "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds",
-                        "gammaSpace": false
+                "extends": "extended, shadowDirectionalLight",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": "{{spec / 5}}",
+                            "g": "{{spec / 5}}",
+                            "b": "{{spec / 5}}"
+                        },
+                        "microSurface": "{{glos / 5}}"
                     }
                 }
+            },
+            "referenceImage": "Specular{{glos * 20}}-{{spec * 20}}.png"
+        },
+        {
+            "title": "BrainStem",
+            "configuration": {
+                "extends": "extended, shadowDirectionalLight"
             },
             "model": "/dist/assets/BrainStem/BrainStem.gltf",
             "referenceImage": "BrainStem.png"
@@ -51,7 +72,7 @@
         {
             "title": "BrainStem transformation",
             "configuration": {
-                "extends": "extended",
+                "extends": "extended, shadowDirectionalLight",
                 "camera": {
                     "disableAutoFocus": true
                 },
@@ -62,12 +83,6 @@
                     },
                     "rotation": {
                         "y": 0.9
-                    }
-                },
-                "skybox": {
-                    "cubeTexture": {
-                        "url": "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds",
-                        "gammaSpace": false
                     }
                 }
             },
