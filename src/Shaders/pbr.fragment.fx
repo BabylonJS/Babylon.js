@@ -660,7 +660,7 @@ void main(void) {
         #ifdef HORIZONOCCLUSION
             #ifdef BUMP
                 #ifdef REFLECTIONMAP_3D
-                    float eho = environmentHorizonOcclusion(reflectionCoords, normalW);
+                    float eho = environmentHorizonOcclusion(-viewDirectionW, normalW);
                     specularEnvironmentReflectance *= eho;
                 #endif
             #endif
