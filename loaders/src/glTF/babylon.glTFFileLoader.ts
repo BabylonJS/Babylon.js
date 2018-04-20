@@ -116,6 +116,18 @@ module BABYLON {
         compileShadowGenerators: boolean;
 
         /**
+         * Defines if the Alpha blended materials are only applied as coverage. 
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
+
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -247,6 +259,18 @@ module BABYLON {
          * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
          */
         public compileShadowGenerators = false;
+
+        /**
+         * Defines if the Alpha blended materials are only applied as coverage. 
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        public transparencyAsCoverage = false;
+
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -415,6 +439,8 @@ module BABYLON {
                 this._loader = null;
             }
 
+            this.preprocessUrlAsync = url => Promise.resolve(url);
+
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
@@ -560,6 +586,8 @@ module BABYLON {
             loader.compileMaterials = this.compileMaterials;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.transparencyAsCoverage = this.transparencyAsCoverage;
+            loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
