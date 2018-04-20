@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 /// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts"/>
 
 module INSPECTOR {

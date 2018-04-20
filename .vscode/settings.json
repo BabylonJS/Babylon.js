@@ -6,7 +6,7 @@
         "**/.svn": true,
         "**/.hg": true,
         "**/.DS_Store": true,
-        "**/.vs": true,        
+        "**/.vs": true,
         "**/.tempChromeProfileForDebug": true,
         "**/node_modules": true,
         "**/temp": true,
@@ -20,10 +20,11 @@
         "proceduralTexturesLibrary/**/*.d.ts": true,
         "serielazers/**/*.d.ts": true,
         "viewer/**/*.d.ts": true,
+        "Viewer/**/*.d.ts": true,
         "**/*.js.map": true,
         "**/*.js.fx": true,
-        "**/*.js": { 
-            "when":"$(basename).ts"
+        "**/*.js": {
+            "when": "$(basename).ts"
         }
     },
     "files.associations": {
@@ -37,11 +38,11 @@
         "**/.temp": true,
         "**/dist": true,
         "**/*.map": true,
-        "**/*.js": { 
-             "when":"$(basename).ts"
-         },
+        "**/*.js": {
+            "when": "$(basename).ts"
+        },
         "**/*.d.ts": true,
-        "assets":true
+        "assets": true
     },
     "typescript.tsdk": "./Tools/Gulp/node_modules/typescript/lib"
 }
