@@ -5,12 +5,12 @@
         "noResolve": false,
         "noImplicitAny": false,
         "strictNullChecks": true,
-        "removeComments": false,
+        "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "experimentalDecorators": true,
         "isolatedModules": false,
-        "declaration": true,
+        "declaration": false,
         "lib": [
             "dom",
             "es2015.promise",
@@ -19,19 +19,20 @@
         "types": [
             "node"
         ],
-        "baseUrl": ".",
+        "baseUrl": "./src/",
         "paths": {
             "babylonjs": [
-                "../dist/preview release/babylon.d.ts"
+                "../../../../dist/preview release/babylon.d.ts"
             ],
             "babylonjs-loaders": [
-                "externalModules.d.ts"
+                "../../../src/externalModules.d.ts"
+            ],
+            "babylonjs-gltf2interface": [
+                "../../../../dist/babylon.glTF2Interface.d.ts"
             ]
-        }
+        },
     },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "tests"
+    "include": [
+        "./src/**/*.ts"
     ]
 }
