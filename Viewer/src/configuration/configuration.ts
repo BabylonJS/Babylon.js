@@ -224,6 +224,19 @@ export interface ISceneConfiguration {
     defaultMaterial?: {
         materialType: "standard" | "pbr";
         [propName: string]: any;
+    };
+    flags?: {
+        shadowsEnabled?: boolean;
+        particlesEnabled?: boolean;
+        collisionsEnabled?: boolean;
+        lightsEnabled?: boolean;
+        texturesEnabled?: boolean;
+        lensFlaresEnabled?: boolean;
+        proceduralTexturesEnabled?: boolean;
+        renderTargetsEnabled?: boolean;
+        spritesEnabled?: boolean;
+        skeletonsEnabled?: boolean;
+        audioEnabled?: boolean;
     }
 }
 
@@ -362,6 +375,7 @@ export interface ICameraConfiguration {
     maxZ?: number;
     inertia?: number;
     exposure?: number;
+    pinchPrecision?: number;
     behaviors?: {
         [name: string]: number | {
             type: number;
