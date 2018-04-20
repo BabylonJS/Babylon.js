@@ -61,7 +61,7 @@
         "webpack-stream": "^4.0.1"
     },
     "scripts": {
-        "install": "npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && gulp deployLocalDev"
+        "install": "npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && npm --prefix ../../Viewer/tests/ install ../../Viewer/tests/ && gulp deployLocalDev"
     },
     "dependencies": {
         "dts-bundle": "^0.7.3",
