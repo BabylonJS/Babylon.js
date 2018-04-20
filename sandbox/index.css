@@ -221,3 +221,166 @@ a {
     opacity: .4;
     font-size: 1.8em;
 }
+
+
+/* animation bar */
+#animationBar {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+}
+
+#animationBar * {
+    padding: 0px;
+    margin: 0px;
+}
+
+#animationBar,
+#dropdownContent {
+    padding: 10px;
+    background-color: gray;
+}
+
+#animationBar img {
+    width: 25px;
+    height: 25px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+#dropdownBtn,
+#playBtn {
+    display: flex;
+    align-items: center;
+}
+
+#playBtn {
+    margin-left: 40px;
+    margin-right: 20px;
+    border: none;
+    background-color: inherit;
+}
+
+#dropdownLabel,
+#dropdownContent a  {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 5px;    
+}
+#dropdownLabel {
+    cursor: default;
+    width: 100px;
+}
+#dropdownContent a {
+    max-width: 710px;
+    transition: color 0.5s;
+}
+#dropdownContent a:hover {
+    color: #444;
+}
+
+#dropdownContent {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: -10px;
+    z-index: 1;
+    border-radius: 5px 5px 0px 0px;
+    min-width: 135px;
+}
+
+#dropdownContent a,
+#playBtn {
+    cursor: pointer;
+}
+
+#dropdownContent .active {
+    color: black;
+}
+
+.dropdown:hover #dropdownContent {
+    display: flex;
+    flex-direction: column;
+}
+
+#playBtn.play #pauseImg,
+#playBtn.pause #playImg{
+    display: none;
+}
+
+#slider {
+    cursor: pointer;
+    -webkit-appearance: none;
+    width: 500px;
+    outline: none;
+    border-radius: 5px;
+}
+
+/*Chrome -webkit */
+#slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 0;
+    background: url('Assets/circle.png') no-repeat gray;
+    background-size: 100% 100%;
+}
+#slider::-webkit-slider-runnable-track {
+    height: 10px;
+    -webkit-appearance: none;
+    color: white;
+    margin-top: -1px;
+}
+
+
+/** FireFox -moz */
+#slider::-moz-range-progress {
+  background-color: white;
+  height: 5px; 
+}
+#slider::-moz-range-thumb{
+    width: 20px;
+    height: 20px;
+    border: 0;
+    background: url('Assets/circle.png') no-repeat gray;
+    background-size: 100% 100%;
+}
+
+/** IE -ms */
+#slider::-ms-fill-lower {
+    background-color: white;
+    height: 5px; 
+  }
+#slider::-ms-thumb {
+    width: 20px;
+    height: 20px;
+    border: 0;
+    background: url('Assets/circle.png') no-repeat gray;
+    background-size: 100% 100%;
+}
+
+/** for screen too small */
+@media only screen and (max-width: 750px) {
+    #slider {
+        width: 100px;
+    }
+
+    #dropdownLabel {
+        width: 50px;
+    }
+
+    #dropdownContent a {
+        max-width: 260px;
+    }
+}

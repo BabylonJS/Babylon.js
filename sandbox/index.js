@@ -4,6 +4,15 @@
 var assetUrl;
 var cameraPosition;
 var kiosk;
+var currentGroup; // animation group
+var currentGroupIndex;
+var currentScene;
+// html balise
+var animationBar = document.getElementById("animationBar");
+var dropdownLabel = document.getElementById("dropdownLabel");
+var dropdownContent = document.getElementById("dropdownContent");
+var playBtn = document.getElementById("playBtn");
+var slider = document.getElementById("slider");
 
 var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
@@ -53,6 +62,9 @@ if (BABYLON.Engine.isSupported()) {
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
+    // This is really important to tell Babylon.js to use decomposeLerp and matrix interpolation
+    BABYLON.Animation.AllowMatricesInterpolation = true;
+
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
     BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
@@ -79,6 +91,30 @@ if (BABYLON.Engine.isSupported()) {
             if (enableDebugLayer) {
             hideDebugLayerAndLogs();
         }
+
+        // Clear dropdown that contains animation names
+        dropdownContent.innerHTML = "";
+        animationBar.style.display = "none";
+        currentGroup = null;
+
+        if(babylonScene.animationGroups.length > 0) {
+            animationBar.style.display = "flex";
+            for (var index = 0; index < babylonScene.animationGroups.length; index++) {
+                var group = babylonScene.animationGroups[index];
+			    createDropdownLink(group,index);
+            }
+            currentGroup = babylonScene.animationGroups[0];
+            currentGroupIndex = 0;
+            document.getElementById( formatId(currentGroup.name+"-"+currentGroupIndex)).click();
+        }
+
+        // Sync the slider with the current frame
+        babylonScene.registerBeforeRender(function () {
+            
+            if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
+                slider.value = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
+            }
+        });
 
         // Clear the error
         errorZone.style.display = 'none';
@@ -179,6 +215,7 @@ if (BABYLON.Engine.isSupported()) {
         var fileName = BABYLON.Tools.GetFilename(assetUrl);
         BABYLON.SceneLoader.LoadAsync(rootUrl, fileName, engine).then(function (scene) {
             sceneLoaded({ name: fileName }, scene);
+            currentScene = scene;
             scene.whenReadyAsync().then(function () {
                 engine.runRenderLoop(function ()  {
                     scene.render();
@@ -274,3 +311,81 @@ function sizeScene() {
         divInspWrapper.style['max-width'] = document.body.clientWidth + "px";
     }
 }
+
+
+// animation
+// event on the dropdown
+function formatId(name){
+    return "data-" + name.replace(/\s/g,'');
+}
+
+function createDropdownLink(group,index) {
+    var animation = document.createElement("a");
+    animation.innerHTML = group.name;
+    animation.setAttribute("id",  formatId(group.name+"-"+index));
+    animation.addEventListener("click", function() {
+        // stop the current animation group
+        currentGroup.reset();
+        currentGroup.stop();
+        document.getElementById( formatId(currentGroup.name+"-"+currentGroupIndex)).classList.remove("active");
+        playBtn.classList.remove("play");
+        playBtn.classList.add("pause");
+
+        // start the new animation group
+        currentGroup = group;
+        currentGroupIndex = index;
+        currentGroup.start(true);
+        this.classList.add("active");
+        dropdownLabel.innerHTML = currentGroup.name;
+
+        // set the slider
+        slider.setAttribute("min", currentGroup.from);
+        slider.setAttribute("max", currentGroup.to);
+        currentSliderValue = 0;
+        slider.value = 0;
+    });
+    dropdownContent.appendChild(animation);
+}
+
+// event on the play/pause button
+playBtn.addEventListener("click", function() {
+    // click on the button to run the animation
+    if( this.classList.contains("play") ) {
+        this.classList.remove("play");
+        this.classList.add("pause");
+        var currentFrame = slider.value;
+        currentGroup.play(true);
+    }
+    // click on the button to pause the animation
+    else {
+        this.classList.add("play");
+        this.classList.remove("pause");
+        currentGroup.pause();
+    }
+});
+
+// event on the slider
+slider.addEventListener("input", function() {
+    if( playBtn.classList.contains("play") ) {
+        currentGroup.play(true);
+        currentGroup.goToFrame(this.value);
+        currentGroup.pause();
+    } else {
+        currentGroup.goToFrame(this.value);
+    }
+});
+
+var sliderPause = false;
+slider.addEventListener("mousedown", function() {
+    if( playBtn.classList.contains("pause") ) {
+        sliderPause = true;
+        playBtn.click();
+    }
+});
+
+slider.addEventListener("mouseup", function() {
+    if( sliderPause ) {
+        sliderPause = false;
+        playBtn.click();
+    }
+});
