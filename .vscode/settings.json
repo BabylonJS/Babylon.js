@@ -19,7 +19,6 @@
         "postProcessesLibrary/**/*.d.ts": true,
         "proceduralTexturesLibrary/**/*.d.ts": true,
         "serielazers/**/*.d.ts": true,
-        "viewer/**/*.d.ts": true,
         "Viewer/**/*.d.ts": true,
         "**/*.js.map": true,
         "**/*.js.fx": true,
