@@ -170,7 +170,7 @@ a {
     display: none;
     align-items: center;
     color: white;
-    font-weight: bold;
+    font-weight: 500;
     width: calc(100% - 168px);
     bottom: 12px;
     min-height: 30px;
@@ -189,7 +189,6 @@ a {
 }
 
 #animationBar #dropdownContent {
-    padding: 10px;
     background-color: #3B789A;
 }
 
@@ -222,12 +221,17 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 5px;    
+    padding: 5px 15px 5px 15px;
 }
 #dropdownLabel {
     cursor: default;
     width: 100px;
 }
+
+#dropdownLabel:hover {
+    cursor: pointer;
+}
+
 #dropdownContent a {
     max-width: 1000px;
     transition: color 0.5s;
@@ -239,10 +243,9 @@ a {
 #dropdownContent {
     display: none;
     position: absolute;
-    bottom: 100%;
-    left: -10px;
+    bottom: 44px;
+    border-bottom: 1px solid white; 
     z-index: 1;
-    border-radius: 5px 5px 0px 0px;
     min-width: 135px;
 }
 
