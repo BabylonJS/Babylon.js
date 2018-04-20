@@ -1,7 +1,11 @@
-import { AbstractViewer } from "..";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags, GLTFFileLoader } from "babylonjs";
+import { AbstractViewer } from "../viewer/viewer";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags } from "babylonjs";
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
-import { ViewerModel, ModelState } from "./viewerModel";
+import { ViewerModel, ModelState } from "../model/viewerModel";
+import { ILoaderPlugin } from './plugins/loaderPlugin';
+import { TelemetryLoaderPlugin } from './plugins/telemetryLoaderPlugin';
+import { getLoaderPluginByName } from './plugins/';
 
 /**
  * An instance of the class is in charge of loading the model correctly.
@@ -16,6 +20,8 @@ export class ModelLoader {
 
     private _loaders: Array<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
 
+    private _plugins: Array<ILoaderPlugin>;
+
     /**
      * Create a new Model loader
      * @param _viewer the viewer using this model loader
@@ -23,6 +29,22 @@ export class ModelLoader {
     constructor(private _viewer: AbstractViewer) {
         this._loaders = [];
         this._loadId = 0;
+        this._plugins = [];
+    }
+
+    public addPlugin(plugin: ILoaderPlugin | string) {
+        let actualPlugin: ILoaderPlugin = {};
+        if (typeof plugin === 'string') {
+            let loadedPlugin = getLoaderPluginByName(plugin);
+            if (loadedPlugin) {
+                actualPlugin = loadedPlugin;
+            }
+        } else {
+            actualPlugin = plugin;
+        }
+        if (actualPlugin && this._plugins.indexOf(actualPlugin) === -1) {
+            this._plugins.push(actualPlugin);
+        }
     }
 
     /**
@@ -32,6 +54,8 @@ export class ModelLoader {
     public load(modelConfiguration: IModelConfiguration): ViewerModel {
 
         const model = new ViewerModel(this._viewer, modelConfiguration);
+
+        model.loadId = this._loadId++;
 
         if (!modelConfiguration.url) {
             model.state = ModelState.ERROR;
@@ -43,11 +67,11 @@ export class ModelLoader {
         let base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
         let plugin = modelConfiguration.loader;
 
-        model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.scene, (meshes, particleSystems, skeletons, animationGroups) => {
+        model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.sceneManager.scene, (meshes, particleSystems, skeletons, animationGroups) => {
             meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, "viewerMesh");
+                model.addMesh(mesh);
             });
-            model.meshes = meshes;
             model.particleSystems = particleSystems;
             model.skeletons = skeletons;
 
@@ -55,22 +79,41 @@ export class ModelLoader {
                 model.addAnimationGroup(animationGroup);
             }
 
-            model.initAnimations();
+            this._checkAndRun("onLoaded", model);
             model.onLoadedObservable.notifyObserversWithPromise(model);
         }, (progressEvent) => {
+            this._checkAndRun("onProgress", progressEvent);
             model.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
-        }, (e, m, exception) => {
+        }, (scene, m, exception) => {
             model.state = ModelState.ERROR;
             Tools.Error("Load Error: There was an error loading the model. " + m);
+            this._checkAndRun("onError", m, exception);
             model.onLoadErrorObservable.notifyObserversWithPromise({ message: m, exception: exception });
         }, plugin)!;
 
         if (model.loader.name === "gltf") {
             let gltfLoader = (<GLTFFileLoader>model.loader);
-            gltfLoader.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE;
+            gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
+            gltfLoader.compileMaterials = true;
+            // if ground is set to "mirror":
+            if (this._viewer.configuration.ground && typeof this._viewer.configuration.ground === 'object' && this._viewer.configuration.ground.mirror) {
+                gltfLoader.useClipPlane = true;
+            }
+            Object.keys(gltfLoader).filter(name => name.indexOf('on') === 0 && name.indexOf('Observable') !== -1).forEach(functionName => {
+                gltfLoader[functionName].add((payload) => {
+                    this._checkAndRun(functionName.replace("Observable", ''), payload);
+                });
+            });
+
+            gltfLoader.onParsedObservable.add((data) => {
+                if (data && data.json && data.json['asset']) {
+                    model.loadInfo = data.json['asset'];
+                }
+            })
         }
 
-        model.loadId = this._loadId++;
+        this._checkAndRun("onInit", model.loader, model);
+
         this._loaders.push(model.loader);
 
         return model;
@@ -100,5 +143,14 @@ export class ModelLoader {
         });
         this._loaders.length = 0;
         this._disposed = true;
+    }
+
+    private _checkAndRun(functionName: string, ...payload: Array<any>) {
+        if (this._disposed) return;
+        this._plugins.filter(p => p[functionName]).forEach(plugin => {
+            try {
+                plugin[functionName].apply(this, payload);
+            } catch (e) { }
+        })
     }
 }

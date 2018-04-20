@@ -1,6 +1,7 @@
 
 import { Observable, IFileRequest, Tools } from 'babylonjs';
 import { isUrl, camelToKebab, kebabToCamel } from './helper';
+import * as deepmerge from '../assets/deepmerge.min.js';
 
 /**
  * A single template configuration object
@@ -293,8 +294,10 @@ export class Template {
      */
     public initPromise: Promise<Template>;
 
-    private _fragment: DocumentFragment;
+    private _fragment: DocumentFragment | Element;
+    private _addedFragment: DocumentFragment | Element;
     private _htmlTemplate: string;
+    private _rawHtml: string;
 
     private loadRequests: Array<IFileRequest>;
 
@@ -317,8 +320,14 @@ export class Template {
                 this._htmlTemplate = htmlTemplate;
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
                 let config = this._configuration.params || {};
-                let rawHtml = compiledTemplate(config);
-                this._fragment = document.createRange().createContextualFragment(rawHtml);
+                this._rawHtml = compiledTemplate(config);
+                try {
+                    this._fragment = document.createRange().createContextualFragment(this._rawHtml);
+                } catch (e) {
+                    let test = document.createElement(this.name);
+                    test.innerHTML = this._rawHtml;
+                    this._fragment = test;
+                }
                 this.isLoaded = true;
                 this.isShown = true;
                 this.onLoaded.notifyObservers(this);
@@ -334,16 +343,26 @@ export class Template {
      * 
      * @param params the new template parameters
      */
-    public updateParams(params: { [key: string]: string | number | boolean | object }) {
-        this._configuration.params = params;
+    public updateParams(params: { [key: string]: string | number | boolean | object }, append: boolean = true) {
+        if (append) {
+            this._configuration.params = deepmerge(this._configuration.params, params);
+        } else {
+            this._configuration.params = params;
+        }
         // update the template
         if (this.isLoaded) {
-            this.dispose();
+            // this.dispose();
         }
         let compiledTemplate = Handlebars.compile(this._htmlTemplate);
         let config = this._configuration.params || {};
-        let rawHtml = compiledTemplate(config);
-        this._fragment = document.createRange().createContextualFragment(rawHtml);
+        this._rawHtml = compiledTemplate(config);
+        try {
+            this._fragment = document.createRange().createContextualFragment(this._rawHtml);
+        } catch (e) {
+            let test = document.createElement(this.name);
+            test.innerHTML = this._rawHtml;
+            this._fragment = test;
+        }
         if (this.parent) {
             this.appendTo(this.parent, true);
         }
@@ -363,10 +382,16 @@ export class Template {
     public getChildElements(): Array<string> {
         let childrenArray: string[] = [];
         //Edge and IE don't support frage,ent.children
-        let children = this._fragment.children;
+        let children: HTMLCollection | NodeListOf<Element> = this._fragment && this._fragment.children;
+        if (!this._fragment) {
+            let fragment = this.parent.querySelector(this.name);
+            if (fragment) {
+                children = fragment.querySelectorAll('*');
+            }
+        }
         if (!children) {
             // casting to HTMLCollection, as both NodeListOf and HTMLCollection have 'item()' and 'length'.
-            children = <HTMLCollection>this._fragment.querySelectorAll('*');
+            children = this._fragment.querySelectorAll('*');
         }
         for (let i = 0; i < children.length; ++i) {
             childrenArray.push(kebabToCamel(children.item(i).nodeName.toLowerCase()));
@@ -382,8 +407,11 @@ export class Template {
      */
     public appendTo(parent: HTMLElement, forceRemove?: boolean) {
         if (this.parent) {
-            if (forceRemove) {
-                this.parent.removeChild(this._fragment);
+            if (forceRemove && this._addedFragment) {
+                /*let fragement = this.parent.querySelector(this.name)
+                if (fragement)
+                    this.parent.removeChild(fragement);*/
+                this.parent.innerHTML = '';
             } else {
                 return;
             }
@@ -393,7 +421,12 @@ export class Template {
         if (this._configuration.id) {
             this.parent.id = this._configuration.id;
         }
-        this._fragment = this.parent.appendChild(this._fragment);
+        if (this._fragment) {
+            this.parent.appendChild(this._fragment);
+            this._addedFragment = this._fragment;
+        } else {
+            this.parent.insertAdjacentHTML("beforeend", this._rawHtml);
+        }
         // appended only one frame after.
         setTimeout(() => {
             this._registerEvents();
@@ -420,6 +453,10 @@ export class Template {
             } else {
                 // flex? box? should this be configurable easier than the visibilityFunction?
                 this.parent.style.display = 'flex';
+                // support old browsers with no flex:
+                if (this.parent.style.display !== 'flex') {
+                    this.parent.style.display = '';
+                }
                 return this;
             }
         }).then(() => {
@@ -445,7 +482,7 @@ export class Template {
                 return visibilityFunction(this);
             } else {
                 // flex? box? should this be configurable easier than the visibilityFunction?
-                this.parent.style.display = 'hide';
+                this.parent.style.display = 'none';
                 return this;
             }
         }).then(() => {
