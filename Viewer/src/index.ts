@@ -1,11 +1,14 @@
 /// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
 import { mapperManager } from './configuration/mappers';
+import { viewerGlobals } from './configuration/globals';
 import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
-import { ModelLoader } from './model/modelLoader';
+import { telemetryManager } from './telemetryManager';
+import { ModelLoader } from './loader/modelLoader';
 import { ViewerModel, ModelState } from './model/viewerModel';
 import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
+import { ILoaderPlugin } from './loader/plugins/loaderPlugin';
 
 /**
  * BabylonJS Viewer
@@ -13,25 +16,20 @@ import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
-import { PromisePolyfill } from 'babylonjs';
+import * as BABYLON from 'babylonjs';
 
 // load needed modules.
 import 'babylonjs-loaders';
 import 'pep';
 
-
-import { InitTags } from './initializer';
+import { initListeners, InitTags } from './initializer';
 
 // promise polyfill, if needed!
-PromisePolyfill.Apply();
+BABYLON.PromisePolyfill.Apply();
+initListeners();
 
-export let disableInit: boolean = false;
-document.addEventListener("DOMContentLoaded", init);
-function init(event) {
-    document.removeEventListener("DOMContentLoaded", init);
-    if (disableInit) return;
-    InitTags();
-}
+//deprectaed, here for backwards compatibility
+let disableInit: boolean = viewerGlobals.disableInit;
 
 /**
  * Dispose all viewers currently registered
@@ -39,7 +37,10 @@ function init(event) {
 function disposeAll() {
     viewerManager.dispose();
     mapperManager.dispose();
+    telemetryManager.dispose();
 }
 
+const Version = BABYLON.Engine.Version;
+
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
+export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin };

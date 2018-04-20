@@ -13,6 +13,8 @@
     "files": [
         "babylon.viewer.js",
         "babylon.viewer.module.d.ts",
+        "babylon.glTF2Interface.d.ts",
+        "babylonjs.loaders.d.ts",
         "babylon.d.ts",
         "readme.md",
         "package.json"
