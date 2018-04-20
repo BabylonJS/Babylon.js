@@ -21,7 +21,7 @@
 - New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
 - Physics - Latest production version of Oimo.js is being used - 1.0.9 ([RaananW](https://github.com/RaananW))
 - Introduces [PCF](https://doc.babylonjs.com/babylon101/shadows#percentage-closer-filtering-webgl2-only) and [PCSS](https://doc.babylonjs.com/babylon101/shadows#contact-hardening-shadow-webgl2-only) shadow support in Webgl 2 ([sebavan](https://github.com/sebavan)))
-- Introduces PBR Specular Anti Aliasing support ([sebavan](https://github.com/sebavan)))
+- Introduces [PBR Specular Anti Aliasing support](https://doc.babylonjs.com/how_to/physically_based_rendering_master#specular-aliasing) ([sebavan](https://github.com/sebavan)))
 
 ## Documentation
 
@@ -118,6 +118,7 @@
 - Added alphaCutOff support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - Add support for sparse accessors to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - Add support for cameras to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Add support for preprocessing urls to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
 

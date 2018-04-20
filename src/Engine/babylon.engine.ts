@@ -726,7 +726,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.2.0-beta.5";
+            return "3.2.0-rc.1";
         }
 
         // Updatable statics so stick with vars here
@@ -781,6 +781,11 @@
          * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
          **/
         public enableOfflineSupport = false;
+
+        /** 
+         * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (Babylon.js will always consider the database is up to date)
+         **/
+        public disableManifestCheck = false;        
 
         /**
          * Gets the list of created scenes
@@ -7095,6 +7100,8 @@
                 switch(format) {
                     case Engine.TEXTUREFORMAT_LUMINANCE:
                         return this._gl.LUMINANCE;
+                    case Engine.TEXTUREFORMAT_RGB:
+                        return this._gl.RGB;                        
                 }                    
             }
             return this._gl.RGBA;

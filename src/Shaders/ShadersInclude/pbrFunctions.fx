@@ -137,11 +137,9 @@ float environmentRadianceOcclusion(float ambientOcclusion, float NdotVUnclamped)
     return clamp(square(temp) - 1.0 + ambientOcclusion, 0.0, 1.0);
 }
 
-float environmentHorizonOcclusion(vec3 reflection, vec3 normal) {
-	// http://marmosetco.tumblr.com/post/81245981087
-#ifdef REFLECTIONMAP_OPPOSITEZ
-    reflection.z *= -1.0;
-#endif
+float environmentHorizonOcclusion(vec3 view, vec3 normal) {
+    // http://marmosetco.tumblr.com/post/81245981087
+    vec3 reflection = reflect(view, normal);
     float temp = clamp( 1.0 + 1.1 * dot(reflection, normal), 0.0, 1.0);
     return square(temp);
 }
