@@ -668,10 +668,6 @@
                         defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
 
                         switch (reflectionTexture.coordinatesMode) {
-                            case Texture.CUBIC_MODE:
-                            case Texture.INVCUBIC_MODE:
-                                defines.REFLECTIONMAP_CUBIC = true;
-                                break;
                             case Texture.EXPLICIT_MODE:
                                 defines.REFLECTIONMAP_EXPLICIT = true;
                                 break;
@@ -696,7 +692,11 @@
                             case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
                                 defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                                 break;
-                        }
+                            case Texture.CUBIC_MODE:
+                            case Texture.INVCUBIC_MODE:
+                            default:
+                                    defines.REFLECTIONMAP_CUBIC = true;
+                                    break;                        }
 
                         if (this.reflectionFresnel) {
                             defines.REFLECTIONFRESNEL = true;
