@@ -21,58 +21,6 @@
     -ms-touch-action: none;
 }
 
-.help {
-    display: none;
-    position: absolute;
-    background-color: #3B789A;
-    right: 0;
-    bottom: 70px;
-    color: white;
-    padding-right: 10px;
-    width: 360px;
-    height: 30px;
-    transition: all 0.5s ease;
-    -webkit-transition: all 0.5s ease;
-    transform: translateX(400px);
-    -webkit-transform: translateX(400px);
-        text-align: center;
-}
-
-    .help.shown {
-        transform: translateX(-100px);
-        -webkit-transform: translateX(-100px);
-        display: inline;
-    }
-
- .help2 {
-    display: none;
-    position: absolute;
-    background-color: #3B789A;
-    right: 0;
-    bottom: 70px;
-    color: white;
-    padding-right: 10px;
-    width: 360px;
-    height: 30px;
-    transition: all 0.5s ease;
-    -webkit-transition: all 0.5s ease;
-    transform: translateX(400px);
-    -webkit-transform: translateX(400px);
-        text-align: center;
-}
-
-    .help2.shown {
-        transform: translateX(0px);
-        -webkit-transform: translateX(0px);
-        display: inline;
-    }
-
-#helpArrow {
-    position: absolute;
-    right: -65px;
-    bottom: 10px;
-}
-
 #fps {
     position: absolute;
     font-size: 30px;
@@ -97,22 +45,14 @@ a {
     height: 56px;
     bottom: 0;
     background-color: #3B789A;
-    padding-left: 15px;
 }
 
 .footerRight {
     display: inline;
     position: absolute;
     bottom: 0;
-    right: 10px;
+    right: 0px;
     top: 0px;
-}
-
-.footerLeft {
-    position: absolute;
-    bottom: 20px;
-    left: 15px;
-    color: white;
 }
 
 .footerRight a {
@@ -228,16 +168,18 @@ a {
     position: absolute;
     bottom: 0px;
     display: none;
-    justify-content: space-around;
     align-items: center;
     color: white;
     font-weight: bold;
-    width: calc(100% - 200px);
+    width: calc(100% - 168px);
+    bottom: 12px;
 }
 
 .row {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    flex-grow: 10;
 }
 
 #animationBar * {
@@ -245,8 +187,7 @@ a {
     margin: 0px;
 }
 
-#animationBar,
-#dropdownContent {
+#animationBar #dropdownContent {
     padding: 10px;
     background-color: #3B789A;
 }
@@ -259,6 +200,7 @@ a {
 .dropdown {
     position: relative;
     display: inline-block;
+    width: 150px;
 }
 
 #dropdownBtn,
@@ -328,6 +270,8 @@ a {
     width: 1000px;
     outline: none;
     border-radius: 5px;
+    height: 4px; 
+    margin-top: 10px;   
 }
 
 /*Chrome -webkit */
@@ -344,7 +288,7 @@ a {
     height: 10px;
     -webkit-appearance: none;
     color: white;
-    margin-top: -1px;
+    margin-top: -10px;
 }
 
 
