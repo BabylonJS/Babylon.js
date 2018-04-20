@@ -900,8 +900,25 @@ export class SceneManager {
             shadownMap.renderList = []
         }
         for (var index = 0; index < focusMeshes.length; index++) {
-            if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
-                shadownMap.renderList.push(focusMeshes[index]);
+            let mesh = focusMeshes[index];
+            if (Tags.MatchesQuery(mesh, 'castShadow') && shadownMap.renderList.indexOf(mesh) === -1) {
+                shadownMap.renderList.push(mesh);
+            }
+        }
+    }
+
+    private _updateGroundMirrorRenderList(model?: ViewerModel, resetList?: boolean) {
+        if (this.environmentHelper.groundMirror && this.environmentHelper.groundMirror.renderList) {
+            let focusMeshes = model ? model.meshes : this.scene.meshes;
+            let renderList = this.environmentHelper.groundMirror.renderList;
+            if (resetList) {
+                renderList.length = 0;
+            }
+            for (var index = 0; index < focusMeshes.length; index++) {
+                let mesh = focusMeshes[index];
+                if (renderList.indexOf(mesh) === -1) {
+                    renderList.push(mesh);
+                }
             }
         }
     }
