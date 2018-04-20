@@ -84,6 +84,12 @@ var BABYLON;
              */
             this.compileShadowGenerators = false;
             /**
+             * Defines if the Alpha blended materials are only applied as coverage.
+             * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+             * If true, no extra effects are applied to transparent pixels.
+             */
+            this.transparencyAsCoverage = false;
+            /**
              * Function called before loading a url referenced by the asset.
              */
             this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
@@ -394,6 +400,7 @@ var BABYLON;
             loader.compileMaterials = this.compileMaterials;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.transparencyAsCoverage = this.transparencyAsCoverage;
             loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
@@ -1974,6 +1981,7 @@ var BABYLON;
                 this.compileMaterials = false;
                 this.useClipPlane = false;
                 this.compileShadowGenerators = false;
+                this.transparencyAsCoverage = false;
                 this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
                 this.onMeshLoadedObservable = new BABYLON.Observable();
                 this.onTextureLoadedObservable = new BABYLON.Observable();
