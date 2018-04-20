@@ -10,12 +10,6 @@ module BABYLON.GLTF2 {
         _total?: number;
     }
 
-    /** @hidden */
-    export interface _MaterialConstructor<T extends Material> {
-        readonly prototype: T;
-        new(name: string, scene: Scene): T;
-    }
-
     /**
      * Loader for loading a glTF 2.0 asset
      */
@@ -79,6 +73,13 @@ module BABYLON.GLTF2 {
          * Defines if the loader should compile shadow generators.
          */
         public compileShadowGenerators = false;
+
+        /**
+         * Defines if the Alpha blended materials are only applied as coverage. 
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        public transparencyAsCoverage = false;
 
         /**
          * Function called before loading a url referenced by the asset.
@@ -205,14 +206,13 @@ module BABYLON.GLTF2 {
 
         private _loadAsync(nodes: Nullable<Array<_ILoaderNode>>, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return Promise.resolve().then(() => {
-                this._loadExtensions();
-
                 this._babylonScene = scene;
                 this._rootUrl = rootUrl;
                 this._progressCallback = onProgress;
                 this._state = GLTFLoaderState.LOADING;
 
                 this._loadData(data);
+                this._loadExtensions();
                 this._checkExtensions();
 
                 const promises = new Array<Promise<void>>();
@@ -266,17 +266,6 @@ module BABYLON.GLTF2 {
             });
         }
 
-        private _loadExtensions(): void {
-            for (const name of GLTFLoader._ExtensionNames) {
-                const extension = GLTFLoader._ExtensionFactories[name](this);
-                this._extensions[name] = extension;
-
-                this.onExtensionLoadedObservable.notifyObservers(extension);
-            }
-
-            this.onExtensionLoadedObservable.clear();
-        }
-
         private _loadData(data: IGLTFLoaderData): void {
             this._gltf = data.json as _ILoaderGLTF;
             this._setupData();
@@ -328,6 +317,17 @@ module BABYLON.GLTF2 {
                     node._parent = parentIndex === undefined ? rootNode : this._gltf.nodes[parentIndex];
                 }
             }
+        }
+
+        private _loadExtensions(): void {
+            for (const name of GLTFLoader._ExtensionNames) {
+                const extension = GLTFLoader._ExtensionFactories[name](this);
+                this._extensions[name] = extension;
+
+                this.onExtensionLoadedObservable.notifyObservers(extension);
+            }
+
+            this.onExtensionLoadedObservable.clear();
         }
 
         private _checkExtensions(): void {
@@ -1268,7 +1268,7 @@ module BABYLON.GLTF2 {
         private _getDefaultMaterial(drawMode: number): Material {
             let babylonMaterial = this._defaultBabylonMaterials[drawMode];
             if (!babylonMaterial) {
-                babylonMaterial = this._createMaterial(PBRMaterial, "__gltf_default", drawMode);
+                babylonMaterial = this._createMaterial("__gltf_default", drawMode);
                 babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
                 babylonMaterial.metallic = 1;
                 babylonMaterial.roughness = 1;
@@ -1333,7 +1333,7 @@ module BABYLON.GLTF2 {
                 const promises = new Array<Promise<void>>();
 
                 const name = material.name || `materialSG_${material._index}`;
-                const babylonMaterial = this._createMaterial(PBRMaterial, name, babylonDrawMode);
+                const babylonMaterial = this._createMaterial(name, babylonDrawMode);
 
                 promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
                 promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
@@ -1356,10 +1356,13 @@ module BABYLON.GLTF2 {
         }
 
         /** @hidden */
-        public _createMaterial<T extends Material>(type: _MaterialConstructor<T>, name: string, drawMode: number): T {
-            const babylonMaterial = new type(name, this._babylonScene);
+        public _createMaterial(name: string, drawMode: number): PBRMaterial {
+            const babylonMaterial = new PBRMaterial(name, this._babylonScene);
             babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             babylonMaterial.fillMode = drawMode;
+            babylonMaterial.enableSpecularAntiAliasing = true;
+            babylonMaterial.useRadianceOverAlpha = !this.transparencyAsCoverage;
+            babylonMaterial.useSpecularOverAlpha = !this.transparencyAsCoverage;
             return babylonMaterial;
         }
 
