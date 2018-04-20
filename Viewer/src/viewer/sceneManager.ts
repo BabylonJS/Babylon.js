@@ -745,7 +745,7 @@ export class SceneManager {
      * @param model optionally use the model to configure the camera.
      */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
-        let focusMeshes = model ? model.meshes : this.scene.meshes;
+
         // sanity check!
         if (!Object.keys(lightsConfiguration).length) {
             if (!this.scene.lights.length)
@@ -853,14 +853,8 @@ export class SceneManager {
                     }
 
                     // add the focues meshes to the shadow list
-                    let shadownMap = shadowGenerator.getShadowMap();
-                    if (!shadownMap) return;
-                    let renderList = shadownMap.renderList;
-                    for (var index = 0; index < focusMeshes.length; index++) {
-                        if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
-                            renderList && renderList.push(focusMeshes[index]);
-                        }
-                    }
+                    this._updateShadowRenderList(shadowGenerator, model);
+
                     var blurKernel = this.getBlurKernel(light, bufferSize);
 
                     //shadowGenerator.useBlurCloseExponentialShadowMap = true;
@@ -893,6 +887,23 @@ export class SceneManager {
             newConfiguration: lightsConfiguration,
             model
         });
+    }
+
+    private _updateShadowRenderList(shadowGenerator: ShadowGenerator, model?: ViewerModel, resetList?: boolean) {
+        let focusMeshes = model ? model.meshes : this.scene.meshes;
+        // add the focues meshes to the shadow list
+        let shadownMap = shadowGenerator.getShadowMap();
+        if (!shadownMap) return;
+        if (resetList && shadownMap.renderList) {
+            shadownMap.renderList.length = 0;
+        } else {
+            shadownMap.renderList = []
+        }
+        for (var index = 0; index < focusMeshes.length; index++) {
+            if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
+                shadownMap.renderList.push(focusMeshes[index]);
+            }
+        }
     }
 
     /**
