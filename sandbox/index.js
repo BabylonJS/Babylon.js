@@ -112,7 +112,12 @@ if (BABYLON.Engine.isSupported()) {
         babylonScene.registerBeforeRender(function () {
             
             if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
-                slider.value = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
+                var currentValue = slider.valueAsNumber;
+                var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
+
+                if (Math.abs(currentValue - newValue) > 0.01) {
+                    slider.value = newValue
+                }
             }
         });
 
