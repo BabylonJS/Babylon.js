@@ -220,6 +220,10 @@ export interface ISceneConfiguration {
     disableCameraControl?: boolean;
     animationPropertiesOverride?: {
         [propName: string]: any;
+    };
+    defaultMaterial?: {
+        materialType: "standard" | "pbr";
+        [propName: string]: any;
     }
 }
 

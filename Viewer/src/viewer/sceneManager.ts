@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
@@ -206,14 +206,21 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._viewer.engine);
 
-        // default material should be a PBRMaterial
-        var defaultMaterial = new BABYLON.PBRMaterial('default-material', this.scene);
-        defaultMaterial.environmentBRDFTexture = null;
-        defaultMaterial.usePhysicalLightFalloff = true;
-        defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-        defaultMaterial.microSurface = 0.6;
+        // TODO - is this needed, now that Babylon is integrated? 
+        // set a default PBR material
+        if (!sceneConfiguration.defaultMaterial) {
+            var defaultMaterial = new BABYLON.PBRMaterial('default-material', this.scene);
+            defaultMaterial.environmentBRDFTexture = null;
+            defaultMaterial.usePhysicalLightFalloff = true;
+            defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            defaultMaterial.microSurface = 0.6;
 
-        this.scene.defaultMaterial = defaultMaterial;
+            if (this.scene.defaultMaterial) {
+                this.scene.defaultMaterial.dispose();
+            }
+
+            this.scene.defaultMaterial = defaultMaterial;
+        }
 
         this.scene.animationPropertiesOverride = new AnimationPropertiesOverride();
         this.scene.animationPropertiesOverride.enableBlending = true;
@@ -231,15 +238,6 @@ export class SceneManager {
             }
             var gl = new BABYLON.GlowLayer("glow", this.scene, options);
         }
-
-        /*if (sceneConfiguration) {
-            this._configureScene(sceneConfiguration);
-
-            // Scene optimizer
-            if (optimizerConfiguration) {
-                this._configureOptimizer(optimizerConfiguration);
-            }
-        }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
     }
@@ -264,27 +262,6 @@ export class SceneManager {
         // update scene configuration
         if (newConfiguration.scene) {
             this._configureScene(newConfiguration.scene);
-
-            // process mainColor changes:
-            if (newConfiguration.scene.mainColor) {
-                this._mainColor = this._mainColor || Color3.White();
-                let mc = newConfiguration.scene.mainColor;
-                if (mc.r !== undefined) {
-                    this._mainColor.r = mc.r;
-                }
-                if (mc.g !== undefined) {
-                    this._mainColor.g = mc.g
-                }
-                if (mc.b !== undefined) {
-                    this._mainColor.b = mc.b
-                }
-
-                /*this._mainColor.toLinearSpaceToRef(this._mainColor);
-                let exposure = Math.pow(2.0, -((globalConfiguration.camera && globalConfiguration.camera.exposure) || 0.75)) * Math.PI;
-                this._mainColor.scaleToRef(1 / exposure, this._mainColor);
-                let environmentTint = (globalConfiguration.lab && globalConfiguration.lab.environmentMap && globalConfiguration.lab.environmentMap.tintLevel) || 0;
-                this._mainColor = Color3.Lerp(this._white, this._mainColor, environmentTint);*/
-            }
         }
 
         // optimizer
@@ -428,6 +405,41 @@ export class SceneManager {
             this.camera.detachControl(this._viewer.canvas);
         } else if (this.camera && sceneConfig.disableCameraControl === false) {
             this.camera.attachControl(this._viewer.canvas);
+        }
+
+        // process mainColor changes:
+        if (sceneConfig.mainColor) {
+            this._mainColor = this._mainColor || Color3.White();
+            let mc = sceneConfig.mainColor;
+            if (mc.r !== undefined) {
+                this._mainColor.r = mc.r;
+            }
+            if (mc.g !== undefined) {
+                this._mainColor.g = mc.g
+            }
+            if (mc.b !== undefined) {
+                this._mainColor.b = mc.b
+            }
+
+            /*this._mainColor.toLinearSpaceToRef(this._mainColor);
+            let exposure = Math.pow(2.0, -((globalConfiguration.camera && globalConfiguration.camera.exposure) || 0.75)) * Math.PI;
+            this._mainColor.scaleToRef(1 / exposure, this._mainColor);
+            let environmentTint = (globalConfiguration.lab && globalConfiguration.lab.environmentMap && globalConfiguration.lab.environmentMap.tintLevel) || 0;
+            this._mainColor = Color3.Lerp(this._white, this._mainColor, environmentTint);*/
+        }
+
+        if (sceneConfig.defaultMaterial) {
+            let conf = sceneConfig.defaultMaterial;
+            if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
+                (conf.materialType === 'pbr' && this.scene.defaultMaterial.getClassName() !== 'PBRMaterial')) {
+                this.scene.defaultMaterial.dispose();
+                if (conf.materialType === 'standard') {
+                    this.scene.defaultMaterial = new StandardMaterial("defaultMaterial", this.scene);
+                } else {
+                    this.scene.defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
+                }
+            }
+            extendClassWithConfig(this.scene.defaultMaterial, conf);
         }
 
         this.onSceneConfiguredObservable.notifyObservers({
