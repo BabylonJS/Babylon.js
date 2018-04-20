@@ -98,6 +98,12 @@ declare module BABYLON {
          */
         compileShadowGenerators: boolean;
         /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -202,6 +208,12 @@ declare module BABYLON {
          * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -522,6 +534,12 @@ declare module BABYLON.GLTF2 {
          * Defines if the loader should compile shadow generators.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */

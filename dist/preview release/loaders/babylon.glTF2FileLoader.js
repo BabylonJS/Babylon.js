@@ -84,6 +84,12 @@ var BABYLON;
              */
             this.compileShadowGenerators = false;
             /**
+             * Defines if the Alpha blended materials are only applied as coverage.
+             * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+             * If true, no extra effects are applied to transparent pixels.
+             */
+            this.transparencyAsCoverage = false;
+            /**
              * Function called before loading a url referenced by the asset.
              */
             this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
@@ -394,6 +400,7 @@ var BABYLON;
             loader.compileMaterials = this.compileMaterials;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.transparencyAsCoverage = this.transparencyAsCoverage;
             loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
@@ -653,6 +660,12 @@ var BABYLON;
                  * Defines if the loader should compile shadow generators.
                  */
                 this.compileShadowGenerators = false;
+                /**
+                 * Defines if the Alpha blended materials are only applied as coverage.
+                 * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+                 * If true, no extra effects are applied to transparent pixels.
+                 */
+                this.transparencyAsCoverage = false;
                 /**
                  * Function called before loading a url referenced by the asset.
                  */
@@ -1772,6 +1785,8 @@ var BABYLON;
                 babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? BABYLON.Material.CounterClockWiseSideOrientation : BABYLON.Material.ClockWiseSideOrientation;
                 babylonMaterial.fillMode = drawMode;
                 babylonMaterial.enableSpecularAntiAliasing = true;
+                babylonMaterial.useRadianceOverAlpha = !this.transparencyAsCoverage;
+                babylonMaterial.useSpecularOverAlpha = !this.transparencyAsCoverage;
                 return babylonMaterial;
             };
             /** @hidden */
