@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "noResolve": false,
+        "noImplicitAny": false,
+        "strictNullChecks": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "isolatedModules": false,
+        "declaration": false,
+        "lib": [
+            "dom",
+            "es2015.promise",
+            "es5"
+        ],
+        "types": [
+            "node"
+        ],
+        "baseUrl": "./src/",
+        "paths": {
+            "babylonjs": [
+                "../../../../dist/preview release/babylon.d.ts"
+            ],
+            "babylonjs-loaders": [
+                "../../../src/externalModules.d.ts"
+            ],
+            "babylonjs-gltf2interface": [
+                "../../../../dist/babylon.glTF2Interface.d.ts"
+            ]
+        },
+    },
+    "include": [
+        "./src/**/*.ts"
+    ]
+}
