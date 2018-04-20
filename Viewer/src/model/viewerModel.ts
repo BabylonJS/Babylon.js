@@ -1,9 +1,11 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, GLTFFileLoader, Quaternion } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride } from "babylonjs";
+import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { AbstractViewer } from "..";
+import { extendClassWithConfig } from "../helper";
 
 
 export enum ModelState {
@@ -29,10 +31,10 @@ export class ViewerModel implements IDisposable {
     /**
      * the list of meshes that are a part of this model
      */
-    public meshes: Array<AbstractMesh> = [];
+    private _meshes: Array<AbstractMesh> = [];
     /**
      * This model's root mesh (the parent of all other meshes).
-     * This mesh also exist in the meshes array.
+     * This mesh does not(!) exist in the meshes array.
      */
     public rootMesh: AbstractMesh;
     /**
@@ -76,6 +78,8 @@ export class ViewerModel implements IDisposable {
      * A loadID provided by the modelLoader, unique to ths (Abstract)Viewer instance.
      */
     public loadId: number;
+
+    public loadInfo: GLTF2.IAsset;
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
@@ -87,12 +91,67 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
+        this.rootMesh = new AbstractMesh("modelRootMesh", this._viewer.sceneManager.scene);
+
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
-        this._modelConfiguration = deepmerge({}, modelConfiguration);
+        this._modelConfiguration = deepmerge(this._viewer.configuration.model || {}, modelConfiguration);
 
-        this._viewer.models.push(this);
+        this._viewer.sceneManager.models.push(this);
+        this._viewer.onModelAddedObservable.notifyObservers(this);
+        this.onLoadedObservable.add(() => {
+            this._viewer.onModelLoadedObservable.notifyObservers(this);
+            this._initAnimations();
+        });
     }
+
+    /**
+     * Is this model enabled?
+     */
+    public get enabled() {
+        return this.rootMesh.isEnabled();
+    }
+
+    /**
+     * Set whether this model is enabled or not.
+     */
+    public set enabled(enable: boolean) {
+        this.rootMesh.setEnabled(enable);
+    }
+
+    /**
+     * Get the viewer showing this model
+     */
+    public getViewer() {
+        return this._viewer;
+    }
+
+    /**
+     * Add a mesh to this model.
+     * Any mesh that has no parent will be provided with the root mesh as its new parent.
+     * 
+     * @param mesh the new mesh to add
+     * @param triggerLoaded should this mesh trigger the onLoaded observable. Used when adding meshes manually.
+     */
+    public addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
+        if (!mesh.parent) {
+            mesh.parent = this.rootMesh;
+        }
+        mesh.receiveShadows = !!this.configuration.receiveShadows;
+        this._meshes.push(mesh);
+        if (triggerLoaded) {
+            return this.onLoadedObservable.notifyObserversWithPromise(this);
+        }
+    }
+
+    /**
+     * get the list of meshes (excluding the root mesh)
+     */
+    public get meshes() {
+        return this._meshes;
+    }
+
+    public get
 
     /**
      * Get the model's configuration
@@ -122,16 +181,11 @@ export class ViewerModel implements IDisposable {
     }
 
 
-    public initAnimations() {
-        this._animations.forEach(a => {
-            a.dispose();
-        });
-        this._animations.length = 0;
-
+    private _initAnimations() {
         // check if this is not a gltf loader and init the animations
-        if (this.loader.name !== 'gltf') {
+        if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx, this._viewer.scene);
+                let ag = new AnimationGroup("animation-" + idx, this._viewer.sceneManager.scene);
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
@@ -214,7 +268,8 @@ export class ViewerModel implements IDisposable {
     }
 
     private _configureModel() {
-        let meshesWithNoParent: Array<AbstractMesh> = this.meshes.filter(m => !m.parent);
+        // this can be changed to the meshes that have rootMesh a parent without breaking anything.
+        let meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh] //this._meshes.filter(m => m.parent === this.rootMesh);
         let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach(mesh => {
                 if (param) {
@@ -238,32 +293,6 @@ export class ViewerModel implements IDisposable {
                 updateMeshesWithNoParent(variable, configValues.w, 'w');
             }
         }
-        // position?
-        if (this._modelConfiguration.position) {
-            updateXYZ('position', this._modelConfiguration.position);
-        }
-        if (this._modelConfiguration.rotation) {
-            //quaternion?
-            if (this._modelConfiguration.rotation.w) {
-                meshesWithNoParent.forEach(mesh => {
-                    if (!mesh.rotationQuaternion) {
-                        mesh.rotationQuaternion = new Quaternion();
-                    }
-                })
-                updateXYZ('rotationQuaternion', this._modelConfiguration.rotation);
-            } else {
-                updateXYZ('rotation', this._modelConfiguration.rotation);
-            }
-        }
-        if (this._modelConfiguration.scaling) {
-            updateXYZ('scaling', this._modelConfiguration.scaling);
-        }
-
-        if (this._modelConfiguration.castShadow) {
-            this.meshes.forEach(mesh => {
-                Tags.AddTagsTo(mesh, 'castShadow');
-            });
-        }
 
         if (this._modelConfiguration.normalize) {
             let center = false;
@@ -272,7 +301,6 @@ export class ViewerModel implements IDisposable {
             if (this._modelConfiguration.normalize === true) {
                 center = true;
                 unitSize = true;
-                parentIndex = 0;
             } else {
                 center = !!this._modelConfiguration.normalize.center;
                 unitSize = !!this._modelConfiguration.normalize.unitSize;
@@ -281,7 +309,7 @@ export class ViewerModel implements IDisposable {
 
             let meshesToNormalize: Array<AbstractMesh> = [];
             if (parentIndex !== undefined) {
-                meshesToNormalize.push(this.meshes[parentIndex]);
+                meshesToNormalize.push(this._meshes[parentIndex]);
             } else {
                 meshesToNormalize = meshesWithNoParent;
             }
@@ -300,21 +328,125 @@ export class ViewerModel implements IDisposable {
                     const center = boundingInfo.min.add(halfSizeVec);
                     mesh.position = center.scale(-1);
 
-                    // Set on ground.
-                    mesh.position.y += halfSizeVec.y;
-
                     // Recompute Info.
                     mesh.computeWorldMatrix(true);
                 });
             }
+        } else {
+            //center automatically
+            meshesWithNoParent.forEach(mesh => {
+                const boundingInfo = mesh.getHierarchyBoundingVectors(true);
+                const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+                const halfSizeVec = sizeVec.scale(0.5);
+                const center = boundingInfo.min.add(halfSizeVec);
+                mesh.position = center.scale(-1);
+
+                // Recompute Info.
+                mesh.computeWorldMatrix(true);
+            });
         }
+
+        // position?
+        if (this._modelConfiguration.position) {
+            updateXYZ('position', this._modelConfiguration.position);
+        }
+        if (this._modelConfiguration.rotation) {
+            //quaternion?
+            if (this._modelConfiguration.rotation.w) {
+                meshesWithNoParent.forEach(mesh => {
+                    if (!mesh.rotationQuaternion) {
+                        mesh.rotationQuaternion = new Quaternion();
+                    }
+                })
+                updateXYZ('rotationQuaternion', this._modelConfiguration.rotation);
+            } else {
+                updateXYZ('rotation', this._modelConfiguration.rotation);
+            }
+        }
+
+        if (this._modelConfiguration.rotationOffsetAxis) {
+            let rotationAxis = new Vector3(0, 0, 0).copyFrom(this._modelConfiguration.rotationOffsetAxis as Vector3);
+
+            meshesWithNoParent.forEach(m => {
+                if (this._modelConfiguration.rotationOffsetAngle) {
+                    m.rotate(rotationAxis, this._modelConfiguration.rotationOffsetAngle);
+                }
+            })
+
+        }
+
+        if (this._modelConfiguration.scaling) {
+            updateXYZ('scaling', this._modelConfiguration.scaling);
+        }
+
+        if (this._modelConfiguration.castShadow) {
+            this._meshes.forEach(mesh => {
+                Tags.AddTagsTo(mesh, 'castShadow');
+            });
+        }
+
+        let meshes = this.rootMesh.getChildMeshes(false);
+        meshes.filter(m => m.material).forEach((mesh) => {
+            this._applyModelMaterialConfiguration(mesh.material!);
+        });
+
         this.onAfterConfigure.notifyObservers(this);
+    }
+
+    /**
+     * Apply a material configuration to a material
+     * @param material Material to apply configuration to
+     */
+    private _applyModelMaterialConfiguration(material: Material) {
+        if (!this._modelConfiguration.material) return;
+
+        extendClassWithConfig(material, this._modelConfiguration.material);
+
+        if (material instanceof BABYLON.PBRMaterial) {
+            if (this._modelConfiguration.material.directIntensity !== undefined) {
+                material.directIntensity = this._modelConfiguration.material.directIntensity;
+            }
+
+            if (this._modelConfiguration.material.emissiveIntensity !== undefined) {
+                material.emissiveIntensity = this._modelConfiguration.material.emissiveIntensity;
+            }
+
+            if (this._modelConfiguration.material.environmentIntensity !== undefined) {
+                material.environmentIntensity = this._modelConfiguration.material.environmentIntensity;
+            }
+
+            if (this._modelConfiguration.material.directEnabled !== undefined) {
+                material.disableLighting = !this._modelConfiguration.material.directEnabled;
+            }
+            if (this._viewer.sceneManager.mainColor) {
+                material.reflectionColor = this._viewer.sceneManager.mainColor;
+            }
+        }
+        else if (material instanceof BABYLON.MultiMaterial) {
+            for (let i = 0; i < material.subMaterials.length; i++) {
+                const subMaterial = material.subMaterials[i];
+                if (subMaterial) {
+                    this._applyModelMaterialConfiguration(subMaterial);
+                }
+            }
+        }
+    }
+
+    /**
+     * Will remove this model from the viewer (but NOT dispose it).
+     */
+    public remove() {
+        this._viewer.sceneManager.models.splice(this._viewer.sceneManager.models.indexOf(this), 1);
+        // hide it
+        this.rootMesh.isVisible = false;
+        this._viewer.onModelRemovedObservable.notifyObservers(this);
     }
 
     /**
      * Dispose this model, including all of its associated assets.
      */
     public dispose() {
+        this.remove();
         this.onAfterConfigure.clear();
         this.onLoadedObservable.clear();
         this.onLoadErrorObservable.clear();
@@ -328,8 +460,8 @@ export class ViewerModel implements IDisposable {
         this.skeletons.length = 0;
         this._animations.forEach(ag => ag.dispose());
         this._animations.length = 0;
-        this.meshes.forEach(m => m.dispose());
-        this.meshes.length = 0;
-        this._viewer.models.splice(this._viewer.models.indexOf(this), 1);
+        this._meshes.forEach(m => m.dispose());
+        this._meshes.length = 0;
+        this.rootMesh.dispose();
     }
 }
