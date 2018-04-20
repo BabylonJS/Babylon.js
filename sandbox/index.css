@@ -266,8 +266,8 @@ a {
 }
 
 #slider {
-    cursor: pointer;
     -webkit-appearance: none;
+    cursor: pointer;
     width: 1000px;
     outline: none;
     border-radius: 5px;
@@ -311,10 +311,14 @@ a {
     background-color: white;
     height: 5px; 
   }
+  #slider::-ms-fill-upper {
+    background-color: white;
+    height: 5px; 
+  }  
 #slider::-ms-thumb {
     width: 20px;
     height: 20px;
-    border: 0;
+    border: none;
     background: url('Assets/circle.png') no-repeat #3B789A;
     background-size: 100% 100%;
 }
