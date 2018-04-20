@@ -1,4 +1,5 @@
 import { ITemplateConfiguration } from './../templateManager';
+import { EngineOptions, IGlowLayerOptions } from 'babylonjs';
 
 export interface ViewerConfiguration {
 
@@ -33,7 +34,7 @@ export interface ViewerConfiguration {
     engine?: {
         antialiasing?: boolean;
         disableResize?: boolean;
-        engineOptions?: { [key: string]: any };
+        engineOptions?: EngineOptions;
         adaptiveQuality?: boolean;
     },
     //templateStructure?: ITemplateStructure,
@@ -51,6 +52,15 @@ export interface ViewerConfiguration {
         }
     }
 
+    loaderPlugins?: {
+        extendedMaterial?: boolean;
+        msftLod?: boolean;
+        telemetry?: boolean;
+        minecraft?: boolean;
+
+        [propName: string]: boolean | undefined;
+    };
+
     // features that are being tested.
     // those features' syntax will change and move out! 
     // Don't use in production (or be ready to make the changes :) )
@@ -63,10 +73,45 @@ export interface ViewerConfiguration {
             specular?: { r: number, g: number, b: number };
         }
         hideLoadingDelay?: number;
+        environmentAssetsRootURL?: string;
+        environmentMap?: {
+            /**
+             * Environment map texture path in relative to the asset folder.
+             */
+            texture: string;
+
+            /**
+             * Default rotation to apply to the environment map.
+             */
+            rotationY: number;
+
+            /**
+             * Tint level of the main color on the environment map.
+             */
+            tintLevel: number;
+        }
+        renderingPipelines?: {
+            default?: boolean | {
+                [propName: string]: any;
+            };
+            standard?: boolean | {
+                [propName: string]: any;
+            };
+            /*lens?: boolean | {
+                [propName: string]: boolean | string | number | undefined;
+            };*/
+            ssao?: boolean | {
+                [propName: string]: any;
+            };
+            ssao2?: boolean | {
+                [propName: string]: any;
+            };
+        }
     }
 }
 
 export interface IModelConfiguration {
+    id?: string;
     url?: string;
     root?: string; //optional
     loader?: string; // obj, gltf?
@@ -76,11 +121,12 @@ export interface IModelConfiguration {
     parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
 
     castShadow?: boolean;
+    receiveShadows?: boolean;
     normalize?: boolean | {
         center?: boolean;
         unitSize?: boolean;
         parentIndex?: number;
-    }; // shoud the model be scaled to unit-size
+    }; // should the model be scaled to unit-size
 
     title?: string;
     subtitle?: string;
@@ -89,6 +135,33 @@ export interface IModelConfiguration {
     animation?: {
         autoStart?: boolean | string;
         playOnce?: boolean;
+    }
+
+    material?: {
+        directEnabled?: boolean;
+        directIntensity?: number;
+        emissiveIntensity?: number;
+        environmentIntensity?: number;
+        [propName: string]: any;
+    }
+
+    /** 
+     * Rotation offset axis definition
+     */
+    rotationOffsetAxis?: {
+        x: number;
+        y: number;
+        z: number;
+    };
+
+    /**
+     * the offset angle
+     */
+    rotationOffsetAngle?: number;
+
+    loaderConfiguration?: {
+        maxLODsToLoad?: number;
+        progressiveLoading?: boolean;
     }
 
     // [propName: string]: any; // further configuration, like title and creator
@@ -108,7 +181,7 @@ export interface ISkyboxConfiguration {
         imageProcessingConfiguration?: IImageProcessingConfiguration;
         [propName: string]: any;
     };
-    infiniteDIstance?: boolean;
+    infiniteDistance?: boolean;
 
 }
 
@@ -128,20 +201,145 @@ export interface IGroundConfiguration {
     texture?: string;
     color?: { r: number, g: number, b: number };
     opacity?: number;
-    material?: { // deprecated!
+    material?: {
         [propName: string]: any;
     };
 }
 
 export interface ISceneConfiguration {
     debug?: boolean;
-    autoRotate?: boolean; // deprecated
-    rotationSpeed?: number; // deprecated
-    defaultCamera?: boolean; // deprecated
-    defaultLight?: boolean; // deprecated
     clearColor?: { r: number, g: number, b: number, a: number };
+    mainColor?: { r: number, g: number, b: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
+    colorGrading?: IColorGradingConfiguration;
+    environmentRotationY?: number;
+    glow?: boolean | IGlowLayerOptions;
+    disableHdr?: boolean;
+    renderInBackground?: boolean;
+    disableCameraControl?: boolean;
+    animationPropertiesOverride?: {
+        [propName: string]: any;
+    };
+    defaultMaterial?: {
+        materialType: "standard" | "pbr";
+        [propName: string]: any;
+    };
+    flags?: {
+        shadowsEnabled?: boolean;
+        particlesEnabled?: boolean;
+        collisionsEnabled?: boolean;
+        lightsEnabled?: boolean;
+        texturesEnabled?: boolean;
+        lensFlaresEnabled?: boolean;
+        proceduralTexturesEnabled?: boolean;
+        renderTargetsEnabled?: boolean;
+        spritesEnabled?: boolean;
+        skeletonsEnabled?: boolean;
+        audioEnabled?: boolean;
+    }
+}
+
+/**
+ * The Color Grading Configuration groups the different settings used to define the color grading used in the viewer.
+ */
+export interface IColorGradingConfiguration {
+
+    /**
+     * Transform data string, encoded as determined by transformDataFormat.
+     */
+    transformData: string;
+
+    /**
+     * The encoding format of TransformData (currently only raw-base16 is supported).
+     */
+    transformDataFormat: string;
+
+    /**
+     * The weight of the transform
+     */
+    transformWeight: number;
+
+    /**
+     * Color curve colorFilterHueGlobal value
+     */
+    colorFilterHueGlobal: number;
+
+    /**
+     * Color curve colorFilterHueShadows value
+     */
+    colorFilterHueShadows: number;
+
+    /**
+     * Color curve colorFilterHueMidtones value
+     */
+    colorFilterHueMidtones: number;
+
+    /**
+     * Color curve colorFilterHueHighlights value
+     */
+    colorFilterHueHighlights: number;
+
+    /**
+     * Color curve colorFilterDensityGlobal value
+     */
+    colorFilterDensityGlobal: number;
+
+    /**
+     * Color curve colorFilterDensityShadows value
+     */
+    colorFilterDensityShadows: number;
+
+    /**
+     * Color curve colorFilterDensityMidtones value
+     */
+    colorFilterDensityMidtones: number;
+
+    /**
+     * Color curve colorFilterDensityHighlights value
+     */
+    colorFilterDensityHighlights: number;
+
+    /**
+     * Color curve saturationGlobal value
+     */
+    saturationGlobal: number;
+
+    /**
+     * Color curve saturationShadows value
+     */
+    saturationShadows: number;
+
+    /**
+     * Color curve saturationMidtones value
+     */
+    saturationMidtones: number;
+
+    /**
+     * Color curve saturationHighlights value
+     */
+    saturationHighlights: number;
+
+    /**
+     * Color curve exposureGlobal value
+     */
+    exposureGlobal: number;
+
+    /**
+     * Color curve exposureShadows value
+     */
+    exposureShadows: number;
+
+    /**
+     * Color curve exposureMidtones value
+     */
+    exposureMidtones: number;
+
+    /**
+     * Color curve exposureHighlights value
+     */
+    exposureHighlights: number;
+
 }
 
 export interface ISceneOptimizerConfiguration {
@@ -176,12 +374,17 @@ export interface ICameraConfiguration {
     minZ?: number;
     maxZ?: number;
     inertia?: number;
+    exposure?: number;
+    pinchPrecision?: number;
     behaviors?: {
         [name: string]: number | {
             type: number;
             [propName: string]: any;
         };
     };
+    disableCameraControl?: boolean;
+    disableCtrlForPanning?: boolean;
+    disableAutoFocus?: boolean;
 
     [propName: string]: any;
 }
@@ -201,6 +404,7 @@ export interface ILightConfiguration {
     shadownEnabled?: boolean; // only on specific lights!
     shadowConfig?: {
         useBlurExponentialShadowMap?: boolean;
+        useBlurCloseExponentialShadowMap?: boolean;
         useKernelBlur?: boolean;
         blurKernel?: number;
         blurScale?: number;
@@ -208,8 +412,15 @@ export interface ILightConfiguration {
         maxZ?: number;
         frustumSize?: number;
         angleScale?: number;
+        frustumEdgeFalloff?: number;
         [propName: string]: any;
-    }
+    };
+    spotAngle?: number;
+    shadowFieldOfView?: number;
+    shadowBufferSize?: number;
+    shadowFrustumSize?: number;
+    shadowMinZ?: number;
+    shadowMaxZ?: number;
     [propName: string]: any;
 
     // no behaviors for light at the moment, but allowing configuration for future reference.
