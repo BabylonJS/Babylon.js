@@ -587,6 +587,10 @@ declare module BabylonViewer {
             loadInfo: BABYLON.GLTF2.IAsset;
             constructor(_viewer: AbstractViewer, modelConfiguration: IModelConfiguration);
             /**
+                * Set whether this model is enabled or not.
+                */
+            enabled: boolean;
+            /**
                 * Get the viewer showing this model
                 */
             getViewer(): AbstractViewer;
@@ -1072,6 +1076,23 @@ declare module BabylonViewer {
             animationPropertiesOverride?: {
                     [propName: string]: any;
             };
+            defaultMaterial?: {
+                    materialType: "standard" | "pbr";
+                    [propName: string]: any;
+            };
+            flags?: {
+                    shadowsEnabled?: boolean;
+                    particlesEnabled?: boolean;
+                    collisionsEnabled?: boolean;
+                    lightsEnabled?: boolean;
+                    texturesEnabled?: boolean;
+                    lensFlaresEnabled?: boolean;
+                    proceduralTexturesEnabled?: boolean;
+                    renderTargetsEnabled?: boolean;
+                    spritesEnabled?: boolean;
+                    skeletonsEnabled?: boolean;
+                    audioEnabled?: boolean;
+            };
     }
     /**
         * The Color Grading Configuration groups the different settings used to define the color grading used in the viewer.
@@ -1194,6 +1215,7 @@ declare module BabylonViewer {
             maxZ?: number;
             inertia?: number;
             exposure?: number;
+            pinchPrecision?: number;
             behaviors?: {
                     [name: string]: number | {
                             type: number;
@@ -1629,6 +1651,7 @@ declare module BabylonViewer {
             processShadows: boolean;
             /**
                 * Sets the engine flags to unlock all babylon features.
+                * Can also be configured using the scene.flags configuration object
                 */
             unlockBabylonFeatures(): void;
             /**
