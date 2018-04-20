@@ -194,6 +194,12 @@ declare module BABYLON {
          */
         compileShadowGenerators: boolean;
         /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -298,6 +304,12 @@ declare module BABYLON {
          * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -847,6 +859,7 @@ declare module BABYLON.GLTF1 {
         compileMaterials: boolean;
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
+        transparencyAsCoverage: boolean;
         preprocessUrlAsync: (url: string) => Promise<string>;
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
@@ -1150,11 +1163,6 @@ declare module BABYLON.GLTF2 {
  * Defines the module used to import/export glTF 2.0 assets
  */
 declare module BABYLON.GLTF2 {
-    /** @hidden */
-    interface _MaterialConstructor<T extends Material> {
-        readonly prototype: T;
-        new (name: string, scene: Scene): T;
-    }
     /**
      * Loader for loading a glTF 2.0 asset
      */
@@ -1198,6 +1206,12 @@ declare module BABYLON.GLTF2 {
          * Defines if the loader should compile shadow generators.
          */
         compileShadowGenerators: boolean;
+        /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -1266,9 +1280,9 @@ declare module BABYLON.GLTF2 {
          */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         private _loadAsync(nodes, scene, data, rootUrl, onProgress?);
-        private _loadExtensions();
         private _loadData(data);
         private _setupData();
+        private _loadExtensions();
         private _checkExtensions();
         private _createRootNode();
         private _loadNodesAsync(nodes);
@@ -1312,7 +1326,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void>;
         /** @hidden */
-        _createMaterial<T extends Material>(type: _MaterialConstructor<T>, name: string, drawMode: number): T;
+        _createMaterial(name: string, drawMode: number): PBRMaterial;
         /** @hidden */
         _loadMaterialBasePropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void>;
         /** @hidden */
@@ -1403,6 +1417,26 @@ declare module BABYLON.GLTF2.Extensions {
          * Gets an array of LOD properties from lowest to highest.
          */
         private _getLODs<T>(context, property, array, ids);
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    /** @hidden */
+    class MSFT_minecraftMesh extends GLTFLoaderExtension {
+        readonly name: string;
+        constructor(loader: GLTFLoader);
+        private _onMaterialLoaded;
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    /** @hidden */
+    class MSFT_sRGBFactors extends GLTFLoaderExtension {
+        readonly name: string;
+        constructor(loader: GLTFLoader);
+        private _onMaterialLoaded;
     }
 }
 
