@@ -165,6 +165,7 @@ export class SceneManager {
 
     /**
      * Sets the engine flags to unlock all babylon features.
+     * Can also be configured using the scene.flags configuration object
      */
     public unlockBabylonFeatures() {
         this.scene.shadowsEnabled = true;
@@ -209,9 +210,7 @@ export class SceneManager {
         // TODO - is this needed, now that Babylon is integrated? 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
-            var defaultMaterial = new BABYLON.PBRMaterial('default-material', this.scene);
-            defaultMaterial.environmentBRDFTexture = null;
-            defaultMaterial.usePhysicalLightFalloff = true;
+            var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
             defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
             defaultMaterial.microSurface = 0.6;
 
@@ -440,6 +439,10 @@ export class SceneManager {
                 }
             }
             extendClassWithConfig(this.scene.defaultMaterial, conf);
+        }
+
+        if (sceneConfig.flags) {
+            extendClassWithConfig(this.scene, sceneConfig.flags);
         }
 
         this.onSceneConfiguredObservable.notifyObservers({

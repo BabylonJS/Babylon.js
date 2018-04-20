@@ -106,6 +106,20 @@ export class ViewerModel implements IDisposable {
     }
 
     /**
+     * Is this model enabled?
+     */
+    public get enabled() {
+        return this.rootMesh.isEnabled();
+    }
+
+    /**
+     * Set whether this model is enabled or not.
+     */
+    public set enabled(enable: boolean) {
+        this.rootMesh.setEnabled(enable);
+    }
+
+    /**
      * Get the viewer showing this model
      */
     public getViewer() {
