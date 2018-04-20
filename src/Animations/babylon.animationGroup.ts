@@ -23,6 +23,20 @@ module BABYLON {
         public onAnimationEndObservable = new Observable<TargetedAnimation>();
 
         /**
+         * Gets the first frame
+         */
+        public get from(): number {
+            return this._from;
+        }
+        
+        /**
+         * Gets the last frame
+         */
+        public get to(): number {
+            return this._to;
+        }
+
+        /**
          * Define if the animations are started
          */
         public get isStarted(): boolean {
