@@ -1040,11 +1040,7 @@ gulp.task("tests-unit-debug", ["tests-unit-transpile"], function (done) {
     server.start();
 });
 
-/**
- * Launches the KARMA unit tests in phantomJS.
- * (Can only be launch on any branches.)
- */
-gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
+gulp.task("tests-babylon-unit", ["tests-unit-transpile"], function (done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/unit/karma.conf.js",
         singleRun: true
@@ -1052,6 +1048,14 @@ gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
 
     var server = new karmaServer(kamaServerOptions, done);
     server.start();
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-unit", function (cb) {
+    runSequence("tests-babylon-unit", "tests-viewer-unit", cb);
 });
 
 var rmDir = function (dirPath) {
