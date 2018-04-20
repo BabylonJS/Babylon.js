@@ -1568,6 +1568,7 @@ module BABYLON.GLTF1 {
         public compileMaterials = false;
         public useClipPlane = false;
         public compileShadowGenerators = false;
+        public transparencyAsCoverage = false;
         public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
