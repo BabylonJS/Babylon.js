@@ -173,6 +173,7 @@ a {
     font-weight: bold;
     width: calc(100% - 168px);
     bottom: 12px;
+    min-height: 30px;
 }
 
 .row {
@@ -210,7 +211,7 @@ a {
 }
 
 #playBtn {
-    margin-left: 40px;
+    margin-left: 20px;
     margin-right: 20px;
     border: none;
     background-color: inherit;
