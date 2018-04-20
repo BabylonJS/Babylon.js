@@ -75,6 +75,13 @@ module BABYLON.GLTF2 {
         public compileShadowGenerators = false;
 
         /**
+         * Defines if the Alpha blended materials are only applied as coverage. 
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        public transparencyAsCoverage = false;
+
+        /**
          * Function called before loading a url referenced by the asset.
          */
         public preprocessUrlAsync = (url: string) => Promise.resolve(url);
@@ -1354,6 +1361,8 @@ module BABYLON.GLTF2 {
             babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             babylonMaterial.fillMode = drawMode;
             babylonMaterial.enableSpecularAntiAliasing = true;
+            babylonMaterial.useRadianceOverAlpha = !this.transparencyAsCoverage;
+            babylonMaterial.useSpecularOverAlpha = !this.transparencyAsCoverage;
             return babylonMaterial;
         }
 
