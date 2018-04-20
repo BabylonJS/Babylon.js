@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 
 module.exports = {
     entry: {
@@ -27,11 +26,6 @@ module.exports = {
         "earcut": true
     },
     devtool: 'source-map',
-    plugins: [
-        new webpack.WatchIgnorePlugin([
-            /\.d\.ts$/
-        ])
-    ],
     module: {
         loaders: [{
             test: /\.tsx?$/,
