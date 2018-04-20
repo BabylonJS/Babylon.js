@@ -614,10 +614,6 @@ module BABYLON {
                             defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
 
                             switch (this._reflectionTexture.coordinatesMode) {
-                                case Texture.CUBIC_MODE:
-                                case Texture.INVCUBIC_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_CUBIC");
-                                    break;
                                 case Texture.EXPLICIT_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_EXPLICIT");
                                     break;
@@ -642,7 +638,12 @@ module BABYLON {
                                 case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
                                     break;
-                            }
+                                case Texture.CUBIC_MODE:
+                                case Texture.INVCUBIC_MODE:
+                                default:
+                                        defines.setReflectionMode("REFLECTIONMAP_CUBIC");
+                                        break;
+                                }
 
                             defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>this._reflectionTexture).boundingBoxSize ? true : false;
                         }
