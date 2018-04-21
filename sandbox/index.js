@@ -53,7 +53,7 @@ if (BABYLON.Engine.isSupported()) {
     var currentPluginName;
     var skyboxPath = "Assets/environment.dds";
 
-    engine.loadingUIBackgroundColor = "#80a8bf";
+    engine.loadingUIBackgroundColor = "#a9b5bc";
 
     btnFullScreen.classList.add("hidden");
     btnInspector.classList.add("hidden");
