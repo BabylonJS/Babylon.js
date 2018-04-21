@@ -121,8 +121,7 @@
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
                 if (!this._texture.isReady) {
-                    this._texture.isReady = true;
-                    this._updateInternalTexture();
+                    this._textureReady();
                 }
                 return;
             }
@@ -146,15 +145,20 @@
                 this._samplingMode
             );
 
-            if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
-                this._texture.isReady = true;
-                this._updateInternalTexture();
-            }
-
-            if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
-                this.onLoadObservable.notifyObservers(this);
+            if (this.video.readyState >= this.video.HAVE_FUTURE_DATA) {
+                this._textureReady();
             }
         };
+
+        private _textureReady(): void {
+            if (this._texture) {
+                this._texture.isReady = true;
+                this._updateInternalTexture();
+                if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                    this.onLoadObservable.notifyObservers(this);
+                }
+            }
+        }
 
         private reset = (): void => {
             if (this._texture == null) {
