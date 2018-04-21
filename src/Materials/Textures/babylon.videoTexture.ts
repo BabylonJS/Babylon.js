@@ -120,12 +120,10 @@
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
-                if (!this.isReady) {
+                if (!this._texture.isReady) {
                     this._texture.isReady = true;
                     this._updateInternalTexture();
-                    this._createInternalTexture();
                 }
-                
                 return;
             }
 
@@ -151,7 +149,6 @@
             if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
                 this._texture.isReady = true;
                 this._updateInternalTexture();
-                this._createInternalTexture();
             }
 
             if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
