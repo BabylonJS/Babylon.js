@@ -75,6 +75,7 @@
                 this.video.loop = settings.loop;
             }
 
+            this.video.addEventListener("canplay", this._createInternalTexture);
             this.video.addEventListener("canplaythrough", this._createInternalTexture);
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
@@ -119,6 +120,12 @@
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
+                if (!this.isReady) {
+                    this._texture.isReady = true;
+                    this._updateInternalTexture();
+                    this._createInternalTexture();
+                }
+                
                 return;
             }
 
@@ -141,9 +148,12 @@
                 this._samplingMode
             );
 
-            this._texture.isReady = true;
+            if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
+                this._texture.isReady = true;
+                this._updateInternalTexture();
+                this._createInternalTexture();
+            }
 
-            this._updateInternalTexture();
             if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
             }
@@ -211,7 +221,8 @@
         }
 
         public dispose(): void {
-            super.dispose();            
+            super.dispose();
+            this.video.removeEventListener("canplay", this._createInternalTexture);
             this.video.removeEventListener("canplaythrough", this._createInternalTexture);
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
