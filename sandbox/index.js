@@ -53,6 +53,8 @@ if (BABYLON.Engine.isSupported()) {
     var currentPluginName;
     var skyboxPath = "Assets/environment.dds";
 
+    engine.loadingUIBackgroundColor = "#a9b5bc";
+
     btnFullScreen.classList.add("hidden");
     btnInspector.classList.add("hidden");
 
@@ -112,7 +114,12 @@ if (BABYLON.Engine.isSupported()) {
         babylonScene.registerBeforeRender(function () {
             
             if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
-                slider.value = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
+                var currentValue = slider.valueAsNumber;
+                var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
+                var range = Math.abs(currentGroup.from - currentGroup.to);
+                if (Math.abs(currentValue - newValue) > range * 0.01) { // Only move if greater than a 1% change
+                    slider.value = newValue;
+                }
             }
         });
 

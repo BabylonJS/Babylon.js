@@ -1,7 +1,7 @@
 {
-  "errors": 4330,
+  "errors": 4325,
   "babylon.typedoc.json": {
-    "errors": 4330,
+    "errors": 4325,
     "Animatable": {
       "Class": {
         "Comments": {
@@ -6929,29 +6929,6 @@
                 "MissingText": true
               }
             }
-          }
-        },
-        "generateBabylonHDR": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "UselessReturn": true
-          },
-          "Parameter": {
-            "callback": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "generateBabylonHDROnDisk": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "UselessReturn": true
           }
         }
       }
