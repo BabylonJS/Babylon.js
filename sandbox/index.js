@@ -116,9 +116,9 @@ if (BABYLON.Engine.isSupported()) {
             if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
                 var currentValue = slider.valueAsNumber;
                 var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
-
-                if (Math.abs(currentValue - newValue) > 0.01) {
-                    slider.value = newValue
+                var range = Math.abs(currentGroup.from - currentGroup.to);
+                if (Math.abs(currentValue - newValue) > range * 0.01) { // Only move if greater than a 1% change
+                    slider.value = newValue;
                 }
             }
         });
