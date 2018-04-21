@@ -199,7 +199,8 @@ a {
 
 #animationBar img {
     width: 36px;
-    height: 56px;
+    height: 36px;
+    margin: 10px;
 }
 
 .dropdown {
@@ -215,11 +216,17 @@ a {
 }
 
 #playBtn {
-    margin-left: 20px;
-    margin-right: 20px;
     border: none;
     background-color: inherit;
 }
+
+    #playBtn:hover {
+        background-color: #2c5a74; /* Add a hover color */    
+    }
+
+    #playBtn:active {
+        background-color: #162D3A; /* Add a hover color */ 
+    }
 
 #dropdownContent {
     background-color: #3B789A;
@@ -233,9 +240,9 @@ a {
     padding: 10px 15px 10px 46px;
 }
 #dropdownLabel {
-    cursor: default;
-    width: 100px;
-    padding: 5px 15px 5px 5px;
+    cursor: pointer;
+    width: 200px;
+    padding: 0px 15px 2px 5px;
 }
 
 #dropdownBtn:hover {
@@ -282,15 +289,11 @@ a {
     display: inline;
     margin-right: 0px;
     margin-left: 0px;
-    padding-left: 15px;
-    max-width: 28px;
 }
 #chevronDown {
     display: none;
     margin-right: 0px;
     margin-left: 0px;
-    padding-left: 15px;
-    max-width: 28px;
 }
 
 .dropdown:hover #chevronUp {
@@ -379,11 +382,13 @@ a {
 }
 
 @media (min-width: 0px) {
-    #slider,
-    #dropdownLabel {
+    #slider {
         display: none;
     }
 
+    #dropdownLabel {
+        display: none;
+    }   
     #dropdownContent a {
         max-width: 260px;
     }
@@ -397,10 +402,6 @@ a {
     
     #slider {
         width: 100px;
-    }
-
-    #dropdownLabel {
-        width: 50px;
     }
 
     #dropdownContent a {
@@ -418,9 +419,6 @@ a {
         width: 300px;
     }
 
-    #dropdownLabel {
-        width: 75px;
-    }
 
     #dropdownContent a {
         max-width: 400px;
@@ -437,10 +435,6 @@ a {
         width: 400px;
     }
 
-    #dropdownLabel {
-        width: 100px;
-    }
-
     #dropdownContent a {
         max-width: 600px;
     }
@@ -454,10 +448,6 @@ a {
     
     #slider {
         width: 700px;
-    }
-
-    #dropdownLabel {
-        width: 200px;
     }
 
     #dropdownContent a {
