@@ -1422,7 +1422,7 @@ module BABYLON {
             this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
         }
 
-        private _moveTeleportationSelectorTo(hit: PickingInfo, gazer:VRExperienceHelperGazer) {
+        private _moveTeleportationSelectorTo(hit: PickingInfo, gazer:VRExperienceHelperGazer, ray: Ray) {
             if (hit.pickedPoint) {
                 if (gazer._teleportationRequestInitiated) {
                     this._displayTeleportationTarget();
@@ -1430,7 +1430,7 @@ module BABYLON {
                     this._teleportationTarget.position.copyFrom(hit.pickedPoint);
                 }
                 
-                var pickNormal = hit.getNormal(true, false);
+                var pickNormal = this._convertNormalToDirectionOfRay(hit.getNormal(true, false), ray);
                 if (pickNormal) {
                     var axis1 = Vector3.Cross(Axis.Y, pickNormal);
                     var axis2 = Vector3.Cross(pickNormal, axis1);
@@ -1537,12 +1537,23 @@ module BABYLON {
             this._hideTeleportationTarget();
         }
 
+        private _convertNormalToDirectionOfRay(normal:Nullable<Vector3>, ray:Ray){
+            if(normal){
+                var angle = Math.acos(BABYLON.Vector3.Dot(normal, ray.direction));
+                if(angle < Math.PI/2){
+                    normal.scaleInPlace(-1);
+                }
+            }            
+            return normal;
+        }
+
         private _castRayAndSelectObject(gazer:VRExperienceHelperGazer) {
             if (!(this.currentVRCamera instanceof FreeCamera)) {
                 return;
             }
-                       
-            var hit = this._scene.pickWithRay(gazer._getForwardRay(this._rayLength), this._raySelectionPredicate);
+             
+            var ray = gazer._getForwardRay(this._rayLength);
+            var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
 
             // Moving the gazeTracker on the mesh face targetted
             if (hit && hit.pickedPoint) {
@@ -1558,7 +1569,7 @@ module BABYLON {
                     gazer._gazeTracker.scaling.y = hit.distance * multiplier;
                     gazer._gazeTracker.scaling.z = hit.distance * multiplier;
 
-                    var pickNormal = hit.getNormal();
+                    var pickNormal = this._convertNormalToDirectionOfRay(hit.getNormal(), ray);
                     // To avoid z-fighting
                     let deltaFighting = 0.002;
 
@@ -1612,7 +1623,7 @@ module BABYLON {
 
                     gazer._currentMeshSelected = null;
                     if(gazer._teleportationRequestInitiated){
-                        this._moveTeleportationSelectorTo(hit, gazer);
+                        this._moveTeleportationSelectorTo(hit, gazer, ray);
                     }
                     return;
                 }
