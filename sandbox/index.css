@@ -386,6 +386,10 @@ a {
         display: none;
     }
 
+    .dropdown {        
+        width: 56px;
+    }    
+
     #dropdownLabel {
         display: none;
     }   
@@ -394,7 +398,7 @@ a {
     }
 }
 
-@media (min-width: 576px) {
+@media (min-width: 480px) {
     #slider,
     #dropdownLabel {
         display: initial;
@@ -404,8 +408,12 @@ a {
         width: 100px;
     }
 
-    #dropdownContent a {
-        max-width: 300px;
+    .dropdown {        
+        width: 150px;
+    }
+
+    #dropdownContent {
+        width: 150px;
     }
 }
 
@@ -419,9 +427,12 @@ a {
         width: 300px;
     }
 
+    .dropdown {        
+        width: 200px;
+    }
 
-    #dropdownContent a {
-        max-width: 400px;
+    #dropdownContent {
+        width: 200px;
     }
 }
 
