@@ -76,7 +76,6 @@
             }
 
             this.video.addEventListener("canplay", this._createInternalTexture);
-            this.video.addEventListener("canplaythrough", this._createInternalTexture);
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this.reset);
@@ -120,12 +119,6 @@
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
-                if (!this._texture.isReady) {
-                    this._textureReady();
-                }
-                else {
-                    this._updateInternalTexture();
-                }
                 return;
             }
 
@@ -148,20 +141,27 @@
                 this._samplingMode
             );
 
-            if (this.video.readyState >= this.video.HAVE_FUTURE_DATA) {
-                this._textureReady();
+            if (!this.video.autoplay) {
+                this.video.play();
+                setTimeout(() => {
+                    if (this._texture) {
+                        this._texture.isReady = true;
+                        this._updateInternalTexture();
+                        this.video.pause();
+                        if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                            this.onLoadObservable.notifyObservers(this);
+                        }
+                    }
+                }, 9);
             }
-        };
-
-        private _textureReady(): void {
-            if (this._texture) {
+            else {
                 this._texture.isReady = true;
                 this._updateInternalTexture();
                 if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
                 }
             }
-        }
+        };
 
         private reset = (): void => {
             if (this._texture == null) {
@@ -227,7 +227,6 @@
         public dispose(): void {
             super.dispose();
             this.video.removeEventListener("canplay", this._createInternalTexture);
-            this.video.removeEventListener("canplaythrough", this._createInternalTexture);
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this.reset);
