@@ -400,7 +400,7 @@ a {
         display: none;
     }   
     #dropdownContent a {
-        max-width: 260px;
+        max-width: 200px;
     }
 }
 
@@ -451,10 +451,6 @@ a {
     #slider {
         width: 400px;
     }
-
-    #dropdownContent a {
-        max-width: 600px;
-    }
 }
 
 @media (min-width: 1200px) {
@@ -465,9 +461,5 @@ a {
     
     #slider {
         width: 700px;
-    }
-
-    #dropdownContent a {
-        max-width: 700px;
     }
 }
