@@ -228,6 +228,11 @@ a {
         background-color: #162D3A; /* Add a hover color */ 
     }
 
+    #playBtn:focus {
+        outline: none !important;
+        border: none;
+    }
+
 #dropdownContent {
     background-color: #3B789A;
 }
@@ -314,6 +319,7 @@ a {
     width: 1000px;
     outline: none;
     border-radius: 5px;
+    margin-left: 20px;
 }
 
 /*Chrome -webkit */
