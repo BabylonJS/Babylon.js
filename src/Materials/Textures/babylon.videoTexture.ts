@@ -142,17 +142,17 @@
             );
 
             if (!this.video.autoplay) {
-                this.video.play();
-                setTimeout(() => {
-                    if (this._texture) {
-                        this._texture.isReady = true;
-                        this._updateInternalTexture();
-                        this.video.pause();
-                        if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
-                            this.onLoadObservable.notifyObservers(this);
-                        }
+                let oldHandler = this.video.onplay;
+                this.video.onplay = () => {
+                    this.video.pause();
+                    this.video.onplay = oldHandler;
+                    this._texture!.isReady = true;
+                    this._updateInternalTexture();
+                    if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                        this.onLoadObservable.notifyObservers(this);
                     }
-                }, 9);
+                };
+                this.video.play();
             }
             else {
                 this._texture.isReady = true;
