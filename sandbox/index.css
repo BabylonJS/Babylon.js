@@ -307,7 +307,6 @@ a {
     width: 1000px;
     outline: none;
     border-radius: 5px;
-    height: 2px;
 }
 
 /*Chrome -webkit */
@@ -315,15 +314,15 @@ a {
     -webkit-appearance: none;
     width: 20px;
     height: 20px;
-    border: 0;
-    background: url('Assets/circle.png') no-repeat #3B789A;
-    background-size: 100% 100%;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #3B789A;
+    margin-top: -10px;
 }
 #slider::-webkit-slider-runnable-track {
-    height: 10px;
+    height: 2px;
     -webkit-appearance: none;
     color: white;
-    margin-top: -10px;
 }
 
 
@@ -335,26 +334,44 @@ a {
 #slider::-moz-range-thumb{
     width: 20px;
     height: 20px;
-    border: 0;
-    background: url('Assets/circle.png') no-repeat #3B789A;
-    background-size: 100% 100%;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #3B789A;
+}
+#slider::-moz-range-track {
+    background: white;
+    height: 2px;
 }
 
 /** IE -ms */
+#slider::-ms-track {
+    height: 2px;
+    
+    /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+    background: transparent;
+    
+    /*leave room for the larger thumb to overflow with a transparent border */
+    border-color: transparent;
+    border-width: 10px 0;
+
+    /*remove default tick marks*/
+    color: transparent;
+}
 #slider::-ms-fill-lower {
-    background-color: white;
-    height: 2px; 
-  }
-  #slider::-ms-fill-upper {
-    background-color: white;
-    height: 2px; 
-  }  
+    background: white;
+    border-radius: 5px;
+}
+#slider::-ms-fill-upper {
+    background: white;
+    border-radius: 5px;
+}
 #slider::-ms-thumb {
-    width: 20px;
-    height: 20px;
-    border: none;
-    background: url('Assets/circle.png') no-repeat #3B789A;
-    background-size: 100% 100%;
+    width: 16px;
+    height: 16px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #3B789A;
+    margin-top: 0px;
 }
 
 @media (min-width: 0px) {
