@@ -44,6 +44,8 @@ a {
     width: 100%;
     height: 56px;
     bottom: 0;
+    margin: 0;
+    padding: 0;
     background-color: #3B789A;
 }
 
