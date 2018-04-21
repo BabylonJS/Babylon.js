@@ -218,10 +218,6 @@ a {
         background-color: #2c5a74; /* Add a hover color */    
     }
 
-    #playBtn:active {
-        background-color: #162D3A; /* Add a hover color */ 
-    }
-
     #playBtn:focus {
         outline: none !important;
         border: none;
