@@ -19,17 +19,9 @@
     top: 0;
     margin :0;
     right: 0;
+    left: 0;
     touch-action: none;
     -ms-touch-action: none;
-}
-
-#fps {
-    position: absolute;
-    font-size: 30px;
-    color: white;
-    bottom: 15px;
-    right: 85px;
-    width: 85px;
 }
 
 a {
@@ -48,7 +40,8 @@ a {
     bottom: 0;
     margin: 0;
     padding: 0;
-    right: -1px;
+    right: 0;
+    left: 0;
     background-color: #3B789A;
 }
 
