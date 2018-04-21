@@ -17,6 +17,8 @@
     width: 100%;
     height: 100%;
     top: 0;
+    margin :0;
+    right: 0;
     touch-action: none;
     -ms-touch-action: none;
 }
@@ -46,6 +48,7 @@ a {
     bottom: 0;
     margin: 0;
     padding: 0;
+    right: 0;
     background-color: #3B789A;
 }
 
