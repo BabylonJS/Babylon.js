@@ -142,12 +142,12 @@
             );
 
             if (!this.video.autoplay) {
-                let oldHandler = this.video.onplay;
-                this.video.onplay = () => {
-                    this.video.pause();
-                    this.video.onplay = oldHandler;
+                let oldHandler = this.video.onplaying;
+                this.video.onplaying = () => {
+                    this.video.onplaying = oldHandler;
                     this._texture!.isReady = true;
                     this._updateInternalTexture();
+                    this.video.pause();
                     if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                         this.onLoadObservable.notifyObservers(this);
                     }
