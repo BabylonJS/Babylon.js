@@ -123,6 +123,9 @@
                 if (!this._texture.isReady) {
                     this._textureReady();
                 }
+                else {
+                    this._updateInternalTexture();
+                }
                 return;
             }
 
