@@ -148,8 +148,8 @@
                 return;
             }
 
-            var ssaoRatio = ratio.ssaoRatio || ratio;
-            var blurRatio = ratio.blurRatio || ratio;
+            var ssaoRatio = this._ratio.ssaoRatio || ratio;
+            var blurRatio = this._ratio.blurRatio || ratio;
 
             // Set up assets
             let geometryBufferRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
