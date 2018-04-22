@@ -120,6 +120,7 @@
 - Add support for cameras to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 - Add support for preprocessing urls to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 - Viewer upgrade - see [PR](https://github.com/BabylonJS/Babylon.js/pull/4160) ([RaananW](https://github.com/RaananW))
+- New serialize and parse functions for SSAO2 Rendering Pipeline ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 
