@@ -5,6 +5,7 @@ import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
 import { ViewerLabs } from '../labs/viewerLabs';
+import { getCustomOptimizerByName } from '../optimizer/custom/';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -161,6 +162,51 @@ export class SceneManager {
         }
 
         this._processShadows = process;
+    }
+
+    private _groundEnabled: boolean = true;
+
+    public get groundEnabled() {
+        return this._groundEnabled;
+    }
+
+    public set groundEnabled(newValue: boolean) {
+        if (newValue === this._groundEnabled) return;
+
+        this._groundEnabled = newValue;
+
+        if (this.environmentHelper && this.environmentHelper.ground) {
+            this.environmentHelper.ground.setEnabled(this._groundEnabled);
+        }
+    }
+
+    private _groundMirrorEnabled = false;
+        /**
+         * gets wether the reflection is disabled.
+         */
+        public get groundMirrorEnabled(): boolean {
+            return this._groundMirrorEnabled;
+        }
+        /**
+         * sets wether the reflection is disabled.
+         */
+        public set groundMirrorEnabled(value: boolean) {
+            if (this._groundMirrorEnabled === value) {
+                return;
+            }
+
+            this._groundMirrorEnabled = value;
+            if (this.environmentHelper && this.environmentHelper.groundMaterial && this.environmentHelper.groundMirror) {
+                if (value) {
+                    this.environmentHelper.groundMaterial.reflectionTexture = null;
+                } else {
+                    this.environmentHelper.groundMaterial.reflectionTexture = this.environmentHelper.groundMirror;
+                }
+            }
+        }
+
+    public getActiveRenderingPiplineByName(name: string) {
+        return this._piplines[name];
     }
 
     /**
@@ -488,6 +534,16 @@ export class SceneManager {
                 this.sceneOptimizer.stop();
                 this.sceneOptimizer.dispose()
             }
+            if (optimizerConfig.custom) {
+                let customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
+                if (customOptimizer) {
+                    optimizerOptions.addCustomOptimization(() => {
+                        return customOptimizer(this._viewer);
+                    }, () => {
+                        return `Babylon Viewer ${optimizerConfig.custom} custom optimization`;
+                    });
+                }
+            }
             this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
             this.sceneOptimizer.start();
         }
@@ -589,7 +645,7 @@ export class SceneManager {
 
 
         const options: Partial<IEnvironmentHelperOptions> = {
-            createGround: !!groundConfiguration,
+            createGround: !!groundConfiguration && this._groundEnabled,
             createSkybox: !!skyboxConifguration,
             setupImageProcessing: false, // will be done at the scene level!,
         };
@@ -1024,6 +1080,8 @@ export class SceneManager {
         this.models.forEach(model => {
             model.dispose();
         });
+
+        Object.keys(this._piplines).forEach(name => this._piplines[name].dispose());
 
         this.models.length = 0;
 
