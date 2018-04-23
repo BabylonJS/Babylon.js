@@ -30,7 +30,9 @@
          * @param triggerOptions the trigger, with or without parameters, for the action
          * @param condition an optional determinant of action 
          */
-        constructor(public triggerOptions: any, condition?: Condition) {
+        constructor(
+            /** the trigger, with or without parameters, for the action */
+            public triggerOptions: any, condition?: Condition) {
 
             if (triggerOptions.parameter) {
                 this.trigger = triggerOptions.trigger;
@@ -116,7 +118,7 @@
 
         /**
          * Adds action to chain of actions, may be a DoNothingAction
-         * @param index The index of the attribute.
+         * @param action defines the next action to execute
          * @returns The action passed in
          * @see https://www.babylonjs-playground.com/#1T30HR#0
          */

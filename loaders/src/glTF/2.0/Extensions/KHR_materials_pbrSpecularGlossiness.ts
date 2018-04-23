@@ -25,7 +25,7 @@ module BABYLON.GLTF2.Extensions {
                     const promises = new Array<Promise<void>>();
 
                     const name = material.name || `materialSG_${material._index}`;
-                    const babylonMaterial = this._loader._createMaterial(PBRMaterial, name, babylonDrawMode);
+                    const babylonMaterial = this._loader._createMaterial(name, babylonDrawMode);
 
                     promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
                     promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));

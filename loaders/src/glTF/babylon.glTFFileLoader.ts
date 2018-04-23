@@ -116,6 +116,18 @@ module BABYLON {
         compileShadowGenerators: boolean;
 
         /**
+         * Defines if the Alpha blended materials are only applied as coverage. 
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
+
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -129,6 +141,11 @@ module BABYLON {
          * Observable raised when the loader creates a material after parsing the glTF properties of the material.
          */
         onMaterialLoadedObservable: Observable<Material>;
+
+        /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        onCameraLoadedObservable: Observable<Camera>;
 
         /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
@@ -244,6 +261,18 @@ module BABYLON {
         public compileShadowGenerators = false;
 
         /**
+         * Defines if the Alpha blended materials are only applied as coverage. 
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        public transparencyAsCoverage = false;
+
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
+
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
@@ -292,6 +321,23 @@ module BABYLON {
                 this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
             }
             this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
+        }
+
+        /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        public readonly onCameraLoadedObservable = new Observable<Camera>();
+
+        private _onCameraLoadedObserver: Nullable<Observer<Camera>>;
+
+        /**
+         * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        public set onCameraLoaded(callback: (camera: Camera) => void) {
+            if (this._onCameraLoadedObserver) {
+                this.onCameraLoadedObservable.remove(this._onCameraLoadedObserver);
+            }
+            this._onCameraLoadedObserver = this.onCameraLoadedObservable.add(callback);
         }
 
         /**
@@ -393,9 +439,14 @@ module BABYLON {
                 this._loader = null;
             }
 
+            this.preprocessUrlAsync = url => Promise.resolve(url);
+
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
+            this.onCameraLoadedObservable.clear();
+            this.onCompleteObservable.clear();
+            this.onExtensionLoadedObservable.clear();
 
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
@@ -535,15 +586,23 @@ module BABYLON {
             loader.compileMaterials = this.compileMaterials;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.transparencyAsCoverage = this.transparencyAsCoverage;
+            loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
-            loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
+            loader.onCameraLoadedObservable.add(camera => this.onCameraLoadedObservable.notifyObservers(camera));
+
+            loader.onExtensionLoadedObservable.add(extension => {
+                this.onExtensionLoadedObservable.notifyObservers(extension);
+                this.onExtensionLoadedObservable.clear();
+            });
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();
                 this.onTextureLoadedObservable.clear();
                 this.onMaterialLoadedObservable.clear();
+                this.onCameraLoadedObservable.clear();
 
                 this.onCompleteObservable.notifyObservers(this);
                 this.onCompleteObservable.clear();

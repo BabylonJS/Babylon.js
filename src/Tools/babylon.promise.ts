@@ -15,12 +15,25 @@ module BABYLON {
 
     class InternalPromise<T> {
         private _state = PromiseStates.Pending;
-        private _result?: Nullable<T>;
+        private _resultValue?: Nullable<T>;
         private _reason: any;
         private _children = new Array<InternalPromise<T>>();
+        private _parent: Nullable<InternalPromise<T>>;
         private _onFulfilled?: (fulfillment?: Nullable<T>) => Nullable<InternalPromise<T>> | T;
         private _onRejected?: (reason: any) => void;
         private _rejectWasConsumed = false;
+
+        private get _result(): Nullable<T> | undefined {
+            return this._resultValue;
+        }
+
+        private set _result(value: Nullable<T> | undefined) {
+            this._resultValue = value;
+
+            if (this._parent && this._parent._result === undefined) {
+                this._parent._result = value;
+            }
+        }
 
         public constructor(resolver?: (
             resolve: (value?: Nullable<T>) => void,
@@ -53,6 +66,7 @@ module BABYLON {
 
             // Composition
             this._children.push(newPromise);
+            newPromise._parent = this;
 
             if (this._state !== PromiseStates.Pending) {
                 Tools.SetImmediate(() => {
@@ -63,6 +77,7 @@ module BABYLON {
                             if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
                                 let returnedPromise = returnedValue as InternalPromise<T>;
                                 newPromise._children.push(returnedPromise);
+                                returnedPromise._parent = newPromise;
                                 newPromise = returnedPromise;
                             } else {
                                 newPromise._result = (<T>returnedValue);
@@ -79,6 +94,10 @@ module BABYLON {
 
         private _moveChildren(children: InternalPromise<T>[]): void {
             this._children.push(...children.splice(0, children.length));
+
+            this._children.forEach(child => {
+                child._parent = this;
+            });
 
             if (this._state === PromiseStates.Fulfilled) {
                 for (var child of this._children) {
@@ -104,8 +123,9 @@ module BABYLON {
                     if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
                         // Transmit children
                         let returnedPromise = returnedValue as InternalPromise<T>;
-
+                        returnedPromise._parent = this;
                         returnedPromise._moveChildren(this._children);
+
                         value = returnedPromise._result;
                     } else {
                         value = <T>returnedValue;

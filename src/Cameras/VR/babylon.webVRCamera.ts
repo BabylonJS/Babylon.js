@@ -602,6 +602,14 @@ module BABYLON {
             }
 
             parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
+
+            // Compute global position
+            this._workingMatrix = this._workingMatrix || Matrix.Identity();
+            this._webvrViewMatrix.invertToRef(this._workingMatrix);
+            this._workingMatrix.multiplyToRef(parentCamera.getWorldMatrix(), this._workingMatrix);
+            this._workingMatrix.getTranslationToRef(this._globalPosition);
+            this._markSyncedWithParent();
+
             return this._webvrViewMatrix;
         }
 

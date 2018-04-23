@@ -163,5 +163,286 @@ describe('Babylon glTF Serializer', () => {
                 done();
             });
         });
+        it('should serialize single component translation animation to glTF', (done) => {
+            mocha.timeout(10000);
+            const scene = new BABYLON.Scene(subject);
+            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            let keys: BABYLON.IAnimationKey[] = [];
+            keys.push({
+            frame: 0,
+            value: 1
+            });
+            keys.push({
+            frame: 20,
+            value: 0.2
+            });
+            keys.push({
+            frame: 40,
+            value: 1
+            });
+            let animationBoxT = new BABYLON.Animation('boxAnimation_translation', 'position.y', 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            animationBoxT.setKeys(keys);
+            box.animations.push(animationBoxT);
+            scene.executeWhenReady(function () {
+            const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
+            const glTFData = glTFExporter._generateGLTF('test');
+            const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+            const jsonData = JSON.parse(jsonString);
+            jsonData.animations.length.should.be.equal(1);
+            const animation = jsonData.animations[0];
+            animation.channels.length.should.be.equal(1);
+            animation.channels[0].sampler.should.be.equal(0);
+            animation.channels[0].target.node.should.be.equal(0);
+            animation.channels[0].target.path.should.be.equal('translation');
+            jsonData.animations[0].samplers.length.should.be.equal(1);
+            // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
+            Object.keys(jsonData).length.should.be.equal(10);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.accessors.length.should.be.equal(6);
+            // generator, version
+            Object.keys(jsonData.asset).length.should.be.equal(2);
+            jsonData.buffers.length.should.be.equal(1);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.bufferViews.length.should.be.equal(6);
+            jsonData.meshes.length.should.be.equal(1);
+            jsonData.nodes.length.should.be.equal(1);
+            jsonData.scenes.length.should.be.equal(1);
+            jsonData.scene.should.be.equal(0);
+            done();
+            });
+            });
+            it('should serialize translation animation to glTF', (done) => {
+            mocha.timeout(10000);
+            const scene = new BABYLON.Scene(subject);
+            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            let keys: BABYLON.IAnimationKey[] = [];
+            keys.push({
+            frame: 0,
+            value: new BABYLON.Vector3(0.1, 0.1, 0.1)
+            });
+            keys.push({
+            frame: 20,
+            value: BABYLON.Vector3.One()
+            });
+            keys.push({
+            frame: 40,
+            value: new BABYLON.Vector3(0.1, 0.1, 0.1)
+            });
+            let animationBoxT = new BABYLON.Animation('boxAnimation_translation', 'position', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            animationBoxT.setKeys(keys);
+            box.animations.push(animationBoxT);
+            scene.executeWhenReady(function () {
+            const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
+            const glTFData = glTFExporter._generateGLTF('test');
+            const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+            const jsonData = JSON.parse(jsonString);
+            jsonData.animations.length.should.be.equal(1);
+            const animation = jsonData.animations[0];
+            animation.channels.length.should.be.equal(1);
+            animation.channels[0].sampler.should.be.equal(0);
+            animation.channels[0].target.node.should.be.equal(0);
+            animation.channels[0].target.path.should.be.equal('translation');
+            animation.samplers.length.should.be.equal(1);
+            animation.samplers[0].interpolation.should.be.equal('LINEAR');
+            animation.samplers[0].input.should.be.equal(4);
+            animation.samplers[0].output.should.be.equal(5);
+            jsonData.animations[0].samplers.length.should.be.equal(1);
+            // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
+            Object.keys(jsonData).length.should.be.equal(10);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.accessors.length.should.be.equal(6);
+            // generator, version
+            Object.keys(jsonData.asset).length.should.be.equal(2);
+            jsonData.buffers.length.should.be.equal(1);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.bufferViews.length.should.be.equal(6);
+            jsonData.meshes.length.should.be.equal(1);
+            jsonData.nodes.length.should.be.equal(1);
+            jsonData.scenes.length.should.be.equal(1);
+            jsonData.scene.should.be.equal(0);
+            done();
+            });
+            });
+            it('should serialize scale animation to glTF', (done) => {
+            mocha.timeout(10000);
+            const scene = new BABYLON.Scene(subject);
+            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            let keys: BABYLON.IAnimationKey[] = [];
+            keys.push({
+            frame: 0,
+            value: new BABYLON.Vector3(0.1, 0.1, 0.1)
+            });
+            keys.push({
+            frame: 20,
+            value: BABYLON.Vector3.One()
+            });
+            keys.push({
+            frame: 40,
+            value: new BABYLON.Vector3(0.1, 0.1, 0.1)
+            });
+            let animationBoxT = new BABYLON.Animation('boxAnimation_translation', 'scaling', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            animationBoxT.setKeys(keys);
+            box.animations.push(animationBoxT);
+            scene.executeWhenReady(function () {
+            const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
+            const glTFData = glTFExporter._generateGLTF('test');
+            const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+            const jsonData = JSON.parse(jsonString);
+            jsonData.animations.length.should.be.equal(1);
+            const animation = jsonData.animations[0];
+            animation.channels.length.should.be.equal(1);
+            animation.channels[0].sampler.should.be.equal(0);
+            animation.channels[0].target.node.should.be.equal(0);
+            animation.channels[0].target.path.should.be.equal('scale');
+            animation.samplers.length.should.be.equal(1);
+            animation.samplers[0].interpolation.should.be.equal('LINEAR');
+            animation.samplers[0].input.should.be.equal(4);
+            animation.samplers[0].output.should.be.equal(5);
+            jsonData.animations[0].samplers.length.should.be.equal(1);
+            // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
+            Object.keys(jsonData).length.should.be.equal(10);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.accessors.length.should.be.equal(6);
+            // generator, version
+            Object.keys(jsonData.asset).length.should.be.equal(2);
+            jsonData.buffers.length.should.be.equal(1);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.bufferViews.length.should.be.equal(6);
+            jsonData.meshes.length.should.be.equal(1);
+            jsonData.nodes.length.should.be.equal(1);
+            jsonData.scenes.length.should.be.equal(1);
+            jsonData.scene.should.be.equal(0);
+            done();
+            });
+            });
+            it('should serialize rotation quaternion animation to glTF', (done) => {
+            mocha.timeout(10000);
+            const scene = new BABYLON.Scene(subject);
+            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            let keys: BABYLON.IAnimationKey[] = [];
+            keys.push({
+            frame: 0,
+            value: new BABYLON.Quaternion(0.707, 0.0, 0.0, 0.707)
+            });
+            keys.push({
+            frame: 20,
+            value: BABYLON.Quaternion.Identity()
+            });
+            keys.push({
+            frame: 40,
+            value: new BABYLON.Quaternion(0.707, 0.0, 0.0, 0.707)
+            });
+            let animationBoxT = new BABYLON.Animation('boxAnimation_translation', 'rotationQuaternion', 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            animationBoxT.setKeys(keys);
+            box.animations.push(animationBoxT);
+            scene.executeWhenReady(function () {
+            const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
+            const glTFData = glTFExporter._generateGLTF('test');
+            const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+            const jsonData = JSON.parse(jsonString);
+            jsonData.animations.length.should.be.equal(1);
+            const animation = jsonData.animations[0];
+            animation.channels.length.should.be.equal(1);
+            animation.channels[0].sampler.should.be.equal(0);
+            animation.channels[0].target.node.should.be.equal(0);
+            animation.channels[0].target.path.should.be.equal('rotation');
+            animation.samplers.length.should.be.equal(1);
+            animation.samplers[0].interpolation.should.be.equal('LINEAR');
+            animation.samplers[0].input.should.be.equal(4);
+            animation.samplers[0].output.should.be.equal(5);
+            jsonData.animations[0].samplers.length.should.be.equal(1);
+            // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
+            Object.keys(jsonData).length.should.be.equal(10);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.accessors.length.should.be.equal(6);
+            // generator, version
+            Object.keys(jsonData.asset).length.should.be.equal(2);
+            jsonData.buffers.length.should.be.equal(1);
+            // positions, normals, texture coords, indices, animation keyframe data, animation data
+            jsonData.bufferViews.length.should.be.equal(6);
+            jsonData.meshes.length.should.be.equal(1);
+            jsonData.nodes.length.should.be.equal(1);
+            jsonData.scenes.length.should.be.equal(1);
+            jsonData.scene.should.be.equal(0);
+            done();
+            });
+            });
+            it('should serialize combined animations to glTF', (done) => {
+            mocha.timeout(10000);
+            const scene = new BABYLON.Scene(subject);
+            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const rotationKeyFrames: BABYLON.IAnimationKey[] = [];
+            rotationKeyFrames.push({
+            frame: 0,
+            value: new BABYLON.Quaternion(0.707, 0.0, 0.0, 0.707)
+            });
+            rotationKeyFrames.push({
+            frame: 20,
+            value: BABYLON.Quaternion.Identity()
+            });
+            rotationKeyFrames.push({
+            frame: 40,
+            value: new BABYLON.Quaternion(0.707, 0.0, 0.0, 0.707)
+            });
+            const scaleKeyFrames: BABYLON.IAnimationKey[] = [];
+            scaleKeyFrames.push({
+            frame: 0,
+            value: new BABYLON.Vector3(0.1, 0.1, 0.1)
+            });
+            scaleKeyFrames.push({
+            frame: 20,
+            value: BABYLON.Vector3.One()
+            });
+            scaleKeyFrames.push({
+            frame: 40,
+            value: new BABYLON.Vector3(0.1, 0.1, 0.1)
+            });
+            let rotationAnimationBox = new BABYLON.Animation('boxAnimation_rotation', 'rotationQuaternion', 30, BABYLON.Animation.ANIMATIONTYPE_QUATERNION, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            rotationAnimationBox.setKeys(rotationKeyFrames);
+            box.animations.push(rotationAnimationBox);
+            let scaleAnimationBox = new BABYLON.Animation('boxAnimation_scale', 'scaling', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            scaleAnimationBox.setKeys(scaleKeyFrames);
+            box.animations.push(scaleAnimationBox);
+            scene.executeWhenReady(function () {
+            const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
+            const glTFData = glTFExporter._generateGLTF('test');
+            const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+            const jsonData = JSON.parse(jsonString);
+            jsonData.animations.length.should.be.equal(2);
+            
+            let animation = jsonData.animations[0];
+            animation.channels.length.should.be.equal(1);
+            animation.channels[0].sampler.should.be.equal(0);
+            animation.channels[0].target.node.should.be.equal(0);
+            animation.channels[0].target.path.should.be.equal('rotation');
+            animation.samplers.length.should.be.equal(1);
+            animation.samplers[0].interpolation.should.be.equal('LINEAR');
+            animation.samplers[0].input.should.be.equal(4);
+            animation.samplers[0].output.should.be.equal(5);
+            animation = jsonData.animations[1];
+            animation.channels[0].sampler.should.be.equal(0);
+            animation.channels[0].target.node.should.be.equal(0);
+            animation.channels[0].target.path.should.be.equal('scale');
+            animation.samplers.length.should.be.equal(1);
+            animation.samplers[0].interpolation.should.be.equal('LINEAR');
+            animation.samplers[0].input.should.be.equal(6);
+            animation.samplers[0].output.should.be.equal(7);
+            // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
+            Object.keys(jsonData).length.should.be.equal(10);
+            // positions, normals, texture coords, indices, rotation animation keyframe data, rotation animation data, scale animation keyframe data, scale animation data
+            jsonData.accessors.length.should.be.equal(8);
+            // generator, version
+            Object.keys(jsonData.asset).length.should.be.equal(2);
+            jsonData.buffers.length.should.be.equal(1);
+            // positions, normals, texture coords, indices, rotation animation keyframe data, rotation animation data, scale animation keyframe data, scale animation data 
+            jsonData.bufferViews.length.should.be.equal(8);
+            jsonData.meshes.length.should.be.equal(1);
+            jsonData.nodes.length.should.be.equal(1);
+            jsonData.scenes.length.should.be.equal(1);
+            jsonData.scene.should.be.equal(0);
+            done();
+            });
+            });
+            
     });
 });

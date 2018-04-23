@@ -90,7 +90,7 @@ module BABYLON.GLTF2 {
 }
 
 /**
- * Defines the module of the glTF loader extensions.
+ * Defines the module of the glTF 2.0 loader extensions.
  */
 module BABYLON.GLTF2.Extensions {
 }

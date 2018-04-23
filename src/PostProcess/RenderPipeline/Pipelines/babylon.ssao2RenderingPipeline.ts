@@ -48,6 +48,12 @@
         private _samples: number = 8;
 
         /**
+         * Ratio object used for SSAO ratio and blur ratio
+         */
+        @serialize()
+        private _ratio: any;
+
+        /**
         * Dynamically generated sphere sampler.
         */
         private _sampleSphere: number[];
@@ -135,14 +141,15 @@
             super(scene.getEngine(), name);
 
             this._scene = scene;
+            this._ratio = ratio;
 
             if (!this.isSupported) {
                 Tools.Error("SSAO 2 needs WebGL 2 support.");
                 return;
             }
 
-            var ssaoRatio = ratio.ssaoRatio || ratio;
-            var blurRatio = ratio.blurRatio || ratio;
+            var ssaoRatio = this._ratio.ssaoRatio || ratio;
+            var blurRatio = this._ratio.blurRatio || ratio;
 
             // Set up assets
             let geometryBufferRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
@@ -362,6 +369,28 @@
             }
 
             this._randomTexture.update(false);
+        }
+
+        /**
+         * Serialize the rendering pipeline (Used when exporting)
+         * @returns the serialized object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "SSAO2RenderingPipeline";
+
+            return serializationObject;
+        }
+
+        /**
+         * Parse the serialized pipeline
+         * @param source Source pipeline.
+         * @param scene The scene to load the pipeline to.
+         * @param rootUrl The URL of the serialized pipeline.
+         * @returns An instantiated pipeline from the serialized object.
+         */
+        public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
+            return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
         }
     }
 }

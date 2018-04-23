@@ -885,7 +885,7 @@ module BABYLON.GLTF1 {
 
             if (camera) {
                 if (camera.type === "orthographic") {
-                    var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
+                    var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                     orthoCamera.name = node.name || "";
                     orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
@@ -895,7 +895,7 @@ module BABYLON.GLTF1 {
                 }
                 else if (camera.type === "perspective") {
                     var perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
-                    var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
+                    var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                     persCamera.name = node.name || "";
                     persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
@@ -1568,17 +1568,17 @@ module BABYLON.GLTF1 {
         public compileMaterials = false;
         public useClipPlane = false;
         public compileShadowGenerators = false;
+        public transparencyAsCoverage = false;
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
-        public onDisposeObservable = new Observable<IGLTFLoader>();
-        public onMeshLoadedObservable = new Observable<AbstractMesh>();
-        public onTextureLoadedObservable = new Observable<BaseTexture>();
-        public onMaterialLoadedObservable = new Observable<Material>();
-        public onCompleteObservable = new Observable<IGLTFLoader>();
-        public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
+        public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
+        public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
+        public readonly onMaterialLoadedObservable = new Observable<Material>();
+        public readonly onCameraLoadedObservable = new Observable<Camera>();
+        public readonly onCompleteObservable = new Observable<IGLTFLoader>();
+        public readonly onDisposeObservable = new Observable<IGLTFLoader>();
+        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
-        /**
-        * State of the loader
-        */
         public state: Nullable<GLTFLoaderState> = null;
 
         public dispose(): void {}

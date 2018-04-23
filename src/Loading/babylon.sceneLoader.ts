@@ -309,7 +309,8 @@
             }
 
             if (rootUrl.indexOf("file:") === -1) {
-                let canUseOfflineSupport = scene.getEngine().enableOfflineSupport;
+                let engine = scene.getEngine();
+                let canUseOfflineSupport = engine.enableOfflineSupport;
                 if (canUseOfflineSupport) {
                     // Also check for exceptions
                     let exceptionFound = false;
@@ -325,7 +326,7 @@
 
                 if (canUseOfflineSupport) {
                     // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                    database = new Database(rootUrl + sceneFilename, manifestChecked);
+                    database = new Database(rootUrl + sceneFilename, manifestChecked, engine.disableManifestCheck);
                 }
                 else {
                     manifestChecked();
