@@ -358,6 +358,7 @@ export interface ISceneOptimizerConfiguration {
         renderTarget?: ISceneOptimizerParameters;
         mergeMeshes?: ISceneOptimizerParameters;
     }
+    custom?: string;
 }
 
 export interface IObserversConfiguration {
