@@ -14,21 +14,15 @@
 
 #renderCanvas {
     position: absolute;
+    overflow: hidden;
     width: 100%;
     height: 100%;
     top: 0;
-    margin-bottom: 65px;
+    margin: 0;
+    right: 0;
+    left: 0;
     touch-action: none;
     -ms-touch-action: none;
-}
-
-#fps {
-    position: absolute;
-    font-size: 30px;
-    color: white;
-    bottom: 15px;
-    right: 85px;
-    width: 85px;
 }
 
 a {
@@ -45,6 +39,10 @@ a {
     width: 100%;
     height: 56px;
     bottom: 0;
+    margin: 0;
+    padding: 0;
+    right: 0;
+    left: 0;
     background-color: #3B789A;
 }
 
@@ -195,7 +193,8 @@ a {
 
 #animationBar img {
     width: 36px;
-    height: 56px;
+    height: 36px;
+    margin: 10px;
 }
 
 .dropdown {
@@ -211,11 +210,22 @@ a {
 }
 
 #playBtn {
-    margin-left: 20px;
-    margin-right: 20px;
     border: none;
     background-color: inherit;
 }
+
+    #playBtn:hover {
+        background-color: #2c5a74; /* Add a hover color */    
+    }
+
+    #playBtn:active {
+        background-color: #162D3A; /* Add a hover color */
+    }
+
+    #playBtn:focus {
+        outline: none !important;
+        border: none;
+    }
 
 #dropdownContent {
     background-color: #3B789A;
@@ -229,9 +239,9 @@ a {
     padding: 10px 15px 10px 46px;
 }
 #dropdownLabel {
-    cursor: default;
-    width: 100px;
-    padding: 5px 15px 5px 5px;
+    cursor: pointer;
+    width: 200px;
+    padding: 0px 15px 2px 5px;
 }
 
 #dropdownBtn:hover {
@@ -261,6 +271,8 @@ a {
     z-index: 1;
     min-width: 135px;
     width: 200px;
+    flex-direction: column;
+    transition: all 0.3s ease; /* Add transition for hover effects */
 }
 
 #dropdownContent a,
@@ -268,32 +280,15 @@ a {
     cursor: pointer;
 }
 
-.dropdown:hover #dropdownContent {
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease; /* Add transition for hover effects */
-}
-
 #chevronUp {
     display: inline;
     margin-right: 0px;
     margin-left: 0px;
-    padding-left: 15px;
-    max-width: 28px;
 }
 #chevronDown {
     display: none;
     margin-right: 0px;
     margin-left: 0px;
-    padding-left: 15px;
-    max-width: 28px;
-}
-
-.dropdown:hover #chevronUp {
-    display: none;
-}
-.dropdown:hover #chevronDown {
-    display: inline;
 }
 
 #playBtn.play #pauseImg,
@@ -305,8 +300,10 @@ a {
     -webkit-appearance: none;
     cursor: pointer;
     width: 1000px;
+    height: 50px;
     outline: none;
-    border-radius: 5px;
+    margin-left: 20px;
+    background-color: transparent;
 }
 
 /*Chrome -webkit */
@@ -322,7 +319,7 @@ a {
 #slider::-webkit-slider-runnable-track {
     height: 2px;
     -webkit-appearance: none;
-    color: white;
+    background-color: white;
 }
 
 
@@ -375,17 +372,23 @@ a {
 }
 
 @media (min-width: 0px) {
-    #slider,
-    #dropdownLabel {
+    #slider {
         display: none;
     }
 
+    .dropdown {        
+        width: 56px;
+    }    
+
+    #dropdownLabel {
+        display: none;
+    }   
     #dropdownContent a {
-        max-width: 260px;
+        max-width: 200px;
     }
 }
 
-@media (min-width: 576px) {
+@media (min-width: 480px) {
     #slider,
     #dropdownLabel {
         display: initial;
@@ -395,12 +398,12 @@ a {
         width: 100px;
     }
 
-    #dropdownLabel {
-        width: 50px;
+    .dropdown {        
+        width: 150px;
     }
 
-    #dropdownContent a {
-        max-width: 300px;
+    #dropdownContent {
+        width: 150px;
     }
 }
 
@@ -414,12 +417,12 @@ a {
         width: 300px;
     }
 
-    #dropdownLabel {
-        width: 75px;
+    .dropdown {        
+        width: 200px;
     }
 
-    #dropdownContent a {
-        max-width: 400px;
+    #dropdownContent {
+        width: 200px;
     }
 }
 
@@ -432,14 +435,6 @@ a {
     #slider {
         width: 400px;
     }
-
-    #dropdownLabel {
-        width: 100px;
-    }
-
-    #dropdownContent a {
-        max-width: 600px;
-    }
 }
 
 @media (min-width: 1200px) {
@@ -450,13 +445,5 @@ a {
     
     #slider {
         width: 700px;
-    }
-
-    #dropdownLabel {
-        width: 200px;
-    }
-
-    #dropdownContent a {
-        max-width: 700px;
     }
 }
