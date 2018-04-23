@@ -1241,7 +1241,7 @@ var BABYLON;
                 });
                 loadAttribute("TANGENT", BABYLON.VertexBuffer.TangentKind, function (babylonVertexBuffer, data) {
                     var dataIndex = 0;
-                    babylonVertexBuffer.forEach(data.length, function (value, index) {
+                    babylonVertexBuffer.forEach(data.length / 3 * 4, function (value, index) {
                         // Tangent data for morph targets is stored as xyz delta.
                         // The vertexData.tangent is stored as xyzw.
                         // So we need to skip every fourth vertexData.tangent.
