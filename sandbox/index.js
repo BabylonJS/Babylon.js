@@ -190,6 +190,7 @@ if (BABYLON.Engine.isSupported()) {
                 displayDebugLayerAndLogs();
             }
             document.getElementById("logo").className = "hidden";
+            document.getElementById("droptext").className = "hidden";
             canvas.style.opacity = 1;
             if (currentScene.activeCamera.keysUp) {
                 currentScene.activeCamera.keysUp.push(90); // Z
