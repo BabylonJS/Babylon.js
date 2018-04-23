@@ -271,17 +271,13 @@ a {
     z-index: 1;
     min-width: 135px;
     width: 200px;
+    flex-direction: column;
+    transition: all 0.3s ease; /* Add transition for hover effects */
 }
 
 #dropdownContent a,
 #playBtn {
     cursor: pointer;
-}
-
-.dropdown:hover #dropdownContent {
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease; /* Add transition for hover effects */
 }
 
 #chevronUp {
@@ -293,13 +289,6 @@ a {
     display: none;
     margin-right: 0px;
     margin-left: 0px;
-}
-
-.dropdown:hover #chevronUp {
-    display: none;
-}
-.dropdown:hover #chevronDown {
-    display: inline;
 }
 
 #playBtn.play #pauseImg,
