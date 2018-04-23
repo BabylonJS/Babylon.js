@@ -2,63 +2,66 @@
 
 module BABYLON.GLTF2 {
     /** 
-     * Interface for storing specular glossiness factors.
+     * Interface for storing specular glossiness factors
      * @hidden
      */
+
     interface _IPBRSpecularGlossiness {
         /** 
-         * Represents the linear diffuse factors of the material.
+         * Represents the linear diffuse factors of the material
         */
         diffuseColor: BABYLON.Color3;
         /** 
-         * Represents the linear specular factors of the material.
+         * Represents the linear specular factors of the material
         */
         specularColor: BABYLON.Color3;
         /** 
-         * Represents the smoothness of the material.
+         * Represents the smoothness of the material
         */
         glossiness: number;
     }
 
     /** 
-     * Interface for storing metallic roughness factors.
+     * Interface for storing metallic roughness factors
      * @hidden
      */
+
     interface _IPBRMetallicRoughness {
         /** 
-         * Represents the albedo color of the material.
+         * Represents the albedo color of the material
         */
         baseColor: BABYLON.Color3;
         /** 
-         * Represents the metallness of the material.
+         * Represents the metallness of the material
         */
         metallic: number;
         /** 
-         * Represents the roughness of the material.
+         * Represents the roughness of the material
         */
         roughness: number;
         /** 
-         * The metallic roughness texture as a base64 string.
+         * The metallic roughness texture as a base64 string
         */
         metallicRoughnessTextureBase64?: Nullable<string>;
         /** 
-         * The base color texture as a base64 string.
+         * The base color texture as a base64 string
         */
         baseColorTextureBase64?: Nullable<string>;
     }
 
     /**
-     * Utility methods for working with glTF material conversion properties.  This class should only be used internally.
+     * Utility methods for working with glTF material conversion properties.  This class should only be used internally
      * @hidden
+
      */
     export class _GLTFMaterial {
         /**
-         * Represents the dielectric specular values for R, G and B.
+         * Represents the dielectric specular values for R, G and B
          */
         private static readonly _dielectricSpecular: Color3 = new Color3(0.04, 0.04, 0.04);
 
         /**
-         * Allows the maximum specular power to be defined for material calculations.
+         * Allows the maximum specular power to be defined for material calculations
          */
         private static _maxSpecularPower = 1024;
 
@@ -68,10 +71,10 @@ module BABYLON.GLTF2 {
         private static _epsilon = 1e-6;
 
         /**
-         * Specifies if two colors are approximately equal in value.
-         * @param color1 - first color to compare to.
-         * @param color2 - second color to compare to.
-         * @param epsilon - threshold value
+         * Specifies if two colors are approximately equal in value
+         * @param color1 first color to compare to
+         * @param color2 second color to compare to
+         * @param epsilon threshold value
          */
         private static FuzzyEquals(color1: Color3, color2: Color3, epsilon: number): boolean {
             return Scalar.WithinEpsilon(color1.r, color2.r, epsilon) &&
@@ -80,14 +83,14 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Gets the materials from a Babylon scene and converts them to glTF materials.
-         * @param scene - babylonjs scene.
-         * @param mimeType - texture mime type.
-         * @param images - array of images.
-         * @param textures - array of textures.
-         * @param materials - array of materials.
-         * @param imageData - mapping of texture names to base64 textures
-         * @param hasTextureCoords - specifies if texture coordinates are present on the material.
+         * Gets the materials from a Babylon scene and converts them to glTF materials
+         * @param scene babylonjs scene
+         * @param mimeType texture mime type
+         * @param images array of images
+         * @param textures array of textures
+         * @param materials array of materials
+         * @param imageData mapping of texture names to base64 textures
+         * @param hasTextureCoords specifies if texture coordinates are present on the material
          */
         public static _ConvertMaterialsToGLTF(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean) {
             for (let i = 0; i < babylonMaterials.length; ++i) {
@@ -102,14 +105,14 @@ module BABYLON.GLTF2 {
                     _GLTFMaterial._ConvertPBRMaterial(babylonMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords);
                 }
                 else {
-                    throw new Error("Unsupported material type: " + babylonMaterial.name);
+                    Tools.Error("Unsupported material type: " + babylonMaterial.name);
                 }
             }
         }
 
         /**
-         * Makes a copy of the glTF material without the texture parameters.
-         * @param originalMaterial - original glTF material.
+         * Makes a copy of the glTF material without the texture parameters
+         * @param originalMaterial original glTF material
          * @returns glTF material without texture parameters
          */
         public static _StripTexturesFromMaterial(originalMaterial: IMaterial): IMaterial {
@@ -132,8 +135,8 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Specifies if the material has any texture parameters present.
-         * @param material - glTF Material.
+         * Specifies if the material has any texture parameters present
+         * @param material glTF Material
          * @returns boolean specifying if texture parameters are present
          */
         public static _HasTexturesPresent(material: IMaterial): boolean {
@@ -151,9 +154,9 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material.
+         * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material
          * @param babylonStandardMaterial 
-         * @returns - glTF Metallic Roughness Material representation
+         * @returns glTF Metallic Roughness Material representation
          */
         public static _ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness {
             const P0 = new BABYLON.Vector2(0, 1);
@@ -162,13 +165,13 @@ module BABYLON.GLTF2 {
             const P3 = new BABYLON.Vector2(1300, 0.1);
 
             /**
-             * Given the control points, solve for x based on a given t for a cubic bezier curve.
-             * @param t - a value between 0 and 1.
-             * @param p0 - first control point.
-             * @param p1 - second control point.
-             * @param p2 - third control point.
-             * @param p3 - fourth control point.
-             * @returns - number result of cubic bezier curve at the specified t.
+             * Given the control points, solve for x based on a given t for a cubic bezier curve
+             * @param t a value between 0 and 1
+             * @param p0 first control point
+             * @param p1 second control point
+             * @param p2 third control point
+             * @param p3 fourth control point
+             * @returns number result of cubic bezier curve at the specified t
              */
             function _cubicBezierCurve(t: number, p0: number, p1: number, p2: number, p3: number): number {
                 return (
@@ -182,9 +185,9 @@ module BABYLON.GLTF2 {
             /**
              * Evaluates a specified specular power value to determine the appropriate roughness value, 
              * based on a pre-defined cubic bezier curve with specular on the abscissa axis (x-axis) 
-             * and roughness on the ordinant axis (y-axis).
-             * @param specularPower - specular power of standard material.
-             * @returns - Number representing the roughness value.
+             * and roughness on the ordinant axis (y-axis)
+             * @param specularPower specular power of standard material
+             * @returns Number representing the roughness value
              */
             function _solveForRoughness(specularPower: number): number {
                 var t = Math.pow(specularPower / P3.x, 0.333333);
@@ -213,10 +216,10 @@ module BABYLON.GLTF2 {
 
         /**
          * Computes the metallic factor
-         * @param diffuse - diffused value
-         * @param specular - specular value
-         * @param oneMinusSpecularStrength - one minus the specular strength
-         * @returns - metallic value
+         * @param diffuse diffused value
+         * @param specular specular value
+         * @param oneMinusSpecularStrength one minus the specular strength
+         * @returns metallic value
          */
         public static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
             if (specular < _GLTFMaterial._dielectricSpecular.r) {
@@ -233,10 +236,10 @@ module BABYLON.GLTF2 {
 
         /**
          * Gets the glTF alpha mode from the Babylon Material
-         * @param babylonMaterial - Babylon Material
-         * @returns - The Babylon alpha mode value
+         * @param babylonMaterial Babylon Material
+         * @returns The Babylon alpha mode value
          */
-        public static _GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode {
+        public static _GetAlphaMode(babylonMaterial: Material): Nullable<MaterialAlphaMode> {
             if (babylonMaterial instanceof StandardMaterial) {
                 const babylonStandardMaterial = babylonMaterial as StandardMaterial;
                 if ((babylonStandardMaterial.alpha != 1.0) ||
@@ -266,7 +269,8 @@ module BABYLON.GLTF2 {
                         return MaterialAlphaMode.BLEND;
                     }
                     default: {
-                        throw new Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
+                        Tools.Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
+                        return null;
                     }
                 }
             }
@@ -288,27 +292,28 @@ module BABYLON.GLTF2 {
                         return MaterialAlphaMode.BLEND;
                     }
                     default: {
-                        throw new Error("Unsupported alpha mode " + babylonPBRMaterial.transparencyMode);
+                        Tools.Error("Unsupported alpha mode " + babylonPBRMaterial.transparencyMode);
+                        return null;
                     }
                 }
             }
             else {
-                throw new Error("Unsupported Babylon material type");
+                Tools.Error("Unsupported Babylon material type");
+                return null;
             }
         }
 
         /**
-         * Converts a Babylon Standard Material to a glTF Material.
-         * @param babylonStandardMaterial - BJS Standard Material.
-         * @param mimeType - mime type to use for the textures.
-         * @param images - array of glTF image interfaces.
-         * @param textures - array of glTF texture interfaces.
-         * @param materials - array of glTF material interfaces.
-         * @param imageData - map of image file name to data.
-         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         * Converts a Babylon Standard Material to a glTF Material
+         * @param babylonStandardMaterial BJS Standard Material
+         * @param mimeType mime type to use for the textures
+         * @param images array of glTF image interfaces
+         * @param textures array of glTF texture interfaces
+         * @param materials array of glTF material interfaces
+         * @param imageData map of image file name to data
+         * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
         public static _ConvertStandardMaterial(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean) {
-            Tools.Warn(babylonStandardMaterial.name + ": Standard Material is currently not fully supported/implemented in glTF serializer");
             const glTFPbrMetallicRoughness = _GLTFMaterial._ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
             const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
@@ -369,14 +374,14 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material.
-         * @param babylonPBRMetalRoughMaterial - BJS PBR Metallic Roughness Material.
-         * @param mimeType - mime type to use for the textures.
-         * @param images - array of glTF image interfaces.
-         * @param textures - array of glTF texture interfaces.
-         * @param materials - array of glTF material interfaces.
-         * @param imageData - map of image file name to data.
-         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
+         * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness Material
+         * @param mimeType mime type to use for the textures
+         * @param images array of glTF image interfaces
+         * @param textures array of glTF texture interfaces
+         * @param materials array of glTF material interfaces
+         * @param imageData map of image file name to data
+         * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
         public static _ConvertPBRMetallicRoughnessMaterial(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean) {
             const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
@@ -439,11 +444,12 @@ module BABYLON.GLTF2 {
             }
             if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
                 const alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMetalRoughMaterial);
-
-                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === MaterialAlphaMode.BLEND) {
-                        glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
+                if (alphaMode) {
+                    if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
+                        glTFMaterial.alphaMode = alphaMode;
+                        if (alphaMode === MaterialAlphaMode.BLEND) {
+                            glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
+                        }
                     }
                 }
             }
@@ -454,14 +460,14 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Converts an image typed array buffer to a base64 image.
-         * @param buffer - typed array buffer.
-         * @param width - width of the image.
-         * @param height - height of the image.
-         * @param mimeType - mimetype of the image.
-         * @returns - base64 image string.
+         * Converts an image typed array buffer to a base64 image
+         * @param buffer typed array buffer
+         * @param width width of the image
+         * @param height height of the image
+         * @param mimeType mimetype of the image
+         * @returns base64 image string
          */
-        private static _CreateBase64FromCanvas(buffer: Uint8ClampedArray, width: number, height: number, mimeType: ImageMimeType): string {
+        private static _CreateBase64FromCanvas(buffer: Uint8ClampedArray | Float32Array, width: number, height: number, mimeType: ImageMimeType): string {
             const imageCanvas = document.createElement('canvas');
             imageCanvas.id = "WriteCanvas";
             const ctx = imageCanvas.getContext('2d') as CanvasRenderingContext2D;
@@ -477,11 +483,11 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Generates a white texture based on the specified width and height.
-         * @param width - width of the texture in pixels.
-         * @param height - height of the texture in pixels.
-         * @param scene - babylonjs scene.
-         * @returns - white texture.
+         * Generates a white texture based on the specified width and height
+         * @param width width of the texture in pixels
+         * @param height height of the texture in pixels
+         * @param scene babylonjs scene
+         * @returns white texture
          */
         private static _CreateWhiteTexture(width: number, height: number, scene: Scene): Texture {
             const data = new Uint8Array(width * height * 4);
@@ -496,11 +502,11 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Resizes the two source textures to the same dimensions.  If a texture is null, a default white texture is generated.  If both textures are null, returns null.
-         * @param texture1 - first texture to resize.
-         * @param texture2 - second texture to resize.
-         * @param scene - babylonjs scene.
-         * @returns resized textures or null.
+         * Resizes the two source textures to the same dimensions.  If a texture is null, a default white texture is generated.  If both textures are null, returns null
+         * @param texture1 first texture to resize
+         * @param texture2 second texture to resize
+         * @param scene babylonjs scene
+         * @returns resized textures or null
          */
         private static _ResizeTexturesToSameDimensions(texture1: BaseTexture, texture2: BaseTexture, scene: Scene): { "texture1": BaseTexture, "texture2": BaseTexture } {
             let texture1Size = texture1 ? texture1.getSize() : { width: 0, height: 0 };
@@ -538,14 +544,14 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Convert Specular Glossiness Textures to Metallic Roughness.
+         * Convert Specular Glossiness Textures to Metallic Roughness
          * See link below for info on the material conversions from PBR Metallic/Roughness and Specular/Glossiness
          * @link https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows-bjs/js/babylon.pbrUtilities.js
-         * @param diffuseTexture - texture used to store diffuse information.
-         * @param specularGlossinessTexture - texture used to store specular and glossiness information.
-         * @param factors - specular glossiness material factors.
-         * @param mimeType - the mime type to use for the texture.
-         * @returns pbr metallic roughness interface or null.
+         * @param diffuseTexture texture used to store diffuse information
+         * @param specularGlossinessTexture texture used to store specular and glossiness information
+         * @param factors specular glossiness material factors
+         * @param mimeType the mime type to use for the texture
+         * @returns pbr metallic roughness interface or null
          */
         private static _ConvertSpecularGlossinessTexturesToMetallicRoughness(diffuseTexture: BaseTexture, specularGlossinessTexture: BaseTexture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Nullable<_IPBRMetallicRoughness> {
             if (!(diffuseTexture || specularGlossinessTexture)) {
@@ -554,7 +560,8 @@ module BABYLON.GLTF2 {
 
             const scene = diffuseTexture ? diffuseTexture.getScene() : specularGlossinessTexture.getScene();
             if (!scene) {
-                throw new Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
+                Tools.Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
+                return null;
             }
 
             const resizedTextures = this._ResizeTexturesToSameDimensions(diffuseTexture, specularGlossinessTexture, scene);
@@ -572,7 +579,8 @@ module BABYLON.GLTF2 {
                 diffuseBuffer = (resizedTextures.texture1.readPixels()) as Uint8Array;
             }
             else {
-                throw new Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture1.name);
+                Tools.Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture1.name);
+                return null;
             }
             pixels = resizedTextures.texture2.readPixels();
 
@@ -580,7 +588,8 @@ module BABYLON.GLTF2 {
                 specularGlossinessBuffer = (resizedTextures.texture2.readPixels()) as Uint8Array;
             }
             else {
-                throw new Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture2.name);
+                Tools.Error("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Pixel array buffer type not supported for texture: " + resizedTextures.texture2.name);
+                return null;
             }
 
             const byteLength = specularGlossinessBuffer.byteLength;
@@ -678,9 +687,9 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Converts specular glossiness material properties to metallic roughness.
-         * @param specularGlossiness - interface with specular glossiness material properties.
-         * @returns - interface with metallic roughness material properties.
+         * Converts specular glossiness material properties to metallic roughness
+         * @param specularGlossiness interface with specular glossiness material properties
+         * @returns interface with metallic roughness material properties
          */
         private static _ConvertSpecularGlossinessToMetallicRoughness(specularGlossiness: _IPBRSpecularGlossiness): _IPBRMetallicRoughness {
             const diffusePerceivedBrightness = _GLTFMaterial._GetPerceivedBrightness(specularGlossiness.diffuseColor);
@@ -702,9 +711,9 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Calculates the surface reflectance, independent of lighting conditions.
-         * @param color - Color source to calculate brightness from.
-         * @returns number representing the perceived brightness, or zero if color is undefined. 
+         * Calculates the surface reflectance, independent of lighting conditions
+         * @param color Color source to calculate brightness from
+         * @returns number representing the perceived brightness, or zero if color is undefined
          */
         private static _GetPerceivedBrightness(color: Color3): number {
             if (color) {
@@ -714,9 +723,9 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Returns the maximum color component value.
+         * Returns the maximum color component value
          * @param color 
-         * @returns maximum color component value, or zero if color is null or undefined.
+         * @returns maximum color component value, or zero if color is null or undefined
          */
         private static _GetMaxComponent(color: Color3): number {
             if (color) {
@@ -726,15 +735,15 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Convert a PBRMaterial (Metallic/Roughness) to Metallic Roughness factors.
-         * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
-         * @param mimeType - mime type to use for the textures.
-         * @param images - array of glTF image interfaces.
-         * @param textures - array of glTF texture interfaces.
-         * @param glTFPbrMetallicRoughness - glTF PBR Metallic Roughness interface.
-         * @param imageData - map of image file name to data.
-         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
-         * @returns - glTF PBR Metallic Roughness factors.
+         * Convert a PBRMaterial (Metallic/Roughness) to Metallic Roughness factors
+         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
+         * @param mimeType mime type to use for the textures
+         * @param images array of glTF image interfaces
+         * @param textures array of glTF texture interfaces
+         * @param glTFPbrMetallicRoughness glTF PBR Metallic Roughness interface
+         * @param imageData map of image file name to data
+         * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
+         * @returns glTF PBR Metallic Roughness factors
          */
         private static _ConvertMetalRoughFactorsToMetallicRoughness(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): _IPBRMetallicRoughness {
             const metallicRoughness = {
@@ -761,24 +770,25 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors.
-         * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
-         * @param mimeType - mime type to use for the textures.
-         * @param images - array of glTF image interfaces.
-         * @param textures - array of glTF texture interfaces.
-         * @param glTFPbrMetallicRoughness - glTF PBR Metallic Roughness interface.
-         * @param imageData - map of image file name to data.
-         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
-         * @returns - glTF PBR Metallic Roughness factors.
+         * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors
+         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
+         * @param mimeType mime type to use for the textures
+         * @param images array of glTF image interfaces
+         * @param textures array of glTF texture interfaces
+         * @param glTFPbrMetallicRoughness glTF PBR Metallic Roughness interface
+         * @param imageData map of image file name to data
+         * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
+         * @returns glTF PBR Metallic Roughness factors
          */
-        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): _IPBRMetallicRoughness {
+        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Nullable<_IPBRMetallicRoughness> {
             const specGloss: _IPBRSpecularGlossiness = {
                 diffuseColor: babylonPBRMaterial.albedoColor || Color3.White(),
                 specularColor: babylonPBRMaterial.reflectivityColor || Color3.White(),
                 glossiness: babylonPBRMaterial.microSurface || 1,
             };
             if (babylonPBRMaterial.reflectivityTexture && !babylonPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha) {
-                throw new Error("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture currently not supported");
+                Tools.Error("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture currently not supported");
+                return null;
             }
 
             let metallicRoughnessFactors = this._ConvertSpecularGlossinessTexturesToMetallicRoughness(babylonPBRMaterial.albedoTexture, babylonPBRMaterial.reflectivityTexture, specGloss, mimeType);
@@ -806,14 +816,14 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material.
-         * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
-         * @param mimeType - mime type to use for the textures.
-         * @param images - array of glTF image interfaces.
-         * @param textures - array of glTF texture interfaces.
-         * @param materials - array of glTF material interfaces.
-         * @param imageData - map of image file name to data.
-         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
+         * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
+         * @param mimeType mime type to use for the textures
+         * @param images array of glTF image interfaces
+         * @param textures array of glTF texture interfaces
+         * @param materials array of glTF material interfaces
+         * @param imageData map of image file name to data
+         * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
         public static _ConvertPBRMaterial(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean) {
             const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
@@ -829,83 +839,90 @@ module BABYLON.GLTF2 {
             else {
                 metallicRoughness = this._ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
             }
-
-            if (!(this.FuzzyEquals(metallicRoughness.baseColor, Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
-                glTFPbrMetallicRoughness.baseColorFactor = [
-                    metallicRoughness.baseColor.r,
-                    metallicRoughness.baseColor.g,
-                    metallicRoughness.baseColor.b,
-                    babylonPBRMaterial.alpha
-                ];
-            }
-
-            if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {
-                glTFPbrMetallicRoughness.metallicFactor = metallicRoughness.metallic;
-            }
-            if (metallicRoughness.roughness != null && metallicRoughness.roughness !== 1) {
-                glTFPbrMetallicRoughness.roughnessFactor = metallicRoughness.roughness;
-            }
-
-            if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
-                if (!babylonPBRMaterial.twoSidedLighting) {
-                    Tools.Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
+            if (metallicRoughness) {
+                if (!(this.FuzzyEquals(metallicRoughness.baseColor, Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
+                    glTFPbrMetallicRoughness.baseColorFactor = [
+                        metallicRoughness.baseColor.r,
+                        metallicRoughness.baseColor.g,
+                        metallicRoughness.baseColor.b,
+                        babylonPBRMaterial.alpha
+                    ];
                 }
-                glTFMaterial.doubleSided = true;
-            }
-            if (hasTextureCoords) {
-                if (babylonPBRMaterial.bumpTexture) {
-                    const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.bumpTexture, mimeType, images, textures, imageData);
-                    if (glTFTexture) {
-                        glTFMaterial.normalTexture = glTFTexture;
+
+                if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {
+                    glTFPbrMetallicRoughness.metallicFactor = metallicRoughness.metallic;
+                }
+                if (metallicRoughness.roughness != null && metallicRoughness.roughness !== 1) {
+                    glTFPbrMetallicRoughness.roughnessFactor = metallicRoughness.roughness;
+                }
+
+                if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
+                    if (!babylonPBRMaterial.twoSidedLighting) {
+                        Tools.Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
                     }
+                    glTFMaterial.doubleSided = true;
                 }
-                if (babylonPBRMaterial.ambientTexture) {
-                    const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.ambientTexture, mimeType, images, textures, imageData);
-                    if (glTFTexture) {
-                        let occlusionTexture: IMaterialOcclusionTextureInfo = {
-                            index: glTFTexture.index
-                        };
+                if (hasTextureCoords) {
+                    if (babylonPBRMaterial.bumpTexture) {
+                        const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.bumpTexture, mimeType, images, textures, imageData);
+                        if (glTFTexture) {
+                            glTFMaterial.normalTexture = glTFTexture;
+                        }
+                    }
+                    if (babylonPBRMaterial.ambientTexture) {
+                        const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.ambientTexture, mimeType, images, textures, imageData);
+                        if (glTFTexture) {
+                            let occlusionTexture: IMaterialOcclusionTextureInfo = {
+                                index: glTFTexture.index
+                            };
 
-                        glTFMaterial.occlusionTexture = occlusionTexture;
+                            glTFMaterial.occlusionTexture = occlusionTexture;
 
-                        if (babylonPBRMaterial.ambientTextureStrength) {
-                            occlusionTexture.strength = babylonPBRMaterial.ambientTextureStrength;
+                            if (babylonPBRMaterial.ambientTextureStrength) {
+                                occlusionTexture.strength = babylonPBRMaterial.ambientTextureStrength;
+                            }
+                        }
+                    }
+                    if (babylonPBRMaterial.emissiveTexture) {
+                        const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, imageData);
+                        if (glTFTexture != null) {
+                            glTFMaterial.emissiveTexture = glTFTexture;
                         }
                     }
                 }
-                if (babylonPBRMaterial.emissiveTexture) {
-                    const glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, imageData);
-                    if (glTFTexture != null) {
-                        glTFMaterial.emissiveTexture = glTFTexture;
-                    }
-                }       
-            }
-            if (!this.FuzzyEquals(babylonPBRMaterial.emissiveColor, Color3.Black(), this._epsilon)) {
-                glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
-            }
-            if (babylonPBRMaterial.transparencyMode != null) {
-                const alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMaterial);
-
-                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === MaterialAlphaMode.BLEND) {
-                        glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
+                if (!this.FuzzyEquals(babylonPBRMaterial.emissiveColor, Color3.Black(), this._epsilon)) {
+                    glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
+                }
+                if (babylonPBRMaterial.transparencyMode != null) {
+                    const alphaMode = _GLTFMaterial._GetAlphaMode(babylonPBRMaterial);
+                    if (alphaMode) {
+                        if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
+                            glTFMaterial.alphaMode = alphaMode;
+                            if (alphaMode === MaterialAlphaMode.BLEND) {
+                                glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
+                            }
+                        }
                     }
                 }
-            }
 
-            glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-            materials.push(glTFMaterial);
+                glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
+                materials.push(glTFMaterial);
+            }
+        }
+
+        private static GetPixelsFromTexture(babylonTexture: Texture): Uint8Array | Float32Array {
+            let pixels = babylonTexture.textureType === Engine.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
+            return pixels;
         }
 
         /**
-         * Extracts a texture from a Babylon texture into file data and glTF data.
-         * @param babylonTexture - Babylon texture to extract.
-         * @param mimeType - Mime Type of the babylonTexture.
-         * @param images - Array of glTF images.
-         * @param textures - Array of glTF textures.
-         * @param imageData - map of image file name and data.
-         * @return - glTF texture info, or null if the texture format is not supported.
+         * Extracts a texture from a Babylon texture into file data and glTF data
+         * @param babylonTexture Babylon texture to extract
+         * @param mimeType Mime Type of the babylonTexture
+         * @param images Array of glTF images
+         * @param textures Array of glTF textures
+         * @param imageData map of image file name and data
+         * @return glTF texture info, or null if the texture format is not supported
          */
         private static _ExportTexture(babylonTexture: BaseTexture, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }): Nullable<ITextureInfo> {
             let textureName = "texture_" + (textures.length - 1).toString();
@@ -927,12 +944,13 @@ module BABYLON.GLTF2 {
                 extension = ".png";
             }
             else {
-                throw new Error("Unsupported mime type " + mimeType);
+                Tools.Error("Unsupported mime type " + mimeType);
+                return null;
             }
             textureName = baseFile + extension;
 
 
-            const pixels = babylonTexture.readPixels() as Uint8Array;
+            const pixels = _GLTFMaterial.GetPixelsFromTexture(babylonTexture as Texture);
 
             const size = babylonTexture.getSize();
 
@@ -942,14 +960,14 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Builds a texture from base64 string.
-         * @param base64Texture - base64 texture string.
-         * @param textureName - Name to use for the texture.
-         * @param mimeType - image mime type for the texture.
-         * @param images - array of images.
-         * @param textures - array of textures.
-         * @param imageData - map of image data.
-         * @returns - glTF texture info, or null if the texture format is not supported.
+         * Builds a texture from base64 string
+         * @param base64Texture base64 texture string
+         * @param textureName Name to use for the texture
+         * @param mimeType image mime type for the texture
+         * @param images array of images
+         * @param textures array of textures
+         * @param imageData map of image data
+         * @returns glTF texture info, or null if the texture format is not supported
          */
         private static _GetTextureInfoFromBase64(base64Texture: string, textureName: string, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }): Nullable<ITextureInfo> {
             let textureInfo: Nullable<ITextureInfo> = null;
@@ -959,8 +977,9 @@ module BABYLON.GLTF2 {
             };
 
             const binStr = atob(base64Texture.split(',')[1]);
-            const arr = new Uint8Array(binStr.length);
-            for (let i = 0; i < binStr.length; ++i) {
+            let arrBuff = new ArrayBuffer(binStr.length);
+            const arr = new Uint8Array(arrBuff);
+            for (let i = 0, length = binStr.length; i < length; ++i) {
                 arr[i] = binStr.charCodeAt(i);
             }
             const imageValues = { data: arr, mimeType: mimeType };
@@ -970,7 +989,7 @@ module BABYLON.GLTF2 {
                 const glTFImage: IImage = {
                     uri: textureName
                 }
-                let foundIndex = -1;
+                let foundIndex: number = -1;
                 for (let i = 0; i < images.length; ++i) {
                     if (images[i].uri === textureName) {
                         foundIndex = i;

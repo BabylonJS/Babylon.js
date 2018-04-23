@@ -34,6 +34,9 @@ var dtsBundle = require('dts-bundle');
 const through = require('through2');
 var karmaServer = require('karma').Server;
 
+//viewer declaration
+var processViewerDeclaration = require('./processViewerDeclaration');
+
 var config = require("./config.json");
 
 var del = require("del");
@@ -467,6 +470,8 @@ var buildExternalLibrary = function (library, settings, watch) {
                             if (err) throw err;
                             data = settings.build.dtsBundle.prependText + '\n' + data.toString();
                             fs.writeFile(settings.build.dtsBundle.out, data);
+                            var newData = processViewerDeclaration(data);
+                            fs.writeFile(settings.build.dtsBundle.out.replace('.module', ''), newData);
                         });
                     });
                 }
@@ -502,7 +507,16 @@ var buildExternalLibrary = function (library, settings, watch) {
 
                     if (library.babylonIncluded && dest.addBabylonDeclaration) {
                         // include the babylon declaration
-                        sequence.unshift(gulp.src(config.build.outputDirectory + '/' + config.build.declarationFilename)
+                        if (dest.addBabylonDeclaration === true) {
+                            dest.addBabylonDeclaration = [config.build.declarationFilename];
+                        }
+                        var decsToAdd = dest.addBabylonDeclaration.map(function (dec) {
+                            return config.build.outputDirectory + '/' + dec;
+                        });
+                        sequence.unshift(gulp.src(decsToAdd)
+                            .pipe(rename(function (path) {
+                                path.dirname = '';
+                            }))
                             .pipe(gulp.dest(outputDirectory)))
                     }
                 }
@@ -884,7 +898,10 @@ gulp.task("modules", ["prepare-dependency-tree"], function () {
  */
 gulp.task("typedoc-generate", function () {
     return gulp
-        .src(["../../dist/preview release/babylon.d.ts", "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts", "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
+        .src(["../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
+            "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
+            "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
         .pipe(typedoc({
             // TypeScript options (see typescript docs)
             mode: "modules",
@@ -1023,13 +1040,112 @@ gulp.task("tests-unit-debug", ["tests-unit-transpile"], function (done) {
     server.start();
 });
 
+gulp.task("tests-babylon-unit", ["tests-unit-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/unit/karma.conf.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
 /**
  * Launches the KARMA unit tests in phantomJS.
  * (Can only be launch on any branches.)
  */
-gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
+gulp.task("tests-unit", function (cb) {
+    runSequence("tests-babylon-unit", "tests-viewer-unit", cb);
+});
+
+var rmDir = function (dirPath) {
+    try { var files = fs.readdirSync(dirPath); }
+    catch (e) { return; }
+    if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+            var filePath = dirPath + '/' + files[i];
+            if (fs.statSync(filePath).isFile())
+                fs.unlinkSync(filePath);
+            else
+                rmDir(filePath);
+        }
+    fs.rmdirSync(dirPath);
+};
+
+/**
+ * Launches the viewer's KARMA validation tests in chrome in order to debug them.
+ * (Can only be launch locally.)
+ */
+gulp.task("tests-viewer-validation-karma", ["tests-viewer-validation-transpile"], function (done) {
     var kamaServerOptions = {
-        configFile: __dirname + "/../../tests/unit/karma.conf.js",
+        configFile: __dirname + "/../../Viewer/tests/validation/karma.conf.js",
+        singleRun: false
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Transpiles viewer typescript unit tests. 
+ */
+gulp.task("tests-viewer-validation-transpile", function (done) {
+
+    let wpBuild = webpack(require('../../Viewer//webpack.gulp.config.js'));
+
+    // clean the built directory
+    rmDir("../../Viewer/tests/build/");
+
+    return wpBuild
+        .pipe(rename(function (path) {
+            if (path.extname === '.js') {
+                path.basename = "test";
+            }
+        }))
+        .pipe(gulp.dest("../../Viewer/tests/build/"));
+});
+
+/**
+ * Transpiles viewer typescript unit tests. 
+ */
+gulp.task("tests-viewer-transpile", function (done) {
+
+    let wpBuild = webpack(require('../../Viewer/tests/unit/webpack.config.js'));
+
+    // clean the built directory
+    rmDir("../../Viewer/tests/build/");
+
+    return wpBuild
+        .pipe(rename(function (path) {
+            if (path.extname === '.js') {
+                path.basename = "test";
+            }
+        }))
+        .pipe(gulp.dest("../../Viewer/tests/build/"));
+});
+
+/**
+ * Launches the KARMA unit tests in chrome.
+ * (Can be launch on any branches.)
+ */
+gulp.task("tests-viewer-unit-debug", ["tests-viewer-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
+        singleRun: false,
+        browsers: ['Chrome']
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can be launch on any branches.)
+ */
+gulp.task("tests-viewer-unit", ["tests-viewer-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../Viewer/tests/karma.conf.js",
         singleRun: true
     };
 

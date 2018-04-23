@@ -15,7 +15,7 @@ module BABYLON.GLTF2.Extensions {
                 let babylonData = material._babylonData[babylonDrawMode];
                 if (!babylonData) {
                     const name = material.name || `materialUnlit_${material._index}`;
-                    const babylonMaterial = this._loader._createMaterial(PBRMaterial, name, babylonDrawMode);
+                    const babylonMaterial = this._loader._createMaterial(name, babylonDrawMode);
                     babylonMaterial.unlit = true;
 
                     const promise = this._loadUnlitPropertiesAsync(context, material, babylonMaterial);

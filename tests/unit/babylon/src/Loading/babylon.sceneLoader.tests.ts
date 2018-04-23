@@ -367,6 +367,54 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
+        it('Load BoomBox with transparencyAsCoverage', () => {
+            const scene = new BABYLON.Scene(subject);
+
+            const promises = new Array<Promise<any>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                var specularOverAlpha = false;
+                var radianceOverAlpha = false;
+
+                loader.transparencyAsCoverage = true;
+                loader.onMaterialLoaded = material => {
+                    specularOverAlpha = specularOverAlpha || (material as BABYLON.PBRMaterial).useSpecularOverAlpha;
+                    radianceOverAlpha = radianceOverAlpha || (material as BABYLON.PBRMaterial).useRadianceOverAlpha;
+                };
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(specularOverAlpha, "specularOverAlpha").to.be.false;
+                    expect(radianceOverAlpha, "radianceOverAlpha").to.be.false;
+                }));
+            }, undefined, undefined, undefined, true);
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene));
+            return Promise.all(promises);
+        });
+
+        it('Load BoomBox without transparencyAsCoverage', () => {
+            const scene = new BABYLON.Scene(subject);
+
+            const promises = new Array<Promise<any>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                var specularOverAlpha = true;
+                var radianceOverAlpha = true;
+
+                loader.transparencyAsCoverage = false;
+                loader.onMaterialLoaded = material => {
+                    specularOverAlpha = specularOverAlpha && (material as BABYLON.PBRMaterial).useSpecularOverAlpha;
+                    radianceOverAlpha = radianceOverAlpha && (material as BABYLON.PBRMaterial).useRadianceOverAlpha;
+                };
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(specularOverAlpha, "specularOverAlpha").to.be.true;
+                    expect(radianceOverAlpha, "radianceOverAlpha").to.be.true;
+                }));
+            }, undefined, undefined, undefined, true);
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene));
+            return Promise.all(promises);
+        });
+
         // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name

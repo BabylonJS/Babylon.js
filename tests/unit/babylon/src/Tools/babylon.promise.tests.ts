@@ -217,6 +217,35 @@ describe('Babylon.Promise', function () {
                     }
                 });
         });
+
+        it('should correctly handle then multiple times', (done) => {
+            var promise = Promise.resolve().then(function () {
+                return new Promise(function (resolve) {
+                    setTimeout(function () {
+                        resolve(123);
+                    }, 100);
+                });
+            });
+            
+            promise.then(function (result1) {
+                try {
+                    result1.should.be.equal(123);
+                }
+                catch(error) {
+                    done(error);
+                }
+                return promise.then(function (result2) {
+                    try {
+                        result2.should.be.equal(123);
+                        done();
+                    }
+                    catch(error) {
+                        done(error);
+                    }
+                });
+            });    
+        });        
+
     });
 
     describe('#Multiple children', () => {

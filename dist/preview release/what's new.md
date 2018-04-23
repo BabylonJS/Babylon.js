@@ -14,14 +14,14 @@
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials. Demo [here](http://www.babylonjs.com/demos/GlowLayer/) ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) class and loading methods ([trevordev](https://github.com/trevordev))
 - Added [depth of field](https://www.babylonjs-playground.com/frame.html#8F5HYV#9), [MSAA, sharpening, chromatic aberration and grain effect](https://www.babylonjs-playground.com/#Y3C0HQ#146) to the default pipeline ([trevordev](https://github.com/trevordev))
-- Added support for [animation weights](http://doc.babylonjs.com/babylon101/animations#animation-weights). Demo [here](https://www.babylonjs-playground.com/#IQN716#9) ([deltakosh](https://github.com/deltakosh))
+- Added support for [animation weights](http://doc.babylonjs.com/babylon101/animations#animation-weights). Demo [here](https://www.babylonjs-playground.com/#LL5BIQ) ([deltakosh](https://github.com/deltakosh))
 - Added [sub emitters for particle system](http://doc.babylonjs.com/babylon101/particles#sub-emitters) which will spawn new particle systems when particles dies. Demo [here](https://www.babylonjs-playground.com/frame.html#9NHBCC#1) ([IbraheemOsama](https://github.com/IbraheemOsama))
 - New [Babylon.js](http://doc.babylonjs.com/resources/maya) and [glTF](http://doc.babylonjs.com/resources/maya_to_gltf) exporter for Autodesk Maya ([Noalak](https://github.com/Noalak))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
 - New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
 - Physics - Latest production version of Oimo.js is being used - 1.0.9 ([RaananW](https://github.com/RaananW))
 - Introduces [PCF](https://doc.babylonjs.com/babylon101/shadows#percentage-closer-filtering-webgl2-only) and [PCSS](https://doc.babylonjs.com/babylon101/shadows#contact-hardening-shadow-webgl2-only) shadow support in Webgl 2 ([sebavan](https://github.com/sebavan)))
-- Introduces PBR Specular Anti Aliasing support ([sebavan](https://github.com/sebavan)))
+- Introduces [PBR Specular Anti Aliasing support](https://doc.babylonjs.com/how_to/physically_based_rendering_master#specular-aliasing) ([sebavan](https://github.com/sebavan)))
 
 ## Documentation
 
@@ -114,8 +114,13 @@
 - Added unlit material extension support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - (Viewer) Viewer's declaration file automatically generated ([RaananW](https://github.com/RaananW))
 - New serialize and parse functions for effect layers (Highlight and Glow layers) ([julien-moreau](https://github.com/julien-moreau))
+- GUI: Introduced `MultiLine` which will draw lines between any number of meshes, controls and points. [Documentation](http://doc.babylonjs.com/how_to/gui#multiline) ([royibernthal](https://github.com/royibernthal))
 - Added alphaCutOff support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - Add support for sparse accessors to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
+- Add support for cameras to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Add support for preprocessing urls to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Viewer upgrade - see [PR](https://github.com/BabylonJS/Babylon.js/pull/4160) ([RaananW](https://github.com/RaananW))
+- New serialize and parse functions for SSAO2 Rendering Pipeline ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 

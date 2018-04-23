@@ -5,20 +5,36 @@
      */
     export class ActionEvent {
         /**
-         * @param source The mesh or sprite that triggered the action.
+         * Creates a new ActionEvent
+         * @param source The mesh or sprite that triggered the action
          * @param pointerX The X mouse cursor position at the time of the event
          * @param pointerY The Y mouse cursor position at the time of the event
          * @param meshUnderPointer The mesh that is currently pointed at (can be null)
          * @param sourceEvent the original (browser) event that triggered the ActionEvent
+         * @param additionalData additional data for the event
          */
-        constructor(public source: any, public pointerX: number, public pointerY: number, public meshUnderPointer: Nullable<AbstractMesh>, public sourceEvent?: any, public additionalData?: any) {
+        constructor(
+            /** The mesh or sprite that triggered the action */
+            public source: any, 
+            /** The X mouse cursor position at the time of the event */
+            public pointerX: number, 
+            /** The Y mouse cursor position at the time of the event */
+            public pointerY: number, 
+            /** The mesh that is currently pointed at (can be null) */
+            public meshUnderPointer: Nullable<AbstractMesh>, 
+            /** the original (browser) event that triggered the ActionEvent */
+            public sourceEvent?: any, 
+            /** additional data for the event */
+            public additionalData?: any) {
 
         }
 
         /**
          * Helper function to auto-create an ActionEvent from a source mesh.
          * @param source The source mesh that triggered the event
-         * @param evt {Event} The original (browser) event
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
          */
         public static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent {
             var scene = source.getScene();
@@ -26,10 +42,12 @@
         }
 
         /**
-         * Helper function to auto-create an ActionEvent from a source mesh.
+         * Helper function to auto-create an ActionEvent from a source sprite
          * @param source The source sprite that triggered the event
          * @param scene Scene associated with the sprite
-         * @param evt {Event} The original (browser) event
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
          */
         public static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent {
             return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
@@ -38,12 +56,21 @@
         /**
          * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
          * @param scene the scene where the event occurred
-         * @param evt {Event} The original (browser) event
+         * @param evt The original (browser) event
+         * @returns the new ActionEvent
          */
         public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
 
+        /**
+         * Helper function to auto-create an ActionEvent from a primitive
+         * @param prim defines the target primitive
+         * @param pointerPos defines the pointer position
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
+         */
         public static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent {
             return new ActionEvent(prim, pointerPos.x, pointerPos.y, null, evt, additionalData);
         }
@@ -52,6 +79,7 @@
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
      * A single scene can have many Action Managers to handle predefined actions on specific meshes.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
      */
     export class ActionManager {
         // Statics
@@ -73,84 +101,159 @@
         private static _OnKeyUpTrigger = 15;
         private static _OnPickOutTrigger = 16;
 
+        /**
+         * Nothing
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
         }
 
+        /** 
+         * On pick 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnPickTrigger(): number {
             return ActionManager._OnPickTrigger;
         }
 
+        /** 
+         * On left pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnLeftPickTrigger(): number {
             return ActionManager._OnLeftPickTrigger;
         }
 
+        /** 
+         * On right pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnRightPickTrigger(): number {
             return ActionManager._OnRightPickTrigger;
         }
 
+        /** 
+         * On center pick 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnCenterPickTrigger(): number {
             return ActionManager._OnCenterPickTrigger;
         }
 
+        /** 
+         * On pick down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnPickDownTrigger(): number {
             return ActionManager._OnPickDownTrigger;
         }
 
+        /** 
+         * On double pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnDoublePickTrigger(): number {
             return ActionManager._OnDoublePickTrigger;
         }
 
+        /** 
+         * On pick up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnPickUpTrigger(): number {
             return ActionManager._OnPickUpTrigger;
         }
 
-        /// This trigger will only be raised if you also declared a OnPickDown
+        /**
+         * On pick out.
+         * This trigger will only be raised if you also declared a OnPickDown
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnPickOutTrigger(): number {
             return ActionManager._OnPickOutTrigger;
         }
 
+        /** 
+         * On long press
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnLongPressTrigger(): number {
             return ActionManager._OnLongPressTrigger;
         }
 
+        /** 
+         * On pointer over
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnPointerOverTrigger(): number {
             return ActionManager._OnPointerOverTrigger;
         }
 
+        /** 
+         * On pointer out
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnPointerOutTrigger(): number {
             return ActionManager._OnPointerOutTrigger;
         }
 
+        /** 
+         * On every frame
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnEveryFrameTrigger(): number {
             return ActionManager._OnEveryFrameTrigger;
         }
 
+        /** 
+         * On intersection enter
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnIntersectionEnterTrigger(): number {
             return ActionManager._OnIntersectionEnterTrigger;
         }
 
+        /** 
+         * On intersection exit
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnIntersectionExitTrigger(): number {
             return ActionManager._OnIntersectionExitTrigger;
         }
 
+        /**
+         * On key down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnKeyDownTrigger(): number {
             return ActionManager._OnKeyDownTrigger;
         }
 
+        /**
+         * On key up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
         public static get OnKeyUpTrigger(): number {
             return ActionManager._OnKeyUpTrigger;
         }
 
+        /** Gets the list of active triggers */
         public static Triggers: { [key: string]: number } = {};
 
         // Members
+        /** Gets the list of actions */
         public actions = new Array<Action>();
 
+        /** Gets the cursor to use when hovering items */
         public hoverCursor: string = '';
 
         private _scene: Scene;
 
+        /**
+         * Creates a new action manager
+         * @param scene defines the hosting scene
+         */
         constructor(scene: Scene) {
             this._scene = scene || Engine.LastCreatedScene;
 
@@ -158,6 +261,10 @@
         }
 
         // Methods
+
+        /**
+         * Releases all associated resources
+         */
         public dispose(): void {
             var index = this._scene._actionManagers.indexOf(this);
 
@@ -174,14 +281,18 @@
             }
         }
 
+        /** 
+         * Gets hosting scene 
+         * @returns the hosting scene
+         */
         public getScene(): Scene {
             return this._scene;
         }
 
         /**
          * Does this action manager handles actions of any of the given triggers
-         * @param {number[]} triggers - the triggers to be tested
-         * @return {boolean} whether one (or more) of the triggers is handeled 
+         * @param triggers defines the triggers to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled 
          */
         public hasSpecificTriggers(triggers: number[]): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -221,7 +332,6 @@
 
         /**
          * Does this action manager has pointer triggers
-         * @return {boolean} whether or not it has pointer triggers
          */
         public get hasPointerTriggers(): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -237,7 +347,6 @@
 
         /**
          * Does this action manager has pick triggers
-         * @return {boolean} whether or not it has pick triggers
          */
         public get hasPickTriggers(): boolean {
             for (var index = 0; index < this.actions.length; index++) {
@@ -253,8 +362,7 @@
 
         /**
          * Does exist one action manager with at least one trigger 
-         * @return {boolean} whether or not it exists one action manager with one trigger
-        **/
+         **/
         public static get HasTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {
@@ -266,8 +374,7 @@
 
         /**
          * Does exist one action manager with at least one pick trigger 
-         * @return {boolean} whether or not it exists one action manager with one pick trigger
-        **/
+         **/
         public static get HasPickTriggers(): boolean {
             for (var t in ActionManager.Triggers) {
                 if (ActionManager.Triggers.hasOwnProperty(t)) {
@@ -282,8 +389,8 @@
 
         /**
          * Does exist one action manager that handles actions of a given trigger
-         * @param {number} trigger - the trigger to be tested
-         * @return {boolean} whether the trigger is handeled by at least one action manager
+         * @param trigger defines the trigger to be tested
+         * @return a boolean indicating whether the trigger is handeled by at least one action manager
         **/
         public static HasSpecificTrigger(trigger: number): boolean {
             for (var t in ActionManager.Triggers) {
@@ -299,8 +406,8 @@
 
         /**
          * Registers an action to this action manager
-         * @param {BABYLON.Action} action - the action to be registered
-         * @return {BABYLON.Action} the action amended (prepared) after registration
+         * @param action defines the action to be registered
+         * @return the action amended (prepared) after registration
          */
         public registerAction(action: Action): Nullable<Action> {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
@@ -327,8 +434,8 @@
 
         /**
          * Unregisters an action to this action manager
-         * @param action The action to be unregistered
-         * @return whether the action has been unregistered
+         * @param action defines the action to be unregistered
+         * @return a boolean indicating whether the action has been unregistered
          */
         public unregisterAction(action: Action): Boolean {
             var index = this.actions.indexOf(action);
@@ -346,8 +453,8 @@
 
         /**
          * Process a specific trigger
-         * @param {number} trigger - the trigger to process
-         * @param evt {BABYLON.ActionEvent} the event details to be processed
+         * @param trigger defines the trigger to process
+         * @param evt defines the event details to be processed
          */
         public processTrigger(trigger: number, evt?: ActionEvent): void {
             for (var index = 0; index < this.actions.length; index++) {
@@ -381,6 +488,7 @@
             }
         }
 
+        /** @hidden */
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             var properties = propertyPath.split(".");
 
@@ -391,12 +499,18 @@
             return target;
         }
 
+        /** @hidden */
         public _getProperty(propertyPath: string): string {
             var properties = propertyPath.split(".");
 
             return properties[properties.length - 1];
         }
 
+        /**
+         * Serialize this manager to a JSON object
+         * @param name defines the property name to store this manager
+         * @returns a JSON representation of this manager
+         */
         public serialize(name: string): any {
             var root = {
                 children: new Array(),
@@ -441,7 +555,13 @@
             return root;
         }
 
-        public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene) {
+        /**
+         * Creates a new ActionManager from a JSON data
+         * @param parsedActions defines the JSON data to read from
+         * @param object defines the hosting mesh
+         * @param scene defines the hosting scene
+         */
+        public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void {
             var actionManager = new ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;
@@ -626,6 +746,11 @@
             }
         }
 
+        /**
+         * Get a trigger name by index
+         * @param trigger defines the trigger index
+         * @returns a trigger name
+         */
         public static GetTriggerName(trigger: number): string {
             switch (trigger) {
                 case 0: return "NothingTrigger";

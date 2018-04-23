@@ -98,6 +98,16 @@ declare module BABYLON {
          */
         compileShadowGenerators: boolean;
         /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -109,6 +119,10 @@ declare module BABYLON {
          * Observable raised when the loader creates a material after parsing the glTF properties of the material.
          */
         onMaterialLoadedObservable: Observable<Material>;
+        /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        onCameraLoadedObservable: Observable<Camera>;
         /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -195,6 +209,16 @@ declare module BABYLON {
          */
         compileShadowGenerators: boolean;
         /**
+         * Defines if the Alpha blended materials are only applied as coverage.
+         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+         * If true, no extra effects are applied to transparent pixels.
+         */
+        transparencyAsCoverage: boolean;
+        /**
+         * Function called before loading a url referenced by the asset.
+         */
+        preprocessUrlAsync: (url: string) => Promise<string>;
+        /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
@@ -221,6 +245,15 @@ declare module BABYLON {
          * Callback raised when the loader creates a material after parsing the glTF properties of the material.
          */
         onMaterialLoaded: (material: Material) => void;
+        /**
+         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        readonly onCameraLoadedObservable: Observable<Camera>;
+        private _onCameraLoadedObserver;
+        /**
+         * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+         */
+        onCameraLoaded: (camera: Camera) => void;
         /**
          * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -730,15 +763,15 @@ declare module BABYLON.GLTF1 {
         compileMaterials: boolean;
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
-        onDisposeObservable: Observable<IGLTFLoader>;
-        onMeshLoadedObservable: Observable<AbstractMesh>;
-        onTextureLoadedObservable: Observable<BaseTexture>;
-        onMaterialLoadedObservable: Observable<Material>;
-        onCompleteObservable: Observable<IGLTFLoader>;
-        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
-        /**
-        * State of the loader
-        */
+        transparencyAsCoverage: boolean;
+        preprocessUrlAsync: (url: string) => Promise<string>;
+        readonly onMeshLoadedObservable: Observable<AbstractMesh>;
+        readonly onTextureLoadedObservable: Observable<BaseTexture>;
+        readonly onMaterialLoadedObservable: Observable<Material>;
+        readonly onCameraLoadedObservable: Observable<Camera>;
+        readonly onCompleteObservable: Observable<IGLTFLoader>;
+        readonly onDisposeObservable: Observable<IGLTFLoader>;
+        readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
         dispose(): void;
         private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress?, onError?);

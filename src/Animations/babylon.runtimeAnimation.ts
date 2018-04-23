@@ -278,7 +278,7 @@
                 if (!this._originalValue) {
                     let originalValue: any;
 
-                    if (destination.getRestPose) { // For bones
+                    if (destination.getRestPose && path === "_matrix") { // For bones
                         originalValue = destination.getRestPose();
                     } else {
                         originalValue = destination[path];
