@@ -300,9 +300,10 @@ a {
     -webkit-appearance: none;
     cursor: pointer;
     width: 1000px;
+    height: 50px;
     outline: none;
-    border-radius: 5px;
     margin-left: 20px;
+    background-color: transparent;
 }
 
 /*Chrome -webkit */
@@ -318,7 +319,7 @@ a {
 #slider::-webkit-slider-runnable-track {
     height: 2px;
     -webkit-appearance: none;
-    color: white;
+    background-color: white;
 }
 
 
