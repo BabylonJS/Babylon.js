@@ -181,29 +181,29 @@ export class SceneManager {
     }
 
     private _groundMirrorEnabled = false;
-        /**
-         * gets wether the reflection is disabled.
-         */
-        public get groundMirrorEnabled(): boolean {
-            return this._groundMirrorEnabled;
+    /**
+     * gets wether the reflection is disabled.
+     */
+    public get groundMirrorEnabled(): boolean {
+        return this._groundMirrorEnabled;
+    }
+    /**
+     * sets wether the reflection is disabled.
+     */
+    public set groundMirrorEnabled(value: boolean) {
+        if (this._groundMirrorEnabled === value) {
+            return;
         }
-        /**
-         * sets wether the reflection is disabled.
-         */
-        public set groundMirrorEnabled(value: boolean) {
-            if (this._groundMirrorEnabled === value) {
-                return;
-            }
 
-            this._groundMirrorEnabled = value;
-            if (this.environmentHelper && this.environmentHelper.groundMaterial && this.environmentHelper.groundMirror) {
-                if (value) {
-                    this.environmentHelper.groundMaterial.reflectionTexture = null;
-                } else {
-                    this.environmentHelper.groundMaterial.reflectionTexture = this.environmentHelper.groundMirror;
-                }
+        this._groundMirrorEnabled = value;
+        if (this.environmentHelper && this.environmentHelper.groundMaterial && this.environmentHelper.groundMirror) {
+            if (value) {
+                this.environmentHelper.groundMaterial.reflectionTexture = null;
+            } else {
+                this.environmentHelper.groundMaterial.reflectionTexture = this.environmentHelper.groundMirror;
             }
         }
+    }
 
     public getActiveRenderingPiplineByName(name: string) {
         return this._piplines[name];
@@ -670,7 +670,7 @@ export class SceneManager {
             if (groundConfig.shadowLevel !== undefined) {
                 options.groundShadowLevel = groundConfig.shadowLevel;
             }
-            options.enableGroundMirror = !!groundConfig.mirror;
+            options.enableGroundMirror = !!groundConfig.mirror && this.groundMirrorEnabled;
             if (groundConfig.texture) {
                 options.groundTexture = groundConfig.texture;
             }
@@ -783,9 +783,9 @@ export class SceneManager {
                 this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
                 this.environmentHelper.groundMirror.clearColor.a = 1;
 
-                /*if (this.Scene.DisableReflection) {
+                if (!this.groundMirrorEnabled) {
                     this.environmentHelper.groundMaterial.reflectionTexture = null;
-                }*/
+                }
             }
         }
 
