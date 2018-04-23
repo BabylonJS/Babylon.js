@@ -9,6 +9,9 @@ var currentGroupIndex;
 var currentScene;
 // html balise
 var animationBar = document.getElementById("animationBar");
+var dropdownBtn = document.getElementById("dropdownBtn");
+var chevronUp = document.getElementById("chevronUp");
+var chevronDown = document.getElementById("chevronDown");
 var dropdownLabel = document.getElementById("dropdownLabel");
 var dropdownContent = document.getElementById("dropdownContent");
 var playBtn = document.getElementById("playBtn");
@@ -326,6 +329,27 @@ function formatId(name){
     return "data-" + name.replace(/\s/g,'');
 }
 
+function displayDropdownContent(display) {
+    if(display) {
+        dropdownContent.style.display = "flex";
+        chevronDown.style.display = "inline";
+        chevronUp.style.display = "none";
+    }
+    else {
+        dropdownContent.style.display = "none";
+        chevronDown.style.display = "none";
+        chevronUp.style.display = "inline";
+    }
+}
+dropdownBtn.addEventListener("click", function() {
+    if(dropdownContent.style.display === "flex") {
+        displayDropdownContent(false);
+    }
+    else {
+        displayDropdownContent(true);
+    }
+});
+
 function createDropdownLink(group,index) {
     var animation = document.createElement("a");
     animation.innerHTML = group.name;
@@ -348,8 +372,11 @@ function createDropdownLink(group,index) {
         // set the slider
         slider.setAttribute("min", currentGroup.from);
         slider.setAttribute("max", currentGroup.to);
-        currentSliderValue = 0;
-        slider.value = 0;
+        currentSliderValue = currentGroup.from;
+        slider.value = currentGroup.from;
+
+        // hide the content of the dropdown
+        displayDropdownContent(false);
     });
     dropdownContent.appendChild(animation);
 }
