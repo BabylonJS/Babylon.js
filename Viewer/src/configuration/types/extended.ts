@@ -10,6 +10,8 @@ export let extendedConfiguration: ViewerConfiguration = {
         wheelPrecision: 300,
         minZ: 0.1,
         maxZ: 50,
+        fovMode: 0,
+        pinchPrecision: 1500
     },
     lights: {
         "light1": {
@@ -36,6 +38,34 @@ export let extendedConfiguration: ViewerConfiguration = {
         receiveShadows: true
     },
     scene: {
+        flags: {
+            shadowsEnabled: true,
+            particlesEnabled: false,
+            collisionsEnabled: false,
+            lightsEnabled: true,
+            texturesEnabled: true,
+            lensFlaresEnabled: false,
+            proceduralTexturesEnabled: false,
+            renderTargetsEnabled: true,
+            spritesEnabled: false,
+            skeletonsEnabled: true,
+            audioEnabled: false,
+        },
+        defaultMaterial: {
+            materialType: 'pbr',
+            reflectivityColor: {
+                r: 0.1,
+                g: 0.1,
+                b: 0.1
+            },
+            microSurface: 0.6
+        },
+        clearColor: {
+            r: 0.9,
+            g: 0.9,
+            b: 0.9,
+            a: 1.0
+        },
         imageProcessingConfiguration: {
             colorCurves: {
                 shadowsHue: 43.359,
