@@ -104,7 +104,7 @@ module BABYLON {
 
     class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer{
         private _laserPointer: Mesh;
-
+        private _meshAttachedObserver: Nullable<Observer<AbstractMesh>>;
         constructor(public webVRController: WebVRController, scene: Scene, gazeTrackerToClone:Mesh){
             super(scene, gazeTrackerToClone);
             // Laser pointer
@@ -127,6 +127,10 @@ module BABYLON {
             }
 
             this._setLaserPointerParent(webVRController.mesh!);
+
+            this._meshAttachedObserver = webVRController._meshAttachedObservable.add((mesh)=>{
+                this._setLaserPointerParent(mesh);
+            });
         }
 
         _getForwardRay(length:number):Ray{
@@ -176,6 +180,9 @@ module BABYLON {
         dispose(){
             super.dispose();
             this._laserPointer.dispose();
+            if(this._meshAttachedObserver){
+                this.webVRController._meshAttachedObservable.remove(this._meshAttachedObserver);
+            }
         }
     }
 

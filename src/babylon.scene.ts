@@ -2944,12 +2944,13 @@
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
 
-        /**
+      /**
          * Remove a mesh for the list of scene's meshes
          * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
          * @returns the index where the mesh was in the mesh list
          */
-        public removeMesh(toRemove: AbstractMesh): number {
+        public removeMesh(toRemove: AbstractMesh, recursive = false): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
                 // Remove from the scene if mesh found
@@ -2957,7 +2958,11 @@
             }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
-
+            if(recursive){
+                toRemove.getChildMeshes().forEach((m)=>{
+                    this.removeMesh(m);
+                })
+            }
             return index;
         }
 
