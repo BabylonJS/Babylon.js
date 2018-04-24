@@ -389,7 +389,7 @@
 
             const defaultStride = VertexBuffer.DeduceStride(vertexBuffer.getKind());
             const defaultByteStride = defaultStride * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-            const count = this._totalVertices * defaultStride;
+            const count = this._totalVertices * vertexBuffer.getSize();
 
             if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== defaultByteStride) {
                 const copy = new Array<number>(count);
