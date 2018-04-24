@@ -729,7 +729,7 @@ module BABYLON.GLTF2 {
 
             loadAttribute("TANGENT", VertexBuffer.TangentKind, (babylonVertexBuffer, data) => {
                 let dataIndex = 0;
-                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                babylonVertexBuffer.forEach(data.length / 3 * 4, (value, index) => {
                     // Tangent data for morph targets is stored as xyz delta.
                     // The vertexData.tangent is stored as xyzw.
                     // So we need to skip every fourth vertexData.tangent.

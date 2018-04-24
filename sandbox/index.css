@@ -106,6 +106,14 @@ a {
     background-size: 50%;
 }
 
+#droptext {
+    position: absolute;;
+    text-align: center;
+    color: #fff;
+    height: 50px;
+    width: 100%;
+    bottom: 5%;    
+}
 #btnDownArrow {
     position: absolute;
     bottom: 35px;
@@ -271,17 +279,13 @@ a {
     z-index: 1;
     min-width: 135px;
     width: 200px;
+    flex-direction: column;
+    transition: all 0.3s ease; /* Add transition for hover effects */
 }
 
 #dropdownContent a,
 #playBtn {
     cursor: pointer;
-}
-
-.dropdown:hover #dropdownContent {
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease; /* Add transition for hover effects */
 }
 
 #chevronUp {
@@ -295,13 +299,6 @@ a {
     margin-left: 0px;
 }
 
-.dropdown:hover #chevronUp {
-    display: none;
-}
-.dropdown:hover #chevronDown {
-    display: inline;
-}
-
 #playBtn.play #pauseImg,
 #playBtn.pause #playImg{
     display: none;
@@ -311,9 +308,10 @@ a {
     -webkit-appearance: none;
     cursor: pointer;
     width: 1000px;
+    height: 50px;
     outline: none;
-    border-radius: 5px;
     margin-left: 20px;
+    background-color: transparent;
 }
 
 /*Chrome -webkit */
@@ -329,7 +327,7 @@ a {
 #slider::-webkit-slider-runnable-track {
     height: 2px;
     -webkit-appearance: none;
-    color: white;
+    background-color: white;
 }
 
 
