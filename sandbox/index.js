@@ -233,7 +233,7 @@ if (BABYLON.Engine.isSupported()) {
                 });
             });
         }).catch(function (reason) {
-            sceneError({ name: fileName }, null, reason);
+            sceneError({ name: fileName }, null, reason.message || reason);
         });
     }
     else {
@@ -250,7 +250,7 @@ if (BABYLON.Engine.isSupported()) {
 
         window.addEventListener("keydown", function (evt) {
             // Press R to reload
-            if (evt.keyCode === 82) {
+            if (evt.keyCode === 82 && !enableDebugLayer) {
                 filesInput.reload();
             }
         });
@@ -291,8 +291,8 @@ if (BABYLON.Engine.isSupported()) {
     }, false);
 
     window.addEventListener("keydown", function (evt) {
-        // Press Esc to toggle footer
-        if (evt.keyCode === 27 &&!enableDebugLayer) {
+        // Press space to toggle footer
+        if (evt.keyCode === 32 && !enableDebugLayer) {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
             }
