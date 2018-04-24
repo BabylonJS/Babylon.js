@@ -650,13 +650,14 @@ export class SceneManager {
             setupImageProcessing: false, // will be done at the scene level!,
         };
 
-        if (model) {
+        // will that cause problems with model ground configuration?
+        /*if (model) {
             const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
             const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
             const halfSizeVec = sizeVec.scale(0.5);
             const center = boundingInfo.min.add(halfSizeVec);
             options.groundYBias = -center.y;
-        }
+        }*/
 
         if (groundConfiguration) {
             let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
@@ -798,6 +799,10 @@ export class SceneManager {
             }
         }
 
+        this._viewer.onModelLoadedObservable.add((model) => {
+            this._updateGroundMirrorRenderList(model);
+        });
+
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.environmentHelper,
@@ -920,11 +925,17 @@ export class SceneManager {
 
                     if (!shadowGenerator) {
                         shadowGenerator = new ShadowGenerator(bufferSize, light);
-                        // TODO blur kernel definition
+                        // TODO blur kernel definition ?
                     }
 
                     // add the focues meshes to the shadow list
+                    this._viewer.onModelLoadedObservable.add((model) => {
+                        this._updateShadowRenderList(shadowGenerator, model);
+                    });
+
+                    //if (model) {
                     this._updateShadowRenderList(shadowGenerator, model);
+                    //}
 
                     var blurKernel = this.getBlurKernel(light, bufferSize);
 
@@ -1130,12 +1141,11 @@ export class SceneManager {
             case CameraBehavior.BOUNCING:
                 break;
             case CameraBehavior.FRAMING:
-                if (config.zoomOnBoundingInfo) {
-                    //payload is an array of meshes
-                    let meshes = <Array<AbstractMesh>>payload;
-                    let bounding = meshes[0].getHierarchyBoundingVectors();
-                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
-                }
+                this._viewer.onModelLoadedObservable.add((model) => {
+                    if (config.zoomOnBoundingInfo) {
+                        (<FramingBehavior>behavior).zoomOnMeshHierarchy(model.rootMesh);
+                    }
+                });
                 break;
         }
     }

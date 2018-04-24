@@ -187,7 +187,9 @@ export class DefaultViewer extends AbstractViewer {
             hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
-            this.hideLoadingScreen();
+            this.sceneManager.scene.executeWhenReady(() => {
+                this.hideLoadingScreen();
+            });
         }, hideLoadingDelay);
 
         return;

@@ -195,7 +195,11 @@ export abstract class AbstractViewer {
         });
 
         this.onModelLoadedObservable.add((model) => {
-            this.updateConfiguration(this._configuration, model);
+            //this.updateConfiguration(this._configuration, model);
+        });
+
+        this.onSceneInitObservable.add(() => {
+            this.updateConfiguration();
         });
 
         this.onInitDoneObservable.add(() => {
@@ -455,9 +459,9 @@ export abstract class AbstractViewer {
                     return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
             }).then((scene) => {
-                if (!autoLoad) {
+                /*if (!autoLoad) {
                     this.updateConfiguration();
-                }
+                }*/
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
