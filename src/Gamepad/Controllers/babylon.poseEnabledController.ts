@@ -239,6 +239,11 @@ module BABYLON {
         }
 
         /**
+         * @hidden
+         */
+        public _meshAttachedObservable = new Observable<AbstractMesh>()
+
+        /**
          * Attaches a mesh to the controller
          * @param mesh the mesh to be attached
          */
@@ -253,6 +258,7 @@ module BABYLON {
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
+            this._meshAttachedObservable.notifyObservers(mesh);
         }
 
         /**
