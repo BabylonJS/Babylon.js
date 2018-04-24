@@ -229,7 +229,7 @@
             let targetPropertyPath = this._animation.targetPropertyPath
 
             if (targetPropertyPath.length > 1) {
-                var property = this._target;
+                var property = this._target[targetPropertyPath[0]];
 
                 for (var index = 1; index < targetPropertyPath.length - 1; index++) {
                     property = property[targetPropertyPath[index]];
