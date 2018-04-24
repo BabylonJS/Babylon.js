@@ -32,7 +32,22 @@ describe('Babylon Geometry', () => {
     });
 
     describe('#Geometry get vertices data', () => {
-        it('should be able to get vertices data for interleaved buffer with offset', () => {
+        it('vec3 float color tightly packed', () => {
+            const scene = new BABYLON.Scene(subject);
+            const data = new Float32Array([0.4, 0.4, 0.4, 0.6, 0.6, 0.6, 0.8, 0.8, 0.8, 1, 1, 1]);
+            const buffer = new BABYLON.Buffer(subject, data, false);
+            var vertexBuffer = new BABYLON.VertexBuffer(subject, buffer, BABYLON.VertexBuffer.ColorKind,
+                undefined, undefined, undefined, undefined, undefined, 3);
+
+            var geometry = new BABYLON.Geometry("geometry1", scene);
+            geometry.setVerticesBuffer(vertexBuffer);
+            geometry.setIndices([0, 1, 2, 3], 4);
+
+            var result = geometry.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            expect(result).to.equal(data);
+        });
+
+        it('vec3 unsigned byte normalized color with offset of 3 and byte stride of 4', () => {
             const scene = new BABYLON.Scene(subject);
             const data = new Uint8Array([0, 0, 0, 102, 102, 102, 0, 153, 153, 153, 0, 204, 204, 204, 0, 255, 255, 255, 0]);
             const buffer = new BABYLON.Buffer(subject, data, false, 4, undefined, undefined, true);
