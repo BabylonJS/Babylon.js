@@ -1,5 +1,19 @@
 import { ITemplateConfiguration } from './../templateManager';
-import { EngineOptions, IGlowLayerOptions } from 'babylonjs';
+import { EngineOptions, IGlowLayerOptions, DepthOfFieldEffectBlurLevel } from 'babylonjs';
+
+export function getConfigurationKey(key: string, configObject: any) {
+    let splits = key.split('.');
+
+    if (splits.length === 0 || !configObject) return false;
+    else if (splits.length === 1) {
+        if (configObject[key] !== undefined) {
+            return configObject[key];
+        }
+    } else {
+        let firstKey = splits.shift();
+        return getConfigurationKey(splits.join("."), configObject[firstKey!])
+    }
+}
 
 export interface ViewerConfiguration {
 
@@ -73,7 +87,7 @@ export interface ViewerConfiguration {
             specular?: { r: number, g: number, b: number };
         }
         hideLoadingDelay?: number;
-        environmentAssetsRootURL?: string;
+        assetsRootURL?: string;
         environmentMap?: {
             /**
              * Environment map texture path in relative to the asset folder.
@@ -90,24 +104,28 @@ export interface ViewerConfiguration {
              */
             tintLevel: number;
         }
-        renderingPipelines?: {
-            default?: boolean | {
-                [propName: string]: any;
-            };
-            standard?: boolean | {
-                [propName: string]: any;
-            };
-            /*lens?: boolean | {
-                [propName: string]: boolean | string | number | undefined;
-            };*/
-            ssao?: boolean | {
-                [propName: string]: any;
-            };
-            ssao2?: boolean | {
-                [propName: string]: any;
-            };
-        }
+        defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
     }
+}
+
+export interface IDefaultRenderingPipelineConfiguration {
+    sharpenEnabled?: boolean;
+    bloomEnabled?: boolean;
+    bloomThreshold?: number;
+    depthOfFieldEnabled?: boolean;
+    depthOfFieldBlurLevel?: DepthOfFieldEffectBlurLevel;
+    fxaaEnabled?: boolean;
+    imageProcessingEnabled?: boolean;
+    defaultPipelineTextureType?: number;
+    bloomScale?: number;
+    chromaticAberrationEnabled?: boolean;
+    grainEnabled?: boolean;
+    bloomKernel?: number;
+    hardwareScaleLevel?: number;
+    bloomWeight?: number;
+    bllomThreshold?: number;
+    hdr?: boolean;
+    samples?: number;
 }
 
 export interface IModelConfiguration {
@@ -210,6 +228,7 @@ export interface ISceneConfiguration {
     debug?: boolean;
     clearColor?: { r: number, g: number, b: number, a: number };
     mainColor?: { r: number, g: number, b: number };
+    environmentMainColor?: { r: number, g: number, b: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
     colorGrading?: IColorGradingConfiguration;
