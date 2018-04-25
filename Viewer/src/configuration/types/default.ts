@@ -25,10 +25,10 @@ export let defaultConfiguration: ViewerConfiguration = {
             html: require("../../../assets/templates/default/navbar.html"),
             params: {
                 buttons: {
-                    /*"help-button": {
+                    "help-button": {
                         altText: "Help",
                         image: require('../../../assets/img/help-circle.png')
-                    },*/
+                    },
                     "fullscreen-button": {
                         altText: "Fullscreen",
                         image: require('../../../assets/img/fullscreen.png')
@@ -62,13 +62,17 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     camera: {
         behaviors: {
-            autoRotate: 0,
+            autoRotate: {
+                type: 0
+            },
             framing: {
                 type: 2,
                 zoomOnBoundingInfo: true,
                 zoomStopsAnimation: false
             },
-            bouncing: 1
+            bouncing: {
+                type: 1
+            }
         },
         wheelPrecision: 200,
     },
@@ -77,9 +81,9 @@ export let defaultConfiguration: ViewerConfiguration = {
             url: 'https://playground.babylonjs.com/textures/environment.dds',
             gammaSpace: false
         },*/
-        pbr: true,
+        /*pbr: true,
         blur: 0.7,
-        infiniteDistance: false,
+        infiniteDistance: false,*/
         /*material: {
             imageProcessingConfiguration: {
                 colorCurves: {
@@ -105,10 +109,10 @@ export let defaultConfiguration: ViewerConfiguration = {
         antialiasing: true
     },
     scene: {
-        imageProcessingConfiguration: {
+        /*imageProcessingConfiguration: {
             exposure: 1.4,
             contrast: 1.66,
             toneMappingEnabled: true
-        }
+        }*/
     }
 }

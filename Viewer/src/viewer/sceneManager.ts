@@ -1,6 +1,6 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh } from 'babylonjs';
 import { AbstractViewer } from './viewer';
-import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from '../configuration/configuration';
+import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration } from '../configuration/configuration';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
@@ -88,6 +88,7 @@ export class SceneManager {
     private _hdrSupport: boolean;
 
     private _mainColor: Color3 = Color3.White();
+    private _reflectionColor = Color3.White();
     private readonly _white = Color3.White();
 
     /**
@@ -96,7 +97,11 @@ export class SceneManager {
      */
     public labs: ViewerLabs;
 
-    private _piplines: { [key: string]: PostProcessRenderPipeline } = {};
+    private _defaultRenderingPipeline: Nullable<DefaultRenderingPipeline>;
+
+    public get defaultRenderingPipeline() {
+        return this._defaultRenderingPipeline;
+    }
 
     constructor(private _viewer: AbstractViewer) {
         this.models = [];
@@ -128,6 +133,10 @@ export class SceneManager {
      */
     public get mainColor(): Color3 {
         return this._mainColor;
+    }
+
+    public get reflectionColor(): Color3 {
+        return this._reflectionColor;
     }
 
     private _processShadows: boolean = true;
@@ -205,8 +214,24 @@ export class SceneManager {
         }
     }
 
-    public getActiveRenderingPiplineByName(name: string) {
-        return this._piplines[name];
+    private _defaultRenderingPipelineEnabled: boolean = false;
+
+    public get defaultRenderingPipelineEnabled() {
+        return this._defaultRenderingPipelineEnabled;
+    }
+
+    public set defaultRenderingPipelineEnabled(value: boolean) {
+        if (value === this._defaultRenderingPipelineEnabled) {
+            return;
+        }
+
+        this._defaultRenderingPipelineEnabled = value;
+        this._rebuildPostprocesses();
+        if (this._defaultRenderingPipeline) {
+            this._defaultRenderingPipelineShouldBuild = false;
+            this._defaultRenderingPipeline.prepare();
+            this.scene.imageProcessingConfiguration.applyByPostProcess = true;
+        }
     }
 
     /**
@@ -304,6 +329,13 @@ export class SceneManager {
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration, model?: ViewerModel) {
 
+
+        if (newConfiguration.lab) {
+            if (newConfiguration.lab.assetsRootURL) {
+                this.labs.assetsRootURL = newConfiguration.lab.assetsRootURL;
+            }
+        }
+
         // update scene configuration
         if (newConfiguration.scene) {
             this._configureScene(newConfiguration.scene);
@@ -331,10 +363,6 @@ export class SceneManager {
         this._configureCamera(newConfiguration.camera, model);
 
         if (newConfiguration.lab) {
-            if (newConfiguration.lab.environmentAssetsRootURL) {
-                this.labs.environmentAssetsRootURL = newConfiguration.lab.environmentAssetsRootURL;
-            }
-
             if (newConfiguration.lab.environmentMap) {
                 let rot = newConfiguration.lab.environmentMap.rotationY;
                 this.labs.loadEnvironment(newConfiguration.lab.environmentMap.texture, () => {
@@ -347,44 +375,120 @@ export class SceneManager {
             }
 
             // rendering piplines
-            if (newConfiguration.lab.renderingPipelines) {
-                Object.keys(newConfiguration.lab.renderingPipelines).forEach((name => {
-                    // disabled
-                    if (!newConfiguration.lab!.renderingPipelines![name]) {
-                        if (this._piplines[name]) {
-                            this._piplines[name].dispose();
-                            delete this._piplines[name];
-                        }
-                    } else {
-                        if (!this._piplines[name]) {
-                            const cameras = [this.camera];
-                            const ratio = newConfiguration.lab!.renderingPipelines![name].ratio || 0.5;
-                            switch (name) {
-                                case 'default':
-                                    this._piplines[name] = new DefaultRenderingPipeline('defaultPipeline', this._hdrSupport, this.scene, cameras);
-                                    break;
-                                case 'standard':
-                                    this._piplines[name] = new StandardRenderingPipeline('standardPipline', this.scene, ratio, undefined, cameras);
-                                    break;
-                                case 'ssao':
-                                    this._piplines[name] = new SSAORenderingPipeline('ssao', this.scene, ratio, cameras);
-                                    break;
-                                case 'ssao2':
-                                    this._piplines[name] = new SSAO2RenderingPipeline('ssao', this.scene, ratio, cameras);
-                                    break;
-                            }
-                        }
-                        // make sure it was generated
-                        if (this._piplines[name] && typeof newConfiguration.lab!.renderingPipelines![name] !== 'boolean') {
-                            extendClassWithConfig(this._piplines[name], newConfiguration.lab!.renderingPipelines![name]);
-                        }
-                    }
-                }));
+            if (newConfiguration.lab.defaultRenderingPipelines) {
+                let pipelineConfig = newConfiguration.lab.defaultRenderingPipelines;
+                if (typeof pipelineConfig === 'boolean') {
+                    this.defaultRenderingPipelineEnabled = pipelineConfig;
+                } else {
+                    this.defaultRenderingPipelineEnabled = true;
+                }
             }
+        }
+
+        if (this._defaultRenderingPipeline && this._defaultRenderingPipeline.imageProcessing) {
+            this._defaultRenderingPipeline.imageProcessing.fromLinearSpace = true;
+        }
+
+        if (this._defaultRenderingPipelineShouldBuild && this._defaultRenderingPipeline) {
+            this._defaultRenderingPipelineShouldBuild = false;
+            this._defaultRenderingPipeline.prepare();
+        }
+
+        // reflection color
+        this._reflectionColor.copyFrom(this.mainColor);
+        this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
+        if (globalConfiguration.camera && globalConfiguration.camera.exposure) {
+            this._reflectionColor.scaleToRef(1 / globalConfiguration.camera.exposure, this._reflectionColor);
+        }
+        let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", globalConfiguration) || 0;
+        let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
+        this._reflectionColor.copyFrom(tmpColor3);
+    }
+
+    private _defaultRenderingPipelineShouldBuild: boolean = true;
+
+    private _rebuildPostprocesses(configuration?: IDefaultRenderingPipelineConfiguration): void {
+        if (!this.defaultRenderingPipelineEnabled || !getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", this._viewer.configuration)) {
+            if (this._defaultRenderingPipeline) {
+                this._defaultRenderingPipeline.dispose();
+                this._defaultRenderingPipeline = null;
+                this.scene.autoClearDepthAndStencil = true;
+                this.scene.autoClear = true;
+                this.scene.imageProcessingConfiguration.applyByPostProcess = false;
+            }
+
+            return;
+        }
+
+        let pipelineConfig = configuration || (this._viewer.configuration.lab && this._viewer.configuration.lab.defaultRenderingPipelines);
+        if (pipelineConfig) {
+
+            if (!this._defaultRenderingPipeline) {
+                // Create pipeline in manual mode to avoid triggering multiple shader compilations
+                this._defaultRenderingPipeline = new DefaultRenderingPipeline("default rendering pipeline", this._hdrSupport, this.scene, [this.camera], false);
+            }
+            this.scene.autoClear = false;
+            this.scene.autoClearDepthAndStencil = false;
+            this._defaultRenderingPipelineShouldBuild = true;
+
+            let bloomEnabled = this._bloomEnabled;
+
+            if (typeof pipelineConfig !== 'boolean') {
+                extendClassWithConfig(this._defaultRenderingPipeline, pipelineConfig);
+                this._bloomEnabled = !!pipelineConfig.bloomEnabled;
+                this._fxaaEnabled = !!pipelineConfig.fxaaEnabled;
+                bloomEnabled = this._bloomEnabled && pipelineConfig.bloomWeight !== undefined && pipelineConfig.bloomWeight > 0;
+
+                this._defaultRenderingPipeline.bloomWeight = (pipelineConfig.bloomWeight !== undefined && pipelineConfig.bloomWeight) || (this._defaultRenderingPipeline.bloomWeight);
+            }
+
+            this._defaultRenderingPipeline.bloomEnabled = bloomEnabled;
+            this._defaultRenderingPipeline.fxaaEnabled = this.fxaaEnabled;
+        }
+
+    }
+
+    // default from rendering pipeline
+    private _bloomEnabled: boolean = false;
+
+    public get bloomEnabled() {
+        return this._bloomEnabled;
+    }
+
+    public set bloomEnabled(value: boolean) {
+        if (this._bloomEnabled === value) {
+            return;
+        }
+
+        this._bloomEnabled = value;
+        this._rebuildPostprocesses();
+        if (this._defaultRenderingPipeline) {
+            this._defaultRenderingPipelineShouldBuild = false;
+            this._defaultRenderingPipeline.prepare();
+            this.scene.imageProcessingConfiguration.applyByPostProcess = true;
         }
     }
 
+    // default from rendering pipeline
+    private _fxaaEnabled: boolean = false;
 
+    public get fxaaEnabled() {
+        return this._fxaaEnabled;
+    }
+
+    public set fxaaEnabled(value: boolean) {
+        if (this._fxaaEnabled === value) {
+            return;
+        }
+
+        this._fxaaEnabled = value;
+        this._rebuildPostprocesses();
+        if (this._defaultRenderingPipeline) {
+            this._defaultRenderingPipelineShouldBuild = false;
+            this._defaultRenderingPipeline.prepare();
+            this.scene.imageProcessingConfiguration.applyByPostProcess = true;
+        }
+    }
 
     /**
      * internally configure the scene using the provided configuration.
@@ -598,17 +702,16 @@ export class SceneManager {
             let newTarget = this.camera.target.clone();
             extendClassWithConfig(newTarget, cameraConfig.target);
             this.camera.setTarget(newTarget);
-        } else if (model && !cameraConfig.disableAutoFocus) {
-            const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
-            const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
-            const halfSizeVec = sizeVec.scale(0.5);
-            const center = boundingInfo.min.add(halfSizeVec);
-            this.camera.setTarget(center);
+        } else if (this.models.length && !cameraConfig.disableAutoFocus) {
+            this._focusOnModel(this.models[0]);
         }
 
-        if (cameraConfig.rotation) {
-            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
-        }
+        this._viewer.onModelLoadedObservable.add(this._focusOnModel);
+        if (model)
+
+            if (cameraConfig.rotation) {
+                this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
+            }
 
         if (cameraConfig.behaviors) {
             for (let name in cameraConfig.behaviors) {
@@ -624,6 +727,17 @@ export class SceneManager {
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
 
+        // sanity check!
+        if (this.scene.imageProcessingConfiguration) {
+            this.scene.imageProcessingConfiguration.colorCurvesEnabled = true;
+            this.scene.imageProcessingConfiguration.vignetteEnabled = true;
+            if (cameraConfig.contrast !== undefined)
+                this.scene.imageProcessingConfiguration.contrast = cameraConfig.contrast;
+            if (cameraConfig.exposure !== undefined)
+                this.scene.imageProcessingConfiguration.exposure = cameraConfig.exposure;
+            this.scene.imageProcessingConfiguration.toneMappingEnabled = !!cameraConfig.toneMappingEnabled;
+        }
+
         extendClassWithConfig(this.camera, cameraConfig);
 
         this.onCameraConfiguredObservable.notifyObservers({
@@ -632,6 +746,14 @@ export class SceneManager {
             newConfiguration: cameraConfig,
             model
         });
+    }
+
+    private _focusOnModel = (model: ViewerModel) => {
+        const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
+        const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+        const halfSizeVec = sizeVec.scale(0.5);
+        const center = boundingInfo.min.add(halfSizeVec);
+        this.camera.setTarget(center);
     }
 
     protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean, model?: ViewerModel) {
@@ -673,7 +795,7 @@ export class SceneManager {
             }
             options.enableGroundMirror = !!groundConfig.mirror && this.groundMirrorEnabled;
             if (groundConfig.texture) {
-                options.groundTexture = groundConfig.texture;
+                options.groundTexture = this.labs.getAssetUrl(groundConfig.texture);
             }
             if (groundConfig.color) {
                 options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
@@ -719,14 +841,14 @@ export class SceneManager {
             }
             if (conf.cubeTexture && conf.cubeTexture.url) {
                 if (typeof conf.cubeTexture.url === "string") {
-                    options.skyboxTexture = conf.cubeTexture.url;
+                    options.skyboxTexture = this.labs.getAssetUrl(conf.cubeTexture.url);
                 } else {
                     // init later!
                     postInitSkyboxMaterial = true;
                 }
             }
 
-            if (conf.material && conf.material.imageProcessingConfiguration) {
+            if (conf.material) {
                 postInitSkyboxMaterial = true;
             }
         }
@@ -749,11 +871,15 @@ export class SceneManager {
             }
         }
 
-        this.environmentHelper.setMainColor(this._mainColor || Color3.White());
-
         if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
             this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
         }
+
+        if (this._viewer.configuration.scene && this._viewer.configuration.scene.environmentMainColor) {
+            let mainColor = new Color3().copyFrom(this._viewer.configuration.scene.environmentMainColor as Color3);
+            this.environmentHelper.setMainColor(mainColor);
+        }
+
 
         let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
         if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
@@ -794,6 +920,10 @@ export class SceneManager {
             let skyboxMaterial = this.environmentHelper.skyboxMaterial;
             if (skyboxMaterial) {
                 if (typeof skyboxConifguration === 'object' && skyboxConifguration.material) {
+                    if (!skyboxMaterial._perceptualColor) {
+                        skyboxMaterial._perceptualColor = Color3.Black();
+                    }
+                    skyboxMaterial._perceptualColor.copyFrom(this.mainColor);
                     extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
                 }
             }
@@ -884,8 +1014,8 @@ export class SceneManager {
             //position. Some lights don't support shadows
             if (light instanceof ShadowLight) {
                 // set default values
-                light.shadowMinZ = light.shadowMinZ || 0.1;
-                light.shadowMaxZ = Math.min(20, light.shadowMaxZ || 20); //large far clips reduce shadow depth precision
+                light.shadowMinZ = light.shadowMinZ || 0.2;
+                light.shadowMaxZ = Math.min(10, light.shadowMaxZ || 10); //large far clips reduce shadow depth precision
 
                 if (lightConfig.target) {
                     if (light.setDirectionToTarget) {
@@ -928,6 +1058,12 @@ export class SceneManager {
                         // TODO blur kernel definition ?
                     }
 
+                    var blurKernel = this.getBlurKernel(light, bufferSize);
+                    shadowGenerator.bias = this._shadowGeneratorBias;
+                    shadowGenerator.blurKernel = blurKernel;
+                    //override defaults
+                    extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
+
                     // add the focues meshes to the shadow list
                     this._viewer.onModelLoadedObservable.add((model) => {
                         this._updateShadowRenderList(shadowGenerator, model);
@@ -936,17 +1072,6 @@ export class SceneManager {
                     //if (model) {
                     this._updateShadowRenderList(shadowGenerator, model);
                     //}
-
-                    var blurKernel = this.getBlurKernel(light, bufferSize);
-
-                    //shadowGenerator.useBlurCloseExponentialShadowMap = true;
-                    //shadowGenerator.useKernelBlur = true;
-                    //shadowGenerator.blurScale = 1.0;
-                    shadowGenerator.bias = this._shadowGeneratorBias;
-                    shadowGenerator.blurKernel = blurKernel;
-                    //shadowGenerator.depthScale = 50 * (light.shadowMaxZ - light.shadowMinZ);
-                    //override defaults
-                    extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                 } else if (shadowGenerator) {
                     shadowGenerator.dispose();
                 }
@@ -971,6 +1096,8 @@ export class SceneManager {
         });
     }
 
+    private _shadowGroundPlane: Nullable<AbstractMesh>;
+
     private _updateShadowRenderList(shadowGenerator: ShadowGenerator, model?: ViewerModel, resetList?: boolean) {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
         // add the focues meshes to the shadow list
@@ -979,13 +1106,36 @@ export class SceneManager {
         if (resetList && shadownMap.renderList) {
             shadownMap.renderList.length = 0;
         } else {
-            shadownMap.renderList = []
+            shadownMap.renderList = shadownMap.renderList || []
         }
         for (var index = 0; index < focusMeshes.length; index++) {
             let mesh = focusMeshes[index];
             if (Tags.MatchesQuery(mesh, 'castShadow') && shadownMap.renderList.indexOf(mesh) === -1) {
                 shadownMap.renderList.push(mesh);
             }
+        }
+
+        if (!this._shadowGroundPlane) {
+            if (shadowGenerator.useBlurCloseExponentialShadowMap) {
+                let shadowGroundPlane = Mesh.CreatePlane("shadowGroundPlane", 100, this.scene, false);
+                shadowGroundPlane.useVertexColors = false;
+                //material isn't ever used in rendering, just used to set back face culling
+                shadowGroundPlane.material = new StandardMaterial('shadowGroundPlaneMaterial', this.scene);
+                shadowGroundPlane.material.backFaceCulling = false;
+                shadowGroundPlane.rotation.x = Math.PI * 0.5;
+                shadowGroundPlane.freezeWorldMatrix();
+                this._shadowGroundPlane = shadowGroundPlane;
+                this.scene.removeMesh(shadowGroundPlane);
+            }
+        } else {
+            if (!shadowGenerator.useBlurCloseExponentialShadowMap) {
+                this._shadowGroundPlane.dispose();
+                this._shadowGroundPlane = null;
+            }
+        }
+
+        if (this._shadowGroundPlane && shadownMap.renderList.indexOf(this._shadowGroundPlane) === -1) {
+            shadownMap.renderList.push(this._shadowGroundPlane);
         }
     }
 
@@ -1092,7 +1242,9 @@ export class SceneManager {
             model.dispose();
         });
 
-        Object.keys(this._piplines).forEach(name => this._piplines[name].dispose());
+        if (this._defaultRenderingPipeline) {
+            this._defaultRenderingPipeline.dispose();
+        }
 
         this.models.length = 0;
 

@@ -37,6 +37,8 @@ export class ViewerModel implements IDisposable {
      * This mesh does not(!) exist in the meshes array.
      */
     public rootMesh: AbstractMesh;
+
+    private _pivotMesh: AbstractMesh;
     /**
      * ParticleSystems connected to this model
      */
@@ -92,6 +94,10 @@ export class ViewerModel implements IDisposable {
         this.state = ModelState.INIT;
 
         this.rootMesh = new AbstractMesh("modelRootMesh", this._viewer.sceneManager.scene);
+        this._pivotMesh = new AbstractMesh("pivotMesh", this._viewer.sceneManager.scene);
+        this._pivotMesh.parent = this.rootMesh;
+        // rotate 180, gltf fun
+        this._pivotMesh.rotation.y += Math.PI;
 
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
@@ -135,7 +141,7 @@ export class ViewerModel implements IDisposable {
      */
     public addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
         if (!mesh.parent) {
-            mesh.parent = this.rootMesh;
+            mesh.parent = this._pivotMesh;
         }
         mesh.receiveShadows = !!this.configuration.receiveShadows;
         this._meshes.push(mesh);
@@ -311,7 +317,7 @@ export class ViewerModel implements IDisposable {
             if (parentIndex !== undefined) {
                 meshesToNormalize.push(this._meshes[parentIndex]);
             } else {
-                meshesToNormalize = meshesWithNoParent;
+                meshesToNormalize = [this._pivotMesh];
             }
 
             if (unitSize) {
@@ -328,22 +334,24 @@ export class ViewerModel implements IDisposable {
                     const center = boundingInfo.min.add(halfSizeVec);
                     mesh.position = center.scale(-1);
 
+                    mesh.position.y += halfSizeVec.y;
+
                     // Recompute Info.
                     mesh.computeWorldMatrix(true);
                 });
             }
         } else {
             //center automatically
-            meshesWithNoParent.forEach(mesh => {
-                const boundingInfo = mesh.getHierarchyBoundingVectors(true);
-                const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
-                const halfSizeVec = sizeVec.scale(0.5);
-                const center = boundingInfo.min.add(halfSizeVec);
-                mesh.position = center.scale(-1);
+            //meshesWithNoParent.forEach(mesh => {
+            const boundingInfo = this._pivotMesh.getHierarchyBoundingVectors(true);
+            const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+            const halfSizeVec = sizeVec.scale(0.5);
+            const center = boundingInfo.min.add(halfSizeVec);
+            this._pivotMesh.position = center.scale(-1);
 
-                // Recompute Info.
-                mesh.computeWorldMatrix(true);
-            });
+            // Recompute Info.
+            this._pivotMesh.computeWorldMatrix(true);
+            //});
         }
 
         // position?
@@ -371,7 +379,7 @@ export class ViewerModel implements IDisposable {
                 if (this._modelConfiguration.rotationOffsetAngle) {
                     m.rotate(rotationAxis, this._modelConfiguration.rotationOffsetAngle);
                 }
-            })
+            });
 
         }
 
@@ -385,7 +393,7 @@ export class ViewerModel implements IDisposable {
             });
         }
 
-        let meshes = this.rootMesh.getChildMeshes(false);
+        let meshes = this._pivotMesh.getChildMeshes(false);
         meshes.filter(m => m.material).forEach((mesh) => {
             this._applyModelMaterialConfiguration(mesh.material!);
         });
@@ -418,8 +426,8 @@ export class ViewerModel implements IDisposable {
             if (this._modelConfiguration.material.directEnabled !== undefined) {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
-            if (this._viewer.sceneManager.mainColor) {
-                material.reflectionColor = this._viewer.sceneManager.mainColor;
+            if (this._viewer.sceneManager.reflectionColor) {
+                material.reflectionColor = this._viewer.sceneManager.reflectionColor;
             }
         }
         else if (material instanceof BABYLON.MultiMaterial) {

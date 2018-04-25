@@ -2,7 +2,7 @@ import { AbstractViewer } from '../../viewer/viewer';
 import { Scalar, DefaultRenderingPipeline } from 'babylonjs';
 
 export function extendedUpgrade(viewer: AbstractViewer): boolean {
-    let pipelineConifg = <DefaultRenderingPipeline>viewer.sceneManager.getActiveRenderingPiplineByName("default");
+    let defaultPipeline = <DefaultRenderingPipeline>viewer.sceneManager.defaultRenderingPipeline;
     // if (!this.Scene.BackgroundHelper) {
     // 	this.Scene.EngineScene.autoClear = false;
     // this.Scene.BackgroundHelper = true;
@@ -22,8 +22,8 @@ export function extendedUpgrade(viewer: AbstractViewer): boolean {
         viewer.sceneManager.groundEnabled = true;
         return false;
     }
-    if (pipelineConifg && !pipelineConifg.fxaaEnabled) {
-        pipelineConifg.fxaaEnabled = true
+    if (defaultPipeline && !viewer.sceneManager.fxaaEnabled) {
+        viewer.sceneManager.fxaaEnabled = true
         return false;
     }
     var hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
@@ -36,8 +36,8 @@ export function extendedUpgrade(viewer: AbstractViewer): boolean {
         viewer.sceneManager.processShadows = true;
         return false;
     }
-    if (pipelineConifg && !pipelineConifg.bloomEnabled) {
-        pipelineConifg.bloomEnabled = true
+    if (defaultPipeline && !viewer.sceneManager.bloomEnabled) {
+        viewer.sceneManager.bloomEnabled = true
         return false;
     }
     if (!viewer.sceneManager.groundMirrorEnabled) {
@@ -48,14 +48,14 @@ export function extendedUpgrade(viewer: AbstractViewer): boolean {
 }
 
 export function extendedDegrade(viewer: AbstractViewer): boolean {
-    let pipelineConifg = <DefaultRenderingPipeline>viewer.sceneManager.getActiveRenderingPiplineByName("default");
+    let defaultPipeline = <DefaultRenderingPipeline>viewer.sceneManager.defaultRenderingPipeline;
 
     if (viewer.sceneManager.groundMirrorEnabled) {
         viewer.sceneManager.groundMirrorEnabled = false;
         return false;
     }
-    if (pipelineConifg && pipelineConifg.bloomEnabled) {
-        pipelineConifg.bloomEnabled = false;
+    if (defaultPipeline && viewer.sceneManager.bloomEnabled) {
+        viewer.sceneManager.bloomEnabled = false;
         return false;
     }
     if (viewer.sceneManager.processShadows) {
@@ -67,8 +67,8 @@ export function extendedDegrade(viewer: AbstractViewer): boolean {
         viewer.engine.setHardwareScalingLevel(scaling);
         return false;
     }
-    if (pipelineConifg && pipelineConifg.fxaaEnabled) {
-        pipelineConifg.fxaaEnabled = false;
+    if (defaultPipeline && viewer.sceneManager.fxaaEnabled) {
+        viewer.sceneManager.fxaaEnabled = false;
         return false;
     }
     if (viewer.sceneManager.groundEnabled) {
