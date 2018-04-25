@@ -1059,6 +1059,9 @@
          * @returns the new bounding vectors
          */
         public getHierarchyBoundingVectors(includeDescendants = true): { min: Vector3, max: Vector3 } {
+            // Ensures that all world matrix will be recomputed.
+            this.getScene().incrementRenderId();
+
             this.computeWorldMatrix(true);
 
             let min: Vector3;

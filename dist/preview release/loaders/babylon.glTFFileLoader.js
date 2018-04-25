@@ -3456,7 +3456,7 @@ var BABYLON;
                 });
                 loadAttribute("TANGENT", BABYLON.VertexBuffer.TangentKind, function (babylonVertexBuffer, data) {
                     var dataIndex = 0;
-                    babylonVertexBuffer.forEach(data.length, function (value, index) {
+                    babylonVertexBuffer.forEach(data.length / 3 * 4, function (value, index) {
                         // Tangent data for morph targets is stored as xyz delta.
                         // The vertexData.tangent is stored as xyzw.
                         // So we need to skip every fourth vertexData.tangent.
@@ -4945,7 +4945,7 @@ var BABYLON;
         (function (Extensions) {
             var NAME = "KHR_materials_unlit";
             /**
-             * [Specification](https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit) (Experimental)
+             * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
              */
             var KHR_materials_unlit = /** @class */ (function (_super) {
                 __extends(KHR_materials_unlit, _super);
