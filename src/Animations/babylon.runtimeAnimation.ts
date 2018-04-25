@@ -246,7 +246,7 @@
             this._activeTarget = destination;
             this._weight = weight;
 
-            if (!this._originalValue) {
+            if (!this._originalValue ) {
                 let originalValue: any;
 
                 if (destination.getRestPose && path === "_matrix") { // For bones
@@ -255,7 +255,7 @@
                     originalValue = destination[path];
                 }
 
-                if (originalValue.clone) {
+                if (originalValue && originalValue.clone) {
                     this._originalValue = originalValue.clone();
                 } else {
                     this._originalValue = originalValue;

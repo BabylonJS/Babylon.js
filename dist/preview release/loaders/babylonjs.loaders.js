@@ -4731,13 +4731,12 @@ var BABYLON;
                                 value: key.value[targetIndex],
                                 outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                             }); }));
-                            var morphTargets = new Array();
                             _this._forEachPrimitive(targetNode, function (babylonMesh) {
                                 var morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
-                                morphTarget.animations.push(babylonAnimation);
-                                morphTargets.push(morphTarget);
+                                var babylonAnimationClone = babylonAnimation.clone();
+                                morphTarget.animations.push(babylonAnimationClone);
+                                babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
                             });
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                         };
                         for (var targetIndex = 0; targetIndex < targetNode._numMorphTargets; targetIndex++) {
                             _loop_1(targetIndex);
@@ -4750,9 +4749,10 @@ var BABYLON;
                         if (targetNode._babylonAnimationTargets) {
                             for (var _i = 0, _a = targetNode._babylonAnimationTargets; _i < _a.length; _i++) {
                                 var babylonAnimationTarget = _a[_i];
-                                babylonAnimationTarget.animations.push(babylonAnimation);
+                                var babylonAnimationClone = babylonAnimation.clone();
+                                babylonAnimationTarget.animations.push(babylonAnimationClone);
+                                babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, babylonAnimationTarget);
                             }
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                         }
                     }
                 });
