@@ -433,7 +433,7 @@
                 }
 
                 // Merge meshes
-                Mesh.MergeMeshes(currentPool);
+                Mesh.MergeMeshes(currentPool, undefined, true);
             }
 
             if (updateSelectionTree != undefined) {

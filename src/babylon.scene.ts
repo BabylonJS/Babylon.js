@@ -2116,25 +2116,28 @@
                     this._processPointerUp(pickResult, evt, clickInfo);
 
                     // Sprites
-                    if (this.spriteManagers.length > 0) {
-                        let spritePickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
-                        if (spritePickResult) {
-                            if (spritePickResult.hit && spritePickResult.pickedSprite) {
-                                if (spritePickResult.pickedSprite.actionManager) {
-                                    spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                    if(!clickInfo.ignore){
+                        if (this.spriteManagers.length > 0) {
+                            let spritePickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
+    
+                            if (spritePickResult) {
+                                if (spritePickResult.hit && spritePickResult.pickedSprite) {
                                     if (spritePickResult.pickedSprite.actionManager) {
-                                        if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
-                                            spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                                        spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                                        if (spritePickResult.pickedSprite.actionManager) {
+                                            if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
+                                                spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== spritePickResult.pickedSprite) {
-                                this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                                if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== spritePickResult.pickedSprite) {
+                                    this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                                }
                             }
                         }
                     }
+                    
                     this._previousPickResult = this._currentPickResult;
                 });
             };
@@ -2941,12 +2944,13 @@
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
 
-        /**
+      /**
          * Remove a mesh for the list of scene's meshes
          * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
          * @returns the index where the mesh was in the mesh list
          */
-        public removeMesh(toRemove: AbstractMesh): number {
+        public removeMesh(toRemove: AbstractMesh, recursive = false): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
                 // Remove from the scene if mesh found
@@ -2954,7 +2958,11 @@
             }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
-
+            if(recursive){
+                toRemove.getChildMeshes().forEach((m)=>{
+                    this.removeMesh(m);
+                })
+            }
             return index;
         }
 

@@ -1565,20 +1565,7 @@
          * @returns a new Quaternion object, computed from the Vector3 coordinates
          */
         public toQuaternion(): Quaternion {
-            var result = new Quaternion(0.0, 0.0, 0.0, 1.0);
-
-            var cosxPlusz = Math.cos((this.x + this.z) * 0.5);
-            var sinxPlusz = Math.sin((this.x + this.z) * 0.5);
-            var coszMinusx = Math.cos((this.z - this.x) * 0.5);
-            var sinzMinusx = Math.sin((this.z - this.x) * 0.5);
-            var cosy = Math.cos(this.y * 0.5);
-            var siny = Math.sin(this.y * 0.5);
-
-            result.x = coszMinusx * siny;
-            result.y = -sinzMinusx * siny;
-            result.z = sinxPlusz * cosy;
-            result.w = cosxPlusz * cosy;
-            return result;
+            return BABYLON.Quaternion.RotationYawPitchRoll(this.x, this.y, this.z);
         }
 
         /**
