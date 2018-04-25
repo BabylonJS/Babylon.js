@@ -387,11 +387,10 @@
                  return null;
             }
 
-            const defaultStride = VertexBuffer.DeduceStride(vertexBuffer.getKind());
-            const defaultByteStride = defaultStride * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-            const count = this._totalVertices * defaultStride;
+            const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+            const count = this._totalVertices * vertexBuffer.getSize();
 
-            if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== defaultByteStride) {
+            if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
                 const copy = new Array<number>(count);
                 vertexBuffer.forEach(count, (value, index) => {
                     copy[index] = value;
@@ -399,7 +398,7 @@
                 return copy;
             }
 
-            if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
+            if (!((data instanceof Array) || (data instanceof Float32Array)) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
                 if (data instanceof Array) {
                     const offset = vertexBuffer.byteOffset / 4;
                     return Tools.Slice(data, offset, offset + count);
