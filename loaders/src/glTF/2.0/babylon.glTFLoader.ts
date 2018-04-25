@@ -1062,14 +1062,12 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        const morphTargets = new Array<any>();
                         this._forEachPrimitive(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                            morphTarget.animations.push(babylonAnimation);
-                            morphTargets.push(morphTarget);
+                            const babylonAnimationClone = babylonAnimation.clone();
+                            morphTarget.animations.push(babylonAnimationClone);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
                         });
-
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                     }
                 }
                 else {
@@ -1079,10 +1077,10 @@ module BABYLON.GLTF2 {
 
                     if (targetNode._babylonAnimationTargets) {
                         for (const babylonAnimationTarget of targetNode._babylonAnimationTargets) {
-                            babylonAnimationTarget.animations.push(babylonAnimation);
+                            const babylonAnimationClone = babylonAnimation.clone();
+                            babylonAnimationTarget.animations.push(babylonAnimationClone);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, babylonAnimationTarget);
                         }
-
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                     }
                 }
             });
