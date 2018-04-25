@@ -1469,7 +1469,7 @@ declare module BABYLON.GLTF2.Extensions {
 
 declare module BABYLON.GLTF2.Extensions {
     /**
-     * [Specification](https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
      */
     class KHR_materials_unlit extends GLTFLoaderExtension {
         readonly name: string;

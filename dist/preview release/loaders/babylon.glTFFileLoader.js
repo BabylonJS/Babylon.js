@@ -4945,7 +4945,7 @@ var BABYLON;
         (function (Extensions) {
             var NAME = "KHR_materials_unlit";
             /**
-             * [Specification](https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit) (Experimental)
+             * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
              */
             var KHR_materials_unlit = /** @class */ (function (_super) {
                 __extends(KHR_materials_unlit, _super);
