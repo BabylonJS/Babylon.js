@@ -95,7 +95,7 @@ module BABYLON {
             this._activePointer = false;
         }
 
-        public _updatePointerDistance(distance:number) {
+        public _updatePointerDistance(distance:number = 100) {
         }
 
         public dispose(){
@@ -177,7 +177,7 @@ module BABYLON {
             this._laserPointer.parent = mesh;
         }
 
-        public _updatePointerDistance(distance:number) {
+        public _updatePointerDistance(distance:number = 100) {
             this._laserPointer.scaling.y = distance;
             this._laserPointer.position.z = -distance / 2;  
         }
@@ -1614,6 +1614,7 @@ module BABYLON {
                 gazer._updatePointerDistance(hit.distance);        
             }
             else {
+                gazer._updatePointerDistance();   
                 gazer._gazeTracker.isVisible = false;
             }
 
