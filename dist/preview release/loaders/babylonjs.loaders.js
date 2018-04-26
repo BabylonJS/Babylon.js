@@ -4252,8 +4252,6 @@ var BABYLON;
                 var promises = new Array();
                 var babylonMesh = new BABYLON.Mesh(node.name || "node" + node._index, this._babylonScene, node._parent._babylonMesh);
                 node._babylonMesh = babylonMesh;
-                node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-                node._babylonAnimationTargets.push(babylonMesh);
                 GLTFLoader._LoadTransform(node, babylonMesh);
                 if (node.mesh != undefined) {
                     var mesh = GLTFLoader._GetProperty(context + "/mesh", this._gltf.meshes, node.mesh);
@@ -4517,8 +4515,8 @@ var BABYLON;
                 var boneIndex = skin.joints.indexOf(node._index);
                 babylonBone = new BABYLON.Bone(node.name || "joint" + node._index, skin._babylonSkeleton, babylonParentBone, this._getNodeMatrix(node), null, null, boneIndex);
                 babylonBones[node._index] = babylonBone;
-                node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-                node._babylonAnimationTargets.push(babylonBone);
+                node._babylonBones = node._babylonBones || [];
+                node._babylonBones.push(babylonBone);
                 return babylonBone;
             };
             GLTFLoader.prototype._loadSkinInverseBindMatricesDataAsync = function (context, skin) {
@@ -4615,7 +4613,7 @@ var BABYLON;
                 var targetNode = GLTFLoader._GetProperty(context + "/target/node", this._gltf.nodes, channel.target.node);
                 // Ignore animations that have no animation targets.
                 if ((channel.target.path === "weights" /* WEIGHTS */ && !targetNode._numMorphTargets) ||
-                    (channel.target.path !== "weights" /* WEIGHTS */ && !targetNode._babylonAnimationTargets)) {
+                    (channel.target.path !== "weights" /* WEIGHTS */ && !targetNode._babylonMesh)) {
                     return Promise.resolve();
                 }
                 // Ignore animations targeting TRS of skinned nodes.
@@ -4746,13 +4744,17 @@ var BABYLON;
                         var animationName = babylonAnimationGroup.name + "_channel" + babylonAnimationGroup.targetedAnimations.length;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
-                        if (targetNode._babylonAnimationTargets) {
-                            for (var _i = 0, _a = targetNode._babylonAnimationTargets; _i < _a.length; _i++) {
-                                var babylonAnimationTarget = _a[_i];
-                                var babylonAnimationClone = babylonAnimation.clone();
-                                babylonAnimationTarget.animations.push(babylonAnimationClone);
-                                babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, babylonAnimationTarget);
+                        if (targetNode._babylonBones) {
+                            var babylonAnimationTargets = [targetNode._babylonMesh].concat(targetNode._babylonBones);
+                            for (var _i = 0, babylonAnimationTargets_1 = babylonAnimationTargets; _i < babylonAnimationTargets_1.length; _i++) {
+                                var babylonAnimationTarget = babylonAnimationTargets_1[_i];
+                                babylonAnimationTarget.animations.push(babylonAnimation);
                             }
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
+                        }
+                        else {
+                            targetNode._babylonMesh.animations.push(babylonAnimation);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonMesh);
                         }
                     }
                 });
