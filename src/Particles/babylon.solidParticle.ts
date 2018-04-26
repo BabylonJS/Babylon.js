@@ -206,7 +206,7 @@ module BABYLON {
         /**
          * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
          * SPS internal tool, don't use it manually.
-         * @ignore
+         * @hidden
          */
         constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], 
                         posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>) {

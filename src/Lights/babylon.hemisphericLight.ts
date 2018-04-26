@@ -89,7 +89,7 @@
         }
 
         /**
-         * @ignore internal use only.
+         * @hidden internal use only.
          */
         public _getWorldMatrix(): Matrix {
             if (!this._worldMatrix) {

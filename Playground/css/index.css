@@ -433,29 +433,6 @@ body {
 }
 
 /* Save form & co */
-
-.save-message {
-    display: none;
-    position:absolute;
-    top:40px; /* navbar top */
-    width: 100%;
-    z-index:5;
-    text-align: center;
-    font-size: 0.8em;
-    line-height: 2em;
-    cursor:pointer;
-}
-
-.save-message.light {
-    background-color: rgba(239, 239, 239, 0.9);
-    color: #7283a0;
-}
-
-.save-message.dark {
-    background-color: rgba(51, 51, 51, 0.9);
-    color: #eee;
-}
-
 .save-layer {
     display: none;
     position: absolute;

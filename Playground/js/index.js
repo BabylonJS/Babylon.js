@@ -53,8 +53,7 @@
         '.navbar .select .toDisplayBig a',
         '.navbar .select .toDisplayBig ul li',
         '.navbarBottom',
-        '.navbarBottom .links .link',
-        '.save-message'];
+        '.navbarBottom .links .link'];
 
     var run = function () {
         var blockEditorChange = false;
@@ -211,7 +210,7 @@
             currentSnippetDescription = null;
             currentSnippetTags = null;
             showNoMetadata();
-            jsEditor.setValue('// You have to create a function called createScene. This function must return a BABYLON.Scene object\r\n// You can reference the following variables: scene, canvas\r\n// You must at least define a camera\r\n// More info here: https://doc.babylonjs.com/generals/The_Playground_Tutorial\r\n\r\nvar createScene = function() {\r\n\tvar scene = new BABYLON.Scene(engine);\r\n\tvar camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);\r\n\tcamera.attachControl(canvas, true);\r\n\r\n\r\n\r\n\treturn scene;\r\n};');
+            jsEditor.setValue('// You have to create a function called createScene. This function must return a BABYLON.Scene object\r\n// You can reference the following variables: scene, canvas\r\n// You must at least define a camera\r\n// More info here: https://doc.babylonjs.com/generals/The_Playground_Tutorial\r\n\r\nvar createScene = function() {\r\n\tvar scene = new BABYLON.Scene(engine);\r\n\tvar camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);\r\n\tcamera.attachControl(canvas, true);\r\n\r\n\r\n\r\n\treturn scene;\r\n};');
             jsEditor.setPosition({ lineNumber: 11, column: 0 });
             jsEditor.focus();
             compileAndRun();
@@ -297,17 +296,14 @@
             }
             document.getElementById("saveFormButtons").style.display = "block";
             document.getElementById("saveFormButtonOk").style.display = "inline-block";
-            document.getElementById("saveMessage").style.display = "block";
         };
         showNoMetadata();
-        document.getElementById("saveMessage").style.display = "none";
 
         var hideNoMetadata = function () {
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
             document.getElementById("saveFormButtonOk").style.display = "none";
-            document.getElementById("saveMessage").style.display = "none";
             setToMultipleID("metadataButton", "display", "inline-block");
         };
 
@@ -476,6 +472,11 @@
 
         // Zip
         var addContentToZip = function (zip, name, url, replace, buffer, then) {
+            if (url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
+                then();
+                return;
+            }
+
             var xhr = new XMLHttpRequest();
 
             xhr.open('GET', url, true);
@@ -863,9 +864,6 @@
         });
         document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
-        });
-        document.getElementById("saveMessage").addEventListener("click", function () {
-            document.getElementById("saveMessage").style.display = "none";
         });
         document.getElementById("mainTitle").innerHTML = "v" + BABYLON.Engine.Version;
 

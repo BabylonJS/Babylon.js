@@ -31,21 +31,21 @@
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        /** @ignore */
+        /** @hidden */
         public _delayInfo: Array<string>;
         private _indexBuffer: Nullable<WebGLBuffer>;
         private _indexBufferIsUpdatable = false;
-        /** @ignore */
+        /** @hidden */
         public _boundingInfo: Nullable<BoundingInfo>;
-        /** @ignore */
+        /** @hidden */
         public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
-        /** @ignore */
+        /** @hidden */
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
         private _updatable: boolean;
 
         // Cache
-        /** @ignore */
+        /** @hidden */
         public _positions: Nullable<Vector3[]>;
 
         /**
@@ -168,7 +168,7 @@
             return true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuild(): void {
             if (this._vertexArrayObjects) {
                 this._vertexArrayObjects = {};
@@ -271,15 +271,16 @@
          * @param kind defines the data kind (Position, normal, etc...)
          * @param data defines the data to use 
          * @param offset defines the offset in the target buffer where to store the data
+         * @param useBytes set to true if the offset is in bytes
          */
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
+        public updateVerticesDataDirectly(kind: string, data: DataArray, offset: number, useBytes: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
                 return;
             }
 
-            vertexBuffer.updateDirectly(data, offset);
+            vertexBuffer.updateDirectly(data, offset, useBytes);
             this.notifyUpdate(kind);
         }
 
@@ -328,7 +329,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<WebGLBuffer>): void {
             if (!effect) {
                 return;
@@ -386,11 +387,10 @@
                  return null;
             }
 
-            const defaultStride = VertexBuffer.DeduceStride(vertexBuffer.getKind());
-            const defaultByteStride = defaultStride * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-            const count = this._totalVertices * defaultStride;
+            const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+            const count = this._totalVertices * vertexBuffer.getSize();
 
-            if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== defaultByteStride) {
+            if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
                 const copy = new Array<number>(count);
                 vertexBuffer.forEach(count, (value, index) => {
                     copy[index] = value;
@@ -398,7 +398,7 @@
                 return copy;
             }
 
-            if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
+            if (!((data instanceof Array) || (data instanceof Float32Array)) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
                 if (data instanceof Array) {
                     const offset = vertexBuffer.byteOffset / 4;
                     return Tools.Slice(data, offset, offset + count);
@@ -584,7 +584,7 @@
             return this._indexBuffer;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _releaseVertexArrayObject(effect: Nullable<Effect> = null) {
             if (!effect || !this._vertexArrayObjects) {
                 return;
@@ -789,12 +789,12 @@
         }
 
         // Cache
-        /** @ignore */
+        /** @hidden */
         public _resetPointsArrayCache(): void {
             this._positions = null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _generatePointsArray(): boolean {
             if (this._positions)
                 return true;
@@ -1075,7 +1075,7 @@
             return Tools.RandomId();
         }
 
-        /** @ignore */
+        /** @hidden */
         public static _ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
             var scene = mesh.getScene();
 
@@ -1432,6 +1432,7 @@
     /// Abstract class
     /**
      * Abstract class used to provide common services for all typed geometries
+     * @hidden
      */
     export class _PrimitiveGeometry extends Geometry {
 
@@ -1496,7 +1497,7 @@
         }
 
         // to override
-        /** @ignore */
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             throw new Error("Abstract method");
         }
@@ -1559,7 +1560,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
         }

@@ -1,14 +1,15 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod
-
     const NAME = "MSFT_lod";
 
     interface IMSFTLOD {
         ids: number[];
     }
 
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
+     */
     export class MSFT_lod extends GLTFLoaderExtension {
         public readonly name = NAME;
 
@@ -17,13 +18,13 @@ module BABYLON.GLTF2.Extensions {
          */
         public maxLODsToLoad = Number.MAX_VALUE;
 
-        private _loadingNodeLOD: Nullable<ILoaderNode> = null;
+        private _loadingNodeLOD: Nullable<_ILoaderNode> = null;
         private _loadNodeSignals: { [nodeIndex: number]: Deferred<void> } = {};
 
-        private _loadingMaterialLOD: Nullable<ILoaderMaterial> = null;
+        private _loadingMaterialLOD: Nullable<_ILoaderMaterial> = null;
         private _loadMaterialSignals: { [materialIndex: number]: Deferred<void> } = {};
 
-        protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> {
+        protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IMSFTLOD>(context, node, (extensionContext, extension) => {
                 let firstPromise: Promise<void>;
 
@@ -71,7 +72,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             // Don't load material LODs if already loading a node LOD.
             if (this._loadingNodeLOD) {
                 return null;

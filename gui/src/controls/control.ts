@@ -107,6 +107,15 @@ module BABYLON.GUI {
        */
         public onAfterDrawObservable = new Observable<Control>();
 
+        /** Gets or set information about font offsets (used to render and align text) */
+        public get fontOffset(): { ascent: number, height: number, descent: number } {
+            return this._fontOffset;
+        }
+
+        public set fontOffset(offset: { ascent: number, height: number, descent: number }) {
+            this._fontOffset = offset;
+        }
+
         public get alpha(): number {
             return this._alpha;
         }
@@ -278,7 +287,7 @@ module BABYLON.GUI {
             this._fontSet = true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get _isFontSizeInPercentage(): boolean {
             return this._fontSize.isPercentage;
         }
@@ -493,7 +502,7 @@ module BABYLON.GUI {
             return "Control";
         }
 
-        /** @ignore */
+        /** @hidden */
         public _resetFontCache(): void {
             this._fontSet = true;
         }

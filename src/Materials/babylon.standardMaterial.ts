@@ -1,5 +1,5 @@
 module BABYLON {
-    /** @ignore */
+    /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public MAINUV1 = false;
         public MAINUV2 = false;
@@ -89,12 +89,12 @@ module BABYLON {
         public IMAGEPROCESSINGPOSTPROCESS = false;
         /**
          * If the reflection texture on this material is in linear color space
-         * @ignore
+         * @hidden
          */
         public IS_REFLECTION_LINEAR = false;
         /**
          * If the refraction texture on this material is in linear color space
-         * @ignore
+         * @hidden
          */
         public IS_REFRACTION_LINEAR = false;
         public EXPOSURE = false;
@@ -240,6 +240,12 @@ module BABYLON {
 
         @serialize()
         public invertRefractionY = true;
+
+        /**
+         * Defines the alpha limits in alpha test mode
+         */
+        @serialize()
+        public alphaCutOff = 0.4;        
 
         @serialize("useLightmapAsShadowmap")
         private _useLightmapAsShadowmap = false;
@@ -608,10 +614,6 @@ module BABYLON {
                             defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
 
                             switch (this._reflectionTexture.coordinatesMode) {
-                                case Texture.CUBIC_MODE:
-                                case Texture.INVCUBIC_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_CUBIC");
-                                    break;
                                 case Texture.EXPLICIT_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_EXPLICIT");
                                     break;
@@ -636,7 +638,12 @@ module BABYLON {
                                 case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
                                     break;
-                            }
+                                case Texture.CUBIC_MODE:
+                                case Texture.INVCUBIC_MODE:
+                                default:
+                                        defines.setReflectionMode("REFLECTIONMAP_CUBIC");
+                                        break;
+                                }
 
                             defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>this._reflectionTexture).boundingBoxSize ? true : false;
                         }
@@ -876,7 +883,7 @@ module BABYLON {
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "vReflectionPosition", "vReflectionSize",
-                    "logarithmicDepthConstant", "vTangentSpaceParams"
+                    "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
@@ -968,12 +975,19 @@ module BABYLON {
 
         public unbind(): void {
             if (this._activeEffect) {
+                let needFlag = false;
                 if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                     this._activeEffect.setTexture("reflection2DSampler", null);
+                    needFlag = true;
                 }
 
                 if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
                     this._activeEffect.setTexture("refraction2DSampler", null);
+                    needFlag = true;
+                }
+
+                if (needFlag) {
+                    this._markAllSubMeshesAsTexturesDirty();
                 }
             }
 
@@ -1047,6 +1061,10 @@ module BABYLON {
                         if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                             MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
+
+                            if (this._diffuseTexture.hasAlpha) {
+                                effect.setFloat("alphaCutOff", this.alphaCutOff);
+                            }
                         }
 
                         if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {

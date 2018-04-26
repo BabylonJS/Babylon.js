@@ -25,7 +25,7 @@
         readonly checksIsEnabled: boolean;
     }
 
-    /** @ignore */
+    /** @hidden */
     class ClickInfo {
         private _singleClick = false;
         private _doubleClick = false;
@@ -171,10 +171,10 @@
          */        
         public ambientColor = new Color3(0, 0, 0);
 
-        /** @ignore */
+        /** @hidden */
         public _environmentBRDFTexture: BaseTexture;
 
-        /** @ignore */
+        /** @hidden */
         protected _environmentTexture: BaseTexture;
         /**
          * Texture used in all pbr material as the reflection texture.
@@ -198,7 +198,7 @@
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
-        /** @ignore */
+        /** @hidden */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Default image processing configuration used either in the rendering
@@ -256,6 +256,20 @@
          * Gets or sets a boolean indicating if animations are enabled
          */
         public animationsEnabled = true;
+
+        private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
+
+        /**
+         * Gets or sets the animation properties override
+         */
+        public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            return this._animationPropertiesOverride;
+        }
+
+        public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+            this._animationPropertiesOverride = value;
+        }
+
         /**
          * Gets or sets a boolean indicating if a constant deltatime has to be used
          * This is mostly useful for testing purposes when you do not want the animations to scale with the framerate
@@ -634,7 +648,7 @@
         private _currentInternalStep: number = 0;
 
         // Mirror
-        /** @ignore */
+        /** @hidden */
         public _mirroredCameraPosition: Nullable<Vector3>;
 
         // Keyboard
@@ -953,7 +967,7 @@
         */           
         public collisionsEnabled = true;
         private _workerCollisions: boolean;
-        /** @ignore */
+        /** @hidden */
         public collisionCoordinator: ICollisionCoordinator;
         /** 
          * Defines the gravity applied to this scene (used only for collisions)
@@ -1027,7 +1041,7 @@
 
         // Database
         /**
-         * @ignore
+         * @hidden
          */
         public database: Database;
 
@@ -1037,7 +1051,7 @@
         */
         public actionManager: ActionManager;
 
-        /** @ignore */
+        /** @hidden */
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
@@ -1076,7 +1090,7 @@
         /**
          * Gets or sets the VRExperienceHelper attached to the scene
          * @see http://doc.babylonjs.com/how_to/webvr_helper
-         * @ignoreNaming
+         * @ignorenaming
          */
         public VRHelper: VRExperienceHelper;
 
@@ -1091,11 +1105,11 @@
 
         // Performance counters
         private _totalVertices = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _activeIndices = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _activeParticles = new PerfCounter();
-        /** @ignore */
+        /** @hidden */
         public _activeBones = new PerfCounter();
 
         private _animationRatio: number;
@@ -1108,11 +1122,11 @@
          */
         public animationTimeScale: number = 1;
 
-        /** @ignore */
+        /** @hidden */
         public _cachedMaterial: Nullable<Material>;
-        /** @ignore */
+        /** @hidden */
         public _cachedEffect: Nullable<Effect>;
-        /** @ignore */
+        /** @hidden */
         public _cachedVisibility: Nullable<number>;
 
         private _renderId = 0;
@@ -1124,7 +1138,7 @@
         private _alternateViewUpdateFlag = -1;
         private _alternateProjectionUpdateFlag = -1;
 
-        /** @ignore */
+        /** @hidden */
         public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
         private _activeRequests = new Array<IFileRequest>();
         private _pendingData = new Array();
@@ -1138,7 +1152,7 @@
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
-        /** @ignore */
+        /** @hidden */
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
         private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
         private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
@@ -1146,7 +1160,7 @@
         private _renderingManager: RenderingManager;
         private _physicsEngine: Nullable<PhysicsEngine>;
 
-        /** @ignore */
+        /** @hidden */
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
@@ -1165,10 +1179,10 @@
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
-        /** @ignore */
+        /** @hidden */
         public _forcedViewPosition: Nullable<Vector3>;
 
-        /** @ignore */
+        /** @hidden */
         public get _isAlternateRenderingEnabled(): boolean {
             return this._alternateRendering;
         }
@@ -1447,37 +1461,37 @@
             return this._activeBones;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getInterFramePerfCounter(): number {
             Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get interFramePerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getLastFrameDuration(): number {
             Tools.Warn("getLastFrameDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get lastFramePerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("lastFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getEvaluateActiveMeshesDuration(): number {
             Tools.Warn("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
@@ -1491,43 +1505,43 @@
             return this._activeMeshes;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getRenderTargetsDuration(): number {
             Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getRenderDuration(): number {
             Tools.Warn("getRenderDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get renderDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("renderDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getParticlesDuration(): number {
             Tools.Warn("getParticlesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get particlesDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("particlesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
-        /** @ignore */
+        /** @hidden */
         public getSpritesDuration(): number {
             Tools.Warn("getSpritesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
-        /** @ignore */
+        /** @hidden */
         public get spriteDuractionPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("spriteDuractionPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
@@ -1692,7 +1706,7 @@
 
                             if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
                                 if (this._totalPointersPressed !== 0 &&
-                                    ((new Date().getTime() - this._startingPointerTime) > Scene.LongPressDelay) &&
+                                    ((Date.now() - this._startingPointerTime) > Scene.LongPressDelay) &&
                                     (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
                                         Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
                                     this._startingPointerTime = 0;
@@ -1818,7 +1832,7 @@
 
             this._delayedSimpleClick = (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => {
                 // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
-                if ((new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
+                if ((Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
                     btn !== this._previousButtonPressed) {
                     this._doubleClickOccured = false;
                     clickInfo.singleClick = true;
@@ -1861,7 +1875,7 @@
 
                         if (checkSingleClickImmediately) {
                             // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
-                            if (new Date().getTime() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
+                            if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
                                 btn !== this._previousButtonPressed) {
                                 clickInfo.singleClick = true;
 
@@ -1885,7 +1899,7 @@
                         if (checkDoubleClick) {
                             // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
                             if (btn === this._previousButtonPressed &&
-                                new Date().getTime() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
+                                Date.now() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
                                 !this._doubleClickOccured
                             ) {
                                 // pointer has not moved for 2 clicks, it's a double click
@@ -1997,7 +2011,7 @@
 
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
-                this._startingPointerTime = new Date().getTime();
+                this._startingPointerTime = Date.now();
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
@@ -2102,25 +2116,28 @@
                     this._processPointerUp(pickResult, evt, clickInfo);
 
                     // Sprites
-                    if (this.spriteManagers.length > 0) {
-                        let spritePickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
-                        if (spritePickResult) {
-                            if (spritePickResult.hit && spritePickResult.pickedSprite) {
-                                if (spritePickResult.pickedSprite.actionManager) {
-                                    spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                    if(!clickInfo.ignore){
+                        if (this.spriteManagers.length > 0) {
+                            let spritePickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
+    
+                            if (spritePickResult) {
+                                if (spritePickResult.hit && spritePickResult.pickedSprite) {
                                     if (spritePickResult.pickedSprite.actionManager) {
-                                        if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
-                                            spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                                        spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                                        if (spritePickResult.pickedSprite.actionManager) {
+                                            if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
+                                                spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== spritePickResult.pickedSprite) {
-                                this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                                if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== spritePickResult.pickedSprite) {
+                                    this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                                }
                             }
                         }
                     }
+                    
                     this._previousPickResult = this._currentPickResult;
                 });
             };
@@ -2389,12 +2406,12 @@
             }
         }
 
-        /** @ignore */            
+        /** @hidden */            
         public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _removePendingData(data: any): void {
             var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
@@ -2451,7 +2468,7 @@
             });
         }
 
-        /** @ignore */
+        /** @hidden */
         public _checkIsReady() {
             if (this.isReady()) {
                 this.onReadyObservable.notifyObservers(this);
@@ -2665,7 +2682,7 @@
             this._processLateAnimationBindings();
         }
 
-        /** @ignore */
+        /** @hidden */
         public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
             let target = runtimeAnimation.target;
             this._registeredForLateAnimationBindings.pushNoDuplicate(target);
@@ -2685,6 +2702,54 @@
             target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
         }
 
+        private _processLateAnimationBindingsForMatrices(holder: {
+            totalWeight: number,
+            animations: RuntimeAnimation[]
+        }, originalValue: Matrix): any {
+            let normalizer = 1.0;
+            let finalPosition = Tmp.Vector3[0];
+            let finalScaling = Tmp.Vector3[1];
+            let finalQuaternion = Tmp.Quaternion[0];
+            let startIndex = 0;            
+            let originalAnimation = holder.animations[0];
+
+            var scale = 1;
+            if (holder.totalWeight < 1.0) {
+                // We need to mix the original value in                     
+                originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
+                scale = 1.0 - holder.totalWeight;
+            } else {
+                startIndex = 1;            
+                // We need to normalize the weights
+                normalizer = holder.totalWeight;
+                originalAnimation.currentValue.decompose(finalScaling, finalQuaternion, finalPosition);
+                scale = originalAnimation.weight / normalizer;
+                if (scale == 1) {
+                    return originalAnimation.currentValue;
+                }
+            }
+
+            finalScaling.scaleInPlace(scale);
+            finalPosition.scaleInPlace(scale);
+            finalQuaternion.scaleInPlace(scale);
+
+            for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
+                var runtimeAnimation = holder.animations[animIndex];   
+                var scale = runtimeAnimation.weight / normalizer;
+                let currentPosition = Tmp.Vector3[2];
+                let currentScaling = Tmp.Vector3[3];
+                let currentQuaternion = Tmp.Quaternion[1];
+
+                runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
+                currentScaling.scaleAndAddToRef(scale, finalScaling);
+                currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
+                currentPosition.scaleAndAddToRef(scale, finalPosition);
+            }  
+            
+            Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
+            return originalAnimation._workValue;
+        }
+
         private _processLateAnimationBindings(): void {
             if (!this._registeredForLateAnimationBindings.length) {
                 return;
@@ -2694,52 +2759,55 @@
 
                 for (var path in target._lateAnimationHolders) {
                     var holder = target._lateAnimationHolders[path];                     
-                    let originalValue = holder.animations[0].originalValue;      
+                    let originalAnimation = holder.animations[0];
+                    let originalValue = originalAnimation.originalValue;
+                    let finalTarget = originalAnimation.target;   
                     
-                    // Sanity check
-                    if (!originalValue.scaleAndAddToRef) {
-                        continue;
-                    }
-
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
-                    let normalizer = 1.0;
+
                     let finalValue: any;
-
-                    if (holder.totalWeight < 1.0) {
-                        // We need to mix the original value in     
-                        if (matrixDecomposeMode) {
-                            finalValue = originalValue.clone();
-                        } else {            
-                            finalValue = originalValue.scale(1.0 - holder.totalWeight)
-                        }
+                    if (matrixDecomposeMode) {
+                        finalValue = this._processLateAnimationBindingsForMatrices(holder, originalValue);
                     } else {
-                        // We need to normalize the weights
-                        normalizer = holder.totalWeight;
-                    }
+                        let startIndex = 0;
+                        let normalizer = 1.0;
 
-                    for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
-                        var runtimeAnimation = holder.animations[animIndex];   
-                        var scale = runtimeAnimation.weight / normalizer;
-                        if (finalValue) {
-                            if (matrixDecomposeMode) {
-                                Matrix.DecomposeLerpToRef(finalValue, runtimeAnimation.currentValue, scale, finalValue);
+                        if (holder.totalWeight < 1.0) {
+                            // We need to mix the original value in     
+                            if (originalValue.scale) {
+                                finalValue = originalValue.scale(1.0 - holder.totalWeight);
                             } else {
-                                runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
+                                finalValue = originalValue * (1.0 - holder.totalWeight);
                             }
                         } else {
+                            // We need to normalize the weights
+                            normalizer = holder.totalWeight;
+                            let scale = originalAnimation.weight / normalizer;
                             if (scale !== 1) {
-                                if (matrixDecomposeMode) {
-                                    finalValue = runtimeAnimation.currentValue.clone();
+                                if (originalAnimation.currentValue.scale) {
+                                    finalValue = originalAnimation.currentValue.scale(scale);
                                 } else {
-                                    finalValue = runtimeAnimation.currentValue.scale(scale);
+                                    finalValue = originalAnimation.currentValue * scale;
                                 }
                             } else {
-                                finalValue = runtimeAnimation.currentValue;
+                                finalValue = originalAnimation.currentValue;
+                            }
+
+                            startIndex = 1;
+                        }
+
+                        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
+                            var runtimeAnimation = holder.animations[animIndex];   
+                            var scale = runtimeAnimation.weight / normalizer;
+                            if (runtimeAnimation.currentValue.scaleAndAddToRef) {
+                                runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
+                            } else {
+                                finalValue += runtimeAnimation.currentValue * scale;
                             }
                         }
                     }
 
-                    runtimeAnimation.target[path] = finalValue;
+                    finalTarget[path] = finalValue;
                 }
 
                 target._lateAnimationHolders = {};
@@ -2748,7 +2816,7 @@
         }
 
         // Matrix
-        /** @ignore */
+        /** @hidden */
         public _switchToAlternateCameraConfiguration(active: boolean): void {
             this._useAlternateCameraConfiguration = active;
         }
@@ -2814,7 +2882,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void {
             if (this._alternateViewUpdateFlag === view.updateFlag && this._alternateProjectionUpdateFlag === projection.updateFlag) {
                 return;
@@ -2876,12 +2944,13 @@
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
 
-        /**
+      /**
          * Remove a mesh for the list of scene's meshes
          * @param toRemove defines the mesh to remove
+         * @param recursive if all child meshes should also be removed from the scene
          * @returns the index where the mesh was in the mesh list
          */
-        public removeMesh(toRemove: AbstractMesh): number {
+        public removeMesh(toRemove: AbstractMesh, recursive = false): number {
             var index = this.meshes.indexOf(toRemove);
             if (index !== -1) {
                 // Remove from the scene if mesh found
@@ -2889,7 +2958,11 @@
             }
 
             this.onMeshRemovedObservable.notifyObservers(toRemove);
-
+            if(recursive){
+                toRemove.getChildMeshes().forEach((m)=>{
+                    this.removeMesh(m);
+                })
+            }
             return index;
         }
 
@@ -4048,7 +4121,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }
@@ -5687,7 +5760,7 @@
         }
 
         // Misc.
-        /** @ignore */
+        /** @hidden */
         public _rebuildGeometries(): void {
             for (var geometry of this._geometries) {
                 geometry._rebuild();
@@ -5722,7 +5795,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuildTextures(): void {
             for (var texture of this.textures) {
                 texture._rebuild();
@@ -5820,16 +5893,20 @@
          * @param pbr defines if PBRMaterial must be used instead of StandardMaterial
          * @param scale defines the overall scale of the skybox
          * @param blur defines if blurring must be applied to the environment texture (works only with pbr === true)
+         * @param setGlobalEnvTexture defines a boolean indicating that scene.environmentTexture must match the current skybox texture (true by default)
          * @returns a new mesh holding the sky box
          */
-        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0): Nullable<Mesh> {
-            if (environmentTexture) {
-                this.environmentTexture = environmentTexture;
-            }
+        public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
-            if (!this.environmentTexture) {
+            if (!environmentTexture) {
                 Tools.Warn("Can not create default skybox without environment texture.");
                 return null;
+            }
+
+            if (setGlobalEnvTexture) {
+                if (environmentTexture) {
+                    this.environmentTexture = environmentTexture;
+                }
             }
 
             // Skybox
@@ -5837,7 +5914,7 @@
             if (pbr) {
                 let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
-                hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
+                hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
                 if (hdrSkyboxMaterial.reflectionTexture) {
                     hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
@@ -5850,7 +5927,7 @@
             else {
                 let skyboxMaterial = new StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
-                skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
+                skyboxMaterial.reflectionTexture = environmentTexture.clone();
                 if (skyboxMaterial.reflectionTexture) {
                     skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
@@ -5995,7 +6072,7 @@
             }
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useDatabase?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             let request = Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
             this._activeRequests.push(request);
@@ -6005,7 +6082,7 @@
             return request;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFileAsync(url: string, useDatabase?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {

@@ -5,30 +5,30 @@
     export class MaterialDefines {
         private _keys: string[];
         private _isDirty = true;
-        /** @ignore */
+        /** @hidden */
         public _renderId: number;
 
-        /** @ignore */
+        /** @hidden */
         public _areLightsDirty = true;
-        /** @ignore */
+        /** @hidden */
         public _areAttributesDirty = true;
-        /** @ignore */
+        /** @hidden */
         public _areTexturesDirty = true;
-        /** @ignore */
+        /** @hidden */
         public _areFresnelDirty = true;
-        /** @ignore */
+        /** @hidden */
         public _areMiscDirty = true;
-        /** @ignore */
+        /** @hidden */
         public _areImageProcessingDirty = true;
 
-        /** @ignore */
+        /** @hidden */
         public _normals = false;
-        /** @ignore */
+        /** @hidden */
         public _uvs = false;
 
-        /** @ignore */
+        /** @hidden */
         public _needNormals = false;
-        /** @ignore */
+        /** @hidden */
         public _needUVs = false;
 
         /**
@@ -909,7 +909,7 @@
             this._wasPreviouslyReady = false;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _preBind(effect?: Effect, overrideOrientation: Nullable<number> = null): boolean {
             var engine = this._scene.getEngine();
 

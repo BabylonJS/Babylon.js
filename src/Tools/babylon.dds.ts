@@ -97,6 +97,8 @@
         isCompressed: boolean;
         dxgiFormat: number;
         textureType: number;
+        /** Sphericle polynomial created for the dds texture */
+        sphericalPolynomial?: SphericalPolynomial;
     };
 
     export class DDSTools {
@@ -331,7 +333,7 @@
         }
 
         private static _ExtractLongWordOrder(value: number): number {
-            if (value === 0 ||value === 255 || value === -16777216) {
+            if (value === 0 || value === 255 || value === -16777216) {
                 return 0;
             }
 
@@ -371,7 +373,11 @@
             return byteArray;
         }
 
-        public static UploadDDSLevels(engine: Engine, gl: WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number): void {
+        public static UploadDDSLevels(engine: Engine, gl: WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
+            var sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
+            if (info.sphericalPolynomial) {
+                sphericalPolynomialFaces = new Array<ArrayBufferView>();
+            }
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
@@ -452,7 +458,7 @@
             let rOffset = DDSTools._ExtractLongWordOrder(header[off_RMask]);
             let gOffset = DDSTools._ExtractLongWordOrder(header[off_GMask]);
             let bOffset = DDSTools._ExtractLongWordOrder(header[off_BMask]);
-            let aOffset = DDSTools._ExtractLongWordOrder(header[off_AMask]);            
+            let aOffset = DDSTools._ExtractLongWordOrder(header[off_AMask]);
 
             if (computeFormats) {
                 format = engine._getWebGLTextureType(info.textureType);
@@ -482,9 +488,15 @@
                             if (engine._badOS || engine._badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
                                     floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (sphericalPolynomialFaces && i == 0) {
+                                        sphericalPolynomialFaces.push(DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
+                                    }
                                 }
                                 else if (bpp === 64) {
                                     floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (sphericalPolynomialFaces && i == 0) {
+                                        sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
+                                    }
                                 }
 
                                 info.textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -494,14 +506,23 @@
                             else {
                                 if (bpp === 128) {
                                     floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (sphericalPolynomialFaces && i == 0) {
+                                        sphericalPolynomialFaces.push(floatArray);
+                                    }
                                 } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
                                     floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (sphericalPolynomialFaces && i == 0) {
+                                        sphericalPolynomialFaces.push(floatArray);
+                                    }
 
                                     info.textureType = Engine.TEXTURETYPE_FLOAT;
                                     format = engine._getWebGLTextureType(info.textureType);
                                     internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
                                 } else { // 64
                                     floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                    if (sphericalPolynomialFaces && i == 0) {
+                                        sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
+                                    }
                                 }
                             }
 
@@ -544,6 +565,22 @@
                     // Loading a single face
                     break;
                 }
+            }
+            if (sphericalPolynomialFaces && sphericalPolynomialFaces.length > 0) {
+                info.sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial({
+                    size: header[off_width],
+                    right: sphericalPolynomialFaces[0],
+                    left: sphericalPolynomialFaces[1],
+                    up: sphericalPolynomialFaces[2],
+                    down: sphericalPolynomialFaces[3],
+                    front: sphericalPolynomialFaces[4],
+                    back: sphericalPolynomialFaces[5],
+                    format: Engine.TEXTUREFORMAT_RGBA,
+                    type: Engine.TEXTURETYPE_FLOAT,
+                    gammaSpace: false,
+                });
+            } else {
+                info.sphericalPolynomial = undefined;
             }
         }
     }

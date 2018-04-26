@@ -885,7 +885,7 @@ module BABYLON.GLTF1 {
 
             if (camera) {
                 if (camera.type === "orthographic") {
-                    var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
+                    var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                     orthoCamera.name = node.name || "";
                     orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
@@ -895,7 +895,7 @@ module BABYLON.GLTF1 {
                 }
                 else if (camera.type === "perspective") {
                     var perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
-                    var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene);
+                    var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                     persCamera.name = node.name || "";
                     persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
@@ -1568,13 +1568,16 @@ module BABYLON.GLTF1 {
         public compileMaterials = false;
         public useClipPlane = false;
         public compileShadowGenerators = false;
+        public transparencyAsCoverage = false;
+        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
-        public onDisposeObservable = new Observable<IGLTFLoader>();
-        public onMeshLoadedObservable = new Observable<AbstractMesh>();
-        public onTextureLoadedObservable = new Observable<BaseTexture>();
-        public onMaterialLoadedObservable = new Observable<Material>();
-        public onCompleteObservable = new Observable<IGLTFLoader>();
-        public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
+        public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
+        public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
+        public readonly onMaterialLoadedObservable = new Observable<Material>();
+        public readonly onCameraLoadedObservable = new Observable<Camera>();
+        public readonly onCompleteObservable = new Observable<IGLTFLoader>();
+        public readonly onDisposeObservable = new Observable<IGLTFLoader>();
+        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
         public state: Nullable<GLTFLoaderState> = null;
 
@@ -1644,6 +1647,15 @@ module BABYLON.GLTF1 {
             return true;
         }
 
+        /**
+        * Imports one or more meshes from a loaded gltf file and adds them to the scene
+        * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+        * @param scene the scene the meshes should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise containg the loaded meshes, particles, skeletons and animations
+        */
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return new Promise((resolve, reject) => {
                 this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, skeletons) => {
@@ -1687,6 +1699,14 @@ module BABYLON.GLTF1 {
             }, onError);
         }
 
+        /**
+        * Imports all objects from a loaded gltf file and adds them to the scene
+        * @param scene the scene the objects should be added to
+        * @param data gltf data containing information of the meshes in a loaded file
+        * @param rootUrl root url to load from
+        * @param onProgress event that fires when loading progress has occured
+        * @returns a promise which completes when objects have been loaded to the scene
+        */
         public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return new Promise((resolve, reject) => {
                 this._loadAsync(scene, data, rootUrl, () => {

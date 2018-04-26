@@ -451,7 +451,7 @@
             });
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
@@ -487,7 +487,7 @@
             this._engine._loadFile(vertexShaderUrl + ".vertex.fx", callback);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
@@ -913,7 +913,7 @@
             this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
         }
 
-        /** @ignore */
+        /** @hidden */
         public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
             var cache = this._valueCache[uniformName];
             var flag = matrix.updateFlag;
@@ -926,7 +926,7 @@
             return true;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
             var cache = this._valueCache[uniformName];
             if (!cache) {
@@ -948,7 +948,7 @@
             return changed;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
             var cache = this._valueCache[uniformName];
             if (!cache) {
@@ -974,7 +974,7 @@
             return changed;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
             var cache = this._valueCache[uniformName];
             if (!cache) {

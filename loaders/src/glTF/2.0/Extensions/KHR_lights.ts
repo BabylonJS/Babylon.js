@@ -1,8 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/MiiBond/glTF/tree/khr_lights_v1/extensions/Khronos/KHR_lights
-
     const NAME = "KHR_lights";
 
     enum LightType {
@@ -31,10 +29,13 @@ module BABYLON.GLTF2.Extensions {
         lights: ILight[];
     }
 
+    /**
+     * [Specification](https://github.com/MiiBond/glTF/tree/khr_lights_v1/extensions/Khronos/KHR_lights) (Experimental)
+     */
     export class KHR_lights extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> { 
+        protected _loadSceneAsync(context: string, scene: _ILoaderScene): Nullable<Promise<void>> { 
             return this._loadExtensionAsync<ILightReference>(context, scene, (extensionContext, extension) => {
                 const promise = this._loader._loadSceneAsync(extensionContext, scene);
 
@@ -49,7 +50,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { 
+        protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> { 
             return this._loadExtensionAsync<ILightReference>(context, node, (extensionContext, extension) => {
                 const promise = this._loader._loadNodeAsync(extensionContext, node);
 

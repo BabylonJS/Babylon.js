@@ -395,7 +395,7 @@ module BABYLON {
 
         /**
          * Sets the primary color of all the available elements.
-         * @param color 
+         * @param color the main color to affect to the ground and the background
          */
         public setMainColor(color: Color3): void {
             if (this.groundMaterial) {
@@ -535,10 +535,7 @@ module BABYLON {
             this._groundMaterial.alpha = this._options.groundOpacity;
             this._groundMaterial.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
             this._groundMaterial.shadowLevel = this._options.groundShadowLevel;
-            this._groundMaterial.primaryLevel = 1;
             this._groundMaterial.primaryColor = this._options.groundColor;
-            this._groundMaterial.secondaryLevel = 0;
-            this._groundMaterial.tertiaryLevel = 0;
             this._groundMaterial.useRGBColor = false;
             this._groundMaterial.enableNoise = true;
 
@@ -645,10 +642,7 @@ module BABYLON {
                 this._skyboxMaterial = new BackgroundMaterial("BackgroundSkyboxMaterial", this._scene);
             }
             this._skyboxMaterial.useRGBColor = false;
-            this._skyboxMaterial.primaryLevel = 1;
             this._skyboxMaterial.primaryColor = this._options.skyboxColor;
-            this._skyboxMaterial.secondaryLevel = 0;
-            this._skyboxMaterial.tertiaryLevel = 0;
             this._skyboxMaterial.enableNoise = true;
 
             this._skybox.material = this._skyboxMaterial;
@@ -667,7 +661,7 @@ module BABYLON {
             }
 
             if (this._options.skyboxTexture instanceof BaseTexture) {
-                this._skyboxMaterial.reflectionTexture = this._skyboxTexture;
+                this._skyboxMaterial.reflectionTexture = this._options.skyboxTexture;
                 return;
             }
 

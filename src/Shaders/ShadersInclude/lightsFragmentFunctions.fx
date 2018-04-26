@@ -113,8 +113,5 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
 	strq /= strq.w;
 	vec3 textureColor = texture2D(projectionLightSampler, strq.xy).rgb;
-#ifdef PBR
-	textureColor = toLinearSpace(textureColor);
-#endif
 	return textureColor;
 }

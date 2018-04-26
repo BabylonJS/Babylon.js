@@ -7,19 +7,24 @@ module BABYLON {
      */
     export interface IDracoCompressionConfiguration {
         /**
-         * Configuration for the JavaScript decoder or null if not available.
+         * Configuration for the decoder.
          */
-        decoder: Nullable<{
-            url: string;
-        }>;
+        decoder?: {
+            /**
+             * The url to the WebAssembly module.
+             */
+            wasmUrl?: string;
 
-        /**
-         * Configuration for the WebAssembly decoder or null if not available.
-         */
-        decoderWasm: Nullable<{
-            binaryUrl: string;
-            wrapperUrl: string;
-        }>;
+            /**
+             * The url to the WebAssembly binary.
+             */
+            wasmBinaryUrl?: string;
+
+            /**
+             * The url to the fallback JavaScript module.
+             */
+            fallbackUrl?: string;
+        };
     }
 
     /**
@@ -29,19 +34,36 @@ module BABYLON {
         private static _DecoderModulePromise: Promise<any>;
 
         /**
-         * Gets the configuration.
+         * The configuration.
          */
-        public static Configuration = DracoCompression._GetDefaultConfig();
+        public static Configuration: IDracoCompressionConfiguration = {
+            decoder: {
+                wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js",
+                wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm",
+                fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js"
+            }
+        };
 
         /**
          * Returns true if the decoder is available.
          */
         public static get DecoderAvailable(): boolean {
-            return (
-                typeof DracoDecoderModule !== "undefined" ||
-                (typeof WebAssembly === "object" && !!DracoCompression.Configuration.decoderWasm) ||
-                !!DracoCompression.Configuration.decoder
-            );
+            if (typeof DracoDecoderModule !== "undefined") {
+                return true;
+            }
+
+            const decoder = DracoCompression.Configuration.decoder;
+            if (decoder) {
+                if (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") {
+                    return true;
+                }
+
+                if (decoder.fallbackUrl) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /**
@@ -146,25 +168,31 @@ module BABYLON {
 
         private static _GetDecoderModule(): Promise<any> {
             if (!DracoCompression._DecoderModulePromise) {
-                let promise: Promise<any>;
+                let promise: Nullable<Promise<any>> = null;
                 let config: any = {};
 
                 if (typeof DracoDecoderModule !== "undefined") {
                     promise = Promise.resolve();
                 }
-                else if (typeof WebAssembly === "object" && DracoCompression.Configuration.decoderWasm) {
-                    promise = Promise.all([
-                        DracoCompression._LoadScriptAsync(DracoCompression.Configuration.decoderWasm.wrapperUrl),
-                        DracoCompression._LoadFileAsync(DracoCompression.Configuration.decoderWasm.binaryUrl).then(data => {
-                            config.wasmBinary = data;
-                        })
-                    ]);
-                }
-                else if (DracoCompression.Configuration.decoder) {
-                    promise = DracoCompression._LoadScriptAsync(DracoCompression.Configuration.decoder.url);
-                }
                 else {
-                    throw new Error("Invalid decoder configuration");
+                    const decoder = DracoCompression.Configuration.decoder;
+                    if (decoder) {
+                        if (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") {
+                            promise = Promise.all([
+                                DracoCompression._LoadScriptAsync(decoder.wasmUrl),
+                                DracoCompression._LoadFileAsync(decoder.wasmBinaryUrl).then(data => {
+                                    config.wasmBinary = data;
+                                })
+                            ]);
+                        }
+                        else if (decoder.fallbackUrl) {
+                            promise = DracoCompression._LoadScriptAsync(decoder.fallbackUrl);
+                        }
+                    }
+                }
+
+                if (!promise) {
+                    throw new Error("Draco decoder module is not available");
                 }
 
                 DracoCompression._DecoderModulePromise = promise.then(() => {
@@ -200,53 +228,6 @@ module BABYLON {
                     reject(exception);
                 });
             });
-        }
-
-        private static _GetDefaultConfig(): IDracoCompressionConfiguration {
-            const configuration: IDracoCompressionConfiguration = {
-                decoder: null,
-                decoderWasm: null
-            };
-
-            if (Tools.IsWindowObjectExist()) {
-                let decoderUrl: Nullable<string> = null;
-                let decoderWasmBinaryUrl: Nullable<string> = null;
-                let decoderWasmWrapperUrl: Nullable<string> = null;
-
-                for (let i = 0; i < document.scripts.length; i++) {
-                    const type = document.scripts[i].type;
-                    const src = document.scripts[i].src;
-                    switch (type) {
-                        case "text/x-draco-decoder": {
-                            decoderUrl = src;
-                            break;
-                        }
-                        case "text/x-draco-decoder-wasm-binary": {
-                            decoderWasmBinaryUrl = src;
-                            break;
-                        }
-                        case "text/x-draco-decoder-wasm-wrapper": {
-                            decoderWasmWrapperUrl = src;
-                            break;
-                        }
-                    }
-                }
-
-                if (decoderUrl) {
-                    configuration.decoder = {
-                        url: decoderUrl
-                    };
-                }
-
-                if (decoderWasmWrapperUrl && decoderWasmBinaryUrl) {
-                    configuration.decoderWasm = {
-                        binaryUrl: decoderWasmBinaryUrl,
-                        wrapperUrl: decoderWasmWrapperUrl
-                    };
-                }
-            }
-
-            return configuration;
         }
     }
 }

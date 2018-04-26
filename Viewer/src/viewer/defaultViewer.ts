@@ -6,6 +6,7 @@ import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
+import { extendClassWithConfig } from '../helper';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -21,15 +22,13 @@ export class DefaultViewer extends AbstractViewer {
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this._onModelLoaded);
-    }
+        this.sceneManager.onSceneInitObservable.add(() => {
+            // extendClassWithConfig(this.sceneManager.scene, this._configuration.scene);
+            return this.sceneManager.scene;
+        });
 
-    /**
-     * Overriding the AbstractViewer's _initScene fcuntion
-     */
-    protected _initScene(): Promise<Scene> {
-        return super._initScene().then(() => {
-            this._extendClassWithConfig(this.scene, this._configuration.scene);
-            return this.scene;
+        this.sceneManager.onLightsConfiguredObservable.add((data) => {
+            this._configureLights(data.newConfiguration, data.model!);
         })
     }
 
@@ -92,24 +91,30 @@ export class DefaultViewer extends AbstractViewer {
             this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
             this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
 
-            // other events
-            let viewerTemplate = this.templateManager.getTemplate('viewer');
-            let viewerElement = viewerTemplate && viewerTemplate.parent;
-            // full screen
-            let triggerFullscren = (eventData: EventCallback) => {
-                if (viewerElement) {
-                    let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
-                    if (!fullscreenElement) {
-                        let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
-                        requestFullScreen.call(viewerElement);
-                    } else {
-                        let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
-                        exitFullscreen.call(document);
-                    }
-                }
-            }
+            this.templateManager.eventManager.registerCallback('navBar', this.toggleFullscreen, 'pointerdown', '#fullscreen-button');
+            this.templateManager.eventManager.registerCallback('navBar', (data) => {
+                if (data && data.event && data.event.target)
+                    this.sceneManager.models[0].playAnimation(data.event.target['value']);
+            }, 'change', '#animation-selector');
+        }
+    }
 
-            this.templateManager.eventManager.registerCallback('navBar', triggerFullscren, 'pointerdown', '#fullscreen-button');
+    /**
+     * Toggle fullscreen of the entire viewer
+     */
+    public toggleFullscreen = () => {
+        let viewerTemplate = this.templateManager.getTemplate('viewer');
+        let viewerElement = viewerTemplate && viewerTemplate.parent;
+
+        if (viewerElement) {
+            let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            if (!fullscreenElement) {
+                let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
+                requestFullScreen.call(viewerElement);
+            } else {
+                let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
+                exitFullscreen.call(document);
+            }
         }
     }
 
@@ -129,6 +134,10 @@ export class DefaultViewer extends AbstractViewer {
     protected _configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
+
+        if (model.getAnimationNames().length > 1) {
+            navbar.updateParams({ animations: model.getAnimationNames() });
+        }
 
         let modelConfiguration = model.configuration;
 
@@ -241,6 +250,30 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     /**
+     * show the viewer (in case it was hidden)
+     * 
+     * @param visibilityFunction an optional function to execute in order to show the container
+     */
+    public show(visibilityFunction?: ((template: Template) => Promise<Template>)): Promise<Template> {
+        let template = this.templateManager.getTemplate('main');
+        //not possible, but yet:
+        if (!template) return Promise.reject('Main template not found');
+        return template.show(visibilityFunction);
+    }
+
+    /**
+     * hide the viewer (in case it is visible)
+     * 
+     * @param visibilityFunction an optional function to execute in order to hide the container
+     */
+    public hide(visibilityFunction?: ((template: Template) => Promise<Template>)) {
+        let template = this.templateManager.getTemplate('main');
+        //not possible, but yet:
+        if (!template) return Promise.reject('Main template not found');
+        return template.hide(visibilityFunction);
+    }
+
+    /**
      * Show the loading screen.
      * The loading screen can be configured using the configuration object
      */
@@ -286,8 +319,7 @@ export class DefaultViewer extends AbstractViewer {
      * @param lightsConfiguration the light configuration to use
      * @param model the model that will be used to configure the lights (if the lights are model-dependant)
      */
-    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
-        super._configureLights(lightsConfiguration, model);
+    private _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
         // labs feature - flashlight
         if (this._configuration.lab && this._configuration.lab.flashlight) {
             let pointerPosition = Vector3.Zero();
@@ -299,7 +331,7 @@ export class DefaultViewer extends AbstractViewer {
                 angle = this._configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
-                Vector3.Zero(), exponent, angle, this.scene);
+                Vector3.Zero(), exponent, angle, this.sceneManager.scene);
             if (typeof this._configuration.lab.flashlight === "object") {
                 flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
                 if (this._configuration.lab.flashlight.diffuse) {
@@ -314,8 +346,8 @@ export class DefaultViewer extends AbstractViewer {
                 }
 
             }
-            this.scene.constantlyUpdateMeshUnderPointer = true;
-            this.scene.onPointerObservable.add((eventData, eventState) => {
+            this.sceneManager.scene.constantlyUpdateMeshUnderPointer = true;
+            this.sceneManager.scene.onPointerObservable.add((eventData, eventState) => {
                 if (eventData.type === 4 && eventData.pickInfo) {
                     lightTarget = (eventData.pickInfo.pickedPoint);
                 } else {
@@ -323,14 +355,14 @@ export class DefaultViewer extends AbstractViewer {
                 }
             });
             let updateFlashlightFunction = () => {
-                if (this.camera && flashlight) {
-                    flashlight.position.copyFrom(this.camera.position);
+                if (this.sceneManager.camera && flashlight) {
+                    flashlight.position.copyFrom(this.sceneManager.camera.position);
                     if (lightTarget) {
                         lightTarget.subtractToRef(flashlight.position, flashlight.direction);
                     }
                 }
             }
-            this.scene.registerBeforeRender(updateFlashlightFunction);
+            this.sceneManager.scene.registerBeforeRender(updateFlashlightFunction);
             this._registeredOnBeforeRenderFunctions.push(updateFlashlightFunction);
         }
     }

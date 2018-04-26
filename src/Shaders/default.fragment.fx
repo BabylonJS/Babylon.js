@@ -121,6 +121,10 @@ uniform sampler2D refraction2DSampler;
 	uniform sampler2D specularSampler;
 #endif
 
+#ifdef ALPHATEST
+	uniform float alphaCutOff;
+#endif
+
 // Fresnel
 #include<fresnelFunction>
 
@@ -192,7 +196,7 @@ void main(void) {
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
 	#ifdef ALPHATEST
-		if (baseColor.a < 0.4)
+		if (baseColor.a < alphaCutOff)
 			discard;
 	#endif
 

@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
      * Background material defines definition.
-     * @ignore Mainly internal Use
+     * @hidden Mainly internal Use
      */
     class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         /**
@@ -58,6 +58,12 @@
          * True if the texture contains cooked RGB values and not gray scaled multipliers.
          */
         public USERGBCOLOR = false;
+
+        /**
+         * True if highlight and shadow levels have been specified. It can help ensuring the main perceived color
+         * stays aligned with the desired configuration.
+         */
+        public USEHIGHLIGHTANDSHADOWCOLORS = false;
 
         /**
          * True to add noise in order to reduce the banding effect.
@@ -143,49 +149,62 @@
         @serializeAsColor3()
         protected _primaryColor: Color3;
         /**
-         * Key light Color (multiply against the R channel of the environement texture)
+         * Key light Color (multiply against the environement texture)
          */
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public primaryColor = Color3.White();
-
-        @serialize()
-        protected _primaryLevel: float;
-        /**
-         * Key light Level (allowing HDR output of the background)
-         */
-        @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public primaryLevel: float = 1;
+        
         @serializeAsColor3()
-        protected _secondaryColor: Color3;
+        protected __perceptualColor: Nullable<Color3>;
         /**
-         * Secondary light Color (multiply against the G channel of the environement texture)
+         * Experimental Internal Use Only.
+         * 
+         * Key light Color in "perceptual value" meaning the color you would like to see on screen.
+         * This acts as a helper to set the primary color to a more "human friendly" value.
+         * Conversion to linear space as well as exposure and tone mapping correction will be applied to keep the
+         * output color as close as possible from the chosen value.
+         * (This does not account for contrast color grading and color curves as they are considered post effect and not directly
+         * part of lighting setup.)
          */
-        @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public secondaryColor = Color3.Gray();
+        public get _perceptualColor(): Nullable<Color3> {
+            return this.__perceptualColor;
+        }
+        public set _perceptualColor(value: Nullable<Color3>) {
+            this.__perceptualColor = value;
+            this._computePrimaryColorFromPerceptualColor();
+            this._markAllSubMeshesAsLightsDirty();
+        }
 
         @serialize()
-        protected _secondaryLevel: float;
+        protected _primaryColorShadowLevel: float = 0;
         /**
-         * Secondary light Level (allowing HDR output of the background)
+         * Defines the level of the shadows (dark area of the reflection map) in order to help scaling the colors.
+         * The color opposite to the primary color is used at the level chosen to define what the black area would look.
          */
-        @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public secondaryLevel: float = 1;
-
-        @serializeAsColor3()
-        protected _tertiaryColor: Color3;
-        /**
-         * Tertiary light Color (multiply against the B channel of the environement texture)
-         */
-        @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public tertiaryColor = Color3.Black();
+        public get primaryColorShadowLevel(): float {
+            return this._primaryColorShadowLevel;
+        }
+        public set primaryColorShadowLevel(value: float) {
+            this._primaryColorShadowLevel = value;
+            this._computePrimaryColors();
+            this._markAllSubMeshesAsLightsDirty();
+        }
 
         @serialize()
-        protected _tertiaryLevel: float;
+        protected _primaryColorHighlightLevel: float = 0;
         /**
-         * Tertiary light Level (allowing HDR output of the background)
+         * Defines the level of the highliights (highlight area of the reflection map) in order to help scaling the colors.
+         * The primary color is used at the level chosen to define what the white area would look.
          */
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public tertiaryLevel: float = 1;
+        public get primaryColorHighlightLevel(): float {
+            return this._primaryColorHighlightLevel;
+        }
+        public set primaryColorHighlightLevel(value: float) {
+            this._primaryColorHighlightLevel = value;
+            this._computePrimaryColors();
+            this._markAllSubMeshesAsLightsDirty();
+        }
 
         @serializeAsTexture()
         protected _reflectionTexture: Nullable<BaseTexture>;
@@ -223,15 +242,6 @@
          */
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public shadowLights: Nullable<IShadowLight[]> = null;
-
-        @serialize()
-        protected _shadowBlurScale: int;
-        /**
-         * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
-         * soft lighting on the background.
-         */
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public shadowBlurScale: int = 1;
 
         @serialize()
         protected _shadowLevel: float;
@@ -400,6 +410,7 @@
 
             // Attaches observer.
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                this._computePrimaryColorFromPerceptualColor();
                 this._markAllSubMeshesAsImageProcessingDirty();
             });
         }
@@ -534,6 +545,9 @@
         // Temp values kept as cache in the material.
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _reflectionControls = Vector4.Zero();
+        private _white = Color3.White();
+        private _primaryShadowColor = Color3.Black();
+        private _primaryHighlightColor = Color3.Black();
 
         /**
          * Instantiates a Background Material in the given scene
@@ -654,10 +668,6 @@
                         defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
 
                         switch (reflectionTexture.coordinatesMode) {
-                            case Texture.CUBIC_MODE:
-                            case Texture.INVCUBIC_MODE:
-                                defines.REFLECTIONMAP_CUBIC = true;
-                                break;
                             case Texture.EXPLICIT_MODE:
                                 defines.REFLECTIONMAP_EXPLICIT = true;
                                 break;
@@ -682,7 +692,11 @@
                             case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
                                 defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                                 break;
-                        }
+                            case Texture.CUBIC_MODE:
+                            case Texture.INVCUBIC_MODE:
+                            default:
+                                    defines.REFLECTIONMAP_CUBIC = true;
+                                    break;                        }
 
                         if (this.reflectionFresnel) {
                             defines.REFLECTIONFRESNEL = true;
@@ -699,6 +713,7 @@
                         }
                     } else {
                         defines.REFLECTION = false;
+                        defines.REFLECTIONFRESNEL = false;
                         defines.REFLECTIONFALLOFF = false;
                         defines.REFLECTIONBLUR = false;
                         defines.REFLECTIONMAP_3D = false;
@@ -721,6 +736,10 @@
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.USERGBCOLOR = this._useRGBColor;
                 defines.NOISE = this._enableNoise;
+            }
+
+            if (defines._areLightsDirty) {
+                defines.USEHIGHLIGHTANDSHADOWCOLORS = !this._useRGBColor && (this._primaryColorShadowLevel !== 0 || this._primaryColorHighlightLevel !== 0);
             }
 
             if (defines._areImageProcessingDirty) {
@@ -790,7 +809,7 @@
                     "vFogInfos", "vFogColor", "pointSize",
                     "vClipPlane", "mBones",
 
-                    "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
+                    "vPrimaryColor", "vPrimaryColorShadow",
                     "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",
 
                     "shadowLevel", "alpha",
@@ -849,13 +868,52 @@
         }
 
         /**
+         * Compute the primary color according to the chosen perceptual color.
+         */
+        private _computePrimaryColorFromPerceptualColor(): void {
+            if (!this.__perceptualColor) {
+                return;
+            }
+
+            this._primaryColor.copyFrom(this.__perceptualColor);
+
+            // Revert gamma space.
+            this._primaryColor.toLinearSpaceToRef(this._primaryColor);
+
+            // Revert image processing configuration.
+            if (this._imageProcessingConfiguration) {
+                // Revert Exposure.
+                this._primaryColor.scaleToRef(1 / this._imageProcessingConfiguration.exposure, this._primaryColor);
+            }
+
+            this._computePrimaryColors();
+        }
+
+        /**
+         * Compute the highlights and shadow colors according to their chosen levels.
+         */
+        private _computePrimaryColors(): void {
+            if (this._primaryColorShadowLevel === 0 && this._primaryColorHighlightLevel === 0) {
+                return;
+            }
+
+            // Find the highlight color based on the configuration.
+            this._primaryColor.scaleToRef(this._primaryColorShadowLevel, this._primaryShadowColor);
+            this._primaryColor.subtractToRef(this._primaryShadowColor, this._primaryShadowColor);
+
+            // Find the shadow color based on the configuration.
+            this._white.subtractToRef(this._primaryColor, this._primaryHighlightColor);
+            this._primaryHighlightColor.scaleToRef(this._primaryColorHighlightLevel, this._primaryHighlightColor);
+            this._primaryColor.addToRef(this._primaryHighlightColor, this._primaryHighlightColor);
+        }
+
+        /**
          * Build the uniform buffer used in the material.
          */
         public buildUniformLayout(): void {
             // Order is important !
             this._uniformBuffer.addUniform("vPrimaryColor", 4);
-            this._uniformBuffer.addUniform("vSecondaryColor", 4);
-            this._uniformBuffer.addUniform("vTertiaryColor", 4);
+            this._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
             this._uniformBuffer.addUniform("vDiffuseInfos", 2);
             this._uniformBuffer.addUniform("vReflectionInfos", 2);
             this._uniformBuffer.addUniform("diffuseMatrix", 16);
@@ -956,9 +1014,13 @@
                         this._uniformBuffer.updateFloat("pointSize", this.pointSize);
                     }
 
-                    this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryColor, this._primaryLevel);
-                    this._uniformBuffer.updateColor4("vSecondaryColor", this._secondaryColor, this._secondaryLevel);
-                    this._uniformBuffer.updateColor4("vTertiaryColor", this._tertiaryColor, this._tertiaryLevel);
+                    if (defines.USEHIGHLIGHTANDSHADOWCOLORS) {
+                        this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryHighlightColor, 1.0);
+                        this._uniformBuffer.updateColor4("vPrimaryColorShadow", this._primaryShadowColor, 1.0);
+                    }
+                    else {
+                        this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryColor, 1.0);
+                    }
                 }
 
                 this._uniformBuffer.updateFloat("fFovMultiplier", this._fovMultiplier);

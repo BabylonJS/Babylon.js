@@ -27,13 +27,14 @@
         public _referencePoint = new Vector3(0, 0, 1);
         private _currentUpVector = new Vector3(0, 1, 0);
         public _transformedReferencePoint = Vector3.Zero();
-        public _lookAtTemp = Matrix.Zero();
-        public _tempMatrix = Matrix.Zero();
+
+        protected _globalCurrentTarget = Vector3.Zero();
+        protected _globalCurrentUpVector = Vector3.Zero();
 
         public _reset: () => void;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
-            super(name, position, scene);
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+            super(name, position, scene, setActiveOnSceneIfNoneActive);
         }
 
         public getFrontPosition(distance: number): Vector3 {
@@ -290,13 +291,28 @@
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
 
-            if (this.getScene().useRightHandedSystem) {
-                Matrix.LookAtRHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
+            this._computeViewMatrix(this.position, this._currentTarget, this._currentUpVector);
+            return this._viewMatrix;
+        }
+
+        protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void {
+            if (this.parent) {
+                const parentWorldMatrix = this.parent.getWorldMatrix();
+                Vector3.TransformCoordinatesToRef(this.position, parentWorldMatrix, this._globalPosition);
+                Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._globalCurrentTarget);
+                Vector3.TransformNormalToRef(up, parentWorldMatrix, this._globalCurrentUpVector);
+                this._markSyncedWithParent();
             } else {
-                Matrix.LookAtLHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
+                this._globalPosition.copyFrom(this.position);
+                this._globalCurrentTarget.copyFrom(target);
+                this._globalCurrentUpVector.copyFrom(up);
             }
 
-            return this._viewMatrix;
+            if (this.getScene().useRightHandedSystem) {
+                Matrix.LookAtRHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+            } else {
+                Matrix.LookAtLHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+            }
         }
 
         /**

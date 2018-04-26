@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
      * Manages the defines for the PBR Material.
-     * @ignoreChildren
+     * @hiddenChildren
      */
     class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public PBR = true;
@@ -132,7 +132,7 @@
 
         public FORCENORMALFORWARD = false;
 
-        public GEOMETRYAA = false;
+        public SPECULARAA = false;
 
         public UNLIT = false;
 
@@ -1046,11 +1046,6 @@
                         defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
 
                         switch (reflectionTexture.coordinatesMode) {
-                            case Texture.CUBIC_MODE:
-                            case Texture.INVCUBIC_MODE:
-                                defines.REFLECTIONMAP_CUBIC = true;
-                                defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
-                                break;
                             case Texture.EXPLICIT_MODE:
                                 defines.REFLECTIONMAP_EXPLICIT = true;
                                 break;
@@ -1075,7 +1070,13 @@
                             case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
                                 defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
                                 break;
-                        }
+                            case Texture.CUBIC_MODE:
+                            case Texture.INVCUBIC_MODE:
+                            default:
+                                    defines.REFLECTIONMAP_CUBIC = true;
+                                    defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
+                                    break;
+                            }
 
                         if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
@@ -1211,7 +1212,7 @@
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
                 defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
 
-                defines.GEOMETRYAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
+                defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
             }
 
             if (defines._areImageProcessingDirty) {
@@ -1610,7 +1611,7 @@
 
             this._uniformBuffer.update();
 
-            this._afterBind(mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         /**

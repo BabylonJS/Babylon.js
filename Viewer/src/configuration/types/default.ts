@@ -38,7 +38,8 @@ export let defaultConfiguration: ViewerConfiguration = {
             },
             events: {
                 pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ },
-                pointerover: true
+                pointerover: true,
+                change: { 'animation-selector': true }
             }
         },
         overlay: {
@@ -66,24 +67,11 @@ export let defaultConfiguration: ViewerConfiguration = {
                 type: 2,
                 zoomOnBoundingInfo: true,
                 zoomStopsAnimation: false
-            }
-        }
+            },
+            bouncing: 1
+        },
+        wheelPrecision: 200,
     },
-    /*lights: {
-        "default": {
-            type: 1,
-            shadowEnabled: true,
-            direction: { x: -0.2, y: -0.8, z: 0 },
-            position: { x: 10, y: 10, z: 0 },
-            intensity: 4.5,
-            shadowConfig: {
-                useBlurExponentialShadowMap: true,
-                useKernelBlur: true,
-                blurKernel: 64,
-                blurScale: 4
-            }
-        }
-    },*/
     skybox: {
         /*cubeTexture: {
             url: 'https://playground.babylonjs.com/textures/environment.dds',
@@ -91,7 +79,7 @@ export let defaultConfiguration: ViewerConfiguration = {
         },*/
         pbr: true,
         blur: 0.7,
-        infiniteDIstance: false,
+        infiniteDistance: false,
         /*material: {
             imageProcessingConfiguration: {
                 colorCurves: {
@@ -110,7 +98,9 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }*/
     },
-    ground: true,
+    ground: {
+        receiveShadows: true
+    },
     engine: {
         antialiasing: true
     },
