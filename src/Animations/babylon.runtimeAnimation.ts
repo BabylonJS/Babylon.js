@@ -222,6 +222,17 @@
          * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
         public setValue(currentValue: any, weight = 1.0): void {
+            if (this._target instanceof Array) {
+                for (const target of this._target) {
+                    this._setValue(target, currentValue, weight);
+                }
+            }
+            else {
+                this._setValue(this._target, currentValue, weight);
+            }
+        }
+
+        private _setValue(target: any, currentValue: any, weight: number): void {
             // Set value
             var path: any;
             var destination: any;
@@ -229,7 +240,7 @@
             let targetPropertyPath = this._animation.targetPropertyPath
 
             if (targetPropertyPath.length > 1) {
-                var property = this._target[targetPropertyPath[0]];
+                var property = target[targetPropertyPath[0]];
 
                 for (var index = 1; index < targetPropertyPath.length - 1; index++) {
                     property = property[targetPropertyPath[index]];
@@ -239,7 +250,7 @@
                 destination = property;
             } else {
                 path = targetPropertyPath[0];
-                destination = this._target;
+                destination = target;
             }
 
             this._targetPath = path;
@@ -255,7 +266,7 @@
                     originalValue = destination[path];
                 }
 
-                if (originalValue.clone) {
+                if (originalValue && originalValue.clone) {
                     this._originalValue = originalValue.clone();
                 } else {
                     this._originalValue = originalValue;
@@ -263,7 +274,7 @@
             }
 
             // Blending
-            const enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
+            const enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
             if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
                     let originalValue = destination[path];
@@ -302,7 +313,7 @@
                     }
                 }
 
-                const blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+                const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
                 this._blendingFactor += blendingSpeed;
             } else {
                 this._currentValue = currentValue;
@@ -314,8 +325,8 @@
                 destination[path] = this._currentValue;
             }
 
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this._animation.targetProperty);
+            if (target.markAsDirty) {
+                target.markAsDirty(this._animation.targetProperty);
             }
         }
 
