@@ -107,10 +107,10 @@ module BABYLON {
             var serializationObject: any = {};
 
             serializationObject.type = this.getClassName();
-            serializationObject.direction1  = this.direction1.asArray();;
-            serializationObject.direction2  = this.direction2.asArray();;
-            serializationObject.minEmitBox  = this.minEmitBox.asArray();;
-            serializationObject.maxEmitBox  = this.maxEmitBox.asArray();;
+            serializationObject.direction1  = this.direction1.asArray();
+            serializationObject.direction2  = this.direction2.asArray();
+            serializationObject.minEmitBox  = this.minEmitBox.asArray();
+            serializationObject.maxEmitBox  = this.maxEmitBox.asArray();
 
             return serializationObject;
         }

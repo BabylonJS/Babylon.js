@@ -1368,7 +1368,7 @@
             }
 
             var materialType = Tools.Instantiate(parsedMaterial.customType);
-            return materialType.Parse(parsedMaterial, scene, rootUrl);;
+            return materialType.Parse(parsedMaterial, scene, rootUrl);
         }
     }
 } 

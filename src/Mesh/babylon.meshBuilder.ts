@@ -649,7 +649,7 @@
             var p = 0;
             var step = pi2 / tessellation * arc;
             var rotated;
-            var path = new Array<Vector3>();;
+            var path = new Array<Vector3>();
             for (i = 0; i <= tessellation; i++) {
                 var path: Vector3[] = [];
                 if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
