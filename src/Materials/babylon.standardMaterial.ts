@@ -120,49 +120,49 @@ module BABYLON {
 
     export class StandardMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
-        private _diffuseTexture: Nullable<BaseTexture>;;
+        private _diffuseTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-        public diffuseTexture: Nullable<BaseTexture>;;
+        public diffuseTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("ambientTexture")
-        private _ambientTexture: Nullable<BaseTexture>;;
+        private _ambientTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public ambientTexture: Nullable<BaseTexture>;;
+        public ambientTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: Nullable<BaseTexture>;;
+        private _opacityTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-        public opacityTexture: Nullable<BaseTexture>;;
+        public opacityTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("reflectionTexture")
-        private _reflectionTexture: Nullable<BaseTexture>;;
+        private _reflectionTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("emissiveTexture")
-        private _emissiveTexture: Nullable<BaseTexture>;;
+        private _emissiveTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public emissiveTexture: Nullable<BaseTexture>;;
+        public emissiveTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("specularTexture")
-        private _specularTexture: Nullable<BaseTexture>;;
+        private _specularTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public specularTexture: Nullable<BaseTexture>;;
+        public specularTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("bumpTexture")
-        private _bumpTexture: Nullable<BaseTexture>;;
+        private _bumpTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture: Nullable<BaseTexture>;;
+        public bumpTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("lightmapTexture")
-        private _lightmapTexture: Nullable<BaseTexture>;;
+        private _lightmapTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public lightmapTexture: Nullable<BaseTexture>;;
+        public lightmapTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("refractionTexture")
-        private _refractionTexture: Nullable<BaseTexture>;;
+        private _refractionTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public refractionTexture: Nullable<BaseTexture>;;
+        public refractionTexture: Nullable<BaseTexture>;
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
