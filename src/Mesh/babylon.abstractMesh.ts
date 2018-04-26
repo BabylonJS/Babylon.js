@@ -1151,7 +1151,7 @@
          * @returns true if the mesh is completely in the frustum planes 
          */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
+            return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
         }
 
         /** 
