@@ -46,6 +46,7 @@ export interface ViewerConfiguration {
     lights?: { [name: string]: boolean | ILightConfiguration },
     // engine configuration. optional!
     engine?: {
+        renderInBackground?: boolean;
         antialiasing?: boolean;
         disableResize?: boolean;
         engineOptions?: EngineOptions;
@@ -108,6 +109,38 @@ export interface ViewerConfiguration {
     }
 }
 
+/**
+ * Defines an animation to be applied to a model (translation, scale or rotation).
+ */
+export interface IModelAnimationConfiguration {
+    /**
+     * Time of animation, in seconds
+     */
+    time?: number;
+
+    /**
+     * Scale to apply
+     */
+    scaling?: {
+        x: number;
+        y: number;
+        z: number;
+    };
+
+    /**
+     * Easing function to apply
+     * See SPECTRE.EasingFunction
+     */
+    easingFunction?: number;
+
+    /**
+     * An Easing mode to apply to the easing function
+     * See BABYLON.EasingFunction
+     */
+    easingMode?: number;
+}
+
+
 export interface IDefaultRenderingPipelineConfiguration {
     sharpenEnabled?: boolean;
     bloomEnabled?: boolean;
@@ -132,6 +165,7 @@ export interface IModelConfiguration {
     id?: string;
     url?: string;
     root?: string; //optional
+    file?: string; // is a file being loaded? root and url ignored
     loader?: string; // obj, gltf?
     position?: { x: number, y: number, z: number };
     rotation?: { x: number, y: number, z: number, w?: number };
@@ -154,6 +188,9 @@ export interface IModelConfiguration {
         autoStart?: boolean | string;
         playOnce?: boolean;
     }
+
+    entryAnimation?: IModelAnimationConfiguration;
+    exitAnimation?: IModelAnimationConfiguration;
 
     material?: {
         directEnabled?: boolean;

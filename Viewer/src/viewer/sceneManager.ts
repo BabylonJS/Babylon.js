@@ -1,7 +1,7 @@
 import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration } from '../configuration/configuration';
-import { ViewerModel } from '../model/viewerModel';
+import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
 import { ViewerLabs } from '../labs/viewerLabs';
@@ -119,6 +119,40 @@ export class SceneManager {
         });
 
         this.labs = new ViewerLabs(this);
+
+        this.onSceneInitObservable.add((scene) => {
+            scene.registerBeforeRender(() => {
+                if (this.models.length && scene.animatables && scene.animatables.length > 0) {
+                    // make sure all models are loaded
+                    if (this.models.every((model) => model.state === ModelState.COMPLETE && !model.currentAnimation)) return;
+                    for (let light of this.scene.lights) {
+                        let generator = light.getShadowGenerator();
+                        if (generator) {
+                            // Processing shadows if animates
+                            let shadowMap = generator.getShadowMap();
+                            if (shadowMap) {
+                                shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                            }
+                        }
+                    }
+                }
+            });
+            return this._viewer.onSceneInitObservable.notifyObserversWithPromise(this.scene);
+        });
+
+        this._viewer.onModelLoadedObservable.add((model) => {
+            for (let light of this.scene.lights) {
+                let generator = light.getShadowGenerator();
+                if (generator) {
+                    // Processing shadows if animates
+                    let shadowMap = generator.getShadowMap();
+                    if (shadowMap) {
+                        shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                    }
+                }
+            }
+            this._focusOnModel(model);
+        });
     }
 
     /**
@@ -254,18 +288,6 @@ export class SceneManager {
     }
 
     /**
-     * initialize the environment for a specific model.
-     * Per default it will use the viewer's configuration.
-     * @param model the model to use to configure the environment.
-     * @returns a Promise that will resolve when the configuration is done.
-     */
-    protected _initEnvironment(model?: ViewerModel): Promise<Scene> {
-        this._configureEnvironment(this._viewer.configuration.skybox, this._viewer.configuration.ground, model);
-
-        return Promise.resolve(this.scene);
-    }
-
-    /**
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
@@ -347,9 +369,9 @@ export class SceneManager {
         }
 
         // configure model
-        if (newConfiguration.model && typeof newConfiguration.model === 'object') {
+        /*if (newConfiguration.model && typeof newConfiguration.model === 'object') {
             this._configureModel(newConfiguration.model);
-        }
+        }*/
 
         // lights
         this._configureLights(newConfiguration.lights, model);
@@ -663,7 +685,7 @@ export class SceneManager {
      * configure all models using the configuration.
      * @param modelConfiguration the configuration to use to reconfigure the models
      */
-    protected _configureModel(modelConfiguration: Partial<IModelConfiguration>) {
+    /*protected _configureModel(modelConfiguration: Partial<IModelConfiguration>) {
         this.models.forEach(model => {
             model.updateConfiguration(modelConfiguration);
         });
@@ -673,7 +695,7 @@ export class SceneManager {
             object: this.models,
             newConfiguration: modelConfiguration
         });
-    }
+    }*/
 
     /**
      * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
@@ -681,8 +703,6 @@ export class SceneManager {
      * @param model optionally use the model to configure the camera.
      */
     protected _configureCamera(cameraConfig: ICameraConfiguration = {}, model?: ViewerModel) {
-        let focusMeshes = model ? model.meshes : this.scene.meshes;
-
         if (!this.scene.activeCamera) {
             let attachControl = true;
             if (this._viewer.configuration.scene && this._viewer.configuration.scene.disableCameraControl) {
@@ -702,20 +722,17 @@ export class SceneManager {
             let newTarget = this.camera.target.clone();
             extendClassWithConfig(newTarget, cameraConfig.target);
             this.camera.setTarget(newTarget);
-        } else if (this.models.length && !cameraConfig.disableAutoFocus) {
+        } /*else if (this.models.length && !cameraConfig.disableAutoFocus) {
             this._focusOnModel(this.models[0]);
+        }*/
+
+        if (cameraConfig.rotation) {
+            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
         }
-
-        this._viewer.onModelLoadedObservable.add(this._focusOnModel);
-        if (model)
-
-            if (cameraConfig.rotation) {
-                this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
-            }
 
         if (cameraConfig.behaviors) {
             for (let name in cameraConfig.behaviors) {
-                this._setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
+                this._setCameraBehavior(cameraConfig.behaviors[name]);
             }
         };
 
@@ -726,6 +743,9 @@ export class SceneManager {
         const sceneDiagonalLenght = sceneDiagonal.length();
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+        else {
+            this.camera.upperRadiusLimit = 10;
+        }
 
         // sanity check!
         if (this.scene.imageProcessingConfiguration) {
@@ -754,6 +774,8 @@ export class SceneManager {
         const halfSizeVec = sizeVec.scale(0.5);
         const center = boundingInfo.min.add(halfSizeVec);
         this.camera.setTarget(center);
+        this.camera.alpha = (this._viewer.configuration.camera && this._viewer.configuration.camera.alpha) || this.camera.alpha;
+        this.camera.beta = (this._viewer.configuration.camera && this._viewer.configuration.camera.beta) || this.camera.beta;
     }
 
     protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean, model?: ViewerModel) {
@@ -1254,7 +1276,7 @@ export class SceneManager {
     private _setCameraBehavior(behaviorConfig: number | {
         type: number;
         [propName: string]: any;
-    }, payload: any) {
+    }, payload?: any) {
 
         let behavior: Behavior<ArcRotateCamera> | null;
         let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
