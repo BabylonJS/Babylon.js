@@ -211,8 +211,6 @@ export abstract class AbstractViewer {
                 this.engine.runRenderLoop(this._render);
             });
         });
-
-        Tools.Log("Babylon.js viewer (v" + Version + ") launched");
     }
 
     /**
@@ -465,11 +463,6 @@ export abstract class AbstractViewer {
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
-            }).then((scene) => {
-                /*if (!autoLoad) {
-                    this.updateConfiguration();
-                }*/
-                return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).catch(e => {

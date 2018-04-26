@@ -25,10 +25,10 @@ export let defaultConfiguration: ViewerConfiguration = {
             html: require("../../../assets/templates/default/navbar.html"),
             params: {
                 buttons: {
-                    "help-button": {
+                    /*"help-button": {
                         altText: "Help",
                         image: require('../../../assets/img/help-circle.png')
-                    },
+                    },*/
                     "fullscreen-button": {
                         altText: "Fullscreen",
                         image: require('../../../assets/img/fullscreen.png')

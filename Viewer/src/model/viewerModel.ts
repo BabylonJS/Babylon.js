@@ -1,7 +1,7 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
-import { IModelConfiguration } from "../configuration/configuration";
-import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
+import { IModelConfiguration, IModelAnimationConfiguration } from "../configuration/configuration";
+import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction } from "./modelAnimation";
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { AbstractViewer } from "..";
@@ -12,6 +12,9 @@ export enum ModelState {
     INIT,
     LOADING,
     LOADED,
+    ENTRY,
+    ENTRYDONE,
+    COMPLETE,
     CANCELED,
     ERROR
 }
@@ -20,7 +23,6 @@ export enum ModelState {
  * The viewer model is a container for all assets representing a sngle loaded model.
  */
 export class ViewerModel implements IDisposable {
-
     /**
      * The loader used to load this model.
      */
@@ -67,6 +69,10 @@ export class ViewerModel implements IDisposable {
     public onLoadErrorObservable: Observable<{ message: string; exception: any }>;
 
     /**
+     * Will be executed after the model finished loading and complete, including entry animation and lod
+     */
+    public onCompleteObservable: Observable<ViewerModel>;
+    /**
      * Observers registered here will be executed every time the model is being configured.
      * This can be used to extend the model's configuration without extending the class itself
      */
@@ -85,10 +91,19 @@ export class ViewerModel implements IDisposable {
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
+    private _loaderDone: boolean = false;
+
+    private _entryAnimation: ModelAnimationConfiguration;
+    private _exitAnimation: ModelAnimationConfiguration;
+    private _scaleTransition: BABYLON.Animation;
+    private _animatables: Array<BABYLON.Animatable> = [];
+    private _frameRate: number = 60;
+
     constructor(protected _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();
+        this.onCompleteObservable = new Observable();
         this.onAfterConfigure = new Observable();
 
         this.state = ModelState.INIT;
@@ -99,6 +114,8 @@ export class ViewerModel implements IDisposable {
         // rotate 180, gltf fun
         this._pivotMesh.rotation.y += Math.PI;
 
+        this._scaleTransition = new Animation("scaleAnimation", "scaling", this._frameRate, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
         this._modelConfiguration = deepmerge(this._viewer.configuration.model || {}, modelConfiguration);
@@ -106,8 +123,13 @@ export class ViewerModel implements IDisposable {
         this._viewer.sceneManager.models.push(this);
         this._viewer.onModelAddedObservable.notifyObservers(this);
         this.onLoadedObservable.add(() => {
+            this.updateConfiguration(this._modelConfiguration);
             this._viewer.onModelLoadedObservable.notifyObservers(this);
             this._initAnimations();
+        });
+
+        this.onCompleteObservable.add(() => {
+            this.state = ModelState.COMPLETE;
         });
     }
 
@@ -123,6 +145,17 @@ export class ViewerModel implements IDisposable {
      */
     public set enabled(enable: boolean) {
         this.rootMesh.setEnabled(enable);
+    }
+
+    public set loaderDone(done: boolean) {
+        this._loaderDone = done;
+        this._checkCompleteState();
+    }
+
+    private _checkCompleteState() {
+        if (this._loaderDone && (this.state === ModelState.ENTRYDONE)) {
+            this._modelComplete();
+        }
     }
 
     /**
@@ -156,8 +189,6 @@ export class ViewerModel implements IDisposable {
     public get meshes() {
         return this._meshes;
     }
-
-    public get
 
     /**
      * Get the model's configuration
@@ -201,7 +232,9 @@ export class ViewerModel implements IDisposable {
             });
         }
 
-        if (!this._modelConfiguration) return;
+        let completeCallback = () => {
+
+        }
 
         if (this._modelConfiguration.animation) {
             if (this._modelConfiguration.animation.playOnce) {
@@ -212,9 +245,50 @@ export class ViewerModel implements IDisposable {
             if (this._modelConfiguration.animation.autoStart && this._animations.length) {
                 let animationName = this._modelConfiguration.animation.autoStart === true ?
                     this._animations[0].name : this._modelConfiguration.animation.autoStart;
-                this.playAnimation(animationName);
+
+                completeCallback = () => {
+                    this.playAnimation(animationName);
+                }
             }
         }
+
+        this._enterScene(completeCallback);
+    }
+
+    /**
+     * Animates the model from the current position to the default position
+     * @param completeCallback A function to call when the animation has completed
+     */
+    private _enterScene(completeCallback?: () => void): void {
+        let callback = () => {
+            this.state = ModelState.ENTRYDONE;
+            this._checkCompleteState();
+            if (completeCallback) completeCallback();
+        }
+        if (!this._entryAnimation) {
+            callback();
+            return;
+        }
+
+        this._applyAnimation(this._entryAnimation, true, callback);
+    }
+
+    /**
+     * Animates the model from the current position to the exit-screen position
+     * @param completeCallback A function to call when the animation has completed
+     */
+    private _exitScene(completeCallback: () => void): void {
+        if (!this._exitAnimation) {
+            completeCallback();
+            return;
+        }
+
+        this._applyAnimation(this._exitAnimation, false, completeCallback);
+    }
+
+    private _modelComplete() {
+        this.state = ModelState.COMPLETE;
+        this.onCompleteObservable.notifyObservers(this);
     }
 
     /**
@@ -317,7 +391,7 @@ export class ViewerModel implements IDisposable {
             if (parentIndex !== undefined) {
                 meshesToNormalize.push(this._meshes[parentIndex]);
             } else {
-                meshesToNormalize = [this._pivotMesh];
+                meshesToNormalize = this._pivotMesh.getChildMeshes(true).length === 1 ? [this._pivotMesh] : meshesWithNoParent;
             }
 
             if (unitSize) {
@@ -341,17 +415,7 @@ export class ViewerModel implements IDisposable {
                 });
             }
         } else {
-            //center automatically
-            //meshesWithNoParent.forEach(mesh => {
-            const boundingInfo = this._pivotMesh.getHierarchyBoundingVectors(true);
-            const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
-            const halfSizeVec = sizeVec.scale(0.5);
-            const center = boundingInfo.min.add(halfSizeVec);
-            this._pivotMesh.position = center.scale(-1);
-
-            // Recompute Info.
-            this._pivotMesh.computeWorldMatrix(true);
-            //});
+            // if centered, should be done here
         }
 
         // position?
@@ -398,7 +462,33 @@ export class ViewerModel implements IDisposable {
             this._applyModelMaterialConfiguration(mesh.material!);
         });
 
+        if (this._modelConfiguration.entryAnimation) {
+            this._entryAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.entryAnimation);
+        }
+
+        if (this._modelConfiguration.exitAnimation) {
+            this._exitAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.exitAnimation);
+        }
+
+
         this.onAfterConfigure.notifyObservers(this);
+    }
+
+    private _modelAnimationConfigurationToObject(animConfig: IModelAnimationConfiguration): ModelAnimationConfiguration {
+        let anim: ModelAnimationConfiguration = {
+            time: 0.5
+        };
+        if (animConfig.scaling) {
+            anim.scaling = Vector3.Zero();
+        }
+        if (animConfig.easingFunction !== undefined) {
+            anim.easingFunction = animConfig.easingFunction;
+        }
+        if (animConfig.easingMode !== undefined) {
+            anim.easingMode = animConfig.easingMode;
+        }
+        extendClassWithConfig(anim, animConfig);
+        return anim;
     }
 
     /**
@@ -441,9 +531,172 @@ export class ViewerModel implements IDisposable {
     }
 
     /**
+     * Start entry/exit animation given an animation configuration
+     * @param animationConfiguration Entry/Exit animation configuration
+     * @param isEntry Pass true if the animation is an entry animation
+     * @param completeCallback Callback to execute when the animation completes
+     */
+    private _applyAnimation(animationConfiguration: ModelAnimationConfiguration, isEntry: boolean, completeCallback?: () => void) {
+        let animations: BABYLON.Animation[] = [];
+
+        //scale
+        if (animationConfiguration.scaling) {
+
+            let scaleStart: BABYLON.Vector3 = isEntry ? animationConfiguration.scaling : new BABYLON.Vector3(1, 1, 1);
+            let scaleEnd: BABYLON.Vector3 = isEntry ? new BABYLON.Vector3(1, 1, 1) : animationConfiguration.scaling;
+
+            if (!scaleStart.equals(scaleEnd)) {
+                this.rootMesh.scaling = scaleStart;
+                this._setLinearKeys(
+                    this._scaleTransition,
+                    this.rootMesh.scaling,
+                    scaleEnd,
+                    animationConfiguration.time
+                );
+                animations.push(this._scaleTransition);
+            }
+        }
+
+        //Start the animation(s)
+        this.transitionTo(
+            animations,
+            animationConfiguration.time,
+            this._createEasingFunction(animationConfiguration.easingFunction),
+            animationConfiguration.easingMode,
+            () => { if (completeCallback) completeCallback(); }
+        );
+    }
+
+    /**
+    * Begin @animations with the specified @easingFunction
+    * @param animations The BABYLON Animations to begin
+    * @param duration of transition, in seconds
+    * @param easingFunction An easing function to apply
+    * @param easingMode A easing mode to apply to the easingFunction
+    * @param onAnimationEnd Call back trigger at the end of the animation.
+    */
+    public transitionTo(
+        animations: Animation[],
+        duration: number,
+        easingFunction: any,
+        easingMode: number = BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
+        onAnimationEnd: () => void): void {
+
+        if (easingFunction) {
+            for (let animation of animations) {
+                easingFunction.setEasingMode(easingMode);
+                animation.setEasingFunction(easingFunction);
+            }
+        }
+
+        //Stop any current animations before starting the new one - merging not yet supported.
+        this.stopAllAnimations();
+
+        this.rootMesh.animations = animations;
+
+        if (this._viewer.sceneManager.scene.beginAnimation) {
+            let animatable: Animatable = this._viewer.sceneManager.scene.beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
+                console.log(this.rootMesh.scaling);
+                if (onAnimationEnd) {
+                    onAnimationEnd();
+                }
+            });
+            this._animatables.push(animatable);
+        }
+    }
+
+    /**
+     * Sets key values on an Animation from first to last frame.
+     * @param animation The Babylon animation object to set keys on
+     * @param startValue The value of the first key
+     * @param endValue The value of the last key
+     * @param duration The duration of the animation, used to determine the end frame
+     */
+    private _setLinearKeys(animation: BABYLON.Animation, startValue: any, endValue: any, duration: number) {
+        animation.setKeys([
+            {
+                frame: 0,
+                value: startValue
+            },
+            {
+                frame: this._frameRate * duration,
+                value: endValue
+            }
+        ]);
+    }
+
+    /**
+     * Creates and returns a Babylon easing funtion object based on a string representing the Easing function
+     * @param easingFunctionID The enum of the easing funtion to create
+     * @return The newly created Babylon easing function object
+     */
+    private _createEasingFunction(easingFunctionID?: number): any {
+        let easingFunction;
+
+        switch (easingFunctionID) {
+            case EasingFunction.CircleEase:
+                easingFunction = new CircleEase();
+                break;
+            case EasingFunction.BackEase:
+                easingFunction = new BackEase(0.3);
+                break;
+            case EasingFunction.BounceEase:
+                easingFunction = new BounceEase();
+                break;
+            case EasingFunction.CubicEase:
+                easingFunction = new CubicEase();
+                break;
+            case EasingFunction.ElasticEase:
+                easingFunction = new ElasticEase();
+                break;
+            case EasingFunction.ExponentialEase:
+                easingFunction = new ExponentialEase();
+                break;
+            case EasingFunction.PowerEase:
+                easingFunction = new PowerEase();
+                break;
+            case EasingFunction.QuadraticEase:
+                easingFunction = new QuadraticEase();
+                break;
+            case EasingFunction.QuarticEase:
+                easingFunction = new QuarticEase();
+                break;
+            case EasingFunction.QuinticEase:
+                easingFunction = new QuinticEase();
+                break;
+            case EasingFunction.SineEase:
+                easingFunction = new SineEase();
+                break;
+            default:
+                Tools.Log("No ease function found");
+                break;
+        }
+
+        return easingFunction;
+    }
+
+    /**
+     * Stops and removes all animations that have been applied to the model
+     */
+    public stopAllAnimations(): void {
+        if (this.rootMesh) {
+            this.rootMesh.animations = [];
+        }
+        if (this.currentAnimation) {
+            this.currentAnimation.stop();
+        }
+        while (this._animatables.length) {
+            this._animatables[0].onAnimationEnd = null;
+            this._animatables[0].stop();
+            this._animatables.shift();
+        }
+    }
+
+    /**
      * Will remove this model from the viewer (but NOT dispose it).
      */
     public remove() {
+        this.stopAllAnimations();
         this._viewer.sceneManager.models.splice(this._viewer.sceneManager.models.indexOf(this), 1);
         // hide it
         this.rootMesh.isVisible = false;
