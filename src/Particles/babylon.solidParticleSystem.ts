@@ -200,8 +200,9 @@
                 vertexData.indices = (this._depthSort) ? this._indices : this._indices32;
                 vertexData.set(this._positions32, VertexBuffer.PositionKind);
                 vertexData.set(this._normals32, VertexBuffer.NormalKind);
+
                 if (this._uvs32.length > 0) {
-                    vertexData.set(this._uvs32, VertexBuffer.UVKind);;
+                    vertexData.set(this._uvs32, VertexBuffer.UVKind);
                 }
                 if (this._colors32.length > 0) {
                     vertexData.set(this._colors32, VertexBuffer.ColorKind);
