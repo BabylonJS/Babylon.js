@@ -205,6 +205,7 @@ module BABYLON {
     export class OBJFileLoader implements ISceneLoaderPlugin {
 
         public static OPTIMIZE_WITH_UV = false;
+        public static INVERT_Y = false;
         public name = "obj";
         public extensions = ".obj";
         public obj = /^o/;
@@ -845,6 +846,10 @@ module BABYLON {
                 vertexData.indices = handledMesh.indices;
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
                 vertexData.applyToMesh(babylonMesh);
+                if (OBJFileLoader.INVERT_Y) {
+                    babylonMesh.scaling.y *=-1;
+                }
+
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }

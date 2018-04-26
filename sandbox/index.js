@@ -4,6 +4,18 @@
 var assetUrl;
 var cameraPosition;
 var kiosk;
+var currentGroup; // animation group
+var currentGroupIndex;
+var currentScene;
+// html balise
+var animationBar = document.getElementById("animationBar");
+var dropdownBtn = document.getElementById("dropdownBtn");
+var chevronUp = document.getElementById("chevronUp");
+var chevronDown = document.getElementById("chevronDown");
+var dropdownLabel = document.getElementById("dropdownLabel");
+var dropdownContent = document.getElementById("dropdownContent");
+var playBtn = document.getElementById("playBtn");
+var slider = document.getElementById("slider");
 
 var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
@@ -35,27 +47,28 @@ if (BABYLON.Engine.isSupported()) {
     var htmlInput = document.getElementById("files");
     var footer = document.getElementById("footer");
     var btnFullScreen = document.getElementById("btnFullscreen");
-    var btnPerf = document.getElementById("btnPerf");
-    var help01 = document.getElementById("help01");
-    var help02 = document.getElementById("help02");
+    var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
     var filesInput;
-    var currentHelpCounter;
     var currentScene;
     var currentSkybox;
     var enableDebugLayer = false;
     var currentPluginName;
     var skyboxPath = "Assets/environment.dds";
 
+    engine.loadingUIBackgroundColor = "#a9b5bc";
+
+    btnFullScreen.classList.add("hidden");
+    btnInspector.classList.add("hidden");
+
     canvas.addEventListener("contextmenu", function (evt) {
         evt.preventDefault();
     }, false);
 
-    currentHelpCounter = localStorage.getItem("helpcounter");
-
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-    if (!currentHelpCounter) currentHelpCounter = 0;
+    // This is really important to tell Babylon.js to use decomposeLerp and matrix interpolation
+    BABYLON.Animation.AllowMatricesInterpolation = true;
 
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
@@ -84,19 +97,46 @@ if (BABYLON.Engine.isSupported()) {
             hideDebugLayerAndLogs();
         }
 
+        // Clear dropdown that contains animation names
+        dropdownContent.innerHTML = "";
+        animationBar.style.display = "none";
+        currentGroup = null;
+
+        if(babylonScene.animationGroups.length > 0) {
+            animationBar.style.display = "flex";
+            for (var index = 0; index < babylonScene.animationGroups.length; index++) {
+                var group = babylonScene.animationGroups[index];
+			    createDropdownLink(group,index);
+            }
+            currentGroup = babylonScene.animationGroups[0];
+            currentGroupIndex = 0;
+            document.getElementById( formatId(currentGroup.name+"-"+currentGroupIndex)).click();
+        }
+
+        // Sync the slider with the current frame
+        babylonScene.registerBeforeRender(function () {
+            
+            if (currentGroup != null && currentGroup.targetedAnimations[0].animation.runtimeAnimations[0] != null) {
+                var currentValue = slider.valueAsNumber;
+                var newValue = currentGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame;
+                var range = Math.abs(currentGroup.from - currentGroup.to);
+                if (Math.abs(currentValue - newValue) > range * 0.01) { // Only move if greater than a 1% change
+                    slider.value = newValue;
+                }
+            }
+        });
+
         // Clear the error
         errorZone.style.display = 'none';
+
+        btnFullScreen.classList.remove("hidden");
+        btnInspector.classList.remove("hidden");        
 
         currentScene = babylonScene;
         document.title = "BabylonJS - " + sceneFile.name;
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
-        // removing glTF created camera
-        if (currentScene.activeCamera && currentPluginName === "gltf") {
-            currentScene.activeCamera.dispose();
-            currentScene.activeCamera = null;
-        }
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
@@ -150,6 +190,7 @@ if (BABYLON.Engine.isSupported()) {
                 displayDebugLayerAndLogs();
             }
             document.getElementById("logo").className = "hidden";
+            document.getElementById("droptext").className = "hidden";
             canvas.style.opacity = 1;
             if (currentScene.activeCamera.keysUp) {
                 currentScene.activeCamera.keysUp.push(90); // Z
@@ -185,13 +226,14 @@ if (BABYLON.Engine.isSupported()) {
         var fileName = BABYLON.Tools.GetFilename(assetUrl);
         BABYLON.SceneLoader.LoadAsync(rootUrl, fileName, engine).then(function (scene) {
             sceneLoaded({ name: fileName }, scene);
+            currentScene = scene;
             scene.whenReadyAsync().then(function () {
                 engine.runRenderLoop(function ()  {
                     scene.render();
                 });
             });
         }).catch(function (reason) {
-            sceneError({ name: fileName }, null, reason);
+            sceneError({ name: fileName }, null, reason.message || reason);
         });
     }
     else {
@@ -208,7 +250,7 @@ if (BABYLON.Engine.isSupported()) {
 
         window.addEventListener("keydown", function (evt) {
             // Press R to reload
-            if (evt.keyCode === 82) {
+            if (evt.keyCode === 82 && !enableDebugLayer) {
                 filesInput.reload();
             }
         });
@@ -230,27 +272,12 @@ if (BABYLON.Engine.isSupported()) {
     if (kiosk) {
         footer.style.display = "none";
     }
-    else {
-        // The help tips will be displayed only 5 times
-        if (currentHelpCounter < 5) {
-            help01.className = "help shown";
-
-            setTimeout(function () {
-                help01.className = "help";
-                help02.className = "help2 shown";
-                setTimeout(function () {
-                    help02.className = "help2";
-                    localStorage.setItem("helpcounter", currentHelpCounter + 1);
-                }, 5000);
-            }, 5000);
-        }
-    }
 
     btnFullScreen.addEventListener('click', function () {
         engine.switchFullscreen(true);
     }, false);
 
-    btnPerf.addEventListener('click', function () {
+    btnInspector.addEventListener('click', function () {
         if (currentScene) {
             if (!enableDebugLayer) {
                 currentScene.debugLayer.show();
@@ -264,8 +291,8 @@ if (BABYLON.Engine.isSupported()) {
     }, false);
 
     window.addEventListener("keydown", function (evt) {
-        // Press Esc to toggle footer
-        if (evt.keyCode === 27) {
+        // Press space to toggle footer
+        if (evt.keyCode === 32 && !enableDebugLayer) {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
             }
@@ -295,3 +322,105 @@ function sizeScene() {
         divInspWrapper.style['max-width'] = document.body.clientWidth + "px";
     }
 }
+
+
+// animation
+// event on the dropdown
+function formatId(name){
+    return "data-" + name.replace(/\s/g,'');
+}
+
+function displayDropdownContent(display) {
+    if(display) {
+        dropdownContent.style.display = "flex";
+        chevronDown.style.display = "inline";
+        chevronUp.style.display = "none";
+    }
+    else {
+        dropdownContent.style.display = "none";
+        chevronDown.style.display = "none";
+        chevronUp.style.display = "inline";
+    }
+}
+dropdownBtn.addEventListener("click", function() {
+    if(dropdownContent.style.display === "flex") {
+        displayDropdownContent(false);
+    }
+    else {
+        displayDropdownContent(true);
+    }
+});
+
+function createDropdownLink(group,index) {
+    var animation = document.createElement("a");
+    animation.innerHTML = group.name;
+    animation.setAttribute("id",  formatId(group.name+"-"+index));
+    animation.addEventListener("click", function() {
+        // stop the current animation group
+        currentGroup.reset();
+        currentGroup.stop();
+        document.getElementById( formatId(currentGroup.name+"-"+currentGroupIndex)).classList.remove("active");
+        playBtn.classList.remove("play");
+        playBtn.classList.add("pause");
+
+        // start the new animation group
+        currentGroup = group;
+        currentGroupIndex = index;
+        currentGroup.start(true);
+        this.classList.add("active");
+        dropdownLabel.innerHTML = currentGroup.name;
+
+        // set the slider
+        slider.setAttribute("min", currentGroup.from);
+        slider.setAttribute("max", currentGroup.to);
+        currentSliderValue = currentGroup.from;
+        slider.value = currentGroup.from;
+
+        // hide the content of the dropdown
+        displayDropdownContent(false);
+    });
+    dropdownContent.appendChild(animation);
+}
+
+// event on the play/pause button
+playBtn.addEventListener("click", function() {
+    // click on the button to run the animation
+    if( this.classList.contains("play") ) {
+        this.classList.remove("play");
+        this.classList.add("pause");
+        var currentFrame = slider.value;
+        currentGroup.play(true);
+    }
+    // click on the button to pause the animation
+    else {
+        this.classList.add("play");
+        this.classList.remove("pause");
+        currentGroup.pause();
+    }
+});
+
+// event on the slider
+slider.addEventListener("input", function() {
+    if( playBtn.classList.contains("play") ) {
+        currentGroup.play(true);
+        currentGroup.goToFrame(this.value);
+        currentGroup.pause();
+    } else {
+        currentGroup.goToFrame(this.value);
+    }
+});
+
+var sliderPause = false;
+slider.addEventListener("mousedown", function() {
+    if( playBtn.classList.contains("pause") ) {
+        sliderPause = true;
+        playBtn.click();
+    }
+});
+
+slider.addEventListener("mouseup", function() {
+    if( sliderPause ) {
+        sliderPause = false;
+        playBtn.click();
+    }
+});

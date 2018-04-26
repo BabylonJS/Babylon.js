@@ -297,18 +297,18 @@ module BABYLON {
         public _shadowGenerator: Nullable<IShadowGenerator>;
 
         /**
-         * @ignore Internal use only.
+         * @hidden Internal use only.
          */
         public _excludedMeshesIds = new Array<string>();
 
         /**
-         * @ignore Internal use only.
+         * @hidden Internal use only.
          */
         public _includedOnlyMeshesIds = new Array<string>();
 
         /**
          * The current light unifom buffer.
-         * @ignore Internal use only.
+         * @hidden Internal use only.
          */
         public _uniformBuffer: UniformBuffer;
 
@@ -341,7 +341,7 @@ module BABYLON {
         public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
 
         /**
-         * @ignore internal use only.
+         * @hidden internal use only.
          */
         public abstract _getWorldMatrix(): Matrix;
 
@@ -686,7 +686,7 @@ module BABYLON {
 
         /**
          * Forces the meshes to update their light related information in their rendering used effects
-         * @ignore Internal Use Only
+         * @hidden Internal Use Only
          */
         public _markMeshesAsLightDirty() {
             for (var mesh of this.getScene().meshes) {
@@ -765,7 +765,7 @@ module BABYLON {
 
         /**
          * Reorder the light in the scene according to their defined priority.
-         * @ignore Internal Use Only
+         * @hidden Internal Use Only
          */
         public _reorderLightsInScene(): void {
             var scene = this.getScene();

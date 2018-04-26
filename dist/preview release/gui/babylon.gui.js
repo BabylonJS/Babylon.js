@@ -23,7 +23,6 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -304,6 +303,16 @@ var BABYLON;
                 var engine = scene.getEngine();
                 return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             };
+            AdvancedDynamicTexture.prototype.getProjectedPosition = function (position, worldMatrix) {
+                var scene = this.getScene();
+                if (!scene) {
+                    return BABYLON.Vector2.Zero();
+                }
+                var globalViewport = this._getGlobalViewport(scene);
+                var projectedPosition = BABYLON.Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+                projectedPosition.scaleInPlace(this.renderScale);
+                return new BABYLON.Vector2(projectedPosition.x, projectedPosition.y);
+            };
             AdvancedDynamicTexture.prototype._checkUpdate = function (camera) {
                 if (this._layerToDispose) {
                     if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -390,6 +399,21 @@ var BABYLON;
                     }
                 }
                 this._manageFocus();
+            };
+            AdvancedDynamicTexture.prototype._cleanControlAfterRemovalFromList = function (list, control) {
+                for (var pointerId in list) {
+                    if (!list.hasOwnProperty(pointerId)) {
+                        continue;
+                    }
+                    var lastControlOver = list[pointerId];
+                    if (lastControlOver === control) {
+                        delete list[pointerId];
+                    }
+                }
+            };
+            AdvancedDynamicTexture.prototype._cleanControlAfterRemoval = function (control) {
+                this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
+                this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
             };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
@@ -541,7 +565,6 @@ var BABYLON;
 
 //# sourceMappingURL=advancedDynamicTexture.js.map
 
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -586,7 +609,6 @@ var BABYLON;
 
 //# sourceMappingURL=measure.js.map
 
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -720,7 +742,6 @@ var BABYLON;
 
 //# sourceMappingURL=math2D.js.map
 
-"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -776,10 +797,10 @@ var BABYLON;
                     if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {
                         return window.innerWidth < window.innerHeight ? width : height;
                     }
-                    if (host.idealWidth) {
+                    if (host.idealWidth) { // horizontal
                         return width;
                     }
-                    if (host.idealHeight) {
+                    if (host.idealHeight) { // vertical
                         return height;
                     }
                 }
@@ -850,7 +871,119 @@ var BABYLON;
 
 //# sourceMappingURL=valueAndUnit.js.map
 
-"use strict";
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var MultiLinePoint = /** @class */ (function () {
+            function MultiLinePoint(multiLine) {
+                this._multiLine = multiLine;
+                this._x = new GUI.ValueAndUnit(0);
+                this._y = new GUI.ValueAndUnit(0);
+                this._point = new BABYLON.Vector2(0, 0);
+            }
+            Object.defineProperty(MultiLinePoint.prototype, "x", {
+                get: function () {
+                    return this._x.toString(this._multiLine._host);
+                },
+                set: function (value) {
+                    if (this._x.toString(this._multiLine._host) === value) {
+                        return;
+                    }
+                    if (this._x.fromString(value)) {
+                        this._multiLine._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLinePoint.prototype, "y", {
+                get: function () {
+                    return this._y.toString(this._multiLine._host);
+                },
+                set: function (value) {
+                    if (this._y.toString(this._multiLine._host) === value) {
+                        return;
+                    }
+                    if (this._y.fromString(value)) {
+                        this._multiLine._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLinePoint.prototype, "control", {
+                get: function () {
+                    return this._control;
+                },
+                set: function (value) {
+                    if (this._control === value) {
+                        return;
+                    }
+                    if (this._control && this._controlObserver) {
+                        this._control.onDirtyObservable.remove(this._controlObserver);
+                        this._controlObserver = null;
+                    }
+                    this._control = value;
+                    if (this._control) {
+                        this._controlObserver = this._control.onDirtyObservable.add(this._multiLine.onPointUpdate);
+                    }
+                    this._multiLine._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLinePoint.prototype, "mesh", {
+                get: function () {
+                    return this._mesh;
+                },
+                set: function (value) {
+                    if (this._mesh === value) {
+                        return;
+                    }
+                    if (this._mesh && this._meshObserver) {
+                        this._mesh.getScene().onAfterCameraRenderObservable.remove(this._meshObserver);
+                    }
+                    this._mesh = value;
+                    if (this._mesh) {
+                        this._meshObserver = this._mesh.getScene().onAfterCameraRenderObservable.add(this._multiLine.onPointUpdate);
+                    }
+                    this._multiLine._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            MultiLinePoint.prototype.translate = function () {
+                this._point = this._translatePoint();
+                return this._point;
+            };
+            MultiLinePoint.prototype._translatePoint = function () {
+                if (this._mesh != null) {
+                    return this._multiLine._host.getProjectedPosition(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
+                }
+                else if (this._control != null) {
+                    return new BABYLON.Vector2(this._control.centerX, this._control.centerY);
+                }
+                else {
+                    var host = this._multiLine._host;
+                    var xValue = this._x.getValueInPixel(host, Number(host._canvas.width));
+                    var yValue = this._y.getValueInPixel(host, Number(host._canvas.height));
+                    return new BABYLON.Vector2(xValue, yValue);
+                }
+            };
+            MultiLinePoint.prototype.dispose = function () {
+                this.control = null;
+                this.mesh = null;
+            };
+            return MultiLinePoint;
+        }());
+        GUI.MultiLinePoint = MultiLinePoint;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=multiLinePoint.js.map
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -944,6 +1077,17 @@ var BABYLON;
                 // Properties
                 get: function () {
                     return this._getTypeName();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontOffset", {
+                /** Gets or set information about font offsets (used to render and align text) */
+                get: function () {
+                    return this._fontOffset;
+                },
+                set: function (offset) {
+                    this._fontOffset = offset;
                 },
                 enumerable: true,
                 configurable: true
@@ -1139,7 +1283,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "_isFontSizeInPercentage", {
-                /** @ignore */
+                /** @hidden */
                 get: function () {
                     return this._fontSize.isPercentage;
                 },
@@ -1406,7 +1550,7 @@ var BABYLON;
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
-            /** @ignore */
+            /** @hidden */
             Control.prototype._resetFontCache = function () {
                 this._fontSet = true;
             };
@@ -1968,7 +2112,6 @@ var BABYLON;
 
 //# sourceMappingURL=control.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2083,6 +2226,9 @@ var BABYLON;
                     control.parent = null;
                 }
                 control.linkWithMesh(null);
+                if (this._host) {
+                    this._host._cleanControlAfterRemoval(control);
+                }
                 this._markAsDirty();
                 return this;
             };
@@ -2214,7 +2360,6 @@ var BABYLON;
 
 //# sourceMappingURL=container.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2357,7 +2502,6 @@ var BABYLON;
 
 //# sourceMappingURL=stackPanel.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2485,7 +2629,6 @@ var BABYLON;
 
 //# sourceMappingURL=rectangle.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2563,7 +2706,6 @@ var BABYLON;
 
 //# sourceMappingURL=ellipse.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2807,7 +2949,6 @@ var BABYLON;
 
 //# sourceMappingURL=line.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3096,7 +3237,6 @@ var BABYLON;
 
 //# sourceMappingURL=slider.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3224,7 +3364,6 @@ var BABYLON;
 
 //# sourceMappingURL=checkbox.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3373,7 +3512,6 @@ var BABYLON;
 
 //# sourceMappingURL=radioButton.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3388,10 +3526,10 @@ var BABYLON;
              * @param text defines the text to display (emptry string by default)
              */
             function TextBlock(
-                /**
-                 * Defines the name of the control
-                 */
-                name, text) {
+            /**
+             * Defines the name of the control
+             */
+            name, text) {
                 if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3611,7 +3749,7 @@ var BABYLON;
                 }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
-            /** @ignore */
+            /** @hidden */
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -3721,7 +3859,6 @@ var BABYLON;
 
 //# sourceMappingURL=textBlock.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var DOMImage = Image;
@@ -3982,7 +4119,7 @@ var BABYLON;
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }
-                                if (this._root && this._root.parent) {
+                                if (this._root && this._root.parent) { // Will update root size if root is not the top root
                                     this._root.width = this.width;
                                     this._root.height = this.height;
                                 }
@@ -4033,7 +4170,6 @@ var BABYLON;
 
 //# sourceMappingURL=image.js.map
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4161,9 +4297,6 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=button.js.map
-
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4522,7 +4655,6 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4743,10 +4875,10 @@ var BABYLON;
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
-                    case 32://SPACE
+                    case 32: //SPACE
                         key = " "; //ie11 key for space is "Spacebar" 
                         break;
-                    case 8:// BACKSPACE
+                    case 8: // BACKSPACE
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {
                                 this.text = this._text.substr(0, this._text.length - 1);
@@ -4759,27 +4891,27 @@ var BABYLON;
                             }
                         }
                         return;
-                    case 46:// DELETE
+                    case 46: // DELETE
                         if (this._text && this._text.length > 0) {
                             var deletePosition = this._text.length - this._cursorOffset;
                             this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
                             this._cursorOffset--;
                         }
                         return;
-                    case 13:// RETURN
+                    case 13: // RETURN
                         this._host.focusedControl = null;
                         return;
-                    case 35:// END
+                    case 35: // END
                         this._cursorOffset = 0;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 36:// HOME
+                    case 36: // HOME
                         this._cursorOffset = this._text.length;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 37:// LEFT
+                    case 37: // LEFT
                         this._cursorOffset++;
                         if (this._cursorOffset > this._text.length) {
                             this._cursorOffset = this._text.length;
@@ -4787,7 +4919,7 @@ var BABYLON;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
-                    case 39:// RIGHT
+                    case 39: // RIGHT
                         this._cursorOffset--;
                         if (this._cursorOffset < 0) {
                             this._cursorOffset = 0;
@@ -4803,7 +4935,7 @@ var BABYLON;
                     (keyCode > 64 && keyCode < 91) || // Letters
                     (keyCode > 185 && keyCode < 193) || // Special characters
                     (keyCode > 218 && keyCode < 223) || // Special characters
-                    (keyCode > 95 && keyCode < 112)) {
+                    (keyCode > 95 && keyCode < 112)) { // Numpad
                     if (this._cursorOffset === 0) {
                         this.text += key;
                     }
@@ -4966,7 +5098,6 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -5125,6 +5256,207 @@ var BABYLON;
             return VirtualKeyboard;
         }(GUI.StackPanel));
         GUI.VirtualKeyboard = VirtualKeyboard;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var MultiLine = /** @class */ (function (_super) {
+            __extends(MultiLine, _super);
+            function MultiLine(name) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._lineWidth = 1;
+                _this.onPointUpdate = function () {
+                    _this._markAsDirty();
+                };
+                _this.isHitTestVisible = false;
+                _this._horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                _this._verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                _this._dash = [];
+                _this._points = [];
+                return _this;
+            }
+            Object.defineProperty(MultiLine.prototype, "dash", {
+                get: function () {
+                    return this._dash;
+                },
+                set: function (value) {
+                    if (this._dash === value) {
+                        return;
+                    }
+                    this._dash = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            MultiLine.prototype.getAt = function (index) {
+                if (!this._points[index]) {
+                    this._points[index] = new GUI.MultiLinePoint(this);
+                }
+                return this._points[index];
+            };
+            MultiLine.prototype.add = function () {
+                var _this = this;
+                var items = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    items[_i] = arguments[_i];
+                }
+                return items.map(function (item) { return _this.push(item); });
+            };
+            MultiLine.prototype.push = function (item) {
+                var point = this.getAt(this._points.length);
+                if (item == null)
+                    return point;
+                if (item instanceof BABYLON.AbstractMesh) {
+                    point.mesh = item;
+                }
+                else if (item instanceof GUI.Control) {
+                    point.control = item;
+                }
+                else if (item.x != null && item.y != null) {
+                    point.x = item.x;
+                    point.y = item.y;
+                }
+                return point;
+            };
+            MultiLine.prototype.remove = function (value) {
+                var index;
+                if (value instanceof GUI.MultiLinePoint) {
+                    index = this._points.indexOf(value);
+                    if (index === -1) {
+                        return;
+                    }
+                }
+                else {
+                    index = value;
+                }
+                var point = this._points[index];
+                if (!point) {
+                    return;
+                }
+                point.dispose();
+                this._points.splice(index, 1);
+            };
+            Object.defineProperty(MultiLine.prototype, "lineWidth", {
+                get: function () {
+                    return this._lineWidth;
+                },
+                set: function (value) {
+                    if (this._lineWidth === value) {
+                        return;
+                    }
+                    this._lineWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLine.prototype, "horizontalAlignment", {
+                set: function (value) {
+                    return;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MultiLine.prototype, "verticalAlignment", {
+                set: function (value) {
+                    return;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            MultiLine.prototype._getTypeName = function () {
+                return "MultiLine";
+            };
+            MultiLine.prototype._draw = function (parentMeasure, context) {
+                context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+                this._applyStates(context);
+                if (this._processMeasures(parentMeasure, context)) {
+                    context.strokeStyle = this.color;
+                    context.lineWidth = this._lineWidth;
+                    context.setLineDash(this._dash);
+                    context.beginPath();
+                    var first = true; //first index is not necessarily 0
+                    this._points.forEach(function (point) {
+                        if (!point) {
+                            return;
+                        }
+                        if (first) {
+                            context.moveTo(point._point.x, point._point.y);
+                            first = false;
+                        }
+                        else {
+                            context.lineTo(point._point.x, point._point.y);
+                        }
+                    });
+                    context.stroke();
+                }
+                context.restore();
+            };
+            MultiLine.prototype._additionalProcessing = function (parentMeasure, context) {
+                var _this = this;
+                this._minX = null;
+                this._minY = null;
+                this._maxX = null;
+                this._maxY = null;
+                this._points.forEach(function (point, index) {
+                    if (!point) {
+                        return;
+                    }
+                    point.translate();
+                    if (_this._minX == null || point._point.x < _this._minX)
+                        _this._minX = point._point.x;
+                    if (_this._minY == null || point._point.y < _this._minY)
+                        _this._minY = point._point.y;
+                    if (_this._maxX == null || point._point.x > _this._maxX)
+                        _this._maxX = point._point.x;
+                    if (_this._maxY == null || point._point.y > _this._maxY)
+                        _this._maxY = point._point.y;
+                });
+                if (this._minX == null)
+                    this._minX = 0;
+                if (this._minY == null)
+                    this._minY = 0;
+                if (this._maxX == null)
+                    this._maxX = 0;
+                if (this._maxY == null)
+                    this._maxY = 0;
+            };
+            MultiLine.prototype._measure = function () {
+                if (this._minX == null || this._maxX == null || this._minY == null || this._maxY == null) {
+                    return;
+                }
+                this._currentMeasure.width = Math.abs(this._maxX - this._minX) + this._lineWidth;
+                this._currentMeasure.height = Math.abs(this._maxY - this._minY) + this._lineWidth;
+            };
+            MultiLine.prototype._computeAlignment = function (parentMeasure, context) {
+                if (this._minX == null || this._minY == null) {
+                    return;
+                }
+                this._currentMeasure.left = this._minX - this._lineWidth / 2;
+                this._currentMeasure.top = this._minY - this._lineWidth / 2;
+            };
+            MultiLine.prototype.dispose = function () {
+                while (this._points.length > 0) {
+                    this.remove(this._points.length - 1);
+                }
+                _super.prototype.dispose.call(this);
+            };
+            return MultiLine;
+        }(GUI.Control));
+        GUI.MultiLine = MultiLine;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

@@ -35,7 +35,7 @@
             } else {
                 this._canvas = document.createElement("canvas");
 
-                if (options.width) {
+                if (options.width || options.width === 0) {
                     this._texture = this._engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 } else {
                     this._texture = this._engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
@@ -177,7 +177,7 @@
             return newTexture;
         }
 
-        /** @ignore */
+        /** @hidden */
         public _rebuild(): void {
             this.update();
         }

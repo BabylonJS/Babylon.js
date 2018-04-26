@@ -1,9 +1,33 @@
 module BABYLON {
+    /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
     export class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
         public SMOOTHING = 0.75;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
         public FFT_SIZE = 512;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
         public BARGRAPHAMPLITUDE = 256;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
         public DEBUGCANVASPOS = { x: 20, y: 20 };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
         public DEBUGCANVASSIZE = { width: 320, height: 200 }
 
         private _byteFreqs: Uint8Array;
@@ -16,6 +40,10 @@ module BABYLON {
         private _registerFunc: Nullable<() => void>;
         private _audioEngine: AudioEngine;
 
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
         constructor(scene: Scene) {
             this._scene = scene;
             this._audioEngine = Engine.audioEngine;
@@ -29,6 +57,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
         public getFrequencyBinCount(): number {
             if (this._audioEngine.canUseWebAudio) {
                 return this._webAudioAnalyser.frequencyBinCount;
@@ -38,6 +71,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
         public getByteFrequencyData(): Uint8Array {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
@@ -47,6 +85,11 @@ module BABYLON {
             return this._byteFreqs;
         }
 
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
         public getByteTimeDomainData(): Uint8Array {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
@@ -56,7 +99,12 @@ module BABYLON {
             return this._byteTime;
         }
 
-        public getFloatFrequencyData(): Uint8Array {
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */        
+        public getFloatFrequencyData(): Float32Array {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.smoothingTimeConstant = this.SMOOTHING;
                 this._webAudioAnalyser.fftSize = this.FFT_SIZE;
@@ -65,6 +113,9 @@ module BABYLON {
             return this._floatFreqs;
         }
 
+        /**
+         * Renders the debug canvas
+         */
         public drawDebugCanvas() {
             if (this._audioEngine.canUseWebAudio) {
                 if (!this._debugCanvas) {
@@ -102,6 +153,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
         public stopDebugCanvas() {
             if (this._debugCanvas) {
                 if (this._registerFunc) {
@@ -114,6 +168,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
         public connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode) {
             if (this._audioEngine.canUseWebAudio) {
                 inputAudioNode.connect(this._webAudioAnalyser);
@@ -121,6 +180,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Releases all associated resources
+         */
         public dispose() {
             if (this._audioEngine.canUseWebAudio) {
                 this._webAudioAnalyser.disconnect();

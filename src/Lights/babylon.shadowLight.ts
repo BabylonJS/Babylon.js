@@ -303,7 +303,7 @@
 
         /**
          * Get the world matrix of the sahdow lights.
-         * @ignore Internal Use Only
+         * @hidden Internal Use Only
          */
         public _getWorldMatrix(): Matrix {
             if (!this._worldMatrix) {

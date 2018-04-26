@@ -146,17 +146,6 @@ interface Math {
     imul(a: number, b: number): number;
 }
 
-interface GamepadPose {
-    hasOrientation: boolean;
-    hasPosition: boolean;
-    position?: Float32Array;
-    linearVelocity?: Float32Array;
-    linearAcceleration?: Float32Array;
-    orientation?: Float32Array;
-    angularVelocity?: Float32Array;
-    angularAcceleration?: Float32Array;
-}
-
 interface EXT_disjoint_timer_query {
     QUERY_COUNTER_BITS_EXT: number;
     TIME_ELAPSED_EXT: number;

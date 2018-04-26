@@ -4,17 +4,36 @@
         public radius: number;
         public centerWorld: Vector3;
         public radiusWorld: number;
+        public minimum: Vector3;
+        public maximum: Vector3;
 
         private _tempRadiusVector = Vector3.Zero();
 
-        constructor(public minimum: Vector3, public maximum: Vector3) {
-            var distance = Vector3.Distance(minimum, maximum);
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3) {
+            this.reConstruct(min, max);
+        }
 
-            this.center = Vector3.Lerp(minimum, maximum, 0.5);
+        /**
+         * Recreates the entire bounding sphere from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space) 
+         */
+        public reConstruct(min: Vector3, max: Vector3) {
+            this.minimum = min.clone();
+            this.maximum = max.clone()
+
+            var distance = Vector3.Distance(min, max);
+
+            this.center = Vector3.Lerp(min, max, 0.5);
             this.radius = distance * 0.5;
 
             this.centerWorld = Vector3.Zero();
-            this._update(Matrix.Identity());
+            this._update(Matrix.Identity());            
         }
 
         // Methods

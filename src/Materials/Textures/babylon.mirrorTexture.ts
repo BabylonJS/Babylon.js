@@ -94,7 +94,9 @@
             this.ignoreCameraViewport = true;
             
             this._updateGammaSpace();
-            this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(this._updateGammaSpace)
+            this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
+                this._updateGammaSpace
+            });
 
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);

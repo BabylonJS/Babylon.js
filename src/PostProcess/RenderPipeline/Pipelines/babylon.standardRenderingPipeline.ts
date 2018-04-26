@@ -279,15 +279,6 @@
 
             this._currentDepthOfFieldSource = this.originalPostProcess;
 
-            if (this._vlsEnabled) {
-                // Create volumetric light
-                this._createVolumetricLightPostProcess(scene, ratio);
-
-                // Create volumetric light final post-process
-                this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
-                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
-            }
-
             if (this._bloomEnabled) {
                 // Create down sample X4 post-process
                 this._createDownSampleX4PostProcess(scene, ratio / 2);
@@ -304,6 +295,15 @@
                 // Create depth-of-field source post-process
                 this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBaseDepthOfFieldSource", () => { return this.textureAdderFinalPostProcess; }, true));
+            }
+
+            if (this._vlsEnabled) {
+                // Create volumetric light
+                this._createVolumetricLightPostProcess(scene, ratio);
+
+                // Create volumetric light final post-process
+                this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
             }
 
             if (this._lensFlareEnabled) {
@@ -486,7 +486,7 @@
             this.volumetricLightMergePostProces = new PostProcess("HDRVLSMerge", "standard", [], ["originalSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLSMERGE");
 
             this.volumetricLightMergePostProces.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("originalSampler", this.originalPostProcess);
+                effect.setTextureFromPostProcess("originalSampler", this._bloomEnabled ? this.textureAdderFinalPostProcess : this.originalPostProcess);
 
                 this._currentDepthOfFieldSource = this.volumetricLightFinalPostProcess;
             };
@@ -812,7 +812,9 @@
             this.blurVPostProcesses = [];
         }
 
-        // Dispose
+        /**
+         * Dispose of the pipeline and stop all post processes
+         */
         public dispose(): void {
             this._disposePostProcesses();
 
@@ -821,21 +823,37 @@
             super.dispose();
         }
 
-        // Serialize rendering pipeline
+        /**
+         * Serialize the rendering pipeline (Used when exporting)
+         * @returns the serialized object
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
+
+            if (this.sourceLight) {
+                serializationObject.sourceLightId = this.sourceLight.id;
+            }
+
             serializationObject.customType = "StandardRenderingPipeline";
 
             return serializationObject;
         }
 
         /**
-         * Static members
+         * Parse the serialized pipeline
+         * @param source Source pipeline.
+         * @param scene The scene to load the pipeline to.
+         * @param rootUrl The URL of the serialized pipeline.
+         * @returns An instantiated pipeline from the serialized object.
          */
-
-        // Parse serialized pipeline
         public static Parse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline {
-            return SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+            var p = SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+
+            if (source.sourceLightId) {
+                p.sourceLight = <SpotLight | DirectionalLight> scene.getLightByID(source.sourceLightId);
+            }
+
+            return p;
         }
 
         // Luminance steps

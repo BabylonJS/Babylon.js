@@ -1,8 +1,6 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
-
     const NAME = "KHR_materials_pbrSpecularGlossiness";
 
     interface IKHRMaterialsPbrSpecularGlossiness {
@@ -13,10 +11,13 @@ module BABYLON.GLTF2.Extensions {
         specularGlossinessTexture: ITextureInfo;
     }
 
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
+     */
     export class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (extensionContext, extension) => {
                 material._babylonData = material._babylonData || {};
                 let babylonData = material._babylonData[babylonDrawMode];
@@ -24,7 +25,7 @@ module BABYLON.GLTF2.Extensions {
                     const promises = new Array<Promise<void>>();
 
                     const name = material.name || `materialSG_${material._index}`;
-                    const babylonMaterial = this._loader._createMaterial(PBRMaterial, name, babylonDrawMode);
+                    const babylonMaterial = this._loader._createMaterial(name, babylonDrawMode);
 
                     promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
                     promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
@@ -47,7 +48,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        private _loadSpecularGlossinessPropertiesAsync(context: string, material: ILoaderMaterial, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: PBRMaterial): Promise<void> {
+        private _loadSpecularGlossinessPropertiesAsync(context: string, material: _ILoaderMaterial, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
 
             if (properties.diffuseFactor) {

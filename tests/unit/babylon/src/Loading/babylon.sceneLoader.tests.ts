@@ -170,7 +170,7 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
-        it('Load CompileMaterialsTest', () => {
+        it('Load CompileMaterialsTest with compileMaterials', () => {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
             let createShaderProgramSpy: sinon.SinonSpy;
@@ -187,16 +187,43 @@ describe('Babylon Scene Loader', function () {
                 loader.compileMaterials = true;
 
                 promises.push(loader.whenCompleteAsync().then(() => {
-                    try {
-                        expect(createShaderProgramSpy.called, "createShaderProgramSpy.called").to.be.false;
-                    }
-                    finally {
-                        createShaderProgramSpy.restore();
-                    }
+                    const called = createShaderProgramSpy.called;
+                    createShaderProgramSpy.restore();
+                    expect(called, "createShaderProgramCalled").to.be.false;
                 }));
             }, undefined, undefined, undefined, true);
 
             promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/CompileMaterialsTest/", "Test.gltf", scene).then(() => {
+                createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
+            }));
+
+            return Promise.all(promises);
+        });
+
+        it('Load BrainStem with compileMaterials', () => {
+            const scene = new BABYLON.Scene(subject);
+            const promises = new Array<Promise<void>>();
+            let createShaderProgramSpy: sinon.SinonSpy;
+
+            subject.runRenderLoop(() => {
+                for (const mesh of scene.meshes) {
+                    if (mesh.material && mesh.isEnabled()) {
+                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                    }
+                }
+            });
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                loader.compileMaterials = true;
+
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    const called = createShaderProgramSpy.called;
+                    createShaderProgramSpy.restore();
+                    expect(called, "createShaderProgramCalled").to.be.false;
+                }));
+            }, undefined, undefined, undefined, true);
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BrainStem/", "BrainStem.gltf", scene).then(() => {
                 createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
             }));
 
@@ -338,6 +365,54 @@ describe('Babylon Scene Loader', function () {
                     expect(childMesh.skeleton.name, "mesh skeleton name").to.equal(result.skeletons[0].name);
                 }
             });
+        });
+
+        it('Load BoomBox with transparencyAsCoverage', () => {
+            const scene = new BABYLON.Scene(subject);
+
+            const promises = new Array<Promise<any>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                var specularOverAlpha = false;
+                var radianceOverAlpha = false;
+
+                loader.transparencyAsCoverage = true;
+                loader.onMaterialLoaded = material => {
+                    specularOverAlpha = specularOverAlpha || (material as BABYLON.PBRMaterial).useSpecularOverAlpha;
+                    radianceOverAlpha = radianceOverAlpha || (material as BABYLON.PBRMaterial).useRadianceOverAlpha;
+                };
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(specularOverAlpha, "specularOverAlpha").to.be.false;
+                    expect(radianceOverAlpha, "radianceOverAlpha").to.be.false;
+                }));
+            }, undefined, undefined, undefined, true);
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene));
+            return Promise.all(promises);
+        });
+
+        it('Load BoomBox without transparencyAsCoverage', () => {
+            const scene = new BABYLON.Scene(subject);
+
+            const promises = new Array<Promise<any>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                var specularOverAlpha = true;
+                var radianceOverAlpha = true;
+
+                loader.transparencyAsCoverage = false;
+                loader.onMaterialLoaded = material => {
+                    specularOverAlpha = specularOverAlpha && (material as BABYLON.PBRMaterial).useSpecularOverAlpha;
+                    radianceOverAlpha = radianceOverAlpha && (material as BABYLON.PBRMaterial).useRadianceOverAlpha;
+                };
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(specularOverAlpha, "specularOverAlpha").to.be.true;
+                    expect(radianceOverAlpha, "radianceOverAlpha").to.be.true;
+                }));
+            }, undefined, undefined, undefined, true);
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene));
+            return Promise.all(promises);
         });
 
         // TODO: test animation group callback

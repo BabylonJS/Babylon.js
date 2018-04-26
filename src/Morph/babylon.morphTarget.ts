@@ -9,6 +9,7 @@ module BABYLON {
          */
         public animations = new Array<Animation>();
 
+        private _scene: Nullable<Scene>;
         private _positions: Nullable<FloatArray> = null;
         private _normals: Nullable<FloatArray> = null;
         private _tangents: Nullable<FloatArray> = null;
@@ -39,6 +40,23 @@ module BABYLON {
             }
         }
 
+        
+        private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
+
+        /**
+         * Gets or sets the animation properties override
+         */
+        public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            if (!this._animationPropertiesOverride && this._scene) {
+                return this._scene.animationPropertiesOverride;
+            }
+            return this._animationPropertiesOverride;
+        }
+
+        public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+            this._animationPropertiesOverride = value;
+        }        
+
         /**
          * Creates a new MorphTarget
          * @param name defines the name of the target
@@ -46,8 +64,9 @@ module BABYLON {
          */
         public constructor(
             /** defines the name of the target */
-            public name: string, influence = 0) {
-            this.influence = influence;
+            public name: string, influence = 0, scene: Nullable<Scene> = null) {
+                this._scene = scene || Engine.LastCreatedScene;
+                this.influence = influence;
         }
 
         /**
@@ -186,7 +205,7 @@ module BABYLON {
                 name = mesh.name;
             }
 
-            var result = new MorphTarget(name, influence);
+            var result = new MorphTarget(name, influence, mesh.getScene());
 
             result.setPositions(<FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind));
 

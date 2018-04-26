@@ -3,8 +3,7 @@ layout(std140, column_major) uniform;
 uniform Material
 {
 	uniform vec4 vPrimaryColor;
-	uniform vec4 vSecondaryColor;
-	uniform vec4 vTertiaryColor;
+	uniform vec4 vPrimaryColorShadow;
 	uniform vec2 vDiffuseInfos;
 	uniform vec2 vReflectionInfos;
 	uniform mat4 diffuseMatrix;

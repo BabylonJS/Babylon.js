@@ -226,6 +226,12 @@ declare module INSPECTOR {
         'PhysicsImpostor': {
             type: typeof BABYLON.PhysicsImpostor;
         };
+        'ImageProcessingConfiguration': {
+            type: typeof BABYLON.ImageProcessingConfiguration;
+        };
+        'ColorCurves': {
+            type: typeof BABYLON.ColorCurves;
+        };
     };
 }
 
@@ -1014,6 +1020,17 @@ declare module INSPECTOR {
         private _update();
         dispose(): void;
         active(b: boolean): void;
+    }
+}
+
+
+
+declare module INSPECTOR {
+    class GLTFTab extends Tab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        dispose(): void;
+        private _addExport(inspector, actions);
+        private static _IsSkyBox(transformNode);
     }
 }
 

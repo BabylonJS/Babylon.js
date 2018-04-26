@@ -11,7 +11,7 @@
 
         /**
          * Internal only - manager for action
-         * @ignore 
+         * @hidden 
          */
         public _actionManager: ActionManager;
 
@@ -30,7 +30,9 @@
          * @param triggerOptions the trigger, with or without parameters, for the action
          * @param condition an optional determinant of action 
          */
-        constructor(public triggerOptions: any, condition?: Condition) {
+        constructor(
+            /** the trigger, with or without parameters, for the action */
+            public triggerOptions: any, condition?: Condition) {
 
             if (triggerOptions.parameter) {
                 this.trigger = triggerOptions.trigger;
@@ -45,7 +47,7 @@
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _prepare(): void {
         }
@@ -60,7 +62,7 @@
 
         /**
          * Internal only - executes current action event
-         * @ignore 
+         * @hidden 
          */
         public _executeCurrent(evt?: ActionEvent): void {
             if (this._nextActiveAction._condition) {
@@ -116,7 +118,7 @@
 
         /**
          * Adds action to chain of actions, may be a DoNothingAction
-         * @param index The index of the attribute.
+         * @param action defines the next action to execute
          * @returns The action passed in
          * @see https://www.babylonjs-playground.com/#1T30HR#0
          */
@@ -131,7 +133,7 @@
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _getProperty(propertyPath: string): string {
             return this._actionManager._getProperty(propertyPath);
@@ -139,7 +141,7 @@
 
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
@@ -155,7 +157,7 @@
         
         /**
          * Internal only called by serialize
-         * @ignore 
+         * @hidden 
          */
         protected _serialize(serializedAction: any, parent?: any): any {
             var serializationObject: any = { 
@@ -189,7 +191,7 @@
         
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public static _SerializeValueAsString = (value: any): string => {
             if (typeof value === "number") {
@@ -219,7 +221,7 @@
         
         /**
          * Internal only
-         * @ignore 
+         * @hidden 
          */
         public static _GetTargetProperty = (target: Scene | Node) => {
             return {

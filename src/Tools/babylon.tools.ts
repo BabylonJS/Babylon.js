@@ -146,6 +146,21 @@
             return count === value;
         }
 
+        private static _tmpFloatArray = new Float32Array(1);
+        /**
+         * Returns the nearest 32-bit single precision float representation of a Number
+         * @param value A Number.  If the parameter is of a different type, it will get converted
+         * to a number or to NaN if it cannot be converted
+         * @returns number
+         */
+        public static FloatRound(value: number): number {
+            if (Math.fround) {
+                return Math.fround(value);
+            }
+
+            return (Tools._tmpFloatArray[0] = value);
+        }
+
 		/**
 		 * Find the next highest power of two.
 		 * @param x Number to start search from.
@@ -723,7 +738,7 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): IFileRequest {
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (ev: ProgressEvent) => any): IFileRequest {
             let reader = new FileReader();
 
             let request: IFileRequest = {
@@ -747,7 +762,7 @@
             return request;
         }
 
-        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
             let reader = new FileReader();
             let request: IFileRequest = {
                 onCompleteObservable: new Observable<IFileRequest>(),
@@ -824,8 +839,7 @@
                     continue;
                 }
 
-                try
-                {
+                try {
                     if (typeOfSourceValue === "object") {
                         if (sourceValue instanceof Array) {
                             destination[prop] = [];
@@ -1440,7 +1454,7 @@
                 return window.performance.now();
             }
 
-            return new Date().getTime();
+            return Date.now();
         }
 
         /**

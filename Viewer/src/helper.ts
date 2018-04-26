@@ -26,3 +26,27 @@ export function kebabToCamel(s) {
 export function camelToKebab(str) {
     return !str ? null : str.replace(/([A-Z])/g, function (g) { return '-' + g[0].toLowerCase() });
 }
+
+/**
+ * This will extend an object with configuration values.
+ * What it practically does it take the keys from the configuration and set them on the object.
+ * I the configuration is a tree, it will traverse into the tree.
+ * @param object the object to extend
+ * @param config the configuration object that will extend the object
+ */
+export function extendClassWithConfig(object: any, config: any) {
+    if (!config) return;
+    Object.keys(config).forEach(key => {
+        if (key in object && typeof object[key] !== 'function') {
+            // if (typeof object[key] === 'function') return;
+            // if it is an object, iterate internally until reaching basic types
+            if (typeof object[key] === 'object') {
+                extendClassWithConfig(object[key], config[key]);
+            } else {
+                if (config[key] !== undefined) {
+                    object[key] = config[key];
+                }
+            }
+        }
+    });
+}

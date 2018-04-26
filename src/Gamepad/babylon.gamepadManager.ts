@@ -182,14 +182,15 @@
         private _updateGamepadObjects() {
             var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
             for (var i = 0; i < gamepads.length; i++) {
-                if (gamepads[i]) {
-                    if (!this._babylonGamepads[gamepads[i].index]) {
-                        var newGamepad = this._addNewGamepad(gamepads[i]);
+                let gamepad = gamepads[i];
+                if (gamepad) {
+                    if (!this._babylonGamepads[gamepad.index]) {
+                        var newGamepad = this._addNewGamepad(gamepad);
                         this.onGamepadConnectedObservable.notifyObservers(newGamepad);
                     }
                     else {
                         // Forced to copy again this object for Chrome for unknown reason
-                        this._babylonGamepads[i].browserGamepad = gamepads[i];
+                        this._babylonGamepads[i].browserGamepad = gamepad;
 
                         if (!this._babylonGamepads[i].isConnected) {
                             this._babylonGamepads[i]._isConnected = true;
