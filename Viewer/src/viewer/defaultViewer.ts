@@ -22,10 +22,6 @@ export class DefaultViewer extends AbstractViewer {
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this._onModelLoaded);
-        this.sceneManager.onSceneInitObservable.add(() => {
-            // extendClassWithConfig(this.sceneManager.scene, this._configuration.scene);
-            return this.sceneManager.scene;
-        });
 
         this.sceneManager.onLightsConfiguredObservable.add((data) => {
             this._configureLights(data.newConfiguration, data.model!);
@@ -182,7 +178,7 @@ export class DefaultViewer extends AbstractViewer {
     private _onModelLoaded = (model: ViewerModel) => {
         this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
-        let hideLoadingDelay = 500;
+        let hideLoadingDelay = 20;
         if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
             hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
         }
