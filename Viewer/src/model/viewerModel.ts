@@ -1,7 +1,7 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/configuration";
-import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
+import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, AnimationState } from "./modelAnimation";
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { AbstractViewer } from "..";
@@ -254,13 +254,20 @@ export class ViewerModel implements IDisposable {
      * @returns The model aniamtion to be played.
      */
     public playAnimation(name: string): IModelAnimation {
+        let animation = this.setCurrentAnimationByName(name);
+        if (animation) {
+            animation.start();
+        }
+        return animation;
+    }
+
+    public setCurrentAnimationByName(name: string) {
         let animation = this._getAnimationByName(name);
         if (animation) {
-            if (this.currentAnimation) {
+            if (this.currentAnimation && this.currentAnimation.state !== AnimationState.STOPPED) {
                 this.currentAnimation.stop();
             }
             this.currentAnimation = animation;
-            animation.start();
             return animation;
         } else {
             throw new Error("animation not found - " + name);

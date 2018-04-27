@@ -1,121 +1,305 @@
 <style>
     nav-bar {
         position: absolute;
-        height: 160px;
+        height: 48px;
         width: 100%;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.3);
-        color: white;
-        transition: 1s;
-        align-items: flex-start;
-        justify-content: space-around;
+        bottom: 10px;
         display: flex;
-
-        flex-direction: column;
+        justify-content: center;
     }
 
-    /* Big screens have room for the entire navbar */
+    nav-bar .nav-container {
+        display: flex;
+        flex-direction: row;
+        margin: 0 10px;
+        height: 100%;
+        width: 100%;
+        justify-content: center;
+    }
 
-    @media screen and (min-width: 768px) {
-        nav-bar {
-            align-items: center;
-            flex-direction: row;
-            justify-content: space-between;
-            height: 80px;
+    nav-bar .animation-control {
+        background-color: rgba(91, 93, 107, .75);
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        width: 100%;
+        max-width: 1280px;
+        justify-content: center;
+    }
+
+    nav-bar .flex-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    nav-bar button {
+        background: none;
+        border: none;
+        color: white;
+        margin: 0;
+        padding: 0;
+
+        height: 100%;
+        min-width: 48px;
+        cursor: pointer;
+    }
+
+    nav-bar button:hover,
+    nav-bar button:active,
+    nav-bar button:focus {
+        background: none;
+        border: none;
+        outline: none;
+    }
+
+    nav-bar button:hover {
+        background-color: rgba(22, 24, 26, .20);
+    }
+
+    nav-bar .control-text {
+        font-family: "Segoe UI";
+        font-size: 12px;
+        font-weight: 400;
+        pointer-events: none;
+    }
+
+    nav-bar .icon {
+        width: 18px;
+    }
+
+    nav-bar img {
+        pointer-events: none;
+    }
+
+    .small-icon {
+        width: 12px;
+    }
+
+    .types {
+        display: flex;
+        flex-direction: column;
+        width: 48px;
+    }
+
+    .types .flex-container,
+    .speed .flex-container {
+        align-items: center;
+    }
+
+    .menu-options {
+        position: absolute;
+        bottom: 48px;
+        width: 48px;
+        background-color: rgba(22, 24, 26, .90);
+    }
+
+    .animation-label,
+    .types-icon,
+    .help,
+    .speed {
+        display: none;
+    }
+
+    .progress-control {
+        display: flex;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .progress-bar {
+        align-self: center;
+        flex: 1;
+        background-color: rgb(255, 255, 255);
+        height: 4px;
+        position: absolute;
+        width: calc(100% - 48px);
+        right: 0;
+        pointer-events: none;
+    }
+
+    .animation-number {
+        margin: 0 6px;
+    }
+
+    .speed-text {
+        margin-right: 6px;
+    }
+
+    .progress-wrapper {
+        height: 0px;
+        background-color: rgba(91, 93, 107, .75);
+        width: 100%;
+        border-top: 4px solid rgba(204, 210, 214, .4);
+    }
+
+    .progress-circle {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 50%;
+        background-color: rgb(91, 93, 107);
+        cursor: pointer;
+        position: relative;
+        bottom: 10px;
+        pointer-events: none;
+    }
+
+    .default-control {
+        background-color: rgba(91, 93, 107, .75);
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+    }
+
+    .menu-options button {
+        width: 100%;
+        height: 48px;
+        color: rgb(142, 147, 155);
+    }
+
+    .menu-options button {
+        width: 100%;
+        height: 48px;
+        color: rgb(142, 147, 155);
+    }
+
+    .menu-options button:hover {
+        background-color: transparent;
+        color: rgb(255, 255, 255);
+    }
+
+    .menu-options .animation-number {
+        margin: 0 18px 0 6px;
+    }
+
+    .menu-options .speed-text {
+        margin-right: 18px;
+    }
+
+    .menu-options {
+        visibility: hidden;
+    }
+
+    .open .menu-options {
+        visibility: visible;
+    }
+
+    @media screen and (min-width: 540px) {
+        .types-icon,
+        .speed {
+            display: flex;
+        }
+
+        .help {
+            display: block;
+        }
+        .types {
+            width: 84px;
+            margin-right: 34px;
+        }
+
+        .types .menu-options {
+            width: 84px;
+        }
+        .speed {
+            margin-right: 4px;
+            width: 64px;
+        }
+
+        .speed .menu-options {
+            width: 64px;
         }
     }
 
-    div.flex-container {
-        display: flex;
-        width: 100%;
-    }
-
-    div.thumbnail {
-        position: relative;
-        overflow: hidden;
-        display: block;
-        width: 40px;
-        height: 40px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 20px;
-        margin: 0 10px;
-    }
-
-    div.title-container {
-        flex-direction: column;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    span.model-title {
-        font-size: 125%;
-    }
-
-    span.model-subtitle {
-        font-size: 90%;
-    }
-
-    div.button-container,
-    div.animation-container {
-        align-items: center;
-        justify-content: flex-end;
-    }
-
-    div.button {
-        cursor: pointer;
-        height: 30px;
-        margin: 0 10px;
-    }
-
-    div.button img {
-        height: 100%;
+    @media screen and (min-width: 1024px) {
+        .speed {
+            margin-right: 28px;
+        }
+        .animation-label {
+            display: block;
+            margin-left: 6px;
+        }
+        .types {
+            width: 144px;
+            margin-right: 0px;
+        }
+        .types .menu-options {
+            width: 144px;
+        }
     }
 </style>
 
-{{#if disableOnFullscreen}}
+{{#if (or (not animations) hideAnimations)}}
 <style>
-    viewer:fullscreen nav-bar {
-        display: none;
-    }
-
-    viewer:-moz-full-screen nav-bar {
-        display: none;
-    }
-
-    viewer:-webkit-full-screen nav-bar {
-        display: none;
+    nav-bar .nav-container {
+        justify-content: flex-end;
     }
 </style>
 {{/if}}
 
-<div class="flex-container" id="model-metadata">
-    <!-- holding the description -->
-    <div class="thumbnail">
-        <!-- holding the thumbnail 
-        <img src="{{thumbnail}}" alt="{{title}}">-->
+<div class="nav-container" id="navbar-control">
+    {{#unless (or (not animations) hideAnimations)}}
+    <div class="animation-control">
+        <div class="types">
+            <button class="flex-container" id="types-button">
+                <img src="{{typeImg}}" class="svg icon types-icon">
+                <span class="control-text animation-label">Animation</span>
+                <span class="control-text animation-number">{{selectedAnimation}}</span>
+                <img src="{{upImg}}" class="small-icon">
+            </button>
+            <div class="menu-options">
+                {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
+                <button class="flex-container" id="label-option-button" data-value="{{this}}">
+                    <img src="{{../typeImg}}" class="icon types-icon">
+                    <span class="control-text animation-label">Animation</span>
+                    <span class="control-text animation-number">{{add @index 1}}</span>
+                </button>
+                {{/unless}} {{/each}}
+            </div>
+        </div>
+        <div class="progress-control" id="progress-control">
+            <button class="play-pause" id="play-pause-button">
+                {{#if paused}}
+                <img src="{{playImg}}" class="icon play-button">{{else}}
+                <img src="{{pauseImg}}" class="icon pause-button">{{/if}}
+            </button>
+            <div class="progress-bar-container flex-container" id="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-wrapper" id="progress-wrapper">
+                        <div class="progress-circle" id="progress-circle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="speed">
+            <button class="flex-container" id="speed-button">
+                <span class="control-text speed-text">{{selectedSpeed}}</span>
+                <img src="{{upImg}}" class="small-icon">
+            </button>
+            <div class="menu-options">
+                {{#eachInMap speedList}} {{#unless (eq ../selectedSpeed id)}}
+                <button class="flex-container" id="speed-option-button" data-value="{{value}}">
+                    <span class="control-text speed-text">{{id}}</span>
+                </button>
+                {{/unless}} {{/eachInMap}}
+            </div>
+        </div>
     </div>
-    <div class="title-container">
-
-        <span class="model-title">{{#if title}}{{title}}{{/if}}</span>
-        <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
+    {{/unless}}
+    <div class="default-control">
+        {{#unless hideHelp}}
+        <button class="help" id="help-button" title="Help">
+            <img src="{{helpImg}}" class="icon">
+        </button>
+        {{/unless}} {{#unless hideFullScreen}}
+        <button class="fullscreen" id="fullscreen-button" title="Fullscreen">
+            <img src="{{fullImg}}" class="icon">
+        </button>
+        {{/unless}}
     </div>
-</div>
-{{#if animations}} {{#if hideAnimations}}{{else}}
-<div class="animation-container flex-container">
-    <select id="animation-selector" name="animations">
-        {{#each animations}}
-        <option value="{{this}}">{{this}}</option>> {{/each}}
-    </select>
-</div>
-{{/if}} {{/if}}
-<div class="button-container flex-container">
-    <!-- holding the buttons -->
-    {{#eachInMap buttons}}
-    <div id="{{id}}" class="button">
-        {{#if text}}
-        <span>{{text}}</span>> {{/if}} {{#if image}}
-        <img src="{{image}}" alt="{{altText}}"> {{/if}}
-    </div>
-    {{/eachInMap}}
 </div>

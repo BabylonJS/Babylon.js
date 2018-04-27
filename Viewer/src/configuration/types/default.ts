@@ -24,22 +24,28 @@ export let defaultConfiguration: ViewerConfiguration = {
         navBar: {
             html: require("../../../assets/templates/default/navbar.html"),
             params: {
-                buttons: {
-                    /*"help-button": {
-                        altText: "Help",
-                        image: require('../../../assets/img/help-circle.png')
-                    },*/
-                    "fullscreen-button": {
-                        altText: "Fullscreen",
-                        image: require('../../../assets/img/fullscreen.png')
-                    }
+                speedList: {
+                    "0.5x": "0.5",
+                    "1.0x": "1.0",
+                    "1.5x": "1.5",
+                    "2.0x" : "2.0",
                 },
-                visibilityTimeout: 2000
+
+                // update these to font
+                typeImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Animation.svg",
+                playImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Play.svg",
+                upImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_UpChevron.svg",
+                helpImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Help.svg",
+                fullImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_FullScreen.svg",
+                pauseImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Pause.svg", 
+                
             },
             events: {
-                pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ },
+                pointerdown: {
+                    'navbar-control': true,
+                    'help-button': true
+                },
                 pointerover: true,
-                change: { 'animation-selector': true }
             }
         },
         overlay: {
