@@ -207,9 +207,9 @@ export abstract class AbstractViewer {
 
         this.onInitDoneObservable.add(() => {
             this._isInit = true;
-            this.sceneManager.scene.executeWhenReady(() => {
-                this.engine.runRenderLoop(this._render);
-            });
+            //this.sceneManager.scene.executeWhenReady(() => {
+            this.engine.runRenderLoop(this._render);
+            //});
         });
     }
 

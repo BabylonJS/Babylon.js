@@ -262,6 +262,7 @@ export class ViewerModel implements IDisposable {
     private _enterScene(completeCallback?: () => void): void {
         let callback = () => {
             this.state = ModelState.ENTRYDONE;
+            this._viewer.sceneManager.animationBlendingEnabled = true;
             this._checkCompleteState();
             if (completeCallback) completeCallback();
         }
@@ -269,7 +270,8 @@ export class ViewerModel implements IDisposable {
             callback();
             return;
         }
-
+        // disable blending for the sake of the entry animation;
+        this._viewer.sceneManager.animationBlendingEnabled = false;
         this._applyAnimation(this._entryAnimation, true, callback);
     }
 
@@ -542,8 +544,8 @@ export class ViewerModel implements IDisposable {
         //scale
         if (animationConfiguration.scaling) {
 
-            let scaleStart: BABYLON.Vector3 = isEntry ? animationConfiguration.scaling : new BABYLON.Vector3(1, 1, 1);
-            let scaleEnd: BABYLON.Vector3 = isEntry ? new BABYLON.Vector3(1, 1, 1) : animationConfiguration.scaling;
+            let scaleStart: BABYLON.Vector3 = isEntry ? animationConfiguration.scaling : this.rootMesh.scaling;
+            let scaleEnd: BABYLON.Vector3 = isEntry ? this.rootMesh.scaling : animationConfiguration.scaling;
 
             if (!scaleStart.equals(scaleEnd)) {
                 this.rootMesh.scaling = scaleStart;

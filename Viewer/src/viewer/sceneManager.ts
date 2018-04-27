@@ -72,6 +72,8 @@ export class SceneManager {
      */
     public environmentHelper: EnvironmentHelper;
 
+    private _animationBlendingEnabled: boolean = true;
+
 
     //The following are configuration objects, default values.
     protected _defaultHighpTextureType: number;
@@ -171,6 +173,16 @@ export class SceneManager {
 
     public get reflectionColor(): Color3 {
         return this._reflectionColor;
+    }
+
+    public get animationBlendingEnabled() {
+        return this._animationBlendingEnabled;
+    }
+
+    public set animationBlendingEnabled(value: boolean) {
+        this.scene.animationPropertiesOverride = this.scene.animationPropertiesOverride || new AnimationPropertiesOverride();
+        this.scene.animationPropertiesOverride.enableBlending = value;
+        this._animationBlendingEnabled = value;
     }
 
     private _processShadows: boolean = true;
@@ -315,7 +327,6 @@ export class SceneManager {
         }
 
         this.scene.animationPropertiesOverride = new AnimationPropertiesOverride();
-        this.scene.animationPropertiesOverride.enableBlending = true;
 
         Animation.AllowMatricesInterpolation = true;
 
@@ -570,7 +581,9 @@ export class SceneManager {
             this._handleHardwareLimitations(true);
         }
 
-        this._viewer.renderInBackground = !!sceneConfig.renderInBackground;
+        if (sceneConfig.renderInBackground !== undefined) {
+            this._viewer.renderInBackground = !!sceneConfig.renderInBackground;
+        }
 
         if (this.camera && sceneConfig.disableCameraControl) {
             this.camera.detachControl(this._viewer.canvas);
@@ -732,7 +745,9 @@ export class SceneManager {
 
         if (cameraConfig.behaviors) {
             for (let name in cameraConfig.behaviors) {
-                this._setCameraBehavior(cameraConfig.behaviors[name]);
+                if (cameraConfig.behaviors[name]) {
+                    this._setCameraBehavior(cameraConfig.behaviors[name]);
+                }
             }
         };
 
@@ -776,6 +791,7 @@ export class SceneManager {
         this.camera.setTarget(center);
         this.camera.alpha = (this._viewer.configuration.camera && this._viewer.configuration.camera.alpha) || this.camera.alpha;
         this.camera.beta = (this._viewer.configuration.camera && this._viewer.configuration.camera.beta) || this.camera.beta;
+        this.camera.radius = (this._viewer.configuration.camera && this._viewer.configuration.camera.radius) || this.camera.radius;
     }
 
     protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean, model?: ViewerModel) {
