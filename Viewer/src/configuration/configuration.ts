@@ -1,5 +1,19 @@
 import { ITemplateConfiguration } from './../templateManager';
-import { EngineOptions, IGlowLayerOptions } from 'babylonjs';
+import { EngineOptions, IGlowLayerOptions, DepthOfFieldEffectBlurLevel } from 'babylonjs';
+
+export function getConfigurationKey(key: string, configObject: any) {
+    let splits = key.split('.');
+
+    if (splits.length === 0 || !configObject) return false;
+    else if (splits.length === 1) {
+        if (configObject[key] !== undefined) {
+            return configObject[key];
+        }
+    } else {
+        let firstKey = splits.shift();
+        return getConfigurationKey(splits.join("."), configObject[firstKey!])
+    }
+}
 
 export interface ViewerConfiguration {
 
@@ -32,6 +46,7 @@ export interface ViewerConfiguration {
     lights?: { [name: string]: boolean | ILightConfiguration },
     // engine configuration. optional!
     engine?: {
+        renderInBackground?: boolean;
         antialiasing?: boolean;
         disableResize?: boolean;
         engineOptions?: EngineOptions;
@@ -73,7 +88,8 @@ export interface ViewerConfiguration {
             specular?: { r: number, g: number, b: number };
         }
         hideLoadingDelay?: number;
-        environmentAssetsRootURL?: string;
+        assetsRootURL?: string;
+        environmentMainColor?: { r: number, g: number, b: number };
         environmentMap?: {
             /**
              * Environment map texture path in relative to the asset folder.
@@ -90,30 +106,67 @@ export interface ViewerConfiguration {
              */
             tintLevel: number;
         }
-        renderingPipelines?: {
-            default?: boolean | {
-                [propName: string]: any;
-            };
-            standard?: boolean | {
-                [propName: string]: any;
-            };
-            /*lens?: boolean | {
-                [propName: string]: boolean | string | number | undefined;
-            };*/
-            ssao?: boolean | {
-                [propName: string]: any;
-            };
-            ssao2?: boolean | {
-                [propName: string]: any;
-            };
-        }
+        defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
     }
+}
+
+/**
+ * Defines an animation to be applied to a model (translation, scale or rotation).
+ */
+export interface IModelAnimationConfiguration {
+    /**
+     * Time of animation, in seconds
+     */
+    time?: number;
+
+    /**
+     * Scale to apply
+     */
+    scaling?: {
+        x: number;
+        y: number;
+        z: number;
+    };
+
+    /**
+     * Easing function to apply
+     * See SPECTRE.EasingFunction
+     */
+    easingFunction?: number;
+
+    /**
+     * An Easing mode to apply to the easing function
+     * See BABYLON.EasingFunction
+     */
+    easingMode?: number;
+}
+
+
+export interface IDefaultRenderingPipelineConfiguration {
+    sharpenEnabled?: boolean;
+    bloomEnabled?: boolean;
+    bloomThreshold?: number;
+    depthOfFieldEnabled?: boolean;
+    depthOfFieldBlurLevel?: DepthOfFieldEffectBlurLevel;
+    fxaaEnabled?: boolean;
+    imageProcessingEnabled?: boolean;
+    defaultPipelineTextureType?: number;
+    bloomScale?: number;
+    chromaticAberrationEnabled?: boolean;
+    grainEnabled?: boolean;
+    bloomKernel?: number;
+    hardwareScaleLevel?: number;
+    bloomWeight?: number;
+    bllomThreshold?: number;
+    hdr?: boolean;
+    samples?: number;
 }
 
 export interface IModelConfiguration {
     id?: string;
     url?: string;
     root?: string; //optional
+    file?: string; // is a file being loaded? root and url ignored
     loader?: string; // obj, gltf?
     position?: { x: number, y: number, z: number };
     rotation?: { x: number, y: number, z: number, w?: number };
@@ -136,6 +189,9 @@ export interface IModelConfiguration {
         autoStart?: boolean | string;
         playOnce?: boolean;
     }
+
+    entryAnimation?: IModelAnimationConfiguration;
+    exitAnimation?: IModelAnimationConfiguration;
 
     material?: {
         directEnabled?: boolean;
@@ -358,6 +414,7 @@ export interface ISceneOptimizerConfiguration {
         renderTarget?: ISceneOptimizerParameters;
         mergeMeshes?: ISceneOptimizerParameters;
     }
+    custom?: string;
 }
 
 export interface IObserversConfiguration {
