@@ -1,9 +1,9 @@
-import { AnimationGroup, Animatable, Skeleton } from "babylonjs";
+import { AnimationGroup, Animatable, Skeleton, Vector3 } from "babylonjs";
 
 /**
  * Animation play mode enum - is the animation looping or playing once
  */
-export enum AnimationPlayMode {
+export const enum AnimationPlayMode {
     ONCE,
     LOOP
 }
@@ -11,12 +11,57 @@ export enum AnimationPlayMode {
 /**
  * An enum representing the current state of an animation object
  */
-export enum AnimationState {
+export const enum AnimationState {
     INIT,
     PLAYING,
     PAUSED,
     STOPPED,
     ENDED
+}
+
+/**
+ * The different type of easing functions available 
+ */
+export const enum EasingFunction {
+    Linear = 0,
+    CircleEase = 1,
+    BackEase = 2,
+    BounceEase = 3,
+    CubicEase = 4,
+    ElasticEase = 5,
+    ExponentialEase = 6,
+    PowerEase = 7,
+    QuadraticEase = 8,
+    QuarticEase = 9,
+    QuinticEase = 10,
+    SineEase = 11
+}
+
+/**
+ * Defines a simple animation to be applied to a model (scale).
+ */
+export interface ModelAnimationConfiguration {
+    /**
+     * Time of animation, in seconds
+     */
+    time: number;
+
+    /**
+     * Scale to apply
+     */
+    scaling?: Vector3;
+
+    /**
+     * Easing function to apply
+     * See SPECTRE.EasingFunction
+     */
+    easingFunction?: number;
+
+    /**
+     * An Easing mode to apply to the easing function
+     * See BABYLON.EasingFunction
+     */
+    easingMode?: number;
 }
 
 /**
