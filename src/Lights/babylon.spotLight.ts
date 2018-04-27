@@ -67,7 +67,7 @@
             return this._projectionTextureMatrix;
         }
 
-        protected _projectionTextureLightNear : number = 1e-6;;
+        protected _projectionTextureLightNear : number = 1e-6;
         /**
          * Gets the near clip of the Spotlight for texture projection.
          */

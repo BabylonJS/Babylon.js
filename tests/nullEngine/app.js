@@ -156,6 +156,15 @@ var engine = new BABYLON.NullEngine();
 
 //             console.log(pos);
 
+// const scene = new BABYLON.Scene(engine);
+// new BABYLON.PBRMetallicRoughnessMaterial("asdfasf", scene);
+// scene.dispose();
+
+BABYLON.Tools.LogLevels = BABYLON.Tools.ErrorLogLevel & BABYLON.Tools.WarningLogLevel;
 const scene = new BABYLON.Scene(engine);
-new BABYLON.PBRMetallicRoughnessMaterial("asdfasf", scene);
-scene.dispose();
+const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
+const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+mesh.position.set(0.5, 0.5, 0.5);
+mesh.isPickable = true;
+scene.render();
+engine.dispose();
