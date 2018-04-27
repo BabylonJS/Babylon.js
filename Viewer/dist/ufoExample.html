@@ -20,8 +20,10 @@
     <body>
         <babylon extends="default, shadowDirectionalLight, environmentMap" templates.nav-bar.params.disable-on-fullscreen="true">
             <scene glow="true">
-                <environment-main-color r="0.5" g="0.2" b="0.2"></environment-main-color>
             </scene>
+            <lab>
+                <environment-main-color r="0.5" g="0.2" b="0.2"></environment-main-color>
+            </lab>
             <model url="https://models.babylonjs.com/ufo.glb">
                 <animation auto-start="true"></animation>
             </model>
