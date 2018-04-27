@@ -90,7 +90,9 @@ export class ModelLoader {
             }
 
             this._checkAndRun("onLoaded", model);
-            model.onLoadedObservable.notifyObserversWithPromise(model);
+            this._viewer.sceneManager.scene.executeWhenReady(() => {
+                model.onLoadedObservable.notifyObservers(model);
+            });
         }, (progressEvent) => {
             this._checkAndRun("onProgress", progressEvent);
             model.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);

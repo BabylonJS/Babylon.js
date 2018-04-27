@@ -426,16 +426,6 @@ export class SceneManager {
             this._defaultRenderingPipelineShouldBuild = false;
             this._defaultRenderingPipeline.prepare();
         }
-
-        // reflection color
-        this._reflectionColor.copyFrom(this.mainColor);
-        this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
-        if (globalConfiguration.camera && globalConfiguration.camera.exposure) {
-            this._reflectionColor.scaleToRef(1 / globalConfiguration.camera.exposure, this._reflectionColor);
-        }
-        let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", globalConfiguration) || 0;
-        let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
-        this._reflectionColor.copyFrom(tmpColor3);
     }
 
     private _defaultRenderingPipelineShouldBuild: boolean = true;
@@ -534,19 +524,21 @@ export class SceneManager {
             return;
         }
 
-        let cc = sceneConfig.clearColor || { r: 0.9, g: 0.9, b: 0.9, a: 1.0 };
+        let cc = sceneConfig.clearColor;
         let oldcc = this.scene.clearColor;
-        if (cc.r !== undefined) {
-            oldcc.r = cc.r;
-        }
-        if (cc.g !== undefined) {
-            oldcc.g = cc.g
-        }
-        if (cc.b !== undefined) {
-            oldcc.b = cc.b
-        }
-        if (cc.a !== undefined) {
-            oldcc.a = cc.a
+        if (cc) {
+            if (cc.r !== undefined) {
+                oldcc.r = cc.r;
+            }
+            if (cc.g !== undefined) {
+                oldcc.g = cc.g
+            }
+            if (cc.b !== undefined) {
+                oldcc.b = cc.b
+            }
+            if (cc.a !== undefined) {
+                oldcc.a = cc.a
+            }
         }
 
         // image processing configuration - optional.
@@ -605,11 +597,35 @@ export class SceneManager {
                 this._mainColor.b = mc.b
             }
 
-            /*this._mainColor.toLinearSpaceToRef(this._mainColor);
-            let exposure = Math.pow(2.0, -((globalConfiguration.camera && globalConfiguration.camera.exposure) || 0.75)) * Math.PI;
-            this._mainColor.scaleToRef(1 / exposure, this._mainColor);
-            let environmentTint = (globalConfiguration.lab && globalConfiguration.lab.environmentMap && globalConfiguration.lab.environmentMap.tintLevel) || 0;
-            this._mainColor = Color3.Lerp(this._white, this._mainColor, environmentTint);*/
+            this._reflectionColor.copyFrom(this.mainColor);
+
+            if (this._viewer.configuration.camera && this._viewer.configuration.camera.exposure) {
+
+                let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._viewer.configuration) || 0;
+
+                /*this._mainColor.toLinearSpaceToRef(this._mainColor);
+                let exposure = Math.pow(2.0, -(this._viewer.configuration.camera.exposure) * Math.PI);
+                this._mainColor.scaleToRef(1 / exposure, this._mainColor);
+                let tmpColor = Color3.Lerp(this._white, this._mainColor, environmentTint);
+                this._mainColor.copyFrom(tmpColor);*/
+
+                // reflection color
+                this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
+                this._reflectionColor.scaleToRef(1 / this._viewer.configuration.camera.exposure, this._reflectionColor);
+                let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
+                this._reflectionColor.copyFrom(tmpColor3);
+            }
+
+            //update the environment, if exists
+            if (this.environmentHelper) {
+                if (this.environmentHelper.groundMaterial) {
+                    this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
+                }
+
+                if (this.environmentHelper.skyboxMaterial) {
+                    this.environmentHelper.skyboxMaterial._perceptualColor = this.mainColor;
+                }
+            }
         }
 
         if (sceneConfig.defaultMaterial) {
@@ -921,10 +937,11 @@ export class SceneManager {
 
         let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
         if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
-            if (!this.environmentHelper.groundMaterial._perceptualColor) {
-                this.environmentHelper.groundMaterial._perceptualColor = Color3.Black();
-            }
-            this.environmentHelper.groundMaterial._perceptualColor.copyFrom(this.mainColor);
+            //if (!this.environmentHelper.groundMaterial._perceptualColor) {
+
+            this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
+            //}
+            //this.environmentHelper.groundMaterial._perceptualColor.copyFrom(this.mainColor);
             // to be configured using the configuration object
 
             /*this.environmentHelper.groundMaterial.primaryColorHighlightLevel = groundConfig.material.highlightLevel;
@@ -954,14 +971,13 @@ export class SceneManager {
             }
         }
 
-        if (postInitSkyboxMaterial) {
-            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
-            if (skyboxMaterial) {
+
+        let skyboxMaterial = this.environmentHelper.skyboxMaterial;
+        if (skyboxMaterial) {
+            skyboxMaterial._perceptualColor = this.mainColor;
+
+            if (postInitSkyboxMaterial) {
                 if (typeof skyboxConifguration === 'object' && skyboxConifguration.material) {
-                    if (!skyboxMaterial._perceptualColor) {
-                        skyboxMaterial._perceptualColor = Color3.Black();
-                    }
-                    skyboxMaterial._perceptualColor.copyFrom(this.mainColor);
                     extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
                 }
             }

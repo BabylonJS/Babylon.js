@@ -1,4 +1,4 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration, IModelAnimationConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction } from "./modelAnimation";
@@ -95,8 +95,8 @@ export class ViewerModel implements IDisposable {
 
     private _entryAnimation: ModelAnimationConfiguration;
     private _exitAnimation: ModelAnimationConfiguration;
-    private _scaleTransition: BABYLON.Animation;
-    private _animatables: Array<BABYLON.Animatable> = [];
+    private _scaleTransition: Animation;
+    private _animatables: Array<Animatable> = [];
     private _frameRate: number = 60;
 
     constructor(protected _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
@@ -114,7 +114,7 @@ export class ViewerModel implements IDisposable {
         // rotate 180, gltf fun
         this._pivotMesh.rotation.y += Math.PI;
 
-        this._scaleTransition = new Animation("scaleAnimation", "scaling", this._frameRate, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        this._scaleTransition = new Animation("scaleAnimation", "scaling", this._frameRate, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
@@ -289,6 +289,11 @@ export class ViewerModel implements IDisposable {
     }
 
     private _modelComplete() {
+        //reapply material defines to be sure:
+        let meshes = this._pivotMesh.getChildMeshes(false);
+        meshes.filter(m => m.material).forEach((mesh) => {
+            this._applyModelMaterialConfiguration(mesh.material!);
+        });
         this.state = ModelState.COMPLETE;
         this.onCompleteObservable.notifyObservers(this);
     }
@@ -502,7 +507,7 @@ export class ViewerModel implements IDisposable {
 
         extendClassWithConfig(material, this._modelConfiguration.material);
 
-        if (material instanceof BABYLON.PBRMaterial) {
+        if (material instanceof PBRMaterial) {
             if (this._modelConfiguration.material.directIntensity !== undefined) {
                 material.directIntensity = this._modelConfiguration.material.directIntensity;
             }
@@ -522,7 +527,7 @@ export class ViewerModel implements IDisposable {
                 material.reflectionColor = this._viewer.sceneManager.reflectionColor;
             }
         }
-        else if (material instanceof BABYLON.MultiMaterial) {
+        else if (material instanceof MultiMaterial) {
             for (let i = 0; i < material.subMaterials.length; i++) {
                 const subMaterial = material.subMaterials[i];
                 if (subMaterial) {
@@ -539,13 +544,13 @@ export class ViewerModel implements IDisposable {
      * @param completeCallback Callback to execute when the animation completes
      */
     private _applyAnimation(animationConfiguration: ModelAnimationConfiguration, isEntry: boolean, completeCallback?: () => void) {
-        let animations: BABYLON.Animation[] = [];
+        let animations: Animation[] = [];
 
         //scale
         if (animationConfiguration.scaling) {
 
-            let scaleStart: BABYLON.Vector3 = isEntry ? animationConfiguration.scaling : this.rootMesh.scaling;
-            let scaleEnd: BABYLON.Vector3 = isEntry ? this.rootMesh.scaling : animationConfiguration.scaling;
+            let scaleStart: Vector3 = isEntry ? animationConfiguration.scaling : new Vector3(1, 1, 1);
+            let scaleEnd: Vector3 = isEntry ? new Vector3(1, 1, 1) : animationConfiguration.scaling;
 
             if (!scaleStart.equals(scaleEnd)) {
                 this.rootMesh.scaling = scaleStart;
@@ -598,7 +603,6 @@ export class ViewerModel implements IDisposable {
 
         if (this._viewer.sceneManager.scene.beginAnimation) {
             let animatable: Animatable = this._viewer.sceneManager.scene.beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
-                console.log(this.rootMesh.scaling);
                 if (onAnimationEnd) {
                     onAnimationEnd();
                 }
@@ -614,7 +618,7 @@ export class ViewerModel implements IDisposable {
      * @param endValue The value of the last key
      * @param duration The duration of the animation, used to determine the end frame
      */
-    private _setLinearKeys(animation: BABYLON.Animation, startValue: any, endValue: any, duration: number) {
+    private _setLinearKeys(animation: Animation, startValue: any, endValue: any, duration: number) {
         animation.setKeys([
             {
                 frame: 0,
