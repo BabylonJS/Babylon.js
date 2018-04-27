@@ -146,11 +146,12 @@ export class GroupModelAnimation implements IModelAnimation {
      * In correlation to an arry, this would be ".length"
      */
     public get frames(): number {
-        let animationFrames = this._animationGroup.targetedAnimations.map(ta => {
+        /*let animationFrames = this._animationGroup.targetedAnimations.map(ta => {
             let keys = ta.animation.getKeys();
             return keys[keys.length - 1].frame;
         });
-        return Math.max.apply(null, animationFrames);
+        return Math.max.apply(null, animationFrames);*/
+        return this._animationGroup.to - this._animationGroup.from;
     }
 
     /**
@@ -161,7 +162,7 @@ export class GroupModelAnimation implements IModelAnimation {
      */
     public get currentFrame(): number {
         // get the first currentFrame found
-        for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
+        /*for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
             let animatable: Animatable = this._animationGroup.animatables[i];
             let animations = animatable.getAnimations();
             if (!animations || !animations.length) {
@@ -172,8 +173,12 @@ export class GroupModelAnimation implements IModelAnimation {
                     return animations[idx].currentFrame;
                 }
             }
+        }*/
+        if (this._animationGroup.targetedAnimations[0] && this._animationGroup.targetedAnimations[0].animation.runtimeAnimations[0]) {
+            return this._animationGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame - this._animationGroup.from;
+        } else {
+            return 0;
         }
-        return 0;
     }
 
     /**
@@ -234,7 +239,10 @@ export class GroupModelAnimation implements IModelAnimation {
      * Restart the animation group
      */
     restart() {
-        this._animationGroup.restart();
+        if (this.state === AnimationState.PAUSED)
+            this._animationGroup.restart();
+        else
+            this.start();
     }
 
     /**
@@ -242,10 +250,7 @@ export class GroupModelAnimation implements IModelAnimation {
      * @param frameNumber Go to a specific frame in the animation
      */
     goToFrame(frameNumber: number) {
-        // this._animationGroup.goToFrame(frameNumber);
-        this._animationGroup['_animatables'].forEach(a => {
-            a.goToFrame(frameNumber);
-        })
+        this._animationGroup.goToFrame(frameNumber + this._animationGroup.from);
     }
 
     /**
