@@ -165,9 +165,12 @@ export class DefaultViewer extends AbstractViewer {
      * The scene will automatically be cleared of the old models, if exist.
      * @param model the configuration object (or URL) to load.
      */
-    public loadModel(model: any = this._configuration.model): Promise<ViewerModel> {
+    public loadModel(model?: string | IModelConfiguration): Promise<ViewerModel> {
+        if (!model) {
+            model = this.configuration.model;
+        }
         this.showLoadingScreen();
-        return super.loadModel(model, true).catch((error) => {
+        return super.loadModel(model!, true).catch((error) => {
             console.log(error);
             this.hideLoadingScreen();
             this.showOverlayScreen('error');
