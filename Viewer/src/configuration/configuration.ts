@@ -89,6 +89,7 @@ export interface ViewerConfiguration {
         }
         hideLoadingDelay?: number;
         assetsRootURL?: string;
+        environmentMainColor?: { r: number, g: number, b: number };
         environmentMap?: {
             /**
              * Environment map texture path in relative to the asset folder.
@@ -265,7 +266,6 @@ export interface ISceneConfiguration {
     debug?: boolean;
     clearColor?: { r: number, g: number, b: number, a: number };
     mainColor?: { r: number, g: number, b: number };
-    environmentMainColor?: { r: number, g: number, b: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
     colorGrading?: IColorGradingConfiguration;

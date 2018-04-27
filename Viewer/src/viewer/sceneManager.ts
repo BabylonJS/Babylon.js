@@ -416,6 +416,11 @@ export class SceneManager {
                     this.defaultRenderingPipelineEnabled = true;
                 }
             }
+
+            if (newConfiguration.lab.environmentMainColor) {
+                let mainColor = new Color3().copyFrom(newConfiguration.lab.environmentMainColor as Color3);
+                this.environmentHelper.setMainColor(mainColor);
+            }
         }
 
         if (this._defaultRenderingPipeline && this._defaultRenderingPipeline.imageProcessing) {
@@ -928,12 +933,6 @@ export class SceneManager {
         if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
             this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
         }
-
-        if (this._viewer.configuration.scene && this._viewer.configuration.scene.environmentMainColor) {
-            let mainColor = new Color3().copyFrom(this._viewer.configuration.scene.environmentMainColor as Color3);
-            this.environmentHelper.setMainColor(mainColor);
-        }
-
 
         let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
         if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
