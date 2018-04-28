@@ -88,7 +88,7 @@
 
                     if (otherMesh.material.getEffect() === effect) {
                         otherMesh.computeBonesUsingShaders = false;
-                    } else {
+                    } else if (otherMesh.subMeshes) {
                         for (var subMesh of otherMesh.subMeshes) {
                             let subMeshEffect = subMesh.effect;
 
