@@ -262,6 +262,15 @@ Handlebars.registerHelper('not', function (a) {
     return out;
 });
 
+Handlebars.registerHelper('count', function (map) {
+    return map.length;
+});
+
+Handlebars.registerHelper('gt', function (a, b) {
+    var out = a > b;
+    return out;
+});
+
 /**
  * This class represents a single template in the viewer's template tree.
  * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
