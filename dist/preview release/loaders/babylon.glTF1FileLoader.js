@@ -406,15 +406,13 @@ var BABYLON;
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
             loader.onCameraLoadedObservable.add(function (camera) { return _this.onCameraLoadedObservable.notifyObservers(camera); });
-            loader.onExtensionLoadedObservable.add(function (extension) {
-                _this.onExtensionLoadedObservable.notifyObservers(extension);
-                _this.onExtensionLoadedObservable.clear();
-            });
+            loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
             loader.onCompleteObservable.add(function () {
                 _this.onMeshLoadedObservable.clear();
                 _this.onTextureLoadedObservable.clear();
                 _this.onMaterialLoadedObservable.clear();
                 _this.onCameraLoadedObservable.clear();
+                _this.onExtensionLoadedObservable.clear();
                 _this.onCompleteObservable.notifyObservers(_this);
                 _this.onCompleteObservable.clear();
             });
