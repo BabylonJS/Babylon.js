@@ -592,17 +592,14 @@ module BABYLON {
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
             loader.onCameraLoadedObservable.add(camera => this.onCameraLoadedObservable.notifyObservers(camera));
-
-            loader.onExtensionLoadedObservable.add(extension => {
-                this.onExtensionLoadedObservable.notifyObservers(extension);
-                this.onExtensionLoadedObservable.clear();
-            });
+            loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();
                 this.onTextureLoadedObservable.clear();
                 this.onMaterialLoadedObservable.clear();
                 this.onCameraLoadedObservable.clear();
+                this.onExtensionLoadedObservable.clear();
 
                 this.onCompleteObservable.notifyObservers(this);
                 this.onCompleteObservable.clear();

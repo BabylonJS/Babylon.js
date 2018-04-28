@@ -428,5 +428,8 @@
 
             return false;
         }
+
+        public releaseEffects() {
+        }
     }
 }

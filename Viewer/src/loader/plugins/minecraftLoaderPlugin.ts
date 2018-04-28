@@ -16,7 +16,7 @@ export class MinecraftLoaderPlugin implements ILoaderPlugin {
         this._minecraftEnabled = false;
     }
 
-    public inParsed(data: IGLTFLoaderData) {
+    public onParsed(data: IGLTFLoaderData) {
         if (data && data.json && data.json['meshes'] && data.json['meshes'].length) {
             var meshes = data.json['meshes'] as GLTF2.IMesh[];
             for (var i = 0; i < meshes.length; i++) {
