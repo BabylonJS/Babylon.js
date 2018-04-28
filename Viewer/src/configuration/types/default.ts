@@ -34,7 +34,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                     "1.5x": "1.5",
                     "2.0x": "2.0",
                 },
-                logoImg: require('../../../assets/img/BabylonJS_logo_Small.png'),
+                logoImg: require('../../../assets/img/BabylonJS_Logo_Small.png'),
                 logoText: 'BabylonJS',
                 hideHelp: true,
                 disableOnFullscreen: true,
