@@ -5,13 +5,15 @@
       "title": "Chibi Rex",
       "playgroundId": "#QATUCH#4",
       "renderCount": 50,
-      "referenceImage": "chibi_rex.png"
+      "referenceImage": "chibi_rex.png",
+      "excludeFromAutomaticTesting": true
     },     
     {
       "title": "Yeti",
       "playgroundId": "#QATUCH#3",
       "renderCount": 150,
-      "referenceImage": "yeti.png"
+      "referenceImage": "yeti.png",
+      "excludeFromAutomaticTesting": true
     },   
     {
       "title": "Sponza",
