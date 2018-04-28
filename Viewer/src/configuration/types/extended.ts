@@ -256,7 +256,7 @@ export let extendedConfiguration: ViewerConfiguration = {
     },
     loaderPlugins: {
         extendedMaterial: true,
-        minecraft: true,
+        applyMaterialConfig: true,
         msftLod: true,
         telemetry: true
     },
