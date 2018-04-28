@@ -297,12 +297,7 @@
         justify-content: space-between;
     }
 </style>
-{{/if}}
-<style>
-    nav-bar .fullscreen {
-        margin-left: 4px;
-    }
-</style> {{/if}}
+{{/if}} {{/if}}
 
 <div class="nav-container" id="navbar-control">
     {{#unless hideLogo}}
@@ -316,7 +311,9 @@
                 <span class="icon types-icon"></span>
                 <span class="control-text animation-label">Animation</span>
                 <span class="control-text animation-number">{{selectedAnimation}}</span>
+                {{#if (gt (count animations) 1)}}
                 <span class="icon up-icon"></span>
+                {{/if}}
             </button>
             <div class="menu-options">
                 {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}

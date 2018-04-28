@@ -225,17 +225,17 @@ export class DefaultViewer extends AbstractViewer {
         if (!navbar) return;
 
         if (model.getAnimationNames().length >= 1) {
+            this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
             this._animationList = model.getAnimationNames(),
                 navbar.updateParams({
                     animations: this._animationList,
+                    paused: this._isAnimationPaused,
                 });
 
             // default animation & speed
             this._updateAnimationSpeed("1.0");
-            this._isAnimationPaused = !!(model.configuration.animation && model.configuration.animation.autoStart);
             this._updateAnimationType(this._animationList[0]);
         }
-
         let modelConfiguration = model.configuration;
     }
 

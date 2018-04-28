@@ -35,7 +35,8 @@ export let defaultConfiguration: ViewerConfiguration = {
                     "2.0x": "2.0",
                 },
                 logoImg: require('../../../assets/img/BabylonJS_logo_Small.png'),
-                logoText: 'BabylonJS'
+                logoText: 'BabylonJS',
+                hideHelp: true,
             },
             events: {
                 pointerdown: {
