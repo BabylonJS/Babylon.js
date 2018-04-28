@@ -298,7 +298,21 @@
         justify-content: space-between;
     }
 </style>
-{{/if}} {{/if}}
+{{/if}} {{/if}} {{#if disableOnFullscreen}}
+<style>
+    viewer:fullscreen nav-bar {
+        display: none;
+    }
+
+    viewer:-moz-full-screen nav-bar {
+        display: none;
+    }
+
+    viewer:-webkit-full-screen nav-bar {
+        display: none;
+    }
+</style>
+{{/if}}
 
 <div class="nav-container" id="navbar-control">
     {{#unless hideLogo}}

@@ -37,6 +37,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                 logoImg: require('../../../assets/img/BabylonJS_logo_Small.png'),
                 logoText: 'BabylonJS',
                 hideHelp: true,
+                disableOnFullscreen: true,
             },
             events: {
                 pointerdown: {
