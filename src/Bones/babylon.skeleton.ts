@@ -502,11 +502,15 @@
                 };
 
                 serializationObject.bones.push(serializedBone);
-
+                
                 if (bone.length) {
                     serializedBone.length = bone.length;
                 }
 
+                if (bone.metadata) {
+                    serializedBone.metadata = bone.metadata;
+                }
+                
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
                 }
@@ -553,9 +557,13 @@
                 }
                 var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
-
+                
                 if (parsedBone.length) {
                     bone.length = parsedBone.length;
+                }
+
+                if (parsedBone.metadata) {
+                    bone.metadata = parsedBone.metadata;
                 }
 
                 if (parsedBone.animation) {
