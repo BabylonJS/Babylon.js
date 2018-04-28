@@ -66,16 +66,25 @@
         pointer-events: none;
     }
 
+    nav-bar img,
     nav-bar .icon {
-        width: 18px;
-    }
-
-    nav-bar img {
         pointer-events: none;
     }
 
-    .small-icon {
-        width: 12px;
+    .logo-button {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: center;
+        background-color: rgba(91, 93, 107, .75);
+        height: 48px;
+        min-width: 48px;
+        margin-right: 4px;
+    }
+
+    .logo-button img {
+        height: 20px;
+        width: 20px;
     }
 
     .types {
@@ -96,11 +105,42 @@
         background-color: rgba(22, 24, 26, .90);
     }
 
+    .logo-button,
     .animation-label,
     .types-icon,
     .help,
     .speed {
         display: none;
+    }
+
+    .types-icon:after {
+        font-size: 16px;
+        content: "\F6BE";
+    }
+
+    .up-icon:after {
+        font-size: 12px;
+        content: "\E70E";
+    }
+
+    .play-icon:after {
+        font-size: 16px;
+        content: "\E768";
+    }
+
+    .pause-icon:after {
+        font-size: 16px;
+        content: "\E769";
+    }
+
+    .fullscreen-icon:after {
+        font-size: 16px;
+        content: "\E740";
+    }
+
+    .help-icon:after {
+        font-size: 16px;
+        content: "\F70C";
     }
 
     .progress-control {
@@ -111,13 +151,18 @@
         cursor: pointer;
     }
 
+    .progress-bar-container {
+        position: relative;
+        overflow: hidden;
+    }
+
     .progress-bar {
         align-self: center;
         flex: 1;
         background-color: rgb(255, 255, 255);
-        height: 4px;
+        height: 2px;
         position: absolute;
-        width: calc(100% - 48px);
+        width: 100%;
         right: 0;
         pointer-events: none;
     }
@@ -134,7 +179,7 @@
         height: 0px;
         background-color: rgba(91, 93, 107, .75);
         width: 100%;
-        border-top: 4px solid rgba(204, 210, 214, .4);
+        border-top: 2px solid rgba(204, 210, 214, .4);
     }
 
     .progress-circle {
@@ -150,10 +195,10 @@
     }
 
     .default-control {
-        background-color: rgba(91, 93, 107, .75);
         display: flex;
         flex-direction: row;
         height: 100%;
+        background-color: rgba(91, 93, 107, .75);
     }
 
     .menu-options button {
@@ -190,24 +235,28 @@
     }
 
     @media screen and (min-width: 540px) {
+        .help,
         .types-icon,
         .speed {
+            display: inline-block;
+        }
+
+        .logo-button {
             display: flex;
         }
 
-        .help {
-            display: block;
-        }
         .types {
             width: 84px;
-            margin-right: 34px;
+        }
+
+        .progress-bar-container {
+            margin: 0 12px;
         }
 
         .types .menu-options {
             width: 84px;
         }
         .speed {
-            margin-right: 4px;
             width: 64px;
         }
 
@@ -217,16 +266,16 @@
     }
 
     @media screen and (min-width: 1024px) {
-        .speed {
-            margin-right: 28px;
-        }
         .animation-label {
             display: block;
-            margin-left: 6px;
         }
+
+        .progress-bar-container {
+            margin: 0 12px;
+        }
+
         .types {
             width: 144px;
-            margin-right: 0px;
         }
         .types .menu-options {
             width: 144px;
@@ -234,28 +283,43 @@
     }
 </style>
 
-{{#if (or (not animations) hideAnimations)}}
+{{#if (or (not animations) hideAnimations)}} {{#if hideLogo}}
 <style>
     nav-bar .nav-container {
         justify-content: flex-end;
     }
 </style>
+{{else}}
+<style>
+    nav-bar .nav-container {
+        justify-content: space-between;
+    }
+</style>
 {{/if}}
+<style>
+    nav-bar .fullscreen {
+        margin-left: 4px;
+    }
+</style> {{/if}}
 
 <div class="nav-container" id="navbar-control">
-    {{#unless (or (not animations) hideAnimations)}}
+    {{#unless hideLogo}}
+    <div class="logo-button" title="{{logoText}}">
+        <img src="{{logoImg}}">
+    </div>
+    {{/unless}} {{#unless (or (not animations) hideAnimations)}}
     <div class="animation-control">
         <div class="types">
             <button class="flex-container" id="types-button">
-                <img src="{{typeImg}}" class="svg icon types-icon">
+                <span class="icon types-icon"></span>
                 <span class="control-text animation-label">Animation</span>
                 <span class="control-text animation-number">{{selectedAnimation}}</span>
-                <img src="{{upImg}}" class="small-icon">
+                <span class="icon up-icon"></span>
             </button>
             <div class="menu-options">
                 {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
                 <button class="flex-container" id="label-option-button" data-value="{{this}}">
-                    <img src="{{../typeImg}}" class="icon types-icon">
+                    <span class="icon types-icon"></span>
                     <span class="control-text animation-label">Animation</span>
                     <span class="control-text animation-number">{{add @index 1}}</span>
                 </button>
@@ -265,8 +329,10 @@
         <div class="progress-control" id="progress-control">
             <button class="play-pause" id="play-pause-button">
                 {{#if paused}}
-                <img src="{{playImg}}" class="icon play-button">{{else}}
-                <img src="{{pauseImg}}" class="icon pause-button">{{/if}}
+                <span class="icon play-icon"></span>
+                {{else}}
+                <span class="icon pause-icon"></span>
+                {{/if}}
             </button>
             <div class="progress-bar-container flex-container" id="progress-bar-container">
                 <div class="progress-bar">
@@ -279,7 +345,7 @@
         <div class="speed">
             <button class="flex-container" id="speed-button">
                 <span class="control-text speed-text">{{selectedSpeed}}</span>
-                <img src="{{upImg}}" class="small-icon">
+                <span class="icon up-icon"></span>
             </button>
             <div class="menu-options">
                 {{#eachInMap speedList}} {{#unless (eq ../selectedSpeed id)}}
@@ -294,11 +360,11 @@
     <div class="default-control">
         {{#unless hideHelp}}
         <button class="help" id="help-button" title="Help">
-            <img src="{{helpImg}}" class="icon">
+            <span class="icon help-icon"></span>
         </button>
         {{/unless}} {{#unless hideFullScreen}}
         <button class="fullscreen" id="fullscreen-button" title="Fullscreen">
-            <img src="{{fullImg}}" class="icon">
+            <span class="icon fullscreen-icon"></span>
         </button>
         {{/unless}}
     </div>

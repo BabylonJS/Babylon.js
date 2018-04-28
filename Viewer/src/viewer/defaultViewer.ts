@@ -232,8 +232,6 @@ export class DefaultViewer extends AbstractViewer {
             this._animationList = model.getAnimationNames(),
                 navbar.updateParams({
                     animations: this._animationList,
-                    //hideAnimations: true,
-                    //hideFullScreen: true,
                 });
 
             // default animation & speed

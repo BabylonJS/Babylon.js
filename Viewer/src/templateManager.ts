@@ -339,7 +339,7 @@ export class Template {
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
-                let compiledTemplate = Handlebars.compile(htmlTemplate);
+                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && this._configuration.params.noEscape) });
                 let config = this._configuration.params || {};
                 this._rawHtml = compiledTemplate(config);
                 try {
