@@ -4,7 +4,11 @@ export let defaultConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     templates: {
         main: {
-            html: require("../../../assets/templates/default/defaultTemplate.html")
+            html: require("../../../assets/templates/default/defaultTemplate.html"),
+            params: {
+                babylonFont: require('../../../assets/babylon.woff'),
+                noEscape: true
+            }
         },
         loadingScreen: {
             html: require("../../../assets/templates/default/loadingScreen.html"),
@@ -24,22 +28,23 @@ export let defaultConfiguration: ViewerConfiguration = {
         navBar: {
             html: require("../../../assets/templates/default/navbar.html"),
             params: {
-                buttons: {
-                    /*"help-button": {
-                        altText: "Help",
-                        image: require('../../../assets/img/help-circle.png')
-                    },*/
-                    "fullscreen-button": {
-                        altText: "Fullscreen",
-                        image: require('../../../assets/img/fullscreen.png')
-                    }
+                speedList: {
+                    "0.5x": "0.5",
+                    "1.0x": "1.0",
+                    "1.5x": "1.5",
+                    "2.0x": "2.0",
                 },
-                visibilityTimeout: 2000
+                logoImg: require('../../../assets/img/BabylonJS_Logo_Small.png'),
+                logoText: 'BabylonJS',
+                hideHelp: true,
+                disableOnFullscreen: true,
             },
             events: {
-                pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ },
+                pointerdown: {
+                    'navbar-control': true,
+                    'help-button': true
+                },
                 pointerover: true,
-                change: { 'animation-selector': true }
             }
         },
         overlay: {
@@ -62,13 +67,17 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     camera: {
         behaviors: {
-            autoRotate: 0,
+            autoRotate: {
+                type: 0
+            },
             framing: {
                 type: 2,
                 zoomOnBoundingInfo: true,
                 zoomStopsAnimation: false
             },
-            bouncing: 1
+            bouncing: {
+                type: 1
+            }
         },
         wheelPrecision: 200,
     },
@@ -77,9 +86,9 @@ export let defaultConfiguration: ViewerConfiguration = {
             url: 'https://playground.babylonjs.com/textures/environment.dds',
             gammaSpace: false
         },*/
-        pbr: true,
+        /*pbr: true,
         blur: 0.7,
-        infiniteDistance: false,
+        infiniteDistance: false,*/
         /*material: {
             imageProcessingConfiguration: {
                 colorCurves: {
@@ -105,10 +114,10 @@ export let defaultConfiguration: ViewerConfiguration = {
         antialiasing: true
     },
     scene: {
-        imageProcessingConfiguration: {
+        /*imageProcessingConfiguration: {
             exposure: 1.4,
             contrast: 1.66,
             toneMappingEnabled: true
-        }
+        }*/
     }
 }
