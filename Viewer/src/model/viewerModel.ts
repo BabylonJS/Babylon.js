@@ -1,7 +1,7 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration, IModelAnimationConfiguration } from "../configuration/configuration";
-import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction } from "./modelAnimation";
+import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { AbstractViewer } from "..";
@@ -341,13 +341,20 @@ export class ViewerModel implements IDisposable {
      * @returns The model aniamtion to be played.
      */
     public playAnimation(name: string): IModelAnimation {
+        let animation = this.setCurrentAnimationByName(name);
+        if (animation) {
+            animation.start();
+        }
+        return animation;
+    }
+
+    public setCurrentAnimationByName(name: string) {
         let animation = this._getAnimationByName(name);
         if (animation) {
-            if (this.currentAnimation) {
+            if (this.currentAnimation && this.currentAnimation.state !== AnimationState.STOPPED) {
                 this.currentAnimation.stop();
             }
             this.currentAnimation = animation;
-            animation.start();
             return animation;
         } else {
             throw new Error("animation not found - " + name);
@@ -502,7 +509,7 @@ export class ViewerModel implements IDisposable {
      * Apply a material configuration to a material
      * @param material Material to apply configuration to
      */
-    private _applyModelMaterialConfiguration(material: Material) {
+    public _applyModelMaterialConfiguration(material: Material) {
         if (!this._modelConfiguration.material) return;
 
         extendClassWithConfig(material, this._modelConfiguration.material);
@@ -727,8 +734,6 @@ export class ViewerModel implements IDisposable {
         this.skeletons.length = 0;
         this._animations.forEach(ag => ag.dispose());
         this._animations.length = 0;
-        this._meshes.forEach(m => m.dispose());
-        this._meshes.length = 0;
-        this.rootMesh.dispose();
+        this.rootMesh.dispose(false, true);
     }
 }

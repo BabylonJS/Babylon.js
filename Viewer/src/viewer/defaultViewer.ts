@@ -7,6 +7,7 @@ import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMa
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
+import { IModelAnimation } from '../model/modelAnimation';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -51,48 +52,140 @@ export class DefaultViewer extends AbstractViewer {
     private _initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
         if (navbar) {
-            let navbarHeight = navbar.parent.clientHeight + 'px';
-
-            let navbarShown: boolean = true;
-            let timeoutCancel /*: number*/;
-
-            let triggerNavbar = function (show: boolean = false, evt: PointerEvent) {
-                // only left-click on no-button.
-                if (!navbar || evt.button > 0) return;
-                // clear timeout
-                timeoutCancel && clearTimeout(timeoutCancel);
-                // if state is the same, do nothing
-                if (show === navbarShown) return;
-                //showing? simply show it!
-                if (show) {
-                    navbar.parent.style.bottom = show ? '0px' : '-' + navbarHeight;
-                    navbarShown = show;
-                } else {
-                    let visibilityTimeout = 2000;
-                    if (navbar.configuration.params && navbar.configuration.params.visibilityTimeout !== undefined) {
-                        visibilityTimeout = <number>navbar.configuration.params.visibilityTimeout;
-                    }
-                    // not showing? set timeout until it is removed.
-                    timeoutCancel = setTimeout(function () {
-                        if (navbar) {
-                            navbar.parent.style.bottom = '-' + navbarHeight;
-                        }
-                        navbarShown = show;
-                    }, visibilityTimeout);
-                }
-            }
-
-            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerout');
-            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, true), 'pointerdown');
-            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
-            this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
-
-            this.templateManager.eventManager.registerCallback('navBar', this.toggleFullscreen, 'pointerdown', '#fullscreen-button');
-            this.templateManager.eventManager.registerCallback('navBar', (data) => {
-                if (data && data.event && data.event.target)
-                    this.sceneManager.models[0].playAnimation(data.event.target['value']);
-            }, 'change', '#animation-selector');
+            this.onFrameRenderedObservable.add(this._updateProgressBar);
+            this.templateManager.eventManager.registerCallback('navBar', this._handlePointerDown, 'pointerdown');
+            // an example how to trigger the help button. publiclly available
+            this.templateManager.eventManager.registerCallback("navBar", () => {
+                // do your thing
+            }, "pointerdown", "#help-button");
         }
+    }
+
+    private _animationList: string[];
+    private _currentAnimation: IModelAnimation;
+    private _isAnimationPaused: boolean;
+
+    private _handlePointerDown = (event: EventCallback) => {
+
+        let pointerDown = <PointerEvent>event.event;
+        if (pointerDown.button !== 0) return;
+        var element = (<HTMLElement>event.event.srcElement);
+
+        if (!element) {
+            return;
+        }
+
+        let parentClasses = element.parentElement!.classList;
+
+        switch (element.id) {
+            case "speed-button":
+            case "types-button":
+                if (parentClasses.contains("open")) {
+                    parentClasses.remove("open");
+                } else {
+                    parentClasses.add("open");
+                }
+                break;
+            case "play-pause-button":
+                this._togglePlayPause();
+                break;
+            case "label-option-button":
+                var label = element.dataset["value"];
+                if (label) {
+                    this._updateAnimationType(label);
+                }
+                break;
+            case "speed-option-button":
+                if (!this._currentAnimation) {
+                    return;
+                }
+                var speed = element.dataset["value"];
+                if (speed)
+                    this._updateAnimationSpeed(speed);
+                break;
+            case "progress-bar-container":
+                if (!this._currentAnimation) return;
+                const gotoFrame = (pointerDown.offsetX / element.clientWidth) * this._currentAnimation.frames;
+                if (isNaN(gotoFrame)) return;
+                this._currentAnimation.goToFrame(gotoFrame);
+                break;
+            case "fullscreen-button":
+                this.toggleFullscreen();
+            default:
+                return;
+        }
+    }
+
+    /**
+     * Plays or Pauses animation
+     */
+    private _togglePlayPause = () => {
+        if (!this._currentAnimation) {
+            return;
+        }
+        if (this._isAnimationPaused) {
+            this._currentAnimation.restart();
+        } else {
+            this._currentAnimation.pause();
+        }
+
+        this._isAnimationPaused = !this._isAnimationPaused;
+
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+
+        navbar.updateParams({
+            paused: this._isAnimationPaused,
+        });
+    }
+
+    /**
+     * Control progress bar position based on animation current frame
+     */
+    private _updateProgressBar = () => {
+        var progressWrapper = document.getElementById("progress-wrapper");
+        if (progressWrapper && this._currentAnimation) {
+            const progress = this._currentAnimation.currentFrame / this._currentAnimation.frames * 100;
+            if (isNaN(progress)) return;
+            progressWrapper.style.transform = "translateX(" + progress + "%)";
+        }
+    }
+
+    /** 
+     * Update Current Animation Speed
+     */
+    private _updateAnimationSpeed = (speed: string) => {
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+
+        if (speed && this._currentAnimation) {
+            this._currentAnimation.speedRatio = parseFloat(speed);
+            if (!this._isAnimationPaused) {
+                this._currentAnimation.restart();
+            }
+            navbar.updateParams({
+                selectedSpeed: speed + "x",
+            });
+        }
+    }
+
+    /** 
+     * Update Current Animation Type
+     */
+    private _updateAnimationType = (label: string) => {
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+
+        if (label) {
+            this._currentAnimation = this.sceneManager.models[0].setCurrentAnimationByName(label);
+        }
+
+        navbar.updateParams({
+            selectedAnimation: (this._animationList.indexOf(label) + 1),
+        });
+
+        // reset speed when a new animation is selected
+        this._updateAnimationSpeed("1.0");
     }
 
     /**
@@ -131,32 +224,19 @@ export class DefaultViewer extends AbstractViewer {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
-        if (model.getAnimationNames().length > 1) {
-            navbar.updateParams({ animations: model.getAnimationNames() });
-        }
+        if (model.getAnimationNames().length >= 1) {
+            this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
+            this._animationList = model.getAnimationNames(),
+                navbar.updateParams({
+                    animations: this._animationList,
+                    paused: this._isAnimationPaused,
+                });
 
+            // default animation & speed
+            this._updateAnimationSpeed("1.0");
+            this._updateAnimationType(this._animationList[0]);
+        }
         let modelConfiguration = model.configuration;
-
-        let metadataContainer = navbar.parent.querySelector('#model-metadata');
-        if (metadataContainer) {
-            if (modelConfiguration.title !== undefined) {
-                let element = metadataContainer.querySelector('span.model-title');
-                if (element) {
-                    element.innerHTML = modelConfiguration.title;
-                }
-            }
-
-            if (modelConfiguration.subtitle !== undefined) {
-                let element = metadataContainer.querySelector('span.model-subtitle');
-                if (element) {
-                    element.innerHTML = modelConfiguration.subtitle;
-                }
-            }
-
-            if (modelConfiguration.thumbnail !== undefined) {
-                (<HTMLDivElement>metadataContainer.querySelector('.thumbnail')).style.backgroundImage = `url('${modelConfiguration.thumbnail}')`;
-            }
-        }
     }
 
     /**

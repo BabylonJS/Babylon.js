@@ -100,7 +100,6 @@
 - Add isThumbClamped option on GUI slider control ([JeanPhilippeKernel](https://github.com/JeanPhilippeKernel))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
-(https://github.com/trevordev))
 - Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
@@ -153,5 +152,5 @@
 - Removed public references to default rendering pipeline's internal post process ([trevordev](https://github.com/trevordev))
 - `Bone.setScale` does not support scaleChildren property anymore. You can use `Bone.scale` to achieve the same effect ([deltakosh](https://github.com/deltakosh))
 - Vector3 &amp; Vector4:
-    - `MinimizeInPlace` has been renamed to `minimizeInPlace`
-    - `MaximizeInPlace` has been renamed to `maximizeInPlace`
+  - `MinimizeInPlace` has been renamed to `minimizeInPlace`
+  - `MaximizeInPlace` has been renamed to `maximizeInPlace`
