@@ -477,6 +477,12 @@ var INSPECTOR;
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor
         },
+        'ImageProcessingConfiguration': {
+            type: BABYLON.ImageProcessingConfiguration
+        },
+        'ColorCurves': {
+            type: BABYLON.ColorCurves
+        }
     };
 })(INSPECTOR || (INSPECTOR = {}));
 

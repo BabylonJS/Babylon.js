@@ -164,8 +164,13 @@
 
         /**
          * Resets the runtime animation to the beginning
+         * @param restoreOriginal defines whether to restore the target property to the original value
          */
-        public reset(): void {
+        public reset(restoreOriginal = false): void {
+            if (restoreOriginal && this._originalValue != null) {
+                this.setValue(this._originalValue, -1);
+            }
+
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._currentFrame = 0;
@@ -212,9 +217,9 @@
         }
 
         /**
-         * Affect the interpolated value to the target
+         * Apply the interpolated value to the target
          * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
         public setValue(currentValue: any, weight = 1.0): void {
             if (this._target instanceof Array) {
@@ -227,13 +232,7 @@
             }
         }
 
-        /**
-         * Sets the value of the runtime animation
-         * @param target The target property of the runtime animation
-         * @param currentValue The current value to use for the runtime animation
-         * @param weight The weight to use for the runtime animation (Defaults to 1.0)
-         */
-        private _setValue(target: any, currentValue: any, weight = 1.0): void {
+        private _setValue(target: any, currentValue: any, weight: number): void {
             // Set value
             var path: any;
             var destination: any;
@@ -258,10 +257,24 @@
             this._activeTarget = destination;
             this._weight = weight;
 
+            if (!this._originalValue) {
+                let originalValue: any;
+
+                if (destination.getRestPose && path === "_matrix") { // For bones
+                    originalValue = destination.getRestPose();
+                } else {
+                    originalValue = destination[path];
+                }
+
+                if (originalValue && originalValue.clone) {
+                    this._originalValue = originalValue.clone();
+                } else {
+                    this._originalValue = originalValue;
+                }
+            }
+
             // Blending
-            let enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
-            let blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
-            
+            const enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
             if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
                     let originalValue = destination[path];
@@ -272,27 +285,7 @@
                         this._originalBlendValue = originalValue;
                     }
                 }
-            }
 
-            if (weight !== -1.0) {
-                if (!this._originalValue) {
-                    let originalValue: any;
-
-                    if (destination.getRestPose && path === "_matrix") { // For bones
-                        originalValue = destination.getRestPose();
-                    } else {
-                        originalValue = destination[path];
-                    }
-
-                    if (originalValue.clone) {
-                        this._originalValue = originalValue.clone();
-                    } else {
-                        this._originalValue = originalValue;
-                    }
-                }
-            }
-
-            if (enableBlending && this._blendingFactor <= 1.0) {
                 if (this._originalBlendValue.m) { // Matrix
                     if (Animation.AllowMatrixDecomposeForInterpolation) {
                         if (this._currentValue) {
@@ -319,6 +312,8 @@
                         this._currentValue = currentValue;
                     }
                 }
+
+                const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
                 this._blendingFactor += blendingSpeed;
             } else {
                 this._currentValue = currentValue;

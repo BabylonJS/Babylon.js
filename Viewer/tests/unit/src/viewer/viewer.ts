@@ -76,7 +76,7 @@ describe('Viewer', function () {
         let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         let renderCount = 0;
         let sceneRenderCount = 0;
-        viewer.onSceneInitObservable.add(() => {
+        viewer.onSceneInitObservable.add((scene) => {
             viewer.sceneManager.scene.registerBeforeRender(() => {
                 sceneRenderCount++;
             });
@@ -174,13 +174,13 @@ describe('Viewer', function () {
     it('should render in background if set to true', (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isFalse(viewer.engine.renderEvenInBackground, "Engine is rendering in background");
+            assert.isTrue(viewer.engine.renderEvenInBackground, "Engine is rendering in background");
             viewer.updateConfiguration({
                 scene: {
-                    renderInBackground: true
+                    renderInBackground: false
                 }
             });
-            assert.isTrue(viewer.engine.renderEvenInBackground, "Engine is not rendering in background");
+            assert.isFalse(viewer.engine.renderEvenInBackground, "Engine is not rendering in background");
             viewer.dispose();
             done();
         });

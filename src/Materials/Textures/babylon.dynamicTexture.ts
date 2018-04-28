@@ -140,7 +140,7 @@
                 x = (size.width - textSize.width) / 2;
             }
             if (y === null || y === undefined) {
-                var fontSize = parseInt((font.replace(/\D/g, '')));;
+                var fontSize = parseInt((font.replace(/\D/g, '')));
                 y = (size.height / 2) + (fontSize / 3.65);
             }
 

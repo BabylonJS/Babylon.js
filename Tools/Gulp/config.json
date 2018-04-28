@@ -1764,7 +1764,7 @@
                 "name": "babylonjs-viewer",
                 "main": "../../Viewer/src/index.d.ts",
                 "out": "../../dist/preview release/viewer/babylon.viewer.module.d.ts",
-                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\n"
+                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "outputs": [
                 {

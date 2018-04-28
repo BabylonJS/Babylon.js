@@ -2,7 +2,7 @@ import { viewerManager } from './viewerManager';
 import { SceneManager } from './sceneManager';
 import { TemplateManager } from './../templateManager';
 import { ConfigurationLoader } from './../configuration/loader';
-import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
+import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
@@ -13,6 +13,7 @@ import { CameraBehavior } from '../interfaces';
 import { viewerGlobals } from '../configuration/globals';
 import { extendClassWithConfig } from '../helper';
 import { telemetryManager } from '../telemetryManager';
+import { Version } from '..';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -166,6 +167,8 @@ export abstract class AbstractViewer {
 
         this._prepareContainerElement();
 
+        RenderingManager.AUTOCLEAR = false;
+
         // extend the configuration
         this._configurationLoader = new ConfigurationLoader();
         this._configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
@@ -195,12 +198,18 @@ export abstract class AbstractViewer {
         });
 
         this.onModelLoadedObservable.add((model) => {
-            this.updateConfiguration(this._configuration, model);
+            //this.updateConfiguration(this._configuration, model);
+        });
+
+        this.onSceneInitObservable.add(() => {
+            this.updateConfiguration();
         });
 
         this.onInitDoneObservable.add(() => {
             this._isInit = true;
+            //this.sceneManager.scene.executeWhenReady(() => {
             this.engine.runRenderLoop(this._render);
+            //});
         });
     }
 
@@ -454,11 +463,6 @@ export abstract class AbstractViewer {
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
-            }).then((scene) => {
-                if (!autoLoad) {
-                    this.updateConfiguration();
-                }
-                return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).catch(e => {

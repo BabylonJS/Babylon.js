@@ -199,10 +199,10 @@ module BABYLON {
          * @returns the JSON object
          */        
         public serialize(): any {
-            var serializationObject = super.serialize();;
+            var serializationObject = super.serialize();
 
-            serializationObject.direction1 = this.direction1.asArray();;
-            serializationObject.direction2 = this.direction2.asArray();;
+            serializationObject.direction1 = this.direction1.asArray();
+            serializationObject.direction2 = this.direction2.asArray();
 
             return serializationObject;
         }    

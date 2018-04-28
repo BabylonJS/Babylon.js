@@ -507,9 +507,6 @@ module BABYLON.GLTF2 {
             const babylonMesh = new Mesh(node.name || `node${node._index}`, this._babylonScene, node._parent._babylonMesh);
             node._babylonMesh = babylonMesh;
 
-            node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-            node._babylonAnimationTargets.push(babylonMesh);
-
             GLTFLoader._LoadTransform(node, babylonMesh);
 
             if (node.mesh != undefined) {
@@ -818,8 +815,8 @@ module BABYLON.GLTF2 {
             babylonBone = new Bone(node.name || `joint${node._index}`, skin._babylonSkeleton!, babylonParentBone, this._getNodeMatrix(node), null, null, boneIndex);
             babylonBones[node._index] = babylonBone;
 
-            node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-            node._babylonAnimationTargets.push(babylonBone);
+            node._babylonBones = node._babylonBones || [];
+            node._babylonBones.push(babylonBone);
 
             return babylonBone;
         }
@@ -939,7 +936,7 @@ module BABYLON.GLTF2 {
 
             // Ignore animations that have no animation targets.
             if ((channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
-                (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonAnimationTargets)) {
+                (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonMesh)) {
                 return Promise.resolve();
             }
 
@@ -1062,14 +1059,12 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        const morphTargets = new Array<any>();
                         this._forEachPrimitive(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                            morphTarget.animations.push(babylonAnimation);
-                            morphTargets.push(morphTarget);
+                            const babylonAnimationClone = babylonAnimation.clone();
+                            morphTarget.animations.push(babylonAnimationClone);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
                         });
-
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                     }
                 }
                 else {
@@ -1077,12 +1072,16 @@ module BABYLON.GLTF2 {
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    if (targetNode._babylonAnimationTargets) {
-                        for (const babylonAnimationTarget of targetNode._babylonAnimationTargets) {
+                    if (targetNode._babylonBones) {
+                        const babylonAnimationTargets = [targetNode._babylonMesh!, ...targetNode._babylonBones];
+                        for (const babylonAnimationTarget of babylonAnimationTargets) {
                             babylonAnimationTarget.animations.push(babylonAnimation);
                         }
-
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
+                    }
+                    else {
+                        targetNode._babylonMesh!.animations.push(babylonAnimation);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonMesh);
                     }
                 }
             });
