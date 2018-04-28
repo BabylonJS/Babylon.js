@@ -1,79 +1,304 @@
 <style>
     nav-bar {
         position: absolute;
-        height: 160px;
+        height: 48px;
         width: 100%;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.3);
-        color: white;
-        transition: 1s;
-        align-items: flex-start;
-        justify-content: space-around;
+        bottom: 10px;
         display: flex;
-
-        flex-direction: column;
+        justify-content: center;
     }
 
-    /* Big screens have room for the entire navbar */
+    nav-bar .nav-container {
+        display: flex;
+        flex-direction: row;
+        margin: 0 10px;
+        height: 100%;
+        width: 100%;
+        justify-content: center;
+    }
 
-    @media screen and (min-width: 768px) {
-        nav-bar {
-            align-items: center;
-            flex-direction: row;
-            justify-content: space-between;
-            height: 80px;
+    nav-bar .animation-control {
+        background-color: rgba(91, 93, 107, .75);
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        width: 100%;
+        max-width: 1280px;
+        justify-content: center;
+    }
+
+    nav-bar .flex-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    nav-bar button {
+        background: none;
+        border: none;
+        color: white;
+        margin: 0;
+        padding: 0;
+
+        height: 100%;
+        min-width: 48px;
+        cursor: pointer;
+    }
+
+    nav-bar button:hover,
+    nav-bar button:active,
+    nav-bar button:focus {
+        background: none;
+        border: none;
+        outline: none;
+    }
+
+    nav-bar button:hover {
+        background-color: rgba(22, 24, 26, .20);
+    }
+
+    nav-bar .control-text {
+        font-family: "Segoe UI";
+        font-size: 12px;
+        font-weight: 400;
+        pointer-events: none;
+    }
+
+    nav-bar img,
+    nav-bar .icon {
+        pointer-events: none;
+    }
+
+    .logo-button {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: center;
+        background-color: rgba(91, 93, 107, .75);
+        height: 48px;
+        min-width: 48px;
+        margin-right: 4px;
+    }
+
+    .logo-button img {
+        height: 20px;
+        width: 20px;
+    }
+
+    .types {
+        display: flex;
+        flex-direction: column;
+        width: 48px;
+    }
+
+    .types .flex-container,
+    .speed .flex-container {
+        align-items: center;
+    }
+
+    .menu-options {
+        position: absolute;
+        bottom: 48px;
+        width: 48px;
+        background-color: rgba(22, 24, 26, .90);
+    }
+
+    .logo-button,
+    .animation-label,
+    .types-icon,
+    .help,
+    .speed {
+        display: none;
+    }
+
+    .types-icon:after {
+        font-size: 16px;
+        content: "\F6BE";
+    }
+
+    .up-icon:after {
+        line-height: 16px;
+        font-size: 12px;
+        content: "\E70E";
+    }
+
+    .play-icon:after {
+        font-size: 16px;
+        content: "\E768";
+    }
+
+    .pause-icon:after {
+        font-size: 16px;
+        content: "\E769";
+    }
+
+    .fullscreen-icon:after {
+        font-size: 16px;
+        content: "\E740";
+    }
+
+    .help-icon:after {
+        /* TODO: wrong Icon, need font update */
+        font-size: 16px;
+        content: "\F70C";
+    }
+
+    .progress-control {
+        display: flex;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .progress-bar-container {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        align-self: center;
+        flex: 1;
+        background-color: rgb(255, 255, 255);
+        height: 2px;
+        position: absolute;
+        width: 100%;
+        right: 0;
+        pointer-events: none;
+    }
+
+    .animation-number {
+        margin: 0 6px;
+    }
+
+    .speed-text {
+        margin-right: 6px;
+    }
+
+    .progress-wrapper {
+        height: 0px;
+        background-color: rgba(91, 93, 107, .75);
+        width: 100%;
+        border-top: 2px solid rgba(204, 210, 214, .4);
+    }
+
+    .progress-circle {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 50%;
+        background-color: rgb(91, 93, 107);
+        cursor: pointer;
+        position: relative;
+        bottom: 10px;
+        pointer-events: none;
+    }
+
+    .default-control {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        background-color: rgba(91, 93, 107, .75);
+    }
+
+    .menu-options button {
+        width: 100%;
+        height: 48px;
+        color: rgb(142, 147, 155);
+    }
+
+    .menu-options button {
+        width: 100%;
+        height: 48px;
+        color: rgb(142, 147, 155);
+    }
+
+    .menu-options button:hover {
+        background-color: transparent;
+        color: rgb(255, 255, 255);
+    }
+
+    .menu-options .animation-number {
+        margin: 0 18px 0 6px;
+    }
+
+    .menu-options .speed-text {
+        margin-right: 18px;
+    }
+
+    .menu-options {
+        visibility: hidden;
+    }
+
+    .open .menu-options {
+        visibility: visible;
+    }
+
+    @media screen and (min-width: 540px) {
+        .help,
+        .types-icon,
+        .speed {
+            display: inline-block;
+        }
+
+        .logo-button {
+            display: flex;
+        }
+
+        .types {
+            width: 84px;
+        }
+
+        .progress-bar-container {
+            margin: 0 12px;
+        }
+
+        .types .menu-options {
+            width: 84px;
+        }
+        .speed {
+            width: 64px;
+        }
+
+        .speed .menu-options {
+            width: 64px;
         }
     }
 
-    div.flex-container {
-        display: flex;
-        width: 100%;
-    }
+    @media screen and (min-width: 1024px) {
+        .animation-label {
+            display: block;
+            margin-left: 6px;
+        }
 
-    div.thumbnail {
-        position: relative;
-        overflow: hidden;
-        display: block;
-        width: 40px;
-        height: 40px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 20px;
-        margin: 0 10px;
-    }
+        .progress-bar-container {
+            margin: 0 12px;
+        }
 
-    div.title-container {
-        flex-direction: column;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    span.model-title {
-        font-size: 125%;
-    }
-
-    span.model-subtitle {
-        font-size: 90%;
-    }
-
-    div.button-container,
-    div.animation-container {
-        align-items: center;
-        justify-content: flex-end;
-    }
-
-    div.button {
-        cursor: pointer;
-        height: 30px;
-        margin: 0 10px;
-    }
-
-    div.button img {
-        height: 100%;
+        .types {
+            width: 144px;
+        }
+        .types .menu-options {
+            width: 144px;
+        }
     }
 </style>
 
-{{#if disableOnFullscreen}}
+{{#if (or (not animations) hideAnimations)}} {{#if hideLogo}}
+<style>
+    nav-bar .nav-container {
+        justify-content: flex-end;
+    }
+</style>
+{{else}}
+<style>
+    nav-bar .nav-container {
+        justify-content: space-between;
+    }
+</style>
+{{/if}} {{/if}} {{#if disableOnFullscreen}}
 <style>
     viewer:fullscreen nav-bar {
         display: none;
@@ -89,33 +314,72 @@
 </style>
 {{/if}}
 
-<div class="flex-container" id="model-metadata">
-    <!-- holding the description -->
-    <div class="thumbnail">
-        <!-- holding the thumbnail 
-        <img src="{{thumbnail}}" alt="{{title}}">-->
+<div class="nav-container" id="navbar-control">
+    {{#unless hideLogo}}
+    <div class="logo-button" title="{{logoText}}">
+        <img src="{{logoImg}}">
     </div>
-    <div class="title-container">
-
-        <span class="model-title">{{#if title}}{{title}}{{/if}}</span>
-        <span class="model-subtitle"> {{#if subtitle}}{{subtitle}} {{/if}}</span>
+    {{/unless}} {{#unless (or (not animations) hideAnimations)}}
+    <div class="animation-control">
+        <div class="types">
+            <button class="flex-container" id="types-button">
+                <span class="icon types-icon"></span>
+                <span class="control-text animation-label">Animation</span>
+                <span class="control-text animation-number">{{selectedAnimation}}</span>
+                {{#if (gt (count animations) 1)}}
+                <span class="icon up-icon"></span>
+                {{/if}}
+            </button>
+            <div class="menu-options">
+                {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
+                <button class="flex-container" id="label-option-button" data-value="{{this}}">
+                    <span class="icon types-icon"></span>
+                    <span class="control-text animation-label">Animation</span>
+                    <span class="control-text animation-number">{{add @index 1}}</span>
+                </button>
+                {{/unless}} {{/each}}
+            </div>
+        </div>
+        <div class="progress-control" id="progress-control">
+            <button class="play-pause" id="play-pause-button">
+                {{#if paused}}
+                <span class="icon play-icon"></span>
+                {{else}}
+                <span class="icon pause-icon"></span>
+                {{/if}}
+            </button>
+            <div class="progress-bar-container flex-container" id="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-wrapper" id="progress-wrapper">
+                        <div class="progress-circle" id="progress-circle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="speed">
+            <button class="flex-container" id="speed-button">
+                <span class="control-text speed-text">{{selectedSpeed}}</span>
+                <span class="icon up-icon"></span>
+            </button>
+            <div class="menu-options">
+                {{#eachInMap speedList}} {{#unless (eq ../selectedSpeed id)}}
+                <button class="flex-container" id="speed-option-button" data-value="{{value}}">
+                    <span class="control-text speed-text">{{id}}</span>
+                </button>
+                {{/unless}} {{/eachInMap}}
+            </div>
+        </div>
     </div>
-</div>
-{{#if animations}} {{#if hideAnimations}}{{else}}
-<div class="animation-container flex-container">
-    <select id="animation-selector" name="animations">
-        {{#each animations}}
-        <option value="{{this}}">{{this}}</option>> {{/each}}
-    </select>
-</div>
-{{/if}} {{/if}}
-<div class="button-container flex-container">
-    <!-- holding the buttons -->
-    {{#eachInMap buttons}}
-    <div id="{{id}}" class="button">
-        {{#if text}}
-        <span>{{text}}</span>> {{/if}} {{#if image}}
-        <img src="{{image}}" alt="{{altText}}"> {{/if}}
+    {{/unless}}
+    <div class="default-control">
+        {{#unless hideHelp}}
+        <button class="help" id="help-button" title="Help">
+            <span class="icon help-icon"></span>
+        </button>
+        {{/unless}} {{#unless hideFullScreen}}
+        <button class="fullscreen" id="fullscreen-button" title="Fullscreen">
+            <span class="icon fullscreen-icon"></span>
+        </button>
+        {{/unless}}
     </div>
-    {{/eachInMap}}
 </div>

@@ -1,9 +1,9 @@
-import { AnimationGroup, Animatable, Skeleton } from "babylonjs";
+import { AnimationGroup, Animatable, Skeleton, Vector3 } from "babylonjs";
 
 /**
  * Animation play mode enum - is the animation looping or playing once
  */
-export enum AnimationPlayMode {
+export const enum AnimationPlayMode {
     ONCE,
     LOOP
 }
@@ -11,12 +11,57 @@ export enum AnimationPlayMode {
 /**
  * An enum representing the current state of an animation object
  */
-export enum AnimationState {
+export const enum AnimationState {
     INIT,
     PLAYING,
     PAUSED,
     STOPPED,
     ENDED
+}
+
+/**
+ * The different type of easing functions available 
+ */
+export const enum EasingFunction {
+    Linear = 0,
+    CircleEase = 1,
+    BackEase = 2,
+    BounceEase = 3,
+    CubicEase = 4,
+    ElasticEase = 5,
+    ExponentialEase = 6,
+    PowerEase = 7,
+    QuadraticEase = 8,
+    QuarticEase = 9,
+    QuinticEase = 10,
+    SineEase = 11
+}
+
+/**
+ * Defines a simple animation to be applied to a model (scale).
+ */
+export interface ModelAnimationConfiguration {
+    /**
+     * Time of animation, in seconds
+     */
+    time: number;
+
+    /**
+     * Scale to apply
+     */
+    scaling?: Vector3;
+
+    /**
+     * Easing function to apply
+     * See SPECTRE.EasingFunction
+     */
+    easingFunction?: number;
+
+    /**
+     * An Easing mode to apply to the easing function
+     * See BABYLON.EasingFunction
+     */
+    easingMode?: number;
 }
 
 /**
@@ -146,11 +191,12 @@ export class GroupModelAnimation implements IModelAnimation {
      * In correlation to an arry, this would be ".length"
      */
     public get frames(): number {
-        let animationFrames = this._animationGroup.targetedAnimations.map(ta => {
+        /*let animationFrames = this._animationGroup.targetedAnimations.map(ta => {
             let keys = ta.animation.getKeys();
             return keys[keys.length - 1].frame;
         });
-        return Math.max.apply(null, animationFrames);
+        return Math.max.apply(null, animationFrames);*/
+        return this._animationGroup.to - this._animationGroup.from;
     }
 
     /**
@@ -161,7 +207,7 @@ export class GroupModelAnimation implements IModelAnimation {
      */
     public get currentFrame(): number {
         // get the first currentFrame found
-        for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
+        /*for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
             let animatable: Animatable = this._animationGroup.animatables[i];
             let animations = animatable.getAnimations();
             if (!animations || !animations.length) {
@@ -172,8 +218,12 @@ export class GroupModelAnimation implements IModelAnimation {
                     return animations[idx].currentFrame;
                 }
             }
+        }*/
+        if (this._animationGroup.targetedAnimations[0] && this._animationGroup.targetedAnimations[0].animation.runtimeAnimations[0]) {
+            return this._animationGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame - this._animationGroup.from;
+        } else {
+            return 0;
         }
-        return 0;
     }
 
     /**
@@ -234,7 +284,10 @@ export class GroupModelAnimation implements IModelAnimation {
      * Restart the animation group
      */
     restart() {
-        this._animationGroup.restart();
+        if (this.state === AnimationState.PAUSED)
+            this._animationGroup.restart();
+        else
+            this.start();
     }
 
     /**
@@ -242,10 +295,7 @@ export class GroupModelAnimation implements IModelAnimation {
      * @param frameNumber Go to a specific frame in the animation
      */
     goToFrame(frameNumber: number) {
-        // this._animationGroup.goToFrame(frameNumber);
-        this._animationGroup['_animatables'].forEach(a => {
-            a.goToFrame(frameNumber);
-        })
+        this._animationGroup.goToFrame(frameNumber + this._animationGroup.from);
     }
 
     /**

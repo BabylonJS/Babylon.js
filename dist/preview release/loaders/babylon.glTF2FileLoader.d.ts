@@ -443,7 +443,7 @@ declare module BABYLON.GLTF2 {
         _parent: _ILoaderNode;
         _babylonMesh?: Mesh;
         _primitiveBabylonMeshes?: Mesh[];
-        _babylonAnimationTargets?: Node[];
+        _babylonBones?: Bone[];
         _numMorphTargets?: number;
     }
     /** @hidden */
