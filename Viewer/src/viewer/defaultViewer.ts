@@ -7,7 +7,7 @@ import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMa
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
-import { IModelAnimation } from 'model/modelAnimation';
+import { IModelAnimation } from '../model/modelAnimation';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.

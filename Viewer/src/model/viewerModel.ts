@@ -509,7 +509,7 @@ export class ViewerModel implements IDisposable {
      * Apply a material configuration to a material
      * @param material Material to apply configuration to
      */
-    private _applyModelMaterialConfiguration(material: Material) {
+    public _applyModelMaterialConfiguration(material: Material) {
         if (!this._modelConfiguration.material) return;
 
         extendClassWithConfig(material, this._modelConfiguration.material);
@@ -734,8 +734,6 @@ export class ViewerModel implements IDisposable {
         this.skeletons.length = 0;
         this._animations.forEach(ag => ag.dispose());
         this._animations.length = 0;
-        this._meshes.forEach(m => m.dispose());
-        this._meshes.length = 0;
-        this.rootMesh.dispose();
+        this.rootMesh.dispose(false, true);
     }
 }

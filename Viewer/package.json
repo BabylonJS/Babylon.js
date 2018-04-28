@@ -24,6 +24,7 @@
     "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
     "devDependencies": {
         "@types/node": "^8.9.4",
+        "base64-font-loader": "0.0.4",
         "base64-image-loader": "^1.2.1",
         "html-loader": "^0.5.5",
         "json-loader": "^0.5.7",
