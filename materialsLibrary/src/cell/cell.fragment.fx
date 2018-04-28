@@ -138,7 +138,7 @@ void main(void)
 	alpha *= vColor.a;
 #endif
 
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
 
 	// Composition
 	vec4 color = vec4(finalDiffuse, alpha);

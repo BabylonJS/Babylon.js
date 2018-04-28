@@ -4,7 +4,7 @@ module BABYLON.GLTF2.Extensions {
     const NAME = "KHR_materials_unlit";
 
     /**
-     * [Specification](https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
      */
     export class KHR_materials_unlit extends GLTFLoaderExtension {
         public readonly name = NAME;

@@ -42,5 +42,7 @@ function disposeAll() {
 
 const Version = BABYLON.Engine.Version;
 
+console.log("Babylon.js viewer (v" + Version + ")");
+
 // public API for initialization
 export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin };

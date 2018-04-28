@@ -423,7 +423,7 @@
                 case VertexBuffer.BYTE: {
                     let value = dataView.getInt8(byteOffset);
                     if (normalized) {
-                        value = (value + 0.5) / 127.5;
+                        value = Math.max(value / 127, -1);
                     }
                     return value;
                 }
@@ -437,7 +437,7 @@
                 case VertexBuffer.SHORT: {
                     let value = dataView.getInt16(byteOffset, true);
                     if (normalized) {
-                        value = (value + 0.5) / 16383.5;
+                        value = Math.max(value / 16383, -1);
                     }
                     return value;
                 }
