@@ -727,8 +727,6 @@ export class ViewerModel implements IDisposable {
         this.skeletons.length = 0;
         this._animations.forEach(ag => ag.dispose());
         this._animations.length = 0;
-        this._meshes.forEach(m => m.dispose());
-        this._meshes.length = 0;
-        this.rootMesh.dispose();
+        this.rootMesh.dispose(false, true);
     }
 }
