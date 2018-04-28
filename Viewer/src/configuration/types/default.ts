@@ -4,7 +4,11 @@ export let defaultConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     templates: {
         main: {
-            html: require("../../../assets/templates/default/defaultTemplate.html")
+            html: require("../../../assets/templates/default/defaultTemplate.html"),
+            params: {
+                babylonFont: require('../../../assets/babylon.woff'),
+                noEscape: true
+            }
         },
         loadingScreen: {
             html: require("../../../assets/templates/default/loadingScreen.html"),
@@ -28,17 +32,10 @@ export let defaultConfiguration: ViewerConfiguration = {
                     "0.5x": "0.5",
                     "1.0x": "1.0",
                     "1.5x": "1.5",
-                    "2.0x" : "2.0",
+                    "2.0x": "2.0",
                 },
-
-                // update these to font
-                typeImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Animation.svg",
-                playImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Play.svg",
-                upImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_UpChevron.svg",
-                helpImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Help.svg",
-                fullImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_FullScreen.svg",
-                pauseImg: "https://denalicdn.blob.core.windows.net/webassets/animation/Icon_Pause.svg", 
-                
+                logoImg: require('../../../assets/img/BabylonJS_logo_Small.png'),
+                logoText: 'BabylonJS'
             },
             events: {
                 pointerdown: {
