@@ -398,8 +398,8 @@ module BABYLON {
 
                     transaction.oncomplete = event => {
                         if (version) {
-                            // If the version in the JSON file is > than the version in DB
-                            if (this.manifestVersionFound > version.data) {
+                            // If the version in the JSON file is different from the version in DB
+                            if (this.manifestVersionFound !== version.data) {
                                 this.mustUpdateRessources = true;
                                 updateInDBCallback();
                             }

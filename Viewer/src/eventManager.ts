@@ -30,8 +30,9 @@ export class EventManager {
             this._callbacksContainer[templateName] = [];
         }
         this._callbacksContainer[templateName].push({
-            eventType: eventType,
-            callback: callback
+            eventType,
+            callback,
+            selector
         });
     }
 

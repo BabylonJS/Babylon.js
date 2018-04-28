@@ -115,12 +115,12 @@ module BABYLON {
         /**
          * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
          * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smallest begin frame of all animations
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than the largest end frame of all animations
+         * @param beginFrame defines the new begin frame for all animations or the smallest begin frame of all animations if null (defaults to 0)
+         * @param endFrame defines the new end frame for all animations or the largest end frame of all animations if null (defaults to null)
          */
-        public normalize(beginFrame = -Number.MAX_VALUE, endFrame = Number.MAX_VALUE): AnimationGroup {
-            beginFrame = Math.max(beginFrame, this._from);
-            endFrame = Math.min(endFrame, this._to);
+        public normalize(beginFrame: Nullable<number> = 0, endFrame: Nullable<number> = null): AnimationGroup {
+            if (beginFrame == null) beginFrame = this._from;
+            if (endFrame == null) endFrame = this._to;
 
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 let targetedAnimation = this._targetedAnimations[index];
@@ -150,6 +150,9 @@ module BABYLON {
                     keys.push(newKey);
                 }
             }
+
+            this._from = beginFrame;
+            this._to = endFrame;
 
             return this;
         }
