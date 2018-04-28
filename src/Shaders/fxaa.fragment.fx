@@ -42,11 +42,13 @@ void main(){
 	float range = rangeMax - rangeMin;
 	float rangeMaxClamped = max(fxaaQualityEdgeThresholdMin, rangeMaxScaled);
 
+#ifndef MALI
 	if(range < rangeMaxClamped) 
 	{
 		gl_FragColor = rgbyM;
 		return;
 	}
+#endif
 
 	float lumaNW = FxaaLuma(texture2D(textureSampler, sampleCoordNW, 0.0));
 	float lumaSE = FxaaLuma(texture2D(textureSampler, sampleCoordSE, 0.0));
@@ -231,5 +233,16 @@ void main(){
 		posM.y += pixelOffsetSubpix * lengthSign;
 	}
 
+#ifdef MALI
+	if(range < rangeMaxClamped) 
+	{
+		gl_FragColor = rgbyM;
+	}
+	else
+	{
+		gl_FragColor = texture2D(textureSampler, posM, 0.0);
+	}
+#else
 	gl_FragColor = texture2D(textureSampler, posM, 0.0);
+#endif
 }

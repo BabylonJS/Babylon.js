@@ -136,13 +136,7 @@
             var runtimeAnimations = this._runtimeAnimations;
 
             for (var index = 0; index < runtimeAnimations.length; index++) {
-                runtimeAnimations[index].reset();
-            }
-
-            // Reset to original value
-            for (index = 0; index < runtimeAnimations.length; index++) {
-                var animation = runtimeAnimations[index];
-                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio);
+                runtimeAnimations[index].reset(true);
             }
 
             this._localDelayOffset = null;

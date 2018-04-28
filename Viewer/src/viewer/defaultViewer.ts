@@ -23,10 +23,6 @@ export class DefaultViewer extends AbstractViewer {
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this._onModelLoaded);
-        this.sceneManager.onSceneInitObservable.add(() => {
-            // extendClassWithConfig(this.sceneManager.scene, this._configuration.scene);
-            return this.sceneManager.scene;
-        });
 
         this.sceneManager.onLightsConfiguredObservable.add((data) => {
             this._configureLights(data.newConfiguration, data.model!);
@@ -249,9 +245,12 @@ export class DefaultViewer extends AbstractViewer {
      * The scene will automatically be cleared of the old models, if exist.
      * @param model the configuration object (or URL) to load.
      */
-    public loadModel(model: any = this._configuration.model): Promise<ViewerModel> {
+    public loadModel(model?: string | IModelConfiguration): Promise<ViewerModel> {
+        if (!model) {
+            model = this.configuration.model;
+        }
         this.showLoadingScreen();
-        return super.loadModel(model, true).catch((error) => {
+        return super.loadModel(model!, true).catch((error) => {
             console.log(error);
             this.hideLoadingScreen();
             this.showOverlayScreen('error');
@@ -262,12 +261,14 @@ export class DefaultViewer extends AbstractViewer {
     private _onModelLoaded = (model: ViewerModel) => {
         this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
-        let hideLoadingDelay = 500;
+        let hideLoadingDelay = 20;
         if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
             hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
-            this.hideLoadingScreen();
+            this.sceneManager.scene.executeWhenReady(() => {
+                this.hideLoadingScreen();
+            });
         }, hideLoadingDelay);
 
         return;

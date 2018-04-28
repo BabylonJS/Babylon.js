@@ -8,6 +8,11 @@
     touch-action: none;
 }
 
+canvas {
+    border:none !important;
+    outline:none !important;
+}
+
 #fpsLabel {
     position: absolute;
     right: 10px;
