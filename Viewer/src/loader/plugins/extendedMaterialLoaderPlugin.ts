@@ -5,8 +5,6 @@ import { Color3, Texture, BaseTexture, Tools, ISceneLoaderPlugin, ISceneLoaderPl
 
 export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
 
-    private _model: ViewerModel;
-
     public onMaterialLoaded(baseMaterial: Material) {
         var material = baseMaterial as PBRMaterial;
         material.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
