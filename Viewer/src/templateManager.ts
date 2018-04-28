@@ -241,6 +241,36 @@ Handlebars.registerHelper('eachInMap', function (map, block) {
     return out;
 });
 
+Handlebars.registerHelper('add', function (a, b) {
+    var out = a + b;
+    return out;
+});
+
+Handlebars.registerHelper('eq', function (a, b) {
+    var out = (a == b);
+    return out;
+});
+
+
+Handlebars.registerHelper('or', function (a, b) {
+    var out = a || b;
+    return out;
+});
+
+Handlebars.registerHelper('not', function (a) {
+    var out = !a;
+    return out;
+});
+
+Handlebars.registerHelper('count', function (map) {
+    return map.length;
+});
+
+Handlebars.registerHelper('gt', function (a, b) {
+    var out = a > b;
+    return out;
+});
+
 /**
  * This class represents a single template in the viewer's template tree.
  * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
@@ -318,7 +348,7 @@ export class Template {
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
-                let compiledTemplate = Handlebars.compile(htmlTemplate);
+                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && this._configuration.params.noEscape) });
                 let config = this._configuration.params || {};
                 this._rawHtml = compiledTemplate(config);
                 try {
