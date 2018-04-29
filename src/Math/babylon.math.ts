@@ -3654,6 +3654,28 @@
         }
 
         /**
+         * Returns the dot product (float) between the quaternions "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the dot product
+         */
+        public static Dot(left: Quaternion, right: Quaternion): number {
+            return (left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w);
+        }        
+
+        /**
+         * Checks if the two quaternions are close to each other
+         * @param quat0 defines the first quaternion to check
+         * @param quat1 defines the second quaternion to check
+         * @returns true if the two quaternions are close to each other
+         */
+        public static AreClose(quat0: Quaternion, quat1: Quaternion): boolean {
+            let dot = Quaternion.Dot(quat0, quat1);
+ 
+            return dot >= 0;					
+        }    
+        
+        /**
          * Creates an empty quaternion
          * @returns a new quaternion set to (0.0, 0.0, 0.0)
          */

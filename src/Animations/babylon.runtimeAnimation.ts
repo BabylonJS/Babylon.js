@@ -27,7 +27,7 @@
         /**
          * The original value of the runtime animation
          */
-        private _originalValue: any;
+        private _originalValue = new Array<any>();
         
         /**
          * The original blend value of the runtime animation
@@ -109,14 +109,7 @@
          */
         public get weight(): number {
             return this._weight;
-        }           
-
-        /**
-         * Gets the original value of the runtime animation
-         */
-        public get originalValue(): any {
-            return this._originalValue;
-        }        
+        }              
 
         /**
          * Gets the current value of the runtime animation
@@ -167,15 +160,28 @@
          * @param restoreOriginal defines whether to restore the target property to the original value
          */
         public reset(restoreOriginal = false): void {
-            if (restoreOriginal && this._originalValue != null) {
-                this.setValue(this._originalValue, -1);
+            if (restoreOriginal) {
+                if (this._target instanceof Array) {
+                    var index = 0;
+                    for (const target of this._target) {
+                        if (this._originalValue[index] !== undefined) {
+                            this._setValue(target, this._originalValue[index], -1);
+                        }
+                        index++;
+                    }
+                }
+                else {
+                    if (this._originalValue[0] !== undefined) {
+                        this._setValue(this._target, this._originalValue[0], -1);
+                    }
+                }
             }
 
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._currentFrame = 0;
             this._blendingFactor = 0;
-            this._originalValue = null;
+            this._originalValue = new Array<any>();
         }
 
         /**
@@ -223,8 +229,10 @@
          */
         public setValue(currentValue: any, weight = 1.0): void {
             if (this._target instanceof Array) {
+                var index = 0;
                 for (const target of this._target) {
-                    this._setValue(target, currentValue, weight);
+                    this._setValue(target, currentValue, weight, index);
+                    index++;
                 }
             }
             else {
@@ -232,7 +240,7 @@
             }
         }
 
-        private _setValue(target: any, currentValue: any, weight: number): void {
+        private _setValue(target: any, currentValue: any, weight: number, targetIndex = 0): void {
             // Set value
             var path: any;
             var destination: any;
@@ -257,7 +265,7 @@
             this._activeTarget = destination;
             this._weight = weight;
 
-            if (!this._originalValue) {
+            if (this._originalValue[targetIndex] === undefined) {
                 let originalValue: any;
 
                 if (destination.getRestPose && path === "_matrix") { // For bones
@@ -267,9 +275,9 @@
                 }
 
                 if (originalValue && originalValue.clone) {
-                    this._originalValue = originalValue.clone();
+                    this._originalValue[targetIndex] = originalValue.clone();
                 } else {
-                    this._originalValue = originalValue;
+                    this._originalValue[targetIndex] = originalValue;
                 }
             }
 
@@ -320,7 +328,7 @@
             }
 
             if (weight !== -1.0) {
-                this._scene._registerTargetForLateAnimationBinding(this);
+                this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
             } else {
                 destination[path] = this._currentValue;
             }
