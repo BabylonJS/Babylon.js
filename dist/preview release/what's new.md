@@ -120,6 +120,7 @@
 - GUI: Introduced `MultiLine` which will draw lines between any number of meshes, controls and points. [Documentation](http://doc.babylonjs.com/how_to/gui#multiline) ([royibernthal](https://github.com/royibernthal))
 - Added `alphaCutOff` support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - New `serialize` and `Parse` functions for SSAO2 Rendering Pipeline ([julien-moreau](https://github.com/julien-moreau))
+- Added `furOcclusion` property to FurMaterial to control the occlusion strength ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 
