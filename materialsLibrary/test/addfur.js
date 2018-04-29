@@ -114,7 +114,14 @@ window.prepareFur = function() {
 		setValue("furSpacing", value);
     }, function() {
         return fur.furSpacing;
-    });
+	});
+	
+	// Fur Occlusion
+	registerRangeUI("fur", "Fur Occlusion", 0, 2, function (value) {
+		setValue("furOcclusion", value);
+	}, function () {
+		return fur.furOcclusion;
+	});
     
     return {
 		material: fur,

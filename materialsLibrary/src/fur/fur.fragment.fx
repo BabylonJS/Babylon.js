@@ -34,6 +34,7 @@ uniform vec2 vDiffuseInfos;
 // Fur uniforms
 #ifdef HIGHLEVEL
 uniform float furOffset;
+uniform float furOcclusion;
 uniform sampler2D furTexture;
 
 varying vec2 vFurUV;
@@ -96,7 +97,7 @@ void main(void) {
 	
     float occlusion = mix(0.0, furTextureColor.b * 1.2, furOffset);
     
-	baseColor = vec4(baseColor.xyz * occlusion, 1.1 - furOffset);
+	baseColor = vec4(baseColor.xyz * max(occlusion, furOcclusion), 1.1 - furOffset);
 	#endif
 
 	// Lighting
