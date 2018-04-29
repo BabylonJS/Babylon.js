@@ -2687,7 +2687,7 @@
         }
 
         /** @hidden */
-        public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
+        public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void {
             let target = runtimeAnimation.target;
             this._registeredForLateAnimationBindings.pushNoDuplicate(target);
 
@@ -2698,7 +2698,8 @@
             if (!target._lateAnimationHolders[runtimeAnimation.targetPath]) {
                 target._lateAnimationHolders[runtimeAnimation.targetPath] = {
                     totalWeight: 0,
-                    animations: []
+                    animations: [],
+                    originalValue: originalValue
                 }
             }
 
@@ -2708,14 +2709,16 @@
 
         private _processLateAnimationBindingsForMatrices(holder: {
             totalWeight: number,
-            animations: RuntimeAnimation[]
-        }, originalValue: Matrix): any {
+            animations: RuntimeAnimation[],
+            originalValue: Matrix
+        }): any {
             let normalizer = 1.0;
             let finalPosition = Tmp.Vector3[0];
             let finalScaling = Tmp.Vector3[1];
             let finalQuaternion = Tmp.Quaternion[0];
             let startIndex = 0;            
             let originalAnimation = holder.animations[0];
+            let originalValue = holder.originalValue;
 
             var scale = 1;
             if (holder.totalWeight < 1.0) {
@@ -2754,6 +2757,56 @@
             return originalAnimation._workValue;
         }
 
+        private _processLateAnimationBindingsForQuaternions(holder: {
+            totalWeight: number,
+            animations: RuntimeAnimation[],
+            originalValue: Quaternion
+        }): Quaternion {
+            let originalAnimation = holder.animations[0];
+            let originalValue = holder.originalValue;
+
+            if (holder.animations.length === 1) {
+                return Quaternion.Slerp(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight));
+            }
+
+            let normalizer = 1.0;
+            let cumulativeQuaternion: Nullable<Quaternion> = null;
+            
+            if (holder.totalWeight < 1.0) {
+                // We need to mix the original value in                     
+                //originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
+                let scale = 1.0 - holder.totalWeight;
+                cumulativeQuaternion = originalValue.scaleInPlace(scale);
+                cumulativeQuaternion.normalize();
+            } else {
+                if (holder.animations.length === 2) { // Slerp as soon as we can
+                    return Quaternion.Slerp(holder.animations[0].currentValue,  holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight);
+                }
+                normalizer = holder.totalWeight;
+            }
+
+            // There is no simple way to cumulate and weight quaternions so doing approximations here
+            for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
+                let runtimeAnimation = holder.animations[animIndex];   
+                let scale = runtimeAnimation.weight / normalizer;
+                let current: Quaternion = runtimeAnimation.currentValue;
+                current.scaleInPlace(scale);
+                current.normalize();
+                if (!cumulativeQuaternion) {
+                    cumulativeQuaternion = current;
+                    continue;
+                }
+
+                if (!Quaternion.AreClose(current, cumulativeQuaternion)) {
+                    current.conjugateInPlace();
+                }
+                cumulativeQuaternion.addInPlace(current);
+                cumulativeQuaternion.normalize();
+            }
+
+            return cumulativeQuaternion!;
+        }
+
         private _processLateAnimationBindings(): void {
             if (!this._registeredForLateAnimationBindings.length) {
                 return;
@@ -2763,55 +2816,59 @@
 
                 for (var path in target._lateAnimationHolders) {
                     var holder = target._lateAnimationHolders[path];                     
-                    let originalAnimation = holder.animations[0];
-                    let originalValue = originalAnimation.originalValue;
-                    let finalTarget = originalAnimation.target;   
+                    let originalAnimation: RuntimeAnimation = holder.animations[0];
+                    let originalValue = holder.originalValue;
                     
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
                     let finalValue: any;
                     if (matrixDecomposeMode) {
-                        finalValue = this._processLateAnimationBindingsForMatrices(holder, originalValue);
+                        finalValue = this._processLateAnimationBindingsForMatrices(holder);
                     } else {
-                        let startIndex = 0;
-                        let normalizer = 1.0;
-
-                        if (holder.totalWeight < 1.0) {
-                            // We need to mix the original value in     
-                            if (originalValue.scale) {
-                                finalValue = originalValue.scale(1.0 - holder.totalWeight);
-                            } else {
-                                finalValue = originalValue * (1.0 - holder.totalWeight);
-                            }
+                        let quaternionMode = originalValue.w !== undefined;
+                        if (quaternionMode) {
+                            finalValue = this._processLateAnimationBindingsForQuaternions(holder);
                         } else {
-                            // We need to normalize the weights
-                            normalizer = holder.totalWeight;
-                            let scale = originalAnimation.weight / normalizer;
-                            if (scale !== 1) {
-                                if (originalAnimation.currentValue.scale) {
-                                    finalValue = originalAnimation.currentValue.scale(scale);
+
+                            let startIndex = 0;
+                            let normalizer = 1.0;
+
+                            if (holder.totalWeight < 1.0) {
+                                // We need to mix the original value in     
+                                if (originalValue.scale) {
+                                    finalValue = originalValue.scale(1.0 - holder.totalWeight);
                                 } else {
-                                    finalValue = originalAnimation.currentValue * scale;
+                                    finalValue = originalValue * (1.0 - holder.totalWeight);
                                 }
                             } else {
-                                finalValue = originalAnimation.currentValue;
+                                // We need to normalize the weights
+                                normalizer = holder.totalWeight;
+                                let scale = originalAnimation.weight / normalizer;
+                                if (scale !== 1) {
+                                    if (originalAnimation.currentValue.scale) {                  
+                                        finalValue = originalAnimation.currentValue.scale(scale);
+                                    } else {
+                                        finalValue = originalAnimation.currentValue * scale;
+                                    }
+                                } else {
+                                    finalValue = originalAnimation.currentValue;
+                                }
+
+                                startIndex = 1;
                             }
 
-                            startIndex = 1;
-                        }
-
-                        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
-                            var runtimeAnimation = holder.animations[animIndex];   
-                            var scale = runtimeAnimation.weight / normalizer;
-                            if (runtimeAnimation.currentValue.scaleAndAddToRef) {
-                                runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
-                            } else {
-                                finalValue += runtimeAnimation.currentValue * scale;
+                            for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
+                                var runtimeAnimation = holder.animations[animIndex];   
+                                var scale = runtimeAnimation.weight / normalizer;
+                                if (runtimeAnimation.currentValue.scaleAndAddToRef) {
+                                    runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
+                                } else {
+                                    finalValue += runtimeAnimation.currentValue * scale;
+                                }
                             }
                         }
                     }
-
-                    finalTarget[path] = finalValue;
+                    target[path] = finalValue;
                 }
 
                 target._lateAnimationHolders = {};
