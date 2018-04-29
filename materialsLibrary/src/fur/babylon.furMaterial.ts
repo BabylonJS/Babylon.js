@@ -64,6 +64,9 @@ module BABYLON {
         @serialize()
         public furDensity: number = 20;
 
+        @serialize()
+        public furOcclusion: number = 0.0;
+
         public furTexture: DynamicTexture;
 
 
@@ -240,7 +243,7 @@ module BABYLON {
                     "vDiffuseInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix",
-                    "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity"
+                    "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity", "furOcclusion"
                 ];
                 var samplers = ["diffuseSampler",
                     "heightTexture", "furTexture"
@@ -347,6 +350,7 @@ module BABYLON {
                 this._activeEffect.setFloat("furOffset", this.furOffset);
                 this._activeEffect.setFloat("furSpacing", this.furSpacing);
                 this._activeEffect.setFloat("furDensity", this.furDensity);
+                this._activeEffect.setFloat("furOcclusion", this.furOcclusion);
 
                 this._furTime += this.getScene().getEngine().getDeltaTime() / this.furSpeed;
                 this._activeEffect.setFloat("furTime", this._furTime);

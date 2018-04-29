@@ -14,6 +14,7 @@ declare module BABYLON {
         furGravity: Vector3;
         furSpeed: number;
         furDensity: number;
+        furOcclusion: number;
         furTexture: DynamicTexture;
         private _disableLighting;
         disableLighting: boolean;
