@@ -309,16 +309,7 @@
                         }
                     }
                 } else { 
-                    let constructor = this._originalBlendValue.constructor;
-                    if (constructor.Lerp) { // Lerp supported
-                        this._currentValue = constructor.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
-                    } else if (constructor.Slerp) { // Slerp supported
-                        this._currentValue = constructor.Slerp(this._originalBlendValue, currentValue, this._blendingFactor);
-                    } else if (this._originalBlendValue.toFixed) { // Number
-                        this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
-                    } else { // Blending not supported
-                        this._currentValue = currentValue;
-                    }
+                    this._currentValue = Animation._UniversalLerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 }
 
                 const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;

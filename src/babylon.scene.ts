@@ -2770,38 +2770,46 @@
             }
 
             let normalizer = 1.0;
-            let cumulativeQuaternion: Nullable<Quaternion> = null;
+            let quaternions: Array<Quaternion>;
+            let weights: Array<number>;
             
             if (holder.totalWeight < 1.0) {
-                // We need to mix the original value in                     
-                //originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
                 let scale = 1.0 - holder.totalWeight;
-                cumulativeQuaternion = originalValue.scaleInPlace(scale);
-                cumulativeQuaternion.normalize();
+
+                quaternions = [];
+                weights = [];
+
+                quaternions.push(originalValue);
+                weights.push(scale);
             } else {
                 if (holder.animations.length === 2) { // Slerp as soon as we can
                     return Quaternion.Slerp(holder.animations[0].currentValue,  holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight);
                 }
+                quaternions = [];
+                weights = [];
+                
                 normalizer = holder.totalWeight;
             }
-
-            // There is no simple way to cumulate and weight quaternions so doing approximations here
             for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
                 let runtimeAnimation = holder.animations[animIndex];   
-                let scale = runtimeAnimation.weight / normalizer;
-                let current: Quaternion = runtimeAnimation.currentValue;
-                current.scaleInPlace(scale);
-                current.normalize();
+                quaternions.push(runtimeAnimation.currentValue);
+                weights.push(runtimeAnimation.weight / normalizer);
+            }
+
+            // https://gamedev.stackexchange.com/questions/62354/method-for-interpolation-between-3-quaternions
+
+            let cumulativeAmount = 0;
+            let cumulativeQuaternion: Nullable<Quaternion> = null;
+            for (var index = 0; index < quaternions.length; ) {
                 if (!cumulativeQuaternion) {
-                    cumulativeQuaternion = current;
+                    cumulativeQuaternion = Quaternion.Slerp(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]));
+                    cumulativeAmount = weights[index] + weights[index + 1];
+                    index += 2;
                     continue;
                 }
-
-                if (!Quaternion.AreClose(current, cumulativeQuaternion)) {
-                    current.conjugateInPlace();
-                }
-                cumulativeQuaternion.addInPlace(current);
-                cumulativeQuaternion.normalize();
+                cumulativeAmount += weights[index];
+                cumulativeQuaternion = Quaternion.Slerp(cumulativeQuaternion, quaternions[index], weights[index] / cumulativeAmount);
+                index++;
             }
 
             return cumulativeQuaternion!;
