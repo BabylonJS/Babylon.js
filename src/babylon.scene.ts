@@ -641,6 +641,7 @@
         private _previousStartingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         private _previousStartingPointerTime = 0;
+        private _pointerCaptures: {[pointerId:number]: boolean} = {};
 
         // Deterministic lockstep
         private _timeAccumulator: number = 0;
@@ -1960,7 +1961,7 @@
                 this._updatePointerPosition(evt);
 
                 // PreObservable support
-                if (this.onPrePointerObservable.hasObservers()) {
+                if (this.onPrePointerObservable.hasObservers() && !this._pointerCaptures[evt.pointerId]) {
                     let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
                     let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
                     this.onPrePointerObservable.notifyObservers(pi, type);
@@ -2009,6 +2010,7 @@
                     return;
                 }
 
+                this._pointerCaptures[evt.pointerId] = true;
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = Date.now();
@@ -2064,7 +2066,7 @@
                 this._updatePointerPosition(evt);
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
-                    if (this.onPrePointerObservable.hasObservers()) {
+                    if (this.onPrePointerObservable.hasObservers() && !this._pointerCaptures[evt.pointerId]) {
                         if (!clickInfo.ignore) {
                             if (!clickInfo.hasSwiped) {
                                 if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
@@ -2098,6 +2100,8 @@
                     if (!this.cameraToUseForPointers && !this.activeCamera) {
                         return;
                     }
+
+                    this._pointerCaptures[evt.pointerId] = false;
 
                     if (!this.pointerUpPredicate) {
                         this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
