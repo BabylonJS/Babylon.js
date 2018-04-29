@@ -89,6 +89,8 @@ var BABYLON;
              * If true, no extra effects are applied to transparent pixels.
              */
             this.transparencyAsCoverage = false;
+            /** @hidden */
+            this._normalizeAnimationGroupsToBeginAtZero = true;
             /**
              * Function called before loading a url referenced by the asset.
              */
@@ -401,6 +403,7 @@ var BABYLON;
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
             loader.transparencyAsCoverage = this.transparencyAsCoverage;
+            loader._normalizeAnimationGroupsToBeginAtZero = this._normalizeAnimationGroupsToBeginAtZero;
             loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
@@ -664,6 +667,8 @@ var BABYLON;
                  * If true, no extra effects are applied to transparent pixels.
                  */
                 this.transparencyAsCoverage = false;
+                /** @hidden */
+                this._normalizeAnimationGroupsToBeginAtZero = true;
                 /**
                  * Function called before loading a url referenced by the asset.
                  */
@@ -1396,6 +1401,7 @@ var BABYLON;
                 return Promise.all(promises).then(function () { });
             };
             GLTFLoader.prototype._loadAnimationAsync = function (context, animation) {
+                var _this = this;
                 var babylonAnimationGroup = new BABYLON.AnimationGroup(animation.name || "animation" + animation._index, this._babylonScene);
                 animation._babylonAnimationGroup = babylonAnimationGroup;
                 var promises = new Array();
@@ -1406,7 +1412,7 @@ var BABYLON;
                     promises.push(this._loadAnimationChannelAsync(context + "/channels/" + channel._index, context, animation, channel, babylonAnimationGroup));
                 }
                 return Promise.all(promises).then(function () {
-                    babylonAnimationGroup.normalize();
+                    babylonAnimationGroup.normalize(_this._normalizeAnimationGroupsToBeginAtZero ? 0 : null);
                 });
             };
             GLTFLoader.prototype._loadAnimationChannelAsync = function (context, animationContext, animation, channel, babylonAnimationGroup) {
