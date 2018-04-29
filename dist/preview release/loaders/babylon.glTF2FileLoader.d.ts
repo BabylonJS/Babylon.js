@@ -103,6 +103,8 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -214,6 +216,8 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -540,6 +544,8 @@ declare module BABYLON.GLTF2 {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */

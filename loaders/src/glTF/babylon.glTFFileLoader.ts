@@ -122,6 +122,9 @@ module BABYLON {
          */
         transparencyAsCoverage: boolean;
 
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
+
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -266,6 +269,9 @@ module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         public transparencyAsCoverage = false;
+
+        /** @hidden */
+        public _normalizeAnimationGroupsToBeginAtZero = true;
 
         /**
          * Function called before loading a url referenced by the asset.
@@ -587,6 +593,7 @@ module BABYLON {
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
             loader.transparencyAsCoverage = this.transparencyAsCoverage;
+            loader._normalizeAnimationGroupsToBeginAtZero = this._normalizeAnimationGroupsToBeginAtZero;
             loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
