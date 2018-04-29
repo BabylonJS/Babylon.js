@@ -81,6 +81,9 @@ module BABYLON.GLTF2 {
          */
         public transparencyAsCoverage = false;
 
+        /** @hidden */
+        public _normalizeAnimationGroupsToBeginAtZero = true;
+
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -927,7 +930,7 @@ module BABYLON.GLTF2 {
             }
 
             return Promise.all(promises).then(() => {
-                babylonAnimationGroup.normalize();
+                babylonAnimationGroup.normalize(this._normalizeAnimationGroupsToBeginAtZero ? 0 : null);
             });
         }
 
