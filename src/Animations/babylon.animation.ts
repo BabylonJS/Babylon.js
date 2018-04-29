@@ -1108,7 +1108,7 @@
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
         }
 
-        /** @ignore */
+        /** @hidden */
         public static _UniversalLerp(left: any, right: any, amount: number): any {
             let constructor = left.constructor;
             if (constructor.Lerp) { // Lerp supported
