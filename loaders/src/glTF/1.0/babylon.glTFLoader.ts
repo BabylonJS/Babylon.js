@@ -1569,6 +1569,7 @@ module BABYLON.GLTF1 {
         public useClipPlane = false;
         public compileShadowGenerators = false;
         public transparencyAsCoverage = false;
+        public _normalizeAnimationGroupsToBeginAtZero = true;
         public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
