@@ -188,6 +188,7 @@ export interface IModelConfiguration {
     animation?: {
         autoStart?: boolean | string;
         playOnce?: boolean;
+        autoStartIndex?: number;
     }
 
     entryAnimation?: IModelAnimationConfiguration;

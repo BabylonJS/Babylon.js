@@ -154,7 +154,7 @@ export class DefaultViewer extends AbstractViewer {
     /** 
      * Update Current Animation Speed
      */
-    private _updateAnimationSpeed = (speed: string) => {
+    private _updateAnimationSpeed = (speed: string, paramsObject?: any) => {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
@@ -163,16 +163,21 @@ export class DefaultViewer extends AbstractViewer {
             if (!this._isAnimationPaused) {
                 this._currentAnimation.restart();
             }
-            navbar.updateParams({
-                selectedSpeed: speed + "x",
-            });
+
+            if (paramsObject) {
+                paramsObject.selectedSpeed = speed + "x"
+            } else {
+                navbar.updateParams({
+                    selectedSpeed: speed + "x",
+                });
+            }
         }
     }
 
     /** 
      * Update Current Animation Type
      */
-    private _updateAnimationType = (label: string) => {
+    private _updateAnimationType = (label: string, paramsObject?: any) => {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
@@ -180,12 +185,15 @@ export class DefaultViewer extends AbstractViewer {
             this._currentAnimation = this.sceneManager.models[0].setCurrentAnimationByName(label);
         }
 
-        navbar.updateParams({
-            selectedAnimation: (this._animationList.indexOf(label) + 1),
-        });
+        if (paramsObject) {
+            paramsObject.selectedAnimation = (this._animationList.indexOf(label) + 1)
+        } else {
+            navbar.updateParams({
+                selectedAnimation: (this._animationList.indexOf(label) + 1),
+            });
+        }
 
-        // reset speed when a new animation is selected
-        this._updateAnimationSpeed("1.0");
+        this._updateAnimationSpeed("1.0", paramsObject);
     }
 
     /**
@@ -212,6 +220,7 @@ export class DefaultViewer extends AbstractViewer {
      */
     protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
+        this.containerElement.style.height = '100%';
         this.containerElement.style.display = 'flex';
     }
 
@@ -224,19 +233,26 @@ export class DefaultViewer extends AbstractViewer {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
-        if (model.getAnimationNames().length >= 1) {
-            this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
-            this._animationList = model.getAnimationNames(),
-                navbar.updateParams({
-                    animations: this._animationList,
-                    paused: this._isAnimationPaused,
-                });
+        let newParams: any = {};
 
-            // default animation & speed
-            this._updateAnimationSpeed("1.0");
-            this._updateAnimationType(this._animationList[0]);
+        let animationNames = model.getAnimationNames();
+        if (animationNames.length >= 1) {
+            this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
+            this._animationList = animationNames;
+            newParams.animations = this._animationList;
+            newParams.paused = this._isAnimationPaused;
+            let animationIndex = 0;
+            if (model.configuration.animation && model.configuration.animation.autoStartIndex) {
+                animationIndex = model.configuration.animation.autoStartIndex;
+            }
+            this._updateAnimationSpeed("1.0", newParams);
+            this._updateAnimationType(animationNames[animationIndex]);
         }
-        let modelConfiguration = model.configuration;
+
+        if (model.configuration.thumbnail) {
+            newParams.logoImage = model.configuration.thumbnail
+        }
+        navbar.updateParams(newParams);
     }
 
     /**
@@ -286,7 +302,6 @@ export class DefaultViewer extends AbstractViewer {
         return template.show((template => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
-            var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
             template.parent.style.display = 'flex';
             template.parent.style.width = canvasRect.width + "px";
@@ -365,14 +380,19 @@ export class DefaultViewer extends AbstractViewer {
         return template.show((template => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
-            var canvasPositioning = window.getComputedStyle(this.containerElement).position;
+            // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
             template.parent.style.display = 'flex';
             template.parent.style.width = canvasRect.width + "px";
             template.parent.style.height = canvasRect.height + "px";
             template.parent.style.opacity = "1";
             // from the configuration!!!
-            template.parent.style.backgroundColor = "black";
+            let color = "black";
+            if (this.configuration.templates && this.configuration.templates.loadingScreen) {
+                color = (this.configuration.templates.loadingScreen.params &&
+                    <string>this.configuration.templates.loadingScreen.params.backgroundColor) || color;
+            }
+            template.parent.style.backgroundColor = color;
             return Promise.resolve(template);
         }));
     }
