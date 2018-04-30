@@ -198,6 +198,7 @@ var INSPECTOR;
                     return this._getRelativeParent(elem.parentElement, true);
                 }
             }
+            // looking for the relative parent of the element 
             else {
                 if (computedStyle.position == "static") {
                     return elem.parentElement;
@@ -289,6 +290,7 @@ var INSPECTOR;
                     }
                 }
             }
+            INSPECTOR.Scheduler.getInstance().dispose();
         };
         /** Open the inspector in a new popup
          * Set 'firstTime' to true if there is no inspector created beforehands
@@ -382,7 +384,7 @@ var INSPECTOR;
         },
         'Color3': {
             type: BABYLON.Color3,
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            format: function (color) { return "R:" + color.r.toPrecision(2) + ", G:" + color.g.toPrecision(2) + ", B:" + color.b.toPrecision(2); },
             slider: {
                 r: { min: 0, max: 1, step: 0.01 },
                 g: { min: 0, max: 1, step: 0.01 },
@@ -475,6 +477,12 @@ var INSPECTOR;
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor
         },
+        'ImageProcessingConfiguration': {
+            type: BABYLON.ImageProcessingConfiguration
+        },
+        'ColorCurves': {
+            type: BABYLON.ColorCurves
+        }
     };
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -703,12 +711,22 @@ var INSPECTOR;
         };
         CameraAdapter.prototype.getTools = function () {
             var tools = [];
-            // tools.push(new Checkbox(this));
             tools.push(new INSPECTOR.CameraPOV(this));
             return tools;
         };
+        // Set the point of view of the chosen camera
         CameraAdapter.prototype.setPOV = function () {
-            this._obj.getScene().activeCamera = this._obj;
+            this._obj.getScene().switchActiveCamera(this._obj);
+        };
+        // Return the name of the current active camera
+        CameraAdapter.prototype.getCurrentActiveCamera = function () {
+            var activeCamera = this._obj.getScene().activeCamera;
+            if (activeCamera != null) {
+                return activeCamera.name;
+            }
+            else {
+                return "0";
+            }
         };
         return CameraAdapter;
     }(INSPECTOR.Adapter));
@@ -1163,6 +1181,9 @@ var INSPECTOR;
         Object.defineProperty(DetailPanel.prototype, "details", {
             set: function (detailsRow) {
                 this.clean();
+                //add the searchBar
+                this._addSearchBarDetails();
+                this._details = INSPECTOR.Helpers.CreateDiv('details', this._div);
                 this._detailRows = detailsRow;
                 // Refresh HTML
                 this.update();
@@ -1178,16 +1199,49 @@ var INSPECTOR;
             this._div.appendChild(this._headerRow);
         };
         /** Updates the HTML of the detail panel */
-        DetailPanel.prototype.update = function () {
+        DetailPanel.prototype.update = function (_items) {
             this._sortDetails('name', 1);
-            this._addDetails();
+            // Check the searchbar
+            if (_items) {
+                this.cleanRow();
+                this._addSearchDetails(_items);
+                //console.log(_items);
+            }
+            else {
+                this._addDetails();
+                //console.log("np");
+            }
+        };
+        /** Add the search bar for the details */
+        DetailPanel.prototype._addSearchBarDetails = function () {
+            var searchDetails = INSPECTOR.Helpers.CreateDiv('searchbar-details', this._div);
+            // Create search bar
+            this._searchDetails = new INSPECTOR.SearchBarDetails(this);
+            searchDetails.appendChild(this._searchDetails.toHtml());
+            this._div.appendChild(searchDetails);
+        };
+        /** Search an element by name  */
+        DetailPanel.prototype.searchByName = function (searchName) {
+            var rows = [];
+            for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                if (row.name.indexOf(searchName) >= 0) {
+                    rows.push(row);
+                }
+            }
+            this.update(rows);
         };
         /** Add all lines in the html div. Does not sort them! */
         DetailPanel.prototype._addDetails = function () {
-            var details = INSPECTOR.Helpers.CreateDiv('details', this._div);
             for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
                 var row = _a[_i];
-                details.appendChild(row.toHtml());
+                this._details.appendChild(row.toHtml());
+            }
+        };
+        DetailPanel.prototype._addSearchDetails = function (_items) {
+            for (var _i = 0, _items_1 = _items; _i < _items_1.length; _i++) {
+                var row = _items_1[_i];
+                this._details.appendChild(row.toHtml());
             }
         };
         /**
@@ -1249,6 +1303,17 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._div);
             // Header row
             this._div.appendChild(this._headerRow);
+        };
+        /**
+         * Clean the rows only
+         */
+        DetailPanel.prototype.cleanRow = function () {
+            // Delete all details row
+            for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
+                var pline = _a[_i];
+                pline.dispose();
+            }
+            INSPECTOR.Helpers.CleanDiv(this._details);
         };
         /** Overrides basicelement.dispose */
         DetailPanel.prototype.dispose = function () {
@@ -1443,10 +1508,10 @@ var INSPECTOR;
          */
         PropertyLine.prototype._validateInput = function (e) {
             this._input.removeEventListener('focusout', this._focusOutInputHandler);
-            if (e.keyCode == 13) {
+            if (e.keyCode == 13) { // Enter
                 this.validateInput(this._input.value);
             }
-            else if (e.keyCode == 9) {
+            else if (e.keyCode == 9) { // Tab
                 e.preventDefault();
                 this.validateInput(this._input.value);
             }
@@ -1624,11 +1689,62 @@ var INSPECTOR;
             if (typeof this.value === 'boolean') {
                 this._checkboxInput();
             }
-            else if (this._isSliderType()) {
+            else if (this._isSliderType()) { // Add slider when parent have slider property
                 this._rangeInput();
             }
             else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+                //Doing the Hexa convertion
+                if ((this._property.type == "Color3" && this._children.length == 5 && this._children[1].value == true) || (this._property.type == "Color4" && this._children.length == 6 && this._children[1].value == true)) {
+                    if (this._children[0] != undefined && this._children[0].name == "hex") {
+                        var hexLineString = this._children[0].value;
+                        var rValue = (parseInt((hexLineString.slice(1, 3)), 16)) * (1 / 255);
+                        var rValueRound = Math.round(100 * rValue) / 100;
+                        this.value.r = rValueRound;
+                        var gValue = (parseInt((hexLineString.slice(3, 5)), 16)) * (1 / 255);
+                        var gValueRound = Math.round(100 * gValue) / 100;
+                        this.value.g = gValueRound;
+                        var bValue = (parseInt((hexLineString.slice(5, 7)), 16)) * (1 / 255);
+                        var bValueRound = Math.round(100 * bValue) / 100;
+                        this.value.b = bValueRound;
+                        if (this._children[2].name == "a") {
+                            var aValue = (parseInt((hexLineString.slice(7, 9)), 16)) * (1 / 255);
+                            var aValueRound = Math.round(100 * aValue) / 100;
+                            this.value.a = aValueRound;
+                        }
+                    }
+                }
+                else if (this._property.type == "Color3" || this._property.type == "Color4") {
+                    if (this._property.value.hex != undefined && this._property.value.hex != null) {
+                        var hexLineInfos = [];
+                        var valHexR = ((this._property.value.r * 255) | 0).toString(16);
+                        hexLineInfos.push(valHexR);
+                        if (valHexR == "0") {
+                            hexLineInfos.push("0");
+                        }
+                        var valHexG = ((this._property.value.g * 255) | 0).toString(16);
+                        hexLineInfos.push(valHexG);
+                        if (valHexG == "0") {
+                            hexLineInfos.push("0");
+                        }
+                        var valHexB = ((this._property.value.b * 255) | 0).toString(16);
+                        hexLineInfos.push(valHexB);
+                        if (valHexB == "0") {
+                            hexLineInfos.push("0");
+                        }
+                        if (this._property.value.a != undefined) {
+                            var valHexA = ((this._property.value.a * 255) | 0).toString(16);
+                            hexLineInfos.push(valHexA);
+                            if (valHexA == "0") {
+                                hexLineInfos.push("0");
+                            }
+                        }
+                        hexLineInfos.unshift("#");
+                        var hexLineString = hexLineInfos.join("");
+                        this._property.value.hex = hexLineString;
+                        hexLineInfos.length = 0;
+                    }
+                }
             }
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
@@ -1713,11 +1829,35 @@ var INSPECTOR;
                         var child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.push(child);
                     }
+                    //Add the Hexa converter
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0) {
+                        var hexLineInfos = [];
+                        var hexLinePropCheck = new INSPECTOR.Property("hexEnable", this._property.value);
+                        hexLinePropCheck.value = false;
+                        var hexLineCheck = new PropertyLine(hexLinePropCheck, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLineCheck);
+                        for (var _c = 0, propToDisplay_2 = propToDisplay; _c < propToDisplay_2.length; _c++) {
+                            var prop = propToDisplay_2[_c];
+                            var infos = new INSPECTOR.Property(prop, this._property.value);
+                            var valHex = ((infos.value * 255) | 0).toString(16);
+                            hexLineInfos.push(valHex);
+                            if (valHex == "0") {
+                                hexLineInfos.push("0");
+                            }
+                        }
+                        hexLineInfos.push("#");
+                        hexLineInfos.reverse();
+                        var hexLineString = hexLineInfos.join("");
+                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value);
+                        hexLineProp.value = hexLineString;
+                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLine);
+                    }
                 }
                 // otherwise display it    
                 if (this._div.parentNode) {
-                    for (var _c = 0, _d = this._children; _c < _d.length; _c++) {
-                        var child = _d[_c];
+                    for (var _d = 0, _e = this._children; _d < _e.length; _d++) {
+                        var child = _e[_d];
                         this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
                     }
                 }
@@ -1755,7 +1895,7 @@ var INSPECTOR;
          */
         PropertyLine.prototype._checkboxInput = function () {
             var _this = this;
-            if (this._valueDiv.childElementCount < 1) {
+            if (this._valueDiv.childElementCount < 1) { // Prevent display two checkbox
                 this._input = INSPECTOR.Helpers.CreateInput('checkbox-element', this._valueDiv);
                 this._input.type = 'checkbox';
                 this._input.checked = this.value;
@@ -1766,7 +1906,7 @@ var INSPECTOR;
             }
         };
         PropertyLine.prototype._rangeInput = function () {
-            if (this._valueDiv.childElementCount < 1) {
+            if (this._valueDiv.childElementCount < 1) { // Prevent display two input range
                 this._input = INSPECTOR.Helpers.CreateInput('slider-element', this._valueDiv);
                 this._input.type = 'range';
                 this._input.style.display = 'inline-block';
@@ -2111,7 +2251,7 @@ var INSPECTOR;
         __extends(SearchBar, _super);
         function SearchBar(tab) {
             var _this = _super.call(this) || this;
-            _this._tab = tab;
+            _this._propTab = tab;
             _this._div.classList.add('searchbar');
             var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
             filter.className = 'fa fa-search';
@@ -2122,7 +2262,7 @@ var INSPECTOR;
             _this._div.appendChild(_this._inputElement);
             _this._inputElement.addEventListener('keyup', function (evt) {
                 var filter = _this._inputElement.value;
-                _this._tab.filter(filter);
+                _this._propTab.filter(filter);
             });
             return _this;
         }
@@ -2136,6 +2276,35 @@ var INSPECTOR;
         return SearchBar;
     }(INSPECTOR.BasicElement));
     INSPECTOR.SearchBar = SearchBar;
+    var SearchBarDetails = /** @class */ (function (_super) {
+        __extends(SearchBarDetails, _super);
+        function SearchBarDetails(tab) {
+            var _this = _super.call(this) || this;
+            _this._detailTab = tab;
+            _this._div.classList.add('searchbar');
+            var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
+            filter.className = 'fa fa-search';
+            _this._div.appendChild(filter);
+            // Create input
+            _this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+            _this._inputElement.placeholder = 'Filter by name...';
+            _this._div.appendChild(_this._inputElement);
+            _this._inputElement.addEventListener('keyup', function (evt) {
+                var filter = _this._inputElement.value;
+                _this._detailTab.searchByName(filter);
+            });
+            return _this;
+        }
+        /** Delete all characters typped in the input element */
+        SearchBarDetails.prototype.reset = function () {
+            this._inputElement.value = '';
+        };
+        SearchBarDetails.prototype.update = function () {
+            // Nothing to update
+        };
+        return SearchBarDetails;
+    }(INSPECTOR.BasicElement));
+    INSPECTOR.SearchBarDetails = SearchBarDetails;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {
@@ -2431,7 +2600,7 @@ var INSPECTOR;
             this.pause = false;
             /** The list of data to update */
             this._updatableProperties = [];
-            setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+            this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
         Scheduler.getInstance = function () {
             if (!Scheduler._instance) {
@@ -2458,6 +2627,9 @@ var INSPECTOR;
                     prop.update();
                 }
             }
+        };
+        Scheduler.prototype.dispose = function () {
+            window.clearInterval(this.interval);
         };
         /** All properties are refreshed every 250ms */
         Scheduler.REFRESH_TIME = 250;
@@ -2635,7 +2807,7 @@ var INSPECTOR;
                     node.active(false);
                 }
             }
-            item.getDiv().scrollIntoView();
+            //  item.getDiv().scrollIntoView();
             item.active(true);
         };
         /** Returns the treeitem corersponding to the given obj, null if not found */
@@ -3567,6 +3739,12 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
                 });
+                _this._createStatLabel("Texture collisions", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._sceneInstrumentation.textureCollisionsCounter.current.toString(); }
+                });
                 _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
@@ -3849,6 +4027,64 @@ var INSPECTOR;
     INSPECTOR.StatsTab = StatsTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+/// <reference path="../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var GLTFTab = /** @class */ (function (_super) {
+        __extends(GLTFTab, _super);
+        function GLTFTab(tabbar, inspector) {
+            var _this = _super.call(this, tabbar, 'GLTF') || this;
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            var actions = INSPECTOR.Helpers.CreateDiv('gltf-actions', _this._panel);
+            _this._addExport(inspector, actions);
+            return _this;
+        }
+        GLTFTab.prototype.dispose = function () {
+            // Nothing to dispose
+        };
+        GLTFTab.prototype._addExport = function (inspector, actions) {
+            var title = INSPECTOR.Helpers.CreateDiv('gltf-title', actions);
+            title.textContent = 'Export';
+            var name = INSPECTOR.Helpers.CreateInput('gltf-input', actions);
+            name.placeholder = "File name...";
+            var button = INSPECTOR.Helpers.CreateElement('button', 'gltf-button', actions);
+            button.innerText = 'Export GLB';
+            button.addEventListener('click', function () {
+                BABYLON.GLTF2Export.GLBAsync(inspector.scene, name.value || "scene", {
+                    shouldExportTransformNode: function (transformNode) { return !GLTFTab._IsSkyBox(transformNode); }
+                }).then(function (glb) {
+                    glb.downloadFiles();
+                });
+            });
+        };
+        GLTFTab._IsSkyBox = function (transformNode) {
+            if (transformNode instanceof BABYLON.Mesh) {
+                if (transformNode.material) {
+                    var material = transformNode.material;
+                    var reflectionTexture = material.reflectionTexture;
+                    if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        return GLTFTab;
+    }(INSPECTOR.Tab));
+    INSPECTOR.GLTFTab = GLTFTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3884,6 +4120,9 @@ var INSPECTOR;
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            if (BABYLON.GLTF2Export) {
+                _this._tabs.push(new INSPECTOR.GLTFTab(_this, _this._inspector));
+            }
             if (BABYLON.GUI) {
                 _this._tabs.push(new INSPECTOR.GUITab(_this, _this._inspector));
             }
@@ -4372,6 +4611,7 @@ var INSPECTOR;
                 this._initializeLabels();
                 this._advancedTexture._rootContainer.isVisible = true;
             }
+            // Or to hide them
             else {
                 this._advancedTexture._rootContainer.isVisible = false;
             }
@@ -4422,6 +4662,8 @@ var INSPECTOR;
             if (!this._inspector.popupMode && !INSPECTOR.Helpers.IsBrowserEdge()) {
                 this._tools.push(new INSPECTOR.PopupTool(this._div, this._inspector));
             }
+            // FullScreen
+            this._tools.push(new INSPECTOR.FullscreenTool(this._div, this._inspector));
             // Pause schedule
             this._tools.push(new INSPECTOR.PauseScheduleTool(this._div, this._inspector));
             // Pause schedule
@@ -4471,6 +4713,38 @@ var INSPECTOR;
         return DisposeTool;
     }(INSPECTOR.AbstractTool));
     INSPECTOR.DisposeTool = DisposeTool;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var FullscreenTool = /** @class */ (function (_super) {
+        __extends(FullscreenTool, _super);
+        function FullscreenTool(parent, inspector) {
+            return _super.call(this, 'fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit') || this;
+        }
+        // Action : refresh the whole panel
+        FullscreenTool.prototype.action = function () {
+            var elem = document.body;
+            function requestFullScreen(element) {
+                // Supports most browsers and their versions.
+                var requestMethod = element.requestFullscreen || element.webkitRequestFullScreen;
+                requestMethod.call(element);
+            }
+            requestFullScreen(elem);
+        };
+        return FullscreenTool;
+    }(INSPECTOR.AbstractTool));
+    INSPECTOR.FullscreenTool = FullscreenTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {
@@ -4558,7 +4832,18 @@ var INSPECTOR;
         };
         /** Build the HTML of this item */
         TreeItem.prototype._build = function () {
-            this._div.className = 'line';
+            /**
+             *  Hide the debug objects :
+             * - Axis : xline, yline, zline
+             * */
+            var adapterId = this._adapter.id();
+            if (adapterId == "xline"
+                || adapterId == "yline"
+                || adapterId == "zline") {
+                this._div.className = "line_invisible";
+            }
+            else
+                this._div.className = 'line';
             // special class for transform node ONLY
             if (this.adapter instanceof INSPECTOR.MeshAdapter) {
                 var obj = this.adapter.object;
@@ -4746,7 +5031,15 @@ var INSPECTOR;
         function CameraPOV(camera) {
             var _this = _super.call(this) || this;
             _this.cameraPOV = camera;
-            _this._elem.classList.add('fa-video-camera');
+            // Setting the id of the line with the name of the camera
+            _this._elem.id = _this.cameraPOV.id();
+            // Put the right icon 
+            if (_this._elem.id == _this.cameraPOV.getCurrentActiveCamera()) {
+                _this._elem.classList.add('fa-check-circle');
+            }
+            else {
+                _this._elem.classList.add('fa-circle');
+            }
             return _this;
         }
         CameraPOV.prototype.action = function () {
@@ -4754,16 +5047,19 @@ var INSPECTOR;
             this._gotoPOV();
         };
         CameraPOV.prototype._gotoPOV = function () {
-            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-video-camera.active");
-            console.log(actives);
+            // Uncheck all the radio buttons
+            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-check-circle");
             for (var i = 0; i < actives.length; i++) {
-                actives[i].classList.remove('active');
+                actives[i].classList.remove('fa-check-circle');
+                actives[i].classList.add('fa-circle');
             }
-            //if (this._on) {
-            // set icon camera
-            this._elem.classList.add('active');
-            //}
+            // setting the point off view to the right camera
             this.cameraPOV.setPOV();
+            // Check the right radio button
+            if (this._elem.id == this.cameraPOV.getCurrentActiveCamera()) {
+                this._elem.classList.remove('fa-circle');
+                this._elem.classList.add('fa-check-circle');
+            }
         };
         return CameraPOV;
     }(INSPECTOR.AbstractTreeTool));

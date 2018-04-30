@@ -1,23 +1,29 @@
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
-var BABYLON = babylonDependency;
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __extends = (this && this.__extends) || (function () {
-            var extendStatics = Object.setPrototypeOf ||
-                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-            return function (d, b) {
-                extendStatics(d, b);
-                function __() { this.constructor = d; }
-                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-            };
-        })();
-        
+
+
+(function universalModuleDefinition(root, factory) {
+    var amdDependencies = [];
+    var BABYLON = root.BABYLON || this.BABYLON;
+    if(typeof exports === 'object' && typeof module === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
+        module.exports = factory(BABYLON);
+    } else if(typeof define === 'function' && define.amd) {
+         amdDependencies.push("babylonjs");
+
+        define("babylonjs-post-process", amdDependencies, factory);
+    } else if(typeof exports === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
+        exports["babylonjs-post-process"] = factory(BABYLON);
+    } else {
+        root["BABYLON"] = factory(BABYLON);
+    }
+})(this, function(BABYLON) {
+  BABYLON = BABYLON || this.BABYLON;
+
+var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
+var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
+
 
 
 var BABYLON;
@@ -444,22 +450,7 @@ var BABYLON;
 
 BABYLON.Effect.ShadersStore['digitalrainPixelShader'] = "\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D digitalRainFont;\n\nuniform vec4 digitalRainFontInfos;\nuniform vec4 digitalRainOptions;\nuniform mat4 matrixSpeed;\nuniform float cosTimeZeroOne;\n\nfloat getLuminance(vec3 color)\n{\nreturn clamp(dot(color,vec3(0.2126,0.7152,0.0722)),0.,1.);\n}\n\nvoid main(void) \n{\nfloat caracterSize=digitalRainFontInfos.x;\nfloat numChar=digitalRainFontInfos.y-1.0;\nfloat fontx=digitalRainFontInfos.z;\nfloat fonty=digitalRainFontInfos.w;\nfloat screenx=digitalRainOptions.x;\nfloat screeny=digitalRainOptions.y;\nfloat ratio=screeny/fonty;\nfloat columnx=float(floor((gl_FragCoord.x)/caracterSize));\nfloat tileX=float(floor((gl_FragCoord.x)/caracterSize))*caracterSize/screenx;\nfloat tileY=float(floor((gl_FragCoord.y)/caracterSize))*caracterSize/screeny;\nvec2 tileUV=vec2(tileX,tileY);\nvec4 tileColor=texture2D(textureSampler,tileUV);\nvec4 baseColor=texture2D(textureSampler,vUV);\nfloat tileLuminance=getLuminance(tileColor.rgb);\nint st=int(mod(columnx,4.0));\nfloat speed=cosTimeZeroOne*(sin(tileX*314.5)*0.5+0.6); \nfloat x=float(mod(gl_FragCoord.x,caracterSize))/fontx;\nfloat y=float(mod(speed+gl_FragCoord.y/screeny,1.0));\ny*=ratio;\nvec4 finalColor=texture2D(digitalRainFont,vec2(x,1.0-y));\nvec3 high=finalColor.rgb*(vec3(1.2,1.2,1.2)*pow(1.0-y,30.0));\nfinalColor.rgb*=vec3(pow(tileLuminance,5.0),pow(tileLuminance,1.5),pow(tileLuminance,3.0));\nfinalColor.rgb+=high;\nfinalColor.rgb=clamp(finalColor.rgb,0.,1.);\nfinalColor.a=1.0;\nfinalColor=mix(finalColor,tileColor,digitalRainOptions.w);\nfinalColor=mix(finalColor,baseColor,digitalRainOptions.z);\ngl_FragColor=finalColor;\n}";
 
+    
 
-(function universalModuleDefinition(root, factory) {
-                var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
-                
-    if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = f;
-    else if(typeof define === 'function' && define.amd)
-        define(["BJSPostProcess"], factory);
-    else if(typeof exports === 'object')
-        exports["BJSPostProcess"] = f;
-    else {
-        root["BABYLON"] = f;
-    }
-})(this, function() {
     return BABYLON;
 });

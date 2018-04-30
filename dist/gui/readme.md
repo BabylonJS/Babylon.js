@@ -1,7 +1,7 @@
 Babylon.js GUI module
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/how_to/gui
+For usage documentation please visit http://doc.babylonjs.com/overviews/gui
 
 # Installation instructions
 
