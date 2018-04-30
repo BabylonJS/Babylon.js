@@ -242,11 +242,13 @@ export class DefaultViewer extends AbstractViewer {
             newParams.animations = this._animationList;
             newParams.paused = this._isAnimationPaused;
             let animationIndex = 0;
-            if (model.configuration.animation && model.configuration.animation.autoStartIndex) {
-                animationIndex = model.configuration.animation.autoStartIndex;
+            if (model.configuration.animation && typeof model.configuration.animation.autoStart === 'string') {
+                animationIndex = animationNames.indexOf(model.configuration.animation.autoStart);
+                if (animationIndex === -1) {
+                    animationIndex = 0;
+                }
             }
-            this._updateAnimationSpeed("1.0", newParams);
-            this._updateAnimationType(animationNames[animationIndex]);
+            this._updateAnimationType(animationNames[animationIndex], newParams);
         }
 
         if (model.configuration.thumbnail) {
