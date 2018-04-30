@@ -18,13 +18,13 @@ export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
             intensity: 4.887,
             intensityMode: 0,
             shadowBufferSize: 1024,
-            shadowFrustumSize: 8.0,
+            shadowFrustumSize: 6.0,
             shadowFieldOfView: 50.977,
             shadowMinZ: 0.1,
-            shadowMaxZ: 12.0,
+            shadowMaxZ: 10.0,
             shadowConfig: {
                 blurKernel: 32,
-                useBlurExponentialShadowMap: true
+                useBlurCloseExponentialShadowMap: true
             }
         }
     }
