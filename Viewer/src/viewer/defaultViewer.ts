@@ -221,6 +221,7 @@ export class DefaultViewer extends AbstractViewer {
     protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
         this.containerElement.style.height = '100%';
+        this.containerElement.style.display = 'flex';
     }
 
     /**
