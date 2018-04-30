@@ -2808,7 +2808,7 @@
                     continue;
                 }
                 cumulativeAmount += weights[index];
-                cumulativeQuaternion = Quaternion.Slerp(cumulativeQuaternion, quaternions[index], weights[index] / cumulativeAmount);
+                Quaternion.SlerpToRef(cumulativeQuaternion, quaternions[index], weights[index] / cumulativeAmount, cumulativeQuaternion);
                 index++;
             }
 
