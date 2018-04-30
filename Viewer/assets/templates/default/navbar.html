@@ -317,9 +317,14 @@
 <div class="nav-container" id="navbar-control">
     {{#unless hideLogo}}
     <div class="logo-button" title="{{logoText}}">
-        <img src="{{logoImg}}">
+        {{#if logoLink}}
+        <a href="{{logoLink}}" target="_blank">
+            <img src="{{logoImage}}">
+        </a>
+        {{else}}
+        <img src="{{logoImage}}"> {{/if}}
     </div>
-    {{/unless}} {{#unless (or (not animations) hideAnimations)}}
+    {{/unless}}{{#unless (or (not animations) hideAnimations)}}
     <div class="animation-control">
         <div class="types">
             <button class="flex-container" id="types-button">
