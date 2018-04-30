@@ -7,7 +7,7 @@ import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMa
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
-import { IModelAnimation } from '../model/modelAnimation';
+import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -58,12 +58,29 @@ export class DefaultViewer extends AbstractViewer {
             this.templateManager.eventManager.registerCallback("navBar", () => {
                 // do your thing
             }, "pointerdown", "#help-button");
+
+            this.templateManager.eventManager.registerCallback("navBar", (event: EventCallback) => {
+                let element = <HTMLInputElement>event.event.srcElement;
+                console.log(element.value);
+                if (!this._currentAnimation) return;
+                const gotoFrame = +element.value / 100 * this._currentAnimation.frames;
+                if (isNaN(gotoFrame)) return;
+                this._currentAnimation.goToFrame(gotoFrame);
+            }, "input");
+
+            this.templateManager.eventManager.registerCallback("navBar", (e) => {
+                if (this._resumePlay) {
+                    this._togglePlayPause(true);
+                }
+                this._resumePlay = false;
+            }, "pointerup", "#progress-wrapper");
         }
     }
 
     private _animationList: string[];
     private _currentAnimation: IModelAnimation;
     private _isAnimationPaused: boolean;
+    private _resumePlay: boolean;
 
     private _handlePointerDown = (event: EventCallback) => {
 
@@ -103,11 +120,11 @@ export class DefaultViewer extends AbstractViewer {
                 if (speed)
                     this._updateAnimationSpeed(speed);
                 break;
-            case "progress-bar-container":
-                if (!this._currentAnimation) return;
-                const gotoFrame = (pointerDown.offsetX / element.clientWidth) * this._currentAnimation.frames;
-                if (isNaN(gotoFrame)) return;
-                this._currentAnimation.goToFrame(gotoFrame);
+            case "progress-wrapper":
+                this._resumePlay = !this._isAnimationPaused;
+                if (this._resumePlay) {
+                    this._togglePlayPause(true);
+                }
                 break;
             case "fullscreen-button":
                 this.toggleFullscreen();
@@ -119,7 +136,7 @@ export class DefaultViewer extends AbstractViewer {
     /**
      * Plays or Pauses animation
      */
-    private _togglePlayPause = () => {
+    private _togglePlayPause = (noUiUpdate?: boolean) => {
         if (!this._currentAnimation) {
             return;
         }
@@ -131,6 +148,8 @@ export class DefaultViewer extends AbstractViewer {
 
         this._isAnimationPaused = !this._isAnimationPaused;
 
+        if (noUiUpdate) return;
+
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
@@ -139,15 +158,33 @@ export class DefaultViewer extends AbstractViewer {
         });
     }
 
+    private _oldIdleRotationValue: number;
+
     /**
      * Control progress bar position based on animation current frame
      */
     private _updateProgressBar = () => {
-        var progressWrapper = document.getElementById("progress-wrapper");
-        if (progressWrapper && this._currentAnimation) {
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+        var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
+        if (progressSlider && this._currentAnimation) {
             const progress = this._currentAnimation.currentFrame / this._currentAnimation.frames * 100;
-            if (isNaN(progress)) return;
-            progressWrapper.style.transform = "translateX(" + progress + "%)";
+            var currentValue = progressSlider.valueAsNumber;
+            if (Math.abs(currentValue - progress) > 0.1) { // Only move if greater than a 1% change
+                progressSlider.value = '' + progress;
+            }
+
+            if (this._currentAnimation.state === AnimationState.PLAYING) {
+                if (this.sceneManager.camera.autoRotationBehavior && !this._oldIdleRotationValue) {
+                    this._oldIdleRotationValue = this.sceneManager.camera.autoRotationBehavior.idleRotationSpeed;
+                    this.sceneManager.camera.autoRotationBehavior.idleRotationSpeed = 0;
+                }
+            } else {
+                if (this.sceneManager.camera.autoRotationBehavior && this._oldIdleRotationValue) {
+                    this.sceneManager.camera.autoRotationBehavior.idleRotationSpeed = this._oldIdleRotationValue;
+                    this._oldIdleRotationValue = 0;
+                }
+            }
         }
     }
 
@@ -186,10 +223,12 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         if (paramsObject) {
-            paramsObject.selectedAnimation = (this._animationList.indexOf(label) + 1)
+            paramsObject.selectedAnimation = (this._animationList.indexOf(label) + 1);
+            paramsObject.selectedAnimationName = label;
         } else {
             navbar.updateParams({
                 selectedAnimation: (this._animationList.indexOf(label) + 1),
+                selectedAnimationName: label
             });
         }
 
