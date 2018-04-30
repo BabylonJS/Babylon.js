@@ -139,7 +139,7 @@ describe('Babylon glTF Serializer', () => {
 
             const plane = BABYLON.Mesh.CreatePlane('plane', 120, scene);
             const babylonPBRMetalRoughMaterial = new BABYLON.PBRMetallicRoughnessMaterial('metalRoughMat', scene);
-            babylonPBRMetalRoughMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+            babylonPBRMetalRoughMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
             const alphaCutoff = 0.8;
             babylonPBRMetalRoughMaterial.alphaCutOff = alphaCutoff;
 
@@ -156,7 +156,7 @@ describe('Babylon glTF Serializer', () => {
 
                 jsonData.materials.length.should.be.equal(2);
 
-                jsonData.materials[0].alphaMode.should.be.equal('BLEND');
+                jsonData.materials[0].alphaMode.should.be.equal('MASK');
 
                 jsonData.materials[0].alphaCutoff.should.be.equal(alphaCutoff);
 
