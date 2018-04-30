@@ -24,12 +24,7 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         },
         viewer: {
-            html: require("../../../assets/templates/default/defaultViewer.html"),
-            events: {
-                pointerout: true,
-                pointerdown: true,
-                pointerup: true
-            }
+            html: require("../../../assets/templates/default/defaultViewer.html")
         },
         navBar: {
             html: require("../../../assets/templates/default/navbar.html"),
@@ -51,7 +46,12 @@ export let defaultConfiguration: ViewerConfiguration = {
                     'navbar-control': true,
                     'help-button': true
                 },
-                pointerover: true,
+                input: {
+                    'progress-wrapper': true
+                },
+                pointerup: {
+                    'progress-wrapper': true
+                }
             }
         },
         overlay: {
@@ -89,30 +89,6 @@ export let defaultConfiguration: ViewerConfiguration = {
         wheelPrecision: 200,
     },
     skybox: {
-        /*cubeTexture: {
-            url: 'https://playground.babylonjs.com/textures/environment.dds',
-            gammaSpace: false
-        },*/
-        /*pbr: true,
-        blur: 0.7,
-        infiniteDistance: false,*/
-        /*material: {
-            imageProcessingConfiguration: {
-                colorCurves: {
-                    globalDensity: 89,
-                    globalHue: 58.88,
-                    globalSaturation: 94
-                },
-                colorCurvesEnabled: true,
-                exposure: 1.5,
-                contrast: 1.66,
-                toneMappingEnabled: true,
-                vignetteEnabled: true,
-                vignetteWeight: 5,
-                vignetteColor: { r: 0.8, g: 0.6, b: 0.4 },
-                vignetteM: true
-            }
-        }*/
     },
     ground: {
         receiveShadows: true
