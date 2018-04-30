@@ -1091,6 +1091,7 @@ declare module BabylonViewer {
             animation?: {
                     autoStart?: boolean | string;
                     playOnce?: boolean;
+                    autoStartIndex?: number;
             };
             entryAnimation?: IModelAnimationConfiguration;
             exitAnimation?: IModelAnimationConfiguration;

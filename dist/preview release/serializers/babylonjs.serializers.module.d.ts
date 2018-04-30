@@ -18,13 +18,13 @@ declare module BABYLON {
     /**
      * Holds a collection of exporter options and parameters
      */
-    interface IExporterOptions {
+    interface IExportOptions {
         /**
          * Function which indicates whether a babylon mesh should be exported or not
-         * @param mesh source Babylon mesh. It is used to check whether it should be exported to glTF or not
+         * @param transformNode source Babylon transform node. It is used to check whether it should be exported to glTF or not
          * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
          */
-        shouldExportMesh?(mesh: AbstractMesh): boolean;
+        shouldExportTransformNode?(transformNode: TransformNode): boolean;
         /**
          * The sample rate to bake animation curves
          */
@@ -35,22 +35,39 @@ declare module BABYLON {
      */
     class GLTF2Export {
         /**
-         * Exports the geometry of the scene to .gltf file format
+         * Exports the geometry of the scene to .gltf file format synchronously
          * @param scene Babylon scene with scene hierarchy information
          * @param filePrefix File prefix to use when generating the glTF file
          * @param options Exporter options
          * @returns Returns an object with a .gltf file and associates texture names
          * as keys and their data and paths as values
          */
-        static GLTF(scene: Scene, filePrefix: string, options?: IExporterOptions): Nullable<GLTFData>;
+        private static GLTF(scene, filePrefix, options?);
         /**
-         * Exports the geometry of the scene to .glb file format
+         * Exports the geometry of the scene to .gltf file format asynchronously
+         * @param scene Babylon scene with scene hierarchy information
+         * @param filePrefix File prefix to use when generating the glTF file
+         * @param options Exporter options
+         * @returns Returns an object with a .gltf file and associates texture names
+         * as keys and their data and paths as values
+         */
+        static GLTFAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
+        /**
+         * Exports the geometry of the scene to .glb file format synchronously
          * @param scene Babylon scene with scene hierarchy information
          * @param filePrefix File prefix to use when generating glb file
          * @param options Exporter options
          * @returns Returns an object with a .glb filename as key and data as value
          */
-        static GLB(scene: Scene, filePrefix: string, options?: IExporterOptions): Nullable<GLTFData>;
+        private static GLB(scene, filePrefix, options?);
+        /**
+         * Exports the geometry of the scene to .glb file format asychronously
+         * @param scene Babylon scene with scene hierarchy information
+         * @param filePrefix File prefix to use when generating glb file
+         * @param options Exporter options
+         * @returns Returns an object with a .glb filename as key and data as value
+         */
+        static GLBAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData>;
     }
 }
 
@@ -102,6 +119,10 @@ declare module BABYLON.GLTF2 {
          */
         private images;
         /**
+         * Stores all the texture samplers
+         */
+        private samplers;
+        /**
          * Stores all the generated animation samplers, which is referenced by glTF animations
          */
         /**
@@ -133,22 +154,80 @@ declare module BABYLON.GLTF2 {
          * Baked animation sample rate
          */
         private animationSampleRate;
-        private shouldExportMesh;
+        private shouldExportTransformNode;
         /**
          * Creates a glTF Exporter instance, which can accept optional exporter options
          * @param babylonScene Babylon scene object
          * @param options Options to modify the behavior of the exporter
          */
-        constructor(babylonScene: Scene, options?: IExporterOptions);
+        constructor(babylonScene: Scene, options?: IExportOptions);
+        private reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
+        /**
+         * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is
+         * clock-wise during export to glTF
+         * @param submesh BabylonJS submesh
+         * @param primitiveMode Primitive mode of the mesh
+         * @param sideOrientation the winding order of the submesh
+         * @param vertexBufferKind The type of vertex attribute
+         * @param meshAttributeArray The vertex attribute data
+         * @param byteOffset The offset to the binary data
+         * @param binaryWriter The binary data for the glTF file
+         */
+        private reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+        /**
+         * Reorders the vertex attributes in the correct triangle mode order .  This is necessary when indices are not available and the winding order is
+         * clock-wise during export to glTF
+         * @param submesh BabylonJS submesh
+         * @param primitiveMode Primitive mode of the mesh
+         * @param sideOrientation the winding order of the submesh
+         * @param vertexBufferKind The type of vertex attribute
+         * @param meshAttributeArray The vertex attribute data
+         * @param byteOffset The offset to the binary data
+         * @param binaryWriter The binary data for the glTF file
+         */
+        private reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+        /**
+         * Reorders the vertex attributes in the correct triangle strip order.  This is necessary when indices are not available and the winding order is
+         * clock-wise during export to glTF
+         * @param submesh BabylonJS submesh
+         * @param primitiveMode Primitive mode of the mesh
+         * @param sideOrientation the winding order of the submesh
+         * @param vertexBufferKind The type of vertex attribute
+         * @param meshAttributeArray The vertex attribute data
+         * @param byteOffset The offset to the binary data
+         * @param binaryWriter The binary data for the glTF file
+         */
+        private reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+        /**
+         * Reorders the vertex attributes in the correct triangle fan order.  This is necessary when indices are not available and the winding order is
+         * clock-wise during export to glTF
+         * @param submesh BabylonJS submesh
+         * @param primitiveMode Primitive mode of the mesh
+         * @param sideOrientation the winding order of the submesh
+         * @param vertexBufferKind The type of vertex attribute
+         * @param meshAttributeArray The vertex attribute data
+         * @param byteOffset The offset to the binary data
+         * @param binaryWriter The binary data for the glTF file
+         */
+        private reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+        /**
+         * Writes the vertex attribute data to binary
+         * @param vertices The vertices to write to the binary writer
+         * @param byteOffset The offset into the binary writer to overwrite binary data
+         * @param vertexAttributeKind The vertex attribute type
+         * @param meshAttributeArray The vertex attribute data
+         * @param binaryWriter The writer containing the binary data
+         */
+        private writeVertexAttributeData(vertices, byteOffset, vertexAttributeKind, meshAttributeArray, binaryWriter);
         /**
          * Writes mesh attribute data to a data buffer
          * Returns the bytelength of the data
          * @param vertexBufferKind Indicates what kind of vertex data is being passed in
          * @param meshAttributeArray Array containing the attribute data
          * @param binaryWriter The buffer to write the binary data to
-         * @returns Byte length of the attribute data
+         * @param indices Used to specify the order of the vertex data
          */
-        private writeAttributeData(vertexBufferKind, meshAttributeArray, binaryWriter);
+        private writeAttributeData(vertexBufferKind, meshAttributeArray, byteStride, binaryWriter);
         /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
@@ -184,45 +263,63 @@ declare module BABYLON.GLTF2 {
         /**
          * Sets the TRS for each node
          * @param node glTF Node for storing the transformation data
-         * @param babylonMesh Babylon mesh used as the source for the transformation data
+         * @param babylonTransformNode Babylon mesh used as the source for the transformation data
          */
-        private setNodeTransformation(node, babylonMesh);
+        private setNodeTransformation(node, babylonTransformNode);
+        private getVertexBufferFromMesh(attributeKind, bufferMesh);
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
          * @param kind Indicates the type of vertices data
-         * @param babylonMesh The Babylon mesh to get the vertices data from
+         * @param babylonTransformNode The Babylon mesh to get the vertices data from
          * @param binaryWriter The buffer to write the bufferview data to
          */
-        private createBufferViewKind(kind, babylonMesh, binaryWriter, byteStride);
+        private createBufferViewKind(kind, babylonTransformNode, binaryWriter, byteStride);
+        /**
+         * The primitive mode of the Babylon mesh
+         * @param babylonMesh The BabylonJS mesh
+         */
+        private getMeshPrimitiveMode(babylonMesh);
+        /**
+         * Sets the primitive mode of the glTF mesh primitive
+         * @param meshPrimitive glTF mesh primitive
+         * @param primitiveMode The primitive mode
+         */
+        private setPrimitiveMode(meshPrimitive, primitiveMode);
+        /**
+         * Sets the vertex attribute accessor based of the glTF mesh primitive
+         * @param meshPrimitive glTF mesh primitive
+         * @param attributeKind vertex attribute
+         * @returns boolean specifying if uv coordinates are present
+         */
+        private setAttributeKind(meshPrimitive, attributeKind);
         /**
          * Sets data for the primitive attributes of each submesh
          * @param mesh glTF Mesh object to store the primitive attribute information
-         * @param babylonMesh Babylon mesh to get the primitive attribute data from
+         * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
          * @param binaryWriter Buffer to write the attribute data to
          */
-        private setPrimitiveAttributes(mesh, babylonMesh, binaryWriter);
+        private setPrimitiveAttributes(mesh, babylonTransformNode, binaryWriter);
         /**
          * Creates a glTF scene based on the array of meshes
          * Returns the the total byte offset
          * @param babylonScene Babylon scene to get the mesh data from
          * @param binaryWriter Buffer to write binary data to
-         * @returns bytelength + byteoffset
          */
         private createScene(babylonScene, binaryWriter);
         /**
          * Creates a mapping of Node unique id to node index and handles animations
-         * @param scene Babylon Scene
+         * @param babylonScene Babylon Scene
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */
-        private createNodeMapAndAnimations(scene, binaryWriter);
+        private createNodeMapAndAnimations(babylonScene, nodes, shouldExportTransformNode, binaryWriter);
         /**
          * Creates a glTF node from a Babylon mesh
          * @param babylonMesh Source Babylon mesh
          * @param binaryWriter Buffer for storing geometry data
          * @returns glTF node
          */
-        private createNode(babylonMesh, binaryWriter);
+        private createNode(babylonTransformNode, binaryWriter);
     }
     /**
      * @hidden
@@ -265,18 +362,30 @@ declare module BABYLON.GLTF2 {
         /**
          * Stores an UInt8 in the array buffer
          * @param entry
+         * @param byteOffset If defined, specifies where to set the value as an offset.
          */
-        setUInt8(entry: number): void;
+        setUInt8(entry: number, byteOffset?: number): void;
+        /**
+         * Gets an UInt32 in the array buffer
+         * @param entry
+         * @param byteOffset If defined, specifies where to set the value as an offset.
+         */
+        getUInt32(byteOffset: number): number;
+        getVector3Float32FromRef(vector3: Vector3, byteOffset: number): void;
+        setVector3Float32FromRef(vector3: Vector3, byteOffset: number): void;
+        getVector4Float32FromRef(vector4: Vector4, byteOffset: number): void;
+        setVector4Float32FromRef(vector4: Vector4, byteOffset: number): void;
         /**
          * Stores a Float32 in the array buffer
          * @param entry
          */
-        setFloat32(entry: number): void;
+        setFloat32(entry: number, byteOffset?: number): void;
         /**
          * Stores an UInt32 in the array buffer
          * @param entry
+         * @param byteOffset If defined, specifies where to set the value as an offset.
          */
-        setUInt32(entry: number): void;
+        setUInt32(entry: number, byteOffset?: number): void;
     }
 }
 
@@ -308,7 +417,6 @@ declare module BABYLON.GLTF2 {
     /**
      * Utility methods for working with glTF material conversion properties.  This class should only be used internally
      * @hidden
-
      */
     class _GLTFMaterial {
         /**
@@ -340,7 +448,7 @@ declare module BABYLON.GLTF2 {
          * @param imageData mapping of texture names to base64 textures
          * @param hasTextureCoords specifies if texture coordinates are present on the material
          */
-        static _ConvertMaterialsToGLTF(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+        static _ConvertMaterialsToGLTF(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -388,7 +496,7 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        static _ConvertStandardMaterial(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+        static _ConvertStandardMaterial(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -404,7 +512,7 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        static _ConvertPBRMetallicRoughnessMaterial(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+        static _ConvertPBRMetallicRoughnessMaterial(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -475,7 +583,10 @@ declare module BABYLON.GLTF2 {
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          * @returns glTF PBR Metallic Roughness factors
          */
-        private static _ConvertMetalRoughFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+        private static _ConvertMetalRoughFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+        private static _GetGLTFTextureSampler(texture);
+        private static _GetGLTFTextureWrapMode(wrapMode);
+        private static _GetGLTFTextureWrapModesSampler(texture);
         /**
          * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors
          * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
@@ -487,7 +598,7 @@ declare module BABYLON.GLTF2 {
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          * @returns glTF PBR Metallic Roughness factors
          */
-        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
         /**
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
          * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
@@ -498,7 +609,7 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        static _ConvertPBRMaterial(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+        static _ConvertPBRMaterial(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -514,7 +625,7 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name and data
          * @return glTF texture info, or null if the texture format is not supported
          */
-        private static _ExportTexture(babylonTexture, mimeType, images, textures, imageData);
+        private static _ExportTexture(babylonTexture, mimeType, images, textures, samplers, imageData);
         /**
          * Builds a texture from base64 string
          * @param base64Texture base64 texture string
@@ -525,7 +636,7 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image data
          * @returns glTF texture info, or null if the texture format is not supported
          */
-        private static _GetTextureInfoFromBase64(base64Texture, textureName, mimeType, images, textures, imageData);
+        private static _GetTextureInfoFromBase64(base64Texture, textureName, mimeType, images, textures, texCoordIndex, samplerIndex, imageData);
     }
 }
 
@@ -580,20 +691,22 @@ declare module BABYLON.GLTF2 {
      */
     class _GLTFAnimation {
         /**
+         * @ignore
          *
          * Creates glTF channel animation from BabylonJS animation.
-         * @param babylonMesh - BabylonJS mesh.
+         * @param babylonTransformNode - BabylonJS mesh.
          * @param animation - animation.
          * @param animationChannelTargetPath - The target animation channel.
          * @param convertToRightHandedSystem - Specifies if the values should be converted to right-handed.
          * @param useQuaternion - Specifies if quaternions are used.
          * @returns nullable IAnimationData
          */
-        static _CreateNodeAnimation(babylonMesh: BABYLON.Mesh, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number): Nullable<_IAnimationData>;
+        static _CreateNodeAnimation(babylonTransformNode: TransformNode, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number): Nullable<_IAnimationData>;
         private static _DeduceAnimationInfo(animation);
         /**
-         *
-         * @param babylonMesh
+         * @ignore
+         * Create node animations from the transform node animations
+         * @param babylonTransformNode
          * @param runtimeGLTFAnimation
          * @param idleGLTFAnimations
          * @param nodeMap
@@ -603,11 +716,12 @@ declare module BABYLON.GLTF2 {
          * @param accessors
          * @param convertToRightHandedSystem
          */
-        static _CreateNodeAnimationFromMeshAnimations(babylonMesh: Mesh, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+        static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: TransformNode, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
-         *
+         * @ignore
+         * Create node animations from the animation groups
          * @param babylonScene
          * @param glTFAnimations
          * @param nodeMap
@@ -620,10 +734,10 @@ declare module BABYLON.GLTF2 {
         static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
-        private static AddAnimation(name, glTFAnimation, babylonMesh, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate);
+        private static AddAnimation(name, glTFAnimation, babylonTransformNode, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate);
         /**
          * Create a baked animation
-         * @param babylonMesh BabylonJS mesh
+         * @param babylonTransformNode BabylonJS mesh
          * @param animation BabylonJS animation corresponding to the BabylonJS mesh
          * @param animationChannelTargetPath animation target channel
          * @param minFrame minimum animation frame
@@ -634,12 +748,12 @@ declare module BABYLON.GLTF2 {
          * @param convertToRightHandedSystem converts the values to right-handed
          * @param useQuaternion specifies if quaternions should be used
          */
-        private static _CreateBakedAnimation(babylonMesh, animation, animationChannelTargetPath, minFrame, maxFrame, fps, sampleRate, inputs, outputs, minMaxFrames, convertToRightHandedSystem, useQuaternion);
-        private static _ConvertFactorToVector3OrQuaternion(factor, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
-        private static _SetInterpolatedValue(babylonMesh, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+        private static _CreateBakedAnimation(babylonTransformNode, animation, animationChannelTargetPath, minFrame, maxFrame, fps, sampleRate, inputs, outputs, minMaxFrames, convertToRightHandedSystem, useQuaternion);
+        private static _ConvertFactorToVector3OrQuaternion(factor, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+        private static _SetInterpolatedValue(babylonTransformNode, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
         /**
          * Creates linear animation from the animation key frames
-         * @param babylonMesh BabylonJS mesh
+         * @param babylonTransformNode BabylonJS mesh
          * @param animation BabylonJS animation
          * @param animationChannelTargetPath The target animation channel
          * @param frameDelta The difference between the last and first frame of the animation
@@ -648,10 +762,10 @@ declare module BABYLON.GLTF2 {
          * @param convertToRightHandedSystem Specifies if the position data should be converted to right handed
          * @param useQuaternion Specifies if quaternions are used in the animation
          */
-        private static _CreateLinearOrStepAnimation(babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+        private static _CreateLinearOrStepAnimation(babylonTransformNode, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
         /**
          * Creates cubic spline animation from the animation key frames
-         * @param babylonMesh BabylonJS mesh
+         * @param babylonTransformNode BabylonJS mesh
          * @param animation BabylonJS animation
          * @param animationChannelTargetPath The target animation channel
          * @param frameDelta The difference between the last and first frame of the animation
@@ -660,8 +774,8 @@ declare module BABYLON.GLTF2 {
          * @param convertToRightHandedSystem Specifies if the position data should be converted to right handed
          * @param useQuaternion Specifies if quaternions are used in the animation
          */
-        private static _CreateCubicSplineAnimation(babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
-        private static _GetBasePositionRotationOrScale(babylonMesh, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+        private static _CreateCubicSplineAnimation(babylonTransformNode, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+        private static _GetBasePositionRotationOrScale(babylonTransformNode, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
         /**
          * Adds a key frame value
          * @param keyFrame
@@ -672,7 +786,13 @@ declare module BABYLON.GLTF2 {
          * @param convertToRightHandedSystem
          * @param useQuaternion
          */
-        private static _AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonMesh, convertToRightHandedSystem, useQuaternion);
+        private static _AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
+        /**
+         * Determine the interpolation based on the key frames
+         * @param keyFrames
+         * @param animationChannelTargetPath
+         * @param useQuaternion
+         */
         private static _DeduceInterpolation(keyFrames, animationChannelTargetPath, useQuaternion);
         /**
          * Adds an input tangent or output tangent to the output data
@@ -686,7 +806,7 @@ declare module BABYLON.GLTF2 {
          * @param useQuaternion Specifies if quaternions are used
          * @param convertToRightHandedSystem Specifies if the values should be converted to right-handed
          */
-        private static AddSplineTangent(tangentType, outputs, animationChannelTargetPath, interpolation, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem);
+        private static AddSplineTangent(babylonTransformNode, tangentType, outputs, animationChannelTargetPath, interpolation, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem);
         /**
          * Get the minimum and maximum key frames' frame values
          * @param keyFrames animation key frames
@@ -741,21 +861,52 @@ declare module BABYLON.GLTF2 {
          * @param vector vector3 array
          * @returns right-handed Vector3
          */
-        static GetRightHandedVector3(vector: Vector3): Vector3;
+        static GetRightHandedPositionVector3(vector: Vector3): Vector3;
         /**
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
-        static GetRightHandedVector3FromRef(vector: Vector3): void;
+        static GetRightHandedPositionVector3FromRef(vector: Vector3): void;
+        /**
+         * Converts a three element number array to right-handed
+         * @param vector number array to convert to right-handed
+         */
+        static GetRightHandedPositionArray3FromRef(vector: number[]): void;
+        /**
+         * Converts a new right-handed Vector3
+         * @param vector vector3 array
+         * @returns right-handed Vector3
+         */
+        static GetRightHandedNormalVector3(vector: Vector3): Vector3;
+        /**
+         * Converts a Vector3 to right-handed
+         * @param vector Vector3 to convert to right-handed
+         */
+        static GetRightHandedNormalVector3FromRef(vector: Vector3): void;
+        /**
+         * Converts a three element number array to right-handed
+         * @param vector number array to convert to right-handed
+         */
+        static GetRightHandedNormalArray3FromRef(vector: number[]): void;
         /**
          * Converts a Vector4 to right-handed
          * @param vector Vector4 to convert to right-handed
          */
         static GetRightHandedVector4FromRef(vector: Vector4): void;
         /**
+         * Converts a Vector4 to right-handed
+         * @param vector Vector4 to convert to right-handed
+         */
+        static GetRightHandedArray4FromRef(vector: number[]): void;
+        /**
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */
         static GetRightHandedQuaternionFromRef(quaternion: Quaternion): void;
+        /**
+         * Converts a Quaternion to right-handed
+         * @param quaternion Source quaternion to convert to right-handed
+         */
+        static GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
     }
 }
