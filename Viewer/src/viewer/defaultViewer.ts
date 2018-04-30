@@ -220,7 +220,6 @@ export class DefaultViewer extends AbstractViewer {
      */
     protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
-        this.containerElement.style.display = 'flex';
     }
 
     /**
@@ -301,7 +300,6 @@ export class DefaultViewer extends AbstractViewer {
         return template.show((template => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
-            var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
             template.parent.style.display = 'flex';
             template.parent.style.width = canvasRect.width + "px";
@@ -380,14 +378,19 @@ export class DefaultViewer extends AbstractViewer {
         return template.show((template => {
 
             var canvasRect = this.containerElement.getBoundingClientRect();
-            var canvasPositioning = window.getComputedStyle(this.containerElement).position;
+            // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
             template.parent.style.display = 'flex';
             template.parent.style.width = canvasRect.width + "px";
             template.parent.style.height = canvasRect.height + "px";
             template.parent.style.opacity = "1";
             // from the configuration!!!
-            template.parent.style.backgroundColor = "black";
+            let color = "black";
+            if (this.configuration.templates && this.configuration.templates.loadingScreen) {
+                color = (this.configuration.templates.loadingScreen.params &&
+                    <string>this.configuration.templates.loadingScreen.params.backgroundColor) || color;
+            }
+            template.parent.style.backgroundColor = color;
             return Promise.resolve(template);
         }));
     }
