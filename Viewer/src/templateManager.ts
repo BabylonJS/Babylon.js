@@ -599,8 +599,14 @@ export class Template {
 
                     // if boolean, set the parent as the event listener
                     if (typeof this._configuration.events[eventName] === 'boolean') {
-                        let binding = functionToFire.bind(this, '#' + this.parent.id);
-                        this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
+                        let selector = this.parent.id
+                        if (selector) {
+                            selector = '#' + selector
+                        } else {
+                            selector = this.parent.tagName
+                        }
+                        let binding = functionToFire.bind(this, selector);
+                        this.parent.addEventListener(eventName, functionToFire.bind(this, selector), false);
                         this._registeredEvents.push({
                             htmlElement: this.parent,
                             eventName: eventName,
