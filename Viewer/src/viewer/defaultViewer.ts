@@ -61,7 +61,6 @@ export class DefaultViewer extends AbstractViewer {
 
             this.templateManager.eventManager.registerCallback("navBar", (event: EventCallback) => {
                 let element = <HTMLInputElement>event.event.srcElement;
-                console.log(element.value);
                 if (!this._currentAnimation) return;
                 const gotoFrame = +element.value / 100 * this._currentAnimation.frames;
                 if (isNaN(gotoFrame)) return;
@@ -166,11 +165,11 @@ export class DefaultViewer extends AbstractViewer {
     private _updateProgressBar = () => {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
-        var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
+        var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input#progress-wrapper");
         if (progressSlider && this._currentAnimation) {
             const progress = this._currentAnimation.currentFrame / this._currentAnimation.frames * 100;
             var currentValue = progressSlider.valueAsNumber;
-            if (Math.abs(currentValue - progress) > 0.1) { // Only move if greater than a 1% change
+            if (Math.abs(currentValue - progress) > 0.5) { // Only move if greater than a 1% change
                 progressSlider.value = '' + progress;
             }
 
