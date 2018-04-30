@@ -11,6 +11,17 @@
     }
 </style>
 
-<viewer></viewer>
-<loading-screen></loading-screen>
-<overlay></overlay>
+{{#if fillScreen}}
+<style>
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+
+        margin: 0;
+        padding: 0;
+    }
+</style>
+{{/if}}
+
+<fill-container></fill-container>
