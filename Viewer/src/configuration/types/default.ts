@@ -7,7 +7,14 @@ export let defaultConfiguration: ViewerConfiguration = {
             html: require("../../../assets/templates/default/defaultTemplate.html"),
             params: {
                 babylonFont: require('../../../assets/babylon.woff'),
-                noEscape: true
+                noEscape: true,
+                fillParent: true
+            }
+        },
+        fullscreenContainer: {
+            html: require("../../../assets/templates/default/fullscreenContainer.html"),
+            params: {
+                disable: false
             }
         },
         loadingScreen: {
