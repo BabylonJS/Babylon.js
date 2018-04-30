@@ -26,13 +26,11 @@ module INSPECTOR {
             button.innerText = 'Export GLB';
 
             button.addEventListener('click', () => {
-                const data = BABYLON.GLTF2Export.GLB(inspector.scene, name.value || "scene", {
-                    shouldExportMesh: mesh => !GLTFTab._IsSkyBox(mesh)
+                BABYLON.GLTF2Export.GLBAsync(inspector.scene, name.value || "scene", {
+                    shouldExportTransformNode: transformNode => !GLTFTab._IsSkyBox(transformNode)
+                }).then((glb) => {
+                    glb.downloadFiles();
                 });
-
-                if (data) {
-                    data.downloadFiles();
-                }
             });
         }
 
