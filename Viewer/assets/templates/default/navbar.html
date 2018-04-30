@@ -213,6 +213,24 @@
         visibility: visible;
     }
 
+    .types .menu-options {
+        width: 144px;
+    }
+
+    .types .menu-options button {
+        padding: 0 8px;
+        justify-content: left;
+    }
+
+    .types .menu-options button>* {
+        display: flex;
+        margin: 8px;
+    }
+
+    .types .menu-options button span.animation-number {
+        display: none;
+    }
+
     @media screen and (min-width: 540px) {
         .help,
         .types-icon,
@@ -232,9 +250,6 @@
             margin: 0 12px;
         }
 
-        .types .menu-options {
-            width: 84px;
-        }
         .speed {
             width: 64px;
         }
@@ -275,9 +290,6 @@
         }
 
         .types {
-            width: 144px;
-        }
-        .types .menu-options {
             width: 144px;
         }
     }
