@@ -587,7 +587,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * @ignore
          * Generates data for .gltf and .bin files based on the glTF prefix string
          * @param glTFPrefix Text to use when prefixing a glTF file
          * @returns GLTFData with glTF file data
@@ -1049,7 +1048,6 @@ module BABYLON.GLTF2 {
                             if (babylonIndices) {
                                 if (sideOrientation === Material.ClockWiseSideOrientation) {
                                     this.reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
-                                  //  this.flipNormalsAndTangents(submesh, vertexAttributeBufferViews, binaryWriter);
                                 }
                             }
                             else {

@@ -735,7 +735,6 @@ module BABYLON.GLTF2 {
                                 tangent = Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(tangent)).asArray();
                             }
                         }
-
                     }
                     else {
                         tangent = [0, 0, 0, 0];
