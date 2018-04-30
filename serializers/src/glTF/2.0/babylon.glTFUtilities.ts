@@ -44,13 +44,13 @@ module BABYLON.GLTF2 {
         public static CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor {
             let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
 
-            if (min) {
+            if (min != null) {
                 accessor.min = min;
             }
-            if (max) {
+            if (max != null) {
                 accessor.max = max;
             }
-            if (byteOffset) {
+            if (byteOffset != null) {
                 accessor.byteOffset = byteOffset;
             }
 
@@ -78,7 +78,7 @@ module BABYLON.GLTF2 {
 
                     position = Vector3.FromArray(positions, indexOffset);
                     if (convertToRightHandedSystem) {
-                        _GLTFUtilities.GetRightHandedVector3FromRef(position);
+                        _GLTFUtilities.GetRightHandedPositionVector3FromRef(position);
                     }
                     vector = position.asArray();
 
@@ -102,7 +102,7 @@ module BABYLON.GLTF2 {
          * @param vector vector3 array
          * @returns right-handed Vector3
          */
-        public static GetRightHandedVector3(vector: Vector3): Vector3 {
+        public static GetRightHandedPositionVector3(vector: Vector3): Vector3 {
             return new Vector3(vector.x, vector.y, -vector.z);
         }
 
@@ -110,8 +110,41 @@ module BABYLON.GLTF2 {
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
-        public static GetRightHandedVector3FromRef(vector: Vector3) {
+        public static GetRightHandedPositionVector3FromRef(vector: Vector3) {
             vector.z *= -1;
+        }
+
+        /**
+         * Converts a three element number array to right-handed
+         * @param vector number array to convert to right-handed
+         */
+        public static GetRightHandedPositionArray3FromRef(vector: number[]) {
+            vector[2] *= -1;
+        }
+
+        /**
+         * Converts a new right-handed Vector3
+         * @param vector vector3 array
+         * @returns right-handed Vector3
+         */
+        public static GetRightHandedNormalVector3(vector: Vector3): Vector3 {
+            return new Vector3(vector.x, vector.y, -vector.z);
+        }
+
+        /**
+         * Converts a Vector3 to right-handed
+         * @param vector Vector3 to convert to right-handed
+         */
+        public static GetRightHandedNormalVector3FromRef(vector: Vector3) {
+            vector.z *= -1;
+        }
+
+        /**
+         * Converts a three element number array to right-handed
+         * @param vector number array to convert to right-handed
+         */
+        public static GetRightHandedNormalArray3FromRef(vector: number[]) {
+            vector[2] *= -1;
         }
 
         /**
@@ -124,12 +157,30 @@ module BABYLON.GLTF2 {
         }
 
         /**
+         * Converts a Vector4 to right-handed
+         * @param vector Vector4 to convert to right-handed
+         */
+        public static GetRightHandedArray4FromRef(vector: number[]) {
+            vector[2] *= -1;
+            vector[3] *= -1;
+        }
+
+        /**
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */
         public static GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
-            quaternion.x *= -1;
-            quaternion.y *= -1;
+             quaternion.x *= -1;
+             quaternion.y *= -1;
+        }
+
+        /**
+         * Converts a Quaternion to right-handed
+         * @param quaternion Source quaternion to convert to right-handed
+         */
+        public static GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
+             quaternion[0] *= -1;
+             quaternion[1] *= -1;
         }
     }
 }
