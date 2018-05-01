@@ -1,0 +1,28 @@
+{
+    "name": "babylonjs-gltf2interface",
+    "description": "A typescript declaration of babylon's gltf2 inteface.",
+    "version": "3.2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "files": [
+        "babylon.glTF2Interface.d.ts",
+        "package.json"
+    ],
+    "typings": "babylon.glTF2Interface.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "gltf2"
+    ],
+    "license": "Apache-2.0",
+    "peerDependencies": {
+        "babylonjs": ">=3.2.0-alpha"
+    },
+    "engines": {
+        "node": "*"
+    }
+}

@@ -20,6 +20,9 @@ var BABYLON;
          * @param rootUrl
          */
         MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+            if (data instanceof ArrayBuffer) {
+                return;
+            }
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char
@@ -197,6 +200,7 @@ var BABYLON;
                     url += value;
                 }
             }
+            // Not from input file.
             else {
                 url += value;
             }
@@ -259,6 +263,12 @@ var BABYLON;
         OBJFileLoader.prototype.load = function (scene, data, rootUrl) {
             //Get the 3D model
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
+        };
+        OBJFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
+            var container = new BABYLON.AssetContainer(scene);
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
         };
         /**
          * Read the OBJ file and create an Array of meshes.
@@ -736,6 +746,9 @@ var BABYLON;
                 vertexData.indices = handledMesh.indices;
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
                 vertexData.applyToMesh(babylonMesh);
+                if (OBJFileLoader.INVERT_Y) {
+                    babylonMesh.scaling.y *= -1;
+                }
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
@@ -777,6 +790,7 @@ var BABYLON;
             return babylonMeshesArray;
         };
         OBJFileLoader.OPTIMIZE_WITH_UV = false;
+        OBJFileLoader.INVERT_Y = false;
         return OBJFileLoader;
     }());
     BABYLON.OBJFileLoader = OBJFileLoader;

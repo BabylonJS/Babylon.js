@@ -44,11 +44,11 @@
       font-size: 1em; }
       .insp-wrapper .insp-right-panel .top-panel .tab-panel-content {
         width: 100%;
-        height: calc(100% - 32px); }
+        height: calc(100% - 40px); }
       .insp-wrapper .insp-right-panel .top-panel .more-tabs-panel {
         position: absolute;
         z-index: 10;
-        top: 32px;
+        top: 40px;
         right: 0;
         width: 100px;
         display: none;
@@ -70,7 +70,7 @@
             background-color: #454545; }
   .insp-wrapper .tooltip {
     position: absolute;
-    top: 32px;
+    top: 40px;
     right: 0;
     color: #f29766;
     display: none;
@@ -242,6 +242,36 @@
   .insp-wrapper .tab-panel .stat-infos {
     width: 100%;
     padding: 4px; }
+  .insp-wrapper .tab-panel .gltf-actions {
+    overflow-y: auto;
+    padding-left: 5px; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-title {
+      font-size: 1.1em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #5db0d7;
+      margin: 10px 0 10px 0; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-input {
+      background-color: #2c2c2c;
+      border: none;
+      outline: none;
+      font-family: "Inconsolata", sans-serif;
+      color: #b3b3b3;
+      padding: 5px;
+      margin: 0px 6px 0px 0; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-input:hover {
+        background-color: #383838; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-button {
+      background-color: #2c2c2c;
+      border: none;
+      outline: none;
+      font-family: "Inconsolata", sans-serif;
+      color: #ccc;
+      padding: 5px 10px;
+      margin: 0px 6px 0px 0; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-button:hover {
+        background-color: #383838; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-button:active {
+        background-color: #454545; }
   .insp-wrapper .property-type {
     color: #5db0d7; }
   .insp-wrapper .property-name, .insp-wrapper .insp-details .base-row .prop-name, .insp-wrapper .insp-details .row .prop-name, .insp-wrapper .insp-details .header-row .prop-name {
@@ -249,7 +279,7 @@
   .insp-wrapper .insp-tree {
     overflow-y: auto;
     overflow-x: hidden;
-    height: calc(50% - 32px - 30px); }
+    height: calc(50% - 40px - 30px); }
     .insp-wrapper .insp-tree .line {
       padding: 3px;
       cursor: pointer; }
@@ -283,6 +313,8 @@
           background-color: #242424; }
         .insp-wrapper .insp-tree .line .line-content .line:hover:first-child {
           background-color: #383838; }
+    .insp-wrapper .insp-tree .line_invisible {
+      display: none; }
   .insp-wrapper .insp-details {
     background-color: #242424;
     overflow-y: auto;
@@ -303,7 +335,7 @@
         width: 35%; }
       .insp-wrapper .insp-details .base-row .prop-value, .insp-wrapper .insp-details .row .prop-value, .insp-wrapper .insp-details .header-row .prop-value {
         width: 59%;
-        padding-left: 10px; }
+        padding-left: 5px; }
         .insp-wrapper .insp-details .base-row .prop-value.clickable, .insp-wrapper .insp-details .row .prop-value.clickable, .insp-wrapper .insp-details .header-row .prop-value.clickable {
           cursor: pointer; }
           .insp-wrapper .insp-details .base-row .prop-value.clickable:hover, .insp-wrapper .insp-details .row .prop-value.clickable:hover, .insp-wrapper .insp-details .header-row .prop-value.clickable:hover {
@@ -340,7 +372,8 @@
       display: inline-block;
       margin-left: 5px; }
     .insp-wrapper .insp-details .color-element {
-      top: 2px; }
+      width: 20px;
+      height: 15px; }
     .insp-wrapper .insp-details .texture-element {
       color: #f29766;
       margin-left: 10px; }
@@ -365,7 +398,7 @@
           max-width: 110px;
           max-height: 110px; }
   .insp-wrapper .tabbar {
-    height: 32px;
+    height: 40px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #383838;
@@ -374,11 +407,11 @@
     overflow-y: hidden;
     box-sizing: border-box; }
     .insp-wrapper .tabbar .tab {
-      height: calc(32px - 2px);
+      height: calc(40px - 2px);
       width: auto;
       padding: 0 10px 0 10px;
       color: #ccc;
-      line-height: 32px;
+      line-height: 40px;
       text-align: center;
       cursor: pointer;
       margin: 0 5px 0 5px;
@@ -391,8 +424,8 @@
       .insp-wrapper .tabbar .tab.active {
         border-bottom: 1px solid #f29766; }
     .insp-wrapper .tabbar .more-tabs {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -409,8 +442,8 @@
   .insp-wrapper .toolbar {
     display: flex; }
     .insp-wrapper .toolbar .tool {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
