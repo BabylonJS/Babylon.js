@@ -1,4 +1,4 @@
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
 module BABYLON.GLTF2 {
     /** 
