@@ -1,0 +1,22 @@
+{
+    "ground": {
+        "material": {
+            "primaryColorHighlightLevel": 0.05
+        }
+    },
+    "skybox": {
+        "material": {
+            "primaryColorShadowLevel": 0.1
+        }
+    },
+    "scene": {
+        "imageProcessingConfiguration": {
+            "vignetteWeight": 0
+        },
+        "mainColor": {
+            "r": 0.9607843137254902,
+            "g": 0.9607843137254902,
+            "b": 0.9607843137254902
+        }
+    }
+}
