@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - Configuration usage with code</title>
+        <style>
+        </style>
+    </head>
+
+    <body>
+        <div id="viewport"></div>
+        <script src="../../viewer.js"></script>
+        <script>
+            var config = {
+                extends: 'extended',
+                configuration: "./config.json",
+                model: {
+                    url: "https://babylonjs.com/Assets/FlightHelmet/glTF/FlightHelmet_Materials.gltf",
+                },
+                templates: {
+                    main: {
+                        params: {
+                            fillScreen: true
+                        }
+                    }
+                },
+                lab: {
+                    assetsRootURL: '/external/msft/'
+                }
+            }
+
+            // create viewer
+            var viewerElement = document.getElementById("viewport");
+            new BabylonViewer.DefaultViewer(viewerElement, config);
+
+        </script>
+    </body>
+
+</html>
