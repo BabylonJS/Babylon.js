@@ -5,6 +5,9 @@
         }
     },
     "skybox": {
+        "cubeTexture": {
+            "url": "Skybox_3.0-256.dds"
+        },
         "material": {
             "primaryColorShadowLevel": 0.1
         }
