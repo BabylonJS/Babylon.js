@@ -65,6 +65,15 @@
         @serialize()
         public wAng = 0;
 
+        @serialize()
+        public uAngCenter = 0.5;
+
+        @serialize()
+        public vAngCenter = 0.5;
+
+        @serialize()
+        public wAngCenter = 0.5;
+
         get noMipmap(): boolean {
             return this._noMipmap;
         }
@@ -229,15 +238,15 @@
             x *= this.uScale;
             y *= this.vScale;
 
-            x -= 0.5 * this.uScale;
-            y -= 0.5 * this.vScale;
-            z -= 0.5;
+            x -= this.uAngCenter * this.uScale;
+            y -= this.vAngCenter * this.vScale;
+            z -= this.wAngCenter;
 
             Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
 
-            t.x += 0.5 * this.uScale + this.uOffset;
-            t.y += 0.5 * this.vScale + this.vOffset;
-            t.z += 0.5;
+            t.x += this.uAngCenter * this.uScale + this.uOffset;
+            t.y += this.vAngCenter * this.vScale + this.vOffset;
+            t.z += this.wAngCenter;
         }
 
         public getTextureMatrix(): Matrix {
