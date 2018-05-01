@@ -105,7 +105,7 @@ If you want to contribute, please read our [contribution guidelines](https://git
 
 ## Useful links
 
- - Official web site: [www.babylonjs.com](http://wwws.babylonjs.com/)
+ - Official web site: [www.babylonjs.com](https://www.babylonjs.com/)
  - Online [playground](https://playground.babylonjs.com/) to learn by experimentating
  - Online [sandbox](https://www.babylonjs.com/sandbox) where you can test your .babylon and glTF scenes with a simple drag'n'drop
  - Online [shader creation tool](https://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
