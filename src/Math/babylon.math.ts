@@ -6543,26 +6543,39 @@
 
         /**
          * Returns a Curve3 object along a CatmullRom Spline curve : 
-         * @param points (array of Vector3) the points the spline must pass through. At least, four points required.  
-         * @param nbPoints (integer) the wanted number of points between each curve control points.
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required  
+         * @param nbPoints (integer) the wanted number of points between each curve control points
+         * @param closed (boolean) optional with default false, when true forms a closed loop from the points
          */
-        public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number): Curve3 {
-            var totalPoints = new Array<Vector3>();
-            totalPoints.push(points[0].clone());
-            Array.prototype.push.apply(totalPoints, points);
-            totalPoints.push(points[points.length - 1].clone());
+        public static CreateCatmullRomSpline(points: Vector3[], nbPoints: number, closed?: boolean): Curve3 {
             var catmullRom = new Array<Vector3>();
             var step = 1.0 / nbPoints;
             var amount = 0.0;
-            for (var i = 0; i < totalPoints.length - 3; i++) {
-                amount = 0;
-                for (var c = 0; c < nbPoints; c++) {
-                    catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
-                    amount += step
+            if(closed) {
+                var pointsCount = points.length;
+                for (var i = 0; i < pointsCount; i++) {
+                    amount = 0;
+                    for (var c = 0; c < nbPoints; c++) {
+                        catmullRom.push(Vector3.CatmullRom(points[i % pointsCount], points[(i + 1) % pointsCount], points[(i + 2) % pointsCount], points[(i + 3) % pointsCount], amount));
+                        amount += step;
+                    }
                 }
             }
-            i--;
-            catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
+            else {
+                var totalPoints = new Array<Vector3>();
+                totalPoints.push(points[0].clone());
+                Array.prototype.push.apply(totalPoints, points);
+                totalPoints.push(points[points.length - 1].clone());
+                for (var i = 0; i < totalPoints.length - 3; i++) {
+                    amount = 0;
+                    for (var c = 0; c < nbPoints; c++) {
+                        catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
+                        amount += step
+                    }
+                }
+                i--;
+                catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
+            }
             return new Curve3(catmullRom);
         }
 
