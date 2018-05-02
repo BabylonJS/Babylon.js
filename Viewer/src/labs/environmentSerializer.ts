@@ -2,9 +2,9 @@ import { Vector3, Tools } from "babylonjs";
 import { TextureCube, PixelFormat, PixelType } from './texture';
 
 /**
-	 * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
-	 * @ignoreChildren
-	 */
+ * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
+ * @ignoreChildren
+ */
 export interface SphericalPolynomalCoefficients {
     x: Vector3;
     y: Vector3;

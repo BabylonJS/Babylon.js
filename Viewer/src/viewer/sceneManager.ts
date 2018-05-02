@@ -360,7 +360,7 @@ export class SceneManager {
      * @param newConfiguration the delta that should be configured. This includes only the changes
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration, model?: ViewerModel) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
 
 
         if (newConfiguration.lab) {
@@ -385,15 +385,15 @@ export class SceneManager {
         }*/
 
         // lights
-        this._configureLights(newConfiguration.lights, model);
+        this._configureLights(newConfiguration.lights);
 
         // environment
         if (newConfiguration.skybox !== undefined || newConfiguration.ground !== undefined) {
-            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground, model);
+            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
         }
 
         // camera
-        this._configureCamera(newConfiguration.camera, model);
+        this._configureCamera(newConfiguration.camera);
 
         if (newConfiguration.lab) {
             if (newConfiguration.lab.environmentMap) {
@@ -736,7 +736,7 @@ export class SceneManager {
      * @param cameraConfig the new camera configuration
      * @param model optionally use the model to configure the camera.
      */
-    protected _configureCamera(cameraConfig: ICameraConfiguration = {}, model?: ViewerModel) {
+    protected _configureCamera(cameraConfig: ICameraConfiguration = {}) {
         if (!this.scene.activeCamera) {
             let attachControl = true;
             if (this._viewer.configuration.scene && this._viewer.configuration.scene.disableCameraControl) {
@@ -799,8 +799,7 @@ export class SceneManager {
         this.onCameraConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.camera,
-            newConfiguration: cameraConfig,
-            model
+            newConfiguration: cameraConfig
         });
     }
 
@@ -815,7 +814,7 @@ export class SceneManager {
         this.camera.radius = (this._viewer.configuration.camera && this._viewer.configuration.camera.radius) || this.camera.radius;
     }
 
-    protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean, model?: ViewerModel) {
+    protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
         if (!skyboxConifguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
@@ -992,8 +991,7 @@ export class SceneManager {
             newConfiguration: {
                 skybox: skyboxConifguration,
                 ground: groundConfiguration
-            },
-            model
+            }
         });
     }
 
@@ -1003,7 +1001,7 @@ export class SceneManager {
      * @param lightsConfiguration the (new) light(s) configuration
      * @param model optionally use the model to configure the camera.
      */
-    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
+    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}) {
 
         // sanity check!
         if (!Object.keys(lightsConfiguration).length) {
@@ -1123,7 +1121,7 @@ export class SceneManager {
                     });
 
                     //if (model) {
-                    this._updateShadowRenderList(shadowGenerator, model);
+                    this._updateShadowRenderList(shadowGenerator);
                     //}
                 } else if (shadowGenerator) {
                     shadowGenerator.dispose();
@@ -1144,8 +1142,7 @@ export class SceneManager {
         this.onLightsConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.scene.lights,
-            newConfiguration: lightsConfiguration,
-            model
+            newConfiguration: lightsConfiguration
         });
     }
 
