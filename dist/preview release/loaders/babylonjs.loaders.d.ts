@@ -1380,6 +1380,8 @@ declare module BABYLON.GLTF2 {
         protected _loadVertexDataAsync(context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
         /** Override this method to modify the default behavior for loading materials. */
         protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
+        /** Override this method to modify the default behavior for loading textures. */
+        protected _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>>;
         /** Override this method to modify the default behavior for loading uris. */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** Helper method called by a loader extension to load an glTF extension. */
@@ -1392,6 +1394,8 @@ declare module BABYLON.GLTF2 {
         static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
         /** Helper method called by the loader to allow extensions to override loading materials. */
         static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
+        /** Helper method called by the loader to allow extensions to override loading textures. */
+        static _LoadTextureAsync(loader: GLTFLoader, context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>>;
         /** Helper method called by the loader to allow extensions to override loading uris. */
         static _LoadUriAsync(loader: GLTFLoader, context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
@@ -1495,5 +1499,16 @@ declare module BABYLON.GLTF2.Extensions {
         protected _loadSceneAsync(context: string, scene: _ILoaderScene): Nullable<Promise<void>>;
         protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>>;
         private readonly _lights;
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    /**
+     * [Specification](https://github.com/AltspaceVR/glTF/blob/avr-sampler-offset-tile/extensions/2.0/Khronos/KHR_texture_transform/README.md) (Experimental)
+     */
+    class KHR_texture_transform extends GLTFLoaderExtension {
+        readonly name: string;
+        protected _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>>;
     }
 }
