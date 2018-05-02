@@ -496,7 +496,7 @@
             // Compute value
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
-
+            
             // Need to normalize?
             if (this._host && this._host.syncRoot) {
                 let syncRoot = this._host.syncRoot;
@@ -504,13 +504,25 @@
                 currentFrame = from + (to - from) * hostNormalizedFrame;
             }
 
+            // Reset events if looping
+            let events = this._animation.getEvents();
+            if (range > 0 && this.currentFrame > currentFrame || 
+                range < 0 && this.currentFrame < currentFrame) {
+                    // Need to reset animation events
+                    for (var index = 0; index < events.length; index++) {
+                        if (!events[index].onlyOnce) {
+                            // reset event, the animation is looping
+                            events[index].isDone = false;
+                        }
+                    }                    
+                }
+
             var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
             // Set value
             this.setValue(currentValue, weight);
 
             // Check events
-            let events = this._animation.getEvents();
             for (var index = 0; index < events.length; index++) {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
@@ -528,9 +540,6 @@
                         event.isDone = true;
                         event.action();
                     } // Don't do anything if the event has already be done.
-                } else if (events[index].isDone && !events[index].onlyOnce) {
-                    // reset event, the animation is looping
-                    events[index].isDone = false;
                 }
             }
             if (!returnValue) {
