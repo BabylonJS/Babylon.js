@@ -303,6 +303,11 @@
       "referenceImage": "gltfUnlit.png"
     },
     {
+      "title": "GLTF Extension KHR_texture_transform",
+      "playgroundId": "#RNT7K4#2",
+      "referenceImage": "gltfExtensionKhrTextureTransform.png"
+    },
+    {
       "title": "Asset Containers",
       "playgroundId": "#P3U079#19",
       "referenceImage": "assetContainer.png"

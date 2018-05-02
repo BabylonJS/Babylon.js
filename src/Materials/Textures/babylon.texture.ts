@@ -65,14 +65,23 @@
         @serialize()
         public wAng = 0;
 
+        /**
+         * Defines the center of rotation (U)
+         */
         @serialize()
-        public uAngCenter = 0.5;
+        public uCenter = 0.5;
 
+        /**
+         * Defines the center of rotation (V)
+         */
         @serialize()
-        public vAngCenter = 0.5;
+        public vCenter = 0.5;
 
+        /**
+         * Defines the center of rotation (W)
+         */
         @serialize()
-        public wAngCenter = 0.5;
+        public wCenter = 0.5;
 
         get noMipmap(): boolean {
             return this._noMipmap;
@@ -238,15 +247,15 @@
             x *= this.uScale;
             y *= this.vScale;
 
-            x -= this.uAngCenter * this.uScale;
-            y -= this.vAngCenter * this.vScale;
-            z -= this.wAngCenter;
+            x -= this.uCenter * this.uScale;
+            y -= this.vCenter * this.vScale;
+            z -= this.wCenter;
 
             Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
 
-            t.x += this.uAngCenter * this.uScale + this.uOffset;
-            t.y += this.vAngCenter * this.vScale + this.vOffset;
-            t.z += this.wAngCenter;
+            t.x += this.uCenter * this.uScale + this.uOffset;
+            t.y += this.vCenter * this.vScale + this.vOffset;
+            t.z += this.wCenter;
         }
 
         public getTextureMatrix(): Matrix {
