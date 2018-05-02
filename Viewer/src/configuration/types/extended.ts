@@ -298,7 +298,7 @@ export let extendedConfiguration: ViewerConfiguration = {
         receiveShadows: true
     },
     lab: {
-        assetsRootURL: '/assets/environment/',
+        assetsRootURL: 'https://viewer.babylonjs.com/assets/environment/',
         environmentMap: {
             texture: "EnvMap_2.0-256.env",
             rotationY: 3,
