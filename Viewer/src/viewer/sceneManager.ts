@@ -312,7 +312,6 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._viewer.engine);
 
-        // TODO - is this needed, now that Babylon is integrated? 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
             var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
@@ -935,29 +934,15 @@ export class SceneManager {
 
         let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
         if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
-            //if (!this.environmentHelper.groundMaterial._perceptualColor) {
-
             this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
-            //}
-            //this.environmentHelper.groundMaterial._perceptualColor.copyFrom(this.mainColor);
-            // to be configured using the configuration object
-
-            /*this.environmentHelper.groundMaterial.primaryColorHighlightLevel = groundConfig.material.highlightLevel;
-            this.environmentHelper.groundMaterial.primaryColorShadowLevel = groundConfig.material.shadowLevel;
-            this.environmentHelper.groundMaterial.enableNoise = true;
-            if (this.environmentHelper.groundMaterial.diffuseTexture) {
-                this.environmentHelper.groundMaterial.diffuseTexture.gammaSpace = true;
-            }
-            this.environmentHelper.groundMaterial.useRGBColor = false;
-            this.environmentHelper.groundMaterial.maxSimultaneousLights = 1;*/
             extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
 
             if (this.environmentHelper.groundMirror) {
                 const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
+                // TODO user camera exposure value to set the mirror clear color
                 //let exposure = Math.pow(2.0, -this.configuration.camera.exposure) * Math.PI;
                 //mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
 
-                // TODO use highlight if required
                 this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
                 this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
                 this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
@@ -1106,7 +1091,6 @@ export class SceneManager {
 
                     if (!shadowGenerator) {
                         shadowGenerator = new ShadowGenerator(bufferSize, light);
-                        // TODO blur kernel definition ?
                     }
 
                     var blurKernel = this.getBlurKernel(light, bufferSize);

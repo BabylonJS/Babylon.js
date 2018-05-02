@@ -164,7 +164,7 @@ export abstract class AbstractViewer {
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
 
-        // create a new template manager. TODO - singleton?
+        // create a new template manager for this viewer
         this.templateManager = new TemplateManager(containerElement);
         this.sceneManager = new SceneManager(this);
 
@@ -179,8 +179,8 @@ export abstract class AbstractViewer {
             if (this._configuration.observers) {
                 this._configureObservers(this._configuration.observers);
             }
+            // TODO remove this after testing, as this is done in the updateCOnfiguration as well.
             if (this._configuration.loaderPlugins) {
-                // TODO should plugins be removed?
                 Object.keys(this._configuration.loaderPlugins).forEach((name => {
                     if (this._configuration.loaderPlugins && this._configuration.loaderPlugins[name]) {
                         this.modelLoader.addPlugin(name);
@@ -299,7 +299,7 @@ export abstract class AbstractViewer {
             } else {
                 this.engine.performanceMonitor.disable();
 
-                // TODO - is this needed?
+                // update camera instead of rendering
                 this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
             }
         }
@@ -352,7 +352,6 @@ export abstract class AbstractViewer {
         }
 
         if (newConfiguration.loaderPlugins) {
-            // TODO should plugins be removed?
             Object.keys(newConfiguration.loaderPlugins).forEach((name => {
                 if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
