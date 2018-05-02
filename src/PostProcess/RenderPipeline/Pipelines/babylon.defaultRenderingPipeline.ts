@@ -56,6 +56,10 @@
 		 */
         public grain: GrainPostProcess;
         private _grainEffect: PostProcessRenderEffect;
+        /**
+		 * Glow post process which adds a glow to emmisive areas of the image
+		 */
+        private _glowLayer: Nullable<GlowLayer> = null;
 
         /**
          * Animations which can be used to tweak settings over a period of time
@@ -303,6 +307,23 @@
         }
 
         /**
+         * If glow layer is enabled. (Adds a glow effect to emmissive materials)
+         */
+        public set glowLayerEnabled(enabled: boolean) {
+            if(enabled && !this._glowLayer){
+                this._glowLayer = new BABYLON.GlowLayer("", this._scene);
+            }else if(!enabled && this._glowLayer){
+                this._glowLayer.dispose();
+                this._glowLayer = null;
+            }
+        }
+
+        @serialize()
+        public get glowLayerEnabled(): boolean {
+            return this._glowLayer == null;
+        }
+
+        /**
          * Enable or disable the chromaticAberration process from the pipeline
          */
         public set chromaticAberrationEnabled(enabled: boolean) {
@@ -337,15 +358,15 @@
 
         /**
          * @constructor
-         * @param {string} name - The rendering pipeline name
-         * @param {BABYLON.Scene} scene - The scene linked to this pipeline
-         * @param {any} ratio - The size of the postprocesses (0.5 means that your postprocess will have a width = canvas.width 0.5 and a height = canvas.height 0.5)
-         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
-         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline
+         * @param {string} name - The rendering pipeline name (default: "")
+         * @param {boolean} hdr - If high dynamic range textures should be used (default: true)
+         * @param {BABYLON.Scene} scene - The scene linked to this pipeline (default: the last created scene)
+         * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
+         * @param {boolean} automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
          */
-        constructor(name: string, hdr: boolean, scene: Scene, cameras?: Camera[], automaticBuild = true) {
+        constructor(name: string = "", hdr: boolean = true, scene: Scene = BABYLON.Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
-            this._cameras = cameras ||  [];
+            this._cameras = cameras ||  scene.cameras;
             this._originalCameras = this._cameras.slice();
 
             this._buildAllowed = automaticBuild;
