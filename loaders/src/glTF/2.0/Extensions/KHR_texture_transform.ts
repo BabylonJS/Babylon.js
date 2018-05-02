@@ -25,8 +25,8 @@ module BABYLON.GLTF2.Extensions {
                     }
 
                     // Always rotate around the origin.
-                    babylonTexture.uCenter = 0;
-                    babylonTexture.vCenter = 0;
+                    babylonTexture.uRotationCenter = 0;
+                    babylonTexture.vRotationCenter = 0;
 
                     if (extension.rotation) {
                         babylonTexture.wAng = -extension.rotation;
