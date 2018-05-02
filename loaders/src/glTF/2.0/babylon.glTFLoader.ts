@@ -1442,6 +1442,11 @@ module BABYLON.GLTF2 {
 
         /** @hidden */
         public _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadTextureAsync(this, context, textureInfo, assign);
+            if (promise) {
+                return promise;
+            }
+
             const texture = GLTFLoader._GetProperty(`${context}/index`, this._gltf.textures, textureInfo.index);
             context = `#/textures/${textureInfo.index}`;
 
