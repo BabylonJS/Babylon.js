@@ -576,6 +576,9 @@
                     if(this.grain){
                         this.grain.dispose(camera);
                     }
+                    if(this._glowLayer){
+                        this._glowLayer.dispose();
+                    }
                 }
             }
             
@@ -591,6 +594,7 @@
                 (<any>this._chromaticAberrationEffect) = null;
                 (<any>this.grain) = null;
                 (<any>this._grainEffect) = null;
+                this._glowLayer = null;
             } 
         }
 
