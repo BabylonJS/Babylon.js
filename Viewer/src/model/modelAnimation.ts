@@ -191,11 +191,6 @@ export class GroupModelAnimation implements IModelAnimation {
      * In correlation to an arry, this would be ".length"
      */
     public get frames(): number {
-        /*let animationFrames = this._animationGroup.targetedAnimations.map(ta => {
-            let keys = ta.animation.getKeys();
-            return keys[keys.length - 1].frame;
-        });
-        return Math.max.apply(null, animationFrames);*/
         return this._animationGroup.to - this._animationGroup.from;
     }
 
@@ -206,19 +201,6 @@ export class GroupModelAnimation implements IModelAnimation {
      * In correlation to an array, this would be the current index
      */
     public get currentFrame(): number {
-        // get the first currentFrame found
-        /*for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
-            let animatable: Animatable = this._animationGroup.animatables[i];
-            let animations = animatable.getAnimations();
-            if (!animations || !animations.length) {
-                continue;
-            }
-            for (let idx = 0; idx < animations.length; ++idx) {
-                if (animations[idx].currentFrame) {
-                    return animations[idx].currentFrame;
-                }
-            }
-        }*/
         if (this._animationGroup.targetedAnimations[0] && this._animationGroup.targetedAnimations[0].animation.runtimeAnimations[0]) {
             return this._animationGroup.targetedAnimations[0].animation.runtimeAnimations[0].currentFrame - this._animationGroup.from;
         } else {

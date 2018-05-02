@@ -7,10 +7,28 @@ import * as deepmerge from '../assets/deepmerge.min.js';
  * A single template configuration object
  */
 export interface ITemplateConfiguration {
+    /**
+     * can be either the id of the template's html element or a URL.
+     * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+     */
     location?: string; // #template-id OR http://example.com/loading.html
+    /**
+     * If no location is provided you can provide here the raw html of this template.
+     * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+     */
     html?: string; // raw html string
     id?: string;
+    /**
+     * Parameters that will be delivered to the template and will render it accordingly.
+     */
     params?: { [key: string]: string | number | boolean | object };
+    /**
+     * Events to attach to this template.
+     * event name is the key. the value can either be a boolean (attach to the parent element)
+     * or a map of html id elements.
+     * 
+     * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+     */
     events?: {
         // pointer events
         pointerdown?: boolean | { [id: string]: boolean; };
@@ -26,6 +44,7 @@ export interface ITemplateConfiguration {
         // drag and drop
         dragstart?: boolean | { [id: string]: boolean; };
         drop?: boolean | { [id: string]: boolean; };
+
 
         [key: string]: boolean | { [id: string]: boolean; } | undefined;
     }
@@ -370,6 +389,8 @@ export class Template {
      * Some templates have parameters (like background color for example).
      * The parameters are provided to Handlebars which in turn generates the template.
      * This function will update the template with the new parameters
+     * 
+     * Note that when updating parameters the events will be registered again (after being cleared).
      * 
      * @param params the new template parameters
      */

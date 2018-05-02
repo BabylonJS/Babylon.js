@@ -1,6 +1,11 @@
 import { AbstractViewer } from '../../viewer/viewer';
 import { Scalar, DefaultRenderingPipeline } from 'babylonjs';
 
+/**
+ * A custom upgrade-oriented function configuration for the scene optimizer.
+ * 
+ * @param viewer the viewer to optimize
+ */
 export function extendedUpgrade(viewer: AbstractViewer): boolean {
     let defaultPipeline = <DefaultRenderingPipeline>viewer.sceneManager.defaultRenderingPipeline;
     // if (!this.Scene.BackgroundHelper) {
@@ -47,6 +52,11 @@ export function extendedUpgrade(viewer: AbstractViewer): boolean {
     return true;
 }
 
+/**
+ * A custom degrade-oriented function configuration for the scene optimizer.
+ * 
+ * @param viewer the viewer to optimize
+ */
 export function extendedDegrade(viewer: AbstractViewer): boolean {
     let defaultPipeline = <DefaultRenderingPipeline>viewer.sceneManager.defaultRenderingPipeline;
 

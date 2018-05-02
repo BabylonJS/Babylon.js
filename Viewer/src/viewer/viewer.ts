@@ -134,6 +134,9 @@ export abstract class AbstractViewer {
      */
     protected _configurationLoader: ConfigurationLoader;
 
+    /**
+     * Is the viewer already initialized. for internal use.
+     */
     protected _isInit: boolean;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
@@ -334,13 +337,14 @@ export abstract class AbstractViewer {
      * Only provided information will be updated, old configuration values will be kept.
      * If this.configuration was manually changed, you can trigger this function with no parameters, 
      * and the entire configuration will be updated. 
-     * @param newConfiguration 
+     * @param newConfiguration the partial configuration to update
+     * 
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this._configuration, mode?: ViewerModel) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this._configuration) {
         // update this.configuration with the new data
         this._configuration = deepmerge(this._configuration || {}, newConfiguration);
 
-        this.sceneManager.updateConfiguration(newConfiguration, this._configuration, mode);
+        this.sceneManager.updateConfiguration(newConfiguration, this._configuration);
 
         // observers in configuration
         if (newConfiguration.observers) {
@@ -397,27 +401,21 @@ export abstract class AbstractViewer {
 
         //observers
         this.onEngineInitObservable.clear();
-        delete this.onEngineInitObservable;
         this.onInitDoneObservable.clear();
-        delete this.onInitDoneObservable;
         this.onLoaderInitObservable.clear();
-        delete this.onLoaderInitObservable;
         this.onModelLoadedObservable.clear();
-        delete this.onModelLoadedObservable;
         this.onModelLoadErrorObservable.clear();
-        delete this.onModelLoadErrorObservable;
         this.onModelLoadProgressObservable.clear();
-        delete this.onModelLoadProgressObservable;
         this.onSceneInitObservable.clear();
-        delete this.onSceneInitObservable;
         this.onFrameRenderedObservable.clear();
-        delete this.onFrameRenderedObservable;
+        this.onModelAddedObservable.clear();
+        this.onModelRemovedObservable.clear();
 
         if (this.sceneManager.scene.activeCamera) {
             this.sceneManager.scene.activeCamera.detachControl(this.canvas);
         }
 
-        this._fpsTimeout && clearTimeout(this._fpsTimeout);
+        this._fpsTimeoutInterval && clearInterval(this._fpsTimeoutInterval);
 
 
         this.sceneManager.dispose();
@@ -515,10 +513,9 @@ export abstract class AbstractViewer {
     }
 
     private _isLoading: boolean;
-    private _nextLoading: Function;
 
     /**
-     * Initialize a model loading. The returns object (a ViewerModel object) will be loaded in the background.
+     * Initialize a model loading. The returned object (a ViewerModel object) will be loaded in the background.
      * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
      * 
      * @param modelConfig model configuration to use when loading the model.
@@ -570,7 +567,9 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * load a model using the provided configuration
+     * load a model using the provided configuration.
+     * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
+     * If you want to attach to the observables of the model, use initModle instead.
      * 
      * @param modelConfig the model configuration or URL to load.
      * @param clearScene Should the scene be cleared before loading the model
@@ -599,7 +598,8 @@ export abstract class AbstractViewer {
         })
     }
 
-    private _fpsTimeout: number;
+    private _fpsTimeoutInterval: number;
+
 
     protected _initTelemetryEvents() {
         telemetryManager.broadcast("Engine Capabilities", this, this.engine.getCaps());
@@ -616,7 +616,7 @@ export abstract class AbstractViewer {
 
         trackFPS();
         // Track the FPS again after 60 seconds
-        this._fpsTimeout = window.setTimeout(trackFPS, 60 * 1000);
+        this._fpsTimeoutInterval = window.setInterval(trackFPS, 60 * 1000);
     }
 
     /**

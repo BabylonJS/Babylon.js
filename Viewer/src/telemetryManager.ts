@@ -118,6 +118,9 @@ export class TelemetryManager {
         return this._currentSessionId;
     }
 
+    /**
+     * Disposes the telemetry manager
+     */
     public dispose() {
         this.onEventBroadcastedObservable.clear();
         delete this.onEventBroadcastedObservable;

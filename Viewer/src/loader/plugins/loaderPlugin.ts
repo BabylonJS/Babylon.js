@@ -2,6 +2,11 @@ import { ViewerModel } from "../../model/viewerModel";
 import { IGLTFLoaderExtension, IGLTFLoaderData } from "babylonjs-loaders";
 import { AbstractMesh, ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, BaseTexture, Material } from "babylonjs";
 
+/**
+ * This interface defines the structure of a loader plugin.
+ * Any of those functions will be called if (!) the loader supports those callbacks.
+ * Any loader supports onInit, onLoaded, onError and onProgress.
+ */
 export interface ILoaderPlugin {
     onInit?: (loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel) => void;
     onLoaded?: (model: ViewerModel) => void;
