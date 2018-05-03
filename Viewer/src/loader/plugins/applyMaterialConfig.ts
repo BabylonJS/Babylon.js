@@ -4,7 +4,9 @@ import { ViewerModel } from "../..";
 import { Tools, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from "babylonjs";
 import { IGLTFLoaderData, GLTF2 } from "babylonjs-loaders";
 
-
+/**
+ * Force-apply material configuration right after a material was loaded.
+ */
 export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
 
     private _model: ViewerModel;

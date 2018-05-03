@@ -32,6 +32,11 @@ export class ModelLoader {
         this._plugins = [];
     }
 
+    /**
+     * Adds a new plugin to the loader process.
+     * 
+     * @param plugin the plugin name or the plugin itself
+     */
     public addPlugin(plugin: ILoaderPlugin | string) {
         let actualPlugin: ILoaderPlugin = {};
         if (typeof plugin === 'string') {
