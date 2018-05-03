@@ -1729,6 +1729,14 @@
         }
 
         /**
+         * Gets current screen aspect ratio
+         * @returns a number defining the aspect ratio
+         */
+        public getScreenAspectRatio(): number {
+            return (this.getRenderWidth(true)) / (this.getRenderHeight(true));
+        }        
+
+        /**
          * Gets the current render width
          * @param useScreen defines if screen size must be used (or the current render target if any)
          * @returns a number defining the current render width
