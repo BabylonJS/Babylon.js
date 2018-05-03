@@ -170,7 +170,7 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
-        it('Load CompileMaterialsTest with compileMaterials', () => {
+        it('Load CompileMaterials', () => {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
             let createShaderProgramSpy: sinon.SinonSpy;
@@ -193,7 +193,7 @@ describe('Babylon Scene Loader', function () {
                 }));
             }, undefined, undefined, undefined, true);
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/CompileMaterialsTest/", "Test.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/CompileMaterials/", "Test.gltf", scene).then(() => {
                 createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
             }));
 
@@ -304,7 +304,7 @@ describe('Babylon Scene Loader', function () {
                 }));
             }, undefined, undefined, undefined, true);
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
                 const meshes = [
                     scene.getMeshByName("node0"),
                     scene.getMeshByName("node1")
@@ -333,7 +333,7 @@ describe('Babylon Scene Loader', function () {
 
         it('Load MultiPrimitive', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/MultiPrimitive/", "MultiPrimitive.gltf", scene).then(result => {
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "http://models.babylonjs.com/Tests/MultiPrimitive/", "MultiPrimitive.gltf", scene).then(result => {
                 expect(result.meshes, "meshes").to.have.lengthOf(4);
 
                 const node = scene.getMeshByName("node");

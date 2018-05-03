@@ -312,7 +312,6 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._viewer.engine);
 
-        // TODO - is this needed, now that Babylon is integrated? 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
             var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
@@ -360,7 +359,7 @@ export class SceneManager {
      * @param newConfiguration the delta that should be configured. This includes only the changes
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration, model?: ViewerModel) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
 
 
         if (newConfiguration.lab) {
@@ -385,15 +384,15 @@ export class SceneManager {
         }*/
 
         // lights
-        this._configureLights(newConfiguration.lights, model);
+        this._configureLights(newConfiguration.lights);
 
         // environment
         if (newConfiguration.skybox !== undefined || newConfiguration.ground !== undefined) {
-            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground, model);
+            this._configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
         }
 
         // camera
-        this._configureCamera(newConfiguration.camera, model);
+        this._configureCamera(newConfiguration.camera);
 
         if (newConfiguration.lab) {
             if (newConfiguration.lab.environmentMap) {
@@ -736,7 +735,7 @@ export class SceneManager {
      * @param cameraConfig the new camera configuration
      * @param model optionally use the model to configure the camera.
      */
-    protected _configureCamera(cameraConfig: ICameraConfiguration = {}, model?: ViewerModel) {
+    protected _configureCamera(cameraConfig: ICameraConfiguration = {}) {
         if (!this.scene.activeCamera) {
             let attachControl = true;
             if (this._viewer.configuration.scene && this._viewer.configuration.scene.disableCameraControl) {
@@ -799,8 +798,7 @@ export class SceneManager {
         this.onCameraConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.camera,
-            newConfiguration: cameraConfig,
-            model
+            newConfiguration: cameraConfig
         });
     }
 
@@ -815,7 +813,7 @@ export class SceneManager {
         this.camera.radius = (this._viewer.configuration.camera && this._viewer.configuration.camera.radius) || this.camera.radius;
     }
 
-    protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean, model?: ViewerModel) {
+    protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
         if (!skyboxConifguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
@@ -936,29 +934,15 @@ export class SceneManager {
 
         let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
         if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
-            //if (!this.environmentHelper.groundMaterial._perceptualColor) {
-
             this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
-            //}
-            //this.environmentHelper.groundMaterial._perceptualColor.copyFrom(this.mainColor);
-            // to be configured using the configuration object
-
-            /*this.environmentHelper.groundMaterial.primaryColorHighlightLevel = groundConfig.material.highlightLevel;
-            this.environmentHelper.groundMaterial.primaryColorShadowLevel = groundConfig.material.shadowLevel;
-            this.environmentHelper.groundMaterial.enableNoise = true;
-            if (this.environmentHelper.groundMaterial.diffuseTexture) {
-                this.environmentHelper.groundMaterial.diffuseTexture.gammaSpace = true;
-            }
-            this.environmentHelper.groundMaterial.useRGBColor = false;
-            this.environmentHelper.groundMaterial.maxSimultaneousLights = 1;*/
             extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
 
             if (this.environmentHelper.groundMirror) {
                 const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
+                // TODO user camera exposure value to set the mirror clear color
                 //let exposure = Math.pow(2.0, -this.configuration.camera.exposure) * Math.PI;
                 //mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
 
-                // TODO use highlight if required
                 this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
                 this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
                 this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
@@ -992,8 +976,7 @@ export class SceneManager {
             newConfiguration: {
                 skybox: skyboxConifguration,
                 ground: groundConfiguration
-            },
-            model
+            }
         });
     }
 
@@ -1003,7 +986,7 @@ export class SceneManager {
      * @param lightsConfiguration the (new) light(s) configuration
      * @param model optionally use the model to configure the camera.
      */
-    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
+    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}) {
 
         // sanity check!
         if (!Object.keys(lightsConfiguration).length) {
@@ -1108,7 +1091,6 @@ export class SceneManager {
 
                     if (!shadowGenerator) {
                         shadowGenerator = new ShadowGenerator(bufferSize, light);
-                        // TODO blur kernel definition ?
                     }
 
                     var blurKernel = this.getBlurKernel(light, bufferSize);
@@ -1123,7 +1105,7 @@ export class SceneManager {
                     });
 
                     //if (model) {
-                    this._updateShadowRenderList(shadowGenerator, model);
+                    this._updateShadowRenderList(shadowGenerator);
                     //}
                 } else if (shadowGenerator) {
                     shadowGenerator.dispose();
@@ -1144,8 +1126,7 @@ export class SceneManager {
         this.onLightsConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.scene.lights,
-            newConfiguration: lightsConfiguration,
-            model
+            newConfiguration: lightsConfiguration
         });
     }
 

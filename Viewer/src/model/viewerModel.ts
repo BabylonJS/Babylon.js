@@ -8,6 +8,9 @@ import { AbstractViewer } from "..";
 import { extendClassWithConfig } from "../helper";
 
 
+/**
+ * The current state of the model
+ */
 export enum ModelState {
     INIT,
     LOADING,

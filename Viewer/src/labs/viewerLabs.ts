@@ -5,6 +5,11 @@ import { Tools, Quaternion } from 'babylonjs';
 import { ViewerConfiguration } from "../configuration/configuration";
 import { TextureUtils } from "./texture";
 
+/**
+ * The ViewerLabs class will hold functions that are not (!) backwards compatible.
+ * The APIs in all labs-related classes and configuration  might change.
+ * Once stable, lab features will be moved to the publis API and configuration object.
+ */
 export class ViewerLabs {
 
     constructor(private _sceneManager: SceneManager) { }

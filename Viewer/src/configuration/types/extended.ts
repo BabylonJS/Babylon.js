@@ -1,6 +1,10 @@
 import { ViewerConfiguration } from './../configuration';
 import { Tools } from 'babylonjs';
 
+/**
+ * The viewer's "extended" configuration.
+ * This configuration defines specific obejcts and parameters that we think make any model look good.
+ */
 export let extendedConfiguration: ViewerConfiguration = {
     version: "3.2.0",
     extends: "default",

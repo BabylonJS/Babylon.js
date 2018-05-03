@@ -4,7 +4,9 @@ import { ViewerModel } from "../..";
 import { Tools, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
 import { IGLTFLoaderExtension, GLTF2 } from "babylonjs-loaders";
 
-
+/**
+ * A loder plugin to use MSFT_lod extension correctly (glTF)
+ */
 export class MSFTLodLoaderPlugin implements ILoaderPlugin {
 
     private _model: ViewerModel;
