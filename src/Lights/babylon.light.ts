@@ -185,7 +185,6 @@ module BABYLON {
             this._computePhotometricScale();
         };
 
-        
         @serialize()
         private _renderPriority: number;
         /**
@@ -195,12 +194,27 @@ module BABYLON {
         @expandToProperty("_reorderLightsInScene")
         public renderPriority: number = 0;
 
+        @serialize("shadowEnabled")
+        private _shadowEnabled: boolean = true;
         /**
-         * Defines wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+         * Gets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
          * the current shadow generator.
          */
-        @serialize()
-        public shadowEnabled: boolean = true;
+        public get shadowEnabled(): boolean {
+            return this._shadowEnabled;
+        }
+        /**
+         * Sets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+         * the current shadow generator.
+         */
+        public set shadowEnabled(value: boolean) {
+            if (this._shadowEnabled === value) {
+                return;
+            }
+
+            this._shadowEnabled = value;
+            this._markMeshesAsLightDirty();
+        }
 
         private _includedOnlyMeshes: AbstractMesh[];
         /**
