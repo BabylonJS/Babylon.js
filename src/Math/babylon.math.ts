@@ -6560,6 +6560,7 @@
                         amount += step;
                     }
                 }
+                catmullRom.push(catmullRom[0]);
             }
             else {
                 var totalPoints = new Array<Vector3>();
