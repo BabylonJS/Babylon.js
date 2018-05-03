@@ -17,7 +17,7 @@ export class TelemetryLoaderPlugin implements ILoaderPlugin {
     }
 
     public onLoaded(model: ViewerModel) {
-        telemetryManager.broadcast("Load First LOD Complete", model.getViewer(), {
+        telemetryManager.broadcast("Model Loaded", model.getViewer(), {
             model: model,
             loadTime: Tools.Now - this._loadStart
         });

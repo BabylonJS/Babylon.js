@@ -1,5 +1,8 @@
 import { ViewerConfiguration } from './../configuration';
 
+/**
+ * Lab-oriented default .env support
+ */
 export const environmentMapConfiguration: ViewerConfiguration = {
     lab: {
         assetsRootURL: '/assets/environment/',
