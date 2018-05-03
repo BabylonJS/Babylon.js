@@ -53,6 +53,11 @@
         public enablePixelPerfectMode = false;
 
         /**
+         * Force the postprocess to be applied without taking in account viewport
+         */
+        public forceFullscreenViewport = true;
+
+        /**
         * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
         */
         public scaleMode = Engine.SCALEMODE_FLOOR;
@@ -446,11 +451,11 @@
             // Bind the input of this post process to be used as the output of the previous post process.
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
-                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, true);
+                this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, this.forceFullscreenViewport);
             }
             else {
                 this._scaleRatio.copyFromFloats(1, 1);
-                this._engine.bindFramebuffer(target, 0, undefined, undefined, true);
+                this._engine.bindFramebuffer(target, 0, undefined, undefined, this.forceFullscreenViewport);
             }
 
             this.onActivateObservable.notifyObservers(camera);

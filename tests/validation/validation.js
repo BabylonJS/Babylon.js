@@ -131,10 +131,13 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 }
 
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
+    currentScene.useConstantAnimationDeltaTime = true;
+    var renderCount = test.renderCount || 1;
+   
     currentScene.executeWhenReady(function () {
-        var renderCount = test.renderCount || 1;
-
-        currentScene.useConstantAnimationDeltaTime = true;
+        if (currentScene.activeCamera && currentScene.activeCamera.useAutoRotationBehavior) {
+            currentScene.activeCamera.useAutoRotationBehavior = false;
+        }
         engine.runRenderLoop(function () {
             try {
                 currentScene.render();

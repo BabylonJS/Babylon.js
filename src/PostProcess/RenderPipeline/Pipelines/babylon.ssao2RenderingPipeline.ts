@@ -327,11 +327,13 @@
         }
 
         private _createSSAOCombinePostProcess(ratio: number): void {
-            this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"],
+            this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor", "viewport"],
                 ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                 this._scene.getEngine(), false);
 
             this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
+                let viewport = this._scene.activeCamera!.viewport;
+                effect.setVector4("viewport", Tmp.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
                 effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
             };
         }

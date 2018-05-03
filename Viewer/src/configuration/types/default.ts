@@ -1,5 +1,9 @@
 import { ViewerConfiguration } from './../configuration';
 
+/**
+ * The default configuration of the viewer, including templates (canvas, overly, loading screen)
+ * This configuration doesn't hold specific parameters, and only defines objects that are needed for the viewer to fully work correctly.
+ */
 export let defaultConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     templates: {
@@ -97,10 +101,5 @@ export let defaultConfiguration: ViewerConfiguration = {
         antialiasing: true
     },
     scene: {
-        /*imageProcessingConfiguration: {
-            exposure: 1.4,
-            contrast: 1.66,
-            toneMappingEnabled: true
-        }*/
     }
 }

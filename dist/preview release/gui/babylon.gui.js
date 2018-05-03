@@ -422,6 +422,9 @@ var BABYLON;
                     return;
                 }
                 this._pointerMoveObserver = scene.onPrePointerObservable.add(function (pi, state) {
+                    if (scene.isPointerCaptured((pi.event).pointerId)) {
+                        return;
+                    }
                     if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                         && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                         && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
@@ -3501,7 +3504,9 @@ var BABYLON;
                 if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
                     return false;
                 }
-                this.isChecked = !this.isChecked;
+                if (!this.isChecked) {
+                    this.isChecked = true;
+                }
                 return true;
             };
             return RadioButton;

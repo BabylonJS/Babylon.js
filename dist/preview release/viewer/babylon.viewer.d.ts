@@ -334,6 +334,9 @@ declare module BabylonViewer {
                 * The configuration loader of this viewer
                 */
             protected _configurationLoader: ConfigurationLoader;
+            /**
+                * Is the viewer already initialized. for internal use.
+                */
             protected _isInit: boolean;
             constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
             /**
@@ -383,9 +386,10 @@ declare module BabylonViewer {
                 * Only provided information will be updated, old configuration values will be kept.
                 * If this.configuration was manually changed, you can trigger this function with no parameters,
                 * and the entire configuration will be updated.
-                * @param newConfiguration
+                * @param newConfiguration the partial configuration to update
+                *
                 */
-            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>, mode?: ViewerModel): void;
+            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>): void;
             /**
                 * this is used to register native functions using the configuration object.
                 * This will configure the observers.
@@ -416,7 +420,7 @@ declare module BabylonViewer {
                 */
             protected _initEngine(): Promise<BABYLON.Engine>;
             /**
-                * Initialize a model loading. The returns object (a ViewerModel object) will be loaded in the background.
+                * Initialize a model loading. The returned object (a ViewerModel object) will be loaded in the background.
                 * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
                 *
                 * @param modelConfig model configuration to use when loading the model.
@@ -425,7 +429,9 @@ declare module BabylonViewer {
                 */
             initModel(modelConfig: string | IModelConfiguration, clearScene?: boolean): ViewerModel;
             /**
-                * load a model using the provided configuration
+                * load a model using the provided configuration.
+                * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
+                * If you want to attach to the observables of the model, use initModle instead.
                 *
                 * @param modelConfig the model configuration or URL to load.
                 * @param clearScene Should the scene be cleared before loading the model
@@ -480,6 +486,9 @@ declare module BabylonViewer {
                 * @return The current session ID
                 */
             readonly session: string;
+            /**
+                * Disposes the telemetry manager
+                */
             dispose(): void;
     }
     export const telemetryManager: TelemetryManager;
@@ -502,6 +511,11 @@ declare module BabylonViewer {
                 * @param _viewer the viewer using this model loader
                 */
             constructor(_viewer: AbstractViewer);
+            /**
+                * Adds a new plugin to the loader process.
+                *
+                * @param plugin the plugin name or the plugin itself
+                */
             addPlugin(plugin: ILoaderPlugin | string): void;
             /**
                 * Load a model using predefined configuration
@@ -523,6 +537,9 @@ declare module BabylonViewer {
     
     
     
+    /**
+        * The current state of the model
+        */
     export enum ModelState {
             INIT = 0,
             LOADING = 1,
@@ -891,6 +908,11 @@ declare module BabylonViewer {
     
     
     
+    /**
+      * This interface defines the structure of a loader plugin.
+      * Any of those functions will be called if (!) the loader supports those callbacks.
+      * Any loader supports onInit, onLoaded, onError and onProgress.
+      */
     export interface ILoaderPlugin {
         onInit?: (loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel) => void;
         onLoaded?: (model: ViewerModel) => void;
@@ -1455,12 +1477,30 @@ declare module BabylonViewer {
         * A single template configuration object
         */
     export interface ITemplateConfiguration {
+            /**
+                * can be either the id of the template's html element or a URL.
+                * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                */
             location?: string;
+            /**
+                * If no location is provided you can provide here the raw html of this template.
+                * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                */
             html?: string;
             id?: string;
+            /**
+                * Parameters that will be delivered to the template and will render it accordingly.
+                */
             params?: {
                     [key: string]: string | number | boolean | object;
             };
+            /**
+                * Events to attach to this template.
+                * event name is the key. the value can either be a boolean (attach to the parent element)
+                * or a map of html id elements.
+                *
+                * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+                */
             events?: {
                     pointerdown?: boolean | {
                             [id: string]: boolean;
@@ -1616,6 +1656,8 @@ declare module BabylonViewer {
                 * Some templates have parameters (like background color for example).
                 * The parameters are provided to Handlebars which in turn generates the template.
                 * This function will update the template with the new parameters
+                *
+                * Note that when updating parameters the events will be registered again (after being cleared).
                 *
                 * @param params the new template parameters
                 */
@@ -1785,7 +1827,7 @@ declare module BabylonViewer {
                 * @param newConfiguration the delta that should be configured. This includes only the changes
                 * @param globalConfiguration The global configuration object, after the new configuration was merged into it
                 */
-            updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration, model?: ViewerModel): void;
+            updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration): void;
             bloomEnabled: boolean;
             fxaaEnabled: boolean;
             /**
@@ -1805,8 +1847,8 @@ declare module BabylonViewer {
                 * @param cameraConfig the new camera configuration
                 * @param model optionally use the model to configure the camera.
                 */
-            protected _configureCamera(cameraConfig?: ICameraConfiguration, model?: ViewerModel): void;
-            protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean, model?: ViewerModel): Promise<BABYLON.Scene> | undefined;
+            protected _configureCamera(cameraConfig?: ICameraConfiguration): void;
+            protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<BABYLON.Scene> | undefined;
             /**
                 * configure the lights.
                 *
@@ -1815,7 +1857,7 @@ declare module BabylonViewer {
                 */
             protected _configureLights(lightsConfiguration?: {
                     [name: string]: ILightConfiguration | boolean;
-            }, model?: ViewerModel): void;
+            }): void;
             /**
                 * Gets the shadow map blur kernel according to the light configuration.
                 * @param light The light used to generate the shadows
@@ -1899,6 +1941,11 @@ declare module BabylonViewer {
 declare module BabylonViewer {
     
     
+    /**
+        * The ViewerLabs class will hold functions that are not (!) backwards compatible.
+        * The APIs in all labs-related classes and configuration  might change.
+        * Once stable, lab features will be moved to the publis API and configuration object.
+        */
     export class ViewerLabs {
             constructor(_sceneManager: SceneManager);
             assetsRootURL: string;
@@ -1945,9 +1992,9 @@ declare module BabylonViewer {
     
     
     /**
-                * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
-                * @ignoreChildren
-                */
+        * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
+        * @ignoreChildren
+        */
     export interface SphericalPolynomalCoefficients {
             x: BABYLON.Vector3;
             y: BABYLON.Vector3;
