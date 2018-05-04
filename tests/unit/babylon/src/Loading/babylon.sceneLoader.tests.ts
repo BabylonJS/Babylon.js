@@ -415,6 +415,18 @@ describe('Babylon Scene Loader', function () {
             return Promise.all(promises);
         });
 
+        it('Load BoomBox twice and check texture instancing', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
+                const createTextureSpy = sinon.spy(subject, "createTexture");
+                return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
+                    const called = createTextureSpy.called;
+                    createTextureSpy.restore();
+                    expect(called, "createTextureSpyCalled").to.be.false;
+                });
+            });
+        });
+
         // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name
