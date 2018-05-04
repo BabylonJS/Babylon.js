@@ -210,9 +210,7 @@ export abstract class AbstractViewer {
 
         this.onInitDoneObservable.add(() => {
             this._isInit = true;
-            //this.sceneManager.scene.executeWhenReady(() => {
             this.engine.runRenderLoop(this._render);
-            //});
         });
     }
 
@@ -410,7 +408,7 @@ export abstract class AbstractViewer {
         this.onModelAddedObservable.clear();
         this.onModelRemovedObservable.clear();
 
-        if (this.sceneManager.scene.activeCamera) {
+        if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
             this.sceneManager.scene.activeCamera.detachControl(this.canvas);
         }
 
@@ -421,7 +419,9 @@ export abstract class AbstractViewer {
 
         this.modelLoader.dispose();
 
-        this.engine.dispose();
+        if (this.engine) {
+            this.engine.dispose();
+        }
 
         this.templateManager.dispose();
         viewerManager.removeViewer(this);
@@ -449,6 +449,10 @@ export abstract class AbstractViewer {
      * But first - it will load the extendible onTemplateLoaded()!
      */
     private _onTemplateLoaded(): Promise<AbstractViewer> {
+        // check if viewer was disposed right after created
+        if (this._isDisposed) {
+            return Promise.reject("viewer was disposed");
+        }
         return this._onTemplatesLoaded().then(() => {
             let autoLoad = typeof this._configuration.model === 'string' || (this._configuration.model && this._configuration.model.url);
             return this._initEngine().then((engine) => {

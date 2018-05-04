@@ -2,10 +2,18 @@
     "root": "",
     "tests": [
         {
+            "title": "Control Default",
+            "createMesh": true,
+            "configuration": {
+                "extends": "default"
+            },
+            "referenceImage": "ControlDefault.png"
+        },
+        {
             "title": "Control",
             "createMesh": true,
             "configuration": {
-                "extends": "extended, shadowDirectionalLight"
+                "extends": "extended"
             },
             "referenceImage": "Control.png"
         },
@@ -14,7 +22,7 @@
             "createMesh": true,
             "createMaterial": true,
             "configuration": {
-                "extends": "extended, shadowDirectionalLight",
+                "extends": "extended",
                 "castShadow": true,
                 "model": {
                     "material": {
@@ -35,13 +43,36 @@
             "referenceImage": "Diffuse.png"
         },
         {
-            "title": "Specular {{glos * 20}} - {{spec * 20}}",
+            "title": "Emissive",
             "createMesh": true,
             "createMaterial": true,
-            "repeatVariables": "glos,spec",
-            "repeatTimes": "6,6",
             "configuration": {
-                "extends": "extended, shadowDirectionalLight",
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 1,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0.8,
+                            "g": 0.8,
+                            "b": 0.8
+                        },
+                        "microSurface": 0
+                    }
+                }
+            },
+            "referenceImage": "Emissive.png"
+        },
+        {
+            "title": "Transparency",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
                 "castShadow": true,
                 "model": {
                     "material": {
@@ -51,28 +82,225 @@
                             "b": 1
                         },
                         "reflectivityColor": {
-                            "r": "{{spec / 5}}",
-                            "g": "{{spec / 5}}",
-                            "b": "{{spec / 5}}"
+                            "r": 0.5,
+                            "g": 0.5,
+                            "b": 0.5
                         },
-                        "microSurface": "{{glos / 5}}"
+                        "alpha": 0.5,
+                        "microSurface": 0.5
                     }
                 }
             },
-            "referenceImage": "Specular{{glos * 20}}-{{spec * 20}}.png"
+            "referenceImage": "Transparency.png"
+        },
+        {
+            "title": "Camera Contrast 0",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 1
+                    }
+                },
+                "camera": {
+                    "contrast": 0
+                }
+            },
+            "referenceImage": "CameraContrast0.png"
+        },
+        {
+            "title": "Camera Contrast 1",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 1
+                    }
+                },
+                "camera": {
+                    "contrast": 1
+                }
+            },
+            "referenceImage": "CameraContrast1.png"
+        },
+        {
+            "title": "Camera Exposure 0.001",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 1
+                    }
+                },
+                "camera": {
+                    "exposure": 0.001
+                }
+            },
+            "referenceImage": "CameraExposure0.png"
+        },
+        {
+            "title": "Camera Exposure 1",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 1
+                    }
+                },
+                "camera": {
+                    "exposure": 1
+                }
+            },
+            "referenceImage": "CameraExposure1.png"
+        },
+        {
+            "title": "Specular With Env {{glos * 50}} - {{spec * 50}}",
+            "createMesh": true,
+            "createMaterial": true,
+            "repeatVariables": "glos,spec",
+            "repeatTimes": "3,3",
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 1,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": "{{spec / 2}}",
+                            "g": "{{spec / 2}}",
+                            "b": "{{spec / 2}}"
+                        },
+                        "microSurface": "{{glos / 2}}"
+                    }
+                }
+            },
+            "referenceImage": "SpecularEnv{{glos * 50}}-{{spec * 50}}.png",
+            "enableEnvironment": true
+        },
+        {
+            "title": "Main Color Env {{r * 50}} - {{g * 50}}",
+            "createMesh": true,
+            "createMaterial": true,
+            "repeatVariables": "r,g",
+            "repeatTimes": "3,3",
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "scene": {
+                    "mainColor": {
+                        "r": "{{r / 2}}",
+                        "g": "{{g / 2}}",
+                        "b": "1"
+                    }
+                }
+            },
+            "referenceImage": "MainColorEnv{{r * 50}}-{{g * 50}}.png",
+            "enableEnvironment": true
+        },
+        {
+            "title": "Specular {{glos * 25}} - {{spec * 25}}",
+            "createMesh": true,
+            "createMaterial": true,
+            "repeatVariables": "glos,spec",
+            "repeatTimes": "5,5",
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": "{{spec / 4}}",
+                            "g": "{{spec / 4}}",
+                            "b": "{{spec / 4}}"
+                        },
+                        "microSurface": "{{glos / 4}}"
+                    }
+                }
+            },
+            "referenceImage": "Specular{{glos * 25}}-{{spec * 25}}.png"
         },
         {
             "title": "BrainStem",
             "configuration": {
-                "extends": "extended, shadowDirectionalLight"
+                "extends": "extended"
             },
             "model": "/dist/assets/BrainStem/BrainStem.gltf",
             "referenceImage": "BrainStem.png"
         },
         {
+            "title": "BrainStem Environment",
+            "configuration": {
+                "extends": "extended"
+            },
+            "model": "/dist/assets/BrainStem/BrainStem.gltf",
+            "referenceImage": "BrainStemEnv.png",
+            "enableEnvironment": true
+        },
+        {
             "title": "BrainStem transformation",
             "configuration": {
-                "extends": "extended, shadowDirectionalLight",
+                "extends": "extended",
                 "camera": {
                     "disableAutoFocus": true
                 },
