@@ -72,7 +72,7 @@ babylon {
     position: absolute !important;
     transform: translateX(-600px);
     width: 600px;
-    height: 400px;
+    height: 400px !important;
 }
 
 .renderImage {

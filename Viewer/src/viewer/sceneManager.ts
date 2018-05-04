@@ -1284,7 +1284,9 @@ export class SceneManager {
 
         this.models.length = 0;
 
-        this.scene.dispose();
+        if (this.scene) {
+            this.scene.dispose();
+        }
     }
 
     private _setCameraBehavior(behaviorConfig: number | {
