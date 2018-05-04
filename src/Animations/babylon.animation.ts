@@ -50,6 +50,11 @@
             /** Specifies if the event should be triggered only once**/
             public onlyOnce?: boolean ) {
         }
+
+        /** @hidden */
+        public _clone(): AnimationEvent {
+            return new AnimationEvent(this.frame, this.action, this.onlyOnce);
+        }
     }
 
     /**

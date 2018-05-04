@@ -35,6 +35,7 @@ declare module BabylonViewer {
     function disposeAll(): void;
     const Version: string;
     
+    export * from 'babylonjs-viewer/configuration';
 }
 
 declare module BabylonViewer {
@@ -939,6 +940,10 @@ declare module BabylonViewer {
         * @param selector the selector to initialize the viewer on (default is 'babylon')
         */
     export function InitTags(selector?: string): void;
+}
+
+declare module BabylonViewer {
+    export * from 'babylonjs-viewer/configuration/configuration';
 }
 
 declare module BabylonViewer {
