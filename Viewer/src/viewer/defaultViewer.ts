@@ -60,7 +60,8 @@ export class DefaultViewer extends AbstractViewer {
             }, "pointerdown", "#help-button");
 
             this.templateManager.eventManager.registerCallback("navBar", (event: EventCallback) => {
-                let element = <HTMLInputElement>event.event.srcElement;
+                const evt = event.event;
+                const element = <HTMLInputElement>(evt.target);
                 if (!this._currentAnimation) return;
                 const gotoFrame = +element.value / 100 * this._currentAnimation.frames;
                 if (isNaN(gotoFrame)) return;
@@ -85,7 +86,7 @@ export class DefaultViewer extends AbstractViewer {
 
         let pointerDown = <PointerEvent>event.event;
         if (pointerDown.button !== 0) return;
-        var element = (<HTMLElement>event.event.srcElement);
+        var element = (<HTMLElement>event.event.target);
 
         if (!element) {
             return;
