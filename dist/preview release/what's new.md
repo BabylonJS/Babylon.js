@@ -13,6 +13,11 @@
 
 - Add support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
 
+### Viewer
+
+- No fullscreen button on small devices ([RaananW](https://github.com/RaananW))
+- Nav-Bar is now disaplayed on fullscreen per default  ([RaananW](https://github.com/RaananW))
+
 ## Bug fixes
 
 ### Core Engine

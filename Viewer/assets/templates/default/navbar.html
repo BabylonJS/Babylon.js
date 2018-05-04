@@ -231,6 +231,12 @@
         display: none;
     }
 
+    /* Disable fullscreen button for small screens */
+
+    .fullscreen {
+        display: none;
+    }
+
     @media screen and (min-width: 540px) {
         .help,
         .types-icon,
@@ -256,6 +262,10 @@
 
         .speed .menu-options {
             width: 64px;
+        }
+
+        .fullscreen {
+            display: block;
         }
     }
 
