@@ -43,7 +43,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                 logoText: 'BabylonJS',
                 logoLink: 'https://babylonjs.com',
                 hideHelp: true,
-                disableOnFullscreen: true,
+                disableOnFullscreen: false,
             },
             events: {
                 pointerdown: {
