@@ -49,7 +49,7 @@ module BABYLON.GLTF2 {
 
     /** @hidden */
     export interface _ILoaderImage extends IImage, _IArrayItem {
-        _objectURL?: Promise<string>;
+        _blob?: Promise<Blob>;
     }
 
     /** @hidden */

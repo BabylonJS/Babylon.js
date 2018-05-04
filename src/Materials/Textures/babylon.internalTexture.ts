@@ -140,7 +140,7 @@ module BABYLON {
         /** @hidden */
         public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
         /** @hidden */
-        public _buffer: Nullable<ArrayBuffer | HTMLImageElement>;
+        public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
         /** @hidden */
         public _bufferView: Nullable<ArrayBufferView>;
         /** @hidden */
