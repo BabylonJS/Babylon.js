@@ -85,7 +85,7 @@ export class DefaultViewer extends AbstractViewer {
 
         let pointerDown = <PointerEvent>event.event;
         if (pointerDown.button !== 0) return;
-        var element = (<HTMLElement>event.event.srcElement);
+        var element = (<HTMLElement>event.event.target);
 
         if (!element) {
             return;
