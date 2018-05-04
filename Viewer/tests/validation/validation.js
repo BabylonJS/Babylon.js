@@ -90,6 +90,22 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
+function downloadDataUrlFromJavascript(filename, dataUrl) {
+
+    // Construct the 'a' element
+    var link = document.createElement("a");
+    link.download = filename;
+    link.target = "_blank";
+
+    // Construct the URI
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+
+    // Cleanup the DOM
+    document.body.removeChild(link);
+}
+
 function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
     seed = 100000;
     var renderData = getRenderData(currentViewer.canvas, currentViewer.engine);
@@ -122,6 +138,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
     var renderB64 = saveRenderImage(renderData, currentViewer.canvas);
     renderImage.src = renderB64;
+    // downloadDataUrlFromJavascript(test.referenceImage, renderB64)
 
     done(testRes, renderB64);
 }
@@ -197,20 +214,25 @@ function runTest(index, done) {
     configuration.camera.behaviors = null;
 
     // make sure we use only local assets
-    configuration.skybox = {
+    /*configuration.skybox = {
         cubeTexture: {
-            url: "/dist/assets/environment/DefaultSkybox_cube_radiance_256.dds"
+            url: "DefaultSkybox_cube_radiance_256.dds"
         }
-    }
+    }*/
 
     //envirnonment directory
     configuration.lab = configuration.lab || {};
-    configuration.lab.environmentAssetsRootURL = "/dist/assets/environment/";
-    configuration.lab.environmentMap = false;
+    configuration.lab.assetsRootURL = "/dist/assets/environment/";
+    if (!test.enableEnvironment) {
+        configuration.lab.environmentMap = false;
+    } else {
+        console.log(configuration.lab.environmentMap)
+    }
 
     //model config
     configuration.model = configuration.model || {};
-    configuration.model.castShadow = !test.createMesh
+    //configuration.model.castShadow = !test.createMesh
+    configuration.model.entryAnimation = false;
 
     // create a new viewer
     currentViewer && currentViewer.dispose();
@@ -222,7 +244,7 @@ function runTest(index, done) {
     currentViewer.onInitDoneObservable.add(() => {
 
         var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 4;
+        var waitForFrame = test.waitForFrame || 0;
 
         if (test.model) {
             currentViewer.initModel(test.model);
@@ -242,7 +264,6 @@ function runTest(index, done) {
                 }
                 currentFrame++;
             });
-
         })
     });
 }
@@ -253,14 +274,13 @@ function prepareMeshForViewer(viewer, configuration, test) {
     let sphereMesh = BABYLON.Mesh.CreateSphere('sphere-' + test.title, 20, 1.0, viewer.sceneManager.scene);
     if (test.createMaterial) {
         let material = new BABYLON.PBRMaterial("sphereMat", viewer.sceneManager.scene);
-        material.environmentBRDFTexture = null;
-        material.useAlphaFresnel = material.needAlphaBlending();
-        material.backFaceCulling = material.forceDepthWrite;
-        material.twoSidedLighting = true;
-        material.useSpecularOverAlpha = false;
-        material.useRadianceOverAlpha = false;
-        material.usePhysicalLightFalloff = true;
-        material.forceNormalForward = true;
+        /* material.useAlphaFresnel = material.needAlphaBlending();
+         material.backFaceCulling = material.forceDepthWrite;
+         material.twoSidedLighting = true;
+         material.useSpecularOverAlpha = false;
+         material.useRadianceOverAlpha = false;
+         material.usePhysicalLightFalloff = true;
+         material.forceNormalForward = true;*/
         sphereMesh.material = material;
     }
     meshModel.addMesh(sphereMesh, true);

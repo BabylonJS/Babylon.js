@@ -1,5 +1,5 @@
 module.exports = {
-    //context: __dirname,
+    context: __dirname,
     entry: [
         __dirname + '/src/index.ts'
     ]
