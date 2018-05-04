@@ -915,7 +915,7 @@ export class SceneManager {
         if (!this.environmentHelper) {
             this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
         } else {
-            // there might be a new scene! we need to dispose.
+            // unlikely, but there might be a new scene! we need to dispose.
 
             // get the scene used by the envHelper
             let scene: Scene = this.environmentHelper.rootMesh.getScene();
@@ -933,9 +933,11 @@ export class SceneManager {
         }
 
         let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
-        if (this.environmentHelper.groundMaterial && groundConfig && groundConfig.material) {
+        if (this.environmentHelper.groundMaterial && groundConfig) {
             this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
-            extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
+            if (groundConfig.material) {
+                extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
+            }
 
             if (this.environmentHelper.groundMirror) {
                 const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
