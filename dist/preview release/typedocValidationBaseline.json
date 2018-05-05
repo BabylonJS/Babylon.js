@@ -1,7 +1,7 @@
 {
-  "errors": 4320,
+  "errors": 4313,
   "babylon.typedoc.json": {
-    "errors": 4320,
+    "errors": 4313,
     "Animatable": {
       "Class": {
         "Comments": {
@@ -19279,18 +19279,6 @@
             }
           }
         },
-        "updateURL": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "url": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "CreateFromBase64String": {
           "Comments": {
             "MissingText": true
@@ -20061,33 +20049,6 @@
               }
             },
             "onError": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "LoadImage": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "url": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onLoad": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onError": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "database": {
               "Comments": {
                 "MissingText": true
               }

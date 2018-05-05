@@ -4102,8 +4102,9 @@ var BABYLON;
                 babylonTexture.wrapV = samplerData.wrapV;
                 babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
                 var image = GLTFLoader._GetProperty(context + "/source", this._gltf.images, texture.source);
-                promises.push(this._loadImageAsync("#/images/" + image._index, image).then(function (objectURL) {
-                    babylonTexture.updateURL(objectURL);
+                promises.push(this._loadImageAsync("#/images/" + image._index, image).then(function (blob) {
+                    var dataUrl = "data:" + _this._rootUrl + (image.uri || "image" + image._index);
+                    babylonTexture.updateURL(dataUrl, blob);
                 }));
                 assign(babylonTexture);
                 this.onTextureLoadedObservable.notifyObservers(babylonTexture);
@@ -4122,8 +4123,8 @@ var BABYLON;
                 return sampler._data;
             };
             GLTFLoader.prototype._loadImageAsync = function (context, image) {
-                if (image._objectURL) {
-                    return image._objectURL;
+                if (image._blob) {
+                    return image._blob;
                 }
                 var promise;
                 if (image.uri) {
@@ -4133,10 +4134,10 @@ var BABYLON;
                     var bufferView = GLTFLoader._GetProperty(context + "/bufferView", this._gltf.bufferViews, image.bufferView);
                     promise = this._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView);
                 }
-                image._objectURL = promise.then(function (data) {
-                    return URL.createObjectURL(new Blob([data], { type: image.mimeType }));
+                image._blob = promise.then(function (data) {
+                    return new Blob([data], { type: image.mimeType });
                 });
-                return image._objectURL;
+                return image._blob;
             };
             /** @hidden */
             GLTFLoader.prototype._loadUriAsync = function (context, uri) {
@@ -4343,17 +4344,6 @@ var BABYLON;
                     request.abort();
                 }
                 this._requests.length = 0;
-                if (this._gltf && this._gltf.images) {
-                    for (var _b = 0, _c = this._gltf.images; _b < _c.length; _b++) {
-                        var image = _c[_b];
-                        if (image._objectURL) {
-                            image._objectURL.then(function (value) {
-                                URL.revokeObjectURL(value);
-                            });
-                            image._objectURL = undefined;
-                        }
-                    }
-                }
                 delete this._gltf;
                 delete this._babylonScene;
                 this._completePromises.length = 0;

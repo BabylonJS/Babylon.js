@@ -35,6 +35,7 @@ declare module 'babylonjs-viewer' {
     function disposeAll(): void;
     const Version: string;
     export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin };
+    export * from 'babylonjs-viewer/configuration';
 }
 
 declare module 'babylonjs-viewer/configuration/mappers' {
@@ -939,6 +940,10 @@ declare module 'babylonjs-viewer/initializer' {
         * @param selector the selector to initialize the viewer on (default is 'babylon')
         */
     export function InitTags(selector?: string): void;
+}
+
+declare module 'babylonjs-viewer/configuration' {
+    export * from 'babylonjs-viewer/configuration/configuration';
 }
 
 declare module 'babylonjs-viewer/configuration/configuration' {
@@ -1929,6 +1934,7 @@ declare module 'babylonjs-viewer/' {
     function disposeAll(): void;
     const Version: string;
     export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin };
+    export * from 'babylonjs-viewer/configuration';
 }
 
 declare module 'babylonjs-viewer/eventManager' {

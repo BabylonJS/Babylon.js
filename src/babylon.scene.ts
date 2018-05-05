@@ -2596,7 +2596,9 @@
          */
         public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable[] {
             let children = target.getDescendants(directDescendantsOnly);
+
             let result = [];
+            result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd));
             for (var child of children) {
                 result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd));
             }
