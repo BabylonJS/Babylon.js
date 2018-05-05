@@ -106,7 +106,7 @@
         private _cachedProjectionMatrixId: number;
         private _cachedCoordinatesMode: number;
         public _samplingMode: number;
-        private _buffer: any;
+        private _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
         private _deleteBuffer: boolean;
         protected _format: Nullable<number>;
         private _delayedOnLoad: Nullable<() => void>;
@@ -126,7 +126,7 @@
             return this._samplingMode;
         }
 
-        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
+        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
             this.name = url || "";
@@ -189,8 +189,18 @@
             }
         }
 
-        public updateURL(url: string): void {
+        /**
+         * Update the url (and optional buffer) of this texture if url was null during construction.
+         * @param url the url of the texture
+         * @param buffer the buffer of the texture (defaults to null)
+         */
+        public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null): void {
+            if (this.url) {
+                throw new Error("URL is already set");
+            }
+
             this.url = url;
+            this._buffer = buffer;
             this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
             this.delayLoad();
         }
@@ -400,7 +410,7 @@
         public serialize(): any {
             var serializationObject = super.serialize();
 
-            if (typeof this._buffer === "string" && this._buffer.substr(0, 5) === "data:") {
+            if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             }
