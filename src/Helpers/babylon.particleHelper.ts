@@ -12,7 +12,7 @@ module BABYLON {
 
         private static _emitter: AbstractMesh;
 
-        public static create(type: string, emitter: AbstractMesh, scene: Nullable<Scene> = Engine.LastCreatedScene, gpu: boolean = false): ParticleSystem {
+        public static Create(type: string, emitter: AbstractMesh, scene: Nullable<Scene> = Engine.LastCreatedScene, gpu: boolean = false): ParticleSystem {
             const typeParsed = this._parseType(type);
             if (typeParsed === ParticleSystemType.None) {
                 throw new Error("This particle system type doesn't exist.");
