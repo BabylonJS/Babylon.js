@@ -499,32 +499,56 @@
             return url;
         }
 
-        public static LoadImage(url: any, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Nullable<Database>): HTMLImageElement {
-            if (url instanceof ArrayBuffer) {
-                url = Tools.EncodeArrayBufferTobase64(url);
+        /**
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param database database for caching
+         * @returns the HTMLImageElement of the loaded image
+         */
+        public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, database: Nullable<Database>): HTMLImageElement {
+            let url: string;
+            let usingObjectURL = false;
+
+            if (input instanceof ArrayBuffer) {
+                url = URL.createObjectURL(new Blob([input]));
+                usingObjectURL = true;
             }
-
-            url = Tools.CleanUrl(url);
-
-            url = Tools.PreprocessUrl(url);
+            else if (input instanceof Blob) {
+                url = URL.createObjectURL(input);
+                usingObjectURL = true;
+            }
+            else {
+                url = Tools.CleanUrl(input);
+                url = Tools.PreprocessUrl(input);
+            }
 
             var img = new Image();
             Tools.SetCorsBehavior(url, img);
 
             const loadHandler = () => {
+                if (usingObjectURL && img.src) {
+                    URL.revokeObjectURL(img.src);
+                }
+
                 img.removeEventListener("load", loadHandler);
                 img.removeEventListener("error", errorHandler);
                 onLoad(img);
             };
 
             const errorHandler = (err: any) => {
+                if (usingObjectURL && img.src) {
+                    URL.revokeObjectURL(img.src);
+                }
+
                 img.removeEventListener("load", loadHandler);
                 img.removeEventListener("error", errorHandler);
 
-                Tools.Error("Error while trying to load image: " + url);
+                Tools.Error("Error while trying to load image: " + input);
 
                 if (onError) {
-                    onError("Error while trying to load image: " + url, err);
+                    onError("Error while trying to load image: " + input, err);
                 }
             };
 
@@ -540,7 +564,6 @@
                     database.loadImageFromDB(url, img);
                 }
             };
-
 
             //ANY database to do!
             if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
@@ -560,6 +583,7 @@
                                 blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName]);
                             }
                             img.src = blobURL;
+                            usingObjectURL = true;
                         }
                         catch (e) {
                             img.src = "";
