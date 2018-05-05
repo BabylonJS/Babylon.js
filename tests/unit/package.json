@@ -4,7 +4,7 @@
   "description": "Unit Tests Suite For Babylon.js",
   "main": "",
   "repository": {
-      "url": "https://github.com/BabylonJS/Babylon.js/"
+    "url": "https://github.com/BabylonJS/Babylon.js/"
   },
   "readme": "https://github.com/BabylonJS/Babylon.js/edit/master/readme.md",
   "license": "(Apache-2.0)",
