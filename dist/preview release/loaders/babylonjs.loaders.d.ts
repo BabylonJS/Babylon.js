@@ -1096,7 +1096,7 @@ declare module BABYLON.GLTF2 {
     }
     /** @hidden */
     interface _ILoaderImage extends IImage, _IArrayItem {
-        _objectURL?: Promise<string>;
+        _blob?: Promise<Blob>;
     }
     /** @hidden */
     interface _ILoaderMaterial extends IMaterial, _IArrayItem {
