@@ -1473,8 +1473,9 @@ module BABYLON.GLTF2 {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
 
             const image = GLTFLoader._GetProperty(`${context}/source`, this._gltf.images, texture.source);
-            promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(objectURL => {
-                babylonTexture.updateURL(objectURL);
+            promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(blob => {
+                const dataUrl = `data:${this._rootUrl}${image.uri || `image${image._index}`}`;
+                babylonTexture.updateURL(dataUrl, blob);
             }));
 
             assign(babylonTexture);
@@ -1496,9 +1497,9 @@ module BABYLON.GLTF2 {
             return sampler._data;
         }
 
-        private _loadImageAsync(context: string, image: _ILoaderImage): Promise<string> {
-            if (image._objectURL) {
-                return image._objectURL;
+        private _loadImageAsync(context: string, image: _ILoaderImage): Promise<Blob> {
+            if (image._blob) {
+                return image._blob;
             }
 
             let promise: Promise<ArrayBufferView>;
@@ -1510,11 +1511,11 @@ module BABYLON.GLTF2 {
                 promise = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView);
             }
 
-            image._objectURL = promise.then(data => {
-                return URL.createObjectURL(new Blob([data], { type: image.mimeType }));
+            image._blob = promise.then(data => {
+                return new Blob([data], { type: image.mimeType });
             });
 
-            return image._objectURL;
+            return image._blob;
         }
 
         /** @hidden */
@@ -1748,18 +1749,6 @@ module BABYLON.GLTF2 {
             }
 
             this._requests.length = 0;
-
-            if (this._gltf && this._gltf.images) {
-                for (const image of this._gltf.images) {
-                    if (image._objectURL) {
-                        image._objectURL.then(value => {
-                            URL.revokeObjectURL(value);
-                        });
-
-                        image._objectURL = undefined;
-                    }
-                }
-            }
 
             delete this._gltf;
             delete this._babylonScene;
