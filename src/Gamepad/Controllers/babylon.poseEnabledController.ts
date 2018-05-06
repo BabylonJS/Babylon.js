@@ -88,8 +88,8 @@ module BABYLON {
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new ViveController(vrGamepad);
             }
-            // Samsung/Oculus Gear VR
-            else if (vrGamepad.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0) {
+            // Samsung/Oculus Gear VR or Oculus Go
+            else if (vrGamepad.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 || vrGamepad.id.indexOf('Oculus Go') !== -1) {
                 return new GearVRController(vrGamepad);
             }
             // Google Daydream
@@ -137,7 +137,7 @@ module BABYLON {
          */
         public controllerType: PoseEnabledControllerType;
 
-        private _calculatedPosition: Vector3;
+        protected _calculatedPosition: Vector3;
         private _calculatedRotation: Quaternion;
 
         /**
