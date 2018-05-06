@@ -122,6 +122,9 @@ module BABYLON {
          */
         transparencyAsCoverage: boolean;
 
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
+
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -266,6 +269,9 @@ module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         public transparencyAsCoverage = false;
+
+        /** @hidden */
+        public _normalizeAnimationGroupsToBeginAtZero = true;
 
         /**
          * Function called before loading a url referenced by the asset.
@@ -587,22 +593,20 @@ module BABYLON {
             loader.useClipPlane = this.useClipPlane;
             loader.compileShadowGenerators = this.compileShadowGenerators;
             loader.transparencyAsCoverage = this.transparencyAsCoverage;
+            loader._normalizeAnimationGroupsToBeginAtZero = this._normalizeAnimationGroupsToBeginAtZero;
             loader.preprocessUrlAsync = this.preprocessUrlAsync;
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
             loader.onCameraLoadedObservable.add(camera => this.onCameraLoadedObservable.notifyObservers(camera));
-
-            loader.onExtensionLoadedObservable.add(extension => {
-                this.onExtensionLoadedObservable.notifyObservers(extension);
-                this.onExtensionLoadedObservable.clear();
-            });
+            loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();
                 this.onTextureLoadedObservable.clear();
                 this.onMaterialLoadedObservable.clear();
                 this.onCameraLoadedObservable.clear();
+                this.onExtensionLoadedObservable.clear();
 
                 this.onCompleteObservable.notifyObservers(this);
                 this.onCompleteObservable.clear();

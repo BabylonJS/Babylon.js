@@ -148,7 +148,10 @@ module BABYLON.GUI {
             if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }
-            this.isChecked = !this.isChecked;
+            
+            if (!this.isChecked) {
+                this.isChecked = true;
+            }
 
             return true;
         }

@@ -7,10 +7,28 @@ import * as deepmerge from '../assets/deepmerge.min.js';
  * A single template configuration object
  */
 export interface ITemplateConfiguration {
+    /**
+     * can be either the id of the template's html element or a URL.
+     * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+     */
     location?: string; // #template-id OR http://example.com/loading.html
+    /**
+     * If no location is provided you can provide here the raw html of this template.
+     * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+     */
     html?: string; // raw html string
     id?: string;
+    /**
+     * Parameters that will be delivered to the template and will render it accordingly.
+     */
     params?: { [key: string]: string | number | boolean | object };
+    /**
+     * Events to attach to this template.
+     * event name is the key. the value can either be a boolean (attach to the parent element)
+     * or a map of html id elements.
+     * 
+     * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+     */
     events?: {
         // pointer events
         pointerdown?: boolean | { [id: string]: boolean; };
@@ -26,6 +44,7 @@ export interface ITemplateConfiguration {
         // drag and drop
         dragstart?: boolean | { [id: string]: boolean; };
         drop?: boolean | { [id: string]: boolean; };
+
 
         [key: string]: boolean | { [id: string]: boolean; } | undefined;
     }
@@ -241,6 +260,36 @@ Handlebars.registerHelper('eachInMap', function (map, block) {
     return out;
 });
 
+Handlebars.registerHelper('add', function (a, b) {
+    var out = a + b;
+    return out;
+});
+
+Handlebars.registerHelper('eq', function (a, b) {
+    var out = (a == b);
+    return out;
+});
+
+
+Handlebars.registerHelper('or', function (a, b) {
+    var out = a || b;
+    return out;
+});
+
+Handlebars.registerHelper('not', function (a) {
+    var out = !a;
+    return out;
+});
+
+Handlebars.registerHelper('count', function (map) {
+    return map.length;
+});
+
+Handlebars.registerHelper('gt', function (a, b) {
+    var out = a > b;
+    return out;
+});
+
 /**
  * This class represents a single template in the viewer's template tree.
  * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
@@ -318,7 +367,7 @@ export class Template {
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
-                let compiledTemplate = Handlebars.compile(htmlTemplate);
+                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && this._configuration.params.noEscape) });
                 let config = this._configuration.params || {};
                 this._rawHtml = compiledTemplate(config);
                 try {
@@ -340,6 +389,8 @@ export class Template {
      * Some templates have parameters (like background color for example).
      * The parameters are provided to Handlebars which in turn generates the template.
      * This function will update the template with the new parameters
+     * 
+     * Note that when updating parameters the events will be registered again (after being cleared).
      * 
      * @param params the new template parameters
      */
@@ -569,8 +620,14 @@ export class Template {
 
                     // if boolean, set the parent as the event listener
                     if (typeof this._configuration.events[eventName] === 'boolean') {
-                        let binding = functionToFire.bind(this, '#' + this.parent.id);
-                        this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
+                        let selector = this.parent.id
+                        if (selector) {
+                            selector = '#' + selector
+                        } else {
+                            selector = this.parent.tagName
+                        }
+                        let binding = functionToFire.bind(this, selector);
+                        this.parent.addEventListener(eventName, functionToFire.bind(this, selector), false);
                         this._registeredEvents.push({
                             htmlElement: this.parent,
                             eventName: eventName,

@@ -5,11 +5,16 @@ import { Tools, Quaternion } from 'babylonjs';
 import { ViewerConfiguration } from "../configuration/configuration";
 import { TextureUtils } from "./texture";
 
+/**
+ * The ViewerLabs class will hold functions that are not (!) backwards compatible.
+ * The APIs in all labs-related classes and configuration  might change.
+ * Once stable, lab features will be moved to the publis API and configuration object.
+ */
 export class ViewerLabs {
 
     constructor(private _sceneManager: SceneManager) { }
 
-    public environmentAssetsRootURL: string;
+    public assetsRootURL: string;
     public environment: PBREnvironment = {
         //irradiance
         irradiancePolynomialCoefficients: {
@@ -57,7 +62,7 @@ export class ViewerLabs {
             this.environment = EnvironmentDeserializer.Parse(data);
             if (onSuccess) onSuccess(this.environment);
         } else if (typeof data === 'string') {
-            let url = this.getEnvironmentAssetUrl(data);
+            let url = this.getAssetUrl(data);
             this._sceneManager.scene._loadFile(
                 url,
                 (arrayBuffer: ArrayBuffer) => {
@@ -124,15 +129,15 @@ export class ViewerLabs {
      * @param url Asset url
      * @returns The Asset url using the `environmentAssetsRootURL` if the url is not an absolute path.
      */
-    public getEnvironmentAssetUrl(url: string): string {
+    public getAssetUrl(url: string): string {
         let returnUrl = url;
         if (url && url.toLowerCase().indexOf("//") === -1) {
-            if (!this.environmentAssetsRootURL) {
-                Tools.Warn("Please, specify the root url of your assets before loading the configuration (labs.environmentAssetsRootURL) or disable the background through the viewer options.");
+            if (!this.assetsRootURL) {
+                // Tools.Warn("Please, specify the root url of your assets before loading the configuration (labs.environmentAssetsRootURL) or disable the background through the viewer options.");
                 return url;
             }
 
-            returnUrl = this.environmentAssetsRootURL + returnUrl;
+            returnUrl = this.assetsRootURL + returnUrl;
         }
 
         return returnUrl;

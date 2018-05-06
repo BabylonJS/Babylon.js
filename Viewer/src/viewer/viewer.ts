@@ -2,7 +2,7 @@ import { viewerManager } from './viewerManager';
 import { SceneManager } from './sceneManager';
 import { TemplateManager } from './../templateManager';
 import { ConfigurationLoader } from './../configuration/loader';
-import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
+import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
@@ -13,6 +13,7 @@ import { CameraBehavior } from '../interfaces';
 import { viewerGlobals } from '../configuration/globals';
 import { extendClassWithConfig } from '../helper';
 import { telemetryManager } from '../telemetryManager';
+import { Version } from '..';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -133,6 +134,9 @@ export abstract class AbstractViewer {
      */
     protected _configurationLoader: ConfigurationLoader;
 
+    /**
+     * Is the viewer already initialized. for internal use.
+     */
     protected _isInit: boolean;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
@@ -160,11 +164,13 @@ export abstract class AbstractViewer {
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
 
-        // create a new template manager. TODO - singleton?
+        // create a new template manager for this viewer
         this.templateManager = new TemplateManager(containerElement);
         this.sceneManager = new SceneManager(this);
 
         this._prepareContainerElement();
+
+        RenderingManager.AUTOCLEAR = false;
 
         // extend the configuration
         this._configurationLoader = new ConfigurationLoader();
@@ -173,8 +179,8 @@ export abstract class AbstractViewer {
             if (this._configuration.observers) {
                 this._configureObservers(this._configuration.observers);
             }
+            // TODO remove this after testing, as this is done in the updateCOnfiguration as well.
             if (this._configuration.loaderPlugins) {
-                // TODO should plugins be removed?
                 Object.keys(this._configuration.loaderPlugins).forEach((name => {
                     if (this._configuration.loaderPlugins && this._configuration.loaderPlugins[name]) {
                         this.modelLoader.addPlugin(name);
@@ -195,7 +201,11 @@ export abstract class AbstractViewer {
         });
 
         this.onModelLoadedObservable.add((model) => {
-            this.updateConfiguration(this._configuration, model);
+            //this.updateConfiguration(this._configuration, model);
+        });
+
+        this.onSceneInitObservable.add(() => {
+            this.updateConfiguration();
         });
 
         this.onInitDoneObservable.add(() => {
@@ -287,7 +297,7 @@ export abstract class AbstractViewer {
             } else {
                 this.engine.performanceMonitor.disable();
 
-                // TODO - is this needed?
+                // update camera instead of rendering
                 this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
             }
         }
@@ -325,13 +335,14 @@ export abstract class AbstractViewer {
      * Only provided information will be updated, old configuration values will be kept.
      * If this.configuration was manually changed, you can trigger this function with no parameters, 
      * and the entire configuration will be updated. 
-     * @param newConfiguration 
+     * @param newConfiguration the partial configuration to update
+     * 
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this._configuration, mode?: ViewerModel) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this._configuration) {
         // update this.configuration with the new data
         this._configuration = deepmerge(this._configuration || {}, newConfiguration);
 
-        this.sceneManager.updateConfiguration(newConfiguration, this._configuration, mode);
+        this.sceneManager.updateConfiguration(newConfiguration, this._configuration);
 
         // observers in configuration
         if (newConfiguration.observers) {
@@ -339,7 +350,6 @@ export abstract class AbstractViewer {
         }
 
         if (newConfiguration.loaderPlugins) {
-            // TODO should plugins be removed?
             Object.keys(newConfiguration.loaderPlugins).forEach((name => {
                 if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
@@ -388,34 +398,30 @@ export abstract class AbstractViewer {
 
         //observers
         this.onEngineInitObservable.clear();
-        delete this.onEngineInitObservable;
         this.onInitDoneObservable.clear();
-        delete this.onInitDoneObservable;
         this.onLoaderInitObservable.clear();
-        delete this.onLoaderInitObservable;
         this.onModelLoadedObservable.clear();
-        delete this.onModelLoadedObservable;
         this.onModelLoadErrorObservable.clear();
-        delete this.onModelLoadErrorObservable;
         this.onModelLoadProgressObservable.clear();
-        delete this.onModelLoadProgressObservable;
         this.onSceneInitObservable.clear();
-        delete this.onSceneInitObservable;
         this.onFrameRenderedObservable.clear();
-        delete this.onFrameRenderedObservable;
+        this.onModelAddedObservable.clear();
+        this.onModelRemovedObservable.clear();
 
-        if (this.sceneManager.scene.activeCamera) {
+        if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
             this.sceneManager.scene.activeCamera.detachControl(this.canvas);
         }
 
-        this._fpsTimeout && clearTimeout(this._fpsTimeout);
+        this._fpsTimeoutInterval && clearInterval(this._fpsTimeoutInterval);
 
 
         this.sceneManager.dispose();
 
         this.modelLoader.dispose();
 
-        this.engine.dispose();
+        if (this.engine) {
+            this.engine.dispose();
+        }
 
         this.templateManager.dispose();
         viewerManager.removeViewer(this);
@@ -443,6 +449,10 @@ export abstract class AbstractViewer {
      * But first - it will load the extendible onTemplateLoaded()!
      */
     private _onTemplateLoaded(): Promise<AbstractViewer> {
+        // check if viewer was disposed right after created
+        if (this._isDisposed) {
+            return Promise.reject("viewer was disposed");
+        }
         return this._onTemplatesLoaded().then(() => {
             let autoLoad = typeof this._configuration.model === 'string' || (this._configuration.model && this._configuration.model.url);
             return this._initEngine().then((engine) => {
@@ -454,11 +464,6 @@ export abstract class AbstractViewer {
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this._configuration.scene);
                 }
-            }).then((scene) => {
-                if (!autoLoad) {
-                    this.updateConfiguration();
-                }
-                return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).catch(e => {
@@ -511,10 +516,9 @@ export abstract class AbstractViewer {
     }
 
     private _isLoading: boolean;
-    private _nextLoading: Function;
 
     /**
-     * Initialize a model loading. The returns object (a ViewerModel object) will be loaded in the background.
+     * Initialize a model loading. The returned object (a ViewerModel object) will be loaded in the background.
      * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
      * 
      * @param modelConfig model configuration to use when loading the model.
@@ -566,7 +570,9 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * load a model using the provided configuration
+     * load a model using the provided configuration.
+     * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
+     * If you want to attach to the observables of the model, use initModle instead.
      * 
      * @param modelConfig the model configuration or URL to load.
      * @param clearScene Should the scene be cleared before loading the model
@@ -595,7 +601,8 @@ export abstract class AbstractViewer {
         })
     }
 
-    private _fpsTimeout: number;
+    private _fpsTimeoutInterval: number;
+
 
     protected _initTelemetryEvents() {
         telemetryManager.broadcast("Engine Capabilities", this, this.engine.getCaps());
@@ -612,7 +619,7 @@ export abstract class AbstractViewer {
 
         trackFPS();
         // Track the FPS again after 60 seconds
-        this._fpsTimeout = window.setTimeout(trackFPS, 60 * 1000);
+        this._fpsTimeoutInterval = window.setInterval(trackFPS, 60 * 1000);
     }
 
     /**

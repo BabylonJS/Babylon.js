@@ -81,6 +81,9 @@ module BABYLON.GLTF2 {
          */
         public transparencyAsCoverage = false;
 
+        /** @hidden */
+        public _normalizeAnimationGroupsToBeginAtZero = true;
+
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -507,9 +510,6 @@ module BABYLON.GLTF2 {
             const babylonMesh = new Mesh(node.name || `node${node._index}`, this._babylonScene, node._parent._babylonMesh);
             node._babylonMesh = babylonMesh;
 
-            node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-            node._babylonAnimationTargets.push(babylonMesh);
-
             GLTFLoader._LoadTransform(node, babylonMesh);
 
             if (node.mesh != undefined) {
@@ -818,8 +818,8 @@ module BABYLON.GLTF2 {
             babylonBone = new Bone(node.name || `joint${node._index}`, skin._babylonSkeleton!, babylonParentBone, this._getNodeMatrix(node), null, null, boneIndex);
             babylonBones[node._index] = babylonBone;
 
-            node._babylonAnimationTargets = node._babylonAnimationTargets || [];
-            node._babylonAnimationTargets.push(babylonBone);
+            node._babylonBones = node._babylonBones || [];
+            node._babylonBones.push(babylonBone);
 
             return babylonBone;
         }
@@ -930,7 +930,7 @@ module BABYLON.GLTF2 {
             }
 
             return Promise.all(promises).then(() => {
-                babylonAnimationGroup.normalize();
+                babylonAnimationGroup.normalize(this._normalizeAnimationGroupsToBeginAtZero ? 0 : null);
             });
         }
 
@@ -939,7 +939,7 @@ module BABYLON.GLTF2 {
 
             // Ignore animations that have no animation targets.
             if ((channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
-                (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonAnimationTargets)) {
+                (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonMesh)) {
                 return Promise.resolve();
             }
 
@@ -1062,14 +1062,12 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        const morphTargets = new Array<any>();
                         this._forEachPrimitive(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                            morphTarget.animations.push(babylonAnimation);
-                            morphTargets.push(morphTarget);
+                            const babylonAnimationClone = babylonAnimation.clone();
+                            morphTarget.animations.push(babylonAnimationClone);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
                         });
-
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                     }
                 }
                 else {
@@ -1077,12 +1075,16 @@ module BABYLON.GLTF2 {
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    if (targetNode._babylonAnimationTargets) {
-                        for (const babylonAnimationTarget of targetNode._babylonAnimationTargets) {
+                    if (targetNode._babylonBones) {
+                        const babylonAnimationTargets = [targetNode._babylonMesh!, ...targetNode._babylonBones];
+                        for (const babylonAnimationTarget of babylonAnimationTargets) {
                             babylonAnimationTarget.animations.push(babylonAnimation);
                         }
-
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
+                    }
+                    else {
+                        targetNode._babylonMesh!.animations.push(babylonAnimation);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonMesh);
                     }
                 }
             });
@@ -1440,6 +1442,11 @@ module BABYLON.GLTF2 {
 
         /** @hidden */
         public _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadTextureAsync(this, context, textureInfo, assign);
+            if (promise) {
+                return promise;
+            }
+
             const texture = GLTFLoader._GetProperty(`${context}/index`, this._gltf.textures, textureInfo.index);
             context = `#/textures/${textureInfo.index}`;
 
@@ -1466,8 +1473,9 @@ module BABYLON.GLTF2 {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
 
             const image = GLTFLoader._GetProperty(`${context}/source`, this._gltf.images, texture.source);
-            promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(objectURL => {
-                babylonTexture.updateURL(objectURL);
+            promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(blob => {
+                const dataUrl = `data:${this._rootUrl}${image.uri || `image${image._index}`}`;
+                babylonTexture.updateURL(dataUrl, blob);
             }));
 
             assign(babylonTexture);
@@ -1489,9 +1497,9 @@ module BABYLON.GLTF2 {
             return sampler._data;
         }
 
-        private _loadImageAsync(context: string, image: _ILoaderImage): Promise<string> {
-            if (image._objectURL) {
-                return image._objectURL;
+        private _loadImageAsync(context: string, image: _ILoaderImage): Promise<Blob> {
+            if (image._blob) {
+                return image._blob;
             }
 
             let promise: Promise<ArrayBufferView>;
@@ -1503,11 +1511,11 @@ module BABYLON.GLTF2 {
                 promise = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView);
             }
 
-            image._objectURL = promise.then(data => {
-                return URL.createObjectURL(new Blob([data], { type: image.mimeType }));
+            image._blob = promise.then(data => {
+                return new Blob([data], { type: image.mimeType });
             });
 
-            return image._objectURL;
+            return image._blob;
         }
 
         /** @hidden */
@@ -1741,18 +1749,6 @@ module BABYLON.GLTF2 {
             }
 
             this._requests.length = 0;
-
-            if (this._gltf && this._gltf.images) {
-                for (const image of this._gltf.images) {
-                    if (image._objectURL) {
-                        image._objectURL.then(value => {
-                            URL.revokeObjectURL(value);
-                        });
-
-                        image._objectURL = undefined;
-                    }
-                }
-            }
 
             delete this._gltf;
             delete this._babylonScene;

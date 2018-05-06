@@ -558,10 +558,17 @@ module BABYLON {
          * @param effect The effect we are binding the data to
          */
         public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+            if (!effect || !mesh) {
+                return;
+            }
+            if (mesh.computeBonesUsingShaders && effect._bonesComputationForcedToCPU) {
+                mesh.computeBonesUsingShaders = false;
+            }
+
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 var matrices = mesh.skeleton.getTransformMatrices(mesh);
 
-                if (matrices && effect) {
+                if (matrices) {
                     effect.setMatrices("mBones", matrices);
                 }
             }

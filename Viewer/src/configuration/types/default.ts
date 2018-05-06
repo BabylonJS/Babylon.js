@@ -1,10 +1,24 @@
 import { ViewerConfiguration } from './../configuration';
 
+/**
+ * The default configuration of the viewer, including templates (canvas, overly, loading screen)
+ * This configuration doesn't hold specific parameters, and only defines objects that are needed for the viewer to fully work correctly.
+ */
 export let defaultConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     templates: {
         main: {
-            html: require("../../../assets/templates/default/defaultTemplate.html")
+            html: require("../../../assets/templates/default/defaultTemplate.html"),
+            params: {
+                babylonFont: require('../../../assets/babylon.woff'),
+                noEscape: true
+            }
+        },
+        fillContainer: {
+            html: require("../../../assets/templates/default/fillContainer.html"),
+            params: {
+                disable: false
+            }
         },
         loadingScreen: {
             html: require("../../../assets/templates/default/loadingScreen.html"),
@@ -14,32 +28,34 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         },
         viewer: {
-            html: require("../../../assets/templates/default/defaultViewer.html"),
-            events: {
-                pointerout: true,
-                pointerdown: true,
-                pointerup: true
-            }
+            html: require("../../../assets/templates/default/defaultViewer.html")
         },
         navBar: {
             html: require("../../../assets/templates/default/navbar.html"),
             params: {
-                buttons: {
-                    /*"help-button": {
-                        altText: "Help",
-                        image: require('../../../assets/img/help-circle.png')
-                    },*/
-                    "fullscreen-button": {
-                        altText: "Fullscreen",
-                        image: require('../../../assets/img/fullscreen.png')
-                    }
+                speedList: {
+                    "0.5x": "0.5",
+                    "1.0x": "1.0",
+                    "1.5x": "1.5",
+                    "2.0x": "2.0",
                 },
-                visibilityTimeout: 2000
+                logoImage: require('../../../assets/img/BabylonJS_Logo_Small.png'),
+                logoText: 'BabylonJS',
+                logoLink: 'https://babylonjs.com',
+                hideHelp: true,
+                disableOnFullscreen: false,
             },
             events: {
-                pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ },
-                pointerover: true,
-                change: { 'animation-selector': true }
+                pointerdown: {
+                    'navbar-control': true,
+                    'help-button': true
+                },
+                input: {
+                    'progress-wrapper': true
+                },
+                pointerup: {
+                    'progress-wrapper': true
+                }
             }
         },
         overlay: {
@@ -62,41 +78,21 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     camera: {
         behaviors: {
-            autoRotate: 0,
+            autoRotate: {
+                type: 0
+            },
             framing: {
                 type: 2,
                 zoomOnBoundingInfo: true,
                 zoomStopsAnimation: false
             },
-            bouncing: 1
+            bouncing: {
+                type: 1
+            }
         },
         wheelPrecision: 200,
     },
     skybox: {
-        /*cubeTexture: {
-            url: 'https://playground.babylonjs.com/textures/environment.dds',
-            gammaSpace: false
-        },*/
-        pbr: true,
-        blur: 0.7,
-        infiniteDistance: false,
-        /*material: {
-            imageProcessingConfiguration: {
-                colorCurves: {
-                    globalDensity: 89,
-                    globalHue: 58.88,
-                    globalSaturation: 94
-                },
-                colorCurvesEnabled: true,
-                exposure: 1.5,
-                contrast: 1.66,
-                toneMappingEnabled: true,
-                vignetteEnabled: true,
-                vignetteWeight: 5,
-                vignetteColor: { r: 0.8, g: 0.6, b: 0.4 },
-                vignetteM: true
-            }
-        }*/
     },
     ground: {
         receiveShadows: true
@@ -105,10 +101,5 @@ export let defaultConfiguration: ViewerConfiguration = {
         antialiasing: true
     },
     scene: {
-        imageProcessingConfiguration: {
-            exposure: 1.4,
-            contrast: 1.66,
-            toneMappingEnabled: true
-        }
     }
 }

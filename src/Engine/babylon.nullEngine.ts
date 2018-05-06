@@ -315,6 +315,8 @@
                 onLoad();
             }
 
+            this._internalTexturesCache.push(texture);
+
             return texture;
         }
 
@@ -352,6 +354,9 @@
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
+            this._internalTexturesCache.push(texture);
+
             return texture;
         }
 
@@ -427,6 +432,9 @@
             }
 
             return false;
+        }
+
+        public releaseEffects() {
         }
     }
 }

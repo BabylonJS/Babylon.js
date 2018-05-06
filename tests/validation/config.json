@@ -2,6 +2,18 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Chibi Rex",
+      "playgroundId": "#QATUCH#4",
+      "renderCount": 50,
+      "referenceImage": "chibi_rex.png"
+    },     
+    {
+      "title": "Yeti",
+      "playgroundId": "#QATUCH#3",
+      "renderCount": 150,
+      "referenceImage": "yeti.png"
+    },   
+    {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
       "sceneFilename": "Sponza.babylon",
@@ -287,6 +299,11 @@
       "title": "GLTF BoomBox with Unlit Material",
       "playgroundId": "#GYM97C#2",
       "referenceImage": "gltfUnlit.png"
+    },
+    {
+      "title": "GLTF Extension KHR_texture_transform",
+      "playgroundId": "#RNT7K4#2",
+      "referenceImage": "gltfExtensionKhrTextureTransform.png"
     },
     {
       "title": "Asset Containers",

@@ -50,6 +50,11 @@
             /** Specifies if the event should be triggered only once**/
             public onlyOnce?: boolean ) {
         }
+
+        /** @hidden */
+        public _clone(): AnimationEvent {
+            return new AnimationEvent(this.frame, this.action, this.onlyOnce);
+        }
     }
 
     /**
@@ -1106,6 +1111,20 @@
          */
         public static get ANIMATIONLOOPMODE_CONSTANT(): number {
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
+        }
+
+        /** @hidden */
+        public static _UniversalLerp(left: any, right: any, amount: number): any {
+            let constructor = left.constructor;
+            if (constructor.Lerp) { // Lerp supported
+                return constructor.Lerp(left, right, amount);
+            } else if (constructor.Slerp) { // Slerp supported
+                return constructor.Slerp(left, right, amount);
+            } else if (left.toFixed) { // Number
+                return left * (1.0 - amount) + amount* right;
+            } else { // Blending not supported
+                return right;
+            }
         }
 
         /**

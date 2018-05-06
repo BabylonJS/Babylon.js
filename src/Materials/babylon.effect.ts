@@ -73,6 +73,7 @@
             if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0 && this._mesh.material) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
+                effect._bonesComputationForcedToCPU = true;
 
                 var scene = this._mesh.getScene();
                 for (var index = 0; index < scene.meshes.length; index++) {
@@ -88,7 +89,7 @@
 
                     if (otherMesh.material.getEffect() === effect) {
                         otherMesh.computeBonesUsingShaders = false;
-                    } else {
+                    } else if (otherMesh.subMeshes) {
                         for (var subMesh of otherMesh.subMeshes) {
                             let subMeshEffect = subMesh.effect;
 
@@ -205,6 +206,10 @@
          * Observable that will be called when effect is bound.
          */
         public onBindObservable = new Observable<Effect>();
+
+
+        /** @hidden */
+        public _bonesComputationForcedToCPU = false;
 
         private static _uniqueIdSeed = 0;
         private _engine: Engine;
