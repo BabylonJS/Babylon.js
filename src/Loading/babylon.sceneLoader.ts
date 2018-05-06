@@ -494,7 +494,8 @@
                     });
                 }, onProgress, (scene, message, exception) => {
                     reject(exception || new Error(message));
-                });
+                },
+                pluginExtension);
             });
         }
 

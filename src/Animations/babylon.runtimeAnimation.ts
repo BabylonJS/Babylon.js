@@ -4,6 +4,8 @@
      * Defines a runtime animation
      */
     export class RuntimeAnimation {
+        private _events = new Array<AnimationEvent>();
+
         /**
          * The current frame of the runtime animation
          */
@@ -27,7 +29,7 @@
         /**
          * The original value of the runtime animation
          */
-        private _originalValue: any;
+        private _originalValue = new Array<any>();
         
         /**
          * The original blend value of the runtime animation
@@ -109,14 +111,7 @@
          */
         public get weight(): number {
             return this._weight;
-        }           
-
-        /**
-         * Gets the original value of the runtime animation
-         */
-        public get originalValue(): any {
-            return this._originalValue;
-        }        
+        }              
 
         /**
          * Gets the current value of the runtime animation
@@ -153,6 +148,14 @@
             this._host = host;
 
             animation._runtimeAnimations.push(this);
+
+            // Cloning events locally
+            var events = animation.getEvents();
+            if (events && events.length > 0) {
+                events.forEach((e) => {
+                    this._events.push(e._clone());
+                });
+            }
         }
 
         /**
@@ -164,13 +167,36 @@
 
         /**
          * Resets the runtime animation to the beginning
+         * @param restoreOriginal defines whether to restore the target property to the original value
          */
-        public reset(): void {
+        public reset(restoreOriginal = false): void {
+            if (restoreOriginal) {
+                if (this._target instanceof Array) {
+                    var index = 0;
+                    for (const target of this._target) {
+                        if (this._originalValue[index] !== undefined) {
+                            this._setValue(target, this._originalValue[index], -1);
+                        }
+                        index++;
+                    }
+                }
+                else {
+                    if (this._originalValue[0] !== undefined) {
+                        this._setValue(this._target, this._originalValue[0], -1);
+                    }
+                }
+            }
+
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._currentFrame = 0;
             this._blendingFactor = 0;
-            this._originalValue = null;
+            this._originalValue = new Array<any>();
+
+            // Events
+            for (var index = 0; index < this._events.length; index++) {
+                this._events[index].isDone = false;
+            }                  
         }
 
         /**
@@ -212,14 +238,16 @@
         }
 
         /**
-         * Affect the interpolated value to the target
+         * Apply the interpolated value to the target
          * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
         public setValue(currentValue: any, weight = 1.0): void {
             if (this._target instanceof Array) {
+                var index = 0;
                 for (const target of this._target) {
-                    this._setValue(target, currentValue, weight);
+                    this._setValue(target, currentValue, weight, index);
+                    index++;
                 }
             }
             else {
@@ -227,13 +255,7 @@
             }
         }
 
-        /**
-         * Sets the value of the runtime animation
-         * @param target The target property of the runtime animation
-         * @param currentValue The current value to use for the runtime animation
-         * @param weight The weight to use for the runtime animation (Defaults to 1.0)
-         */
-        private _setValue(target: any, currentValue: any, weight = 1.0): void {
+        private _setValue(target: any, currentValue: any, weight: number, targetIndex = 0): void {
             // Set value
             var path: any;
             var destination: any;
@@ -258,10 +280,24 @@
             this._activeTarget = destination;
             this._weight = weight;
 
+            if (this._originalValue[targetIndex] === undefined) {
+                let originalValue: any;
+
+                if (destination.getRestPose && path === "_matrix") { // For bones
+                    originalValue = destination.getRestPose();
+                } else {
+                    originalValue = destination[path];
+                }
+
+                if (originalValue && originalValue.clone) {
+                    this._originalValue[targetIndex] = originalValue.clone();
+                } else {
+                    this._originalValue[targetIndex] = originalValue;
+                }
+            }
+
             // Blending
-            let enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
-            let blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
-            
+            const enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
             if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
                     let originalValue = destination[path];
@@ -272,27 +308,7 @@
                         this._originalBlendValue = originalValue;
                     }
                 }
-            }
 
-            if (weight !== -1.0) {
-                if (!this._originalValue) {
-                    let originalValue: any;
-
-                    if (destination.getRestPose && path === "_matrix") { // For bones
-                        originalValue = destination.getRestPose();
-                    } else {
-                        originalValue = destination[path];
-                    }
-
-                    if (originalValue.clone) {
-                        this._originalValue = originalValue.clone();
-                    } else {
-                        this._originalValue = originalValue;
-                    }
-                }
-            }
-
-            if (enableBlending && this._blendingFactor <= 1.0) {
                 if (this._originalBlendValue.m) { // Matrix
                     if (Animation.AllowMatrixDecomposeForInterpolation) {
                         if (this._currentValue) {
@@ -308,24 +324,17 @@
                         }
                     }
                 } else { 
-                    let constructor = this._originalBlendValue.constructor;
-                    if (constructor.Lerp) { // Lerp supported
-                        this._currentValue = constructor.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
-                    } else if (constructor.Slerp) { // Slerp supported
-                        this._currentValue = constructor.Slerp(this._originalBlendValue, currentValue, this._blendingFactor);
-                    } else if (this._originalBlendValue.toFixed) { // Number
-                        this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
-                    } else { // Blending not supported
-                        this._currentValue = currentValue;
-                    }
+                    this._currentValue = Animation._UniversalLerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 }
+
+                const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
                 this._blendingFactor += blendingSpeed;
             } else {
                 this._currentValue = currentValue;
             }
 
             if (weight !== -1.0) {
-                this._scene._registerTargetForLateAnimationBinding(this);
+                this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
             } else {
                 destination[path] = this._currentValue;
             }
@@ -502,7 +511,7 @@
             // Compute value
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
-
+            
             // Need to normalize?
             if (this._host && this._host.syncRoot) {
                 let syncRoot = this._host.syncRoot;
@@ -510,13 +519,25 @@
                 currentFrame = from + (to - from) * hostNormalizedFrame;
             }
 
+            // Reset events if looping
+            let events = this._events;
+            if (range > 0 && this.currentFrame > currentFrame || 
+                range < 0 && this.currentFrame < currentFrame) {
+                    // Need to reset animation events
+                    for (var index = 0; index < events.length; index++) {
+                        if (!events[index].onlyOnce) {
+                            // reset event, the animation is looping
+                            events[index].isDone = false;
+                        }
+                    }                    
+                }
+
             var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
             // Set value
             this.setValue(currentValue, weight);
 
             // Check events
-            let events = this._animation.getEvents();
             for (var index = 0; index < events.length; index++) {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
@@ -534,9 +555,6 @@
                         event.isDone = true;
                         event.action();
                     } // Don't do anything if the event has already be done.
-                } else if (events[index].isDone && !events[index].onlyOnce) {
-                    // reset event, the animation is looping
-                    events[index].isDone = false;
                 }
             }
             if (!returnValue) {

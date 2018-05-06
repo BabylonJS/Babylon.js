@@ -9,7 +9,7 @@ var BABYLON;
         function GLTF2Export() {
         }
         /**
-         * Exports the geometry of the scene to .gltf file format
+         * Exports the geometry of the scene to .gltf file format synchronously
          * @param scene Babylon scene with scene hierarchy information
          * @param filePrefix File prefix to use when generating the glTF file
          * @param options Exporter options
@@ -19,16 +19,23 @@ var BABYLON;
         GLTF2Export.GLTF = function (scene, filePrefix, options) {
             var glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
             var gltfGenerator = new BABYLON.GLTF2._Exporter(scene, options);
-            if (scene.isReady) {
-                return gltfGenerator._generateGLTF(glTFPrefix);
-            }
-            else {
-                BABYLON.Tools.Error("glTF Serializer: Scene is not ready!");
-                return null;
-            }
+            return gltfGenerator._generateGLTF(glTFPrefix);
         };
         /**
-         * Exports the geometry of the scene to .glb file format
+         * Exports the geometry of the scene to .gltf file format asynchronously
+         * @param scene Babylon scene with scene hierarchy information
+         * @param filePrefix File prefix to use when generating the glTF file
+         * @param options Exporter options
+         * @returns Returns an object with a .gltf file and associates texture names
+         * as keys and their data and paths as values
+         */
+        GLTF2Export.GLTFAsync = function (scene, filePrefix, options) {
+            return Promise.resolve(scene.whenReadyAsync()).then(function () {
+                return GLTF2Export.GLTF(scene, filePrefix, options);
+            });
+        };
+        /**
+         * Exports the geometry of the scene to .glb file format synchronously
          * @param scene Babylon scene with scene hierarchy information
          * @param filePrefix File prefix to use when generating glb file
          * @param options Exporter options
@@ -37,13 +44,19 @@ var BABYLON;
         GLTF2Export.GLB = function (scene, filePrefix, options) {
             var glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
             var gltfGenerator = new BABYLON.GLTF2._Exporter(scene, options);
-            if (scene.isReady) {
-                return gltfGenerator._generateGLB(glTFPrefix);
-            }
-            else {
-                BABYLON.Tools.Error("glTF Serializer: Scene is not ready!");
-                return null;
-            }
+            return gltfGenerator._generateGLB(glTFPrefix);
+        };
+        /**
+         * Exports the geometry of the scene to .glb file format asychronously
+         * @param scene Babylon scene with scene hierarchy information
+         * @param filePrefix File prefix to use when generating glb file
+         * @param options Exporter options
+         * @returns Returns an object with a .glb filename as key and data as value
+         */
+        GLTF2Export.GLBAsync = function (scene, filePrefix, options) {
+            return Promise.resolve(scene.whenReadyAsync()).then(function () {
+                return GLTF2Export.GLB(scene, filePrefix, options);
+            });
         };
         return GLTF2Export;
     }());
@@ -52,7 +65,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally
  * @hidden
@@ -86,55 +99,370 @@ var BABYLON;
                 this.images = [];
                 this.materials = [];
                 this.textures = [];
+                this.samplers = [];
                 this.animations = [];
                 this.imageData = {};
                 this.convertToRightHandedSystem = this.babylonScene.useRightHandedSystem ? false : true;
                 var _options = options || {};
-                this.shouldExportMesh = _options.shouldExportMesh ? _options.shouldExportMesh : (function (mesh) { return true; });
+                this.shouldExportTransformNode = _options.shouldExportTransformNode ? _options.shouldExportTransformNode : function (babylonTransformNode) { return true; };
                 this.animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
             }
+            _Exporter.prototype.reorderIndicesBasedOnPrimitiveMode = function (submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter) {
+                switch (primitiveMode) {
+                    case BABYLON.Material.TriangleFillMode: {
+                        if (!byteOffset) {
+                            byteOffset = 0;
+                        }
+                        for (var i = submesh.indexStart, length_1 = submesh.indexStart + submesh.indexCount; i < length_1; i = i + 3) {
+                            var index = byteOffset + i * 4;
+                            // swap the second and third indices
+                            var secondIndex = binaryWriter.getUInt32(index + 4);
+                            var thirdIndex = binaryWriter.getUInt32(index + 8);
+                            binaryWriter.setUInt32(thirdIndex, index + 4);
+                            binaryWriter.setUInt32(secondIndex, index + 8);
+                        }
+                        break;
+                    }
+                    case BABYLON.Material.TriangleFanDrawMode: {
+                        for (var i = submesh.indexStart + submesh.indexCount - 1, start = submesh.indexStart; i >= start; --i) {
+                            binaryWriter.setUInt32(babylonIndices[i], byteOffset);
+                            byteOffset += 4;
+                        }
+                        break;
+                    }
+                    case BABYLON.Material.TriangleStripDrawMode: {
+                        if (submesh.indexCount >= 3) {
+                            binaryWriter.setUInt32(babylonIndices[submesh.indexStart + 2], byteOffset + 4);
+                            binaryWriter.setUInt32(babylonIndices[submesh.indexStart + 1], byteOffset + 8);
+                        }
+                        break;
+                    }
+                }
+            };
+            /**
+             * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is
+             * clock-wise during export to glTF
+             * @param submesh BabylonJS submesh
+             * @param primitiveMode Primitive mode of the mesh
+             * @param sideOrientation the winding order of the submesh
+             * @param vertexBufferKind The type of vertex attribute
+             * @param meshAttributeArray The vertex attribute data
+             * @param byteOffset The offset to the binary data
+             * @param binaryWriter The binary data for the glTF file
+             */
+            _Exporter.prototype.reorderVertexAttributeDataBasedOnPrimitiveMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+                if (this.convertToRightHandedSystem && sideOrientation === BABYLON.Material.ClockWiseSideOrientation) {
+                    switch (primitiveMode) {
+                        case BABYLON.Material.TriangleFillMode: {
+                            this.reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                            break;
+                        }
+                        case BABYLON.Material.TriangleStripDrawMode: {
+                            this.reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                            break;
+                        }
+                        case BABYLON.Material.TriangleFanDrawMode: {
+                            this.reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                            break;
+                        }
+                    }
+                }
+            };
+            /**
+             * Reorders the vertex attributes in the correct triangle mode order .  This is necessary when indices are not available and the winding order is
+             * clock-wise during export to glTF
+             * @param submesh BabylonJS submesh
+             * @param primitiveMode Primitive mode of the mesh
+             * @param sideOrientation the winding order of the submesh
+             * @param vertexBufferKind The type of vertex attribute
+             * @param meshAttributeArray The vertex attribute data
+             * @param byteOffset The offset to the binary data
+             * @param binaryWriter The binary data for the glTF file
+             */
+            _Exporter.prototype.reorderTriangleFillMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+                var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
+                if (vertexBuffer) {
+                    var stride = vertexBuffer.byteStride / BABYLON.VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+                    if (submesh.verticesCount % 3 !== 0) {
+                        BABYLON.Tools.Error('The submesh vertices for the triangle fill mode is not divisible by 3!');
+                    }
+                    else {
+                        var vertexData = [];
+                        var index = 0;
+                        switch (vertexBufferKind) {
+                            case BABYLON.VertexBuffer.PositionKind:
+                            case BABYLON.VertexBuffer.NormalKind: {
+                                for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
+                                    index = x * stride;
+                                    vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index));
+                                    vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index + 2 * stride));
+                                    vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index + stride));
+                                }
+                                break;
+                            }
+                            case BABYLON.VertexBuffer.TangentKind: {
+                                for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
+                                    index = x * stride;
+                                    vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index));
+                                    vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index + 2 * stride));
+                                    vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index + stride));
+                                }
+                                break;
+                            }
+                            case BABYLON.VertexBuffer.ColorKind: {
+                                var size = vertexBuffer.getSize();
+                                for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + size) {
+                                    index = x * stride;
+                                    if (size === 4) {
+                                        vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index));
+                                        vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index + 2 * stride));
+                                        vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index + stride));
+                                    }
+                                    else {
+                                        vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index));
+                                        vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index + 2 * stride));
+                                        vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index + stride));
+                                    }
+                                }
+                                break;
+                            }
+                            case BABYLON.VertexBuffer.UVKind:
+                            case BABYLON.VertexBuffer.UV2Kind: {
+                                for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
+                                    index = x * stride;
+                                    vertexData.push(BABYLON.Vector2.FromArray(meshAttributeArray, index));
+                                    vertexData.push(BABYLON.Vector2.FromArray(meshAttributeArray, index + 2 * stride));
+                                    vertexData.push(BABYLON.Vector2.FromArray(meshAttributeArray, index + stride));
+                                }
+                                break;
+                            }
+                            default: {
+                                BABYLON.Tools.Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                            }
+                        }
+                        this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
+                    }
+                }
+                else {
+                    BABYLON.Tools.Warn("reorderTriangleFillMode: Vertex Buffer Kind " + vertexBufferKind + " not present!");
+                }
+            };
+            /**
+             * Reorders the vertex attributes in the correct triangle strip order.  This is necessary when indices are not available and the winding order is
+             * clock-wise during export to glTF
+             * @param submesh BabylonJS submesh
+             * @param primitiveMode Primitive mode of the mesh
+             * @param sideOrientation the winding order of the submesh
+             * @param vertexBufferKind The type of vertex attribute
+             * @param meshAttributeArray The vertex attribute data
+             * @param byteOffset The offset to the binary data
+             * @param binaryWriter The binary data for the glTF file
+             */
+            _Exporter.prototype.reorderTriangleStripDrawMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+                var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
+                if (vertexBuffer) {
+                    var stride = vertexBuffer.byteStride / BABYLON.VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+                    var vertexData = [];
+                    var index = 0;
+                    switch (vertexBufferKind) {
+                        case BABYLON.VertexBuffer.PositionKind:
+                        case BABYLON.VertexBuffer.NormalKind: {
+                            index = submesh.verticesStart;
+                            vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index + 2 * stride));
+                            vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index + stride));
+                            break;
+                        }
+                        case BABYLON.VertexBuffer.TangentKind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        case BABYLON.VertexBuffer.ColorKind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexBuffer.getSize() === 4 ? vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index)) : vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        case BABYLON.VertexBuffer.UVKind:
+                        case BABYLON.VertexBuffer.UV2Kind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexData.push(BABYLON.Vector2.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        default: {
+                            BABYLON.Tools.Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                        }
+                    }
+                    this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter);
+                }
+                else {
+                    BABYLON.Tools.Warn("reorderTriangleStripDrawMode: Vertex buffer kind " + vertexBufferKind + " not present!");
+                }
+            };
+            /**
+             * Reorders the vertex attributes in the correct triangle fan order.  This is necessary when indices are not available and the winding order is
+             * clock-wise during export to glTF
+             * @param submesh BabylonJS submesh
+             * @param primitiveMode Primitive mode of the mesh
+             * @param sideOrientation the winding order of the submesh
+             * @param vertexBufferKind The type of vertex attribute
+             * @param meshAttributeArray The vertex attribute data
+             * @param byteOffset The offset to the binary data
+             * @param binaryWriter The binary data for the glTF file
+             */
+            _Exporter.prototype.reorderTriangleFanMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+                var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
+                if (vertexBuffer) {
+                    var stride = vertexBuffer.byteStride / BABYLON.VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+                    var vertexData = [];
+                    var index = 0;
+                    switch (vertexBufferKind) {
+                        case BABYLON.VertexBuffer.PositionKind:
+                        case BABYLON.VertexBuffer.NormalKind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        case BABYLON.VertexBuffer.TangentKind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        case BABYLON.VertexBuffer.ColorKind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index));
+                                vertexBuffer.getSize() === 4 ? vertexData.push(BABYLON.Vector4.FromArray(meshAttributeArray, index)) : vertexData.push(BABYLON.Vector3.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        case BABYLON.VertexBuffer.UVKind:
+                        case BABYLON.VertexBuffer.UV2Kind: {
+                            for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                                index = x * stride;
+                                vertexData.push(BABYLON.Vector2.FromArray(meshAttributeArray, index));
+                            }
+                            break;
+                        }
+                        default: {
+                            BABYLON.Tools.Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                        }
+                    }
+                    this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
+                }
+                else {
+                    BABYLON.Tools.Warn("reorderTriangleFanMode: Vertex buffer kind " + vertexBufferKind + " not present!");
+                }
+            };
+            /**
+             * Writes the vertex attribute data to binary
+             * @param vertices The vertices to write to the binary writer
+             * @param byteOffset The offset into the binary writer to overwrite binary data
+             * @param vertexAttributeKind The vertex attribute type
+             * @param meshAttributeArray The vertex attribute data
+             * @param binaryWriter The writer containing the binary data
+             */
+            _Exporter.prototype.writeVertexAttributeData = function (vertices, byteOffset, vertexAttributeKind, meshAttributeArray, binaryWriter) {
+                for (var _i = 0, vertices_1 = vertices; _i < vertices_1.length; _i++) {
+                    var vertex = vertices_1[_i];
+                    if (this.convertToRightHandedSystem && !(vertexAttributeKind === BABYLON.VertexBuffer.ColorKind) && !(vertex instanceof BABYLON.Vector2)) {
+                        if (vertex instanceof BABYLON.Vector3) {
+                            (vertexAttributeKind === BABYLON.VertexBuffer.PositionKind) ? GLTF2._GLTFUtilities.GetRightHandedPositionVector3FromRef(vertex) : GLTF2._GLTFUtilities.GetRightHandedNormalVector3FromRef(vertex);
+                        }
+                        else {
+                            GLTF2._GLTFUtilities.GetRightHandedVector4FromRef(vertex);
+                        }
+                    }
+                    for (var _a = 0, _b = vertex.asArray(); _a < _b.length; _a++) {
+                        var component = _b[_a];
+                        binaryWriter.setFloat32(component, byteOffset);
+                        byteOffset += 4;
+                    }
+                }
+            };
             /**
              * Writes mesh attribute data to a data buffer
              * Returns the bytelength of the data
              * @param vertexBufferKind Indicates what kind of vertex data is being passed in
              * @param meshAttributeArray Array containing the attribute data
              * @param binaryWriter The buffer to write the binary data to
-             * @returns Byte length of the attribute data
+             * @param indices Used to specify the order of the vertex data
              */
-            _Exporter.prototype.writeAttributeData = function (vertexBufferKind, meshAttributeArray, binaryWriter) {
-                var stride = BABYLON.VertexBuffer.DeduceStride(vertexBufferKind);
-                var byteLength = 0;
-                var vector;
+            _Exporter.prototype.writeAttributeData = function (vertexBufferKind, meshAttributeArray, byteStride, binaryWriter) {
+                var stride = byteStride / 4;
+                var vertexAttributes = [];
                 var index;
-                for (var k = 0, length_1 = meshAttributeArray.length / stride; k < length_1; ++k) {
-                    index = k * stride;
-                    if (vertexBufferKind === BABYLON.VertexBuffer.PositionKind || vertexBufferKind === BABYLON.VertexBuffer.NormalKind) {
-                        var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
-                        if (this.convertToRightHandedSystem) {
-                            GLTF2._GLTFUtilities.GetRightHandedVector3FromRef(vertexData);
+                switch (vertexBufferKind) {
+                    case BABYLON.VertexBuffer.PositionKind: {
+                        for (var k = 0, length_2 = meshAttributeArray.length / stride; k < length_2; ++k) {
+                            index = k * stride;
+                            var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
+                            if (this.convertToRightHandedSystem) {
+                                GLTF2._GLTFUtilities.GetRightHandedPositionVector3FromRef(vertexData);
+                            }
+                            vertexAttributes.push(vertexData.asArray());
                         }
-                        vector = vertexData.asArray();
+                        break;
                     }
-                    else if (vertexBufferKind === BABYLON.VertexBuffer.TangentKind || vertexBufferKind === BABYLON.VertexBuffer.ColorKind) {
-                        var vertexData = BABYLON.Vector4.FromArray(meshAttributeArray, index);
-                        if (this.convertToRightHandedSystem && !(vertexBufferKind === BABYLON.VertexBuffer.ColorKind)) {
-                            GLTF2._GLTFUtilities.GetRightHandedVector4FromRef(vertexData);
+                    case BABYLON.VertexBuffer.NormalKind: {
+                        for (var k = 0, length_3 = meshAttributeArray.length / stride; k < length_3; ++k) {
+                            index = k * stride;
+                            var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
+                            if (this.convertToRightHandedSystem) {
+                                GLTF2._GLTFUtilities.GetRightHandedNormalVector3FromRef(vertexData);
+                            }
+                            vertexAttributes.push(vertexData.asArray());
                         }
-                        vector = vertexData.asArray();
+                        break;
                     }
-                    else if (vertexBufferKind === BABYLON.VertexBuffer.UVKind || vertexBufferKind === BABYLON.VertexBuffer.UV2Kind) {
-                        vector = this.convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]];
+                    case BABYLON.VertexBuffer.TangentKind: {
+                        for (var k = 0, length_4 = meshAttributeArray.length / stride; k < length_4; ++k) {
+                            index = k * stride;
+                            var vertexData = BABYLON.Vector4.FromArray(meshAttributeArray, index);
+                            if (this.convertToRightHandedSystem) {
+                                GLTF2._GLTFUtilities.GetRightHandedVector4FromRef(vertexData);
+                            }
+                            vertexAttributes.push(vertexData.asArray());
+                        }
+                        break;
                     }
-                    else {
+                    case BABYLON.VertexBuffer.ColorKind: {
+                        for (var k = 0, length_5 = meshAttributeArray.length / stride; k < length_5; ++k) {
+                            index = k * stride;
+                            var vertexData = stride === 3 ? BABYLON.Vector3.FromArray(meshAttributeArray, index) : BABYLON.Vector4.FromArray(meshAttributeArray, index);
+                            vertexAttributes.push(vertexData.asArray());
+                        }
+                        break;
+                    }
+                    case BABYLON.VertexBuffer.UVKind:
+                    case BABYLON.VertexBuffer.UV2Kind: {
+                        for (var k = 0, length_6 = meshAttributeArray.length / stride; k < length_6; ++k) {
+                            index = k * stride;
+                            vertexAttributes.push(this.convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]]);
+                        }
+                        break;
+                    }
+                    default: {
                         BABYLON.Tools.Warn("Unsupported Vertex Buffer Type: " + vertexBufferKind);
-                        vector = [];
+                        vertexAttributes = [];
                     }
-                    vector.forEach(function (entry) {
-                        binaryWriter.setFloat32(entry);
-                    });
                 }
-                byteLength = meshAttributeArray.length * 4;
-                return byteLength;
+                for (var _i = 0, vertexAttributes_1 = vertexAttributes; _i < vertexAttributes_1.length; _i++) {
+                    var vertexAttribute = vertexAttributes_1[_i];
+                    for (var _a = 0, vertexAttribute_1 = vertexAttribute; _a < vertexAttribute_1.length; _a++) {
+                        var component = vertexAttribute_1[_a];
+                        binaryWriter.setFloat32(component);
+                    }
+                }
             };
             /**
              * Generates glTF json data
@@ -144,6 +472,7 @@ var BABYLON;
              * @returns json data as string
              */
             _Exporter.prototype.generateJSON = function (shouldUseGlb, glTFPrefix, prettyPrint) {
+                var _this = this;
                 var buffer = { byteLength: this.totalByteLength };
                 var imageName;
                 var imageData;
@@ -180,21 +509,23 @@ var BABYLON;
                 if (this.textures && this.textures.length) {
                     glTF.textures = this.textures;
                 }
+                if (this.samplers && this.samplers.length) {
+                    glTF.samplers = this.samplers;
+                }
                 if (this.images && this.images.length) {
                     if (!shouldUseGlb) {
                         glTF.images = this.images;
                     }
                     else {
                         glTF.images = [];
-                        var self_1 = this;
                         this.images.forEach(function (image) {
                             if (image.uri) {
-                                imageData = self_1.imageData[image.uri];
+                                imageData = _this.imageData[image.uri];
                                 imageName = image.uri.split('.')[0] + " image";
                                 bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                                 byteOffset += imageData.data.buffer.byteLength;
-                                self_1.bufferViews.push(bufferView);
-                                image.bufferView = self_1.bufferViews.length - 1;
+                                _this.bufferViews.push(bufferView);
+                                image.bufferView = _this.bufferViews.length - 1;
                                 image.name = imageName;
                                 image.mimeType = imageData.mimeType;
                                 image.uri = undefined;
@@ -327,18 +658,18 @@ var BABYLON;
             /**
              * Sets the TRS for each node
              * @param node glTF Node for storing the transformation data
-             * @param babylonMesh Babylon mesh used as the source for the transformation data
+             * @param babylonTransformNode Babylon mesh used as the source for the transformation data
              */
-            _Exporter.prototype.setNodeTransformation = function (node, babylonMesh) {
-                if (!babylonMesh.position.equalsToFloats(0, 0, 0)) {
-                    node.translation = this.convertToRightHandedSystem ? GLTF2._GLTFUtilities.GetRightHandedVector3(babylonMesh.position).asArray() : babylonMesh.position.asArray();
+            _Exporter.prototype.setNodeTransformation = function (node, babylonTransformNode) {
+                if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
+                    node.translation = this.convertToRightHandedSystem ? GLTF2._GLTFUtilities.GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
                 }
-                if (!babylonMesh.scaling.equalsToFloats(1, 1, 1)) {
-                    node.scale = babylonMesh.scaling.asArray();
+                if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
+                    node.scale = babylonTransformNode.scaling.asArray();
                 }
-                var rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(babylonMesh.rotation.y, babylonMesh.rotation.x, babylonMesh.rotation.z);
-                if (babylonMesh.rotationQuaternion) {
-                    rotationQuaternion = rotationQuaternion.multiply(babylonMesh.rotationQuaternion);
+                var rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(babylonTransformNode.rotation.y, babylonTransformNode.rotation.x, babylonTransformNode.rotation.z);
+                if (babylonTransformNode.rotationQuaternion) {
+                    rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
                 }
                 if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
                     if (this.convertToRightHandedSystem) {
@@ -347,62 +678,135 @@ var BABYLON;
                     node.rotation = rotationQuaternion.normalize().asArray();
                 }
             };
+            _Exporter.prototype.getVertexBufferFromMesh = function (attributeKind, bufferMesh) {
+                if (bufferMesh.isVerticesDataPresent(attributeKind)) {
+                    var vertexBuffer = bufferMesh.getVertexBuffer(attributeKind);
+                    if (vertexBuffer) {
+                        return vertexBuffer;
+                    }
+                }
+                return null;
+            };
             /**
              * Creates a bufferview based on the vertices type for the Babylon mesh
              * @param kind Indicates the type of vertices data
-             * @param babylonMesh The Babylon mesh to get the vertices data from
+             * @param babylonTransformNode The Babylon mesh to get the vertices data from
              * @param binaryWriter The buffer to write the bufferview data to
              */
-            _Exporter.prototype.createBufferViewKind = function (kind, babylonMesh, binaryWriter, byteStride) {
-                var bufferMesh = null;
-                var byteLength;
-                var vertexData;
-                var bufferView;
-                if (babylonMesh instanceof BABYLON.Mesh) {
-                    bufferMesh = babylonMesh;
-                }
-                else if (babylonMesh instanceof BABYLON.InstancedMesh) {
-                    bufferMesh = babylonMesh.sourceMesh;
-                }
+            _Exporter.prototype.createBufferViewKind = function (kind, babylonTransformNode, binaryWriter, byteStride) {
+                var bufferMesh = babylonTransformNode instanceof BABYLON.Mesh ?
+                    babylonTransformNode : babylonTransformNode instanceof BABYLON.InstancedMesh ?
+                    babylonTransformNode.sourceMesh : null;
                 if (bufferMesh) {
-                    vertexData = bufferMesh.getVerticesData(kind);
+                    var vertexData = bufferMesh.getVerticesData(kind);
                     if (vertexData) {
-                        byteLength = vertexData.length * 4;
-                        bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
+                        var byteLength = vertexData.length * 4;
+                        var bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
                         this.bufferViews.push(bufferView);
-                        this.writeAttributeData(kind, vertexData, binaryWriter);
+                        this.writeAttributeData(kind, vertexData, byteStride, binaryWriter);
+                    }
+                }
+            };
+            /**
+             * The primitive mode of the Babylon mesh
+             * @param babylonMesh The BabylonJS mesh
+             */
+            _Exporter.prototype.getMeshPrimitiveMode = function (babylonMesh) {
+                return babylonMesh.material ? babylonMesh.material.fillMode : BABYLON.Material.TriangleFanDrawMode;
+            };
+            /**
+             * Sets the primitive mode of the glTF mesh primitive
+             * @param meshPrimitive glTF mesh primitive
+             * @param primitiveMode The primitive mode
+             */
+            _Exporter.prototype.setPrimitiveMode = function (meshPrimitive, primitiveMode) {
+                switch (primitiveMode) {
+                    case BABYLON.Material.TriangleFillMode: {
+                        // glTF defaults to using Triangle Mode
+                        break;
+                    }
+                    case BABYLON.Material.TriangleStripDrawMode: {
+                        meshPrimitive.mode = 5 /* TRIANGLE_STRIP */;
+                        break;
+                    }
+                    case BABYLON.Material.TriangleFanDrawMode: {
+                        meshPrimitive.mode = 6 /* TRIANGLE_FAN */;
+                        break;
+                    }
+                    case BABYLON.Material.PointListDrawMode: {
+                        meshPrimitive.mode = 0 /* POINTS */;
+                    }
+                    case BABYLON.Material.PointFillMode: {
+                        meshPrimitive.mode = 0 /* POINTS */;
+                        break;
+                    }
+                    case BABYLON.Material.LineLoopDrawMode: {
+                        meshPrimitive.mode = 2 /* LINE_LOOP */;
+                        break;
+                    }
+                    case BABYLON.Material.LineListDrawMode: {
+                        meshPrimitive.mode = 1 /* LINES */;
+                        break;
+                    }
+                    case BABYLON.Material.LineStripDrawMode: {
+                        meshPrimitive.mode = 3 /* LINE_STRIP */;
+                        break;
+                    }
+                }
+            };
+            /**
+             * Sets the vertex attribute accessor based of the glTF mesh primitive
+             * @param meshPrimitive glTF mesh primitive
+             * @param attributeKind vertex attribute
+             * @returns boolean specifying if uv coordinates are present
+             */
+            _Exporter.prototype.setAttributeKind = function (meshPrimitive, attributeKind) {
+                switch (attributeKind) {
+                    case BABYLON.VertexBuffer.PositionKind: {
+                        meshPrimitive.attributes.POSITION = this.accessors.length - 1;
+                        break;
+                    }
+                    case BABYLON.VertexBuffer.NormalKind: {
+                        meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
+                        break;
+                    }
+                    case BABYLON.VertexBuffer.ColorKind: {
+                        meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
+                        break;
+                    }
+                    case BABYLON.VertexBuffer.TangentKind: {
+                        meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
+                        break;
+                    }
+                    case BABYLON.VertexBuffer.UVKind: {
+                        meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
+                        break;
+                    }
+                    case BABYLON.VertexBuffer.UV2Kind: {
+                        meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
+                        break;
+                    }
+                    default: {
+                        BABYLON.Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
                     }
                 }
             };
             /**
              * Sets data for the primitive attributes of each submesh
              * @param mesh glTF Mesh object to store the primitive attribute information
-             * @param babylonMesh Babylon mesh to get the primitive attribute data from
+             * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
              * @param binaryWriter Buffer to write the attribute data to
              */
-            _Exporter.prototype.setPrimitiveAttributes = function (mesh, babylonMesh, binaryWriter) {
+            _Exporter.prototype.setPrimitiveAttributes = function (mesh, babylonTransformNode, binaryWriter) {
                 var bufferMesh = null;
-                var attributeKind;
-                var indices;
-                var byteLength;
                 var bufferView;
                 var uvCoordsPresent;
-                var meshPrimitive;
-                var vertexData;
-                var stride;
                 var minMax;
-                var newMat;
-                var babylonMultiMaterial;
-                var material;
-                var materialIndex = null;
-                var indexBufferViewIndex = null;
-                var accessor;
-                var bufferViewIndex;
-                if (babylonMesh instanceof BABYLON.Mesh) {
-                    bufferMesh = babylonMesh;
+                if (babylonTransformNode instanceof BABYLON.Mesh) {
+                    bufferMesh = babylonTransformNode;
                 }
-                else if (babylonMesh instanceof BABYLON.InstancedMesh) {
-                    bufferMesh = babylonMesh.sourceMesh;
+                else if (babylonTransformNode instanceof BABYLON.InstancedMesh) {
+                    bufferMesh = babylonTransformNode.sourceMesh;
                 }
                 var attributeData = [
                     { kind: BABYLON.VertexBuffer.PositionKind, accessorType: "VEC3" /* VEC3 */, byteStride: 12 },
@@ -413,76 +817,61 @@ var BABYLON;
                     { kind: BABYLON.VertexBuffer.UV2Kind, accessorType: "VEC2" /* VEC2 */, byteStride: 8 },
                 ];
                 if (bufferMesh) {
+                    var indexBufferViewIndex = null;
+                    var primitiveMode = this.getMeshPrimitiveMode(bufferMesh);
+                    var vertexAttributeBufferViews = {};
                     // For each BabylonMesh, create bufferviews for each 'kind'
                     for (var _i = 0, attributeData_1 = attributeData; _i < attributeData_1.length; _i++) {
                         var attribute = attributeData_1[_i];
-                        attributeKind = attribute.kind;
+                        var attributeKind = attribute.kind;
                         if (bufferMesh.isVerticesDataPresent(attributeKind)) {
-                            this.createBufferViewKind(attributeKind, babylonMesh, binaryWriter, attribute.byteStride);
+                            var vertexBuffer = this.getVertexBufferFromMesh(attributeKind, bufferMesh);
+                            attribute.byteStride = vertexBuffer ? vertexBuffer.getSize() * 4 : BABYLON.VertexBuffer.DeduceStride(attributeKind) * 4;
+                            if (attribute.byteStride === 12) {
+                                attribute.accessorType = "VEC3" /* VEC3 */;
+                            }
+                            this.createBufferViewKind(attributeKind, babylonTransformNode, binaryWriter, attribute.byteStride);
                             attribute.bufferViewIndex = this.bufferViews.length - 1;
+                            vertexAttributeBufferViews[attributeKind] = attribute.bufferViewIndex;
                         }
                     }
                     if (bufferMesh.getTotalIndices()) {
-                        indices = bufferMesh.getIndices();
+                        var indices = bufferMesh.getIndices();
                         if (indices) {
-                            byteLength = indices.length * 4;
+                            var byteLength = indices.length * 4;
                             bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
                             this.bufferViews.push(bufferView);
                             indexBufferViewIndex = this.bufferViews.length - 1;
-                            for (var k = 0, length_2 = indices.length; k < length_2; ++k) {
+                            for (var k = 0, length_7 = indices.length; k < length_7; ++k) {
                                 binaryWriter.setUInt32(indices[k]);
                             }
                         }
                     }
-                    if (babylonMesh.subMeshes) {
+                    if (bufferMesh.subMeshes) {
                         uvCoordsPresent = false;
                         // go through all mesh primitives (submeshes)
-                        for (var _a = 0, _b = babylonMesh.subMeshes; _a < _b.length; _a++) {
+                        for (var _a = 0, _b = bufferMesh.subMeshes; _a < _b.length; _a++) {
                             var submesh = _b[_a];
-                            meshPrimitive = { attributes: {} };
+                            var meshPrimitive = { attributes: {} };
                             for (var _c = 0, attributeData_2 = attributeData; _c < attributeData_2.length; _c++) {
                                 var attribute = attributeData_2[_c];
-                                attributeKind = attribute.kind;
-                                vertexData = bufferMesh.getVerticesData(attributeKind);
+                                var attributeKind = attribute.kind;
+                                var vertexData = bufferMesh.getVerticesData(attributeKind);
                                 if (vertexData) {
-                                    stride = BABYLON.VertexBuffer.DeduceStride(attributeKind);
-                                    bufferViewIndex = attribute.bufferViewIndex;
-                                    if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
-                                        minMax = { min: null, max: null };
-                                        if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
-                                            minMax = GLTF2._GLTFUtilities.CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this.convertToRightHandedSystem);
-                                        }
-                                        accessor = GLTF2._GLTFUtilities.CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonMesh.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
-                                        this.accessors.push(accessor);
-                                        switch (attributeKind) {
-                                            case BABYLON.VertexBuffer.PositionKind: {
-                                                meshPrimitive.attributes.POSITION = this.accessors.length - 1;
-                                                break;
+                                    var vertexBuffer = this.getVertexBufferFromMesh(attributeKind, bufferMesh);
+                                    if (vertexBuffer) {
+                                        var stride = vertexBuffer.getSize();
+                                        var bufferViewIndex = attribute.bufferViewIndex;
+                                        if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
+                                            minMax = { min: null, max: null };
+                                            if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
+                                                minMax = GLTF2._GLTFUtilities.CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this.convertToRightHandedSystem);
                                             }
-                                            case BABYLON.VertexBuffer.NormalKind: {
-                                                meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
-                                                break;
-                                            }
-                                            case BABYLON.VertexBuffer.ColorKind: {
-                                                meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
-                                                break;
-                                            }
-                                            case BABYLON.VertexBuffer.TangentKind: {
-                                                meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
-                                                break;
-                                            }
-                                            case BABYLON.VertexBuffer.UVKind: {
-                                                meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
+                                            var accessor = GLTF2._GLTFUtilities.CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
+                                            this.accessors.push(accessor);
+                                            this.setAttributeKind(meshPrimitive, attributeKind);
+                                            if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
                                                 uvCoordsPresent = true;
-                                                break;
-                                            }
-                                            case BABYLON.VertexBuffer.UV2Kind: {
-                                                meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
-                                                uvCoordsPresent = true;
-                                                break;
-                                            }
-                                            default: {
-                                                BABYLON.Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
                                             }
                                         }
                                     }
@@ -490,26 +879,55 @@ var BABYLON;
                             }
                             if (indexBufferViewIndex) {
                                 // Create accessor
-                                accessor = GLTF2._GLTFUtilities.CreateAccessor(indexBufferViewIndex, "indices - " + babylonMesh.name, "SCALAR" /* SCALAR */, 5125 /* UNSIGNED_INT */, submesh.indexCount, submesh.indexStart * 4, null, null);
+                                var accessor = GLTF2._GLTFUtilities.CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, "SCALAR" /* SCALAR */, 5125 /* UNSIGNED_INT */, submesh.indexCount, submesh.indexStart * 4, null, null);
                                 this.accessors.push(accessor);
                                 meshPrimitive.indices = this.accessors.length - 1;
                             }
                             if (bufferMesh.material) {
-                                materialIndex = null;
+                                var materialIndex = null;
                                 if (bufferMesh.material instanceof BABYLON.StandardMaterial || bufferMesh.material instanceof BABYLON.PBRMetallicRoughnessMaterial || bufferMesh.material instanceof BABYLON.PBRMaterial) {
-                                    materialIndex = babylonMesh.getScene().materials.indexOf(bufferMesh.material);
+                                    materialIndex = babylonTransformNode.getScene().materials.indexOf(bufferMesh.material);
                                 }
                                 else if (bufferMesh.material instanceof BABYLON.MultiMaterial) {
-                                    babylonMultiMaterial = bufferMesh.material;
-                                    material = babylonMultiMaterial.subMaterials[submesh.materialIndex];
+                                    var babylonMultiMaterial = bufferMesh.material;
+                                    var material = babylonMultiMaterial.subMaterials[submesh.materialIndex];
                                     if (material) {
-                                        materialIndex = babylonMesh.getScene().materials.indexOf(material);
+                                        materialIndex = babylonTransformNode.getScene().materials.indexOf(material);
                                     }
                                 }
                                 else {
                                     BABYLON.Tools.Warn("Material type " + bufferMesh.material.getClassName() + " for material " + bufferMesh.material.name + " is not yet implemented in glTF serializer.");
                                 }
                                 if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
+                                    var sideOrientation = this.babylonScene.materials[materialIndex].sideOrientation;
+                                    this.setPrimitiveMode(meshPrimitive, primitiveMode);
+                                    if (this.convertToRightHandedSystem && sideOrientation === BABYLON.Material.ClockWiseSideOrientation) {
+                                        //Overwrite the indices to be counter-clockwise
+                                        var byteOffset = indexBufferViewIndex != null ? this.bufferViews[indexBufferViewIndex].byteOffset : null;
+                                        if (byteOffset == null) {
+                                            byteOffset = 0;
+                                        }
+                                        var babylonIndices = null;
+                                        if (indexBufferViewIndex != null) {
+                                            babylonIndices = bufferMesh.getIndices();
+                                        }
+                                        if (babylonIndices) {
+                                            this.reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
+                                        }
+                                        else {
+                                            for (var _d = 0, attributeData_3 = attributeData; _d < attributeData_3.length; _d++) {
+                                                var attribute = attributeData_3[_d];
+                                                var vertexData = bufferMesh.getVerticesData(attribute.kind);
+                                                if (vertexData) {
+                                                    var byteOffset_1 = this.bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
+                                                    if (!byteOffset_1) {
+                                                        byteOffset_1 = 0;
+                                                    }
+                                                    this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset_1, binaryWriter);
+                                                }
+                                            }
+                                        }
+                                    }
                                     if (uvCoordsPresent) {
                                         if (!GLTF2._GLTFMaterial._HasTexturesPresent(this.materials[materialIndex])) {
                                             delete meshPrimitive.attributes.TEXCOORD_0;
@@ -519,9 +937,41 @@ var BABYLON;
                                     }
                                     else {
                                         if (GLTF2._GLTFMaterial._HasTexturesPresent(this.materials[materialIndex])) {
-                                            newMat = GLTF2._GLTFMaterial._StripTexturesFromMaterial(this.materials[materialIndex]);
+                                            var newMat = GLTF2._GLTFMaterial._StripTexturesFromMaterial(this.materials[materialIndex]);
                                             this.materials.push(newMat);
                                             meshPrimitive.material = this.materials.length - 1;
+                                        }
+                                        else {
+                                            meshPrimitive.material = materialIndex;
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                var sideOrientation = this.babylonScene.defaultMaterial.sideOrientation;
+                                var byteOffset = indexBufferViewIndex != null ? this.bufferViews[indexBufferViewIndex].byteOffset : null;
+                                if (byteOffset == null) {
+                                    byteOffset = 0;
+                                }
+                                var babylonIndices = null;
+                                if (indexBufferViewIndex != null) {
+                                    babylonIndices = bufferMesh.getIndices();
+                                }
+                                if (babylonIndices) {
+                                    if (sideOrientation === BABYLON.Material.ClockWiseSideOrientation) {
+                                        this.reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
+                                    }
+                                }
+                                else {
+                                    for (var _e = 0, attributeData_4 = attributeData; _e < attributeData_4.length; _e++) {
+                                        var attribute = attributeData_4[_e];
+                                        var vertexData = bufferMesh.getVerticesData(attribute.kind);
+                                        if (vertexData) {
+                                            var byteOffset_2 = this.bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
+                                            if (!byteOffset_2) {
+                                                byteOffset_2 = 0;
+                                            }
+                                            this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset_2, binaryWriter);
                                         }
                                     }
                                 }
@@ -536,50 +986,64 @@ var BABYLON;
              * Returns the the total byte offset
              * @param babylonScene Babylon scene to get the mesh data from
              * @param binaryWriter Buffer to write binary data to
-             * @returns bytelength + byteoffset
              */
             _Exporter.prototype.createScene = function (babylonScene, binaryWriter) {
-                if (babylonScene.meshes.length) {
-                    var babylonMeshes = babylonScene.meshes;
-                    var scene_1 = { nodes: [] };
-                    var glTFNodeIndex_1;
-                    var glTFNode_1;
-                    var directDescendents_1;
-                    GLTF2._GLTFMaterial._ConvertMaterialsToGLTF(babylonScene.materials, "image/png" /* PNG */, this.images, this.textures, this.materials, this.imageData, true);
-                    this.nodeMap = this.createNodeMapAndAnimations(babylonScene, binaryWriter);
+                if (this.setNodeTransformation.length) {
+                    var scene = { nodes: [] };
+                    var glTFNodeIndex = void 0;
+                    var glTFNode = void 0;
+                    var directDescendents = void 0;
+                    var nodes = babylonScene.transformNodes.concat(babylonScene.meshes);
+                    GLTF2._GLTFMaterial._ConvertMaterialsToGLTF(babylonScene.materials, "image/png" /* PNG */, this.images, this.textures, this.samplers, this.materials, this.imageData, true);
+                    this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
                     this.totalByteLength = binaryWriter.getByteOffset();
-                    var self_2 = this;
                     // Build Hierarchy with the node map.
-                    babylonMeshes.forEach(function (babylonMesh) {
-                        glTFNodeIndex_1 = self_2.nodeMap[babylonMesh.uniqueId];
-                        glTFNode_1 = self_2.nodes[glTFNodeIndex_1];
-                        if (!babylonMesh.parent) {
-                            if (!self_2.shouldExportMesh(babylonMesh)) {
-                                BABYLON.Tools.Log("Omitting " + babylonMesh.name + " from scene.");
+                    for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+                        var babylonTransformNode = nodes_1[_i];
+                        glTFNodeIndex = this.nodeMap[babylonTransformNode.uniqueId];
+                        if (glTFNodeIndex != null) {
+                            glTFNode = this.nodes[glTFNodeIndex];
+                            if (!babylonTransformNode.parent) {
+                                if (!this.shouldExportTransformNode(babylonTransformNode)) {
+                                    BABYLON.Tools.Log("Omitting " + babylonTransformNode.name + " from scene.");
+                                }
+                                else {
+                                    if (this.convertToRightHandedSystem) {
+                                        if (glTFNode.translation) {
+                                            glTFNode.translation[2] *= -1;
+                                            glTFNode.translation[0] *= -1;
+                                        }
+                                        glTFNode.rotation = glTFNode.rotation ? BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(glTFNode.rotation)).asArray() : (BABYLON.Quaternion.FromArray([0, 1, 0, 0])).asArray();
+                                    }
+                                    scene.nodes.push(glTFNodeIndex);
+                                }
                             }
-                            else {
-                                scene_1.nodes.push(glTFNodeIndex_1);
+                            directDescendents = babylonTransformNode.getDescendants(true);
+                            if (!glTFNode.children && directDescendents && directDescendents.length) {
+                                glTFNode.children = [];
+                                for (var _a = 0, directDescendents_1 = directDescendents; _a < directDescendents_1.length; _a++) {
+                                    var descendent = directDescendents_1[_a];
+                                    if (this.nodeMap[descendent.uniqueId] != null) {
+                                        glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
+                                    }
+                                }
                             }
                         }
-                        directDescendents_1 = babylonMesh.getDescendants(true);
-                        if (!glTFNode_1.children && directDescendents_1 && directDescendents_1.length) {
-                            glTFNode_1.children = [];
-                            for (var _i = 0, directDescendents_2 = directDescendents_1; _i < directDescendents_2.length; _i++) {
-                                var descendent = directDescendents_2[_i];
-                                glTFNode_1.children.push(self_2.nodeMap[descendent.uniqueId]);
-                            }
-                        }
-                    });
-                    this.scenes.push(scene_1);
+                    }
+                    ;
+                    if (scene.nodes.length) {
+                        this.scenes.push(scene);
+                    }
                 }
             };
             /**
              * Creates a mapping of Node unique id to node index and handles animations
-             * @param scene Babylon Scene
+             * @param babylonScene Babylon Scene
              * @param binaryWriter Buffer to write binary data to
              * @returns Node mapping of unique id to index
              */
-            _Exporter.prototype.createNodeMapAndAnimations = function (scene, binaryWriter) {
+            _Exporter.prototype.createNodeMapAndAnimations = function (babylonScene, nodes, shouldExportTransformNode, binaryWriter) {
+                var _this = this;
                 var nodeMap = {};
                 var nodeIndex;
                 var runtimeGLTFAnimation = {
@@ -589,26 +1053,32 @@ var BABYLON;
                 };
                 var idleGLTFAnimations = [];
                 var node;
-                var self = this;
-                scene.meshes.forEach(function (babylonMesh) {
-                    node = self.createNode(babylonMesh, binaryWriter);
-                    self.nodes.push(node);
-                    nodeIndex = self.nodes.length - 1;
-                    nodeMap[babylonMesh.uniqueId] = nodeIndex;
-                    if (!scene.animationGroups.length && babylonMesh.animations.length) {
-                        GLTF2._GLTFAnimation._CreateNodeAnimationFromMeshAnimations(babylonMesh, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, self.nodes, binaryWriter, self.bufferViews, self.accessors, self.convertToRightHandedSystem, self.animationSampleRate);
+                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+                    var babylonTransformNode = nodes_2[_i];
+                    if (shouldExportTransformNode(babylonTransformNode)) {
+                        node = this.createNode(babylonTransformNode, binaryWriter);
+                        this.nodes.push(node);
+                        nodeIndex = this.nodes.length - 1;
+                        nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
+                            GLTF2._GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this.nodes, binaryWriter, this.bufferViews, this.accessors, this.convertToRightHandedSystem, this.animationSampleRate);
+                        }
                     }
-                });
+                    else {
+                        "Excluding mesh " + babylonTransformNode.name;
+                    }
+                }
+                ;
                 if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
                     this.animations.push(runtimeGLTFAnimation);
                 }
                 idleGLTFAnimations.forEach(function (idleGLTFAnimation) {
                     if (idleGLTFAnimation.channels.length && idleGLTFAnimation.samplers.length) {
-                        self.animations.push(idleGLTFAnimation);
+                        _this.animations.push(idleGLTFAnimation);
                     }
                 });
-                if (scene.animationGroups.length) {
-                    GLTF2._GLTFAnimation._CreateNodeAnimationFromAnimationGroups(scene, self.animations, nodeMap, this.nodes, binaryWriter, this.bufferViews, this.accessors, this.convertToRightHandedSystem, self.animationSampleRate);
+                if (babylonScene.animationGroups.length) {
+                    GLTF2._GLTFAnimation._CreateNodeAnimationFromAnimationGroups(babylonScene, this.animations, nodeMap, this.nodes, binaryWriter, this.bufferViews, this.accessors, this.convertToRightHandedSystem, this.animationSampleRate);
                 }
                 return nodeMap;
             };
@@ -618,17 +1088,17 @@ var BABYLON;
              * @param binaryWriter Buffer for storing geometry data
              * @returns glTF node
              */
-            _Exporter.prototype.createNode = function (babylonMesh, binaryWriter) {
+            _Exporter.prototype.createNode = function (babylonTransformNode, binaryWriter) {
                 // create node to hold translation/rotation/scale and the mesh
                 var node = {};
                 // create mesh
                 var mesh = { primitives: [] };
-                if (babylonMesh.name) {
-                    node.name = babylonMesh.name;
+                if (babylonTransformNode.name) {
+                    node.name = babylonTransformNode.name;
                 }
                 // Set transformation
-                this.setNodeTransformation(node, babylonMesh);
-                this.setPrimitiveAttributes(mesh, babylonMesh, binaryWriter);
+                this.setNodeTransformation(node, babylonTransformNode);
+                this.setPrimitiveAttributes(mesh, babylonTransformNode, binaryWriter);
                 if (mesh.primitives.length) {
                     this.meshes.push(mesh);
                     node.mesh = this.meshes.length - 1;
@@ -661,7 +1131,7 @@ var BABYLON;
                 var newBuffer = new ArrayBuffer(byteLength);
                 var oldUint8Array = new Uint8Array(this._arrayBuffer);
                 var newUint8Array = new Uint8Array(newBuffer);
-                for (var i = 0, length_3 = newUint8Array.byteLength; i < length_3; ++i) {
+                for (var i = 0, length_8 = newUint8Array.byteLength; i < length_8; ++i) {
                     newUint8Array[i] = oldUint8Array[i];
                 }
                 this._arrayBuffer = newBuffer;
@@ -685,18 +1155,96 @@ var BABYLON;
             /**
              * Stores an UInt8 in the array buffer
              * @param entry
+             * @param byteOffset If defined, specifies where to set the value as an offset.
              */
-            _BinaryWriter.prototype.setUInt8 = function (entry) {
-                if (this._byteOffset + 1 > this._arrayBuffer.byteLength) {
-                    this.resizeBuffer(this._arrayBuffer.byteLength * 2);
+            _BinaryWriter.prototype.setUInt8 = function (entry, byteOffset) {
+                if (byteOffset != null) {
+                    if (byteOffset < this._byteOffset) {
+                        this._dataView.setUint8(byteOffset, entry);
+                    }
+                    else {
+                        BABYLON.Tools.Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+                    }
                 }
-                this._dataView.setUint8(this._byteOffset++, entry);
+                else {
+                    if (this._byteOffset + 1 > this._arrayBuffer.byteLength) {
+                        this.resizeBuffer(this._arrayBuffer.byteLength * 2);
+                    }
+                    this._dataView.setUint8(this._byteOffset++, entry);
+                }
+            };
+            /**
+             * Gets an UInt32 in the array buffer
+             * @param entry
+             * @param byteOffset If defined, specifies where to set the value as an offset.
+             */
+            _BinaryWriter.prototype.getUInt32 = function (byteOffset) {
+                if (byteOffset < this._byteOffset) {
+                    return this._dataView.getUint32(byteOffset, true);
+                }
+                else {
+                    BABYLON.Tools.Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+                    throw new Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+                }
+            };
+            _BinaryWriter.prototype.getVector3Float32FromRef = function (vector3, byteOffset) {
+                if (byteOffset + 8 > this._byteOffset) {
+                    BABYLON.Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+                }
+                else {
+                    vector3.x = this._dataView.getFloat32(byteOffset, true);
+                    vector3.y = this._dataView.getFloat32(byteOffset + 4, true);
+                    vector3.z = this._dataView.getFloat32(byteOffset + 8, true);
+                }
+            };
+            _BinaryWriter.prototype.setVector3Float32FromRef = function (vector3, byteOffset) {
+                if (byteOffset + 8 > this._byteOffset) {
+                    BABYLON.Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+                }
+                else {
+                    this._dataView.setFloat32(byteOffset, vector3.x, true);
+                    this._dataView.setFloat32(byteOffset + 4, vector3.y, true);
+                    this._dataView.setFloat32(byteOffset + 8, vector3.z, true);
+                }
+            };
+            _BinaryWriter.prototype.getVector4Float32FromRef = function (vector4, byteOffset) {
+                if (byteOffset + 12 > this._byteOffset) {
+                    BABYLON.Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+                }
+                else {
+                    vector4.x = this._dataView.getFloat32(byteOffset, true);
+                    vector4.y = this._dataView.getFloat32(byteOffset + 4, true);
+                    vector4.z = this._dataView.getFloat32(byteOffset + 8, true);
+                    vector4.w = this._dataView.getFloat32(byteOffset + 12, true);
+                }
+            };
+            _BinaryWriter.prototype.setVector4Float32FromRef = function (vector4, byteOffset) {
+                if (byteOffset + 12 > this._byteOffset) {
+                    BABYLON.Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+                }
+                else {
+                    this._dataView.setFloat32(byteOffset, vector4.x, true);
+                    this._dataView.setFloat32(byteOffset + 4, vector4.y, true);
+                    this._dataView.setFloat32(byteOffset + 8, vector4.z, true);
+                    this._dataView.setFloat32(byteOffset + 12, vector4.w, true);
+                }
             };
             /**
              * Stores a Float32 in the array buffer
              * @param entry
              */
-            _BinaryWriter.prototype.setFloat32 = function (entry) {
+            _BinaryWriter.prototype.setFloat32 = function (entry, byteOffset) {
+                if (isNaN(entry)) {
+                    BABYLON.Tools.Error('Invalid data being written!');
+                }
+                if (byteOffset != null) {
+                    if (byteOffset < this._byteOffset) {
+                        this._dataView.setFloat32(byteOffset, entry, true);
+                    }
+                    else {
+                        BABYLON.Tools.Error('BinaryWriter: byteoffset is greater than the current binary length!');
+                    }
+                }
                 if (this._byteOffset + 4 > this._arrayBuffer.byteLength) {
                     this.resizeBuffer(this._arrayBuffer.byteLength * 2);
                 }
@@ -706,13 +1254,24 @@ var BABYLON;
             /**
              * Stores an UInt32 in the array buffer
              * @param entry
+             * @param byteOffset If defined, specifies where to set the value as an offset.
              */
-            _BinaryWriter.prototype.setUInt32 = function (entry) {
-                if (this._byteOffset + 4 > this._arrayBuffer.byteLength) {
-                    this.resizeBuffer(this._arrayBuffer.byteLength * 2);
+            _BinaryWriter.prototype.setUInt32 = function (entry, byteOffset) {
+                if (byteOffset != null) {
+                    if (byteOffset < this._byteOffset) {
+                        this._dataView.setUint32(byteOffset, entry, true);
+                    }
+                    else {
+                        BABYLON.Tools.Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+                    }
                 }
-                this._dataView.setUint32(this._byteOffset, entry, true);
-                this._byteOffset += 4;
+                else {
+                    if (this._byteOffset + 4 > this._arrayBuffer.byteLength) {
+                        this.resizeBuffer(this._arrayBuffer.byteLength * 2);
+                    }
+                    this._dataView.setUint32(this._byteOffset, entry, true);
+                    this._byteOffset += 4;
+                }
             };
             return _BinaryWriter;
         }());
@@ -722,7 +1281,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFExporter.js.map
 
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -781,19 +1340,14 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFData.js.map
 
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;
     (function (GLTF2) {
         /**
-         * Interface for storing specular glossiness factors
-         * @hidden
-         */
-        /**
          * Utility methods for working with glTF material conversion properties.  This class should only be used internally
          * @hidden
-    
          */
         var _GLTFMaterial = /** @class */ (function () {
             function _GLTFMaterial() {
@@ -819,17 +1373,17 @@ var BABYLON;
              * @param imageData mapping of texture names to base64 textures
              * @param hasTextureCoords specifies if texture coordinates are present on the material
              */
-            _GLTFMaterial._ConvertMaterialsToGLTF = function (babylonMaterials, mimeType, images, textures, materials, imageData, hasTextureCoords) {
-                for (var i = 0; i < babylonMaterials.length; ++i) {
-                    var babylonMaterial = babylonMaterials[i];
+            _GLTFMaterial._ConvertMaterialsToGLTF = function (babylonMaterials, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords) {
+                for (var _i = 0, babylonMaterials_1 = babylonMaterials; _i < babylonMaterials_1.length; _i++) {
+                    var babylonMaterial = babylonMaterials_1[_i];
                     if (babylonMaterial instanceof BABYLON.StandardMaterial) {
-                        _GLTFMaterial._ConvertStandardMaterial(babylonMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords);
+                        _GLTFMaterial._ConvertStandardMaterial(babylonMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords);
                     }
                     else if (babylonMaterial instanceof BABYLON.PBRMetallicRoughnessMaterial) {
-                        _GLTFMaterial._ConvertPBRMetallicRoughnessMaterial(babylonMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords);
+                        _GLTFMaterial._ConvertPBRMetallicRoughnessMaterial(babylonMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords);
                     }
                     else if (babylonMaterial instanceof BABYLON.PBRMaterial) {
-                        _GLTFMaterial._ConvertPBRMaterial(babylonMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords);
+                        _GLTFMaterial._ConvertPBRMaterial(babylonMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords);
                     }
                     else {
                         BABYLON.Tools.Error("Unsupported material type: " + babylonMaterial.name);
@@ -1022,7 +1576,7 @@ var BABYLON;
              * @param imageData map of image file name to data
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              */
-            _GLTFMaterial._ConvertStandardMaterial = function (babylonStandardMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords) {
+            _GLTFMaterial._ConvertStandardMaterial = function (babylonStandardMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords) {
                 var glTFPbrMetallicRoughness = _GLTFMaterial._ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
                 var glTFMaterial = { name: babylonStandardMaterial.name };
                 if (babylonStandardMaterial.backFaceCulling != null && !babylonStandardMaterial.backFaceCulling) {
@@ -1033,26 +1587,29 @@ var BABYLON;
                 }
                 if (hasTextureCoords) {
                     if (babylonStandardMaterial.diffuseTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.diffuseTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.diffuseTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture != null) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
                     }
                     if (babylonStandardMaterial.bumpTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.bumpTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.bumpTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture) {
                             glTFMaterial.normalTexture = glTFTexture;
+                            if (babylonStandardMaterial.bumpTexture.level !== 1) {
+                                glTFMaterial.normalTexture.scale = babylonStandardMaterial.bumpTexture.level;
+                            }
                         }
                     }
                     if (babylonStandardMaterial.emissiveTexture) {
-                        var glTFEmissiveTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.emissiveTexture, mimeType, images, textures, imageData);
+                        var glTFEmissiveTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.emissiveTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFEmissiveTexture) {
                             glTFMaterial.emissiveTexture = glTFEmissiveTexture;
                         }
                         glTFMaterial.emissiveFactor = [1.0, 1.0, 1.0];
                     }
                     if (babylonStandardMaterial.ambientTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.ambientTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonStandardMaterial.ambientTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture) {
                             var occlusionTexture = {
                                 index: glTFTexture.index
@@ -1086,7 +1643,7 @@ var BABYLON;
              * @param imageData map of image file name to data
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              */
-            _GLTFMaterial._ConvertPBRMetallicRoughnessMaterial = function (babylonPBRMetalRoughMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords) {
+            _GLTFMaterial._ConvertPBRMetallicRoughnessMaterial = function (babylonPBRMetalRoughMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords) {
                 var glTFPbrMetallicRoughness = {};
                 if (babylonPBRMetalRoughMaterial.baseColor) {
                     glTFPbrMetallicRoughness.baseColorFactor = [
@@ -1110,19 +1667,22 @@ var BABYLON;
                 }
                 if (hasTextureCoords) {
                     if (babylonPBRMetalRoughMaterial.baseTexture != null) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.baseTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.baseTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture != null) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
                     }
                     if (babylonPBRMetalRoughMaterial.normalTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.normalTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.normalTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture) {
                             glTFMaterial.normalTexture = glTFTexture;
+                            if (babylonPBRMetalRoughMaterial.normalTexture.level !== 1) {
+                                glTFMaterial.normalTexture.scale = babylonPBRMetalRoughMaterial.normalTexture.level;
+                            }
                         }
                     }
                     if (babylonPBRMetalRoughMaterial.occlusionTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.occlusionTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.occlusionTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture) {
                             glTFMaterial.occlusionTexture = glTFTexture;
                             if (babylonPBRMetalRoughMaterial.occlusionStrength != null) {
@@ -1131,7 +1691,7 @@ var BABYLON;
                         }
                     }
                     if (babylonPBRMetalRoughMaterial.emissiveTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.emissiveTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMetalRoughMaterial.emissiveTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture != null) {
                             glTFMaterial.emissiveTexture = glTFTexture;
                         }
@@ -1145,7 +1705,7 @@ var BABYLON;
                     if (alphaMode) {
                         if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
                             glTFMaterial.alphaMode = alphaMode;
-                            if (alphaMode === "BLEND" /* BLEND */) {
+                            if (alphaMode === "MASK" /* MASK */) {
                                 glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
                             }
                         }
@@ -1164,10 +1724,10 @@ var BABYLON;
              */
             _GLTFMaterial._CreateBase64FromCanvas = function (buffer, width, height, mimeType) {
                 var imageCanvas = document.createElement('canvas');
-                imageCanvas.id = "WriteCanvas";
-                var ctx = imageCanvas.getContext('2d');
                 imageCanvas.width = width;
                 imageCanvas.height = height;
+                imageCanvas.id = "WriteCanvas";
+                var ctx = imageCanvas.getContext('2d');
                 var imgData = ctx.createImageData(width, height);
                 imgData.data.set(buffer);
                 ctx.putImageData(imgData, 0, 0);
@@ -1182,8 +1742,8 @@ var BABYLON;
              */
             _GLTFMaterial._CreateWhiteTexture = function (width, height, scene) {
                 var data = new Uint8Array(width * height * 4);
-                for (var i = 0; i < data.length; ++i) {
-                    data[i] = 255;
+                for (var i = 0; i < data.length; i = i + 4) {
+                    data[i] = data[i + 1] = data[i + 2] = data[i + 3] = 0xFF;
                 }
                 var rawTexture = BABYLON.RawTexture.CreateRGBATexture(data, width, height, scene);
                 return rawTexture;
@@ -1396,7 +1956,7 @@ var BABYLON;
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              * @returns glTF PBR Metallic Roughness factors
              */
-            _GLTFMaterial._ConvertMetalRoughFactorsToMetallicRoughness = function (babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords) {
+            _GLTFMaterial._ConvertMetalRoughFactorsToMetallicRoughness = function (babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords) {
                 var metallicRoughness = {
                     baseColor: babylonPBRMaterial.albedoColor,
                     metallic: babylonPBRMaterial.metallic,
@@ -1404,19 +1964,113 @@ var BABYLON;
                 };
                 if (hasTextureCoords) {
                     if (babylonPBRMaterial.albedoTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.albedoTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.albedoTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
                     }
                     if (babylonPBRMaterial.metallicTexture) {
-                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.metallicTexture, mimeType, images, textures, imageData);
+                        var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.metallicTexture, mimeType, images, textures, samplers, imageData);
                         if (glTFTexture != null) {
                             glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                         }
                     }
                 }
                 return metallicRoughness;
+            };
+            _GLTFMaterial._GetGLTFTextureSampler = function (texture) {
+                var sampler = _GLTFMaterial._GetGLTFTextureWrapModesSampler(texture);
+                var samplingMode = texture instanceof BABYLON.Texture ? texture.samplingMode : null;
+                if (samplingMode != null) {
+                    switch (samplingMode) {
+                        case BABYLON.Texture.LINEAR_LINEAR: {
+                            sampler.magFilter = 9729 /* LINEAR */;
+                            sampler.minFilter = 9729 /* LINEAR */;
+                            break;
+                        }
+                        case BABYLON.Texture.LINEAR_NEAREST: {
+                            sampler.magFilter = 9729 /* LINEAR */;
+                            sampler.minFilter = 9728 /* NEAREST */;
+                            break;
+                        }
+                        case BABYLON.Texture.NEAREST_LINEAR: {
+                            sampler.magFilter = 9728 /* NEAREST */;
+                            sampler.minFilter = 9729 /* LINEAR */;
+                            break;
+                        }
+                        case BABYLON.Texture.NEAREST_LINEAR_MIPLINEAR: {
+                            sampler.magFilter = 9728 /* NEAREST */;
+                            sampler.minFilter = 9987 /* LINEAR_MIPMAP_LINEAR */;
+                            break;
+                        }
+                        case BABYLON.Texture.NEAREST_NEAREST: {
+                            sampler.magFilter = 9728 /* NEAREST */;
+                            sampler.minFilter = 9728 /* NEAREST */;
+                            break;
+                        }
+                        case BABYLON.Texture.NEAREST_LINEAR_MIPNEAREST: {
+                            sampler.magFilter = 9728 /* NEAREST */;
+                            sampler.minFilter = 9985 /* LINEAR_MIPMAP_NEAREST */;
+                            break;
+                        }
+                        case BABYLON.Texture.LINEAR_NEAREST_MIPNEAREST: {
+                            sampler.magFilter = 9729 /* LINEAR */;
+                            sampler.minFilter = 9984 /* NEAREST_MIPMAP_NEAREST */;
+                            break;
+                        }
+                        case BABYLON.Texture.LINEAR_NEAREST_MIPLINEAR: {
+                            sampler.magFilter = 9729 /* LINEAR */;
+                            sampler.minFilter = 9986 /* NEAREST_MIPMAP_LINEAR */;
+                            break;
+                        }
+                        case BABYLON.Texture.NEAREST_NEAREST_MIPLINEAR: {
+                            sampler.magFilter = 9728 /* NEAREST */;
+                            sampler.minFilter = 9986 /* NEAREST_MIPMAP_LINEAR */;
+                            break;
+                        }
+                        case BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR: {
+                            sampler.magFilter = 9729 /* LINEAR */;
+                            sampler.minFilter = 9987 /* LINEAR_MIPMAP_LINEAR */;
+                            break;
+                        }
+                        case BABYLON.Texture.LINEAR_LINEAR_MIPNEAREST: {
+                            sampler.magFilter = 9729 /* LINEAR */;
+                            sampler.minFilter = 9985 /* LINEAR_MIPMAP_NEAREST */;
+                            break;
+                        }
+                        case BABYLON.Texture.NEAREST_NEAREST_MIPNEAREST: {
+                            sampler.magFilter = 9728 /* NEAREST */;
+                            sampler.minFilter = 9984 /* NEAREST_MIPMAP_NEAREST */;
+                            break;
+                        }
+                    }
+                }
+                return sampler;
+            };
+            _GLTFMaterial._GetGLTFTextureWrapMode = function (wrapMode) {
+                switch (wrapMode) {
+                    case BABYLON.Texture.WRAP_ADDRESSMODE: {
+                        return 10497 /* REPEAT */;
+                    }
+                    case BABYLON.Texture.CLAMP_ADDRESSMODE: {
+                        return 33071 /* CLAMP_TO_EDGE */;
+                    }
+                    case BABYLON.Texture.MIRROR_ADDRESSMODE: {
+                        return 33648 /* MIRRORED_REPEAT */;
+                    }
+                    default: {
+                        BABYLON.Tools.Error("Unsupported Texture Wrap Mode " + wrapMode + "!");
+                        return 10497 /* REPEAT */;
+                    }
+                }
+            };
+            _GLTFMaterial._GetGLTFTextureWrapModesSampler = function (texture) {
+                var wrapS = _GLTFMaterial._GetGLTFTextureWrapMode(texture instanceof BABYLON.Texture ? texture.wrapU : BABYLON.Texture.WRAP_ADDRESSMODE);
+                var wrapT = _GLTFMaterial._GetGLTFTextureWrapMode(texture instanceof BABYLON.Texture ? texture.wrapV : BABYLON.Texture.WRAP_ADDRESSMODE);
+                if (wrapS === 10497 /* REPEAT */ && wrapT === 10497 /* REPEAT */) { // default wrapping mode in glTF, so omitting
+                    return {};
+                }
+                return { wrapS: wrapS, wrapT: wrapT };
             };
             /**
              * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors
@@ -1429,12 +2083,18 @@ var BABYLON;
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              * @returns glTF PBR Metallic Roughness factors
              */
-            _GLTFMaterial._ConvertSpecGlossFactorsToMetallicRoughness = function (babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords) {
+            _GLTFMaterial._ConvertSpecGlossFactorsToMetallicRoughness = function (babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords) {
                 var specGloss = {
                     diffuseColor: babylonPBRMaterial.albedoColor || BABYLON.Color3.White(),
                     specularColor: babylonPBRMaterial.reflectivityColor || BABYLON.Color3.White(),
                     glossiness: babylonPBRMaterial.microSurface || 1,
                 };
+                var samplerIndex = null;
+                var sampler = this._GetGLTFTextureSampler(babylonPBRMaterial.albedoTexture);
+                if (sampler.magFilter != null && sampler.minFilter != null && sampler.wrapS != null && sampler.wrapT != null) {
+                    samplers.push(sampler);
+                    samplerIndex = samplers.length - 1;
+                }
                 if (babylonPBRMaterial.reflectivityTexture && !babylonPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha) {
                     BABYLON.Tools.Error("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture currently not supported");
                     return null;
@@ -1446,13 +2106,13 @@ var BABYLON;
                 else {
                     if (hasTextureCoords) {
                         if (metallicRoughnessFactors.baseColorTextureBase64) {
-                            var glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, images, textures, imageData);
+                            var glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, images, textures, babylonPBRMaterial.albedoTexture.coordinatesIndex, samplerIndex, imageData);
                             if (glTFBaseColorTexture != null) {
                                 glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
                             }
                         }
                         if (metallicRoughnessFactors.metallicRoughnessTextureBase64) {
-                            var glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, images, textures, imageData);
+                            var glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, images, textures, babylonPBRMaterial.reflectivityTexture.coordinatesIndex, samplerIndex, imageData);
                             if (glTFMRColorTexture != null) {
                                 glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
                             }
@@ -1471,7 +2131,7 @@ var BABYLON;
              * @param imageData map of image file name to data
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              */
-            _GLTFMaterial._ConvertPBRMaterial = function (babylonPBRMaterial, mimeType, images, textures, materials, imageData, hasTextureCoords) {
+            _GLTFMaterial._ConvertPBRMaterial = function (babylonPBRMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords) {
                 var glTFPbrMetallicRoughness = {};
                 var metallicRoughness;
                 var glTFMaterial = {
@@ -1479,10 +2139,10 @@ var BABYLON;
                 };
                 var useMetallicRoughness = babylonPBRMaterial.isMetallicWorkflow();
                 if (useMetallicRoughness) {
-                    metallicRoughness = this._ConvertMetalRoughFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+                    metallicRoughness = this._ConvertMetalRoughFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
                 }
                 else {
-                    metallicRoughness = this._ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+                    metallicRoughness = this._ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
                 }
                 if (metallicRoughness) {
                     if (!(this.FuzzyEquals(metallicRoughness.baseColor, BABYLON.Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
@@ -1507,13 +2167,16 @@ var BABYLON;
                     }
                     if (hasTextureCoords) {
                         if (babylonPBRMaterial.bumpTexture) {
-                            var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.bumpTexture, mimeType, images, textures, imageData);
+                            var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.bumpTexture, mimeType, images, textures, samplers, imageData);
                             if (glTFTexture) {
                                 glTFMaterial.normalTexture = glTFTexture;
+                                if (babylonPBRMaterial.bumpTexture.level !== 1) {
+                                    glTFMaterial.normalTexture.scale = babylonPBRMaterial.bumpTexture.level;
+                                }
                             }
                         }
                         if (babylonPBRMaterial.ambientTexture) {
-                            var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.ambientTexture, mimeType, images, textures, imageData);
+                            var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.ambientTexture, mimeType, images, textures, samplers, imageData);
                             if (glTFTexture) {
                                 var occlusionTexture = {
                                     index: glTFTexture.index
@@ -1525,7 +2188,7 @@ var BABYLON;
                             }
                         }
                         if (babylonPBRMaterial.emissiveTexture) {
-                            var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, imageData);
+                            var glTFTexture = _GLTFMaterial._ExportTexture(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, samplers, imageData);
                             if (glTFTexture != null) {
                                 glTFMaterial.emissiveTexture = glTFTexture;
                             }
@@ -1539,7 +2202,7 @@ var BABYLON;
                         if (alphaMode) {
                             if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
                                 glTFMaterial.alphaMode = alphaMode;
-                                if (alphaMode === "BLEND" /* BLEND */) {
+                                if (alphaMode === "MASK" /* MASK */) {
                                     glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
                                 }
                             }
@@ -1562,7 +2225,26 @@ var BABYLON;
              * @param imageData map of image file name and data
              * @return glTF texture info, or null if the texture format is not supported
              */
-            _GLTFMaterial._ExportTexture = function (babylonTexture, mimeType, images, textures, imageData) {
+            _GLTFMaterial._ExportTexture = function (babylonTexture, mimeType, images, textures, samplers, imageData) {
+                var sampler = _GLTFMaterial._GetGLTFTextureSampler(babylonTexture);
+                var samplerIndex = null;
+                //  if a pre-existing sampler with identical parameters exists, then reuse the previous sampler
+                var foundSamplerIndex = null;
+                for (var i = 0; i < samplers.length; ++i) {
+                    var s = samplers[i];
+                    if (s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter &&
+                        s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT) {
+                        foundSamplerIndex = i;
+                        break;
+                    }
+                }
+                if (foundSamplerIndex == null) {
+                    samplers.push(sampler);
+                    samplerIndex = samplers.length - 1;
+                }
+                else {
+                    samplerIndex = foundSamplerIndex;
+                }
                 var textureName = "texture_" + (textures.length - 1).toString();
                 var textureData = babylonTexture.getInternalTexture();
                 if (textureData != null) {
@@ -1585,7 +2267,7 @@ var BABYLON;
                 var pixels = _GLTFMaterial.GetPixelsFromTexture(babylonTexture);
                 var size = babylonTexture.getSize();
                 var base64Data = this._CreateBase64FromCanvas(pixels, size.width, size.height, mimeType);
-                return this._GetTextureInfoFromBase64(base64Data, textureName, mimeType, images, textures, imageData);
+                return this._GetTextureInfoFromBase64(base64Data, textureName, mimeType, images, textures, babylonTexture.coordinatesIndex, samplerIndex, imageData);
             };
             /**
              * Builds a texture from base64 string
@@ -1597,11 +2279,15 @@ var BABYLON;
              * @param imageData map of image data
              * @returns glTF texture info, or null if the texture format is not supported
              */
-            _GLTFMaterial._GetTextureInfoFromBase64 = function (base64Texture, textureName, mimeType, images, textures, imageData) {
+            _GLTFMaterial._GetTextureInfoFromBase64 = function (base64Texture, textureName, mimeType, images, textures, texCoordIndex, samplerIndex, imageData) {
                 var textureInfo = null;
                 var glTFTexture = {
-                    source: images.length
+                    source: images.length,
+                    name: textureName
                 };
+                if (samplerIndex != null) {
+                    glTFTexture.sampler = samplerIndex;
+                }
                 var binStr = atob(base64Texture.split(',')[1]);
                 var arrBuff = new ArrayBuffer(binStr.length);
                 var arr = new Uint8Array(arrBuff);
@@ -1614,28 +2300,26 @@ var BABYLON;
                     var glTFImage = {
                         uri: textureName
                     };
-                    var foundIndex = -1;
+                    var foundIndex = null;
                     for (var i = 0; i < images.length; ++i) {
                         if (images[i].uri === textureName) {
                             foundIndex = i;
                             break;
                         }
                     }
-                    if (foundIndex === -1) {
+                    if (foundIndex == null) {
                         images.push(glTFImage);
                         glTFTexture.source = images.length - 1;
-                        textures.push({
-                            source: images.length - 1
-                        });
-                        textureInfo = {
-                            index: images.length - 1
-                        };
                     }
                     else {
                         glTFTexture.source = foundIndex;
-                        textureInfo = {
-                            index: foundIndex
-                        };
+                    }
+                    textures.push(glTFTexture);
+                    textureInfo = {
+                        index: textures.length - 1
+                    };
+                    if (texCoordIndex) {
+                        textureInfo.texCoord = texCoordIndex;
                     }
                 }
                 return textureInfo;
@@ -1660,7 +2344,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFMaterial.js.map
 
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;
@@ -1688,16 +2372,17 @@ var BABYLON;
             function _GLTFAnimation() {
             }
             /**
+             * @ignore
              *
              * Creates glTF channel animation from BabylonJS animation.
-             * @param babylonMesh - BabylonJS mesh.
+             * @param babylonTransformNode - BabylonJS mesh.
              * @param animation - animation.
              * @param animationChannelTargetPath - The target animation channel.
              * @param convertToRightHandedSystem - Specifies if the values should be converted to right-handed.
              * @param useQuaternion - Specifies if quaternions are used.
              * @returns nullable IAnimationData
              */
-            _GLTFAnimation._CreateNodeAnimation = function (babylonMesh, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate) {
+            _GLTFAnimation._CreateNodeAnimation = function (babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate) {
                 var inputs = [];
                 var outputs = [];
                 var keyFrames = animation.getKeys();
@@ -1707,17 +2392,17 @@ var BABYLON;
                 var interpolation = interpolationOrBake.interpolationType;
                 var shouldBakeAnimation = interpolationOrBake.shouldBakeAnimation;
                 if (shouldBakeAnimation) {
-                    _GLTFAnimation._CreateBakedAnimation(babylonMesh, animation, animationChannelTargetPath, minMaxKeyFrames.min, minMaxKeyFrames.max, animation.framePerSecond, animationSampleRate, inputs, outputs, minMaxKeyFrames, convertToRightHandedSystem, useQuaternion);
+                    _GLTFAnimation._CreateBakedAnimation(babylonTransformNode, animation, animationChannelTargetPath, minMaxKeyFrames.min, minMaxKeyFrames.max, animation.framePerSecond, animationSampleRate, inputs, outputs, minMaxKeyFrames, convertToRightHandedSystem, useQuaternion);
                 }
                 else {
                     if (interpolation === "LINEAR" /* LINEAR */ || interpolation === "STEP" /* STEP */) {
-                        _GLTFAnimation._CreateLinearOrStepAnimation(babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+                        _GLTFAnimation._CreateLinearOrStepAnimation(babylonTransformNode, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
                     }
                     else if (interpolation === "CUBICSPLINE" /* CUBICSPLINE */) {
-                        _GLTFAnimation._CreateCubicSplineAnimation(babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+                        _GLTFAnimation._CreateCubicSplineAnimation(babylonTransformNode, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion);
                     }
                     else {
-                        _GLTFAnimation._CreateBakedAnimation(babylonMesh, animation, animationChannelTargetPath, minMaxKeyFrames.min, minMaxKeyFrames.max, animation.framePerSecond, animationSampleRate, inputs, outputs, minMaxKeyFrames, convertToRightHandedSystem, useQuaternion);
+                        _GLTFAnimation._CreateBakedAnimation(babylonTransformNode, animation, animationChannelTargetPath, minMaxKeyFrames.min, minMaxKeyFrames.max, animation.framePerSecond, animationSampleRate, inputs, outputs, minMaxKeyFrames, convertToRightHandedSystem, useQuaternion);
                     }
                 }
                 if (inputs.length && outputs.length) {
@@ -1770,8 +2455,9 @@ var BABYLON;
                 return null;
             };
             /**
-             *
-             * @param babylonMesh
+             * @ignore
+             * Create node animations from the transform node animations
+             * @param babylonTransformNode
              * @param runtimeGLTFAnimation
              * @param idleGLTFAnimations
              * @param nodeMap
@@ -1781,10 +2467,11 @@ var BABYLON;
              * @param accessors
              * @param convertToRightHandedSystem
              */
-            _GLTFAnimation._CreateNodeAnimationFromMeshAnimations = function (babylonMesh, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationSampleRate) {
+            _GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations = function (babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationSampleRate) {
                 var glTFAnimation;
-                if (babylonMesh.animations) {
-                    babylonMesh.animations.forEach(function (animation) {
+                if (babylonTransformNode.animations) {
+                    for (var _i = 0, _a = babylonTransformNode.animations; _i < _a.length; _i++) {
+                        var animation = _a[_i];
                         var animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
                         if (animationInfo) {
                             glTFAnimation = {
@@ -1792,16 +2479,18 @@ var BABYLON;
                                 samplers: [],
                                 channels: []
                             };
-                            _GLTFAnimation.AddAnimation("" + animation.name, animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation, babylonMesh, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
+                            _GLTFAnimation.AddAnimation("" + animation.name, animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation, babylonTransformNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                             if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
                                 idleGLTFAnimations.push(glTFAnimation);
                             }
                         }
-                    });
+                    }
+                    ;
                 }
             };
             /**
-             *
+             * @ignore
+             * Create node animations from the animation groups
              * @param babylonScene
              * @param glTFAnimations
              * @param nodeMap
@@ -1815,31 +2504,35 @@ var BABYLON;
                 var glTFAnimation;
                 if (babylonScene.animationGroups) {
                     var animationGroups = babylonScene.animationGroups;
-                    animationGroups.forEach(function (animationGroup) {
+                    for (var _i = 0, animationGroups_1 = animationGroups; _i < animationGroups_1.length; _i++) {
+                        var animationGroup = animationGroups_1[_i];
                         glTFAnimation = {
                             name: animationGroup.name,
                             channels: [],
                             samplers: []
                         };
-                        animationGroup.targetedAnimations.forEach(function (targetAnimation) {
+                        for (var _a = 0, _b = animationGroup.targetedAnimations; _a < _b.length; _a++) {
+                            var targetAnimation = _b[_a];
                             var target = targetAnimation.target;
                             var animation = targetAnimation.animation;
-                            if (target instanceof BABYLON.Mesh) {
+                            if (target instanceof BABYLON.Mesh || target.length === 1 && target[0] instanceof BABYLON.Mesh) { // TODO: Update to support bones
                                 var animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                                 if (animationInfo) {
-                                    var babylonMesh = target;
+                                    var babylonMesh = target instanceof BABYLON.Mesh ? target : target[0];
                                     _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonMesh, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                                 }
                             }
-                        });
+                        }
+                        ;
                         if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                             glTFAnimations.push(glTFAnimation);
                         }
-                    });
+                    }
+                    ;
                 }
             };
-            _GLTFAnimation.AddAnimation = function (name, glTFAnimation, babylonMesh, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate) {
-                var animationData = _GLTFAnimation._CreateNodeAnimation(babylonMesh, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
+            _GLTFAnimation.AddAnimation = function (name, glTFAnimation, babylonTransformNode, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate) {
+                var animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
                 var bufferView;
                 var accessor;
                 var keyframeAccessorIndex;
@@ -1848,7 +2541,7 @@ var BABYLON;
                 var animationSampler;
                 var animationChannel;
                 if (animationData) {
-                    var nodeIndex = nodeMap[babylonMesh.uniqueId];
+                    var nodeIndex = nodeMap[babylonTransformNode.uniqueId];
                     // Creates buffer view and accessor for key frames.
                     var byteLength = animationData.inputs.length * 4;
                     bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  keyframe data view");
@@ -1893,7 +2586,7 @@ var BABYLON;
             };
             /**
              * Create a baked animation
-             * @param babylonMesh BabylonJS mesh
+             * @param babylonTransformNode BabylonJS mesh
              * @param animation BabylonJS animation corresponding to the BabylonJS mesh
              * @param animationChannelTargetPath animation target channel
              * @param minFrame minimum animation frame
@@ -1904,7 +2597,7 @@ var BABYLON;
              * @param convertToRightHandedSystem converts the values to right-handed
              * @param useQuaternion specifies if quaternions should be used
              */
-            _GLTFAnimation._CreateBakedAnimation = function (babylonMesh, animation, animationChannelTargetPath, minFrame, maxFrame, fps, sampleRate, inputs, outputs, minMaxFrames, convertToRightHandedSystem, useQuaternion) {
+            _GLTFAnimation._CreateBakedAnimation = function (babylonTransformNode, animation, animationChannelTargetPath, minFrame, maxFrame, fps, sampleRate, inputs, outputs, minMaxFrames, convertToRightHandedSystem, useQuaternion) {
                 var value;
                 var quaternionCache = BABYLON.Quaternion.Identity();
                 var previousTime = null;
@@ -1952,7 +2645,7 @@ var BABYLON;
                             previousTime = time;
                             maxUsedFrame = time;
                             value = animation._interpolate(f, 0, undefined, animation.loopMode);
-                            _GLTFAnimation._SetInterpolatedValue(babylonMesh, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
+                            _GLTFAnimation._SetInterpolatedValue(babylonTransformNode, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
                         }
                     }
                 }
@@ -1960,23 +2653,26 @@ var BABYLON;
                     minMaxFrames.max = maxUsedFrame;
                 }
             };
-            _GLTFAnimation._ConvertFactorToVector3OrQuaternion = function (factor, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion) {
+            _GLTFAnimation._ConvertFactorToVector3OrQuaternion = function (factor, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion) {
                 var property;
                 var componentName;
                 var value = null;
-                var basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(babylonMesh, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+                var basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(babylonTransformNode, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
                 if (animationType === BABYLON.Animation.ANIMATIONTYPE_FLOAT) { // handles single component x, y, z or w component animation by using a base property and animating over a component.
                     property = animation.targetProperty.split('.');
                     componentName = property ? property[1] : ''; // x, y, or z component
                     value = useQuaternion ? BABYLON.Quaternion.FromArray(basePositionRotationOrScale).normalize() : BABYLON.Vector3.FromArray(basePositionRotationOrScale);
                     switch (componentName) {
-                        case 'x':
+                        case 'x': {
+                            value[componentName] = (convertToRightHandedSystem && useQuaternion && (animationChannelTargetPath !== "scale" /* SCALE */)) ? -factor : factor;
+                            break;
+                        }
                         case 'y': {
-                            value[componentName] = (convertToRightHandedSystem && useQuaternion) ? -factor : factor;
+                            value[componentName] = (convertToRightHandedSystem && useQuaternion && (animationChannelTargetPath !== "scale" /* SCALE */)) ? -factor : factor;
                             break;
                         }
                         case 'z': {
-                            value[componentName] = (convertToRightHandedSystem && !useQuaternion && !(animationChannelTargetPath === "scale" /* SCALE */)) ? -factor : factor;
+                            value[componentName] = (convertToRightHandedSystem && !useQuaternion && (animationChannelTargetPath !== "scale" /* SCALE */)) ? -factor : factor;
                             break;
                         }
                         case 'w': {
@@ -1990,12 +2686,12 @@ var BABYLON;
                 }
                 return value;
             };
-            _GLTFAnimation._SetInterpolatedValue = function (babylonMesh, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion) {
+            _GLTFAnimation._SetInterpolatedValue = function (babylonTransformNode, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion) {
                 var animationType = animation.dataType;
                 var cacheValue;
                 inputs.push(time);
                 if (typeof value === "number") {
-                    value = this._ConvertFactorToVector3OrQuaternion(value, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+                    value = this._ConvertFactorToVector3OrQuaternion(value, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
                 }
                 if (value) {
                     if (animationChannelTargetPath === "rotation" /* ROTATION */) {
@@ -2007,15 +2703,21 @@ var BABYLON;
                             BABYLON.Quaternion.RotationYawPitchRollToRef(cacheValue.y, cacheValue.x, cacheValue.z, quaternionCache);
                         }
                         if (convertToRightHandedSystem) {
-                            quaternionCache.x *= -1;
-                            quaternionCache.y *= -1;
-                            outputs.push(quaternionCache.asArray());
+                            GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(quaternionCache);
+                            if (!babylonTransformNode.parent) {
+                                quaternionCache = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(quaternionCache);
+                            }
                         }
+                        outputs.push(quaternionCache.asArray());
                     }
                     else {
                         cacheValue = value;
                         if (convertToRightHandedSystem && (animationChannelTargetPath !== "scale" /* SCALE */)) {
-                            cacheValue.z *= -1;
+                            GLTF2._GLTFUtilities.GetRightHandedPositionVector3FromRef(cacheValue);
+                            if (!babylonTransformNode.parent) {
+                                cacheValue.x *= -1;
+                                cacheValue.z *= -1;
+                            }
                         }
                         outputs.push(cacheValue.asArray());
                     }
@@ -2023,7 +2725,7 @@ var BABYLON;
             };
             /**
              * Creates linear animation from the animation key frames
-             * @param babylonMesh BabylonJS mesh
+             * @param babylonTransformNode BabylonJS mesh
              * @param animation BabylonJS animation
              * @param animationChannelTargetPath The target animation channel
              * @param frameDelta The difference between the last and first frame of the animation
@@ -2032,15 +2734,17 @@ var BABYLON;
              * @param convertToRightHandedSystem Specifies if the position data should be converted to right handed
              * @param useQuaternion Specifies if quaternions are used in the animation
              */
-            _GLTFAnimation._CreateLinearOrStepAnimation = function (babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion) {
-                animation.getKeys().forEach(function (keyFrame) {
+            _GLTFAnimation._CreateLinearOrStepAnimation = function (babylonTransformNode, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion) {
+                for (var _i = 0, _a = animation.getKeys(); _i < _a.length; _i++) {
+                    var keyFrame = _a[_i];
                     inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
-                    _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonMesh, convertToRightHandedSystem, useQuaternion);
-                });
+                    _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
+                }
+                ;
             };
             /**
              * Creates cubic spline animation from the animation key frames
-             * @param babylonMesh BabylonJS mesh
+             * @param babylonTransformNode BabylonJS mesh
              * @param animation BabylonJS animation
              * @param animationChannelTargetPath The target animation channel
              * @param frameDelta The difference between the last and first frame of the animation
@@ -2049,23 +2753,25 @@ var BABYLON;
              * @param convertToRightHandedSystem Specifies if the position data should be converted to right handed
              * @param useQuaternion Specifies if quaternions are used in the animation
              */
-            _GLTFAnimation._CreateCubicSplineAnimation = function (babylonMesh, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion) {
+            _GLTFAnimation._CreateCubicSplineAnimation = function (babylonTransformNode, animation, animationChannelTargetPath, frameDelta, inputs, outputs, convertToRightHandedSystem, useQuaternion) {
                 animation.getKeys().forEach(function (keyFrame) {
                     inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
-                    _GLTFAnimation.AddSplineTangent(_TangentType.INTANGENT, outputs, animationChannelTargetPath, "CUBICSPLINE" /* CUBICSPLINE */, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem);
-                    _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonMesh, convertToRightHandedSystem, useQuaternion);
-                    _GLTFAnimation.AddSplineTangent(_TangentType.OUTTANGENT, outputs, animationChannelTargetPath, "CUBICSPLINE" /* CUBICSPLINE */, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem);
+                    _GLTFAnimation.AddSplineTangent(babylonTransformNode, _TangentType.INTANGENT, outputs, animationChannelTargetPath, "CUBICSPLINE" /* CUBICSPLINE */, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem);
+                    _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
+                    _GLTFAnimation.AddSplineTangent(babylonTransformNode, _TangentType.OUTTANGENT, outputs, animationChannelTargetPath, "CUBICSPLINE" /* CUBICSPLINE */, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem);
                 });
             };
-            _GLTFAnimation._GetBasePositionRotationOrScale = function (babylonMesh, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion) {
+            _GLTFAnimation._GetBasePositionRotationOrScale = function (babylonTransformNode, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion) {
                 var basePositionRotationOrScale;
                 if (animationChannelTargetPath === "rotation" /* ROTATION */) {
                     if (useQuaternion) {
-                        if (babylonMesh.rotationQuaternion) {
-                            basePositionRotationOrScale = babylonMesh.rotationQuaternion.asArray();
+                        if (babylonTransformNode.rotationQuaternion) {
+                            basePositionRotationOrScale = babylonTransformNode.rotationQuaternion.asArray();
                             if (convertToRightHandedSystem) {
-                                basePositionRotationOrScale[0] *= -1;
-                                basePositionRotationOrScale[1] *= -1;
+                                GLTF2._GLTFUtilities.GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
+                                if (!babylonTransformNode.parent) {
+                                    basePositionRotationOrScale = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(basePositionRotationOrScale)).asArray();
+                                }
                             }
                         }
                         else {
@@ -2073,18 +2779,18 @@ var BABYLON;
                         }
                     }
                     else {
-                        basePositionRotationOrScale = babylonMesh.rotation.asArray();
-                        basePositionRotationOrScale[2] *= -1;
+                        basePositionRotationOrScale = babylonTransformNode.rotation.asArray();
+                        GLTF2._GLTFUtilities.GetRightHandedNormalArray3FromRef(basePositionRotationOrScale);
                     }
                 }
                 else if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
-                    basePositionRotationOrScale = babylonMesh.position.asArray();
+                    basePositionRotationOrScale = babylonTransformNode.position.asArray();
                     if (convertToRightHandedSystem) {
-                        basePositionRotationOrScale[2] *= -1;
+                        GLTF2._GLTFUtilities.GetRightHandedPositionArray3FromRef(basePositionRotationOrScale);
                     }
                 }
                 else { // scale
-                    basePositionRotationOrScale = babylonMesh.scaling.asArray();
+                    basePositionRotationOrScale = babylonTransformNode.scaling.asArray();
                 }
                 return basePositionRotationOrScale;
             };
@@ -2098,38 +2804,66 @@ var BABYLON;
              * @param convertToRightHandedSystem
              * @param useQuaternion
              */
-            _GLTFAnimation._AddKeyframeValue = function (keyFrame, animation, outputs, animationChannelTargetPath, babylonMesh, convertToRightHandedSystem, useQuaternion) {
+            _GLTFAnimation._AddKeyframeValue = function (keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion) {
                 var value;
                 var newPositionRotationOrScale;
                 var animationType = animation.dataType;
                 if (animationType === BABYLON.Animation.ANIMATIONTYPE_VECTOR3) {
                     value = keyFrame.value.asArray();
-                    if (convertToRightHandedSystem && !(animationChannelTargetPath === "scale" /* SCALE */)) {
-                        value[2] *= -1;
-                    }
                     if (animationChannelTargetPath === "rotation" /* ROTATION */) {
-                        outputs.push(BABYLON.Vector3.FromArray(value).toQuaternion().asArray());
+                        var array = BABYLON.Vector3.FromArray(value);
+                        var rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(array.y, array.x, array.z);
+                        if (convertToRightHandedSystem) {
+                            GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(rotationQuaternion);
+                            if (!babylonTransformNode.parent) {
+                                rotationQuaternion = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(rotationQuaternion);
+                            }
+                        }
+                        value = rotationQuaternion.asArray();
                     }
-                    else {
-                        outputs.push(value); // scale or position vector.
+                    else if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
+                        if (convertToRightHandedSystem) {
+                            GLTF2._GLTFUtilities.GetRightHandedNormalArray3FromRef(value);
+                            if (!babylonTransformNode.parent) {
+                                value[0] *= -1;
+                                value[2] *= -1;
+                            }
+                        }
                     }
+                    outputs.push(value); // scale  vector.
                 }
                 else if (animationType === BABYLON.Animation.ANIMATIONTYPE_FLOAT) { // handles single component x, y, z or w component animation by using a base property and animating over a component.
-                    newPositionRotationOrScale = this._ConvertFactorToVector3OrQuaternion(keyFrame.value, babylonMesh, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+                    newPositionRotationOrScale = this._ConvertFactorToVector3OrQuaternion(keyFrame.value, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
                     if (newPositionRotationOrScale) {
                         if (animationChannelTargetPath === "rotation" /* ROTATION */) {
-                            useQuaternion ? outputs.push(newPositionRotationOrScale.normalize().asArray()) : outputs.push(newPositionRotationOrScale.toQuaternion().normalize().asArray());
+                            var posRotScale = useQuaternion ? newPositionRotationOrScale : BABYLON.Quaternion.RotationYawPitchRoll(newPositionRotationOrScale.y, newPositionRotationOrScale.x, newPositionRotationOrScale.z).normalize();
+                            if (convertToRightHandedSystem) {
+                                GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(posRotScale);
+                                if (!babylonTransformNode.parent) {
+                                    posRotScale = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(posRotScale);
+                                }
+                            }
+                            outputs.push(posRotScale.asArray());
                         }
-                        else {
-                            outputs.push(newPositionRotationOrScale.asArray());
+                        else if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
+                            if (convertToRightHandedSystem) {
+                                GLTF2._GLTFUtilities.GetRightHandedNormalVector3FromRef(newPositionRotationOrScale);
+                                if (!babylonTransformNode.parent) {
+                                    newPositionRotationOrScale.x *= -1;
+                                    newPositionRotationOrScale.z *= -1;
+                                }
+                            }
                         }
+                        outputs.push(newPositionRotationOrScale.asArray());
                     }
                 }
                 else if (animationType === BABYLON.Animation.ANIMATIONTYPE_QUATERNION) {
                     value = keyFrame.value.normalize().asArray();
                     if (convertToRightHandedSystem) {
-                        value[0] *= -1;
-                        value[1] *= -1;
+                        GLTF2._GLTFUtilities.GetRightHandedQuaternionArrayFromRef(value);
+                        if (!babylonTransformNode.parent) {
+                            value = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(value)).asArray();
+                        }
                     }
                     outputs.push(value);
                 }
@@ -2137,6 +2871,12 @@ var BABYLON;
                     BABYLON.Tools.Error('glTFAnimation: Unsupported key frame values for animation!');
                 }
             };
+            /**
+             * Determine the interpolation based on the key frames
+             * @param keyFrames
+             * @param animationChannelTargetPath
+             * @param useQuaternion
+             */
             _GLTFAnimation._DeduceInterpolation = function (keyFrames, animationChannelTargetPath, useQuaternion) {
                 var interpolationType;
                 var shouldBakeAnimation = false;
@@ -2194,16 +2934,24 @@ var BABYLON;
              * @param useQuaternion Specifies if quaternions are used
              * @param convertToRightHandedSystem Specifies if the values should be converted to right-handed
              */
-            _GLTFAnimation.AddSplineTangent = function (tangentType, outputs, animationChannelTargetPath, interpolation, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem) {
+            _GLTFAnimation.AddSplineTangent = function (babylonTransformNode, tangentType, outputs, animationChannelTargetPath, interpolation, keyFrame, frameDelta, useQuaternion, convertToRightHandedSystem) {
                 var tangent;
                 var tangentValue = tangentType === _TangentType.INTANGENT ? keyFrame.inTangent : keyFrame.outTangent;
                 if (interpolation === "CUBICSPLINE" /* CUBICSPLINE */) {
                     if (animationChannelTargetPath === "rotation" /* ROTATION */) {
                         if (tangentValue) {
-                            tangent = useQuaternion ? tangentValue.scale(frameDelta).asArray() : tangentValue.scale(frameDelta).toQuaternion().asArray();
+                            if (useQuaternion) {
+                                tangent = tangentValue.scale(frameDelta).asArray();
+                            }
+                            else {
+                                var array = tangentValue.scale(frameDelta);
+                                tangent = BABYLON.Quaternion.RotationYawPitchRoll(array.y, array.x, array.z).asArray();
+                            }
                             if (convertToRightHandedSystem) {
-                                tangent[0] *= -1;
-                                tangent[1] *= -1;
+                                GLTF2._GLTFUtilities.GetRightHandedQuaternionArrayFromRef(tangent);
+                                if (!babylonTransformNode.parent) {
+                                    tangent = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(tangent)).asArray();
+                                }
                             }
                         }
                         else {
@@ -2214,7 +2962,13 @@ var BABYLON;
                         if (tangentValue) {
                             tangent = tangentValue.scale(frameDelta).asArray();
                             if (convertToRightHandedSystem) {
-                                tangent[2] *= -1;
+                                if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
+                                    GLTF2._GLTFUtilities.GetRightHandedPositionArray3FromRef(tangent);
+                                    if (!babylonTransformNode.parent) {
+                                        tangent[0] *= -1; // x
+                                        tangent[2] *= -1; // z
+                                    }
+                                }
                             }
                         }
                         else {
@@ -2246,7 +3000,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFAnimation.js.map
 
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;
@@ -2293,13 +3047,13 @@ var BABYLON;
              */
             _GLTFUtilities.CreateAccessor = function (bufferviewIndex, name, type, componentType, count, byteOffset, min, max) {
                 var accessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
-                if (min) {
+                if (min != null) {
                     accessor.min = min;
                 }
-                if (max) {
+                if (max != null) {
                     accessor.max = max;
                 }
-                if (byteOffset) {
+                if (byteOffset != null) {
                     accessor.byteOffset = byteOffset;
                 }
                 return accessor;
@@ -2323,7 +3077,7 @@ var BABYLON;
                         indexOffset = positionStrideSize * i;
                         position = BABYLON.Vector3.FromArray(positions, indexOffset);
                         if (convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedVector3FromRef(position);
+                            _GLTFUtilities.GetRightHandedPositionVector3FromRef(position);
                         }
                         vector = position.asArray();
                         for (var j = 0; j < positionStrideSize; ++j) {
@@ -2345,15 +3099,44 @@ var BABYLON;
              * @param vector vector3 array
              * @returns right-handed Vector3
              */
-            _GLTFUtilities.GetRightHandedVector3 = function (vector) {
+            _GLTFUtilities.GetRightHandedPositionVector3 = function (vector) {
                 return new BABYLON.Vector3(vector.x, vector.y, -vector.z);
             };
             /**
              * Converts a Vector3 to right-handed
              * @param vector Vector3 to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedVector3FromRef = function (vector) {
+            _GLTFUtilities.GetRightHandedPositionVector3FromRef = function (vector) {
                 vector.z *= -1;
+            };
+            /**
+             * Converts a three element number array to right-handed
+             * @param vector number array to convert to right-handed
+             */
+            _GLTFUtilities.GetRightHandedPositionArray3FromRef = function (vector) {
+                vector[2] *= -1;
+            };
+            /**
+             * Converts a new right-handed Vector3
+             * @param vector vector3 array
+             * @returns right-handed Vector3
+             */
+            _GLTFUtilities.GetRightHandedNormalVector3 = function (vector) {
+                return new BABYLON.Vector3(vector.x, vector.y, -vector.z);
+            };
+            /**
+             * Converts a Vector3 to right-handed
+             * @param vector Vector3 to convert to right-handed
+             */
+            _GLTFUtilities.GetRightHandedNormalVector3FromRef = function (vector) {
+                vector.z *= -1;
+            };
+            /**
+             * Converts a three element number array to right-handed
+             * @param vector number array to convert to right-handed
+             */
+            _GLTFUtilities.GetRightHandedNormalArray3FromRef = function (vector) {
+                vector[2] *= -1;
             };
             /**
              * Converts a Vector4 to right-handed
@@ -2364,12 +3147,28 @@ var BABYLON;
                 vector.w *= -1;
             };
             /**
+             * Converts a Vector4 to right-handed
+             * @param vector Vector4 to convert to right-handed
+             */
+            _GLTFUtilities.GetRightHandedArray4FromRef = function (vector) {
+                vector[2] *= -1;
+                vector[3] *= -1;
+            };
+            /**
              * Converts a Quaternion to right-handed
              * @param quaternion Source quaternion to convert to right-handed
              */
             _GLTFUtilities.GetRightHandedQuaternionFromRef = function (quaternion) {
                 quaternion.x *= -1;
                 quaternion.y *= -1;
+            };
+            /**
+             * Converts a Quaternion to right-handed
+             * @param quaternion Source quaternion to convert to right-handed
+             */
+            _GLTFUtilities.GetRightHandedQuaternionArrayFromRef = function (quaternion) {
+                quaternion[0] *= -1;
+                quaternion[1] *= -1;
             };
             return _GLTFUtilities;
         }());

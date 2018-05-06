@@ -477,6 +477,12 @@ var INSPECTOR;
         'PhysicsImpostor': {
             type: BABYLON.PhysicsImpostor
         },
+        'ImageProcessingConfiguration': {
+            type: BABYLON.ImageProcessingConfiguration
+        },
+        'ColorCurves': {
+            type: BABYLON.ColorCurves
+        }
     };
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -4055,12 +4061,11 @@ var INSPECTOR;
             var button = INSPECTOR.Helpers.CreateElement('button', 'gltf-button', actions);
             button.innerText = 'Export GLB';
             button.addEventListener('click', function () {
-                var data = BABYLON.GLTF2Export.GLB(inspector.scene, name.value || "scene", {
-                    shouldExportMesh: function (mesh) { return !GLTFTab._IsSkyBox(mesh); }
+                BABYLON.GLTF2Export.GLBAsync(inspector.scene, name.value || "scene", {
+                    shouldExportTransformNode: function (transformNode) { return !GLTFTab._IsSkyBox(transformNode); }
+                }).then(function (glb) {
+                    glb.downloadFiles();
                 });
-                if (data) {
-                    data.downloadFiles();
-                }
             });
         };
         GLTFTab._IsSkyBox = function (transformNode) {

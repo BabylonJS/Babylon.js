@@ -1538,7 +1538,8 @@
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
                 ],
                 "doNotIncludeInBundle": true,
                 "output": "babylon.glTF2FileLoader.js"
@@ -1562,7 +1563,8 @@
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }
@@ -1764,7 +1766,7 @@
                 "name": "babylonjs-viewer",
                 "main": "../../Viewer/src/index.d.ts",
                 "out": "../../dist/preview release/viewer/babylon.viewer.module.d.ts",
-                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\n"
+                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "outputs": [
                 {

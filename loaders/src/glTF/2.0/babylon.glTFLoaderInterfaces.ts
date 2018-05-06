@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
-/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
 module BABYLON.GLTF2 {
     /** @hidden */
@@ -49,7 +49,7 @@ module BABYLON.GLTF2 {
 
     /** @hidden */
     export interface _ILoaderImage extends IImage, _IArrayItem {
-        _objectURL?: Promise<string>;
+        _blob?: Promise<Blob>;
     }
 
     /** @hidden */
@@ -77,7 +77,7 @@ module BABYLON.GLTF2 {
         _parent: _ILoaderNode;
         _babylonMesh?: Mesh;
         _primitiveBabylonMeshes?: Mesh[];
-        _babylonAnimationTargets?: Node[];
+        _babylonBones?: Bone[];
         _numMorphTargets?: number;
     }
 

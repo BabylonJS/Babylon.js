@@ -1,0 +1,41 @@
+<style>
+    fill-container {
+        display: flex;
+    }
+
+    fill-container>* {
+        touch-action: none;
+    }
+</style>
+
+{{#unless disable}}
+<style>
+    fill-container {
+        width: 100%;
+        height: 100%;
+
+        justify-content: flex-start;
+        /* align items in Main Axis */
+        align-items: stretch;
+        /* align items in Cross Axis */
+        align-content: stretch;
+        /* Extra space in Cross Axis */
+    }
+
+    fill-container>* {
+        flex: 1 1 auto;
+        flex-direction: row;
+
+        justify-content: flex-start;
+        /* align items in Main Axis */
+        align-items: stretch;
+        /* align items in Cross Axis */
+        align-content: stretch;
+        /* Extra space in Cross Axis */
+    }
+</style>
+{{/unless}}
+
+<viewer></viewer>
+<loading-screen></loading-screen>
+<overlay></overlay>

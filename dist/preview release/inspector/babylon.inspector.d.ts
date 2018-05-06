@@ -226,6 +226,12 @@ declare module INSPECTOR {
         'PhysicsImpostor': {
             type: typeof BABYLON.PhysicsImpostor;
         };
+        'ImageProcessingConfiguration': {
+            type: typeof BABYLON.ImageProcessingConfiguration;
+        };
+        'ColorCurves': {
+            type: typeof BABYLON.ColorCurves;
+        };
     };
 }
 

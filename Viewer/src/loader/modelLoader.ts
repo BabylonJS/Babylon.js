@@ -32,6 +32,11 @@ export class ModelLoader {
         this._plugins = [];
     }
 
+    /**
+     * Adds a new plugin to the loader process.
+     * 
+     * @param plugin the plugin name or the plugin itself
+     */
     public addPlugin(plugin: ILoaderPlugin | string) {
         let actualPlugin: ILoaderPlugin = {};
         if (typeof plugin === 'string') {
@@ -63,8 +68,18 @@ export class ModelLoader {
             return model;
         }
 
-        let filename = Tools.GetFilename(modelConfiguration.url) || modelConfiguration.url;
-        let base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
+        let base: string;
+        let filename: any;
+        if (modelConfiguration.file) {
+            base = "file:";
+            filename = modelConfiguration.file;
+        }
+        else {
+            filename = Tools.GetFilename(modelConfiguration.url) || modelConfiguration.url;
+            base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
+        }
+
+
         let plugin = modelConfiguration.loader;
 
         model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.sceneManager.scene, (meshes, particleSystems, skeletons, animationGroups) => {
@@ -80,7 +95,9 @@ export class ModelLoader {
             }
 
             this._checkAndRun("onLoaded", model);
-            model.onLoadedObservable.notifyObserversWithPromise(model);
+            this._viewer.sceneManager.scene.executeWhenReady(() => {
+                model.onLoadedObservable.notifyObservers(model);
+            });
         }, (progressEvent) => {
             this._checkAndRun("onProgress", progressEvent);
             model.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
@@ -95,6 +112,12 @@ export class ModelLoader {
             let gltfLoader = (<GLTFFileLoader>model.loader);
             gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
             gltfLoader.compileMaterials = true;
+
+            if (!modelConfiguration.file) {
+                gltfLoader.rewriteRootURL = (rootURL, responseURL) => {
+                    return modelConfiguration.root || Tools.GetFolderPath(responseURL || modelConfiguration.url || '');
+                };
+            }
             // if ground is set to "mirror":
             if (this._viewer.configuration.ground && typeof this._viewer.configuration.ground === 'object' && this._viewer.configuration.ground.mirror) {
                 gltfLoader.useClipPlane = true;
@@ -109,7 +132,13 @@ export class ModelLoader {
                 if (data && data.json && data.json['asset']) {
                     model.loadInfo = data.json['asset'];
                 }
-            })
+            });
+
+            gltfLoader.onCompleteObservable.add(() => {
+                model.loaderDone = true;
+            });
+        } else {
+            model.loaderDone = true;
         }
 
         this._checkAndRun("onInit", model.loader, model);

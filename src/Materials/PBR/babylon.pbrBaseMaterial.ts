@@ -858,6 +858,9 @@
             if (defines.FOG) {
                 fallbacks.addFallback(fallbackRank, "FOG");
             }
+            if (defines.SPECULARAA) {
+                fallbacks.addFallback(fallbackRank, "SPECULARAA");
+            }
             if (defines.POINTSIZE) {
                 fallbacks.addFallback(fallbackRank, "POINTSIZE");
             }
@@ -1611,7 +1614,7 @@
 
             this._uniformBuffer.update();
 
-            this._afterBind(mesh);
+            this._afterBind(mesh, this._activeEffect);
         }
 
         /**

@@ -769,7 +769,7 @@ declare module BABYLON.GLTF2 {
     /**
      * Reference to a texture
      */
-    interface ITextureInfo {
+    interface ITextureInfo extends IProperty {
         /**
          * The index of the texture
          */

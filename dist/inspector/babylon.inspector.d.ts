@@ -226,6 +226,12 @@ declare module INSPECTOR {
         'PhysicsImpostor': {
             type: typeof BABYLON.PhysicsImpostor;
         };
+        'ImageProcessingConfiguration': {
+            type: typeof BABYLON.ImageProcessingConfiguration;
+        };
+        'ColorCurves': {
+            type: typeof BABYLON.ColorCurves;
+        };
     };
 }
 
@@ -294,6 +300,7 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+        getCurrentActiveCamera(): string;
     }
 }
 
@@ -301,7 +308,7 @@ declare module INSPECTOR {
     class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
         private _viewer;
         private _isVisible;
-        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: any);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -420,13 +427,20 @@ declare module INSPECTOR {
         private _headerRow;
         private _detailRows;
         private _sortDirection;
+        private _searchDetails;
+        private _details;
         constructor(dr?: Array<PropertyLine>);
         details: Array<PropertyLine>;
         protected _build(): void;
         /** Updates the HTML of the detail panel */
-        update(): void;
+        update(_items?: Array<PropertyLine>): void;
+        /** Add the search bar for the details */
+        private _addSearchBarDetails();
+        /** Search an element by name  */
+        searchByName(searchName: string): void;
         /** Add all lines in the html div. Does not sort them! */
         private _addDetails();
+        private _addSearchDetails(_items);
         /**
          * Sort the details row by comparing the given property of each row
          */
@@ -435,6 +449,10 @@ declare module INSPECTOR {
          * Removes all data in the detail panel but keep the header row
          */
         clean(): void;
+        /**
+         * Clean the rows only
+         */
+        cleanRow(): void;
         /** Overrides basicelement.dispose */
         dispose(): void;
         /**
@@ -670,9 +688,17 @@ declare module INSPECTOR {
      * At each keypress on the input, the treepanel will be filtered.
      */
     class SearchBar extends BasicElement {
-        private _tab;
+        private _propTab;
         private _inputElement;
         constructor(tab: PropertyTab);
+        /** Delete all characters typped in the input element */
+        reset(): void;
+        update(): void;
+    }
+    class SearchBarDetails extends BasicElement {
+        private _detailTab;
+        private _inputElement;
+        constructor(tab: DetailPanel);
         /** Delete all characters typped in the input element */
         reset(): void;
         update(): void;
@@ -780,6 +806,7 @@ declare module INSPECTOR {
         static REFRESH_TIME: number;
         /** The list of data to update */
         private _updatableProperties;
+        private interval;
         constructor();
         static getInstance(): Scheduler;
         /** Add a property line to be updated every X ms */
@@ -787,6 +814,7 @@ declare module INSPECTOR {
         /** Removes the given property from the list of properties to update */
         remove(prop: PropertyLine): void;
         private _update();
+        dispose(): void;
     }
 }
 
@@ -868,7 +896,7 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class PhysicsTab extends PropertyTab {
-        viewer: BABYLON.Debug.PhysicsViewer;
+        viewer: any;
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
@@ -992,6 +1020,17 @@ declare module INSPECTOR {
         private _update();
         dispose(): void;
         active(b: boolean): void;
+    }
+}
+
+
+
+declare module INSPECTOR {
+    class GLTFTab extends Tab {
+        constructor(tabbar: TabBar, inspector: Inspector);
+        dispose(): void;
+        private _addExport(inspector, actions);
+        private static _IsSkyBox(transformNode);
     }
 }
 
@@ -1144,6 +1183,13 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class FullscreenTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module INSPECTOR {
     class TreeItem extends BasicElement {
         private _tab;
         private _adapter;
@@ -1228,6 +1274,8 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface ICameraPOV {
         setPOV: () => void;
+        getCurrentActiveCamera: () => string;
+        id: () => string;
     }
     /**
      *

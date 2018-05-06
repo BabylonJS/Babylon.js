@@ -76,7 +76,7 @@ describe('Viewer', function () {
         let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         let renderCount = 0;
         let sceneRenderCount = 0;
-        viewer.onSceneInitObservable.add(() => {
+        viewer.onSceneInitObservable.add((scene) => {
             viewer.sceneManager.scene.registerBeforeRender(() => {
                 sceneRenderCount++;
             });
@@ -174,13 +174,15 @@ describe('Viewer', function () {
     it('should render in background if set to true', (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isFalse(viewer.engine.renderEvenInBackground, "Engine is rendering in background");
+            assert.isTrue(viewer.engine.renderEvenInBackground, "Engine is rendering in background");
+            assert.equal(viewer.engine.renderEvenInBackground, viewer.renderInBackground, "engine render in background should be equal to the viewer's");
             viewer.updateConfiguration({
                 scene: {
-                    renderInBackground: true
+                    renderInBackground: false
                 }
             });
-            assert.isTrue(viewer.engine.renderEvenInBackground, "Engine is not rendering in background");
+            assert.isFalse(viewer.engine.renderEvenInBackground, "Engine is not rendering in background");
+            assert.equal(viewer.engine.renderEvenInBackground, viewer.renderInBackground, "engine render in background should be equal to the viewer's");
             viewer.dispose();
             done();
         });
@@ -258,6 +260,50 @@ describe('Viewer', function () {
                 done();
             });
             viewer.forceRender();
+        });
+    });
+
+    it('should have the correct base ID', (done) => {
+        let element = document.createElement("div");
+        let randomString = "" + Math.random();
+        element.id = randomString;
+        let viewer = Helper.getNewViewerInstance(element);
+        assert.equal(viewer.baseId, viewer.containerElement.id);
+        assert.equal(randomString, viewer.baseId);
+        viewer.dispose();
+        done();
+    });
+
+    it('should update the configuration object when updateConfiguration is called', (done) => {
+        let randomVersion = "" + Math.random();
+        let viewer = Helper.getNewViewerInstance(undefined, {
+            version: randomVersion
+        });
+        viewer.onInitDoneObservable.add(() => {
+            assert.equal(viewer.configuration.version, randomVersion);
+            let newRandom = "" + Math.random();
+            viewer.updateConfiguration({
+                version: newRandom
+            });
+            assert.equal(viewer.configuration.version, newRandom);
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it('should not init engine if viewer is disposed right after created', (done) => {
+        let viewer = Helper.getNewViewerInstance();
+        viewer.dispose();
+        // wait a bit for the engine to initialize, if failed
+        let timeout = setTimeout(() => {
+            assert.isUndefined(viewer.engine);
+            done();
+        }, 1000);
+
+        viewer.onEngineInitObservable.add(() => {
+            assert.fail();
+            clearTimeout(timeout);
+            done();
         });
     });
 });
@@ -397,37 +443,6 @@ QUnit.test('Test getEnvironmentAssetUrl relative root', function (assert) {
 QUnit.test('Test getEnvironmentAssetUrl absolute root', function (assert) {
     var viewer = Helper.createViewer({ environmentAssetsRootURL: "https://foo/" });
     assert.ok(viewer.getEnvironmentAssetUrl("http://foo.png") === "http://foo.png", "Absolute url should not be undefined with configuration.");
-});
-
-QUnit.test('unlockBabylonFeatures', function () {
-    let viewer = Helper.createViewer();
-
-    QUnit.assert.ok(viewer.Scene.EngineScene.shadowsEnabled, "shadowsEnabled");
-    QUnit.assert.ok(!viewer.Scene.EngineScene.particlesEnabled, "particlesEnabled");
-    QUnit.assert.ok(!viewer.Scene.EngineScene.collisionsEnabled, "collisionsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.lightsEnabled, "lightsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.texturesEnabled, "texturesEnabled");
-    QUnit.assert.ok(!viewer.Scene.EngineScene.lensFlaresEnabled, "lensFlaresEnabled");
-    QUnit.assert.ok(!viewer.Scene.EngineScene.proceduralTexturesEnabled, "proceduralTexturesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.renderTargetsEnabled, "renderTargetsEnabled");
-    QUnit.assert.ok(!viewer.Scene.EngineScene.spritesEnabled, "spritesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.skeletonsEnabled, "skeletonsEnabled");
-    QUnit.assert.ok(!viewer.Scene.EngineScene.audioEnabled, "audioEnabled");
-
-    viewer.unlockBabylonFeatures();
-
-    QUnit.assert.ok(viewer.Scene.EngineScene.shadowsEnabled, "shadowsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.particlesEnabled, "particlesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.postProcessesEnabled, "postProcessesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.collisionsEnabled, "collisionsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.lightsEnabled, "lightsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.texturesEnabled, "texturesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.lensFlaresEnabled, "lensFlaresEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.proceduralTexturesEnabled, "proceduralTexturesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.renderTargetsEnabled, "renderTargetsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.spritesEnabled, "spritesEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.skeletonsEnabled, "skeletonsEnabled");
-    QUnit.assert.ok(viewer.Scene.EngineScene.audioEnabled, "audioEnabled");
 });
 
 */

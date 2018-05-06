@@ -1,5 +1,5 @@
 module.exports = {
-    //context: __dirname,
+    // context: __dirname,
     entry: [
         __dirname + '/src/index.ts'
     ]
@@ -47,8 +47,12 @@ module.exports = {
             }
         },
         {
-            test: /\.(jpe?g|png|ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
+            test: /\.(jpe?g|png|ttf|eot|svg?)(\?[a-z0-9=&.]+)?$/,
             use: 'base64-image-loader?limit=1000&name=[name].[ext]'
+        },
+        {
+            test: /\.(woff|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+            loader: 'base64-font-loader'
         }]
     }
 }

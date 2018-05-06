@@ -103,6 +103,8 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -214,6 +216,8 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /** @hidden */
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -764,6 +768,7 @@ declare module BABYLON.GLTF1 {
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
         transparencyAsCoverage: boolean;
+        _normalizeAnimationGroupsToBeginAtZero: boolean;
         preprocessUrlAsync: (url: string) => Promise<string>;
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
