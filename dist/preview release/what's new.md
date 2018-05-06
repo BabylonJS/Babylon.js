@@ -8,6 +8,7 @@
 
 - Add the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catamull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
 - Add support for specifying the center of rotation to textures ([bghgary](http://www.github.com/bghgary))
+- Add webVR support for Oculus Go ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
