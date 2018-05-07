@@ -2,5 +2,6 @@ import { main } from '../../commons/boot';
 if (window && !window['validation']) {
     main();
 }
-export * from './viewer/viewer';
+import './viewer/viewer';
+import './viewer/viewerManager';
 export * from '../../../src'
