@@ -15,22 +15,6 @@ describe('Viewer Manager', function () {
         let randomString = "" + Math.random();
         element.id = randomString;
 
-        /*let addedFlag = false;
-
-        viewerManager.onViewerAddedObservable.add((addedViewer) => {
-            assert.equal(addedViewer.baseId, randomString);
-            addedFlag = true;
-        });
-
-        viewerManager.onViewerRemovedObservable.add((viewerId) => {
-            assert.equal(randomString, viewerId);
-            if (addedFlag) {
-                done();
-            } else {
-                assert.fail();
-            }
-        });*/
-
         assert.isUndefined(viewerManager.getViewerByHTMLElement(element));
         assert.isUndefined(viewerManager.getViewerById(randomString));
         let viewer = Helper.getNewViewerInstance(element);
@@ -40,6 +24,20 @@ describe('Viewer Manager', function () {
         assert.isUndefined(viewerManager.getViewerByHTMLElement(element));
         assert.isUndefined(viewerManager.getViewerById(randomString));
         done();
+    });
+
+    it("should trigger the promsie when viewer was added", (done) => {
+        let element = document.createElement("div");
+        let randomString = "" + Math.random();
+        element.id = randomString;
+
+        let viewer = Helper.getNewViewerInstance(element);
+        viewerManager.getViewerPromiseById(randomString).then(() => {
+            viewer.dispose();
+            done();
+        }, (error) => {
+            assert.fail();
+        });
     });
 
     it("should trigger observers when viewer constructed and disposed", (done) => {
