@@ -5,4 +5,5 @@ if (window && !window['validation']) {
 import './viewer/viewer';
 import './viewer/viewerManager';
 import './configuration/mappers';
+import './configuration/loader';
 export * from '../../../src'
