@@ -25,6 +25,7 @@
 
 - Fix ```shadowEnabled``` property on lights. Shadows are not visble anymore when disabled ([sebavan](http://www.github.com/sebavan))
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
+- Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
 
 ### Viewer
 
