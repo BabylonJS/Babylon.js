@@ -18,6 +18,7 @@
 
 - No fullscreen button on small devices ([RaananW](https://github.com/RaananW))
 - Nav-Bar is now disaplayed on fullscreen per default  ([RaananW](https://github.com/RaananW))
+- Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
