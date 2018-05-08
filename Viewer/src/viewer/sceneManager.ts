@@ -374,7 +374,7 @@ export class SceneManager {
         }
 
         // optimizer
-        if (newConfiguration.optimizer) {
+        if (newConfiguration.optimizer !== undefined) {
             this._configureOptimizer(newConfiguration.optimizer);
         }
 
@@ -563,9 +563,9 @@ export class SceneManager {
             }
         }
 
-        if (sceneConfig.debug) {
+        if (sceneConfig.debug === true) {
             this.scene.debugLayer.show();
-        } else {
+        } else if (sceneConfig.debug === false) {
             if (this.scene.debugLayer.isVisible()) {
                 this.scene.debugLayer.hide();
             }
