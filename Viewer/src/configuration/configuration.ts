@@ -4,7 +4,7 @@ import { EngineOptions, IGlowLayerOptions, DepthOfFieldEffectBlurLevel } from 'b
 export function getConfigurationKey(key: string, configObject: any) {
     let splits = key.split('.');
 
-    if (splits.length === 0 || !configObject) return false;
+    if (splits.length === 0 || !configObject) return;
     else if (splits.length === 1) {
         if (configObject[key] !== undefined) {
             return configObject[key];
@@ -160,6 +160,7 @@ export interface IDefaultRenderingPipelineConfiguration {
     bllomThreshold?: number;
     hdr?: boolean;
     samples?: number;
+    glowLayerEnabled?: boolean;
 }
 
 export interface IModelConfiguration {
@@ -271,6 +272,9 @@ export interface ISceneConfiguration {
     environmentTexture?: string;
     colorGrading?: IColorGradingConfiguration;
     environmentRotationY?: number;
+    /**
+     * Deprecated, please use default rendering pipeline
+     */
     glow?: boolean | IGlowLayerOptions;
     disableHdr?: boolean;
     renderInBackground?: boolean;

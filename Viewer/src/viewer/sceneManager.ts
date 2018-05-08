@@ -331,7 +331,7 @@ export class SceneManager {
 
         this._mainColor = Color3.White();
 
-        if (sceneConfiguration.glow) {
+        /*if (sceneConfiguration.glow) {
             let options: Partial<IGlowLayerOptions> = {
                 mainTextureFixedSize: 512
             };
@@ -339,7 +339,7 @@ export class SceneManager {
                 options = sceneConfiguration.glow
             }
             var gl = new BABYLON.GlowLayer("glow", this.scene, options);
-        }
+        }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
     }
@@ -603,22 +603,14 @@ export class SceneManager {
 
             this._reflectionColor.copyFrom(this.mainColor);
 
-            if (this._viewer.configuration.camera && this._viewer.configuration.camera.exposure) {
 
-                let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._viewer.configuration) || 0;
+            let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._viewer.configuration) || 0;
 
-                /*this._mainColor.toLinearSpaceToRef(this._mainColor);
-                let exposure = Math.pow(2.0, -(this._viewer.configuration.camera.exposure) * Math.PI);
-                this._mainColor.scaleToRef(1 / exposure, this._mainColor);
-                let tmpColor = Color3.Lerp(this._white, this._mainColor, environmentTint);
-                this._mainColor.copyFrom(tmpColor);*/
-
-                // reflection color
-                this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
-                this._reflectionColor.scaleToRef(1 / this._viewer.configuration.camera.exposure, this._reflectionColor);
-                let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
-                this._reflectionColor.copyFrom(tmpColor3);
-            }
+            // reflection color
+            this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
+            this._reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this._reflectionColor);
+            let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
+            this._reflectionColor.copyFrom(tmpColor3);
 
             //update the environment, if exists
             if (this.environmentHelper) {
@@ -786,10 +778,6 @@ export class SceneManager {
         if (this.scene.imageProcessingConfiguration) {
             this.scene.imageProcessingConfiguration.colorCurvesEnabled = true;
             this.scene.imageProcessingConfiguration.vignetteEnabled = true;
-            if (cameraConfig.contrast !== undefined)
-                this.scene.imageProcessingConfiguration.contrast = cameraConfig.contrast;
-            if (cameraConfig.exposure !== undefined)
-                this.scene.imageProcessingConfiguration.exposure = cameraConfig.exposure;
             this.scene.imageProcessingConfiguration.toneMappingEnabled = !!cameraConfig.toneMappingEnabled;
         }
 
@@ -942,8 +930,8 @@ export class SceneManager {
             if (this.environmentHelper.groundMirror) {
                 const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
                 // TODO user camera exposure value to set the mirror clear color
-                //let exposure = Math.pow(2.0, -this.configuration.camera.exposure) * Math.PI;
-                //mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
+                let exposure = Math.pow(2.0, -this.scene.imageProcessingConfiguration.exposure) * Math.PI;
+                mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
 
                 this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
                 this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
