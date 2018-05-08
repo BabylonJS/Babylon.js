@@ -163,7 +163,7 @@ export class MapperManager {
         if (!this._mappers[type]) {
             Tools.Error("No mapper defined for " + type);
         }
-        return this._mappers[type] || this._mappers[MapperManager.DefaultMapper];
+        return this._mappers[type];
     }
 
     /**

@@ -358,9 +358,22 @@ module BABYLON {
 
         public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
             var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
-            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostors: collidedAgainstList });
+            var index = -1;
+            let found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
+                if (cbDef.callback === func && cbDef.otherImpostors.length === collidedAgainstList.length) {
+                    // chcek the arrays match
+                    let sameList = cbDef.otherImpostors.every((impostor) => {
+                        return collidedAgainstList.indexOf(impostor) > -1;
+                    });
+                    if (sameList) {
+                        index = idx;
+                    }
+                    return sameList;
+                }
+                return false;
+            });
 
-            if (index > -1) {
+            if (found) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
             } else {
                 Tools.Warn("Function to remove was not found");

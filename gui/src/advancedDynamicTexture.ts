@@ -459,6 +459,10 @@ module BABYLON.GUI {
             }
 
             this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
+                if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
+                    return;
+                }
+
                 if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                     && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                     && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {

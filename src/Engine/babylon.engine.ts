@@ -1015,7 +1015,7 @@
         protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
-        private _internalTexturesCache = new Array<InternalTexture>();
+        protected _internalTexturesCache = new Array<InternalTexture>();
         /** @hidden */
         protected _activeChannel = 0;
         private _currentTextureChannel = -1;    
@@ -1727,6 +1727,14 @@
             var viewport = camera.viewport;
             return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
         }
+
+        /**
+         * Gets current screen aspect ratio
+         * @returns a number defining the aspect ratio
+         */
+        public getScreenAspectRatio(): number {
+            return (this.getRenderWidth(true)) / (this.getRenderHeight(true));
+        }        
 
         /**
          * Gets the current render width
@@ -4113,14 +4121,14 @@
          * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
          * @param onError optional callback to be called upon failure
-         * @param buffer a source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
+         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-            buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
+            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -4272,16 +4280,19 @@
                     }, samplingMode);
                 };
 
-                if (!fromData || isBase64)
+                if (!fromData || isBase64) {
                     if (buffer instanceof HTMLImageElement) {
                         onload(buffer);
                     } else {
                         Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
                     }
-                else if (buffer instanceof Array || typeof buffer === "string" || buffer instanceof ArrayBuffer)
+                }
+                else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
                     Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
-                else
+                }
+                else {
                     onload(<HTMLImageElement>buffer);
+                }
             }
 
             return texture;

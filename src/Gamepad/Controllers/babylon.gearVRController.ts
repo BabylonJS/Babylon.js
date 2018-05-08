@@ -29,6 +29,8 @@ module BABYLON {
         constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.GEAR_VR;
+            // Initial starting position defaults to where hand would be (incase of only 3dof controller)
+            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15,-0.5, 0.4)
         }
 
         /**
