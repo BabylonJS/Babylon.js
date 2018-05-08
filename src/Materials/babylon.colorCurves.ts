@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    
+
     /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
@@ -7,31 +7,31 @@
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
      */
     export class ColorCurves {
-        
+
         private _dirty = true;
-        
+
         private _tempColor = new Color4(0, 0, 0, 0);
-        
+
         private _globalCurve = new Color4(0, 0, 0, 0);
         private _highlightsCurve = new Color4(0, 0, 0, 0);
         private _midtonesCurve = new Color4(0, 0, 0, 0);
         private _shadowsCurve = new Color4(0, 0, 0, 0);
-        
+
         private _positiveCurve = new Color4(0, 0, 0, 0);
         private _negativeCurve = new Color4(0, 0, 0, 0);
-        
+
         @serialize()
         private _globalHue = 30;
-        
+
         @serialize()
         private _globalDensity = 0;
-        
+
         @serialize()
         private _globalSaturation = 0;
-        
+
         @serialize()
         private _globalExposure = 0;
-        
+
         /**
          * Gets the global Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -79,19 +79,35 @@
             this._globalSaturation = value;
             this._dirty = true;
         }
-        
+
+        /**
+         * Gets the global Exposure value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+         */
+        public get globalExposure(): number {
+            return this._globalExposure;
+        }
+        /**
+         * Sets the global Exposure value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+         */
+        public set globalExposure(value: number) {
+            this._globalExposure = value;
+            this._dirty = true;
+        }
+
         @serialize()
         private _highlightsHue = 30;
-        
+
         @serialize()
         private _highlightsDensity = 0;
-        
+
         @serialize()
         private _highlightsSaturation = 0;
-        
+
         @serialize()
         private _highlightsExposure = 0;
-        
+
         /**
          * Gets the highlights Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -154,19 +170,19 @@
             this._highlightsExposure = value;
             this._dirty = true;
         }
-        
+
         @serialize()
         private _midtonesHue = 30;
-        
+
         @serialize()
         private _midtonesDensity = 0;
-        
+
         @serialize()
         private _midtonesSaturation = 0;
-        
+
         @serialize()
         private _midtonesExposure = 0;
-        
+
         /**
          * Gets the midtones Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -229,12 +245,12 @@
             this._midtonesExposure = value;
             this._dirty = true;
         }
-        
+
         private _shadowsHue = 30;
         private _shadowsDensity = 0;
         private _shadowsSaturation = 0;
         private _shadowsExposure = 0;
-        
+
         /**
          * Gets the shadows Hue value.
          * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
@@ -300,17 +316,17 @@
 
         public getClassName(): string {
             return "ColorCurves";
-        }          
-        
+        }
+
         /**
          * Binds the color curves to the shader.
          * @param colorCurves The color curve to bind
          * @param effect The effect to bind to
          */
-        public static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform = "vCameraColorCurvePositive", neutralUniform = "vCameraColorCurveNeutral", negativeUniform = "vCameraColorCurveNegative") : void {
+        public static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform = "vCameraColorCurvePositive", neutralUniform = "vCameraColorCurveNeutral", negativeUniform = "vCameraColorCurveNegative"): void {
             if (colorCurves._dirty) {
                 colorCurves._dirty = false;
-                            
+
                 // Fill in global info.
                 colorCurves.getColorGradingDataToRef(
                     colorCurves._globalHue,
@@ -336,7 +352,7 @@
                     colorCurves._midtonesExposure,
                     colorCurves._tempColor);
                 colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._midtonesCurve);
-                
+
                 // Compute shadows info.
                 colorCurves.getColorGradingDataToRef(
                     colorCurves._shadowsHue,
@@ -345,43 +361,43 @@
                     colorCurves._shadowsExposure,
                     colorCurves._tempColor);
                 colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._shadowsCurve);
-                
+
                 // Compute deltas (neutral is midtones).
                 colorCurves._highlightsCurve.subtractToRef(colorCurves._midtonesCurve, colorCurves._positiveCurve);
-                colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);            
+                colorCurves._midtonesCurve.subtractToRef(colorCurves._shadowsCurve, colorCurves._negativeCurve);
             }
-            
+
             if (effect) {
-                effect.setFloat4(positiveUniform, 
+                effect.setFloat4(positiveUniform,
                     colorCurves._positiveCurve.r,
                     colorCurves._positiveCurve.g,
                     colorCurves._positiveCurve.b,
                     colorCurves._positiveCurve.a);
-                effect.setFloat4(neutralUniform, 
+                effect.setFloat4(neutralUniform,
                     colorCurves._midtonesCurve.r,
                     colorCurves._midtonesCurve.g,
                     colorCurves._midtonesCurve.b,
                     colorCurves._midtonesCurve.a);
-                effect.setFloat4(negativeUniform, 
+                effect.setFloat4(negativeUniform,
                     colorCurves._negativeCurve.r,
                     colorCurves._negativeCurve.g,
                     colorCurves._negativeCurve.b,
                     colorCurves._negativeCurve.a);
             }
         }
-        
+
         /**
          * Prepare the list of uniforms associated with the ColorCurves effects.
          * @param uniformsList The list of uniforms used in the effect
          */
         public static PrepareUniforms(uniformsList: string[]): void {
             uniformsList.push(
-                "vCameraColorCurveNeutral", 
-                "vCameraColorCurvePositive", 
+                "vCameraColorCurveNeutral",
+                "vCameraColorCurvePositive",
                 "vCameraColorCurveNegative"
             );
         }
-        
+
         /**
          * Returns color grading data based on a hue, density, saturation and exposure value.
          * @param filterHue The hue of the color filter.
@@ -390,7 +406,7 @@
          * @param exposure The exposure.
          * @param result The result data container.
          */
-        private getColorGradingDataToRef(hue: number, density: number, saturation: number, exposure: number, result: Color4) : void {
+        private getColorGradingDataToRef(hue: number, density: number, saturation: number, exposure: number, result: Color4): void {
             if (hue == null) {
                 return;
             }
@@ -399,7 +415,7 @@
             density = ColorCurves.clamp(density, -100, 100);
             saturation = ColorCurves.clamp(saturation, -100, 100);
             exposure = ColorCurves.clamp(exposure, -100, 100);
-                
+
             // Remap the slider/config filter density with non-linear mapping and also scale by half
             // so that the maximum filter density is only 50% control. This provides fine control 
             // for small values and reasonable range.
@@ -412,12 +428,12 @@
                 density *= -1;
                 hue = (hue + 180) % 360;
             }
-            
-            ColorCurves.fromHSBToRef(hue, density, 50 + 0.25 * exposure, result);            
+
+            ColorCurves.fromHSBToRef(hue, density, 50 + 0.25 * exposure, result);
             result.scaleToRef(2, result);
             result.a = 1 + 0.01 * saturation;
         }
-        
+
         /**
          * Takes an input slider value and returns an adjusted value that provides extra control near the centre.
          * @param value The input slider value in range [-100,100].
@@ -437,7 +453,7 @@
 
             return x;
         }
-        
+
         /**
          * Returns an RGBA Color4 based on Hue, Saturation and Brightness (also referred to as value, HSV).
          * @param hue The hue (H) input.
@@ -501,7 +517,7 @@
 
             result.a = 1;
         }
-        
+
         /**
          * Returns a value clamped between min and max
          * @param value The value to clamp
@@ -533,8 +549,8 @@
          * Parses the color curve from a json representation.
          * @param source the JSON source to parse
          * @return The parsed curves
-         */      
-        public static Parse(source: any) : ColorCurves {
+         */
+        public static Parse(source: any): ColorCurves {
             return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
         }
     }
