@@ -33,7 +33,7 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
     }
 }
 
-function setKeyInObject(object: any, keys: string, value: any) {
+function setKeyInObject(object: any, keys: string, value: any, shouldOverwrite?: boolean) {
     let keySplit = keys.split(".");
     if (keySplit.length === 0) return;
     let lastKey = keySplit.pop();
@@ -43,5 +43,6 @@ function setKeyInObject(object: any, keys: string, value: any) {
         curObj[key] = curObj[key] || {};
         curObj = curObj[key];
     });
+    if (curObj[lastKey] !== undefined && !shouldOverwrite) return;
     curObj[lastKey] = value;
 }
