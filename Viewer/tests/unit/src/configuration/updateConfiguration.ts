@@ -161,16 +161,19 @@ describe(name + " scene", () => {
                         g: 0.5,
                         b: 0.5
                     }
+                },
+                lab: {
+                    environmentMap: {
+                        tintLevel: 1,
+                        texture: "",
+                        rotationY: 0
+                    }
                 }
             });
 
             assert.equal(viewer.sceneManager.mainColor.r, 0.5);
             assert.equal(viewer.sceneManager.mainColor.g, 0.5);
             assert.equal(viewer.sceneManager.mainColor.b, 0.5);
-
-            assert.equal(viewer.sceneManager.reflectionColor.r, 0.5);
-            assert.equal(viewer.sceneManager.reflectionColor.g, 0.5);
-            assert.equal(viewer.sceneManager.reflectionColor.b, 0.5);
 
             // to black
             viewer.updateConfiguration({
