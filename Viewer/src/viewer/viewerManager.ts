@@ -98,9 +98,14 @@ export class ViewerManager {
      * dispose the manager and all of its associated viewers
      */
     public dispose() {
+        delete this._onViewerAdded;
+
         for (let id in this._viewers) {
             this._viewers[id].dispose();
         }
+
+        this.onViewerAddedObservable.clear();
+        this.onViewerRemovedObservable.clear();
     }
 }
 

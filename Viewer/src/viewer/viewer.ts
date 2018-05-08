@@ -232,14 +232,16 @@ export abstract class AbstractViewer {
      * Is the engine currently set to rende even when the page is in background
      */
     public get renderInBackground() {
-        return this.engine.renderEvenInBackground;
+        return this.engine && this.engine.renderEvenInBackground;
     }
 
     /**
      * Set the viewer's background rendering flag.
      */
     public set renderInBackground(value: boolean) {
-        this.engine.renderEvenInBackground = value;
+        if (this.engine) {
+            this.engine.renderEvenInBackground = value;
+        }
     }
 
     /**
