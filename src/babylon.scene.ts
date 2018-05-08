@@ -1813,6 +1813,15 @@
         }
 
         /**
+         * Gets a boolean indicating if the current pointer event is captured (meaning that the scene has already handled the pointer down)
+         * @param pointerId defines the pointer id to use in a multi-touch scenario (0 by default)
+         * @returns true if the pointer was captured
+         */
+        public isPointerCaptured(pointerId = 0): boolean {
+            return this._pointerCaptures[pointerId];
+        }
+
+        /**
         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
         * @param attachUp defines if you want to attach events to pointerup
         * @param attachDown defines if you want to attach events to pointerdown
@@ -2066,7 +2075,7 @@
                 this._updatePointerPosition(evt);
                 this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
                     // PreObservable support
-                    if (this.onPrePointerObservable.hasObservers() && !this._pointerCaptures[evt.pointerId]) {
+                    if (this.onPrePointerObservable.hasObservers()) {
                         if (!clickInfo.ignore) {
                             if (!clickInfo.hasSwiped) {
                                 if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
@@ -2587,7 +2596,9 @@
          */
         public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable[] {
             let children = target.getDescendants(directDescendantsOnly);
+
             let result = [];
+            result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd));
             for (var child of children) {
                 result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd));
             }

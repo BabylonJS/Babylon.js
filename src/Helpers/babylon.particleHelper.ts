@@ -1,7 +1,24 @@
 module BABYLON {
-
-    export enum ParticleSystemType { None, Fire, Smoke }
-
+    /**
+     * ParticleSystemType
+     */
+    export enum ParticleSystemType {
+        /**
+         * None is to represents an error in parsing the type string in the create method.
+         */
+        None,
+        /**
+         * Fire particle system.
+         */
+        Fire,
+        /**
+         * Smoke particle system.
+         */
+        Smoke
+    }
+    /**
+     * This class is made for on one-liner static method to help creating particle systems.
+     */
     export class ParticleHelper {
         /**
          * Base Assets URL.
@@ -12,6 +29,14 @@ module BABYLON {
 
         private static _emitter: AbstractMesh;
 
+        /**
+         * This is the main static method (one-liner) of this helper to create different particle systems.
+         * @param type This string will be parsed to a ParticleSystemType
+         * @param emitter The object where the particle system will start to emit from.
+         * @param scene The scene where the particle system should live.
+         * @param gpu If the system will use gpu.
+         * @returns the ParticleSystem created.
+         */
         public static Create(type: string, emitter: AbstractMesh, scene: Nullable<Scene> = Engine.LastCreatedScene, gpu: boolean = false): ParticleSystem {
             const typeParsed = this._parseType(type);
             if (typeParsed === ParticleSystemType.None) {

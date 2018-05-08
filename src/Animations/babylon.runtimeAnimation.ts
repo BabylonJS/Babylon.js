@@ -4,6 +4,8 @@
      * Defines a runtime animation
      */
     export class RuntimeAnimation {
+        private _events = new Array<AnimationEvent>();
+
         /**
          * The current frame of the runtime animation
          */
@@ -146,6 +148,14 @@
             this._host = host;
 
             animation._runtimeAnimations.push(this);
+
+            // Cloning events locally
+            var events = animation.getEvents();
+            if (events && events.length > 0) {
+                events.forEach((e) => {
+                    this._events.push(e._clone());
+                });
+            }
         }
 
         /**
@@ -182,6 +192,11 @@
             this._currentFrame = 0;
             this._blendingFactor = 0;
             this._originalValue = new Array<any>();
+
+            // Events
+            for (var index = 0; index < this._events.length; index++) {
+                this._events[index].isDone = false;
+            }                  
         }
 
         /**
@@ -505,7 +520,7 @@
             }
 
             // Reset events if looping
-            let events = this._animation.getEvents();
+            let events = this._events;
             if (range > 0 && this.currentFrame > currentFrame || 
                 range < 0 && this.currentFrame < currentFrame) {
                     // Need to reset animation events
