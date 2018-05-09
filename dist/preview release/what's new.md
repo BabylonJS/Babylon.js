@@ -9,6 +9,8 @@
 - Add the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catamull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
 - Add support for specifying the center of rotation to textures ([bghgary](http://www.github.com/bghgary))
 - Add webVR support for Oculus Go ([TrevorDev](https://github.com/TrevorDev))
+- Add ability to not generate polynomials harmonics upon prefiltered texture creation ([sebavan](http://www.github.com/sebavan))
+- Add predicate function to customize the list of mesh included in the computation of bounding vectors in the ```getHierarchyBoundingVectors``` method ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 

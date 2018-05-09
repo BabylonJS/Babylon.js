@@ -1081,6 +1081,7 @@ declare module BabylonViewer {
             bllomThreshold?: number;
             hdr?: boolean;
             samples?: number;
+            glowLayerEnabled?: boolean;
     }
     export interface IModelConfiguration {
             id?: string;
@@ -1207,6 +1208,9 @@ declare module BabylonViewer {
             environmentTexture?: string;
             colorGrading?: IColorGradingConfiguration;
             environmentRotationY?: number;
+            /**
+                * Deprecated, please use default rendering pipeline
+                */
             glow?: boolean | BABYLON.IGlowLayerOptions;
             disableHdr?: boolean;
             renderInBackground?: boolean;
