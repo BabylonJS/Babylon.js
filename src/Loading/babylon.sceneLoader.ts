@@ -675,7 +675,7 @@
                 sceneFilename = rootUrl;
                 rootUrl = "";
             }
-
+            
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
@@ -691,7 +691,7 @@
                     Tools.Error(errorMessage);
                     // should the exception be thrown?
                 }
-
+                
                 disposeHandler();
             };
 
@@ -761,7 +761,9 @@
                 SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, assetContainer => {
                     resolve(assetContainer);
                 }, onProgress, (scene, message, exception) => {
-                    reject(exception || new Error(message));
+                    var error = exception || new Error(message);
+                    Tools.Warn(error);
+                    reject(error);
                 }, pluginExtension);
             });
         }
