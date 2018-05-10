@@ -14,6 +14,7 @@ uniform vec4 color1;
 uniform vec4 color2;
 uniform vec3 gravity;
 uniform sampler2D randomSampler;
+uniform vec2 angleRange;
 
 #ifdef BOXEMITTER
 uniform vec3 direction1;
@@ -34,7 +35,7 @@ uniform float radius;
 
 #ifdef CONEEMITTER
 uniform float radius;
-uniform float angle;
+uniform float coneAngle;
 uniform float height;
 uniform float directionRandomizer;
 #endif
@@ -47,6 +48,7 @@ in float seed;
 in float size;
 in vec4 color;
 in vec3 direction;
+in vec2 angle;
 
 // Output
 out vec3 outPosition;
@@ -56,6 +58,7 @@ out float outSeed;
 out float outSize;
 out vec4 outColor;
 out vec3 outDirection;
+out vec2 outAngle;
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -76,6 +79,7 @@ void main() {
       outColor = vec4(0.,0.,0.,0.);
       outSize = 0.;
       outDirection = direction;
+      outAngle = angle;
       return;
     }
     vec3 position;
@@ -96,6 +100,10 @@ void main() {
 
     // Color
     outColor = color1 + (color2 - color1) * randoms.b;
+
+    // Angular speed
+    outAngle.y = angleRange.x + (angleRange.y - angleRange.x) * randoms.a;
+    outAngle.x = 0.;
 
     // Position / Direction (based on emitter type)
 #ifdef BOXEMITTER
@@ -142,7 +150,7 @@ void main() {
     position = vec3(randX, randY, randZ); 
 
     // Direction
-    if (angle == 0.) {
+    if (coneAngle == 0.) {
         direction = vec3(0., 1.0, 0.);
     } else {
         vec3 randoms3 = getRandomVec3(generalRandoms.z);
@@ -169,5 +177,6 @@ void main() {
     outColor = color;
     outSize = size;
     outDirection = direction + gravity * timeDelta;
+    outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
   }
 }

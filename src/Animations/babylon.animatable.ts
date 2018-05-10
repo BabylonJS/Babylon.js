@@ -243,6 +243,10 @@
             }
         }
 
+        /**
+         * Wait asynchronously for the animation to end
+         * @returns a promise which will be fullfilled when the animation ends
+         */
         public waitAsync(): Promise<Animatable> {
             return new Promise((resolve, reject) => {
                 this.onAnimationEndObservable.add(() => {
