@@ -671,6 +671,7 @@
                 return null;
             }
 
+            // If entire file url is in rootUrl set this as the filename so it can be loaded successfully.
             if(sceneFilename==""){
                 sceneFilename = rootUrl;
                 rootUrl = "";
