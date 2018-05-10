@@ -177,9 +177,6 @@
             scene = this.getScene();
 
             if (source) {
-                // Source mesh
-                this._source = source;
-
                 // Geometry
                 if (source._geometry) {
                     source._geometry.applyToMesh(this);
@@ -188,7 +185,10 @@
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", 
                                               "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen"], 
-                                              ["_poseMatrix", "_source"]);
+                                              ["_poseMatrix"]);
+
+                // Source mesh
+                this._source = source;
 
                 // Metadata
                 if (source.metadata && source.metadata.clone) {
