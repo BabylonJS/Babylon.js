@@ -3011,8 +3011,9 @@
         /**
          * Add a mesh to the list of scene's meshes
          * @param newMesh defines the mesh to add
+         * @param recursive if all child meshes should also be added to the scene
          */
-        public addMesh(newMesh: AbstractMesh) {
+        public addMesh(newMesh: AbstractMesh, recursive = false) {
             this.meshes.push(newMesh);
 
             //notify the collision coordinator
@@ -3022,6 +3023,12 @@
             newMesh._resyncLightSources();
 
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
+
+            if(recursive){
+                newMesh.getChildMeshes().forEach((m)=>{
+                    this.addMesh(m);
+                })
+            }
         }
 
       /**
