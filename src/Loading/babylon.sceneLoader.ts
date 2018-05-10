@@ -659,8 +659,8 @@
         */
         public static LoadAssetContainer(
             rootUrl: string,
-            sceneFilename: any,
-            scene: Scene,
+            sceneFilename: any = "",
+            scene: Scene = BABYLON.Engine.LastCreatedScene!,
             onSuccess: Nullable<(assets: AssetContainer) => void> = null,
             onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null,
             onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
@@ -669,6 +669,11 @@
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return null;
+            }
+
+            if(sceneFilename==""){
+                sceneFilename = rootUrl;
+                rootUrl = "";
             }
 
             var loadingToken = {};
@@ -751,7 +756,7 @@
         * @param pluginExtension the extension used to determine the plugin
         * @returns The loaded asset container
         */
-        public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
+        public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any = "", scene: Scene=Engine.LastCreatedScene!, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
             return new Promise((resolve, reject) => {
                 SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, assetContainer => {
                     resolve(assetContainer);
