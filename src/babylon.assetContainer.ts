@@ -332,5 +332,18 @@ module BABYLON {
 
             this.removeAllFromScene();
         }
+
+        /**
+         * Adds all meshes in the asset container to a root mesh that can be used to position the entire assetContainer
+         */
+        public createRootMesh(){
+            var rootMesh = new BABYLON.Mesh("assetContainerRootMesh", this.scene);
+            this.meshes.forEach((m)=>{
+                if(!m.parent){
+                    rootMesh.addChild(m);
+                }
+            })
+            return rootMesh;
+        }
     }
 }
