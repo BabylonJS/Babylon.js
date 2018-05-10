@@ -267,7 +267,7 @@ export interface IGroundConfiguration {
 export interface ISceneConfiguration {
     debug?: boolean;
     clearColor?: { r: number, g: number, b: number, a: number };
-    mainColor?: { r: number, g: number, b: number };
+    mainColor?: { r?: number, g?: number, b?: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
     colorGrading?: IColorGradingConfiguration;

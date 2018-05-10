@@ -7,4 +7,5 @@ import './viewer/viewerManager';
 import './configuration/mappers';
 import './configuration/loader';
 import './helper';
+import './configuration/updateConfiguration';
 export * from '../../../src'
