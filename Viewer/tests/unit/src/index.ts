@@ -2,5 +2,10 @@ import { main } from '../../commons/boot';
 if (window && !window['validation']) {
     main();
 }
-export * from './viewer/viewer';
+import './viewer/viewer';
+import './viewer/viewerManager';
+import './configuration/mappers';
+import './configuration/loader';
+import './helper';
+import './configuration/updateConfiguration';
 export * from '../../../src'

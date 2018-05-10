@@ -1056,9 +1056,10 @@
         /**
          * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
          * @param includeDescendants Include bounding info from descendants as well (true by default)
+         * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
          * @returns the new bounding vectors
          */
-        public getHierarchyBoundingVectors(includeDescendants = true): { min: Vector3, max: Vector3 } {
+        public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
             // Ensures that all world matrix will be recomputed.
             this.getScene().incrementRenderId();
 
@@ -1081,8 +1082,12 @@
 
                 for (var descendant of descendants) {
                     let childMesh = <AbstractMesh>descendant;
-
                     childMesh.computeWorldMatrix(true);
+
+                    // Filters meshes based on custom predicate function.
+                    if (predicate && !predicate(childMesh)) {
+                        continue;
+                    }
 
                     //make sure we have the needed params to get mix and max
                     if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {

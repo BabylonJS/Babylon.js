@@ -353,6 +353,7 @@ module BABYLON {
 
                         this.isReady = true;
                     }, null, this.format, this._extension);
+                    proxy._sphericalPolynomial = this._sphericalPolynomial;
                     return;
             }
         }
