@@ -21,12 +21,12 @@ varying float fClipDistance;
 
 void main(void) {	
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz; 
-	vec3 cornerPos;
+	vec2 cornerPos;
 	float size = options.y;
 	float angle = options.x;
 	vec2 offset = options.zw;
 	
-	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;
+	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
 
 	// Rotate
 	vec3 rotatedCorner;
