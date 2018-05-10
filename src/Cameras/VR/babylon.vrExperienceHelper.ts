@@ -29,6 +29,10 @@ module BABYLON {
          * Uses the main button on the controller to toggle the laser casted. (default: true)
          */
         laserToggle?:boolean;
+        /**
+         * A list of meshes to be used as the teleportation floor. If specified, teleportation will be enabled (default: undefined)
+         */
+        floorMeshes?: Mesh[];
     }
 
     class VRExperienceHelperGazer implements IDisposable {
@@ -675,6 +679,10 @@ module BABYLON {
             //create easing functions
             this._circleEase = new CircleEase();
             this._circleEase.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+
+            if(this.webVROptions.floorMeshes){
+                this.enableTeleportation({floorMeshes: this.webVROptions.floorMeshes});
+            }
         }
 
         // Raised when one of the controller has loaded successfully its associated default mesh

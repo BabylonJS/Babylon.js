@@ -11,6 +11,7 @@
 - Add webVR support for Oculus Go ([TrevorDev](https://github.com/TrevorDev))
 - Add ability to not generate polynomials harmonics upon prefiltered texture creation ([sebavan](http://www.github.com/sebavan))
 - Add predicate function to customize the list of mesh included in the computation of bounding vectors in the ```getHierarchyBoundingVectors``` method ([sebavan](http://www.github.com/sebavan))
+- Add webVR constructor options: disable laser pointer toggle, teleportation floor meshes ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
