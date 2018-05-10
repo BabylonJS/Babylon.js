@@ -3343,6 +3343,10 @@ declare module BABYLON {
         private _syncRoot;
         animationStarted: boolean;
         /**
+         * Observer raised when the animation ends
+         */
+        onAnimationEndObservable: Observable<Animatable>;
+        /**
          * Gets the root Animatable used to synchronize and normalize animations
          */
         readonly syncRoot: Animatable;
@@ -3377,7 +3381,10 @@ declare module BABYLON {
         goToFrame(frame: number): void;
         pause(): void;
         restart(): void;
+        private _raiseOnAnimationEnd();
         stop(animationName?: string): void;
+        waitAsync(): Promise<Animatable>;
+        /** @hidden */
         _animate(delay: number): boolean;
     }
 }
@@ -5362,571 +5369,6 @@ declare module BABYLON {
     }
 }
 
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Nullable<Scene>;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     */
-    class BoneAxesViewer extends AxesViewer {
-        mesh: Nullable<Mesh>;
-        bone: Nullable<Bone>;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh.
-     */
-    class PhysicsViewer {
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        protected _scene: Nullable<Scene>;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _worldMatrix;
-        /**
-         * Creates a new bounding box
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding box from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _tempRadiusVector;
-        /**
-         * Creates a new bounding sphere
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding sphere from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON {
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _radius: Vector3;
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        _velocityWorldLength: number;
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        _initialVelocity: Vector3;
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    /** Defines supported task for worker process */
-    enum WorkerTaskType {
-        /** Initialization */
-        INIT = 0,
-        /** Update of geometry */
-        UPDATE = 1,
-        /** Evaluate collision */
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    /** Defines kind of replies returned by worker */
-    enum WorkerReplyType {
-        /** Success */
-        SUCCESS = 0,
-        /** Unkown error */
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Nullable<Vector3>;
-        pickedMesh: Nullable<AbstractMesh>;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Nullable<Sprite>;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
 declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
@@ -6828,6 +6270,571 @@ interface Window {
 }
 interface Gamepad {
     readonly displayId: number;
+}
+
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _worldMatrix;
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding box from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _tempRadiusVector;
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding sphere from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Nullable<Scene>;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     */
+    class BoneAxesViewer extends AxesViewer {
+        mesh: Nullable<Mesh>;
+        bone: Nullable<Bone>;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh.
+     */
+    class PhysicsViewer {
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        protected _scene: Nullable<Scene>;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _radius: Vector3;
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        _velocityWorldLength: number;
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        _initialVelocity: Vector3;
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    /** Defines supported task for worker process */
+    enum WorkerTaskType {
+        /** Initialization */
+        INIT = 0,
+        /** Update of geometry */
+        UPDATE = 1,
+        /** Evaluate collision */
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    /** Defines kind of replies returned by worker */
+    enum WorkerReplyType {
+        /** Success */
+        SUCCESS = 0,
+        /** Unkown error */
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Nullable<Vector3>;
+        pickedMesh: Nullable<AbstractMesh>;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Nullable<Sprite>;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        getTextureCoordinates(): Nullable<Vector2>;
+    }
 }
 
 declare module BABYLON {
@@ -9075,6 +9082,241 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue(newValue, currentValue, buttonIndex);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad(gamepad);
+        private _startMonitoringGamepads();
+        private _stopMonitoringGamepads();
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects();
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines supported buttons for XBox360 compatible gamepads
+     */
+    enum Xbox360Button {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** Start */
+        Start = 4,
+        /** Back */
+        Back = 5,
+        /** Left button */
+        LB = 6,
+        /** Right button */
+        RB = 7,
+        /** Left stick */
+        LeftStick = 8,
+        /** Right stick */
+        RightStick = 9,
+    }
+    /** Defines values for XBox360 DPad  */
+    enum Xbox360Dpad {
+        /** Up */
+        Up = 0,
+        /** Down */
+        Down = 1,
+        /** Left */
+        Left = 2,
+        /** Right */
+        Right = 3,
+    }
+    /**
+     * Defines a XBox360 gamepad
+     */
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        /** Observable raised when a button is pressed */
+        onButtonDownObservable: Observable<Xbox360Button>;
+        /** Observable raised when a button is released */
+        onButtonUpObservable: Observable<Xbox360Button>;
+        /** Observable raised when a pad is pressed */
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        /** Observable raised when a pad is released */
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        /**
+         * Creates a new XBox360 gamepad object
+         * @param id defines the id of this gamepad
+         * @param index defines its index
+         * @param gamepad defines the internal HTML gamepad object
+         * @param xboxOne defines if it is a XBox One gamepad
+         */
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        /**
+         * Defines the callback to call when left trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Defines the callback to call when right trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Gets or sets left trigger value
+         */
+        leftTrigger: number;
+        /**
+         * Gets or sets right trigger value
+         */
+        rightTrigger: number;
+        /**
+         * Defines the callback to call when a button is pressed
+         * @param callback defines the callback to use
+         */
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a button is released
+         * @param callback defines the callback to use
+         */
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a pad is pressed
+         * @param callback defines the callback to use
+         */
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        /**
+         * Defines the callback to call when a pad is released
+         * @param callback defines the callback to use
+         */
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue(newValue, currentValue, buttonType);
+        private _setDPadValue(newValue, currentValue, buttonType);
+        /** Gets or sets value of A button */
+        buttonA: number;
+        /** Gets or sets value of B button */
+        buttonB: number;
+        /** Gets or sets value of X button */
+        buttonX: number;
+        /** Gets or sets value of Y button */
+        buttonY: number;
+        /** Gets or sets value of Start button  */
+        buttonStart: number;
+        /** Gets or sets value of Back button  */
+        buttonBack: number;
+        /** Gets or sets value of Left button  */
+        buttonLB: number;
+        /** Gets or sets value of Right button  */
+        buttonRB: number;
+        /** Gets or sets value of left stick */
+        buttonLeftStick: number;
+        /** Gets or sets value of right stick */
+        buttonRightStick: number;
+        /** Gets or sets value of DPad up */
+        dPadUp: number;
+        /** Gets or sets value of DPad down */
+        dPadDown: number;
+        /** Gets or sets value of DPad left */
+        dPadLeft: number;
+        /** Gets or sets value of DPad right */
+        dPadRight: number;
+        /**
+         * Force the gamepad to synchronize with device values
+         */
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class KeyboardEventTypes {
         static _KEYDOWN: number;
         static _KEYUP: number;
@@ -9699,916 +9941,48 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
-    }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
-        type: number;
-        private _leftStick;
-        private _rightStick;
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue(newValue, currentValue, buttonIndex);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
-        private _scene;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad(gamepad);
-        private _startMonitoringGamepads();
-        private _stopMonitoringGamepads();
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects();
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines supported buttons for XBox360 compatible gamepads
-     */
-    enum Xbox360Button {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** Start */
-        Start = 4,
-        /** Back */
-        Back = 5,
-        /** Left button */
-        LB = 6,
-        /** Right button */
-        RB = 7,
-        /** Left stick */
-        LeftStick = 8,
-        /** Right stick */
-        RightStick = 9,
-    }
-    /** Defines values for XBox360 DPad  */
-    enum Xbox360Dpad {
-        /** Up */
-        Up = 0,
-        /** Down */
-        Down = 1,
-        /** Left */
-        Left = 2,
-        /** Right */
-        Right = 3,
-    }
-    /**
-     * Defines a XBox360 gamepad
-     */
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        /** Observable raised when a button is pressed */
-        onButtonDownObservable: Observable<Xbox360Button>;
-        /** Observable raised when a button is released */
-        onButtonUpObservable: Observable<Xbox360Button>;
-        /** Observable raised when a pad is pressed */
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        /** Observable raised when a pad is released */
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        /**
-         * Creates a new XBox360 gamepad object
-         * @param id defines the id of this gamepad
-         * @param index defines its index
-         * @param gamepad defines the internal HTML gamepad object
-         * @param xboxOne defines if it is a XBox One gamepad
-         */
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        /**
-         * Defines the callback to call when left trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Defines the callback to call when right trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Gets or sets left trigger value
-         */
-        leftTrigger: number;
-        /**
-         * Gets or sets right trigger value
-         */
-        rightTrigger: number;
-        /**
-         * Defines the callback to call when a button is pressed
-         * @param callback defines the callback to use
-         */
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a button is released
-         * @param callback defines the callback to use
-         */
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a pad is pressed
-         * @param callback defines the callback to use
-         */
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        /**
-         * Defines the callback to call when a pad is released
-         * @param callback defines the callback to use
-         */
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue(newValue, currentValue, buttonType);
-        private _setDPadValue(newValue, currentValue, buttonType);
-        /** Gets or sets value of A button */
-        buttonA: number;
-        /** Gets or sets value of B button */
-        buttonB: number;
-        /** Gets or sets value of X button */
-        buttonX: number;
-        /** Gets or sets value of Y button */
-        buttonY: number;
-        /** Gets or sets value of Start button  */
-        buttonStart: number;
-        /** Gets or sets value of Back button  */
-        buttonBack: number;
-        /** Gets or sets value of Left button  */
-        buttonLB: number;
-        /** Gets or sets value of Right button  */
-        buttonRB: number;
-        /** Gets or sets value of left stick */
-        buttonLeftStick: number;
-        /** Gets or sets value of right stick */
-        buttonRightStick: number;
-        /** Gets or sets value of DPad up */
-        dPadUp: number;
-        /** Gets or sets value of DPad down */
-        dPadDown: number;
-        /** Gets or sets value of DPad left */
-        dPadLeft: number;
-        /** Gets or sets value of DPad right */
-        dPadRight: number;
-        /**
-         * Force the gamepad to synchronize with device values
-         */
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Effect layer options. This helps customizing the behaviour
-     * of the effect layer.
-     */
-    interface IEffectLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the objects (the smaller the faster).
-         */
-        mainTextureRatio: number;
-        /**
-         * Enforces a fixed size texture to ensure effect stability across devices.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * Alpha blending mode used to apply the blur. Default depends of the implementation.
-         */
-        alphaBlendingMode: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera: Nullable<Camera>;
-    }
-    /**
-     * The effect layer Helps adding post process effect blended with the main pass.
-     *
-     * This can be for instance use to generate glow or higlight effects on the scene.
-     *
-     * The effect layer class can not be used directly and is intented to inherited from to be
-     * customized per effects.
-     */
-    abstract class EffectLayer {
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _cachedDefines;
-        private _effectLayerMapGenerationEffect;
-        private _effectLayerOptions;
-        private _mergeEffect;
-        protected _scene: Scene;
-        protected _engine: Engine;
-        protected _maxSize: number;
-        protected _mainTextureDesiredSize: ISize;
-        protected _mainTexture: RenderTargetTexture;
-        protected _shouldRender: boolean;
-        protected _postProcesses: PostProcess[];
-        protected _textures: BaseTexture[];
-        protected _emissiveTextureAndColor: {
-            texture: Nullable<BaseTexture>;
-            color: Color4;
-        };
-        /**
-         * The name of the layer
-         */
-        name: string;
-        /**
-         * The clear color of the texture used to generate the glow map.
-         */
-        neutralColor: Color4;
-        /**
-         * Specifies wether the highlight layer is enabled or not.
-         */
-        isEnabled: boolean;
-        /**
-         * Gets the camera attached to the layer.
-         */
-        readonly camera: Nullable<Camera>;
-        /**
-         * An event triggered when the effect layer has been disposed.
-         */
-        onDisposeObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the effect layer is about rendering the main texture with the glowy parts.
-         */
-        onBeforeRenderMainTextureObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the generated texture is being merged in the scene.
-         */
-        onBeforeComposeObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the generated texture has been merged in the scene.
-         */
-        onAfterComposeObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the efffect layer changes its size.
-         */
-        onSizeChangedObservable: Observable<EffectLayer>;
-        /**
-         * Instantiates a new effect Layer and references it in the scene.
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         */
-        constructor(
-            /** The Friendly of the effect in the scene */
-            name: string, scene: Scene);
-        /**
-         * Get the effect name of the layer.
-         * @return The effect name
-         */
-        abstract getEffectName(): string;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @return true if ready otherwise, false
-         */
-        abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
-         * @returns true if the effect requires stencil during the main canvas render pass.
-         */
-        abstract needStencil(): boolean;
-        /**
-         * Create the merge effect. This is the shader use to blit the information back
-         * to the main canvas at the end of the scene rendering.
-         * @returns The effect containing the shader used to merge the effect on the  main canvas
-         */
-        protected abstract _createMergeEffect(): Effect;
-        /**
-         * Creates the render target textures and post processes used in the effect layer.
-         */
-        protected abstract _createTextureAndPostProcesses(): void;
-        /**
-         * Implementation specific of rendering the generating effect on the main canvas.
-         * @param effect The effect used to render through
-         */
-        protected abstract _internalRender(effect: Effect): void;
-        /**
-         * Sets the required values for both the emissive texture and and the main color.
-         */
-        protected abstract _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-        /**
-         * Free any resources and references associated to a mesh.
-         * Internal use
-         * @param mesh The mesh to free.
-         */
-        abstract _disposeMesh(mesh: Mesh): void;
-        /**
-         * Serializes this layer (Glow or Highlight for example)
-         * @returns a serialized layer object
-         */
-        abstract serialize?(): any;
-        /**
-         * Initializes the effect layer with the required options.
-         * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
-         */
-        protected _init(options: Partial<IEffectLayerOptions>): void;
-        /**
-         * Generates the index buffer of the full screen quad blending to the main canvas.
-         */
-        private _generateIndexBuffer();
-        /**
-         * Generates the vertex buffer of the full screen quad blending to the main canvas.
-         */
-        private _genrateVertexBuffer();
-        /**
-         * Sets the main texture desired size which is the closest power of two
-         * of the engine canvas size.
-         */
-        private _setMainTextureSize();
-        /**
-         * Creates the main texture for the effect layer.
-         */
-        protected _createMainTexture(): void;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean;
-        /**
-         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
-         */
-        render(): void;
-        /**
-         * Determine if a given mesh will be used in the current effect.
-         * @param mesh mesh to test
-         * @returns true if the mesh will be used
-         */
-        hasMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Returns true if the layer contains information to display, otherwise false.
-         * @returns true if the glow layer should be rendered
-         */
-        shouldRender(): boolean;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderMesh(mesh: Mesh): boolean;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderEmissiveTextureForMesh(mesh: Mesh): boolean;
-        /**
-         * Renders the submesh passed in parameter to the generation map.
-         */
-        protected _renderSubMesh(subMesh: SubMesh): void;
-        /**
-         * Rebuild the required buffers.
-         * @hidden Internal use only.
-         */
-        _rebuild(): void;
-        /**
-         * Dispose only the render target textures and post process.
-         */
-        private _disposeTextureAndPostProcesses();
-        /**
-         * Dispose the highlight layer and free resources.
-         */
-        dispose(): void;
-        /**
-          * Gets the class name of the effect layer
-          * @returns the string with the class name of the effect layer
-          */
-        getClassName(): string;
-        /**
-         * Creates an effect layer from parsed effect layer data
-         * @param parsedEffectLayer defines effect layer data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the effect layer information
-         * @returns a parsed effect Layer
-         */
-        static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Glow layer options. This helps customizing the behaviour
-     * of the glow layer.
-     */
-    interface IGlowLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the glowing objects (the smaller the faster).
-         */
-        mainTextureRatio: number;
-        /**
-         * Enforces a fixed size texture to ensure resize independant blur.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * How big is the kernel of the blur texture.
-         */
-        blurKernelSize: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera: Nullable<Camera>;
-        /**
-         * Enable MSAA by chosing the number of samples.
-         */
-        mainTextureSamples?: number;
-    }
-    /**
-     * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
-     *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
-     *
-     * Documentation: https://doc.babylonjs.com/how_to/glow_layer
-     */
-    class GlowLayer extends EffectLayer {
-        /**
-         * Effect Name of the layer.
-         */
-        static readonly EffectName: string;
-        /**
-         * The default blur kernel size used for the glow.
-         */
-        static DefaultBlurKernelSize: number;
-        /**
-         * The default texture size ratio used for the glow.
-         */
-        static DefaultTextureRatio: number;
-        /**
-         * Gets the kernel size of the blur.
-         */
-        /**
-         * Sets the kernel size of the blur.
-         */
-        blurKernelSize: number;
-        /**
-         * Gets the glow intensity.
-         */
-        /**
-         * Sets the glow intensity.
-         */
-        intensity: number;
-        private _options;
-        private _intensity;
-        private _horizontalBlurPostprocess1;
-        private _verticalBlurPostprocess1;
-        private _horizontalBlurPostprocess2;
-        private _verticalBlurPostprocess2;
-        private _blurTexture1;
-        private _blurTexture2;
-        private _postProcesses1;
-        private _postProcesses2;
-        private _includedOnlyMeshes;
-        private _excludedMeshes;
-        /**
-         * Callback used to let the user override the color selection on a per mesh basis
-         */
-        customEmissiveColorSelector: (mesh: Mesh, subMesh: SubMesh, material: Material, result: Color4) => void;
-        /**
-         * Callback used to let the user override the texture selection on a per mesh basis
-         */
-        customEmissiveTextureSelector: (mesh: Mesh, subMesh: SubMesh, material: Material) => Texture;
-        /**
-         * Instantiates a new glow Layer and references it to the scene.
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
-         */
-        constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>);
-        /**
-         * Get the effect name of the layer.
-         * @return The effect name
-         */
-        getEffectName(): string;
-        /**
-         * Create the merge effect. This is the shader use to blit the information back
-         * to the main canvas at the end of the scene rendering.
-         */
-        protected _createMergeEffect(): Effect;
-        /**
-         * Creates the render target textures and post processes used in the glow layer.
-         */
-        protected _createTextureAndPostProcesses(): void;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
-         */
-        needStencil(): boolean;
-        /**
-         * Implementation specific of rendering the generating effect on the main canvas.
-         * @param effect The effect used to render through
-         */
-        protected _internalRender(effect: Effect): void;
-        /**
-         * Sets the required values for both the emissive texture and and the main color.
-         */
-        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderMesh(mesh: Mesh): boolean;
-        /**
-         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
-         * @param mesh The mesh to exclude from the glow layer
-         */
-        addExcludedMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the exclusion list to let it impact or being impacted by the glow layer.
-          * @param mesh The mesh to remove
-          */
-        removeExcludedMesh(mesh: Mesh): void;
-        /**
-         * Add a mesh in the inclusion list to impact or being impacted by the glow layer.
-         * @param mesh The mesh to include in the glow layer
-         */
-        addIncludedOnlyMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the Inclusion list to prevent it to impact or being impacted by the glow layer.
-          * @param mesh The mesh to remove
-          */
-        removeIncludedOnlyMesh(mesh: Mesh): void;
-        /**
-         * Determine if a given mesh will be used in the glow layer
-         * @param mesh The mesh to test
-         * @returns true if the mesh will be highlighted by the current glow layer
-         */
-        hasMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Free any resources and references associated to a mesh.
-         * Internal use
-         * @param mesh The mesh to free.
-         */
-        _disposeMesh(mesh: Mesh): void;
-        /**
-          * Gets the class name of the effect layer
-          * @returns the string with the class name of the effect layer
-          */
-        getClassName(): string;
-        /**
-         * Serializes this glow layer
-         * @returns a serialized glow layer object
-         */
-        serialize(): any;
-        /**
-         * Creates a Glow Layer from parsed glow layer data
-         * @param parsedGlowLayer defines glow layer data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the glow layer information
-         * @returns a parsed Glow Layer
-         */
-        static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Highlight layer options. This helps customizing the behaviour
-     * of the highlight layer.
-     */
-    interface IHighlightLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the glowing objects (the smaller the faster).
-         */
-        mainTextureRatio: number;
-        /**
-         * Enforces a fixed size texture to ensure resize independant blur.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
-         * of the picture to blur (the smaller the faster).
-         */
-        blurTextureSizeRatio: number;
-        /**
-         * How big in texel of the blur texture is the vertical blur.
-         */
-        blurVerticalSize: number;
-        /**
-         * How big in texel of the blur texture is the horizontal blur.
-         */
-        blurHorizontalSize: number;
-        /**
-         * Alpha blending mode used to apply the blur. Default is combine.
-         */
-        alphaBlendingMode: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera: Nullable<Camera>;
-        /**
-         * Should we display highlight as a solid stroke?
-         */
-        isStroke?: boolean;
-    }
-    /**
-     * The highlight layer Helps adding a glow effect around a mesh.
-     *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
-     *
-     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
-     */
-    class HighlightLayer extends EffectLayer {
-        name: string;
-        /**
-         * Effect Name of the highlight layer.
-         */
-        static readonly EffectName: string;
-        /**
-         * The neutral color used during the preparation of the glow effect.
-         * This is black by default as the blend operation is a blend operation.
-         */
-        static NeutralColor: Color4;
-        /**
-         * Stencil value used for glowing meshes.
-         */
-        static GlowingMeshStencilReference: number;
-        /**
-         * Stencil value used for the other meshes in the scene.
-         */
-        static NormalMeshStencilReference: number;
-        /**
-         * Specifies whether or not the inner glow is ACTIVE in the layer.
-         */
-        innerGlow: boolean;
-        /**
-         * Specifies whether or not the outer glow is ACTIVE in the layer.
-         */
-        outerGlow: boolean;
-        /**
-         * Gets the horizontal size of the blur.
-         */
-        /**
-         * Specifies the horizontal size of the blur.
-         */
-        blurHorizontalSize: number;
-        /**
-         * Gets the vertical size of the blur.
-         */
-        /**
-         * Specifies the vertical size of the blur.
-         */
-        blurVerticalSize: number;
-        /**
-         * An event triggered when the highlight layer is being blurred.
-         */
-        onBeforeBlurObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer has been blurred.
-         */
-        onAfterBlurObservable: Observable<HighlightLayer>;
-        private _instanceGlowingMeshStencilReference;
-        private _options;
-        private _downSamplePostprocess;
-        private _horizontalBlurPostprocess;
-        private _verticalBlurPostprocess;
-        private _blurTexture;
-        private _meshes;
-        private _excludedMeshes;
-        /**
-         * Instantiates a new highlight Layer and references it to the scene..
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
-         */
-        constructor(name: string, scene: Scene, options?: Partial<IHighlightLayerOptions>);
-        /**
-         * Get the effect name of the layer.
-         * @return The effect name
-         */
-        getEffectName(): string;
-        /**
-         * Create the merge effect. This is the shader use to blit the information back
-         * to the main canvas at the end of the scene rendering.
-         */
-        protected _createMergeEffect(): Effect;
-        /**
-         * Creates the render target textures and post processes used in the highlight layer.
-         */
-        protected _createTextureAndPostProcesses(): void;
-        /**
-         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
-         */
-        needStencil(): boolean;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Implementation specific of rendering the generating effect on the main canvas.
-         * @param effect The effect used to render through
-         */
-        protected _internalRender(effect: Effect): void;
-        /**
-         * Returns true if the layer contains information to display, otherwise false.
-         */
-        shouldRender(): boolean;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderMesh(mesh: Mesh): boolean;
-        /**
-         * Sets the required values for both the emissive texture and and the main color.
-         */
-        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-        /**
-         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
-         * @param mesh The mesh to exclude from the highlight layer
-         */
-        addExcludedMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
-          * @param mesh The mesh to highlight
-          */
-        removeExcludedMesh(mesh: Mesh): void;
-        /**
-         * Determine if a given mesh will be highlighted by the current HighlightLayer
-         * @param mesh mesh to test
-         * @returns true if the mesh will be highlighted by the current HighlightLayer
-         */
-        hasMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
-         * @param mesh The mesh to highlight
-         * @param color The color of the highlight
-         * @param glowEmissiveOnly Extract the glow from the emissive texture
-         */
-        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
-        /**
-         * Remove a mesh from the highlight layer in order to make it stop glowing.
-         * @param mesh The mesh to highlight
-         */
-        removeMesh(mesh: Mesh): void;
-        /**
-         * Force the stencil to the normal expected value for none glowing parts
-         */
-        private _defaultStencilReference(mesh);
-        /**
-         * Free any resources and references associated to a mesh.
-         * Internal use
-         * @param mesh The mesh to free.
-         */
-        _disposeMesh(mesh: Mesh): void;
-        /**
-         * Dispose the highlight layer and free resources.
-         */
-        dispose(): void;
-        /**
-          * Gets the class name of the effect layer
-          * @returns the string with the class name of the effect layer
-          */
-        getClassName(): string;
-        /**
-         * Serializes this Highlight layer
-         * @returns a serialized Highlight layer object
-         */
-        serialize(): any;
-        /**
-         * Creates a Highlight layer from parsed Highlight layer data
-         * @param parsedHightlightLayer defines the Highlight layer data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the Highlight layer information
-         * @returns a parsed Highlight layer
-         */
-        static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer;
-    }
-}
-
-declare module BABYLON {
-    class Layer {
-        name: string;
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
         texture: Nullable<Texture>;
-        isBackground: boolean;
-        color: Color4;
-        scale: Vector2;
-        offset: Vector2;
-        alphaBlendingMode: number;
-        alphaTest: boolean;
+        alphaMode: number;
+        private _system;
+        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
+        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
         layerMask: number;
+        id: string;
         private _scene;
+        private _emitter;
         private _vertexBuffers;
         private _indexBuffer;
         private _effect;
-        private _alphaTestEffect;
-        /**
-        * An event triggered when the layer is disposed.
-        */
-        onDisposeObservable: Observable<Layer>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        /**
-        * An event triggered before rendering the scene
-        */
-        onBeforeRenderObservable: Observable<Layer>;
-        private _onBeforeRenderObserver;
-        onBeforeRender: () => void;
-        /**
-        * An event triggered after rendering the scene
-        */
-        onAfterRenderObservable: Observable<Layer>;
-        private _onAfterRenderObserver;
-        onAfterRender: () => void;
-        constructor(name: string, imgUrl: Nullable<string>, scene: Nullable<Scene>, isBackground?: boolean, color?: Color4);
-        private _createIndexBuffer();
-        _rebuild(): void;
-        render(): void;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
         dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -14071,52 +13445,6 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Nullable<Texture>;
-        alphaMode: number;
-        private _system;
-        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
-        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
     }
 }
 
@@ -24274,6 +23602,685 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Effect layer options. This helps customizing the behaviour
+     * of the effect layer.
+     */
+    interface IEffectLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the objects (the smaller the faster).
+         */
+        mainTextureRatio: number;
+        /**
+         * Enforces a fixed size texture to ensure effect stability across devices.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * Alpha blending mode used to apply the blur. Default depends of the implementation.
+         */
+        alphaBlendingMode: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera: Nullable<Camera>;
+    }
+    /**
+     * The effect layer Helps adding post process effect blended with the main pass.
+     *
+     * This can be for instance use to generate glow or higlight effects on the scene.
+     *
+     * The effect layer class can not be used directly and is intented to inherited from to be
+     * customized per effects.
+     */
+    abstract class EffectLayer {
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _cachedDefines;
+        private _effectLayerMapGenerationEffect;
+        private _effectLayerOptions;
+        private _mergeEffect;
+        protected _scene: Scene;
+        protected _engine: Engine;
+        protected _maxSize: number;
+        protected _mainTextureDesiredSize: ISize;
+        protected _mainTexture: RenderTargetTexture;
+        protected _shouldRender: boolean;
+        protected _postProcesses: PostProcess[];
+        protected _textures: BaseTexture[];
+        protected _emissiveTextureAndColor: {
+            texture: Nullable<BaseTexture>;
+            color: Color4;
+        };
+        /**
+         * The name of the layer
+         */
+        name: string;
+        /**
+         * The clear color of the texture used to generate the glow map.
+         */
+        neutralColor: Color4;
+        /**
+         * Specifies wether the highlight layer is enabled or not.
+         */
+        isEnabled: boolean;
+        /**
+         * Gets the camera attached to the layer.
+         */
+        readonly camera: Nullable<Camera>;
+        /**
+         * An event triggered when the effect layer has been disposed.
+         */
+        onDisposeObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the effect layer is about rendering the main texture with the glowy parts.
+         */
+        onBeforeRenderMainTextureObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the generated texture is being merged in the scene.
+         */
+        onBeforeComposeObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the generated texture has been merged in the scene.
+         */
+        onAfterComposeObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the efffect layer changes its size.
+         */
+        onSizeChangedObservable: Observable<EffectLayer>;
+        /**
+         * Instantiates a new effect Layer and references it in the scene.
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         */
+        constructor(
+            /** The Friendly of the effect in the scene */
+            name: string, scene: Scene);
+        /**
+         * Get the effect name of the layer.
+         * @return The effect name
+         */
+        abstract getEffectName(): string;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @return true if ready otherwise, false
+         */
+        abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         * @returns true if the effect requires stencil during the main canvas render pass.
+         */
+        abstract needStencil(): boolean;
+        /**
+         * Create the merge effect. This is the shader use to blit the information back
+         * to the main canvas at the end of the scene rendering.
+         * @returns The effect containing the shader used to merge the effect on the  main canvas
+         */
+        protected abstract _createMergeEffect(): Effect;
+        /**
+         * Creates the render target textures and post processes used in the effect layer.
+         */
+        protected abstract _createTextureAndPostProcesses(): void;
+        /**
+         * Implementation specific of rendering the generating effect on the main canvas.
+         * @param effect The effect used to render through
+         */
+        protected abstract _internalRender(effect: Effect): void;
+        /**
+         * Sets the required values for both the emissive texture and and the main color.
+         */
+        protected abstract _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
+        /**
+         * Free any resources and references associated to a mesh.
+         * Internal use
+         * @param mesh The mesh to free.
+         */
+        abstract _disposeMesh(mesh: Mesh): void;
+        /**
+         * Serializes this layer (Glow or Highlight for example)
+         * @returns a serialized layer object
+         */
+        abstract serialize?(): any;
+        /**
+         * Initializes the effect layer with the required options.
+         * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
+         */
+        protected _init(options: Partial<IEffectLayerOptions>): void;
+        /**
+         * Generates the index buffer of the full screen quad blending to the main canvas.
+         */
+        private _generateIndexBuffer();
+        /**
+         * Generates the vertex buffer of the full screen quad blending to the main canvas.
+         */
+        private _genrateVertexBuffer();
+        /**
+         * Sets the main texture desired size which is the closest power of two
+         * of the engine canvas size.
+         */
+        private _setMainTextureSize();
+        /**
+         * Creates the main texture for the effect layer.
+         */
+        protected _createMainTexture(): void;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean;
+        /**
+         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+         */
+        render(): void;
+        /**
+         * Determine if a given mesh will be used in the current effect.
+         * @param mesh mesh to test
+         * @returns true if the mesh will be used
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Returns true if the layer contains information to display, otherwise false.
+         * @returns true if the glow layer should be rendered
+         */
+        shouldRender(): boolean;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderEmissiveTextureForMesh(mesh: Mesh): boolean;
+        /**
+         * Renders the submesh passed in parameter to the generation map.
+         */
+        protected _renderSubMesh(subMesh: SubMesh): void;
+        /**
+         * Rebuild the required buffers.
+         * @hidden Internal use only.
+         */
+        _rebuild(): void;
+        /**
+         * Dispose only the render target textures and post process.
+         */
+        private _disposeTextureAndPostProcesses();
+        /**
+         * Dispose the highlight layer and free resources.
+         */
+        dispose(): void;
+        /**
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
+          */
+        getClassName(): string;
+        /**
+         * Creates an effect layer from parsed effect layer data
+         * @param parsedEffectLayer defines effect layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the effect layer information
+         * @returns a parsed effect Layer
+         */
+        static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Glow layer options. This helps customizing the behaviour
+     * of the glow layer.
+     */
+    interface IGlowLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the glowing objects (the smaller the faster).
+         */
+        mainTextureRatio: number;
+        /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * How big is the kernel of the blur texture.
+         */
+        blurKernelSize: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera: Nullable<Camera>;
+        /**
+         * Enable MSAA by chosing the number of samples.
+         */
+        mainTextureSamples?: number;
+    }
+    /**
+     * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
+     *
+     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * glowy meshes to your scene.
+     *
+     * Documentation: https://doc.babylonjs.com/how_to/glow_layer
+     */
+    class GlowLayer extends EffectLayer {
+        /**
+         * Effect Name of the layer.
+         */
+        static readonly EffectName: string;
+        /**
+         * The default blur kernel size used for the glow.
+         */
+        static DefaultBlurKernelSize: number;
+        /**
+         * The default texture size ratio used for the glow.
+         */
+        static DefaultTextureRatio: number;
+        /**
+         * Gets the kernel size of the blur.
+         */
+        /**
+         * Sets the kernel size of the blur.
+         */
+        blurKernelSize: number;
+        /**
+         * Gets the glow intensity.
+         */
+        /**
+         * Sets the glow intensity.
+         */
+        intensity: number;
+        private _options;
+        private _intensity;
+        private _horizontalBlurPostprocess1;
+        private _verticalBlurPostprocess1;
+        private _horizontalBlurPostprocess2;
+        private _verticalBlurPostprocess2;
+        private _blurTexture1;
+        private _blurTexture2;
+        private _postProcesses1;
+        private _postProcesses2;
+        private _includedOnlyMeshes;
+        private _excludedMeshes;
+        /**
+         * Callback used to let the user override the color selection on a per mesh basis
+         */
+        customEmissiveColorSelector: (mesh: Mesh, subMesh: SubMesh, material: Material, result: Color4) => void;
+        /**
+         * Callback used to let the user override the texture selection on a per mesh basis
+         */
+        customEmissiveTextureSelector: (mesh: Mesh, subMesh: SubMesh, material: Material) => Texture;
+        /**
+         * Instantiates a new glow Layer and references it to the scene.
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
+         */
+        constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>);
+        /**
+         * Get the effect name of the layer.
+         * @return The effect name
+         */
+        getEffectName(): string;
+        /**
+         * Create the merge effect. This is the shader use to blit the information back
+         * to the main canvas at the end of the scene rendering.
+         */
+        protected _createMergeEffect(): Effect;
+        /**
+         * Creates the render target textures and post processes used in the glow layer.
+         */
+        protected _createTextureAndPostProcesses(): void;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         */
+        needStencil(): boolean;
+        /**
+         * Implementation specific of rendering the generating effect on the main canvas.
+         * @param effect The effect used to render through
+         */
+        protected _internalRender(effect: Effect): void;
+        /**
+         * Sets the required values for both the emissive texture and and the main color.
+         */
+        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
+         * @param mesh The mesh to exclude from the glow layer
+         */
+        addExcludedMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the glow layer.
+          * @param mesh The mesh to remove
+          */
+        removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Add a mesh in the inclusion list to impact or being impacted by the glow layer.
+         * @param mesh The mesh to include in the glow layer
+         */
+        addIncludedOnlyMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the Inclusion list to prevent it to impact or being impacted by the glow layer.
+          * @param mesh The mesh to remove
+          */
+        removeIncludedOnlyMesh(mesh: Mesh): void;
+        /**
+         * Determine if a given mesh will be used in the glow layer
+         * @param mesh The mesh to test
+         * @returns true if the mesh will be highlighted by the current glow layer
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Free any resources and references associated to a mesh.
+         * Internal use
+         * @param mesh The mesh to free.
+         */
+        _disposeMesh(mesh: Mesh): void;
+        /**
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
+          */
+        getClassName(): string;
+        /**
+         * Serializes this glow layer
+         * @returns a serialized glow layer object
+         */
+        serialize(): any;
+        /**
+         * Creates a Glow Layer from parsed glow layer data
+         * @param parsedGlowLayer defines glow layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the glow layer information
+         * @returns a parsed Glow Layer
+         */
+        static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Highlight layer options. This helps customizing the behaviour
+     * of the highlight layer.
+     */
+    interface IHighlightLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the glowing objects (the smaller the faster).
+         */
+        mainTextureRatio: number;
+        /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
+         * of the picture to blur (the smaller the faster).
+         */
+        blurTextureSizeRatio: number;
+        /**
+         * How big in texel of the blur texture is the vertical blur.
+         */
+        blurVerticalSize: number;
+        /**
+         * How big in texel of the blur texture is the horizontal blur.
+         */
+        blurHorizontalSize: number;
+        /**
+         * Alpha blending mode used to apply the blur. Default is combine.
+         */
+        alphaBlendingMode: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera: Nullable<Camera>;
+        /**
+         * Should we display highlight as a solid stroke?
+         */
+        isStroke?: boolean;
+    }
+    /**
+     * The highlight layer Helps adding a glow effect around a mesh.
+     *
+     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * glowy meshes to your scene.
+     *
+     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
+     */
+    class HighlightLayer extends EffectLayer {
+        name: string;
+        /**
+         * Effect Name of the highlight layer.
+         */
+        static readonly EffectName: string;
+        /**
+         * The neutral color used during the preparation of the glow effect.
+         * This is black by default as the blend operation is a blend operation.
+         */
+        static NeutralColor: Color4;
+        /**
+         * Stencil value used for glowing meshes.
+         */
+        static GlowingMeshStencilReference: number;
+        /**
+         * Stencil value used for the other meshes in the scene.
+         */
+        static NormalMeshStencilReference: number;
+        /**
+         * Specifies whether or not the inner glow is ACTIVE in the layer.
+         */
+        innerGlow: boolean;
+        /**
+         * Specifies whether or not the outer glow is ACTIVE in the layer.
+         */
+        outerGlow: boolean;
+        /**
+         * Gets the horizontal size of the blur.
+         */
+        /**
+         * Specifies the horizontal size of the blur.
+         */
+        blurHorizontalSize: number;
+        /**
+         * Gets the vertical size of the blur.
+         */
+        /**
+         * Specifies the vertical size of the blur.
+         */
+        blurVerticalSize: number;
+        /**
+         * An event triggered when the highlight layer is being blurred.
+         */
+        onBeforeBlurObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer has been blurred.
+         */
+        onAfterBlurObservable: Observable<HighlightLayer>;
+        private _instanceGlowingMeshStencilReference;
+        private _options;
+        private _downSamplePostprocess;
+        private _horizontalBlurPostprocess;
+        private _verticalBlurPostprocess;
+        private _blurTexture;
+        private _meshes;
+        private _excludedMeshes;
+        /**
+         * Instantiates a new highlight Layer and references it to the scene..
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
+         */
+        constructor(name: string, scene: Scene, options?: Partial<IHighlightLayerOptions>);
+        /**
+         * Get the effect name of the layer.
+         * @return The effect name
+         */
+        getEffectName(): string;
+        /**
+         * Create the merge effect. This is the shader use to blit the information back
+         * to the main canvas at the end of the scene rendering.
+         */
+        protected _createMergeEffect(): Effect;
+        /**
+         * Creates the render target textures and post processes used in the highlight layer.
+         */
+        protected _createTextureAndPostProcesses(): void;
+        /**
+         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         */
+        needStencil(): boolean;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Implementation specific of rendering the generating effect on the main canvas.
+         * @param effect The effect used to render through
+         */
+        protected _internalRender(effect: Effect): void;
+        /**
+         * Returns true if the layer contains information to display, otherwise false.
+         */
+        shouldRender(): boolean;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Sets the required values for both the emissive texture and and the main color.
+         */
+        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
+        /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
+         * @param mesh The mesh to exclude from the highlight layer
+         */
+        addExcludedMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
+          * @param mesh The mesh to highlight
+          */
+        removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
+         * @param mesh The mesh to highlight
+         * @param color The color of the highlight
+         * @param glowEmissiveOnly Extract the glow from the emissive texture
+         */
+        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
+        /**
+         * Remove a mesh from the highlight layer in order to make it stop glowing.
+         * @param mesh The mesh to highlight
+         */
+        removeMesh(mesh: Mesh): void;
+        /**
+         * Force the stencil to the normal expected value for none glowing parts
+         */
+        private _defaultStencilReference(mesh);
+        /**
+         * Free any resources and references associated to a mesh.
+         * Internal use
+         * @param mesh The mesh to free.
+         */
+        _disposeMesh(mesh: Mesh): void;
+        /**
+         * Dispose the highlight layer and free resources.
+         */
+        dispose(): void;
+        /**
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
+          */
+        getClassName(): string;
+        /**
+         * Serializes this Highlight layer
+         * @returns a serialized Highlight layer object
+         */
+        serialize(): any;
+        /**
+         * Creates a Highlight layer from parsed Highlight layer data
+         * @param parsedHightlightLayer defines the Highlight layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the Highlight layer information
+         * @returns a parsed Highlight layer
+         */
+        static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer;
+    }
+}
+
+declare module BABYLON {
+    class Layer {
+        name: string;
+        texture: Nullable<Texture>;
+        isBackground: boolean;
+        color: Color4;
+        scale: Vector2;
+        offset: Vector2;
+        alphaBlendingMode: number;
+        alphaTest: boolean;
+        layerMask: number;
+        private _scene;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _alphaTestEffect;
+        /**
+        * An event triggered when the layer is disposed.
+        */
+        onDisposeObservable: Observable<Layer>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        /**
+        * An event triggered before rendering the scene
+        */
+        onBeforeRenderObservable: Observable<Layer>;
+        private _onBeforeRenderObserver;
+        onBeforeRender: () => void;
+        /**
+        * An event triggered after rendering the scene
+        */
+        onAfterRenderObservable: Observable<Layer>;
+        private _onAfterRenderObserver;
+        onAfterRender: () => void;
+        constructor(name: string, imgUrl: Nullable<string>, scene: Nullable<Scene>, isBackground?: boolean, color?: Color4);
+        private _createIndexBuffer();
+        _rebuild(): void;
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     interface PhysicsImpostorJoint {
         mainImpostor: PhysicsImpostor;
         connectedImpostor: PhysicsImpostor;
@@ -26155,169 +26162,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _AlphaState {
-        private _isAlphaBlendDirty;
-        private _isBlendFunctionParametersDirty;
-        private _isBlendEquationParametersDirty;
-        private _isBlendConstantsDirty;
-        private _alphaBlend;
-        private _blendFunctionParameters;
-        private _blendEquationParameters;
-        private _blendConstants;
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        alphaBlend: boolean;
-        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
-        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
-        setAlphaEquationParameters(rgb: number, alpha: number): void;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _DepthCullingState {
-        private _isDepthTestDirty;
-        private _isDepthMaskDirty;
-        private _isDepthFuncDirty;
-        private _isCullFaceDirty;
-        private _isCullDirty;
-        private _isZOffsetDirty;
-        private _isFrontFaceDirty;
-        private _depthTest;
-        private _depthMask;
-        private _depthFunc;
-        private _cull;
-        private _cullFace;
-        private _zOffset;
-        private _frontFace;
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        zOffset: number;
-        cullFace: Nullable<number>;
-        cull: Nullable<boolean>;
-        depthFunc: Nullable<number>;
-        depthMask: boolean;
-        depthTest: boolean;
-        frontFace: Nullable<number>;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _StencilState {
-        private _isStencilTestDirty;
-        private _isStencilMaskDirty;
-        private _isStencilFuncDirty;
-        private _isStencilOpDirty;
-        private _stencilTest;
-        private _stencilMask;
-        private _stencilFunc;
-        private _stencilFuncRef;
-        private _stencilFuncMask;
-        private _stencilOpStencilFail;
-        private _stencilOpDepthFail;
-        private _stencilOpStencilDepthPass;
-        readonly isDirty: boolean;
-        stencilFunc: number;
-        stencilFuncRef: number;
-        stencilFuncMask: number;
-        stencilOpStencilFail: number;
-        stencilOpDepthFail: number;
-        stencilOpStencilDepthPass: number;
-        stencilMask: number;
-        stencilTest: boolean;
-        constructor();
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -26662,6 +26506,169 @@ declare module BABYLON {
          * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _AlphaState {
+        private _isAlphaBlendDirty;
+        private _isBlendFunctionParametersDirty;
+        private _isBlendEquationParametersDirty;
+        private _isBlendConstantsDirty;
+        private _alphaBlend;
+        private _blendFunctionParameters;
+        private _blendEquationParameters;
+        private _blendConstants;
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        alphaBlend: boolean;
+        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
+        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
+        setAlphaEquationParameters(rgb: number, alpha: number): void;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _DepthCullingState {
+        private _isDepthTestDirty;
+        private _isDepthMaskDirty;
+        private _isDepthFuncDirty;
+        private _isCullFaceDirty;
+        private _isCullDirty;
+        private _isZOffsetDirty;
+        private _isFrontFaceDirty;
+        private _depthTest;
+        private _depthMask;
+        private _depthFunc;
+        private _cull;
+        private _cullFace;
+        private _zOffset;
+        private _frontFace;
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        zOffset: number;
+        cullFace: Nullable<number>;
+        cull: Nullable<boolean>;
+        depthFunc: Nullable<number>;
+        depthMask: boolean;
+        depthTest: boolean;
+        frontFace: Nullable<number>;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _StencilState {
+        private _isStencilTestDirty;
+        private _isStencilMaskDirty;
+        private _isStencilFuncDirty;
+        private _isStencilOpDirty;
+        private _stencilTest;
+        private _stencilMask;
+        private _stencilFunc;
+        private _stencilFuncRef;
+        private _stencilFuncMask;
+        private _stencilOpStencilFail;
+        private _stencilOpDepthFail;
+        private _stencilOpStencilDepthPass;
+        readonly isDirty: boolean;
+        stencilFunc: number;
+        stencilFuncRef: number;
+        stencilFuncMask: number;
+        stencilOpStencilFail: number;
+        stencilOpDepthFail: number;
+        stencilOpStencilDepthPass: number;
+        stencilMask: number;
+        stencilTest: boolean;
+        constructor();
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -29388,283 +29395,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadRotationSensibility: number;
-        gamepadMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        keysReset: number[];
-        panningSensibility: number;
-        zoomingSensibility: number;
-        useAltToZoom: boolean;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _wheel;
-        private _observer;
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        buttons: number[];
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        multiTouchPanning: boolean;
-        multiTouchPanAndZoom: boolean;
-        private _isPanClick;
-        pinchInwards: boolean;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        alphaCorrection: number;
-        betaCorrection: number;
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        constructor();
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        checkInputs(): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     */
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        constructor();
-        camera: FreeCamera;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        _onLostFocus(e: FocusEvent): void;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        touchEnabled: boolean;
-        camera: FreeCamera;
-        buttons: number[];
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        constructor(touchEnabled?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
     class VRCameraMetrics {
         hResolution: number;
         vResolution: number;
@@ -30264,6 +29994,283 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadRotationSensibility: number;
+        gamepadMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _keys;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        keysReset: number[];
+        panningSensibility: number;
+        zoomingSensibility: number;
+        useAltToZoom: boolean;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _wheel;
+        private _observer;
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        buttons: number[];
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        multiTouchPanning: boolean;
+        multiTouchPanAndZoom: boolean;
+        private _isPanClick;
+        pinchInwards: boolean;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        alphaCorrection: number;
+        betaCorrection: number;
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        constructor();
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        checkInputs(): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        constructor();
+        camera: FreeCamera;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        _onLostFocus(e: FocusEvent): void;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        touchEnabled: boolean;
+        camera: FreeCamera;
+        buttons: number[];
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        constructor(touchEnabled?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
     }
 }
 
