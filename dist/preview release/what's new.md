@@ -19,7 +19,7 @@
 ### Viewer
 
 - No fullscreen button on small devices ([RaananW](https://github.com/RaananW))
-- Nav-Bar is now disaplayed on fullscreen per default  ([RaananW](https://github.com/RaananW))
+- Nav-Bar is now disaplayed on fullscreen per default ([RaananW](https://github.com/RaananW))
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
@@ -29,6 +29,7 @@
 - Fix ```shadowEnabled``` property on lights. Shadows are not visble anymore when disabled ([sebavan](http://www.github.com/sebavan))
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
+- Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh)) 
 
 ### Viewer
 
