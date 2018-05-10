@@ -718,7 +718,7 @@
                 up = up.negate();
             }
 
-            Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+            this._computeViewMatrix(this.position, target, up);
             this._viewMatrix.m[12] += this.targetScreenOffset.x;
             this._viewMatrix.m[13] += this.targetScreenOffset.y;
 

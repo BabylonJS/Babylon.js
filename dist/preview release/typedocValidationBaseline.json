@@ -1,7 +1,7 @@
 {
-  "errors": 4313,
+  "errors": 4309,
   "babylon.typedoc.json": {
-    "errors": 4313,
+    "errors": 4309,
     "Animatable": {
       "Class": {
         "Comments": {
@@ -4715,28 +4715,6 @@
               }
             },
             "noMipmap": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "CreateFromPrefilteredData": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "url": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "forcedExtension": {
               "Comments": {
                 "MissingText": true
               }

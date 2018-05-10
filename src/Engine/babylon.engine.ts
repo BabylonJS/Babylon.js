@@ -5351,11 +5351,13 @@
          * @param onError defines an optional callback raised if there is an issue to load the texture
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
          * @returns the cube texture as an InternalTexture
          */
         public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number,
             onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
-            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null): InternalTexture {
+            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null,
+            createPolynomials: boolean = true): InternalTexture {
             var callback = (loadData: any) => {
                 if (!loadData) {
                     if (onLoad) {
@@ -5365,7 +5367,10 @@
                 }
 
                 let texture = loadData.texture as InternalTexture;
-                if(loadData.info.sphericalPolynomial){
+                if (!createPolynomials) {
+                    texture._sphericalPolynomial = new BABYLON.SphericalPolynomial();
+                }
+                else if(loadData.info.sphericalPolynomial){
                     texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
                 }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
@@ -5440,7 +5445,7 @@
                 }
             };
 
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, true);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials);
         }
 
         /**

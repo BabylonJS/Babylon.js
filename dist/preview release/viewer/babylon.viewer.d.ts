@@ -1081,6 +1081,7 @@ declare module BabylonViewer {
             bllomThreshold?: number;
             hdr?: boolean;
             samples?: number;
+            glowLayerEnabled?: boolean;
     }
     export interface IModelConfiguration {
             id?: string;
@@ -1199,14 +1200,17 @@ declare module BabylonViewer {
                     a: number;
             };
             mainColor?: {
-                    r: number;
-                    g: number;
-                    b: number;
+                    r?: number;
+                    g?: number;
+                    b?: number;
             };
             imageProcessingConfiguration?: IImageProcessingConfiguration;
             environmentTexture?: string;
             colorGrading?: IColorGradingConfiguration;
             environmentRotationY?: number;
+            /**
+                * Deprecated, please use default rendering pipeline
+                */
             glow?: boolean | BABYLON.IGlowLayerOptions;
             disableHdr?: boolean;
             renderInBackground?: boolean;
