@@ -1200,9 +1200,9 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                     a: number;
             };
             mainColor?: {
-                    r: number;
-                    g: number;
-                    b: number;
+                    r?: number;
+                    g?: number;
+                    b?: number;
             };
             imageProcessingConfiguration?: IImageProcessingConfiguration;
             environmentTexture?: string;
