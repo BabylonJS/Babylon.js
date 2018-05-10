@@ -18,13 +18,17 @@ module BABYLON {
      */
     export interface VRExperienceHelperOptions extends WebVROptions {
         /**
-         * Create a DeviceOrientationCamera to be used as your out of vr camera.
+         * Create a DeviceOrientationCamera to be used as your out of vr camera. (default: true)
          */
         createDeviceOrientationCamera?: boolean;
         /**
-         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found.
+         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found. (default: true)
          */
         createFallbackVRDeviceOrientationFreeCamera?: boolean;
+        /**
+         * Uses the main button on the controller to toggle the laser casted. (default: true)
+         */
+        laserToggle?:boolean;
     }
 
     class VRExperienceHelperGazer implements IDisposable {
@@ -508,6 +512,9 @@ module BABYLON {
             }
             if (webVROptions.createDeviceOrientationCamera === undefined) {
                 webVROptions.createDeviceOrientationCamera = true;
+            }
+            if (webVROptions.laserToggle === undefined) {
+                webVROptions.laserToggle = true;
             }
             if (webVROptions.defaultHeight === undefined) {
                 webVROptions.defaultHeight = 1.7;
@@ -1108,19 +1115,21 @@ module BABYLON {
                 
                 controller._interactionsEnabled = true;
                 controller._activatePointer();
-                controller.webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
-                    // Enabling / disabling laserPointer 
-                    if (this._displayLaserPointer && stateObject.value === 1) {
-                        if(controller._activePointer){
-                            controller._deactivatePointer();
-                        }else{
-                            controller._activatePointer();
+                if(this.webVROptions.laserToggle){
+                    controller.webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
+                        // Enabling / disabling laserPointer 
+                        if (this._displayLaserPointer && stateObject.value === 1) {
+                            if(controller._activePointer){
+                                controller._deactivatePointer();
+                            }else{
+                                controller._activatePointer();
+                            }
+                            if(this.displayGaze){
+                                controller._gazeTracker.isVisible = controller._activePointer;
+                            }
                         }
-                        if(this.displayGaze){
-                            controller._gazeTracker.isVisible = controller._activePointer;
-                        }
-                    }
-                });
+                    });
+                }
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
                     if (!controller._pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
