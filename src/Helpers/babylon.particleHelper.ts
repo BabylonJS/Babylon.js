@@ -1,5 +1,14 @@
 module BABYLON {
     /**
+     * Represents all available shapes for the emitter
+     */
+    export enum EmitterShapes {
+        Box = "box",
+        Sphere = "sphere",
+        DirectedSphere = "directed_sphere",
+        Cone = "cone"
+    }
+    /**
      * Represents all the data needed to create a ParticleSystem.
      */
     export interface IParticleSystemData {
@@ -7,6 +16,10 @@ module BABYLON {
          * ParticleSystem type
          */
         type: string;
+        /**
+         * Shape of the emitter
+         */
+        emitterType: string
         /**
          * Maximum number of particles in the system
          */
@@ -18,11 +31,11 @@ module BABYLON {
         /**
          * minEmitBox Vector3
          */
-        minEmitBox: { x: number, y: number, z: number };
+        minEmitBox?: { x: number, y: number, z: number };
         /**
          * maxEmitBox Vector3
          */
-        maxEmitBox: { x: number, y: number, z: number };
+        maxEmitBox?: { x: number, y: number, z: number };
         /**
          * color1 Color4
          */
@@ -66,16 +79,39 @@ module BABYLON {
         /**
          * direction1 Vector3
          */
-        direction1: { x: number, y: number, z: number };
+        direction1?: { x: number, y: number, z: number };
         /**
          * direction2 Vector3
          */
-        direction2: { x: number, y: number, z: number };
+        direction2?: { x: number, y: number, z: number };
+        /**
+         * Minimum Angular Speed
+         */
         minAngularSpeed: number;
+        /**
+         * Maximum Angular Speed
+         */
         maxAngularSpeed: number;
+        /**
+         * Minimum Emit Power
+         */
         minEmitPower: number;
+        /**
+         * Maximum Emit Power
+         */
         maxEmitPower: number;
+        /**
+         * Update Speed
+         */
         updateSpeed: number;
+        /**
+         * Radius
+         */
+        radius?: number;
+        /**
+         * Angle
+         */
+        angle?: number;
     }
     /**
      * This class is made for on one-liner static method to help creating particle systems.
@@ -131,8 +167,6 @@ module BABYLON {
             system.particleTexture = new Texture(`${this._baseAssetsUrl}/textures/${data.textureFile}`, this._scene);
             // Where the particles come from
             system.emitter = this._emitter; // the starting object, the emitter
-            system.minEmitBox = new Vector3(data.minEmitBox.x, data.minEmitBox.y, data.minEmitBox.z); // Starting all from
-            system.maxEmitBox = new Vector3(data.maxEmitBox.x, data.maxEmitBox.y, data.maxEmitBox.z); // To...
 
             // Colors of all particles
             system.color1 = new Color4(data.color1.r, data.color1.g, data.color1.b, data.color1.a);
@@ -156,10 +190,6 @@ module BABYLON {
             // Set the gravity of all particles
             system.gravity = new Vector3(data.gravity.x, data.gravity.y, data.gravity.z);
 
-            // Direction of each particle after it has been emitted
-            system.direction1 = new Vector3(data.direction1.x, data.direction1.y, data.direction1.z);
-            system.direction2 = new Vector3(data.direction2.x, data.direction2.y, data.direction2.z);
-
             // Angular speed, in radians
             system.minAngularSpeed = data.minAngularSpeed;
             system.maxAngularSpeed = data.maxAngularSpeed;
@@ -168,6 +198,32 @@ module BABYLON {
             system.minEmitPower = data.minEmitPower;
             system.maxEmitPower = data.maxEmitPower;
             system.updateSpeed = data.updateSpeed;
+
+            switch (data.emitterType) {
+                case EmitterShapes.Box:
+                    const boxEmitter = system.createBoxEmitter(
+                        new Vector3(data.direction1.x, data.direction1.y, data.direction1.z),
+                        new Vector3(data.direction2.x, data.direction2.y, data.direction2.z),
+                        new Vector3(data.minEmitBox.x, data.minEmitBox.y, data.minEmitBox.z),
+                        new Vector3(data.maxEmitBox.x, data.maxEmitBox.y, data.maxEmitBox.z)
+                    );
+                    break;
+                case EmitterShapes.Sphere:
+                    const sphereEmitter = system.createSphereEmitter(data.radius);
+                    break;
+                case EmitterShapes.DirectedSphere:
+                    const directedSphereEmitter = system.createDirectedSphereEmitter(
+                        data.radius,
+                        new Vector3(data.direction1.x, data.direction1.y, data.direction1.z),
+                        new Vector3(data.direction2.x, data.direction2.y, data.direction2.z)
+                    );
+                    break;
+                case EmitterShapes.Cone:
+                    const coneEmitter = system.createConeEmitter(data.radius, data.angle);
+                    break;
+                default:
+                    break;
+            }
 
             return system;
         }

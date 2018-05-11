@@ -1,5 +1,6 @@
 {
   "type": "smoke",
+  "emitterType": "box",
   "capacity": 1000,
   "textureFile": "flare.png",
   "minEmitBox": { "x": -0.5, "y": 1, "z": -0.5 },
