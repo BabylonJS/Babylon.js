@@ -157,7 +157,6 @@ export interface IDefaultRenderingPipelineConfiguration {
     bloomKernel?: number;
     hardwareScaleLevel?: number;
     bloomWeight?: number;
-    bllomThreshold?: number;
     hdr?: boolean;
     samples?: number;
     glowLayerEnabled?: boolean;
