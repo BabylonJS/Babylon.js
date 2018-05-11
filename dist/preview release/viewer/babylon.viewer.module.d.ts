@@ -1078,7 +1078,6 @@ declare module 'babylonjs-viewer/configuration/configuration' {
             bloomKernel?: number;
             hardwareScaleLevel?: number;
             bloomWeight?: number;
-            bllomThreshold?: number;
             hdr?: boolean;
             samples?: number;
             glowLayerEnabled?: boolean;
@@ -1200,9 +1199,9 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                     a: number;
             };
             mainColor?: {
-                    r: number;
-                    g: number;
-                    b: number;
+                    r?: number;
+                    g?: number;
+                    b?: number;
             };
             imageProcessingConfiguration?: IImageProcessingConfiguration;
             environmentTexture?: string;

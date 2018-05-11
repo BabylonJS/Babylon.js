@@ -3327,6 +3327,1046 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Animatable {
+        target: any;
+        fromFrame: number;
+        toFrame: number;
+        loopAnimation: boolean;
+        onAnimationEnd: (() => void) | null | undefined;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _runtimeAnimations;
+        private _paused;
+        private _scene;
+        private _speedRatio;
+        private _weight;
+        private _syncRoot;
+        animationStarted: boolean;
+        /**
+         * Observer raised when the animation ends
+         */
+        onAnimationEndObservable: Observable<Animatable>;
+        /**
+         * Gets the root Animatable used to synchronize and normalize animations
+         */
+        readonly syncRoot: Animatable;
+        /**
+         * Gets the current frame of the first RuntimeAnimation
+         * Used to synchronize Animatables
+         */
+        readonly masterFrame: number;
+        /**
+         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
+         */
+        weight: number;
+        /**
+         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+         */
+        speedRatio: number;
+        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: (() => void) | null | undefined, animations?: any);
+        /**
+         * Synchronize and normalize current Animatable with a source Animatable
+         * This is useful when using animation weights and when animations are not of the same length
+         * @param root defines the root Animatable to synchronize with
+         * @returns the current Animatable
+         */
+        syncWith(root: Animatable): Animatable;
+        getAnimations(): RuntimeAnimation[];
+        appendAnimations(target: any, animations: Animation[]): void;
+        getAnimationByTargetProperty(property: string): Nullable<Animation>;
+        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
+        reset(): void;
+        enableBlending(blendingSpeed: number): void;
+        disableBlending(): void;
+        goToFrame(frame: number): void;
+        pause(): void;
+        restart(): void;
+        private _raiseOnAnimationEnd();
+        stop(animationName?: string): void;
+        /**
+         * Wait asynchronously for the animation to end
+         * @returns a promise which will be fullfilled when the animation ends
+         */
+        waitAsync(): Promise<Animatable>;
+        /** @hidden */
+        _animate(delay: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents the range of an animation
+     */
+    class AnimationRange {
+        /**The name of the animation range**/
+        name: string;
+        /**The starting frame of the animation */
+        from: number;
+        /**The ending frame of the animation*/
+        to: number;
+        /**
+         * Initializes the range of an animation
+         * @param name The name of the animation range
+         * @param from The starting frame of the animation
+         * @param to The ending frame of the animation
+         */
+        constructor(
+            /**The name of the animation range**/
+            name: string, 
+            /**The starting frame of the animation */
+            from: number, 
+            /**The ending frame of the animation*/
+            to: number);
+        /**
+         * Makes a copy of the animation range
+         * @returns A copy of the animation range
+         */
+        clone(): AnimationRange;
+    }
+    /**
+     * Composed of a frame, and an action function
+     */
+    class AnimationEvent {
+        /** The frame for which the event is triggered **/
+        frame: number;
+        /** The event to perform when triggered **/
+        action: () => void;
+        /** Specifies if the event should be triggered only once**/
+        onlyOnce: boolean | undefined;
+        /**
+         * Specifies if the animation event is done
+         */
+        isDone: boolean;
+        /**
+         * Initializes the animation event
+         * @param frame The frame for which the event is triggered
+         * @param action The event to perform when triggered
+         * @param onlyOnce Specifies if the event should be triggered only once
+         */
+        constructor(
+            /** The frame for which the event is triggered **/
+            frame: number, 
+            /** The event to perform when triggered **/
+            action: () => void, 
+            /** Specifies if the event should be triggered only once**/
+            onlyOnce?: boolean | undefined);
+        /** @hidden */
+        _clone(): AnimationEvent;
+    }
+    /**
+     * A cursor which tracks a point on a path
+     */
+    class PathCursor {
+        private path;
+        /**
+         * Stores path cursor callbacks for when an onchange event is triggered
+         */
+        private _onchange;
+        /**
+         * The value of the path cursor
+         */
+        value: number;
+        /**
+         * The animation array of the path cursor
+         */
+        animations: Animation[];
+        /**
+         * Initializes the path cursor
+         * @param path The path to track
+         */
+        constructor(path: Path2);
+        /**
+         * Gets the cursor point on the path
+         * @returns A point on the path cursor at the cursor location
+         */
+        getPoint(): Vector3;
+        /**
+         * Moves the cursor ahead by the step amount
+         * @param step The amount to move the cursor forward
+         * @returns This path cursor
+         */
+        moveAhead(step?: number): PathCursor;
+        /**
+         * Moves the cursor behind by the step amount
+         * @param step The amount to move the cursor back
+         * @returns This path cursor
+         */
+        moveBack(step?: number): PathCursor;
+        /**
+         * Moves the cursor by the step amount
+         * If the step amount is greater than one, an exception is thrown
+         * @param step The amount to move the cursor
+         * @returns This path cursor
+         */
+        move(step: number): PathCursor;
+        /**
+         * Ensures that the value is limited between zero and one
+         * @returns This path cursor
+         */
+        private ensureLimits();
+        /**
+         * Runs onchange callbacks on change (used by the animation engine)
+         * @returns This path cursor
+         */
+        private raiseOnChange();
+        /**
+         * Executes a function on change
+         * @param f A path cursor onchange callback
+         * @returns This path cursor
+         */
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+    /**
+     * Defines an interface which represents an animation key frame
+     */
+    interface IAnimationKey {
+        /**
+         * Frame of the key frame
+         */
+        frame: number;
+        /**
+         * Value at the specifies key frame
+         */
+        value: any;
+        /**
+         * The input tangent for the cubic hermite spline
+         */
+        inTangent?: any;
+        /**
+         * The output tangent for the cubic hermite spline
+         */
+        outTangent?: any;
+        /**
+         * The animation interpolation type
+         */
+        interpolation?: AnimationKeyInterpolation;
+    }
+    /**
+     * Enum for the animation key frame interpolation type
+     */
+    enum AnimationKeyInterpolation {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored
+         */
+        STEP = 1,
+    }
+    /**
+     * Class used to store any kind of animation
+     */
+    class Animation {
+        /**Name of the animation */
+        name: string;
+        /**Property to animate */
+        targetProperty: string;
+        /**The frames per second of the animation */
+        framePerSecond: number;
+        /**The data type of the animation */
+        dataType: number;
+        /**The loop mode of the animation */
+        loopMode: number | undefined;
+        /**Specifies if blending should be enabled */
+        enableBlending: boolean | undefined;
+        /**
+         * Use matrix interpolation instead of using direct key value when animating matrices
+         */
+        static AllowMatricesInterpolation: boolean;
+        /**
+         * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
+         */
+        static AllowMatrixDecomposeForInterpolation: boolean;
+        /**
+         * Stores the key frames of the animation
+         */
+        private _keys;
+        /**
+         * Stores the easing function of the animation
+         */
+        private _easingFunction;
+        /**
+         * @hidden Internal use only
+         */
+        _runtimeAnimations: RuntimeAnimation[];
+        /**
+         * The set of event that will be linked to this animation
+         */
+        private _events;
+        /**
+         * Stores an array of target property paths
+         */
+        targetPropertyPath: string[];
+        /**
+         * Stores the blending speed of the animation
+         */
+        blendingSpeed: number;
+        /**
+         * Stores the animation ranges for the animation
+         */
+        private _ranges;
+        /**
+         * @hidden Internal use
+         */
+        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation>;
+        /**
+         * Sets up an animation
+         * @param property The property to animate
+         * @param animationType The animation type to apply
+         * @param framePerSecond The frames per second of the animation
+         * @param easingFunction The easing function used in the animation
+         * @returns The created animation
+         */
+        static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation;
+        /**
+         * Create and start an animation on a node
+         * @param name defines the name of the global animation that will be run on all nodes
+         * @param node defines the root node where the animation will take place
+         * @param targetProperty defines property to animate
+         * @param framePerSecond defines the number of frame per second yo use
+         * @param totalFrame defines the number of frames in total
+         * @param from defines the initial value
+         * @param to defines the final value
+         * @param loopMode defines which loop mode you want to use (off by default)
+         * @param easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when animation end
+         * @returns the animatable created for this animation
+         */
+        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Create and start an animation on a node and its descendants
+         * @param name defines the name of the global animation that will be run on all nodes
+         * @param node defines the root node where the animation will take place
+         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
+         * @param targetProperty defines property to animate
+         * @param framePerSecond defines the number of frame per second to use
+         * @param totalFrame defines the number of frames in total
+         * @param from defines the initial value
+         * @param to defines the final value
+         * @param loopMode defines which loop mode you want to use (off by default)
+         * @param easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
+         * @example https://www.babylonjs-playground.com/#MH0VLI
+         */
+        static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]>;
+        /**
+         * Creates a new animation, merges it with the existing animations and starts it
+         * @param name Name of the animation
+         * @param node Node which contains the scene that begins the animations
+         * @param targetProperty Specifies which property to animate
+         * @param framePerSecond The frames per second of the animation
+         * @param totalFrame The total number of frames
+         * @param from The frame at the beginning of the animation
+         * @param to The frame at the end of the animation
+         * @param loopMode Specifies the loop mode of the animation
+         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
+         * @param onAnimationEnd Callback to run once the animation is complete
+         * @returns Nullable animation
+         */
+        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Transition property of the Camera to the target Value
+         * @param property The property to transition
+         * @param targetValue The target Value of the property
+         * @param host The object where the property to animate belongs
+         * @param scene Scene used to run the animation
+         * @param frameRate Framerate (in frame/s) to use
+         * @param transition The transition type we want to use
+         * @param duration The duration of the animation, in milliseconds
+         * @param onAnimationEnd Callback trigger at the end of the animation
+         * @returns Nullable animation
+         */
+        static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd?: Nullable<() => void>): Nullable<Animatable>;
+        /**
+         * Return the array of runtime animations currently using this animation
+         */
+        readonly runtimeAnimations: RuntimeAnimation[];
+        /**
+         * Specifies if any of the runtime animations are currently running
+         */
+        readonly hasRunningRuntimeAnimations: boolean;
+        /**
+         * Initializes the animation
+         * @param name Name of the animation
+         * @param targetProperty Property to animate
+         * @param framePerSecond The frames per second of the animation
+         * @param dataType The data type of the animation
+         * @param loopMode The loop mode of the animation
+         * @param enableBlendings Specifies if blending should be enabled
+         */
+        constructor(
+            /**Name of the animation */
+            name: string, 
+            /**Property to animate */
+            targetProperty: string, 
+            /**The frames per second of the animation */
+            framePerSecond: number, 
+            /**The data type of the animation */
+            dataType: number, 
+            /**The loop mode of the animation */
+            loopMode?: number | undefined, 
+            /**Specifies if blending should be enabled */
+            enableBlending?: boolean | undefined);
+        /**
+         * Converts the animation to a string
+         * @param fullDetails support for multiple levels of logging within scene loading
+         * @returns String form of the animation
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Add an event to this animation
+         * @param event Event to add
+         */
+        addEvent(event: AnimationEvent): void;
+        /**
+         * Remove all events found at the given frame
+         * @param frame The frame to remove events from
+         */
+        removeEvents(frame: number): void;
+        /**
+         * Retrieves all the events from the animation
+         * @returns Events from the animation
+         */
+        getEvents(): AnimationEvent[];
+        /**
+         * Creates an animation range
+         * @param name Name of the animation range
+         * @param from Starting frame of the animation range
+         * @param to Ending frame of the animation
+         */
+        createRange(name: string, from: number, to: number): void;
+        /**
+         * Deletes an animation range by name
+         * @param name Name of the animation range to delete
+         * @param deleteFrames Specifies if the key frames for the range should also be deleted (true) or not (false)
+         */
+        deleteRange(name: string, deleteFrames?: boolean): void;
+        /**
+         * Gets the animation range by name, or null if not defined
+         * @param name Name of the animation range
+         * @returns Nullable animation range
+         */
+        getRange(name: string): Nullable<AnimationRange>;
+        /**
+         * Gets the key frames from the animation
+         * @returns The key frames of the animation
+         */
+        getKeys(): Array<IAnimationKey>;
+        /**
+         * Gets the highest frame rate of the animation
+         * @returns Highest frame rate of the animation
+         */
+        getHighestFrame(): number;
+        /**
+         * Gets the easing function of the animation
+         * @returns Easing function of the animation
+         */
+        getEasingFunction(): IEasingFunction;
+        /**
+         * Sets the easing function of the animation
+         * @param easingFunction A custom mathematical formula for animation
+         */
+        setEasingFunction(easingFunction: EasingFunction): void;
+        /**
+         * Interpolates a scalar linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
+         */
+        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        /**
+         * Interpolates a scalar cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
+         */
+        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
+        /**
+         * Interpolates a quaternion using a spherical linear interpolation
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated quaternion value
+         */
+        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        /**
+         * Interpolates a quaternion cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation curve
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated quaternion value
+         */
+        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
+        /**
+         * Interpolates a Vector3 linearl
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
+         */
+        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        /**
+         * Interpolates a Vector3 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns InterpolatedVector3 value
+         */
+        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
+        /**
+         * Interpolates a Vector2 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Vector2 value
+         */
+        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        /**
+         * Interpolates a Vector2 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Vector2 value
+         */
+        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
+        /**
+         * Interpolates a size linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Size value
+         */
+        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
+        /**
+         * Interpolates a Color3 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Color3 value
+         */
+        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        /**
+         * @hidden Internal use only
+         */
+        _getKeyValue(value: any): any;
+        /**
+         * @hidden Internal use only
+         */
+        _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any;
+        /**
+         * Defines the function to use to interpolate matrices
+         * @param startValue defines the start matrix
+         * @param endValue defines the end matrix
+         * @param gradient defines the gradient between both matrices
+         * @param result defines an optional target matrix where to store the interpolation
+         * @returns the interpolated matrix
+         */
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix;
+        /**
+         * Makes a copy of the animation
+         * @returns Cloned animation
+         */
+        clone(): Animation;
+        /**
+         * Sets the key frames of the animation
+         * @param values The animation key frames to set
+         */
+        setKeys(values: Array<IAnimationKey>): void;
+        /**
+         * Serializes the animation to an object
+         * @returns Serialized object
+         */
+        serialize(): any;
+        /**
+         * Float animation type
+         */
+        private static _ANIMATIONTYPE_FLOAT;
+        /**
+         * Vector3 animation type
+         */
+        private static _ANIMATIONTYPE_VECTOR3;
+        /**
+         * Quaternion animation type
+         */
+        private static _ANIMATIONTYPE_QUATERNION;
+        /**
+         * Matrix animation type
+         */
+        private static _ANIMATIONTYPE_MATRIX;
+        /**
+         * Color3 animation type
+         */
+        private static _ANIMATIONTYPE_COLOR3;
+        /**
+         * Vector2 animation type
+         */
+        private static _ANIMATIONTYPE_VECTOR2;
+        /**
+         * Size animation type
+         */
+        private static _ANIMATIONTYPE_SIZE;
+        /**
+         * Relative Loop Mode
+         */
+        private static _ANIMATIONLOOPMODE_RELATIVE;
+        /**
+         * Cycle Loop Mode
+         */
+        private static _ANIMATIONLOOPMODE_CYCLE;
+        /**
+         * Constant Loop Mode
+         */
+        private static _ANIMATIONLOOPMODE_CONSTANT;
+        /**
+         * Get the float animation type
+         */
+        static readonly ANIMATIONTYPE_FLOAT: number;
+        /**
+         * Get the Vector3 animation type
+         */
+        static readonly ANIMATIONTYPE_VECTOR3: number;
+        /**
+         * Get the Vectpr2 animation type
+         */
+        static readonly ANIMATIONTYPE_VECTOR2: number;
+        /**
+         * Get the Size animation type
+         */
+        static readonly ANIMATIONTYPE_SIZE: number;
+        /**
+         * Get the Quaternion animation type
+         */
+        static readonly ANIMATIONTYPE_QUATERNION: number;
+        /**
+         * Get the Matrix animation type
+         */
+        static readonly ANIMATIONTYPE_MATRIX: number;
+        /**
+         * Get the Color3 animation type
+         */
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        /**
+         * Get the Relative Loop Mode
+         */
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
+        /**
+         * Get the Cycle Loop Mode
+         */
+        static readonly ANIMATIONLOOPMODE_CYCLE: number;
+        /**
+         * Get the Constant Loop Mode
+         */
+        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
+        /** @hidden */
+        static _UniversalLerp(left: any, right: any, amount: number): any;
+        /**
+         * Parses an animation object and creates an animation
+         * @param parsedAnimation Parsed animation object
+         * @returns Animation object
+         */
+        static Parse(parsedAnimation: any): Animation;
+        /**
+         * Appends the serialized animations from the source animations
+         * @param source Source containing the animations
+         * @param destination Target to store the animations
+         */
+        static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class defines the direct association between an animation and a target
+     */
+    class TargetedAnimation {
+        animation: Animation;
+        target: any;
+    }
+    /**
+     * Use this class to create coordinated animations on multiple targets
+     */
+    class AnimationGroup implements IDisposable {
+        name: string;
+        private _scene;
+        private _targetedAnimations;
+        private _animatables;
+        private _from;
+        private _to;
+        private _isStarted;
+        private _speedRatio;
+        onAnimationEndObservable: Observable<TargetedAnimation>;
+        /**
+         * Gets the first frame
+         */
+        readonly from: number;
+        /**
+         * Gets the last frame
+         */
+        readonly to: number;
+        /**
+         * Define if the animations are started
+         */
+        readonly isStarted: boolean;
+        /**
+         * Gets or sets the speed ratio to use for all animations
+         */
+        /**
+         * Gets or sets the speed ratio to use for all animations
+         */
+        speedRatio: number;
+        /**
+         * Gets the targeted animations for this animation group
+         */
+        readonly targetedAnimations: Array<TargetedAnimation>;
+        /**
+         * returning the list of animatables controlled by this animation group.
+         */
+        readonly animatables: Array<Animatable>;
+        constructor(name: string, scene?: Nullable<Scene>);
+        /**
+         * Add an animation (with its target) in the group
+         * @param animation defines the animation we want to add
+         * @param target defines the target of the animation
+         * @returns the {BABYLON.TargetedAnimation} object
+         */
+        addTargetedAnimation(animation: Animation, target: any): TargetedAnimation;
+        /**
+         * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
+         * It can add constant keys at begin or end
+         * @param beginFrame defines the new begin frame for all animations or the smallest begin frame of all animations if null (defaults to null)
+         * @param endFrame defines the new end frame for all animations or the largest end frame of all animations if null (defaults to null)
+         */
+        normalize(beginFrame?: Nullable<number>, endFrame?: Nullable<number>): AnimationGroup;
+        /**
+         * Start all animations on given targets
+         * @param loop defines if animations must loop
+         * @param speedRatio defines the ratio to apply to animation speed (1 by default)
+         * @param from defines the from key (optional)
+         * @param to defines the to key (optional)
+         * @returns the current animation group
+         */
+        start(loop?: boolean, speedRatio?: number, from?: number, to?: number): AnimationGroup;
+        /**
+         * Pause all animations
+         */
+        pause(): AnimationGroup;
+        /**
+         * Play all animations to initial state
+         * This function will start() the animations if they were not started or will restart() them if they were paused
+         * @param loop defines if animations must loop
+         */
+        play(loop?: boolean): AnimationGroup;
+        /**
+         * Reset all animations to initial state
+         */
+        reset(): AnimationGroup;
+        /**
+         * Restart animations from key 0
+         */
+        restart(): AnimationGroup;
+        /**
+         * Stop all animations
+         */
+        stop(): AnimationGroup;
+        /**
+         * Set animation weight for all animatables
+         * @param weight defines the weight to use
+         * @return the animationGroup
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+         */
+        setWeightForAllAnimatables(weight: number): AnimationGroup;
+        /**
+         * Synchronize and normalize all animatables with a source animatable
+         * @param root defines the root animatable to synchronize with
+         * @return the animationGroup
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+         */
+        syncAllAnimationsWith(root: Animatable): AnimationGroup;
+        /**
+         * Goes to a specific frame in this animation group
+         * @param frame the frame number to go to
+         * @return the animationGroup
+         */
+        goToFrame(frame: number): AnimationGroup;
+        /**
+         * Dispose all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to override all child animations of a given target
+     */
+    class AnimationPropertiesOverride {
+        /**
+         * Gets or sets a value indicating if animation blending must be used
+         */
+        enableBlending: boolean;
+        /**
+         * Gets or sets the blending speed to use when enableBlending is true
+         */
+        blendingSpeed: number;
+        /**
+         * Gets or sets the default loop mode to use
+         */
+        loopMode: number;
+    }
+}
+
+declare module BABYLON {
+    interface IEasingFunction {
+        ease(gradient: number): number;
+    }
+    class EasingFunction implements IEasingFunction {
+        private static _EASINGMODE_EASEIN;
+        private static _EASINGMODE_EASEOUT;
+        private static _EASINGMODE_EASEINOUT;
+        static readonly EASINGMODE_EASEIN: number;
+        static readonly EASINGMODE_EASEOUT: number;
+        static readonly EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        setEasingMode(easingMode: number): void;
+        getEasingMode(): number;
+        easeInCore(gradient: number): number;
+        ease(gradient: number): number;
+    }
+    class CircleEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BackEase extends EasingFunction implements IEasingFunction {
+        amplitude: number;
+        constructor(amplitude?: number);
+        easeInCore(gradient: number): number;
+    }
+    class BounceEase extends EasingFunction implements IEasingFunction {
+        bounces: number;
+        bounciness: number;
+        constructor(bounces?: number, bounciness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class CubicEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class ElasticEase extends EasingFunction implements IEasingFunction {
+        oscillations: number;
+        springiness: number;
+        constructor(oscillations?: number, springiness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class ExponentialEase extends EasingFunction implements IEasingFunction {
+        exponent: number;
+        constructor(exponent?: number);
+        easeInCore(gradient: number): number;
+    }
+    class PowerEase extends EasingFunction implements IEasingFunction {
+        power: number;
+        constructor(power?: number);
+        easeInCore(gradient: number): number;
+    }
+    class QuadraticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuarticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuinticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class SineEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
+        easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines a runtime animation
+     */
+    class RuntimeAnimation {
+        private _events;
+        /**
+         * The current frame of the runtime animation
+         */
+        private _currentFrame;
+        /**
+         * The animation used by the runtime animation
+         */
+        private _animation;
+        /**
+         * The target of the runtime animation
+         */
+        private _target;
+        /**
+         * The initiating animatable
+         */
+        private _host;
+        /**
+         * The original value of the runtime animation
+         */
+        private _originalValue;
+        /**
+         * The original blend value of the runtime animation
+         */
+        private _originalBlendValue;
+        /**
+         * The offsets cache of the runtime animation
+         */
+        private _offsetsCache;
+        /**
+         * The high limits cache of the runtime animation
+         */
+        private _highLimitsCache;
+        /**
+         * Specifies if the runtime animation has been stopped
+         */
+        private _stopped;
+        /**
+         * The blending factor of the runtime animation
+         */
+        private _blendingFactor;
+        /**
+         * The BabylonJS scene
+         */
+        private _scene;
+        /**
+         * The current value of the runtime animation
+         */
+        private _currentValue;
+        /** @hidden */
+        _workValue: any;
+        /**
+         * The active target of the runtime animation
+         */
+        private _activeTarget;
+        /**
+         * The target path of the runtime animation
+         */
+        private _targetPath;
+        /**
+         * The weight of the runtime animation
+         */
+        private _weight;
+        /**
+         * The ratio offset of the runtime animation
+         */
+        private _ratioOffset;
+        /**
+         * The previous delay of the runtime animation
+         */
+        private _previousDelay;
+        /**
+         * The previous ratio of the runtime animation
+         */
+        private _previousRatio;
+        /**
+         * Gets the current frame of the runtime animation
+         */
+        readonly currentFrame: number;
+        /**
+         * Gets the weight of the runtime animation
+         */
+        readonly weight: number;
+        /**
+         * Gets the current value of the runtime animation
+         */
+        readonly currentValue: any;
+        /**
+         * Gets the target path of the runtime animation
+         */
+        readonly targetPath: string;
+        /**
+         * Gets the actual target of the runtime animation
+         */
+        readonly target: any;
+        /**
+         * Create a new RuntimeAnimation object
+         * @param target defines the target of the animation
+         * @param animation defines the source animation object
+         * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
+         */
+        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        /**
+         * Gets the animation from the runtime animation
+         */
+        readonly animation: Animation;
+        /**
+         * Resets the runtime animation to the beginning
+         * @param restoreOriginal defines whether to restore the target property to the original value
+         */
+        reset(restoreOriginal?: boolean): void;
+        /**
+         * Specifies if the runtime animation is stopped
+         * @returns Boolean specifying if the runtime animation is stopped
+         */
+        isStopped(): boolean;
+        /**
+         * Disposes of the runtime animation
+         */
+        dispose(): void;
+        /**
+         * Interpolates the animation from the current frame
+         * @param currentFrame The frame to interpolate the animation to
+         * @param repeatCount The number of times that the animation should loop
+         * @param loopMode The type of looping mode to use
+         * @param offsetValue Animation offset value
+         * @param highLimitValue The high limit value
+         * @returns The interpolated value
+         */
+        private _interpolate(currentFrame, repeatCount, loopMode?, offsetValue?, highLimitValue?);
+        /**
+         * Apply the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
+         */
+        setValue(currentValue: any, weight?: number): void;
+        private _setValue(target, currentValue, weight, targetIndex?);
+        /**
+         * Gets the loop pmode of the runtime animation
+         * @returns Loop Mode
+         */
+        private _getCorrectLoopMode();
+        /**
+         * Move the current animation to a given frame
+         * @param frame defines the frame to move to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * @hidden Internal use only
+         */
+        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
+        /**
+         * Execute the current animation
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @returns a boolean indicating if the animation has ended
+         */
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+
+declare module BABYLON {
     /**
      * Class used to work with sound analyzer using fast fourier transform (FFT)
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
@@ -4334,1938 +5374,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Animatable {
-        target: any;
-        fromFrame: number;
-        toFrame: number;
-        loopAnimation: boolean;
-        onAnimationEnd: (() => void) | null | undefined;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _runtimeAnimations;
-        private _paused;
-        private _scene;
-        private _speedRatio;
-        private _weight;
-        private _syncRoot;
-        animationStarted: boolean;
-        /**
-         * Gets the root Animatable used to synchronize and normalize animations
-         */
-        readonly syncRoot: Animatable;
-        /**
-         * Gets the current frame of the first RuntimeAnimation
-         * Used to synchronize Animatables
-         */
-        readonly masterFrame: number;
-        /**
-         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
-         */
-        weight: number;
-        /**
-         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
-         */
-        speedRatio: number;
-        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: (() => void) | null | undefined, animations?: any);
-        /**
-         * Synchronize and normalize current Animatable with a source Animatable
-         * This is useful when using animation weights and when animations are not of the same length
-         * @param root defines the root Animatable to synchronize with
-         * @returns the current Animatable
-         */
-        syncWith(root: Animatable): Animatable;
-        getAnimations(): RuntimeAnimation[];
-        appendAnimations(target: any, animations: Animation[]): void;
-        getAnimationByTargetProperty(property: string): Nullable<Animation>;
-        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
-        reset(): void;
-        enableBlending(blendingSpeed: number): void;
-        disableBlending(): void;
-        goToFrame(frame: number): void;
-        pause(): void;
-        restart(): void;
-        stop(animationName?: string): void;
-        _animate(delay: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents the range of an animation
-     */
-    class AnimationRange {
-        /**The name of the animation range**/
-        name: string;
-        /**The starting frame of the animation */
-        from: number;
-        /**The ending frame of the animation*/
-        to: number;
-        /**
-         * Initializes the range of an animation
-         * @param name The name of the animation range
-         * @param from The starting frame of the animation
-         * @param to The ending frame of the animation
-         */
-        constructor(
-            /**The name of the animation range**/
-            name: string, 
-            /**The starting frame of the animation */
-            from: number, 
-            /**The ending frame of the animation*/
-            to: number);
-        /**
-         * Makes a copy of the animation range
-         * @returns A copy of the animation range
-         */
-        clone(): AnimationRange;
-    }
-    /**
-     * Composed of a frame, and an action function
-     */
-    class AnimationEvent {
-        /** The frame for which the event is triggered **/
-        frame: number;
-        /** The event to perform when triggered **/
-        action: () => void;
-        /** Specifies if the event should be triggered only once**/
-        onlyOnce: boolean | undefined;
-        /**
-         * Specifies if the animation event is done
-         */
-        isDone: boolean;
-        /**
-         * Initializes the animation event
-         * @param frame The frame for which the event is triggered
-         * @param action The event to perform when triggered
-         * @param onlyOnce Specifies if the event should be triggered only once
-         */
-        constructor(
-            /** The frame for which the event is triggered **/
-            frame: number, 
-            /** The event to perform when triggered **/
-            action: () => void, 
-            /** Specifies if the event should be triggered only once**/
-            onlyOnce?: boolean | undefined);
-        /** @hidden */
-        _clone(): AnimationEvent;
-    }
-    /**
-     * A cursor which tracks a point on a path
-     */
-    class PathCursor {
-        private path;
-        /**
-         * Stores path cursor callbacks for when an onchange event is triggered
-         */
-        private _onchange;
-        /**
-         * The value of the path cursor
-         */
-        value: number;
-        /**
-         * The animation array of the path cursor
-         */
-        animations: Animation[];
-        /**
-         * Initializes the path cursor
-         * @param path The path to track
-         */
-        constructor(path: Path2);
-        /**
-         * Gets the cursor point on the path
-         * @returns A point on the path cursor at the cursor location
-         */
-        getPoint(): Vector3;
-        /**
-         * Moves the cursor ahead by the step amount
-         * @param step The amount to move the cursor forward
-         * @returns This path cursor
-         */
-        moveAhead(step?: number): PathCursor;
-        /**
-         * Moves the cursor behind by the step amount
-         * @param step The amount to move the cursor back
-         * @returns This path cursor
-         */
-        moveBack(step?: number): PathCursor;
-        /**
-         * Moves the cursor by the step amount
-         * If the step amount is greater than one, an exception is thrown
-         * @param step The amount to move the cursor
-         * @returns This path cursor
-         */
-        move(step: number): PathCursor;
-        /**
-         * Ensures that the value is limited between zero and one
-         * @returns This path cursor
-         */
-        private ensureLimits();
-        /**
-         * Runs onchange callbacks on change (used by the animation engine)
-         * @returns This path cursor
-         */
-        private raiseOnChange();
-        /**
-         * Executes a function on change
-         * @param f A path cursor onchange callback
-         * @returns This path cursor
-         */
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-    /**
-     * Defines an interface which represents an animation key frame
-     */
-    interface IAnimationKey {
-        /**
-         * Frame of the key frame
-         */
-        frame: number;
-        /**
-         * Value at the specifies key frame
-         */
-        value: any;
-        /**
-         * The input tangent for the cubic hermite spline
-         */
-        inTangent?: any;
-        /**
-         * The output tangent for the cubic hermite spline
-         */
-        outTangent?: any;
-        /**
-         * The animation interpolation type
-         */
-        interpolation?: AnimationKeyInterpolation;
-    }
-    /**
-     * Enum for the animation key frame interpolation type
-     */
-    enum AnimationKeyInterpolation {
-        /**
-         * Do not interpolate between keys and use the start key value only. Tangents are ignored
-         */
-        STEP = 1,
-    }
-    /**
-     * Class used to store any kind of animation
-     */
-    class Animation {
-        /**Name of the animation */
-        name: string;
-        /**Property to animate */
-        targetProperty: string;
-        /**The frames per second of the animation */
-        framePerSecond: number;
-        /**The data type of the animation */
-        dataType: number;
-        /**The loop mode of the animation */
-        loopMode: number | undefined;
-        /**Specifies if blending should be enabled */
-        enableBlending: boolean | undefined;
-        /**
-         * Use matrix interpolation instead of using direct key value when animating matrices
-         */
-        static AllowMatricesInterpolation: boolean;
-        /**
-         * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
-         */
-        static AllowMatrixDecomposeForInterpolation: boolean;
-        /**
-         * Stores the key frames of the animation
-         */
-        private _keys;
-        /**
-         * Stores the easing function of the animation
-         */
-        private _easingFunction;
-        /**
-         * @hidden Internal use only
-         */
-        _runtimeAnimations: RuntimeAnimation[];
-        /**
-         * The set of event that will be linked to this animation
-         */
-        private _events;
-        /**
-         * Stores an array of target property paths
-         */
-        targetPropertyPath: string[];
-        /**
-         * Stores the blending speed of the animation
-         */
-        blendingSpeed: number;
-        /**
-         * Stores the animation ranges for the animation
-         */
-        private _ranges;
-        /**
-         * @hidden Internal use
-         */
-        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation>;
-        /**
-         * Sets up an animation
-         * @param property The property to animate
-         * @param animationType The animation type to apply
-         * @param framePerSecond The frames per second of the animation
-         * @param easingFunction The easing function used in the animation
-         * @returns The created animation
-         */
-        static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation;
-        /**
-         * Create and start an animation on a node
-         * @param name defines the name of the global animation that will be run on all nodes
-         * @param node defines the root node where the animation will take place
-         * @param targetProperty defines property to animate
-         * @param framePerSecond defines the number of frame per second yo use
-         * @param totalFrame defines the number of frames in total
-         * @param from defines the initial value
-         * @param to defines the final value
-         * @param loopMode defines which loop mode you want to use (off by default)
-         * @param easingFunction defines the easing function to use (linear by default)
-         * @param onAnimationEnd defines the callback to call when animation end
-         * @returns the animatable created for this animation
-         */
-        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /**
-         * Create and start an animation on a node and its descendants
-         * @param name defines the name of the global animation that will be run on all nodes
-         * @param node defines the root node where the animation will take place
-         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
-         * @param targetProperty defines property to animate
-         * @param framePerSecond defines the number of frame per second to use
-         * @param totalFrame defines the number of frames in total
-         * @param from defines the initial value
-         * @param to defines the final value
-         * @param loopMode defines which loop mode you want to use (off by default)
-         * @param easingFunction defines the easing function to use (linear by default)
-         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-         * @returns the list of animatables created for all nodes
-         * @example https://www.babylonjs-playground.com/#MH0VLI
-         */
-        static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]>;
-        /**
-         * Creates a new animation, merges it with the existing animations and starts it
-         * @param name Name of the animation
-         * @param node Node which contains the scene that begins the animations
-         * @param targetProperty Specifies which property to animate
-         * @param framePerSecond The frames per second of the animation
-         * @param totalFrame The total number of frames
-         * @param from The frame at the beginning of the animation
-         * @param to The frame at the end of the animation
-         * @param loopMode Specifies the loop mode of the animation
-         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
-         * @param onAnimationEnd Callback to run once the animation is complete
-         * @returns Nullable animation
-         */
-        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /**
-         * Transition property of the Camera to the target Value
-         * @param property The property to transition
-         * @param targetValue The target Value of the property
-         * @param host The object where the property to animate belongs
-         * @param scene Scene used to run the animation
-         * @param frameRate Framerate (in frame/s) to use
-         * @param transition The transition type we want to use
-         * @param duration The duration of the animation, in milliseconds
-         * @param onAnimationEnd Callback trigger at the end of the animation
-         * @returns Nullable animation
-         */
-        static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd?: Nullable<() => void>): Nullable<Animatable>;
-        /**
-         * Return the array of runtime animations currently using this animation
-         */
-        readonly runtimeAnimations: RuntimeAnimation[];
-        /**
-         * Specifies if any of the runtime animations are currently running
-         */
-        readonly hasRunningRuntimeAnimations: boolean;
-        /**
-         * Initializes the animation
-         * @param name Name of the animation
-         * @param targetProperty Property to animate
-         * @param framePerSecond The frames per second of the animation
-         * @param dataType The data type of the animation
-         * @param loopMode The loop mode of the animation
-         * @param enableBlendings Specifies if blending should be enabled
-         */
-        constructor(
-            /**Name of the animation */
-            name: string, 
-            /**Property to animate */
-            targetProperty: string, 
-            /**The frames per second of the animation */
-            framePerSecond: number, 
-            /**The data type of the animation */
-            dataType: number, 
-            /**The loop mode of the animation */
-            loopMode?: number | undefined, 
-            /**Specifies if blending should be enabled */
-            enableBlending?: boolean | undefined);
-        /**
-         * Converts the animation to a string
-         * @param fullDetails support for multiple levels of logging within scene loading
-         * @returns String form of the animation
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Add an event to this animation
-         * @param event Event to add
-         */
-        addEvent(event: AnimationEvent): void;
-        /**
-         * Remove all events found at the given frame
-         * @param frame The frame to remove events from
-         */
-        removeEvents(frame: number): void;
-        /**
-         * Retrieves all the events from the animation
-         * @returns Events from the animation
-         */
-        getEvents(): AnimationEvent[];
-        /**
-         * Creates an animation range
-         * @param name Name of the animation range
-         * @param from Starting frame of the animation range
-         * @param to Ending frame of the animation
-         */
-        createRange(name: string, from: number, to: number): void;
-        /**
-         * Deletes an animation range by name
-         * @param name Name of the animation range to delete
-         * @param deleteFrames Specifies if the key frames for the range should also be deleted (true) or not (false)
-         */
-        deleteRange(name: string, deleteFrames?: boolean): void;
-        /**
-         * Gets the animation range by name, or null if not defined
-         * @param name Name of the animation range
-         * @returns Nullable animation range
-         */
-        getRange(name: string): Nullable<AnimationRange>;
-        /**
-         * Gets the key frames from the animation
-         * @returns The key frames of the animation
-         */
-        getKeys(): Array<IAnimationKey>;
-        /**
-         * Gets the highest frame rate of the animation
-         * @returns Highest frame rate of the animation
-         */
-        getHighestFrame(): number;
-        /**
-         * Gets the easing function of the animation
-         * @returns Easing function of the animation
-         */
-        getEasingFunction(): IEasingFunction;
-        /**
-         * Sets the easing function of the animation
-         * @param easingFunction A custom mathematical formula for animation
-         */
-        setEasingFunction(easingFunction: EasingFunction): void;
-        /**
-         * Interpolates a scalar linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated scalar value
-         */
-        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
-        /**
-         * Interpolates a scalar cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated scalar value
-         */
-        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
-        /**
-         * Interpolates a quaternion using a spherical linear interpolation
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated quaternion value
-         */
-        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
-        /**
-         * Interpolates a quaternion cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation curve
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated quaternion value
-         */
-        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
-        /**
-         * Interpolates a Vector3 linearl
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated scalar value
-         */
-        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
-        /**
-         * Interpolates a Vector3 cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns InterpolatedVector3 value
-         */
-        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
-        /**
-         * Interpolates a Vector2 linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Vector2 value
-         */
-        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
-        /**
-         * Interpolates a Vector2 cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Vector2 value
-         */
-        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
-        /**
-         * Interpolates a size linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Size value
-         */
-        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
-        /**
-         * Interpolates a Color3 linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Color3 value
-         */
-        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
-        /**
-         * @hidden Internal use only
-         */
-        _getKeyValue(value: any): any;
-        /**
-         * @hidden Internal use only
-         */
-        _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any;
-        /**
-         * Defines the function to use to interpolate matrices
-         * @param startValue defines the start matrix
-         * @param endValue defines the end matrix
-         * @param gradient defines the gradient between both matrices
-         * @param result defines an optional target matrix where to store the interpolation
-         * @returns the interpolated matrix
-         */
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix;
-        /**
-         * Makes a copy of the animation
-         * @returns Cloned animation
-         */
-        clone(): Animation;
-        /**
-         * Sets the key frames of the animation
-         * @param values The animation key frames to set
-         */
-        setKeys(values: Array<IAnimationKey>): void;
-        /**
-         * Serializes the animation to an object
-         * @returns Serialized object
-         */
-        serialize(): any;
-        /**
-         * Float animation type
-         */
-        private static _ANIMATIONTYPE_FLOAT;
-        /**
-         * Vector3 animation type
-         */
-        private static _ANIMATIONTYPE_VECTOR3;
-        /**
-         * Quaternion animation type
-         */
-        private static _ANIMATIONTYPE_QUATERNION;
-        /**
-         * Matrix animation type
-         */
-        private static _ANIMATIONTYPE_MATRIX;
-        /**
-         * Color3 animation type
-         */
-        private static _ANIMATIONTYPE_COLOR3;
-        /**
-         * Vector2 animation type
-         */
-        private static _ANIMATIONTYPE_VECTOR2;
-        /**
-         * Size animation type
-         */
-        private static _ANIMATIONTYPE_SIZE;
-        /**
-         * Relative Loop Mode
-         */
-        private static _ANIMATIONLOOPMODE_RELATIVE;
-        /**
-         * Cycle Loop Mode
-         */
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        /**
-         * Constant Loop Mode
-         */
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        /**
-         * Get the float animation type
-         */
-        static readonly ANIMATIONTYPE_FLOAT: number;
-        /**
-         * Get the Vector3 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR3: number;
-        /**
-         * Get the Vectpr2 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR2: number;
-        /**
-         * Get the Size animation type
-         */
-        static readonly ANIMATIONTYPE_SIZE: number;
-        /**
-         * Get the Quaternion animation type
-         */
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        /**
-         * Get the Matrix animation type
-         */
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        /**
-         * Get the Color3 animation type
-         */
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        /**
-         * Get the Relative Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        /**
-         * Get the Cycle Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_CYCLE: number;
-        /**
-         * Get the Constant Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
-        /** @hidden */
-        static _UniversalLerp(left: any, right: any, amount: number): any;
-        /**
-         * Parses an animation object and creates an animation
-         * @param parsedAnimation Parsed animation object
-         * @returns Animation object
-         */
-        static Parse(parsedAnimation: any): Animation;
-        /**
-         * Appends the serialized animations from the source animations
-         * @param source Source containing the animations
-         * @param destination Target to store the animations
-         */
-        static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class defines the direct association between an animation and a target
-     */
-    class TargetedAnimation {
-        animation: Animation;
-        target: any;
-    }
-    /**
-     * Use this class to create coordinated animations on multiple targets
-     */
-    class AnimationGroup implements IDisposable {
-        name: string;
-        private _scene;
-        private _targetedAnimations;
-        private _animatables;
-        private _from;
-        private _to;
-        private _isStarted;
-        private _speedRatio;
-        onAnimationEndObservable: Observable<TargetedAnimation>;
-        /**
-         * Gets the first frame
-         */
-        readonly from: number;
-        /**
-         * Gets the last frame
-         */
-        readonly to: number;
-        /**
-         * Define if the animations are started
-         */
-        readonly isStarted: boolean;
-        /**
-         * Gets or sets the speed ratio to use for all animations
-         */
-        /**
-         * Gets or sets the speed ratio to use for all animations
-         */
-        speedRatio: number;
-        /**
-         * Gets the targeted animations for this animation group
-         */
-        readonly targetedAnimations: Array<TargetedAnimation>;
-        /**
-         * returning the list of animatables controlled by this animation group.
-         */
-        readonly animatables: Array<Animatable>;
-        constructor(name: string, scene?: Nullable<Scene>);
-        /**
-         * Add an animation (with its target) in the group
-         * @param animation defines the animation we want to add
-         * @param target defines the target of the animation
-         * @returns the {BABYLON.TargetedAnimation} object
-         */
-        addTargetedAnimation(animation: Animation, target: any): TargetedAnimation;
-        /**
-         * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
-         * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations or the smallest begin frame of all animations if null (defaults to null)
-         * @param endFrame defines the new end frame for all animations or the largest end frame of all animations if null (defaults to null)
-         */
-        normalize(beginFrame?: Nullable<number>, endFrame?: Nullable<number>): AnimationGroup;
-        /**
-         * Start all animations on given targets
-         * @param loop defines if animations must loop
-         * @param speedRatio defines the ratio to apply to animation speed (1 by default)
-         * @param from defines the from key (optional)
-         * @param to defines the to key (optional)
-         * @returns the current animation group
-         */
-        start(loop?: boolean, speedRatio?: number, from?: number, to?: number): AnimationGroup;
-        /**
-         * Pause all animations
-         */
-        pause(): AnimationGroup;
-        /**
-         * Play all animations to initial state
-         * This function will start() the animations if they were not started or will restart() them if they were paused
-         * @param loop defines if animations must loop
-         */
-        play(loop?: boolean): AnimationGroup;
-        /**
-         * Reset all animations to initial state
-         */
-        reset(): AnimationGroup;
-        /**
-         * Restart animations from key 0
-         */
-        restart(): AnimationGroup;
-        /**
-         * Stop all animations
-         */
-        stop(): AnimationGroup;
-        /**
-         * Set animation weight for all animatables
-         * @param weight defines the weight to use
-         * @return the animationGroup
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
-         */
-        setWeightForAllAnimatables(weight: number): AnimationGroup;
-        /**
-         * Synchronize and normalize all animatables with a source animatable
-         * @param root defines the root animatable to synchronize with
-         * @return the animationGroup
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
-         */
-        syncAllAnimationsWith(root: Animatable): AnimationGroup;
-        /**
-         * Goes to a specific frame in this animation group
-         * @param frame the frame number to go to
-         * @return the animationGroup
-         */
-        goToFrame(frame: number): AnimationGroup;
-        /**
-         * Dispose all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to override all child animations of a given target
-     */
-    class AnimationPropertiesOverride {
-        /**
-         * Gets or sets a value indicating if animation blending must be used
-         */
-        enableBlending: boolean;
-        /**
-         * Gets or sets the blending speed to use when enableBlending is true
-         */
-        blendingSpeed: number;
-        /**
-         * Gets or sets the default loop mode to use
-         */
-        loopMode: number;
-    }
-}
-
-declare module BABYLON {
-    interface IEasingFunction {
-        ease(gradient: number): number;
-    }
-    class EasingFunction implements IEasingFunction {
-        private static _EASINGMODE_EASEIN;
-        private static _EASINGMODE_EASEOUT;
-        private static _EASINGMODE_EASEINOUT;
-        static readonly EASINGMODE_EASEIN: number;
-        static readonly EASINGMODE_EASEOUT: number;
-        static readonly EASINGMODE_EASEINOUT: number;
-        private _easingMode;
-        setEasingMode(easingMode: number): void;
-        getEasingMode(): number;
-        easeInCore(gradient: number): number;
-        ease(gradient: number): number;
-    }
-    class CircleEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BackEase extends EasingFunction implements IEasingFunction {
-        amplitude: number;
-        constructor(amplitude?: number);
-        easeInCore(gradient: number): number;
-    }
-    class BounceEase extends EasingFunction implements IEasingFunction {
-        bounces: number;
-        bounciness: number;
-        constructor(bounces?: number, bounciness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class CubicEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class ElasticEase extends EasingFunction implements IEasingFunction {
-        oscillations: number;
-        springiness: number;
-        constructor(oscillations?: number, springiness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class ExponentialEase extends EasingFunction implements IEasingFunction {
-        exponent: number;
-        constructor(exponent?: number);
-        easeInCore(gradient: number): number;
-    }
-    class PowerEase extends EasingFunction implements IEasingFunction {
-        power: number;
-        constructor(power?: number);
-        easeInCore(gradient: number): number;
-    }
-    class QuadraticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuarticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuinticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class SineEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
-        easeInCore(gradient: number): number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines a runtime animation
-     */
-    class RuntimeAnimation {
-        private _events;
-        /**
-         * The current frame of the runtime animation
-         */
-        private _currentFrame;
-        /**
-         * The animation used by the runtime animation
-         */
-        private _animation;
-        /**
-         * The target of the runtime animation
-         */
-        private _target;
-        /**
-         * The initiating animatable
-         */
-        private _host;
-        /**
-         * The original value of the runtime animation
-         */
-        private _originalValue;
-        /**
-         * The original blend value of the runtime animation
-         */
-        private _originalBlendValue;
-        /**
-         * The offsets cache of the runtime animation
-         */
-        private _offsetsCache;
-        /**
-         * The high limits cache of the runtime animation
-         */
-        private _highLimitsCache;
-        /**
-         * Specifies if the runtime animation has been stopped
-         */
-        private _stopped;
-        /**
-         * The blending factor of the runtime animation
-         */
-        private _blendingFactor;
-        /**
-         * The BabylonJS scene
-         */
-        private _scene;
-        /**
-         * The current value of the runtime animation
-         */
-        private _currentValue;
-        /** @hidden */
-        _workValue: any;
-        /**
-         * The active target of the runtime animation
-         */
-        private _activeTarget;
-        /**
-         * The target path of the runtime animation
-         */
-        private _targetPath;
-        /**
-         * The weight of the runtime animation
-         */
-        private _weight;
-        /**
-         * The ratio offset of the runtime animation
-         */
-        private _ratioOffset;
-        /**
-         * The previous delay of the runtime animation
-         */
-        private _previousDelay;
-        /**
-         * The previous ratio of the runtime animation
-         */
-        private _previousRatio;
-        /**
-         * Gets the current frame of the runtime animation
-         */
-        readonly currentFrame: number;
-        /**
-         * Gets the weight of the runtime animation
-         */
-        readonly weight: number;
-        /**
-         * Gets the current value of the runtime animation
-         */
-        readonly currentValue: any;
-        /**
-         * Gets the target path of the runtime animation
-         */
-        readonly targetPath: string;
-        /**
-         * Gets the actual target of the runtime animation
-         */
-        readonly target: any;
-        /**
-         * Create a new RuntimeAnimation object
-         * @param target defines the target of the animation
-         * @param animation defines the source animation object
-         * @param scene defines the hosting scene
-         * @param host defines the initiating Animatable
-         */
-        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
-        /**
-         * Gets the animation from the runtime animation
-         */
-        readonly animation: Animation;
-        /**
-         * Resets the runtime animation to the beginning
-         * @param restoreOriginal defines whether to restore the target property to the original value
-         */
-        reset(restoreOriginal?: boolean): void;
-        /**
-         * Specifies if the runtime animation is stopped
-         * @returns Boolean specifying if the runtime animation is stopped
-         */
-        isStopped(): boolean;
-        /**
-         * Disposes of the runtime animation
-         */
-        dispose(): void;
-        /**
-         * Interpolates the animation from the current frame
-         * @param currentFrame The frame to interpolate the animation to
-         * @param repeatCount The number of times that the animation should loop
-         * @param loopMode The type of looping mode to use
-         * @param offsetValue Animation offset value
-         * @param highLimitValue The high limit value
-         * @returns The interpolated value
-         */
-        private _interpolate(currentFrame, repeatCount, loopMode?, offsetValue?, highLimitValue?);
-        /**
-         * Apply the interpolated value to the target
-         * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value (Defaults to 1.0)
-         */
-        setValue(currentValue: any, weight?: number): void;
-        private _setValue(target, currentValue, weight, targetIndex?);
-        /**
-         * Gets the loop pmode of the runtime animation
-         * @returns Loop Mode
-         */
-        private _getCorrectLoopMode();
-        /**
-         * Move the current animation to a given frame
-         * @param frame defines the frame to move to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * @hidden Internal use only
-         */
-        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
-        /**
-         * Execute the current animation
-         * @param delay defines the delay to add to the current frame
-         * @param from defines the lower bound of the animation range
-         * @param to defines the upper bound of the animation range
-         * @param loop defines if the current animation must loop
-         * @param speedRatio defines the current speed ratio
-         * @param weight defines the weight of the animation (default is -1 so no weight)
-         * @returns a boolean indicating if the animation has ended
-         */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCamera extends TargetCamera {
-        alpha: number;
-        beta: number;
-        radius: number;
-        protected _target: Vector3;
-        protected _targetHost: Nullable<AbstractMesh>;
-        target: Vector3;
-        inertialAlphaOffset: number;
-        inertialBetaOffset: number;
-        inertialRadiusOffset: number;
-        lowerAlphaLimit: Nullable<number>;
-        upperAlphaLimit: Nullable<number>;
-        lowerBetaLimit: number;
-        upperBetaLimit: number;
-        lowerRadiusLimit: Nullable<number>;
-        upperRadiusLimit: Nullable<number>;
-        inertialPanningX: number;
-        inertialPanningY: number;
-        pinchToPanMaxDistance: number;
-        panningDistanceLimit: Nullable<number>;
-        panningOriginTarget: Vector3;
-        panningInertia: number;
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        wheelPrecision: number;
-        wheelDeltaPercentage: number;
-        zoomOnFactor: number;
-        targetScreenOffset: Vector2;
-        allowUpsideDown: boolean;
-        _viewMatrix: Matrix;
-        _useCtrlForPanning: boolean;
-        _panningMouseButton: number;
-        inputs: ArcRotateCameraInputsManager;
-        _reset: () => void;
-        panningAxis: Vector3;
-        protected _localDirection: Vector3;
-        protected _transformedDirection: Vector3;
-        private _bouncingBehavior;
-        readonly bouncingBehavior: Nullable<BouncingBehavior>;
-        useBouncingBehavior: boolean;
-        private _framingBehavior;
-        readonly framingBehavior: Nullable<FramingBehavior>;
-        useFramingBehavior: boolean;
-        private _autoRotationBehavior;
-        readonly autoRotationBehavior: Nullable<AutoRotationBehavior>;
-        useAutoRotationBehavior: boolean;
-        onMeshTargetChangedObservable: Observable<Nullable<AbstractMesh>>;
-        onCollide: (collidedMesh: AbstractMesh) => void;
-        checkCollisions: boolean;
-        collisionRadius: Vector3;
-        protected _collider: Collider;
-        protected _previousPosition: Vector3;
-        protected _collisionVelocity: Vector3;
-        protected _newPosition: Vector3;
-        protected _previousAlpha: number;
-        protected _previousBeta: number;
-        protected _previousRadius: number;
-        protected _collisionTriggered: boolean;
-        protected _targetBoundingCenter: Nullable<Vector3>;
-        private _computationVector;
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
-        _initCache(): void;
-        _updateCache(ignoreParentClass?: boolean): void;
-        protected _getTargetPosition(): Vector3;
-        /**
-         * Store current camera state (fov, position, etc..)
-         */
-        private _storedAlpha;
-        private _storedBeta;
-        private _storedRadius;
-        private _storedTarget;
-        storeState(): Camera;
-        /**
-         * Restored camera state. You must call storeState() first
-         */
-        _restoreStateValues(): boolean;
-        _isSynchronizedViewMatrix(): boolean;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
-        detachControl(element: HTMLElement): void;
-        _checkInputs(): void;
-        protected _checkLimits(): void;
-        rebuildAnglesAndRadius(): void;
-        setPosition(position: Vector3): void;
-        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean): void;
-        _getViewMatrix(): Matrix;
-        protected _onCollisionPositionChange: (collisionId: number, newPosition: Vector3, collidedMesh?: Nullable<AbstractMesh>) => void;
-        zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ?: boolean): void;
-        focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | {
-            min: Vector3;
-            max: Vector3;
-            distance: number;
-        }, doNotUpdateMaxZ?: boolean): void;
-        /**
-         * @override
-         * Override Camera.createRigCamera
-         */
-        createRigCamera(name: string, cameraIndex: number): Camera;
-        /**
-         * @override
-         * Override Camera._updateRigCameras
-         */
-        _updateRigCameras(): void;
-        dispose(): void;
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateCamera> {
-        constructor(camera: ArcRotateCamera);
-        addMouseWheel(): ArcRotateCameraInputsManager;
-        addPointers(): ArcRotateCameraInputsManager;
-        addKeyboard(): ArcRotateCameraInputsManager;
-        addGamepad(): ArcRotateCameraInputsManager;
-        addVRDeviceOrientation(): ArcRotateCameraInputsManager;
-    }
-}
-
-declare module BABYLON {
-    class Camera extends Node {
-        inputs: CameraInputsManager<Camera>;
-        private static _PERSPECTIVE_CAMERA;
-        private static _ORTHOGRAPHIC_CAMERA;
-        private static _FOVMODE_VERTICAL_FIXED;
-        private static _FOVMODE_HORIZONTAL_FIXED;
-        private static _RIG_MODE_NONE;
-        private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH;
-        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
-        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
-        private static _RIG_MODE_STEREOSCOPIC_OVERUNDER;
-        private static _RIG_MODE_VR;
-        private static _RIG_MODE_WEBVR;
-        static readonly PERSPECTIVE_CAMERA: number;
-        static readonly ORTHOGRAPHIC_CAMERA: number;
-        /**
-         * This is the default FOV mode for perspective cameras.
-         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
-         *
-         */
-        static readonly FOVMODE_VERTICAL_FIXED: number;
-        /**
-         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
-         *
-         */
-        static readonly FOVMODE_HORIZONTAL_FIXED: number;
-        static readonly RIG_MODE_NONE: number;
-        static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
-        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
-        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
-        static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
-        static readonly RIG_MODE_VR: number;
-        static readonly RIG_MODE_WEBVR: number;
-        static ForceAttachControlToAlwaysPreventDefault: boolean;
-        static UseAlternateWebVRRendering: boolean;
-        position: Vector3;
-        /**
-         * The vector the camera should consider as up.
-         * (default is Vector3(0, 1, 0) aka Vector3.Up())
-         */
-        upVector: Vector3;
-        orthoLeft: Nullable<number>;
-        orthoRight: Nullable<number>;
-        orthoBottom: Nullable<number>;
-        orthoTop: Nullable<number>;
-        /**
-         * FOV is set in Radians. (default is 0.8)
-         */
-        fov: number;
-        minZ: number;
-        maxZ: number;
-        inertia: number;
-        mode: number;
-        isIntermediate: boolean;
-        viewport: Viewport;
-        /**
-         * Restricts the camera to viewing objects with the same layerMask.
-         * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
-         */
-        layerMask: number;
-        /**
-         * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
-         */
-        fovMode: number;
-        cameraRigMode: number;
-        interaxialDistance: number;
-        isStereoscopicSideBySide: boolean;
-        _cameraRigParams: any;
-        _rigCameras: Camera[];
-        _rigPostProcess: Nullable<PostProcess>;
-        protected _webvrViewMatrix: Matrix;
-        _skipRendering: boolean;
-        _alternateCamera: Camera;
-        customRenderTargets: RenderTargetTexture[];
-        onViewMatrixChangedObservable: Observable<Camera>;
-        onProjectionMatrixChangedObservable: Observable<Camera>;
-        onAfterCheckInputsObservable: Observable<Camera>;
-        onRestoreStateObservable: Observable<Camera>;
-        private _computedViewMatrix;
-        _projectionMatrix: Matrix;
-        private _doNotComputeProjectionMatrix;
-        private _worldMatrix;
-        _postProcesses: Nullable<PostProcess>[];
-        private _transformMatrix;
-        _activeMeshes: SmartArray<AbstractMesh>;
-        protected _globalPosition: Vector3;
-        private _frustumPlanes;
-        private _refreshFrustumPlanes;
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
-        private _storedFov;
-        private _stateStored;
-        /**
-         * Store current camera state (fov, position, etc..)
-         */
-        storeState(): Camera;
-        /**
-         * Restores the camera state values if it has been stored. You must call storeState() first
-         */
-        protected _restoreStateValues(): boolean;
-        /**
-         * Restored camera state. You must call storeState() first
-         */
-        restoreState(): boolean;
-        getClassName(): string;
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        readonly globalPosition: Vector3;
-        getActiveMeshes(): SmartArray<AbstractMesh>;
-        isActiveMesh(mesh: Mesh): boolean;
-        /**
-         * Is this camera ready to be used/rendered
-         * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
-         * @return true if the camera is ready
-         */
-        isReady(completeCheck?: boolean): boolean;
-        _initCache(): void;
-        _updateCache(ignoreParentClass?: boolean): void;
-        _isSynchronized(): boolean;
-        _isSynchronizedViewMatrix(): boolean;
-        _isSynchronizedProjectionMatrix(): boolean;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        update(): void;
-        _checkInputs(): void;
-        readonly rigCameras: Camera[];
-        readonly rigPostProcess: Nullable<PostProcess>;
-        /**
-         * Internal, gets the first post proces.
-         * @returns the first post process to be run on this camera.
-         */
-        _getFirstPostProcess(): Nullable<PostProcess>;
-        private _cascadePostProcessesToRigCams();
-        attachPostProcess(postProcess: PostProcess, insertAt?: Nullable<number>): number;
-        detachPostProcess(postProcess: PostProcess): void;
-        getWorldMatrix(): Matrix;
-        _getViewMatrix(): Matrix;
-        getViewMatrix(force?: boolean): Matrix;
-        freezeProjectionMatrix(projection?: Matrix): void;
-        unfreezeProjectionMatrix(): void;
-        getProjectionMatrix(force?: boolean): Matrix;
-        getTranformationMatrix(): Matrix;
-        private updateFrustumPlanes();
-        isInFrustum(target: ICullable): boolean;
-        isCompletelyInFrustum(target: ICullable): boolean;
-        getForwardRay(length?: number, transform?: Matrix, origin?: Vector3): Ray;
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-        readonly leftCamera: Nullable<FreeCamera>;
-        readonly rightCamera: Nullable<FreeCamera>;
-        getLeftTarget(): Nullable<Vector3>;
-        getRightTarget(): Nullable<Vector3>;
-        setCameraRigMode(mode: number, rigParams: any): void;
-        private _getVRProjectionMatrix();
-        protected _updateCameraRotationMatrix(): void;
-        protected _updateWebVRCameraRotationMatrix(): void;
-        /**
-         * This function MUST be overwritten by the different WebVR cameras available.
-         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-         */
-        protected _getWebVRProjectionMatrix(): Matrix;
-        /**
-         * This function MUST be overwritten by the different WebVR cameras available.
-         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        setCameraRigParameter(name: string, value: any): void;
-        /**
-         * needs to be overridden by children so sub has required properties to be copied
-         */
-        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
-        /**
-         * May need to be overridden by children
-         */
-        _updateRigCameras(): void;
-        _setupInputs(): void;
-        serialize(): any;
-        clone(name: string): Camera;
-        getDirection(localAxis: Vector3): Vector3;
-        getDirectionToRef(localAxis: Vector3, result: Vector3): void;
-        static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
-        computeWorldMatrix(): Matrix;
-        static Parse(parsedCamera: any, scene: Scene): Camera;
-    }
-}
-
-declare module BABYLON {
-    var CameraInputTypes: {};
-    interface ICameraInput<TCamera extends Camera> {
-        camera: Nullable<TCamera>;
-        getClassName(): string;
-        getSimpleName(): string;
-        attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
-        detachControl: (element: Nullable<HTMLElement>) => void;
-        checkInputs?: () => void;
-    }
-    interface CameraInputsMap<TCamera extends Camera> {
-        [name: string]: ICameraInput<TCamera>;
-        [idx: number]: ICameraInput<TCamera>;
-    }
-    class CameraInputsManager<TCamera extends Camera> {
-        attached: CameraInputsMap<TCamera>;
-        attachedElement: Nullable<HTMLElement>;
-        noPreventDefault: boolean;
-        camera: TCamera;
-        checkInputs: () => void;
-        constructor(camera: TCamera);
-        /**
-         * Add an input method to a camera.
-         * builtin inputs example: camera.inputs.addGamepad();
-         * custom inputs example: camera.inputs.add(new BABYLON.FreeCameraGamepadInput());
-         * @param input camera input method
-         */
-        add(input: ICameraInput<TCamera>): void;
-        /**
-         * Remove a specific input method from a camera
-         * example: camera.inputs.remove(camera.inputs.attached.mouse);
-         * @param inputToRemove camera input method
-         */
-        remove(inputToRemove: ICameraInput<TCamera>): void;
-        removeByType(inputType: string): void;
-        private _addCheckInputs(fn);
-        attachInput(input: ICameraInput<TCamera>): void;
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachElement(element: HTMLElement, disconnect?: boolean): void;
-        rebuildInputCheck(): void;
-        /**
-         * Remove all attached input methods from a camera
-         */
-        clear(): void;
-        serialize(serializedCamera: any): void;
-        parse(parsedCamera: any): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This is a camera specifically designed to react to device orientation events such as a modern mobile device
-     * being tilted forward or back and left or right.
-     */
-    class DeviceOrientationCamera extends FreeCamera {
-        private _initialQuaternion;
-        private _quaternionCache;
-        /**
-         * Creates a new device orientation camera
-         * @param name The name of the camera
-         * @param position The start position camera
-         * @param scene The scene the camera belongs to
-         */
-        constructor(name: string, position: Vector3, scene: Scene);
-        /**
-         * Gets the current instance class name ("DeviceOrientationCamera").
-         * This helps avoiding instanceof at run time.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Checks and applies the current values of the inputs to the camera. (Internal use only)
-         */
-        _checkInputs(): void;
-        /**
-         * Reset the camera to its default orientation on the specified axis only.
-         * @param axis The axis to reset
-         */
-        resetToCurrentRotation(axis?: Axis): void;
-    }
-}
-
-declare module BABYLON {
-    class FollowCamera extends TargetCamera {
-        radius: number;
-        rotationOffset: number;
-        heightOffset: number;
-        cameraAcceleration: number;
-        maxCameraSpeed: number;
-        lockedTarget: Nullable<AbstractMesh>;
-        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
-        private getRadians(degrees);
-        private follow(cameraTarget);
-        _checkInputs(): void;
-        getClassName(): string;
-    }
-    class ArcFollowCamera extends TargetCamera {
-        alpha: number;
-        beta: number;
-        radius: number;
-        target: Nullable<AbstractMesh>;
-        private _cartesianCoordinates;
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Nullable<AbstractMesh>, scene: Scene);
-        private follow();
-        _checkInputs(): void;
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCamera extends TargetCamera {
-        ellipsoid: Vector3;
-        ellipsoidOffset: Vector3;
-        checkCollisions: boolean;
-        applyGravity: boolean;
-        inputs: FreeCameraInputsManager;
-        /**
-         * Gets the input sensibility for a mouse input. (default is 2000.0)
-         * Higher values reduce sensitivity.
-         */
-        /**
-         * Sets the input sensibility for a mouse input. (default is 2000.0)
-         * Higher values reduce sensitivity.
-         */
-        angularSensibility: number;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        onCollide: (collidedMesh: AbstractMesh) => void;
-        private _collider;
-        private _needMoveForGravity;
-        private _oldPosition;
-        private _diffPosition;
-        private _newPosition;
-        _localDirection: Vector3;
-        _transformedDirection: Vector3;
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        private _collisionMask;
-        collisionMask: number;
-        _collideWithWorld(displacement: Vector3): void;
-        private _onCollisionPositionChange;
-        _checkInputs(): void;
-        _decideIfNeedsToMove(): boolean;
-        _updatePosition(): void;
-        dispose(): void;
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
-        constructor(camera: FreeCamera);
-        addKeyboard(): FreeCameraInputsManager;
-        addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
-        addGamepad(): FreeCameraInputsManager;
-        addDeviceOrientation(): FreeCameraInputsManager;
-        addTouch(): FreeCameraInputsManager;
-        addVirtualJoystick(): FreeCameraInputsManager;
-    }
-}
-
-declare module BABYLON {
-    class GamepadCamera extends UniversalCamera {
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    class TargetCamera extends Camera {
-        cameraDirection: Vector3;
-        cameraRotation: Vector2;
-        rotation: Vector3;
-        rotationQuaternion: Quaternion;
-        speed: number;
-        noRotationConstraint: boolean;
-        lockedTarget: any;
-        _currentTarget: Vector3;
-        _viewMatrix: Matrix;
-        _camMatrix: Matrix;
-        _cameraTransformMatrix: Matrix;
-        _cameraRotationMatrix: Matrix;
-        private _rigCamTransformMatrix;
-        _referencePoint: Vector3;
-        private _currentUpVector;
-        _transformedReferencePoint: Vector3;
-        protected _globalCurrentTarget: Vector3;
-        protected _globalCurrentUpVector: Vector3;
-        _reset: () => void;
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
-        getFrontPosition(distance: number): Vector3;
-        _getLockedTargetPosition(): Nullable<Vector3>;
-        /**
-         * Store current camera state (fov, position, etc..)
-         */
-        private _storedPosition;
-        private _storedRotation;
-        private _storedRotationQuaternion;
-        storeState(): Camera;
-        /**
-         * Restored camera state. You must call storeState() first
-         */
-        _restoreStateValues(): boolean;
-        _initCache(): void;
-        _updateCache(ignoreParentClass?: boolean): void;
-        _isSynchronizedViewMatrix(): boolean;
-        _computeLocalCameraSpeed(): number;
-        setTarget(target: Vector3): void;
-        /**
-         * Return the current target position of the camera. This value is expressed in local space.
-         */
-        getTarget(): Vector3;
-        _decideIfNeedsToMove(): boolean;
-        _updatePosition(): void;
-        _checkInputs(): void;
-        protected _updateCameraRotationMatrix(): void;
-        _getViewMatrix(): Matrix;
-        protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void;
-        /**
-         * @override
-         * Override Camera.createRigCamera
-         */
-        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
-        /**
-         * @override
-         * Override Camera._updateRigCameras
-         */
-        _updateRigCameras(): void;
-        private _getRigCamPosition(halfSpace, result);
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    class TouchCamera extends FreeCamera {
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getClassName(): string;
-        _setupInputs(): void;
-    }
-}
-
-declare module BABYLON {
-    class UniversalCamera extends TouchCamera {
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    class VirtualJoysticksCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene);
-        getClassName(): string;
-    }
-}
-
-interface VRDisplay extends EventTarget {
-    /**
-     * Dictionary of capabilities describing the VRDisplay.
-     */
-    readonly capabilities: VRDisplayCapabilities;
-    /**
-     * z-depth defining the far plane of the eye view frustum
-     * enables mapping of values in the render target depth
-     * attachment to scene coordinates. Initially set to 10000.0.
-     */
-    depthFar: number;
-    /**
-     * z-depth defining the near plane of the eye view frustum
-     * enables mapping of values in the render target depth
-     * attachment to scene coordinates. Initially set to 0.01.
-     */
-    depthNear: number;
-    /**
-     * An identifier for this distinct VRDisplay. Used as an
-     * association point in the Gamepad API.
-     */
-    readonly displayId: number;
-    /**
-     * A display name, a user-readable name identifying it.
-     */
-    readonly displayName: string;
-    readonly isConnected: boolean;
-    readonly isPresenting: boolean;
-    /**
-     * If this VRDisplay supports room-scale experiences, the optional
-     * stage attribute contains details on the room-scale parameters.
-     */
-    readonly stageParameters: VRStageParameters | null;
-    /**
-     * Passing the value returned by `requestAnimationFrame` to
-     * `cancelAnimationFrame` will unregister the callback.
-     */
-    cancelAnimationFrame(handle: number): void;
-    /**
-     * Stops presenting to the VRDisplay.
-     */
-    exitPresent(): Promise<void>;
-    getEyeParameters(whichEye: string): VREyeParameters;
-    /**
-     * Populates the passed VRFrameData with the information required to render
-     * the current frame.
-     */
-    getFrameData(frameData: VRFrameData): boolean;
-    /**
-     * Get the layers currently being presented.
-     */
-    getLayers(): VRLayer[];
-    /**
-     * Return a VRPose containing the future predicted pose of the VRDisplay
-     * when the current frame will be presented. The value returned will not
-     * change until JavaScript has returned control to the browser.
-     *
-     * The VRPose will contain the position, orientation, velocity,
-     * and acceleration of each of these properties.
-     */
-    getPose(): VRPose;
-    /**
-     * Return the current instantaneous pose of the VRDisplay, with no
-     * prediction applied.
-     */
-    getImmediatePose(): VRPose;
-    /**
-     * The callback passed to `requestAnimationFrame` will be called
-     * any time a new frame should be rendered. When the VRDisplay is
-     * presenting the callback will be called at the native refresh
-     * rate of the HMD. When not presenting this function acts
-     * identically to how window.requestAnimationFrame acts. Content should
-     * make no assumptions of frame rate or vsync behavior as the HMD runs
-     * asynchronously from other displays and at differing refresh rates.
-     */
-    requestAnimationFrame(callback: FrameRequestCallback): number;
-    /**
-     * Begin presenting to the VRDisplay. Must be called in response to a user gesture.
-     * Repeat calls while already presenting will update the VRLayers being displayed.
-     */
-    requestPresent(layers: VRLayer[]): Promise<void>;
-    /**
-     * Reset the pose for this display, treating its current position and
-     * orientation as the "origin/zero" values. VRPose.position,
-     * VRPose.orientation, and VRStageParameters.sittingToStandingTransform may be
-     * updated when calling resetPose(). This should be called in only
-     * sitting-space experiences.
-     */
-    resetPose(): void;
-    /**
-     * The VRLayer provided to the VRDisplay will be captured and presented
-     * in the HMD. Calling this function has the same effect on the source
-     * canvas as any other operation that uses its source image, and canvases
-     * created without preserveDrawingBuffer set to true will be cleared.
-     */
-    submitFrame(pose?: VRPose): void;
-}
-declare var VRDisplay: {
-    prototype: VRDisplay;
-    new (): VRDisplay;
-};
-interface VRLayer {
-    leftBounds?: number[] | null;
-    rightBounds?: number[] | null;
-    source?: HTMLCanvasElement | null;
-}
-interface VRDisplayCapabilities {
-    readonly canPresent: boolean;
-    readonly hasExternalDisplay: boolean;
-    readonly hasOrientation: boolean;
-    readonly hasPosition: boolean;
-    readonly maxLayers: number;
-}
-interface VREyeParameters {
-    /** @deprecated */
-    readonly fieldOfView: VRFieldOfView;
-    readonly offset: Float32Array;
-    readonly renderHeight: number;
-    readonly renderWidth: number;
-}
-interface VRFieldOfView {
-    readonly downDegrees: number;
-    readonly leftDegrees: number;
-    readonly rightDegrees: number;
-    readonly upDegrees: number;
-}
-interface VRFrameData {
-    readonly leftProjectionMatrix: Float32Array;
-    readonly leftViewMatrix: Float32Array;
-    readonly pose: VRPose;
-    readonly rightProjectionMatrix: Float32Array;
-    readonly rightViewMatrix: Float32Array;
-    readonly timestamp: number;
-}
-interface VRPose {
-    readonly angularAcceleration: Float32Array | null;
-    readonly angularVelocity: Float32Array | null;
-    readonly linearAcceleration: Float32Array | null;
-    readonly linearVelocity: Float32Array | null;
-    readonly orientation: Float32Array | null;
-    readonly position: Float32Array | null;
-    readonly timestamp: number;
-}
-interface VRStageParameters {
-    sittingToStandingTransform?: Float32Array;
-    sizeX?: number;
-    sizeY?: number;
-}
-interface Navigator {
-    getVRDisplays(): Promise<VRDisplay[]>;
-    readonly activeVRDisplays: ReadonlyArray<VRDisplay>;
-}
-interface Window {
-    onvrdisplayconnected: ((this: Window, ev: Event) => any) | null;
-    onvrdisplaydisconnected: ((this: Window, ev: Event) => any) | null;
-    onvrdisplaypresentchange: ((this: Window, ev: Event) => any) | null;
-    addEventListener(type: "vrdisplayconnected", listener: (ev: Event) => any, useCapture?: boolean): void;
-    addEventListener(type: "vrdisplaydisconnected", listener: (ev: Event) => any, useCapture?: boolean): void;
-    addEventListener(type: "vrdisplaypresentchange", listener: (ev: Event) => any, useCapture?: boolean): void;
-}
-interface Gamepad {
-    readonly displayId: number;
-}
-
-declare module BABYLON {
     class Collider {
         /** Define if a collision was found */
         collisionFound: boolean;
@@ -6539,6 +5647,357 @@ declare module BABYLON {
         pickedSprite: Nullable<Sprite>;
         getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
         getTextureCoordinates(): Nullable<Vector2>;
+    }
+}
+
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Nullable<Scene>;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     */
+    class BoneAxesViewer extends AxesViewer {
+        mesh: Nullable<Mesh>;
+        bone: Nullable<Bone>;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh.
+     */
+    class PhysicsViewer {
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        protected _scene: Nullable<Scene>;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _worldMatrix;
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding box from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _tempRadiusVector;
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding sphere from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -8786,355 +8245,907 @@ declare var WebGLVertexArrayObject: {
     new (): WebGLVertexArrayObject;
 };
 
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Nullable<Scene>;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     */
-    class BoneAxesViewer extends AxesViewer {
-        mesh: Nullable<Mesh>;
-        bone: Nullable<Bone>;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh.
-     */
-    class PhysicsViewer {
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        protected _scene: Nullable<Scene>;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _worldMatrix;
-        /**
-         * Creates a new bounding box
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding box from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        center: Vector3;
+    class ArcRotateCamera extends TargetCamera {
+        alpha: number;
+        beta: number;
         radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _tempRadiusVector;
+        protected _target: Vector3;
+        protected _targetHost: Nullable<AbstractMesh>;
+        target: Vector3;
+        inertialAlphaOffset: number;
+        inertialBetaOffset: number;
+        inertialRadiusOffset: number;
+        lowerAlphaLimit: Nullable<number>;
+        upperAlphaLimit: Nullable<number>;
+        lowerBetaLimit: number;
+        upperBetaLimit: number;
+        lowerRadiusLimit: Nullable<number>;
+        upperRadiusLimit: Nullable<number>;
+        inertialPanningX: number;
+        inertialPanningY: number;
+        pinchToPanMaxDistance: number;
+        panningDistanceLimit: Nullable<number>;
+        panningOriginTarget: Vector3;
+        panningInertia: number;
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        wheelPrecision: number;
+        wheelDeltaPercentage: number;
+        zoomOnFactor: number;
+        targetScreenOffset: Vector2;
+        allowUpsideDown: boolean;
+        _viewMatrix: Matrix;
+        _useCtrlForPanning: boolean;
+        _panningMouseButton: number;
+        inputs: ArcRotateCameraInputsManager;
+        _reset: () => void;
+        panningAxis: Vector3;
+        protected _localDirection: Vector3;
+        protected _transformedDirection: Vector3;
+        private _bouncingBehavior;
+        readonly bouncingBehavior: Nullable<BouncingBehavior>;
+        useBouncingBehavior: boolean;
+        private _framingBehavior;
+        readonly framingBehavior: Nullable<FramingBehavior>;
+        useFramingBehavior: boolean;
+        private _autoRotationBehavior;
+        readonly autoRotationBehavior: Nullable<AutoRotationBehavior>;
+        useAutoRotationBehavior: boolean;
+        onMeshTargetChangedObservable: Observable<Nullable<AbstractMesh>>;
+        onCollide: (collidedMesh: AbstractMesh) => void;
+        checkCollisions: boolean;
+        collisionRadius: Vector3;
+        protected _collider: Collider;
+        protected _previousPosition: Vector3;
+        protected _collisionVelocity: Vector3;
+        protected _newPosition: Vector3;
+        protected _previousAlpha: number;
+        protected _previousBeta: number;
+        protected _previousRadius: number;
+        protected _collisionTriggered: boolean;
+        protected _targetBoundingCenter: Nullable<Vector3>;
+        private _computationVector;
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        _initCache(): void;
+        _updateCache(ignoreParentClass?: boolean): void;
+        protected _getTargetPosition(): Vector3;
         /**
-         * Creates a new bounding sphere
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
+         * Store current camera state (fov, position, etc..)
          */
-        constructor(min: Vector3, max: Vector3);
+        private _storedAlpha;
+        private _storedBeta;
+        private _storedRadius;
+        private _storedTarget;
+        storeState(): Camera;
         /**
-         * Recreates the entire bounding sphere from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
+         * Restored camera state. You must call storeState() first
          */
-        reConstruct(min: Vector3, max: Vector3): void;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+        _restoreStateValues(): boolean;
+        _isSynchronizedViewMatrix(): boolean;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning?: boolean, panningMouseButton?: number): void;
+        detachControl(element: HTMLElement): void;
+        _checkInputs(): void;
+        protected _checkLimits(): void;
+        rebuildAnglesAndRadius(): void;
+        setPosition(position: Vector3): void;
+        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean): void;
+        _getViewMatrix(): Matrix;
+        protected _onCollisionPositionChange: (collisionId: number, newPosition: Vector3, collidedMesh?: Nullable<AbstractMesh>) => void;
+        zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ?: boolean): void;
+        focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | {
+            min: Vector3;
+            max: Vector3;
+            distance: number;
+        }, doNotUpdateMaxZ?: boolean): void;
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        createRigCamera(name: string, cameraIndex: number): Camera;
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        _updateRigCameras(): void;
+        dispose(): void;
+        getClassName(): string;
     }
 }
 
 declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateCamera> {
+        constructor(camera: ArcRotateCamera);
+        addMouseWheel(): ArcRotateCameraInputsManager;
+        addPointers(): ArcRotateCameraInputsManager;
+        addKeyboard(): ArcRotateCameraInputsManager;
+        addGamepad(): ArcRotateCameraInputsManager;
+        addVRDeviceOrientation(): ArcRotateCameraInputsManager;
     }
+}
+
+declare module BABYLON {
+    class Camera extends Node {
+        inputs: CameraInputsManager<Camera>;
+        private static _PERSPECTIVE_CAMERA;
+        private static _ORTHOGRAPHIC_CAMERA;
+        private static _FOVMODE_VERTICAL_FIXED;
+        private static _FOVMODE_HORIZONTAL_FIXED;
+        private static _RIG_MODE_NONE;
+        private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+        private static _RIG_MODE_STEREOSCOPIC_OVERUNDER;
+        private static _RIG_MODE_VR;
+        private static _RIG_MODE_WEBVR;
+        static readonly PERSPECTIVE_CAMERA: number;
+        static readonly ORTHOGRAPHIC_CAMERA: number;
+        /**
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+         *
+         */
+        static readonly FOVMODE_VERTICAL_FIXED: number;
+        /**
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+         *
+         */
+        static readonly FOVMODE_HORIZONTAL_FIXED: number;
+        static readonly RIG_MODE_NONE: number;
+        static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
+        static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
+        static readonly RIG_MODE_VR: number;
+        static readonly RIG_MODE_WEBVR: number;
+        static ForceAttachControlToAlwaysPreventDefault: boolean;
+        static UseAlternateWebVRRendering: boolean;
+        position: Vector3;
+        /**
+         * The vector the camera should consider as up.
+         * (default is Vector3(0, 1, 0) aka Vector3.Up())
+         */
+        upVector: Vector3;
+        orthoLeft: Nullable<number>;
+        orthoRight: Nullable<number>;
+        orthoBottom: Nullable<number>;
+        orthoTop: Nullable<number>;
+        /**
+         * FOV is set in Radians. (default is 0.8)
+         */
+        fov: number;
+        minZ: number;
+        maxZ: number;
+        inertia: number;
+        mode: number;
+        isIntermediate: boolean;
+        viewport: Viewport;
+        /**
+         * Restricts the camera to viewing objects with the same layerMask.
+         * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
+         */
+        layerMask: number;
+        /**
+         * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
+         */
+        fovMode: number;
+        cameraRigMode: number;
+        interaxialDistance: number;
+        isStereoscopicSideBySide: boolean;
+        _cameraRigParams: any;
+        _rigCameras: Camera[];
+        _rigPostProcess: Nullable<PostProcess>;
+        protected _webvrViewMatrix: Matrix;
+        _skipRendering: boolean;
+        _alternateCamera: Camera;
+        customRenderTargets: RenderTargetTexture[];
+        onViewMatrixChangedObservable: Observable<Camera>;
+        onProjectionMatrixChangedObservable: Observable<Camera>;
+        onAfterCheckInputsObservable: Observable<Camera>;
+        onRestoreStateObservable: Observable<Camera>;
+        private _computedViewMatrix;
+        _projectionMatrix: Matrix;
+        private _doNotComputeProjectionMatrix;
+        private _worldMatrix;
+        _postProcesses: Nullable<PostProcess>[];
+        private _transformMatrix;
+        _activeMeshes: SmartArray<AbstractMesh>;
+        protected _globalPosition: Vector3;
+        private _frustumPlanes;
+        private _refreshFrustumPlanes;
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        private _storedFov;
+        private _stateStored;
+        /**
+         * Store current camera state (fov, position, etc..)
+         */
+        storeState(): Camera;
+        /**
+         * Restores the camera state values if it has been stored. You must call storeState() first
+         */
+        protected _restoreStateValues(): boolean;
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        restoreState(): boolean;
+        getClassName(): string;
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        readonly globalPosition: Vector3;
+        getActiveMeshes(): SmartArray<AbstractMesh>;
+        isActiveMesh(mesh: Mesh): boolean;
+        /**
+         * Is this camera ready to be used/rendered
+         * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
+         * @return true if the camera is ready
+         */
+        isReady(completeCheck?: boolean): boolean;
+        _initCache(): void;
+        _updateCache(ignoreParentClass?: boolean): void;
+        _isSynchronized(): boolean;
+        _isSynchronizedViewMatrix(): boolean;
+        _isSynchronizedProjectionMatrix(): boolean;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        update(): void;
+        _checkInputs(): void;
+        readonly rigCameras: Camera[];
+        readonly rigPostProcess: Nullable<PostProcess>;
+        /**
+         * Internal, gets the first post proces.
+         * @returns the first post process to be run on this camera.
+         */
+        _getFirstPostProcess(): Nullable<PostProcess>;
+        private _cascadePostProcessesToRigCams();
+        attachPostProcess(postProcess: PostProcess, insertAt?: Nullable<number>): number;
+        detachPostProcess(postProcess: PostProcess): void;
+        getWorldMatrix(): Matrix;
+        _getViewMatrix(): Matrix;
+        getViewMatrix(force?: boolean): Matrix;
+        freezeProjectionMatrix(projection?: Matrix): void;
+        unfreezeProjectionMatrix(): void;
+        getProjectionMatrix(force?: boolean): Matrix;
+        getTranformationMatrix(): Matrix;
+        private updateFrustumPlanes();
+        isInFrustum(target: ICullable): boolean;
+        isCompletelyInFrustum(target: ICullable): boolean;
+        getForwardRay(length?: number, transform?: Matrix, origin?: Vector3): Ray;
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        readonly leftCamera: Nullable<FreeCamera>;
+        readonly rightCamera: Nullable<FreeCamera>;
+        getLeftTarget(): Nullable<Vector3>;
+        getRightTarget(): Nullable<Vector3>;
+        setCameraRigMode(mode: number, rigParams: any): void;
+        private _getVRProjectionMatrix();
+        protected _updateCameraRotationMatrix(): void;
+        protected _updateWebVRCameraRotationMatrix(): void;
+        /**
+         * This function MUST be overwritten by the different WebVR cameras available.
+         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
+         */
+        protected _getWebVRProjectionMatrix(): Matrix;
+        /**
+         * This function MUST be overwritten by the different WebVR cameras available.
+         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
+         */
+        protected _getWebVRViewMatrix(): Matrix;
+        setCameraRigParameter(name: string, value: any): void;
+        /**
+         * needs to be overridden by children so sub has required properties to be copied
+         */
+        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
+        /**
+         * May need to be overridden by children
+         */
+        _updateRigCameras(): void;
+        _setupInputs(): void;
+        serialize(): any;
+        clone(name: string): Camera;
+        getDirection(localAxis: Vector3): Vector3;
+        getDirectionToRef(localAxis: Vector3, result: Vector3): void;
+        static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
+        computeWorldMatrix(): Matrix;
+        static Parse(parsedCamera: any, scene: Scene): Camera;
+    }
+}
+
+declare module BABYLON {
+    var CameraInputTypes: {};
+    interface ICameraInput<TCamera extends Camera> {
+        camera: Nullable<TCamera>;
+        getClassName(): string;
+        getSimpleName(): string;
+        attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
+        detachControl: (element: Nullable<HTMLElement>) => void;
+        checkInputs?: () => void;
+    }
+    interface CameraInputsMap<TCamera extends Camera> {
+        [name: string]: ICameraInput<TCamera>;
+        [idx: number]: ICameraInput<TCamera>;
+    }
+    class CameraInputsManager<TCamera extends Camera> {
+        attached: CameraInputsMap<TCamera>;
+        attachedElement: Nullable<HTMLElement>;
+        noPreventDefault: boolean;
+        camera: TCamera;
+        checkInputs: () => void;
+        constructor(camera: TCamera);
+        /**
+         * Add an input method to a camera.
+         * builtin inputs example: camera.inputs.addGamepad();
+         * custom inputs example: camera.inputs.add(new BABYLON.FreeCameraGamepadInput());
+         * @param input camera input method
+         */
+        add(input: ICameraInput<TCamera>): void;
+        /**
+         * Remove a specific input method from a camera
+         * example: camera.inputs.remove(camera.inputs.attached.mouse);
+         * @param inputToRemove camera input method
+         */
+        remove(inputToRemove: ICameraInput<TCamera>): void;
+        removeByType(inputType: string): void;
+        private _addCheckInputs(fn);
+        attachInput(input: ICameraInput<TCamera>): void;
+        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachElement(element: HTMLElement, disconnect?: boolean): void;
+        rebuildInputCheck(): void;
+        /**
+         * Remove all attached input methods from a camera
+         */
+        clear(): void;
+        serialize(serializedCamera: any): void;
+        parse(parsedCamera: any): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This is a camera specifically designed to react to device orientation events such as a modern mobile device
+     * being tilted forward or back and left or right.
+     */
+    class DeviceOrientationCamera extends FreeCamera {
+        private _initialQuaternion;
+        private _quaternionCache;
+        /**
+         * Creates a new device orientation camera
+         * @param name The name of the camera
+         * @param position The start position camera
+         * @param scene The scene the camera belongs to
+         */
+        constructor(name: string, position: Vector3, scene: Scene);
+        /**
+         * Gets the current instance class name ("DeviceOrientationCamera").
+         * This helps avoiding instanceof at run time.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Checks and applies the current values of the inputs to the camera. (Internal use only)
+         */
+        _checkInputs(): void;
+        /**
+         * Reset the camera to its default orientation on the specified axis only.
+         * @param axis The axis to reset
+         */
+        resetToCurrentRotation(axis?: Axis): void;
+    }
+}
+
+declare module BABYLON {
+    class FollowCamera extends TargetCamera {
+        radius: number;
+        rotationOffset: number;
+        heightOffset: number;
+        cameraAcceleration: number;
+        maxCameraSpeed: number;
+        lockedTarget: Nullable<AbstractMesh>;
+        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
+        private getRadians(degrees);
+        private follow(cameraTarget);
+        _checkInputs(): void;
+        getClassName(): string;
+    }
+    class ArcFollowCamera extends TargetCamera {
+        alpha: number;
+        beta: number;
+        radius: number;
+        target: Nullable<AbstractMesh>;
+        private _cartesianCoordinates;
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Nullable<AbstractMesh>, scene: Scene);
+        private follow();
+        _checkInputs(): void;
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCamera extends TargetCamera {
+        ellipsoid: Vector3;
+        ellipsoidOffset: Vector3;
+        checkCollisions: boolean;
+        applyGravity: boolean;
+        inputs: FreeCameraInputsManager;
+        /**
+         * Gets the input sensibility for a mouse input. (default is 2000.0)
+         * Higher values reduce sensitivity.
+         */
+        /**
+         * Sets the input sensibility for a mouse input. (default is 2000.0)
+         * Higher values reduce sensitivity.
+         */
+        angularSensibility: number;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        onCollide: (collidedMesh: AbstractMesh) => void;
+        private _collider;
+        private _needMoveForGravity;
+        private _oldPosition;
+        private _diffPosition;
+        private _newPosition;
+        _localDirection: Vector3;
+        _transformedDirection: Vector3;
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        private _collisionMask;
+        collisionMask: number;
+        _collideWithWorld(displacement: Vector3): void;
+        private _onCollisionPositionChange;
+        _checkInputs(): void;
+        _decideIfNeedsToMove(): boolean;
+        _updatePosition(): void;
+        dispose(): void;
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
+        constructor(camera: FreeCamera);
+        addKeyboard(): FreeCameraInputsManager;
+        addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
+        addGamepad(): FreeCameraInputsManager;
+        addDeviceOrientation(): FreeCameraInputsManager;
+        addTouch(): FreeCameraInputsManager;
+        addVirtualJoystick(): FreeCameraInputsManager;
+    }
+}
+
+declare module BABYLON {
+    class GamepadCamera extends UniversalCamera {
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    class TargetCamera extends Camera {
+        cameraDirection: Vector3;
+        cameraRotation: Vector2;
+        rotation: Vector3;
+        rotationQuaternion: Quaternion;
+        speed: number;
+        noRotationConstraint: boolean;
+        lockedTarget: any;
+        _currentTarget: Vector3;
+        _viewMatrix: Matrix;
+        _camMatrix: Matrix;
+        _cameraTransformMatrix: Matrix;
+        _cameraRotationMatrix: Matrix;
+        private _rigCamTransformMatrix;
+        _referencePoint: Vector3;
+        private _currentUpVector;
+        _transformedReferencePoint: Vector3;
+        protected _globalCurrentTarget: Vector3;
+        protected _globalCurrentUpVector: Vector3;
+        _reset: () => void;
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        getFrontPosition(distance: number): Vector3;
+        _getLockedTargetPosition(): Nullable<Vector3>;
+        /**
+         * Store current camera state (fov, position, etc..)
+         */
+        private _storedPosition;
+        private _storedRotation;
+        private _storedRotationQuaternion;
+        storeState(): Camera;
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        _restoreStateValues(): boolean;
+        _initCache(): void;
+        _updateCache(ignoreParentClass?: boolean): void;
+        _isSynchronizedViewMatrix(): boolean;
+        _computeLocalCameraSpeed(): number;
+        setTarget(target: Vector3): void;
+        /**
+         * Return the current target position of the camera. This value is expressed in local space.
+         */
+        getTarget(): Vector3;
+        _decideIfNeedsToMove(): boolean;
+        _updatePosition(): void;
+        _checkInputs(): void;
+        protected _updateCameraRotationMatrix(): void;
+        _getViewMatrix(): Matrix;
+        protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void;
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        _updateRigCameras(): void;
+        private _getRigCamPosition(halfSpace, result);
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    class TouchCamera extends FreeCamera {
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getClassName(): string;
+        _setupInputs(): void;
+    }
+}
+
+declare module BABYLON {
+    class UniversalCamera extends TouchCamera {
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    class VirtualJoysticksCamera extends FreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene);
+        getClassName(): string;
+    }
+}
+
+interface VRDisplay extends EventTarget {
+    /**
+     * Dictionary of capabilities describing the VRDisplay.
+     */
+    readonly capabilities: VRDisplayCapabilities;
+    /**
+     * z-depth defining the far plane of the eye view frustum
+     * enables mapping of values in the render target depth
+     * attachment to scene coordinates. Initially set to 10000.0.
+     */
+    depthFar: number;
+    /**
+     * z-depth defining the near plane of the eye view frustum
+     * enables mapping of values in the render target depth
+     * attachment to scene coordinates. Initially set to 0.01.
+     */
+    depthNear: number;
+    /**
+     * An identifier for this distinct VRDisplay. Used as an
+     * association point in the Gamepad API.
+     */
+    readonly displayId: number;
+    /**
+     * A display name, a user-readable name identifying it.
+     */
+    readonly displayName: string;
+    readonly isConnected: boolean;
+    readonly isPresenting: boolean;
+    /**
+     * If this VRDisplay supports room-scale experiences, the optional
+     * stage attribute contains details on the room-scale parameters.
+     */
+    readonly stageParameters: VRStageParameters | null;
+    /**
+     * Passing the value returned by `requestAnimationFrame` to
+     * `cancelAnimationFrame` will unregister the callback.
+     */
+    cancelAnimationFrame(handle: number): void;
+    /**
+     * Stops presenting to the VRDisplay.
+     */
+    exitPresent(): Promise<void>;
+    getEyeParameters(whichEye: string): VREyeParameters;
+    /**
+     * Populates the passed VRFrameData with the information required to render
+     * the current frame.
+     */
+    getFrameData(frameData: VRFrameData): boolean;
+    /**
+     * Get the layers currently being presented.
+     */
+    getLayers(): VRLayer[];
+    /**
+     * Return a VRPose containing the future predicted pose of the VRDisplay
+     * when the current frame will be presented. The value returned will not
+     * change until JavaScript has returned control to the browser.
+     *
+     * The VRPose will contain the position, orientation, velocity,
+     * and acceleration of each of these properties.
+     */
+    getPose(): VRPose;
+    /**
+     * Return the current instantaneous pose of the VRDisplay, with no
+     * prediction applied.
+     */
+    getImmediatePose(): VRPose;
+    /**
+     * The callback passed to `requestAnimationFrame` will be called
+     * any time a new frame should be rendered. When the VRDisplay is
+     * presenting the callback will be called at the native refresh
+     * rate of the HMD. When not presenting this function acts
+     * identically to how window.requestAnimationFrame acts. Content should
+     * make no assumptions of frame rate or vsync behavior as the HMD runs
+     * asynchronously from other displays and at differing refresh rates.
+     */
+    requestAnimationFrame(callback: FrameRequestCallback): number;
+    /**
+     * Begin presenting to the VRDisplay. Must be called in response to a user gesture.
+     * Repeat calls while already presenting will update the VRLayers being displayed.
+     */
+    requestPresent(layers: VRLayer[]): Promise<void>;
+    /**
+     * Reset the pose for this display, treating its current position and
+     * orientation as the "origin/zero" values. VRPose.position,
+     * VRPose.orientation, and VRStageParameters.sittingToStandingTransform may be
+     * updated when calling resetPose(). This should be called in only
+     * sitting-space experiences.
+     */
+    resetPose(): void;
+    /**
+     * The VRLayer provided to the VRDisplay will be captured and presented
+     * in the HMD. Calling this function has the same effect on the source
+     * canvas as any other operation that uses its source image, and canvases
+     * created without preserveDrawingBuffer set to true will be cleared.
+     */
+    submitFrame(pose?: VRPose): void;
+}
+declare var VRDisplay: {
+    prototype: VRDisplay;
+    new (): VRDisplay;
+};
+interface VRLayer {
+    leftBounds?: number[] | null;
+    rightBounds?: number[] | null;
+    source?: HTMLCanvasElement | null;
+}
+interface VRDisplayCapabilities {
+    readonly canPresent: boolean;
+    readonly hasExternalDisplay: boolean;
+    readonly hasOrientation: boolean;
+    readonly hasPosition: boolean;
+    readonly maxLayers: number;
+}
+interface VREyeParameters {
+    /** @deprecated */
+    readonly fieldOfView: VRFieldOfView;
+    readonly offset: Float32Array;
+    readonly renderHeight: number;
+    readonly renderWidth: number;
+}
+interface VRFieldOfView {
+    readonly downDegrees: number;
+    readonly leftDegrees: number;
+    readonly rightDegrees: number;
+    readonly upDegrees: number;
+}
+interface VRFrameData {
+    readonly leftProjectionMatrix: Float32Array;
+    readonly leftViewMatrix: Float32Array;
+    readonly pose: VRPose;
+    readonly rightProjectionMatrix: Float32Array;
+    readonly rightViewMatrix: Float32Array;
+    readonly timestamp: number;
+}
+interface VRPose {
+    readonly angularAcceleration: Float32Array | null;
+    readonly angularVelocity: Float32Array | null;
+    readonly linearAcceleration: Float32Array | null;
+    readonly linearVelocity: Float32Array | null;
+    readonly orientation: Float32Array | null;
+    readonly position: Float32Array | null;
+    readonly timestamp: number;
+}
+interface VRStageParameters {
+    sittingToStandingTransform?: Float32Array;
+    sizeX?: number;
+    sizeY?: number;
+}
+interface Navigator {
+    getVRDisplays(): Promise<VRDisplay[]>;
+    readonly activeVRDisplays: ReadonlyArray<VRDisplay>;
+}
+interface Window {
+    onvrdisplayconnected: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaydisconnected: ((this: Window, ev: Event) => any) | null;
+    onvrdisplaypresentchange: ((this: Window, ev: Event) => any) | null;
+    addEventListener(type: "vrdisplayconnected", listener: (ev: Event) => any, useCapture?: boolean): void;
+    addEventListener(type: "vrdisplaydisconnected", listener: (ev: Event) => any, useCapture?: boolean): void;
+    addEventListener(type: "vrdisplaypresentchange", listener: (ev: Event) => any, useCapture?: boolean): void;
+}
+interface Gamepad {
+    readonly displayId: number;
 }
 
 declare module BABYLON {
@@ -9934,685 +9945,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /**
-     * Effect layer options. This helps customizing the behaviour
-     * of the effect layer.
-     */
-    interface IEffectLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the objects (the smaller the faster).
-         */
-        mainTextureRatio: number;
-        /**
-         * Enforces a fixed size texture to ensure effect stability across devices.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * Alpha blending mode used to apply the blur. Default depends of the implementation.
-         */
-        alphaBlendingMode: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera: Nullable<Camera>;
-    }
-    /**
-     * The effect layer Helps adding post process effect blended with the main pass.
-     *
-     * This can be for instance use to generate glow or higlight effects on the scene.
-     *
-     * The effect layer class can not be used directly and is intented to inherited from to be
-     * customized per effects.
-     */
-    abstract class EffectLayer {
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _cachedDefines;
-        private _effectLayerMapGenerationEffect;
-        private _effectLayerOptions;
-        private _mergeEffect;
-        protected _scene: Scene;
-        protected _engine: Engine;
-        protected _maxSize: number;
-        protected _mainTextureDesiredSize: ISize;
-        protected _mainTexture: RenderTargetTexture;
-        protected _shouldRender: boolean;
-        protected _postProcesses: PostProcess[];
-        protected _textures: BaseTexture[];
-        protected _emissiveTextureAndColor: {
-            texture: Nullable<BaseTexture>;
-            color: Color4;
-        };
-        /**
-         * The name of the layer
-         */
-        name: string;
-        /**
-         * The clear color of the texture used to generate the glow map.
-         */
-        neutralColor: Color4;
-        /**
-         * Specifies wether the highlight layer is enabled or not.
-         */
-        isEnabled: boolean;
-        /**
-         * Gets the camera attached to the layer.
-         */
-        readonly camera: Nullable<Camera>;
-        /**
-         * An event triggered when the effect layer has been disposed.
-         */
-        onDisposeObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the effect layer is about rendering the main texture with the glowy parts.
-         */
-        onBeforeRenderMainTextureObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the generated texture is being merged in the scene.
-         */
-        onBeforeComposeObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the generated texture has been merged in the scene.
-         */
-        onAfterComposeObservable: Observable<EffectLayer>;
-        /**
-         * An event triggered when the efffect layer changes its size.
-         */
-        onSizeChangedObservable: Observable<EffectLayer>;
-        /**
-         * Instantiates a new effect Layer and references it in the scene.
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         */
-        constructor(
-            /** The Friendly of the effect in the scene */
-            name: string, scene: Scene);
-        /**
-         * Get the effect name of the layer.
-         * @return The effect name
-         */
-        abstract getEffectName(): string;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @return true if ready otherwise, false
-         */
-        abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
-         * @returns true if the effect requires stencil during the main canvas render pass.
-         */
-        abstract needStencil(): boolean;
-        /**
-         * Create the merge effect. This is the shader use to blit the information back
-         * to the main canvas at the end of the scene rendering.
-         * @returns The effect containing the shader used to merge the effect on the  main canvas
-         */
-        protected abstract _createMergeEffect(): Effect;
-        /**
-         * Creates the render target textures and post processes used in the effect layer.
-         */
-        protected abstract _createTextureAndPostProcesses(): void;
-        /**
-         * Implementation specific of rendering the generating effect on the main canvas.
-         * @param effect The effect used to render through
-         */
-        protected abstract _internalRender(effect: Effect): void;
-        /**
-         * Sets the required values for both the emissive texture and and the main color.
-         */
-        protected abstract _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-        /**
-         * Free any resources and references associated to a mesh.
-         * Internal use
-         * @param mesh The mesh to free.
-         */
-        abstract _disposeMesh(mesh: Mesh): void;
-        /**
-         * Serializes this layer (Glow or Highlight for example)
-         * @returns a serialized layer object
-         */
-        abstract serialize?(): any;
-        /**
-         * Initializes the effect layer with the required options.
-         * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
-         */
-        protected _init(options: Partial<IEffectLayerOptions>): void;
-        /**
-         * Generates the index buffer of the full screen quad blending to the main canvas.
-         */
-        private _generateIndexBuffer();
-        /**
-         * Generates the vertex buffer of the full screen quad blending to the main canvas.
-         */
-        private _genrateVertexBuffer();
-        /**
-         * Sets the main texture desired size which is the closest power of two
-         * of the engine canvas size.
-         */
-        private _setMainTextureSize();
-        /**
-         * Creates the main texture for the effect layer.
-         */
-        protected _createMainTexture(): void;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean;
-        /**
-         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
-         */
-        render(): void;
-        /**
-         * Determine if a given mesh will be used in the current effect.
-         * @param mesh mesh to test
-         * @returns true if the mesh will be used
-         */
-        hasMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Returns true if the layer contains information to display, otherwise false.
-         * @returns true if the glow layer should be rendered
-         */
-        shouldRender(): boolean;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderMesh(mesh: Mesh): boolean;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderEmissiveTextureForMesh(mesh: Mesh): boolean;
-        /**
-         * Renders the submesh passed in parameter to the generation map.
-         */
-        protected _renderSubMesh(subMesh: SubMesh): void;
-        /**
-         * Rebuild the required buffers.
-         * @hidden Internal use only.
-         */
-        _rebuild(): void;
-        /**
-         * Dispose only the render target textures and post process.
-         */
-        private _disposeTextureAndPostProcesses();
-        /**
-         * Dispose the highlight layer and free resources.
-         */
-        dispose(): void;
-        /**
-          * Gets the class name of the effect layer
-          * @returns the string with the class name of the effect layer
-          */
-        getClassName(): string;
-        /**
-         * Creates an effect layer from parsed effect layer data
-         * @param parsedEffectLayer defines effect layer data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the effect layer information
-         * @returns a parsed effect Layer
-         */
-        static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Glow layer options. This helps customizing the behaviour
-     * of the glow layer.
-     */
-    interface IGlowLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the glowing objects (the smaller the faster).
-         */
-        mainTextureRatio: number;
-        /**
-         * Enforces a fixed size texture to ensure resize independant blur.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * How big is the kernel of the blur texture.
-         */
-        blurKernelSize: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera: Nullable<Camera>;
-        /**
-         * Enable MSAA by chosing the number of samples.
-         */
-        mainTextureSamples?: number;
-    }
-    /**
-     * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
-     *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
-     *
-     * Documentation: https://doc.babylonjs.com/how_to/glow_layer
-     */
-    class GlowLayer extends EffectLayer {
-        /**
-         * Effect Name of the layer.
-         */
-        static readonly EffectName: string;
-        /**
-         * The default blur kernel size used for the glow.
-         */
-        static DefaultBlurKernelSize: number;
-        /**
-         * The default texture size ratio used for the glow.
-         */
-        static DefaultTextureRatio: number;
-        /**
-         * Gets the kernel size of the blur.
-         */
-        /**
-         * Sets the kernel size of the blur.
-         */
-        blurKernelSize: number;
-        /**
-         * Gets the glow intensity.
-         */
-        /**
-         * Sets the glow intensity.
-         */
-        intensity: number;
-        private _options;
-        private _intensity;
-        private _horizontalBlurPostprocess1;
-        private _verticalBlurPostprocess1;
-        private _horizontalBlurPostprocess2;
-        private _verticalBlurPostprocess2;
-        private _blurTexture1;
-        private _blurTexture2;
-        private _postProcesses1;
-        private _postProcesses2;
-        private _includedOnlyMeshes;
-        private _excludedMeshes;
-        /**
-         * Callback used to let the user override the color selection on a per mesh basis
-         */
-        customEmissiveColorSelector: (mesh: Mesh, subMesh: SubMesh, material: Material, result: Color4) => void;
-        /**
-         * Callback used to let the user override the texture selection on a per mesh basis
-         */
-        customEmissiveTextureSelector: (mesh: Mesh, subMesh: SubMesh, material: Material) => Texture;
-        /**
-         * Instantiates a new glow Layer and references it to the scene.
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
-         */
-        constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>);
-        /**
-         * Get the effect name of the layer.
-         * @return The effect name
-         */
-        getEffectName(): string;
-        /**
-         * Create the merge effect. This is the shader use to blit the information back
-         * to the main canvas at the end of the scene rendering.
-         */
-        protected _createMergeEffect(): Effect;
-        /**
-         * Creates the render target textures and post processes used in the glow layer.
-         */
-        protected _createTextureAndPostProcesses(): void;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
-         */
-        needStencil(): boolean;
-        /**
-         * Implementation specific of rendering the generating effect on the main canvas.
-         * @param effect The effect used to render through
-         */
-        protected _internalRender(effect: Effect): void;
-        /**
-         * Sets the required values for both the emissive texture and and the main color.
-         */
-        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderMesh(mesh: Mesh): boolean;
-        /**
-         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
-         * @param mesh The mesh to exclude from the glow layer
-         */
-        addExcludedMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the exclusion list to let it impact or being impacted by the glow layer.
-          * @param mesh The mesh to remove
-          */
-        removeExcludedMesh(mesh: Mesh): void;
-        /**
-         * Add a mesh in the inclusion list to impact or being impacted by the glow layer.
-         * @param mesh The mesh to include in the glow layer
-         */
-        addIncludedOnlyMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the Inclusion list to prevent it to impact or being impacted by the glow layer.
-          * @param mesh The mesh to remove
-          */
-        removeIncludedOnlyMesh(mesh: Mesh): void;
-        /**
-         * Determine if a given mesh will be used in the glow layer
-         * @param mesh The mesh to test
-         * @returns true if the mesh will be highlighted by the current glow layer
-         */
-        hasMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Free any resources and references associated to a mesh.
-         * Internal use
-         * @param mesh The mesh to free.
-         */
-        _disposeMesh(mesh: Mesh): void;
-        /**
-          * Gets the class name of the effect layer
-          * @returns the string with the class name of the effect layer
-          */
-        getClassName(): string;
-        /**
-         * Serializes this glow layer
-         * @returns a serialized glow layer object
-         */
-        serialize(): any;
-        /**
-         * Creates a Glow Layer from parsed glow layer data
-         * @param parsedGlowLayer defines glow layer data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the glow layer information
-         * @returns a parsed Glow Layer
-         */
-        static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Highlight layer options. This helps customizing the behaviour
-     * of the highlight layer.
-     */
-    interface IHighlightLayerOptions {
-        /**
-         * Multiplication factor apply to the canvas size to compute the render target size
-         * used to generated the glowing objects (the smaller the faster).
-         */
-        mainTextureRatio: number;
-        /**
-         * Enforces a fixed size texture to ensure resize independant blur.
-         */
-        mainTextureFixedSize?: number;
-        /**
-         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
-         * of the picture to blur (the smaller the faster).
-         */
-        blurTextureSizeRatio: number;
-        /**
-         * How big in texel of the blur texture is the vertical blur.
-         */
-        blurVerticalSize: number;
-        /**
-         * How big in texel of the blur texture is the horizontal blur.
-         */
-        blurHorizontalSize: number;
-        /**
-         * Alpha blending mode used to apply the blur. Default is combine.
-         */
-        alphaBlendingMode: number;
-        /**
-         * The camera attached to the layer.
-         */
-        camera: Nullable<Camera>;
-        /**
-         * Should we display highlight as a solid stroke?
-         */
-        isStroke?: boolean;
-    }
-    /**
-     * The highlight layer Helps adding a glow effect around a mesh.
-     *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
-     *
-     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
-     */
-    class HighlightLayer extends EffectLayer {
-        name: string;
-        /**
-         * Effect Name of the highlight layer.
-         */
-        static readonly EffectName: string;
-        /**
-         * The neutral color used during the preparation of the glow effect.
-         * This is black by default as the blend operation is a blend operation.
-         */
-        static NeutralColor: Color4;
-        /**
-         * Stencil value used for glowing meshes.
-         */
-        static GlowingMeshStencilReference: number;
-        /**
-         * Stencil value used for the other meshes in the scene.
-         */
-        static NormalMeshStencilReference: number;
-        /**
-         * Specifies whether or not the inner glow is ACTIVE in the layer.
-         */
-        innerGlow: boolean;
-        /**
-         * Specifies whether or not the outer glow is ACTIVE in the layer.
-         */
-        outerGlow: boolean;
-        /**
-         * Gets the horizontal size of the blur.
-         */
-        /**
-         * Specifies the horizontal size of the blur.
-         */
-        blurHorizontalSize: number;
-        /**
-         * Gets the vertical size of the blur.
-         */
-        /**
-         * Specifies the vertical size of the blur.
-         */
-        blurVerticalSize: number;
-        /**
-         * An event triggered when the highlight layer is being blurred.
-         */
-        onBeforeBlurObservable: Observable<HighlightLayer>;
-        /**
-         * An event triggered when the highlight layer has been blurred.
-         */
-        onAfterBlurObservable: Observable<HighlightLayer>;
-        private _instanceGlowingMeshStencilReference;
-        private _options;
-        private _downSamplePostprocess;
-        private _horizontalBlurPostprocess;
-        private _verticalBlurPostprocess;
-        private _blurTexture;
-        private _meshes;
-        private _excludedMeshes;
-        /**
-         * Instantiates a new highlight Layer and references it to the scene..
-         * @param name The name of the layer
-         * @param scene The scene to use the layer in
-         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
-         */
-        constructor(name: string, scene: Scene, options?: Partial<IHighlightLayerOptions>);
-        /**
-         * Get the effect name of the layer.
-         * @return The effect name
-         */
-        getEffectName(): string;
-        /**
-         * Create the merge effect. This is the shader use to blit the information back
-         * to the main canvas at the end of the scene rendering.
-         */
-        protected _createMergeEffect(): Effect;
-        /**
-         * Creates the render target textures and post processes used in the highlight layer.
-         */
-        protected _createTextureAndPostProcesses(): void;
-        /**
-         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
-         */
-        needStencil(): boolean;
-        /**
-         * Checks for the readiness of the element composing the layer.
-         * @param subMesh the mesh to check for
-         * @param useInstances specify wether or not to use instances to render the mesh
-         * @param emissiveTexture the associated emissive texture used to generate the glow
-         * @return true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Implementation specific of rendering the generating effect on the main canvas.
-         * @param effect The effect used to render through
-         */
-        protected _internalRender(effect: Effect): void;
-        /**
-         * Returns true if the layer contains information to display, otherwise false.
-         */
-        shouldRender(): boolean;
-        /**
-         * Returns true if the mesh should render, otherwise false.
-         * @param mesh The mesh to render
-         * @returns true if it should render otherwise false
-         */
-        protected _shouldRenderMesh(mesh: Mesh): boolean;
-        /**
-         * Sets the required values for both the emissive texture and and the main color.
-         */
-        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
-        /**
-         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
-         * @param mesh The mesh to exclude from the highlight layer
-         */
-        addExcludedMesh(mesh: Mesh): void;
-        /**
-          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
-          * @param mesh The mesh to highlight
-          */
-        removeExcludedMesh(mesh: Mesh): void;
-        /**
-         * Determine if a given mesh will be highlighted by the current HighlightLayer
-         * @param mesh mesh to test
-         * @returns true if the mesh will be highlighted by the current HighlightLayer
-         */
-        hasMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
-         * @param mesh The mesh to highlight
-         * @param color The color of the highlight
-         * @param glowEmissiveOnly Extract the glow from the emissive texture
-         */
-        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
-        /**
-         * Remove a mesh from the highlight layer in order to make it stop glowing.
-         * @param mesh The mesh to highlight
-         */
-        removeMesh(mesh: Mesh): void;
-        /**
-         * Force the stencil to the normal expected value for none glowing parts
-         */
-        private _defaultStencilReference(mesh);
-        /**
-         * Free any resources and references associated to a mesh.
-         * Internal use
-         * @param mesh The mesh to free.
-         */
-        _disposeMesh(mesh: Mesh): void;
-        /**
-         * Dispose the highlight layer and free resources.
-         */
-        dispose(): void;
-        /**
-          * Gets the class name of the effect layer
-          * @returns the string with the class name of the effect layer
-          */
-        getClassName(): string;
-        /**
-         * Serializes this Highlight layer
-         * @returns a serialized Highlight layer object
-         */
-        serialize(): any;
-        /**
-         * Creates a Highlight layer from parsed Highlight layer data
-         * @param parsedHightlightLayer defines the Highlight layer data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the Highlight layer information
-         * @returns a parsed Highlight layer
-         */
-        static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer;
-    }
-}
-
-declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Nullable<Texture>;
-        isBackground: boolean;
-        color: Color4;
-        scale: Vector2;
-        offset: Vector2;
-        alphaBlendingMode: number;
-        alphaTest: boolean;
-        layerMask: number;
-        private _scene;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _alphaTestEffect;
-        /**
-        * An event triggered when the layer is disposed.
-        */
-        onDisposeObservable: Observable<Layer>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        /**
-        * An event triggered before rendering the scene
-        */
-        onBeforeRenderObservable: Observable<Layer>;
-        private _onBeforeRenderObserver;
-        onBeforeRender: () => void;
-        /**
-        * An event triggered after rendering the scene
-        */
-        onAfterRenderObservable: Observable<Layer>;
-        private _onAfterRenderObserver;
-        onAfterRender: () => void;
-        constructor(name: string, imgUrl: Nullable<string>, scene: Nullable<Scene>, isBackground?: boolean, color?: Color4);
-        private _createIndexBuffer();
-        _rebuild(): void;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class LensFlare {
         size: number;
         position: number;
@@ -10655,6 +9987,268 @@ declare module BABYLON {
         dispose(): void;
         static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
         serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    class SceneLoaderProgressEvent {
+        readonly lengthComputable: boolean;
+        readonly loaded: number;
+        readonly total: number;
+        constructor(lengthComputable: boolean, loaded: number, total: number);
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPluginFactory {
+        name: string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for scene and resources
+         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+        */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded scene
+        */
+        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The given scene
+        */
+        static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded asset container
+        */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -11597,264 +11191,681 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
+    /**
+     * Effect layer options. This helps customizing the behaviour
+     * of the effect layer.
+     */
+    interface IEffectLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the objects (the smaller the faster).
+         */
+        mainTextureRatio: number;
+        /**
+         * Enforces a fixed size texture to ensure effect stability across devices.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * Alpha blending mode used to apply the blur. Default depends of the implementation.
+         */
+        alphaBlendingMode: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera: Nullable<Camera>;
     }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
+    /**
+     * The effect layer Helps adding post process effect blended with the main pass.
+     *
+     * This can be for instance use to generate glow or higlight effects on the scene.
+     *
+     * The effect layer class can not be used directly and is intented to inherited from to be
+     * customized per effects.
+     */
+    abstract class EffectLayer {
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _cachedDefines;
+        private _effectLayerMapGenerationEffect;
+        private _effectLayerOptions;
+        private _mergeEffect;
+        protected _scene: Scene;
+        protected _engine: Engine;
+        protected _maxSize: number;
+        protected _mainTextureDesiredSize: ISize;
+        protected _mainTexture: RenderTargetTexture;
+        protected _shouldRender: boolean;
+        protected _postProcesses: PostProcess[];
+        protected _textures: BaseTexture[];
+        protected _emissiveTextureAndColor: {
+            texture: Nullable<BaseTexture>;
+            color: Color4;
+        };
+        /**
+         * The name of the layer
+         */
+        name: string;
+        /**
+         * The clear color of the texture used to generate the glow map.
+         */
+        neutralColor: Color4;
+        /**
+         * Specifies wether the highlight layer is enabled or not.
+         */
+        isEnabled: boolean;
+        /**
+         * Gets the camera attached to the layer.
+         */
+        readonly camera: Nullable<Camera>;
+        /**
+         * An event triggered when the effect layer has been disposed.
+         */
+        onDisposeObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the effect layer is about rendering the main texture with the glowy parts.
+         */
+        onBeforeRenderMainTextureObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the generated texture is being merged in the scene.
+         */
+        onBeforeComposeObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the generated texture has been merged in the scene.
+         */
+        onAfterComposeObservable: Observable<EffectLayer>;
+        /**
+         * An event triggered when the efffect layer changes its size.
+         */
+        onSizeChangedObservable: Observable<EffectLayer>;
+        /**
+         * Instantiates a new effect Layer and references it in the scene.
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         */
+        constructor(
+            /** The Friendly of the effect in the scene */
+            name: string, scene: Scene);
+        /**
+         * Get the effect name of the layer.
+         * @return The effect name
+         */
+        abstract getEffectName(): string;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @return true if ready otherwise, false
+         */
+        abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         * @returns true if the effect requires stencil during the main canvas render pass.
+         */
+        abstract needStencil(): boolean;
+        /**
+         * Create the merge effect. This is the shader use to blit the information back
+         * to the main canvas at the end of the scene rendering.
+         * @returns The effect containing the shader used to merge the effect on the  main canvas
+         */
+        protected abstract _createMergeEffect(): Effect;
+        /**
+         * Creates the render target textures and post processes used in the effect layer.
+         */
+        protected abstract _createTextureAndPostProcesses(): void;
+        /**
+         * Implementation specific of rendering the generating effect on the main canvas.
+         * @param effect The effect used to render through
+         */
+        protected abstract _internalRender(effect: Effect): void;
+        /**
+         * Sets the required values for both the emissive texture and and the main color.
+         */
+        protected abstract _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
+        /**
+         * Free any resources and references associated to a mesh.
+         * Internal use
+         * @param mesh The mesh to free.
+         */
+        abstract _disposeMesh(mesh: Mesh): void;
+        /**
+         * Serializes this layer (Glow or Highlight for example)
+         * @returns a serialized layer object
+         */
+        abstract serialize?(): any;
+        /**
+         * Initializes the effect layer with the required options.
+         * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
+         */
+        protected _init(options: Partial<IEffectLayerOptions>): void;
+        /**
+         * Generates the index buffer of the full screen quad blending to the main canvas.
+         */
+        private _generateIndexBuffer();
+        /**
+         * Generates the vertex buffer of the full screen quad blending to the main canvas.
+         */
+        private _genrateVertexBuffer();
+        /**
+         * Sets the main texture desired size which is the closest power of two
+         * of the engine canvas size.
+         */
+        private _setMainTextureSize();
+        /**
+         * Creates the main texture for the effect layer.
+         */
+        protected _createMainTexture(): void;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean;
+        /**
+         * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
+         */
+        render(): void;
+        /**
+         * Determine if a given mesh will be used in the current effect.
+         * @param mesh mesh to test
+         * @returns true if the mesh will be used
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Returns true if the layer contains information to display, otherwise false.
+         * @returns true if the glow layer should be rendered
+         */
+        shouldRender(): boolean;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderEmissiveTextureForMesh(mesh: Mesh): boolean;
+        /**
+         * Renders the submesh passed in parameter to the generation map.
+         */
+        protected _renderSubMesh(subMesh: SubMesh): void;
+        /**
+         * Rebuild the required buffers.
+         * @hidden Internal use only.
+         */
+        _rebuild(): void;
+        /**
+         * Dispose only the render target textures and post process.
+         */
+        private _disposeTextureAndPostProcesses();
+        /**
+         * Dispose the highlight layer and free resources.
+         */
+        dispose(): void;
+        /**
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
+          */
+        getClassName(): string;
+        /**
+         * Creates an effect layer from parsed effect layer data
+         * @param parsedEffectLayer defines effect layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the effect layer information
+         * @returns a parsed effect Layer
+         */
+        static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer;
     }
 }
 
 declare module BABYLON {
-    class SceneLoaderProgressEvent {
-        readonly lengthComputable: boolean;
-        readonly loaded: number;
-        readonly total: number;
-        constructor(lengthComputable: boolean, loaded: number, total: number);
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    /**
+     * Glow layer options. This helps customizing the behaviour
+     * of the glow layer.
+     */
+    interface IGlowLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the glowing objects (the smaller the faster).
+         */
+        mainTextureRatio: number;
+        /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * How big is the kernel of the blur texture.
+         */
+        blurKernelSize: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera: Nullable<Camera>;
+        /**
+         * Enable MSAA by chosing the number of samples.
+         */
+        mainTextureSamples?: number;
     }
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
+    /**
+     * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
+     *
+     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * glowy meshes to your scene.
+     *
+     * Documentation: https://doc.babylonjs.com/how_to/glow_layer
+     */
+    class GlowLayer extends EffectLayer {
+        /**
+         * Effect Name of the layer.
+         */
+        static readonly EffectName: string;
+        /**
+         * The default blur kernel size used for the glow.
+         */
+        static DefaultBlurKernelSize: number;
+        /**
+         * The default texture size ratio used for the glow.
+         */
+        static DefaultTextureRatio: number;
+        /**
+         * Gets the kernel size of the blur.
+         */
+        /**
+         * Sets the kernel size of the blur.
+         */
+        blurKernelSize: number;
+        /**
+         * Gets the glow intensity.
+         */
+        /**
+         * Sets the glow intensity.
+         */
+        intensity: number;
+        private _options;
+        private _intensity;
+        private _horizontalBlurPostprocess1;
+        private _verticalBlurPostprocess1;
+        private _horizontalBlurPostprocess2;
+        private _verticalBlurPostprocess2;
+        private _blurTexture1;
+        private _blurTexture2;
+        private _postProcesses1;
+        private _postProcesses2;
+        private _includedOnlyMeshes;
+        private _excludedMeshes;
+        /**
+         * Callback used to let the user override the color selection on a per mesh basis
+         */
+        customEmissiveColorSelector: (mesh: Mesh, subMesh: SubMesh, material: Material, result: Color4) => void;
+        /**
+         * Callback used to let the user override the texture selection on a per mesh basis
+         */
+        customEmissiveTextureSelector: (mesh: Mesh, subMesh: SubMesh, material: Material) => Texture;
+        /**
+         * Instantiates a new glow Layer and references it to the scene.
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
+         */
+        constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>);
+        /**
+         * Get the effect name of the layer.
+         * @return The effect name
+         */
+        getEffectName(): string;
+        /**
+         * Create the merge effect. This is the shader use to blit the information back
+         * to the main canvas at the end of the scene rendering.
+         */
+        protected _createMergeEffect(): Effect;
+        /**
+         * Creates the render target textures and post processes used in the glow layer.
+         */
+        protected _createTextureAndPostProcesses(): void;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         */
+        needStencil(): boolean;
+        /**
+         * Implementation specific of rendering the generating effect on the main canvas.
+         * @param effect The effect used to render through
+         */
+        protected _internalRender(effect: Effect): void;
+        /**
+         * Sets the required values for both the emissive texture and and the main color.
+         */
+        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
+         * @param mesh The mesh to exclude from the glow layer
+         */
+        addExcludedMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the glow layer.
+          * @param mesh The mesh to remove
+          */
+        removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Add a mesh in the inclusion list to impact or being impacted by the glow layer.
+         * @param mesh The mesh to include in the glow layer
+         */
+        addIncludedOnlyMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the Inclusion list to prevent it to impact or being impacted by the glow layer.
+          * @param mesh The mesh to remove
+          */
+        removeIncludedOnlyMesh(mesh: Mesh): void;
+        /**
+         * Determine if a given mesh will be used in the glow layer
+         * @param mesh The mesh to test
+         * @returns true if the mesh will be highlighted by the current glow layer
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Free any resources and references associated to a mesh.
+         * Internal use
+         * @param mesh The mesh to free.
+         */
+        _disposeMesh(mesh: Mesh): void;
+        /**
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
+          */
+        getClassName(): string;
+        /**
+         * Serializes this glow layer
+         * @returns a serialized glow layer object
+         */
+        serialize(): any;
+        /**
+         * Creates a Glow Layer from parsed glow layer data
+         * @param parsedGlowLayer defines glow layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the glow layer information
+         * @returns a parsed Glow Layer
+         */
+        static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer;
     }
-    interface ISceneLoaderPluginFactory {
+}
+
+declare module BABYLON {
+    /**
+     * Highlight layer options. This helps customizing the behaviour
+     * of the highlight layer.
+     */
+    interface IHighlightLayerOptions {
+        /**
+         * Multiplication factor apply to the canvas size to compute the render target size
+         * used to generated the glowing objects (the smaller the faster).
+         */
+        mainTextureRatio: number;
+        /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+        /**
+         * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
+         * of the picture to blur (the smaller the faster).
+         */
+        blurTextureSizeRatio: number;
+        /**
+         * How big in texel of the blur texture is the vertical blur.
+         */
+        blurVerticalSize: number;
+        /**
+         * How big in texel of the blur texture is the horizontal blur.
+         */
+        blurHorizontalSize: number;
+        /**
+         * Alpha blending mode used to apply the blur. Default is combine.
+         */
+        alphaBlendingMode: number;
+        /**
+         * The camera attached to the layer.
+         */
+        camera: Nullable<Camera>;
+        /**
+         * Should we display highlight as a solid stroke?
+         */
+        isStroke?: boolean;
+    }
+    /**
+     * The highlight layer Helps adding a glow effect around a mesh.
+     *
+     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * glowy meshes to your scene.
+     *
+     * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
+     */
+    class HighlightLayer extends EffectLayer {
         name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
         /**
-         * The friendly name of this plugin.
+         * Effect Name of the highlight layer.
          */
+        static readonly EffectName: string;
+        /**
+         * The neutral color used during the preparation of the glow effect.
+         * This is black by default as the blend operation is a blend operation.
+         */
+        static NeutralColor: Color4;
+        /**
+         * Stencil value used for glowing meshes.
+         */
+        static GlowingMeshStencilReference: number;
+        /**
+         * Stencil value used for the other meshes in the scene.
+         */
+        static NormalMeshStencilReference: number;
+        /**
+         * Specifies whether or not the inner glow is ACTIVE in the layer.
+         */
+        innerGlow: boolean;
+        /**
+         * Specifies whether or not the outer glow is ACTIVE in the layer.
+         */
+        outerGlow: boolean;
+        /**
+         * Gets the horizontal size of the blur.
+         */
+        /**
+         * Specifies the horizontal size of the blur.
+         */
+        blurHorizontalSize: number;
+        /**
+         * Gets the vertical size of the blur.
+         */
+        /**
+         * Specifies the vertical size of the blur.
+         */
+        blurVerticalSize: number;
+        /**
+         * An event triggered when the highlight layer is being blurred.
+         */
+        onBeforeBlurObservable: Observable<HighlightLayer>;
+        /**
+         * An event triggered when the highlight layer has been blurred.
+         */
+        onAfterBlurObservable: Observable<HighlightLayer>;
+        private _instanceGlowingMeshStencilReference;
+        private _options;
+        private _downSamplePostprocess;
+        private _horizontalBlurPostprocess;
+        private _verticalBlurPostprocess;
+        private _blurTexture;
+        private _meshes;
+        private _excludedMeshes;
+        /**
+         * Instantiates a new highlight Layer and references it to the scene..
+         * @param name The name of the layer
+         * @param scene The scene to use the layer in
+         * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
+         */
+        constructor(name: string, scene: Scene, options?: Partial<IHighlightLayerOptions>);
+        /**
+         * Get the effect name of the layer.
+         * @return The effect name
+         */
+        getEffectName(): string;
+        /**
+         * Create the merge effect. This is the shader use to blit the information back
+         * to the main canvas at the end of the scene rendering.
+         */
+        protected _createMergeEffect(): Effect;
+        /**
+         * Creates the render target textures and post processes used in the highlight layer.
+         */
+        protected _createTextureAndPostProcesses(): void;
+        /**
+         * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         */
+        needStencil(): boolean;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Implementation specific of rendering the generating effect on the main canvas.
+         * @param effect The effect used to render through
+         */
+        protected _internalRender(effect: Effect): void;
+        /**
+         * Returns true if the layer contains information to display, otherwise false.
+         */
+        shouldRender(): boolean;
+        /**
+         * Returns true if the mesh should render, otherwise false.
+         * @param mesh The mesh to render
+         * @returns true if it should render otherwise false
+         */
+        protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Sets the required values for both the emissive texture and and the main color.
+         */
+        protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
+        /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
+         * @param mesh The mesh to exclude from the highlight layer
+         */
+        addExcludedMesh(mesh: Mesh): void;
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
+          * @param mesh The mesh to highlight
+          */
+        removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Add a mesh in the highlight layer in order to make it glow with the chosen color.
+         * @param mesh The mesh to highlight
+         * @param color The color of the highlight
+         * @param glowEmissiveOnly Extract the glow from the emissive texture
+         */
+        addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly?: boolean): void;
+        /**
+         * Remove a mesh from the highlight layer in order to make it stop glowing.
+         * @param mesh The mesh to highlight
+         */
+        removeMesh(mesh: Mesh): void;
+        /**
+         * Force the stencil to the normal expected value for none glowing parts
+         */
+        private _defaultStencilReference(mesh);
+        /**
+         * Free any resources and references associated to a mesh.
+         * Internal use
+         * @param mesh The mesh to free.
+         */
+        _disposeMesh(mesh: Mesh): void;
+        /**
+         * Dispose the highlight layer and free resources.
+         */
+        dispose(): void;
+        /**
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
+          */
+        getClassName(): string;
+        /**
+         * Serializes this Highlight layer
+         * @returns a serialized Highlight layer object
+         */
+        serialize(): any;
+        /**
+         * Creates a Highlight layer from parsed Highlight layer data
+         * @param parsedHightlightLayer defines the Highlight layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the Highlight layer information
+         * @returns a parsed Highlight layer
+         */
+        static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer;
+    }
+}
+
+declare module BABYLON {
+    class Layer {
         name: string;
+        texture: Nullable<Texture>;
+        isBackground: boolean;
+        color: Color4;
+        scale: Vector2;
+        offset: Vector2;
+        alphaBlendingMode: number;
+        alphaTest: boolean;
+        layerMask: number;
+        private _scene;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _alphaTestEffect;
         /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for scene and resources
-         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+        * An event triggered when the layer is disposed.
         */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        onDisposeObservable: Observable<Layer>;
+        private _onDisposeObserver;
+        onDispose: () => void;
         /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
+        * An event triggered before rendering the scene
         */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        onBeforeRenderObservable: Observable<Layer>;
+        private _onBeforeRenderObserver;
+        onBeforeRender: () => void;
         /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded scene
+        * An event triggered after rendering the scene
         */
-        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The given scene
-        */
-        static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded asset container
-        */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        onAfterRenderObservable: Observable<Layer>;
+        private _onAfterRenderObserver;
+        onAfterRender: () => void;
+        constructor(name: string, imgUrl: Nullable<string>, scene: Nullable<Scene>, isBackground?: boolean, color?: Color4);
+        private _createIndexBuffer();
+        _rebuild(): void;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -17776,199 +17787,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Defines a target to use with MorphTargetManager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        influence: number;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         */
-        constructor(
-            /** defines the name of the target */
-            name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        readonly hasPositions: boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        readonly hasNormals: boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        readonly hasTangents: boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        readonly uniqueId: number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        readonly vertexCount: number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        readonly supportsNormals: boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        readonly supportsTangents: boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        readonly numTargets: number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        readonly numInfluencers: number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        readonly influences: Float32Array;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to store all common mesh properties
      */
     class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
@@ -22839,644 +22657,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity: Nullable<Vector3>, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        /**
-         * Get the time step of the physics engine.
-         */
-        getTimeStep(): number;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostors(): Array<PhysicsImpostor>;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-        getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(joint: PhysicsImpostorJoint): void;
-        removeJoint(joint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class PhysicsHelper {
-        private _scene;
-        private _physicsEngine;
-        constructor(scene: Scene);
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
-        /**
-         * @param {Vector3} origin the origin of the updraft
-         * @param {number} radius the radius of the updraft
-         * @param {number} strength the strength of the updraft
-         * @param {number} height the height of the updraft
-         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
-         */
-        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
-        /**
-         * @param {Vector3} origin the of the vortex
-         * @param {number} radius the radius of the vortex
-         * @param {number} strength the strength of the vortex
-         * @param {number} height   the height of the vortex
-         */
-        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
-    }
-    /***** Radial explosion *****/
-    class PhysicsRadialExplosionEvent {
-        private _scene;
-        private _sphere;
-        private _sphereOptions;
-        private _rays;
-        private _dataFetched;
-        constructor(scene: Scene);
-        /**
-         * Returns the data related to the radial explosion event (sphere & rays).
-         * @returns {PhysicsRadialExplosionEventData}
-         */
-        getData(): PhysicsRadialExplosionEventData;
-        /**
-         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
-         * @param impostor
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
-         * @returns {Nullable<PhysicsForceAndContactPoint>}
-         */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        /*** Helpers ***/
-        private _prepareSphere();
-        private _intersectsWithSphere(impostor, origin, radius);
-    }
-    /***** Gravitational Field *****/
-    class PhysicsGravitationalFieldEvent {
-        private _physicsHelper;
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _falloff;
-        private _tickCallback;
-        private _sphere;
-        private _dataFetched;
-        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
-        /**
-         * Returns the data related to the gravitational field event (sphere).
-         * @returns {PhysicsGravitationalFieldEventData}
-         */
-        getData(): PhysicsGravitationalFieldEventData;
-        /**
-         * Enables the gravitational field.
-         */
-        enable(): void;
-        /**
-         * Disables the gravitational field.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private _tick();
-    }
-    /***** Updraft *****/
-    class PhysicsUpdraftEvent {
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _updraftMode;
-        private _physicsEngine;
-        private _originTop;
-        private _originDirection;
-        private _tickCallback;
-        private _cylinder;
-        private _cylinderPosition;
-        private _dataFetched;
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
-        /**
-         * Returns the data related to the updraft event (cylinder).
-         * @returns {PhysicsUpdraftEventData}
-         */
-        getData(): PhysicsUpdraftEventData;
-        /**
-         * Enables the updraft.
-         */
-        enable(): void;
-        /**
-         * Disables the cortex.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint(impostor);
-        private _tick();
-        /*** Helpers ***/
-        private _prepareCylinder();
-        private _intersectsWithCylinder(impostor);
-    }
-    /***** Vortex *****/
-    class PhysicsVortexEvent {
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _physicsEngine;
-        private _originTop;
-        private _centripetalForceThreshold;
-        private _updraftMultiplier;
-        private _tickCallback;
-        private _cylinder;
-        private _cylinderPosition;
-        private _dataFetched;
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
-        /**
-         * Returns the data related to the vortex event (cylinder).
-         * @returns {PhysicsVortexEventData}
-         */
-        getData(): PhysicsVortexEventData;
-        /**
-         * Enables the vortex.
-         */
-        enable(): void;
-        /**
-         * Disables the cortex.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint(impostor);
-        private _tick();
-        /*** Helpers ***/
-        private _prepareCylinder();
-        private _intersectsWithCylinder(impostor);
-    }
-    /***** Enums *****/
-    /**
-    * The strenght of the force in correspondence to the distance of the affected object
-    */
-    enum PhysicsRadialImpulseFalloff {
-        /** Defines that impulse is constant in strength across it's whole radius */
-        Constant = 0,
-        /** DEfines that impulse gets weaker if it's further from the origin */
-        Linear = 1,
-    }
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    enum PhysicsUpdraftMode {
-        /** Defines that the upstream forces will pull towards the top center of the cylinder */
-        Center = 0,
-        /** Defines that once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder */
-        Perpendicular = 1,
-    }
-    /***** Data interfaces *****/
-    interface PhysicsForceAndContactPoint {
-        force: Vector3;
-        contactPoint: Vector3;
-    }
-    interface PhysicsRadialExplosionEventData {
-        sphere: Mesh;
-        rays: Array<Ray>;
-    }
-    interface PhysicsGravitationalFieldEventData {
-        sphere: Mesh;
-    }
-    interface PhysicsUpdraftEventData {
-        cylinder: Mesh;
-    }
-    interface PhysicsVortexEventData {
-        cylinder: Mesh;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-        ignoreParent?: boolean;
-        disableBidirectionalTransformation?: boolean;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Nullable<Quaternion>;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo(): BoundingInfo;
-        computeWorldMatrix(force: boolean): Matrix;
-        getWorldMatrix?(): Matrix;
-        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
-        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
-        getIndices?(): Nullable<IndicesArray>;
-        getScene?(): Scene;
-        getAbsolutePosition(): Vector3;
-        getAbsolutePivotPoint(): Vector3;
-        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
-        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
-        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
-        getClassName(): string;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        static IDENTITY_QUATERNION: Quaternion;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        private _isDisposed;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        readonly isDisposed: boolean;
-        mass: number;
-        friction: number;
-        restitution: number;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene | undefined);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: Nullable<PhysicsImpostor>;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Nullable<Vector3>;
-        setLinearVelocity(velocity: Nullable<Vector3>): void;
-        getAngularVelocity(): Nullable<Vector3>;
-        setAngularVelocity(velocity: Nullable<Vector3>): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpQuat;
-        private _tmpQuat2;
-        getParentsRotation(): Quaternion;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        /**
-         * Legacy collision detection event support
-         */
-        onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void>;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): PhysicsImpostor;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): PhysicsImpostor;
-        clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        getBoxSizeToRef(result: Vector3): PhysicsImpostor;
-        getRadius(): number;
-        /**
-         * Sync a bone with this impostor
-         * @param bone The bone to sync to the impostor.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         */
-        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
-        /**
-         * Sync impostor to a bone
-         * @param bone The bone that the impostor will be synced to.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         * @param boneAxis Optional vector3 axis the bone is aligned with
-         */
-        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-        static LockJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
-    }
-}
-
-declare module BABYLON {
     /**
      * This represents a GPU particle system in Babylon
      * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
@@ -23599,6 +22779,14 @@ declare module BABYLON {
          * Maximum power of emitting particles.
          */
         maxEmitPower: number;
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        minAngularSpeed: number;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        maxAngularSpeed: number;
         /**
          * The particle emitter type defines the emitter used by the particle system.
          * It can be for example box, sphere, or cone...
@@ -24912,6 +24100,837 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        influence: number;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         */
+        constructor(
+            /** defines the name of the target */
+            name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        readonly hasPositions: boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        readonly hasNormals: boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        readonly hasTangents: boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        readonly uniqueId: number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        readonly vertexCount: number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        readonly supportsNormals: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity: Nullable<Vector3>, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        /**
+         * Get the time step of the physics engine.
+         */
+        getTimeStep(): number;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostors(): Array<PhysicsImpostor>;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
+        getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(joint: PhysicsImpostorJoint): void;
+        removeJoint(joint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class PhysicsHelper {
+        private _scene;
+        private _physicsEngine;
+        constructor(scene: Scene);
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
+        /**
+         * @param {Vector3} origin the origin of the updraft
+         * @param {number} radius the radius of the updraft
+         * @param {number} strength the strength of the updraft
+         * @param {number} height the height of the updraft
+         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
+         */
+        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
+        /**
+         * @param {Vector3} origin the of the vortex
+         * @param {number} radius the radius of the vortex
+         * @param {number} strength the strength of the vortex
+         * @param {number} height   the height of the vortex
+         */
+        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
+    }
+    /***** Radial explosion *****/
+    class PhysicsRadialExplosionEvent {
+        private _scene;
+        private _sphere;
+        private _sphereOptions;
+        private _rays;
+        private _dataFetched;
+        constructor(scene: Scene);
+        /**
+         * Returns the data related to the radial explosion event (sphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
+        getData(): PhysicsRadialExplosionEventData;
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        /*** Helpers ***/
+        private _prepareSphere();
+        private _intersectsWithSphere(impostor, origin, radius);
+    }
+    /***** Gravitational Field *****/
+    class PhysicsGravitationalFieldEvent {
+        private _physicsHelper;
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _falloff;
+        private _tickCallback;
+        private _sphere;
+        private _dataFetched;
+        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
+        /**
+         * Returns the data related to the gravitational field event (sphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        getData(): PhysicsGravitationalFieldEventData;
+        /**
+         * Enables the gravitational field.
+         */
+        enable(): void;
+        /**
+         * Disables the gravitational field.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private _tick();
+    }
+    /***** Updraft *****/
+    class PhysicsUpdraftEvent {
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _height;
+        private _updraftMode;
+        private _physicsEngine;
+        private _originTop;
+        private _originDirection;
+        private _tickCallback;
+        private _cylinder;
+        private _cylinderPosition;
+        private _dataFetched;
+        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
+        /**
+         * Returns the data related to the updraft event (cylinder).
+         * @returns {PhysicsUpdraftEventData}
+         */
+        getData(): PhysicsUpdraftEventData;
+        /**
+         * Enables the updraft.
+         */
+        enable(): void;
+        /**
+         * Disables the cortex.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private getImpostorForceAndContactPoint(impostor);
+        private _tick();
+        /*** Helpers ***/
+        private _prepareCylinder();
+        private _intersectsWithCylinder(impostor);
+    }
+    /***** Vortex *****/
+    class PhysicsVortexEvent {
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _height;
+        private _physicsEngine;
+        private _originTop;
+        private _centripetalForceThreshold;
+        private _updraftMultiplier;
+        private _tickCallback;
+        private _cylinder;
+        private _cylinderPosition;
+        private _dataFetched;
+        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
+        /**
+         * Returns the data related to the vortex event (cylinder).
+         * @returns {PhysicsVortexEventData}
+         */
+        getData(): PhysicsVortexEventData;
+        /**
+         * Enables the vortex.
+         */
+        enable(): void;
+        /**
+         * Disables the cortex.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private getImpostorForceAndContactPoint(impostor);
+        private _tick();
+        /*** Helpers ***/
+        private _prepareCylinder();
+        private _intersectsWithCylinder(impostor);
+    }
+    /***** Enums *****/
+    /**
+    * The strenght of the force in correspondence to the distance of the affected object
+    */
+    enum PhysicsRadialImpulseFalloff {
+        /** Defines that impulse is constant in strength across it's whole radius */
+        Constant = 0,
+        /** DEfines that impulse gets weaker if it's further from the origin */
+        Linear = 1,
+    }
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    enum PhysicsUpdraftMode {
+        /** Defines that the upstream forces will pull towards the top center of the cylinder */
+        Center = 0,
+        /** Defines that once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder */
+        Perpendicular = 1,
+    }
+    /***** Data interfaces *****/
+    interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
+    interface PhysicsRadialExplosionEventData {
+        sphere: Mesh;
+        rays: Array<Ray>;
+    }
+    interface PhysicsGravitationalFieldEventData {
+        sphere: Mesh;
+    }
+    interface PhysicsUpdraftEventData {
+        cylinder: Mesh;
+    }
+    interface PhysicsVortexEventData {
+        cylinder: Mesh;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+        ignoreParent?: boolean;
+        disableBidirectionalTransformation?: boolean;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Nullable<Quaternion>;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo(): BoundingInfo;
+        computeWorldMatrix(force: boolean): Matrix;
+        getWorldMatrix?(): Matrix;
+        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
+        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+        getIndices?(): Nullable<IndicesArray>;
+        getScene?(): Scene;
+        getAbsolutePosition(): Vector3;
+        getAbsolutePivotPoint(): Vector3;
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        getClassName(): string;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        static IDENTITY_QUATERNION: Quaternion;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        private _isDisposed;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        readonly isDisposed: boolean;
+        mass: number;
+        friction: number;
+        restitution: number;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene | undefined);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: Nullable<PhysicsImpostor>;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Nullable<Vector3>;
+        setLinearVelocity(velocity: Nullable<Vector3>): void;
+        getAngularVelocity(): Nullable<Vector3>;
+        setAngularVelocity(velocity: Nullable<Vector3>): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpQuat;
+        private _tmpQuat2;
+        getParentsRotation(): Quaternion;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        /**
+         * Legacy collision detection event support
+         */
+        onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void>;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): PhysicsImpostor;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): PhysicsImpostor;
+        clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        getBoxSizeToRef(result: Vector3): PhysicsImpostor;
+        getRadius(): number;
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         */
+        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
+    }
+}
+
+declare module BABYLON {
     class ReflectionProbe {
         name: string;
         private _scene;
@@ -24937,6 +24956,74 @@ declare module BABYLON {
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        render(): void;
         dispose(): void;
     }
 }
@@ -26499,74 +26586,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
-        dispose(): void;
     }
 }
 
@@ -29388,6 +29407,283 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadRotationSensibility: number;
+        gamepadMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _keys;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        keysReset: number[];
+        panningSensibility: number;
+        zoomingSensibility: number;
+        useAltToZoom: boolean;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _wheel;
+        private _observer;
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        buttons: number[];
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        multiTouchPanning: boolean;
+        multiTouchPanAndZoom: boolean;
+        private _isPanClick;
+        pinchInwards: boolean;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        alphaCorrection: number;
+        betaCorrection: number;
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        constructor();
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        checkInputs(): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        constructor();
+        camera: FreeCamera;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        _onLostFocus(e: FocusEvent): void;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        touchEnabled: boolean;
+        camera: FreeCamera;
+        buttons: number[];
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        constructor(touchEnabled?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
     class VRCameraMetrics {
         hResolution: number;
         vResolution: number;
@@ -29446,13 +29742,21 @@ declare module BABYLON {
      */
     interface VRExperienceHelperOptions extends WebVROptions {
         /**
-         * Create a DeviceOrientationCamera to be used as your out of vr camera.
+         * Create a DeviceOrientationCamera to be used as your out of vr camera. (default: true)
          */
         createDeviceOrientationCamera?: boolean;
         /**
-         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found.
+         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found. (default: true)
          */
         createFallbackVRDeviceOrientationFreeCamera?: boolean;
+        /**
+         * Uses the main button on the controller to toggle the laser casted. (default: true)
+         */
+        laserToggle?: boolean;
+        /**
+         * A list of meshes to be used as the teleportation floor. If specified, teleportation will be enabled (default: undefined)
+         */
+        floorMeshes?: Mesh[];
     }
     /**
      * Helps to quickly add VR support to an existing scene.
@@ -29987,283 +30291,6 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadRotationSensibility: number;
-        gamepadMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        keysReset: number[];
-        panningSensibility: number;
-        zoomingSensibility: number;
-        useAltToZoom: boolean;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _wheel;
-        private _observer;
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        buttons: number[];
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        multiTouchPanning: boolean;
-        multiTouchPanAndZoom: boolean;
-        private _isPanClick;
-        pinchInwards: boolean;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        alphaCorrection: number;
-        betaCorrection: number;
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        constructor();
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        checkInputs(): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     */
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        constructor();
-        camera: FreeCamera;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        _onLostFocus(e: FocusEvent): void;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        touchEnabled: boolean;
-        camera: FreeCamera;
-        buttons: number[];
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        constructor(touchEnabled?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
     }
 }
 
@@ -30875,6 +30902,9 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+}
+
+declare module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -31364,9 +31394,6 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -33927,105 +33954,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _useDeltaForWorldStep;
-        world: any;
-        name: string;
-        private _physicsMaterials;
-        private _fixedTimeStep;
-        BJSCANNON: any;
-        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _processChildMeshes(mainImpostor);
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        private _addMaterial(name, friction, restitution);
-        private _checkWithEpsilon(value);
-        private _createShape(impostor);
-        private _createHeightmap(object, pointDepth?);
-        private _minus90X;
-        private _plus90X;
-        private _tmpPosition;
-        private _tmpDeltaPosition;
-        private _tmpUnityRotation;
-        private _updatePhysicsBodyTransformation(impostor);
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        isSupported(): boolean;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-        private _extendNamespace();
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        BJSOIMO: any;
-        constructor(iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        private _tmpImpostorsArray;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _tmpPositionVector;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a box.
      * It emits the particles randomly between 2 given directions.
@@ -34380,6 +34308,105 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
+    }
+}
+
+declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        world: any;
+        name: string;
+        private _physicsMaterials;
+        private _fixedTimeStep;
+        BJSCANNON: any;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _processChildMeshes(mainImpostor);
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMaterial(name, friction, restitution);
+        private _checkWithEpsilon(value);
+        private _createShape(impostor);
+        private _createHeightmap(object, pointDepth?);
+        private _minus90X;
+        private _plus90X;
+        private _tmpPosition;
+        private _tmpDeltaPosition;
+        private _tmpUnityRotation;
+        private _updatePhysicsBodyTransformation(impostor);
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        isSupported(): boolean;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+        private _extendNamespace();
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        BJSOIMO: any;
+        constructor(iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        private _tmpImpostorsArray;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _tmpPositionVector;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
     }
 }
 

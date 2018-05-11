@@ -29,12 +29,50 @@ module BABYLON {
 
     /**
      * Draco compression (https://google.github.io/draco/)
+     * 
+     * This class wraps the Draco module.
+     * 
+     * **Encoder**
+     * 
+     * The encoder is not currently implemented.
+     * 
+     * **Decoder**
+     * 
+     * By default, the configuration points to a copy of the Draco decoder files for glTF from https://preview.babylonjs.com.
+     * 
+     * To update the configuration, use the following code:
+     * ```javascript
+     *     BABYLON.DracoCompression.Configuration = {
+     *         decoder: {
+     *             wasmUrl: "<url to the WebAssembly library>",
+     *             wasmBinaryUrl: "<url to the WebAssembly binary>",
+     *             fallbackUrl: "<url to the fallback JavaScript library>",
+     *         }
+     *     };
+     * ```
+     * 
+     * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
+     * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
+     * Use `BABYLON.DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+     * 
+     * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
+     * ```javascript
+     *     var dracoCompression = new BABYLON.DracoCompression();
+     *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
+     *         [BABYLON.VertexBuffer.PositionKind]: 0
+     *     });
+     * ```
+     * 
+     * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
         private static _DecoderModulePromise: Promise<any>;
 
         /**
-         * The configuration.
+         * The configuration. Defaults to the following urls:
+         * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
+         * - wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm"
+         * - fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js"
          */
         public static Configuration: IDracoCompressionConfiguration = {
             decoder: {
@@ -80,17 +118,19 @@ module BABYLON {
 
         /**
          * Decode Draco compressed mesh data to vertex data.
-         * @param data The array buffer view for the Draco compression data
+         * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
          * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
          * @returns A promise that resolves with the decoded vertex data
          */
-        public decodeMeshAsync(data: ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
+        public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
+            const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+
             return DracoCompression._GetDecoderModule().then(wrappedModule => {
                 const module = wrappedModule.module;
                 const vertexData = new VertexData();
 
                 const buffer = new module.DecoderBuffer();
-                buffer.Init(data, data.byteLength);
+                buffer.Init(dataView, dataView.byteLength);
 
                 const decoder = new module.Decoder();
                 let geometry: any;
