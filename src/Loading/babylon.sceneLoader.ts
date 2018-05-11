@@ -378,7 +378,7 @@
         /**
          * Import meshes into a scene
          * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported 
-         * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+         * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
          * @param scene the instance of BABYLON.Scene to append to
          * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
@@ -389,11 +389,11 @@
          */
         public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: any = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if(!scene){
-                Tools.Error("No scene availible to LoadAssetContainer to");
+                Tools.Error("No scene available to import mesh to");
                 return null;
             }
 
-            if(sceneFilename == ""){
+            if(!sceneFilename){
                 sceneFilename = Tools.GetFilename(rootUrl);
                 rootUrl = Tools.GetFolderPath(rootUrl);
             }
@@ -486,7 +486,7 @@
         /**
         * Import meshes into a scene
         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported 
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param scene the instance of BABYLON.Scene to append to
         * @param onProgress a callback with a progress event for each file being loaded
@@ -511,7 +511,7 @@
 
         /**
         * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         * @param onSuccess a callback with the scene when import succeeds
@@ -526,7 +526,7 @@
 
         /**
         * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         * @param onProgress a callback with a progress event for each file being loaded
@@ -545,7 +545,7 @@
 
         /**
         * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param scene is the instance of BABYLON.Scene to append to
         * @param onSuccess a callback with the scene when import succeeds
@@ -556,11 +556,11 @@
         */
         public static Append(rootUrl: string, sceneFilename: any = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if(!scene){
-                Tools.Error("No scene availible to LoadAssetContainer to");
+                Tools.Error("No scene available to append to");
                 return null;
             }
 
-            if(sceneFilename == ""){
+            if(!sceneFilename){
                 sceneFilename = Tools.GetFilename(rootUrl);
                 rootUrl = Tools.GetFolderPath(rootUrl);
             }
@@ -649,7 +649,7 @@
 
         /**
         * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param scene is the instance of BABYLON.Scene to append to
         * @param onProgress a callback with a progress event for each file being loaded
@@ -668,7 +668,7 @@
 
         /**
         * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
         * @param onSuccess a callback with the scene when import succeeds
@@ -687,11 +687,11 @@
             pluginExtension: Nullable<string> = null
         ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if(!scene){
-                Tools.Error("No scene availible to LoadAssetContainer to");
+                Tools.Error("No scene available to load asset container to");
                 return null;
             }
 
-            if(sceneFilename == ""){
+            if(!sceneFilename){
                 sceneFilename = Tools.GetFilename(rootUrl);
                 rootUrl = Tools.GetFolderPath(rootUrl);
             }
@@ -775,7 +775,7 @@
 
         /**
         * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatination of rootURL and filename (eg. http://example.com/test.glb)
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
         * @param scene is the instance of BABYLON.Scene to append to
         * @param onProgress a callback with a progress event for each file being loaded
@@ -787,9 +787,7 @@
                 SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, assetContainer => {
                     resolve(assetContainer);
                 }, onProgress, (scene, message, exception) => {
-                    var error = exception || new Error(message);
-                    Tools.Warn(error);
-                    reject(error);
+                    reject(exception || new Error(message));
                 }, pluginExtension);
             });
         }
