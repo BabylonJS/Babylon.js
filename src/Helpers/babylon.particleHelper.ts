@@ -1,14 +1,5 @@
 module BABYLON {
     /**
-     * Represents all available shapes for the emitter
-     */
-    export enum EmitterShapes {
-        Box = "box",
-        Sphere = "sphere",
-        DirectedSphere = "directed_sphere",
-        Cone = "cone"
-    }
-    /**
      * Represents all the data needed to create a ParticleSystem.
      */
     export interface IParticleSystemData {
@@ -200,7 +191,7 @@ module BABYLON {
             system.updateSpeed = data.updateSpeed;
 
             switch (data.emitterType) {
-                case EmitterShapes.Box:
+                case "box":
 
                     if (!data.direction1 || !data.direction2) {
                         throw new Error("Directions are missing in this particle system.");
@@ -217,10 +208,10 @@ module BABYLON {
                         new Vector3(data.maxEmitBox.x, data.maxEmitBox.y, data.maxEmitBox.z)
                     );
                     break;
-                case EmitterShapes.Sphere:
+                case "sphere":
                     const sphereEmitter = system.createSphereEmitter(data.radius);
                     break;
-                case EmitterShapes.DirectedSphere:
+                case "directed_sphere":
                     
                     if (!data.direction1 || !data.direction2) {
                         throw new Error("Directions are missing in this particle system.");
@@ -232,7 +223,7 @@ module BABYLON {
                         new Vector3(data.direction2.x, data.direction2.y, data.direction2.z)
                     );
                     break;
-                case EmitterShapes.Cone:
+                case "cone":
                     const coneEmitter = system.createConeEmitter(data.radius, data.angle);
                     break;
                 default:
