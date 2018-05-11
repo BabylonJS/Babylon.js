@@ -12,6 +12,7 @@ in float size;
 in vec4 color;
 in vec2 offset;
 in vec2 uv;
+in vec2 angle;
 
 out vec2 vUV;
 out vec4 vColor;
@@ -28,9 +29,18 @@ void main() {
   float ratio = age / life;
   vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 
+  vec2 cornerPos = offset * size;
+
+  // Rotate
+	vec4 rotatedCorner;
+	rotatedCorner.x = cornerPos.x * cos(angle.x) - cornerPos.y * sin(angle.x);
+	rotatedCorner.y = cornerPos.x * sin(angle.x) + cornerPos.y * cos(angle.x);
+	rotatedCorner.z = 0.;
+  rotatedCorner.w = 0.;
+
   // Expand position
   vec4 viewPosition = view * vec4(position, 1.0);
-  gl_Position = projection * (viewPosition + vec4(offset * size, 0., 0.));
+  gl_Position = projection * (viewPosition + rotatedCorner);
 
 	// Clip plane
 #ifdef CLIPPLANE

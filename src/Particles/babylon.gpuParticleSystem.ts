@@ -57,7 +57,7 @@
 
         private _randomTexture: RawTexture;
 
-        private readonly _attributesStrideSize = 14;
+        private readonly _attributesStrideSize = 16;
         private _updateEffectOptions: EffectCreationOptions;
 
         private _randomTextureSize: number;
@@ -153,6 +153,15 @@
          * Maximum power of emitting particles.
          */
         public maxEmitPower = 1;        
+
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        public minAngularSpeed = 0;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        public maxAngularSpeed = 0;
 
         /**
          * The particle emitter type defines the emitter used by the particle system.
@@ -346,9 +355,10 @@
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "angle"],
                 uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity", "emitPower",
-                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "angle", "stopFactor"],
+                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
+                                "angleRange"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -357,7 +367,7 @@
                 onError: null,
                 indexParameters: null,
                 maxSimultaneousLights: 0,                                                      
-                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection"]
+                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection", "outAngle"]
             };
 
             // Random data
@@ -386,6 +396,7 @@
             updateVertexBuffers["size"] = source.createVertexBuffer("size", 6, 1);
             updateVertexBuffers["color"] = source.createVertexBuffer("color", 7, 4);
             updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 11, 3);
+            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", 14, 2);
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -400,6 +411,7 @@
             renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
             renderVertexBuffers["size"] = source.createVertexBuffer("size", 6, 1, this._attributesStrideSize, true);           
             renderVertexBuffers["color"] = source.createVertexBuffer("color", 7, 4, this._attributesStrideSize, true);
+            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", 14, 2, this._attributesStrideSize, true);
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -442,7 +454,11 @@
               // direction
               data.push(0.0);
               data.push(0.0);
-              data.push(0.0);              
+              data.push(0.0);     
+              
+              // angle
+              data.push(0.0);  
+              data.push(0.0); 
             }
 
             // Sprite data
@@ -494,7 +510,7 @@
             }
 
             this._renderEffect = new Effect("gpuRenderParticles", 
-                                            ["position", "age", "life", "size", "color", "offset", "uv"], 
+                                            ["position", "age", "life", "size", "color", "offset", "uv", "angle"], 
                                             ["view", "projection", "colorDead", "invView", "vClipPlane"], 
                                             ["textureSampler"], this._scene.getEngine(), defines);
         }        
@@ -555,6 +571,7 @@
             this._updateEffect.setDirectColor4("color1", this.color1);
             this._updateEffect.setDirectColor4("color2", this.color2);
             this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
+            this._updateEffect.setFloat2("angleRange", this.minAngularSpeed, this.maxAngularSpeed);
             this._updateEffect.setVector3("gravity", this.gravity);
 
             if (this.particleEmitterType) {
@@ -757,7 +774,9 @@
             serializationObject.minEmitPower = this.minEmitPower;
             serializationObject.maxEmitPower = this.maxEmitPower;
             serializationObject.minLifeTime = this.minLifeTime;
-            serializationObject.maxLifeTime = this.maxLifeTime;
+            serializationObject.maxLifeTime = this.maxLifeTime;            
+            serializationObject.minAngularSpeed = this.minAngularSpeed;
+            serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.emitRate = this.emitRate;
             serializationObject.gravity = this.gravity.asArray();
             serializationObject.color1 = this.color1.asArray();
@@ -817,6 +836,8 @@
             particleSystem.maxSize = parsedParticleSystem.maxSize;
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
+            particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
             particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;

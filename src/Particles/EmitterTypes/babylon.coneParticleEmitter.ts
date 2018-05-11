@@ -111,7 +111,7 @@ module BABYLON {
          */        
         public applyToShader(effect: Effect): void {
             effect.setFloat("radius", this.radius);
-            effect.setFloat("angle", this.angle);
+            effect.setFloat("coneAngle", this.angle);
             effect.setFloat("height", this._height);
             effect.setFloat("directionRandomizer", this.directionRandomizer);
         }
