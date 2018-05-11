@@ -23,7 +23,7 @@ module BABYLON {
         /**
          * Base Assets URL.
          */
-        private static _baseAssetsUrl = "https://assets.babylonjs.com/particles/";
+        private static _baseAssetsUrl = "https://assets.babylonjs.com/particles";
 
         private static _scene: Scene;
 
@@ -38,6 +38,11 @@ module BABYLON {
          * @returns the ParticleSystem created.
          */
         public static Create(type: string, emitter: AbstractMesh, scene: Nullable<Scene> = Engine.LastCreatedScene, gpu: boolean = false): ParticleSystem {
+            
+            Tools.LoadFile(`${this._baseAssetsUrl}/fire.json`, (data, response) => {
+                console.log(data, response);
+            });
+            
             const typeParsed = this._parseType(type);
             if (typeParsed === ParticleSystemType.None) {
                 throw new Error("This particle system type doesn't exist.");
@@ -80,7 +85,7 @@ module BABYLON {
             // Create a particle system
             const fireSystem = new ParticleSystem("particles", 2000, this._scene);
             // Texture of each particle
-            fireSystem.particleTexture = new Texture(`${this._baseAssetsUrl}textures/flare.png`, this._scene);
+            fireSystem.particleTexture = new Texture(`${this._baseAssetsUrl}/textures/flare.png`, this._scene);
             // Where the particles come from
             fireSystem.emitter = this._emitter; // the starting object, the emitter
             fireSystem.minEmitBox = new Vector3(-0.5, 1, -0.5); // Starting all from
@@ -126,7 +131,7 @@ module BABYLON {
 
         private static _createSmoke(): ParticleSystem {
             const smokeSystem = new ParticleSystem("smoke", 1000, this._scene);
-            smokeSystem.particleTexture = new Texture(`${this._baseAssetsUrl}textures/flare.png`, this._scene);
+            smokeSystem.particleTexture = new Texture(`${this._baseAssetsUrl}/textures/flare.png`, this._scene);
             smokeSystem.emitter = this._emitter;
             smokeSystem.minEmitBox = new Vector3(-0.5, 1, -0.5);
             smokeSystem.maxEmitBox = new Vector3(0.5, 1, 0.5);
