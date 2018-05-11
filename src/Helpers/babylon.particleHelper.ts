@@ -201,6 +201,15 @@ module BABYLON {
 
             switch (data.emitterType) {
                 case EmitterShapes.Box:
+
+                    if (!data.direction1 || !data.direction2) {
+                        throw new Error("Directions are missing in this particle system.");
+                    }
+
+                    if (!data.minEmitBox || !data.maxEmitBox) {
+                        throw new Error("EmitBox is missing in this particle system.");
+                    }
+
                     const boxEmitter = system.createBoxEmitter(
                         new Vector3(data.direction1.x, data.direction1.y, data.direction1.z),
                         new Vector3(data.direction2.x, data.direction2.y, data.direction2.z),
@@ -212,6 +221,11 @@ module BABYLON {
                     const sphereEmitter = system.createSphereEmitter(data.radius);
                     break;
                 case EmitterShapes.DirectedSphere:
+                    
+                    if (!data.direction1 || !data.direction2) {
+                        throw new Error("Directions are missing in this particle system.");
+                    }
+                    
                     const directedSphereEmitter = system.createDirectedSphereEmitter(
                         data.radius,
                         new Vector3(data.direction1.x, data.direction1.y, data.direction1.z),
