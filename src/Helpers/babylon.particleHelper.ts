@@ -54,7 +54,7 @@ module BABYLON {
                 if (scene) {
                     this._scene = scene;
                 } else {
-                    throw new Error("A particle system need a scene.");
+                    return reject("A particle system need a scene.");
                 }
 
                 this._emitter = emitter;
