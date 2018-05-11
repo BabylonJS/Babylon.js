@@ -3,22 +3,73 @@ module BABYLON {
      * Represents all the data needed to create a ParticleSystem.
      */
     export interface IParticleSystemData {
+        /**
+         * ParticleSystem type
+         */
         type: string;
+        /**
+         * Maximum number of particles in the system
+         */
         capacity: number;
+        /**
+         * Link for the texture file
+         */
         textureFile: string;
+        /**
+         * minEmitBox Vector3
+         */
         minEmitBox: { x: number, y: number, z: number };
+        /**
+         * maxEmitBox Vector3
+         */
         maxEmitBox: { x: number, y: number, z: number };
+        /**
+         * color1 Color4
+         */
         color1: { r: number, g: number, b: number, a: number };
+        /**
+         * color2 Color4
+         */
         color2: { r: number, g: number, b: number, a: number };
+        /**
+         * colorDead Color4
+         */
         colorDead: { r: number, g: number, b: number, a: number };
+        /**
+         * Minimum size of each particle
+         */
         minSize: number;
+        /**
+         * Maximum size of each particle
+         */
         maxSize: number;
+        /**
+         * Minimum lifetime for each particle
+         */
         minLifeTime: number;
+        /**
+         * Maximum lifetime for each particle
+         */
         maxLifeTime: number;
+        /**
+         * Emit rate
+         */
         emitRate: number;
+        /**
+         * Blend Mode
+         */
         blendMode: number;
+        /**
+         * gravity Vector3
+         */
         gravity: { x: number, y: number, z: number };
+        /**
+         * direction1 Vector3
+         */
         direction1: { x: number, y: number, z: number };
+        /**
+         * direction2 Vector3
+         */
         direction2: { x: number, y: number, z: number };
         minAngularSpeed: number;
         maxAngularSpeed: number;
@@ -55,6 +106,10 @@ module BABYLON {
                     this._scene = scene;
                 } else {
                     return reject("A particle system need a scene.");
+                }
+
+                if (gpu && !GPUParticleSystem.IsSupported) {
+                    return reject("Particle system with GPU is not supported.");
                 }
 
                 this._emitter = emitter;
