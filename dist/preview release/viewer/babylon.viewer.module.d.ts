@@ -1078,7 +1078,6 @@ declare module 'babylonjs-viewer/configuration/configuration' {
             bloomKernel?: number;
             hardwareScaleLevel?: number;
             bloomWeight?: number;
-            bllomThreshold?: number;
             hdr?: boolean;
             samples?: number;
             glowLayerEnabled?: boolean;

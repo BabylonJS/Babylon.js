@@ -1,7 +1,7 @@
 {
-  "errors": 4309,
+  "errors": 4307,
   "babylon.typedoc.json": {
-    "errors": 4309,
+    "errors": 4307,
     "Animatable": {
       "Class": {
         "Comments": {
@@ -90,18 +90,6 @@
         }
       },
       "Method": {
-        "_animate": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "delay": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "appendAnimations": {
           "Comments": {
             "MissingText": true
