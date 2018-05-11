@@ -1176,9 +1176,7 @@
                 "../../src/Helpers/babylon.particleHelper.js"
             ],
             "dependUpon": [
-                "core",
-                "backgroundMaterial",
-                "additionalTextures"
+                "particles"
             ]
         },
         "videoDome": {
