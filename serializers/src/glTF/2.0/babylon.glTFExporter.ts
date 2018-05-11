@@ -652,86 +652,83 @@ module BABYLON.GLTF2 {
          * @returns object with glb filename as key and data as value
          */
         public _generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
-            return new Promise((resolve, reject) => {
-                this.generateBinaryAsync().then(binaryBuffer => {
-                    const jsonText = this.generateJSON(true);
-                    const glbFileName = glTFPrefix + '.glb';
-                    const headerLength = 12;
-                    const chunkLengthPrefix = 8;
-                    const jsonLength = jsonText.length;
-                    let imageByteLength = 0;
+            return this.generateBinaryAsync().then(binaryBuffer => {
+                const jsonText = this.generateJSON(true);
+                const glbFileName = glTFPrefix + '.glb';
+                const headerLength = 12;
+                const chunkLengthPrefix = 8;
+                const jsonLength = jsonText.length;
+                let imageByteLength = 0;
 
-                    for (let key in this.imageData) {
-                        imageByteLength += this.imageData[key].data.byteLength;
-                    }
-                    const jsonPadding = this._getPadding(jsonLength);
-                    const binPadding = this._getPadding(binaryBuffer.byteLength);
-                    const imagePadding = this._getPadding(imageByteLength);
+                for (let key in this.imageData) {
+                    imageByteLength += this.imageData[key].data.byteLength;
+                }
+                const jsonPadding = this._getPadding(jsonLength);
+                const binPadding = this._getPadding(binaryBuffer.byteLength);
+                const imagePadding = this._getPadding(imageByteLength);
 
-                    const byteLength = headerLength + (2 * chunkLengthPrefix) + jsonLength + jsonPadding + binaryBuffer.byteLength + binPadding + imageByteLength + imagePadding;
+                const byteLength = headerLength + (2 * chunkLengthPrefix) + jsonLength + jsonPadding + binaryBuffer.byteLength + binPadding + imageByteLength + imagePadding;
 
-                    //header
-                    const headerBuffer = new ArrayBuffer(headerLength);
-                    const headerBufferView = new DataView(headerBuffer);
-                    headerBufferView.setUint32(0, 0x46546C67, true); //glTF
-                    headerBufferView.setUint32(4, 2, true); // version
-                    headerBufferView.setUint32(8, byteLength, true); // total bytes in file
+                //header
+                const headerBuffer = new ArrayBuffer(headerLength);
+                const headerBufferView = new DataView(headerBuffer);
+                headerBufferView.setUint32(0, 0x46546C67, true); //glTF
+                headerBufferView.setUint32(4, 2, true); // version
+                headerBufferView.setUint32(8, byteLength, true); // total bytes in file
 
-                    //json chunk
-                    const jsonChunkBuffer = new ArrayBuffer(chunkLengthPrefix + jsonLength + jsonPadding);
-                    const jsonChunkBufferView = new DataView(jsonChunkBuffer);
-                    jsonChunkBufferView.setUint32(0, jsonLength + jsonPadding, true);
-                    jsonChunkBufferView.setUint32(4, 0x4E4F534A, true);
+                //json chunk
+                const jsonChunkBuffer = new ArrayBuffer(chunkLengthPrefix + jsonLength + jsonPadding);
+                const jsonChunkBufferView = new DataView(jsonChunkBuffer);
+                jsonChunkBufferView.setUint32(0, jsonLength + jsonPadding, true);
+                jsonChunkBufferView.setUint32(4, 0x4E4F534A, true);
 
-                    //json chunk bytes
-                    const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-                    for (let i = 0; i < jsonLength; ++i) {
-                        jsonData[i] = jsonText.charCodeAt(i);
-                    }
+                //json chunk bytes
+                const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
+                for (let i = 0; i < jsonLength; ++i) {
+                    jsonData[i] = jsonText.charCodeAt(i);
+                }
 
-                    //json padding
-                    const jsonPaddingView = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix + jsonLength);
-                    for (let i = 0; i < jsonPadding; ++i) {
-                        jsonPaddingView[i] = 0x20;
-                    }
+                //json padding
+                const jsonPaddingView = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix + jsonLength);
+                for (let i = 0; i < jsonPadding; ++i) {
+                    jsonPaddingView[i] = 0x20;
+                }
 
-                    //binary chunk
-                    const binaryChunkBuffer = new ArrayBuffer(chunkLengthPrefix);
-                    const binaryChunkBufferView = new DataView(binaryChunkBuffer);
-                    binaryChunkBufferView.setUint32(0, binaryBuffer.byteLength + imageByteLength + imagePadding, true);
-                    binaryChunkBufferView.setUint32(4, 0x004E4942, true);
+                //binary chunk
+                const binaryChunkBuffer = new ArrayBuffer(chunkLengthPrefix);
+                const binaryChunkBufferView = new DataView(binaryChunkBuffer);
+                binaryChunkBufferView.setUint32(0, binaryBuffer.byteLength + imageByteLength + imagePadding, true);
+                binaryChunkBufferView.setUint32(4, 0x004E4942, true);
 
-                    // binary padding
-                    const binPaddingBuffer = new ArrayBuffer(binPadding);
-                    const binPaddingView = new Uint8Array(binPaddingBuffer);
-                    for (let i = 0; i < binPadding; ++i) {
-                        binPaddingView[i] = 0;
-                    }
+                // binary padding
+                const binPaddingBuffer = new ArrayBuffer(binPadding);
+                const binPaddingView = new Uint8Array(binPaddingBuffer);
+                for (let i = 0; i < binPadding; ++i) {
+                    binPaddingView[i] = 0;
+                }
 
-                    const imagePaddingBuffer = new ArrayBuffer(imagePadding);
-                    const imagePaddingView = new Uint8Array(imagePaddingBuffer);
-                    for (let i = 0; i < imagePadding; ++i) {
-                        imagePaddingView[i] = 0;
-                    }
+                const imagePaddingBuffer = new ArrayBuffer(imagePadding);
+                const imagePaddingView = new Uint8Array(imagePaddingBuffer);
+                for (let i = 0; i < imagePadding; ++i) {
+                    imagePaddingView[i] = 0;
+                }
 
-                    const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
+                const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
 
-                    // binary data
-                    for (let key in this.imageData) {
-                        glbData.push(this.imageData[key].data.buffer);
-                    }
-                    glbData.push(binPaddingBuffer);
+                // binary data
+                for (let key in this.imageData) {
+                    glbData.push(this.imageData[key].data.buffer);
+                }
+                glbData.push(binPaddingBuffer);
 
-                    glbData.push(imagePaddingBuffer);
+                glbData.push(imagePaddingBuffer);
 
-                    const glbFile = new Blob(glbData, { type: 'application/octet-stream' });
+                const glbFile = new Blob(glbData, { type: 'application/octet-stream' });
 
-                    const container = new GLTFData();
-                    container.glTFFiles[glbFileName] = glbFile;
+                const container = new GLTFData();
+                container.glTFFiles[glbFileName] = glbFile;
 
-                    resolve(container);
-                });
-
+                return container;
             });
         }
 
