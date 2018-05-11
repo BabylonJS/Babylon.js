@@ -1601,6 +1601,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
                 ],
+                "shaderFiles": [
+                    "../../serializers/src/glTF/2.0/shaders/setAlphaToOne.fragment.fx"
+                ],
                 "output": "babylon.glTF2Serializer.js"
             }
         ],
