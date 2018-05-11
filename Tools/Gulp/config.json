@@ -1319,6 +1319,16 @@
             },
             {
                 "files": [
+                    "../../materialsLibrary/src/mix/babylon.mixMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/mix/mix.vertex.fx",
+                    "../../materialsLibrary/src/mix/mix.fragment.fx"
+                ],
+                "output": "babylon.mixMaterial.js"
+            },
+            {
+                "files": [
                     "../../materialsLibrary/src/triPlanar/babylon.triPlanarMaterial.ts"
                 ],
                 "shaderFiles": [
