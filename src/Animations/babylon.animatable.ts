@@ -12,6 +12,11 @@
         public animationStarted = false;
 
         /**
+         * Observer raised when the animation ends
+         */
+        public onAnimationEndObservable = new Observable<Animatable>();
+
+        /**
          * Gets the root Animatable used to synchronize and normalize animations
          */
         public get syncRoot(): Animatable {
@@ -190,10 +195,16 @@
             this._paused = false;
         }
 
+        private _raiseOnAnimationEnd() {            
+            if (this.onAnimationEnd) {
+                this.onAnimationEnd();
+            }
+
+            this.onAnimationEndObservable.notifyObservers(this);
+        }
+
         public stop(animationName?: string): void {
-
             if (animationName) {
-
                 var idx = this._scene._activeAnimatables.indexOf(this);
 
                 if (idx > -1) {
@@ -211,10 +222,7 @@
 
                     if (runtimeAnimations.length == 0) {
                         this._scene._activeAnimatables.splice(idx, 1);
-
-                        if (this.onAnimationEnd) {
-                            this.onAnimationEnd();
-                        }
+                        this._raiseOnAnimationEnd();
                     }
                 }
 
@@ -230,14 +238,24 @@
                         runtimeAnimations[index].dispose();
                     }
 
-                    if (this.onAnimationEnd) {
-                        this.onAnimationEnd();
-                    }
+                    this._raiseOnAnimationEnd();
                 }
-
             }
         }
 
+        /**
+         * Wait asynchronously for the animation to end
+         * @returns a promise which will be fullfilled when the animation ends
+         */
+        public waitAsync(): Promise<Animatable> {
+            return new Promise((resolve, reject) => {
+                this.onAnimationEndObservable.add(() => {
+                    resolve(this);
+                }, undefined, undefined, this, true);
+            });
+        }
+
+        /** @hidden */
         public _animate(delay: number): boolean {
             if (this._paused) {
                 this.animationStarted = false;
@@ -283,9 +301,10 @@
                 }
             }
 
-            if (!running && this.onAnimationEnd) {
-                this.onAnimationEnd();
-                this.onAnimationEnd = null;
+            if (!running) {
+                this._raiseOnAnimationEnd();
+                this.onAnimationEnd = null
+                this.onAnimationEndObservable.clear();
             }
 
             return running;

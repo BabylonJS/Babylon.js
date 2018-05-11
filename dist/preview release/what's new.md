@@ -6,15 +6,18 @@
 
 ### Core Engine
 
-- Add the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catamull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
-- Add support for specifying the center of rotation to textures ([bghgary](http://www.github.com/bghgary))
-- Add webVR support for Oculus Go ([TrevorDev](https://github.com/TrevorDev))
-- Add ability to not generate polynomials harmonics upon prefiltered texture creation ([sebavan](http://www.github.com/sebavan))
-- Add predicate function to customize the list of mesh included in the computation of bounding vectors in the ```getHierarchyBoundingVectors``` method ([sebavan](http://www.github.com/sebavan))
+- Added new `Animatable.waitAsync` function to use Promises with animations. Demo [Here](https://www.babylonjs-playground.com/#HZBCXR) ([Deltakosh](https://github.com/deltakosh)) 
+- Added the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catamull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
+- Added support for specifying the center of rotation to textures ([bghgary](http://www.github.com/bghgary))
+- Added webVR support for Oculus Go ([TrevorDev](https://github.com/TrevorDev))
+- Added ability to not generate polynomials harmonics upon prefiltered texture creation ([sebavan](http://www.github.com/sebavan))
+- Added predicate function to customize the list of mesh included in the computation of bounding vectors in the ```getHierarchyBoundingVectors``` method ([sebavan](http://www.github.com/sebavan))
+- Added webVR constructor options: disable laser pointer toggle, teleportation floor meshes ([TrevorDev](https://github.com/TrevorDev))
+
 
 ### glTF Loader
 
-- Add support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
+- Added support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
@@ -26,7 +29,7 @@
 
 ### Core Engine
 
-- Fix ```shadowEnabled``` property on lights. Shadows are not visble anymore when disabled ([sebavan](http://www.github.com/sebavan))
+- Fixed ```shadowEnabled``` property on lights. Shadows are not visble anymore when disabled ([sebavan](http://www.github.com/sebavan))
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
 - Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh)) 
