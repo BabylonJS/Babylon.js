@@ -201,7 +201,7 @@ module BABYLON {
                         throw new Error("EmitBox is missing in this particle system.");
                     }
 
-                    const boxEmitter = system.createBoxEmitter(
+                    system.createBoxEmitter(
                         new Vector3(data.direction1.x, data.direction1.y, data.direction1.z),
                         new Vector3(data.direction2.x, data.direction2.y, data.direction2.z),
                         new Vector3(data.minEmitBox.x, data.minEmitBox.y, data.minEmitBox.z),
@@ -209,7 +209,7 @@ module BABYLON {
                     );
                     break;
                 case "sphere":
-                    const sphereEmitter = system.createSphereEmitter(data.radius);
+                    system.createSphereEmitter(data.radius);
                     break;
                 case "directed_sphere":
                     
@@ -217,14 +217,14 @@ module BABYLON {
                         throw new Error("Directions are missing in this particle system.");
                     }
                     
-                    const directedSphereEmitter = system.createDirectedSphereEmitter(
+                    system.createDirectedSphereEmitter(
                         data.radius,
                         new Vector3(data.direction1.x, data.direction1.y, data.direction1.z),
                         new Vector3(data.direction2.x, data.direction2.y, data.direction2.z)
                     );
                     break;
                 case "cone":
-                    const coneEmitter = system.createConeEmitter(data.radius, data.angle);
+                    system.createConeEmitter(data.radius, data.angle);
                     break;
                 default:
                     break;
