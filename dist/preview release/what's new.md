@@ -2,6 +2,8 @@
 
 ## Major updates
 
+- Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
+
 ## Updates
 
 ### Core Engine
