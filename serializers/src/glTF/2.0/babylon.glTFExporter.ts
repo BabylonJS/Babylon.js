@@ -595,27 +595,25 @@ module BABYLON.GLTF2 {
          * @returns GLTFData with glTF file data
          */
         public _generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
-            return new Promise((resolve, reject) => {
-                this.generateBinaryAsync().then(binaryBuffer => {
-                    const jsonText = this.generateJSON(false, glTFPrefix, true);
-                    const bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
+            return this.generateBinaryAsync().then(binaryBuffer => {
+                const jsonText = this.generateJSON(false, glTFPrefix, true);
+                const bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
 
-                    const glTFFileName = glTFPrefix + '.gltf';
-                    const glTFBinFile = glTFPrefix + '.bin';
+                const glTFFileName = glTFPrefix + '.gltf';
+                const glTFBinFile = glTFPrefix + '.bin';
 
-                    const container = new GLTFData();
+                const container = new GLTFData();
 
-                    container.glTFFiles[glTFFileName] = jsonText;
-                    container.glTFFiles[glTFBinFile] = bin;
+                container.glTFFiles[glTFFileName] = jsonText;
+                container.glTFFiles[glTFBinFile] = bin;
 
-                    if (this.imageData) {
-                        for (let image in this.imageData) {
-                            container.glTFFiles[image] = new Blob([this.imageData[image].data], { type: this.imageData[image].mimeType });
-                        }
+                if (this.imageData) {
+                    for (let image in this.imageData) {
+                        container.glTFFiles[image] = new Blob([this.imageData[image].data], { type: this.imageData[image].mimeType });
                     }
+                }
 
-                    resolve(container);
-                });
+                return container;
             });
 
         }
@@ -625,11 +623,9 @@ module BABYLON.GLTF2 {
          * @returns array buffer for binary data
          */
         private generateBinaryAsync(): Promise<ArrayBuffer> {
-            return new Promise((resolve, reject) => {
-                let binaryWriter = new _BinaryWriter(4);
-                this.createSceneAsync(this.babylonScene, binaryWriter).then(() => {
-                    resolve(binaryWriter.getArrayBuffer());
-                });
+            let binaryWriter = new _BinaryWriter(4);
+            return this.createSceneAsync(this.babylonScene, binaryWriter).then(() => {
+                return binaryWriter.getArrayBuffer();
             });
         }
 
@@ -1057,64 +1053,60 @@ module BABYLON.GLTF2 {
          * @param binaryWriter Buffer to write binary data to
          */
         private createSceneAsync(babylonScene: Scene, binaryWriter: _BinaryWriter): Promise<void> {
-            return new Promise((resolve, reject) => {
-                let promises = [];
-                if (this.setNodeTransformation.length) {
-                    const scene: IScene = { nodes: [] };
-                    let glTFNodeIndex: number;
-                    let glTFNode: INode;
-                    let directDescendents: Node[];
-                    const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
+            if (this.setNodeTransformation.length) {
+                const scene: IScene = { nodes: [] };
+                let glTFNodeIndex: number;
+                let glTFNode: INode;
+                let directDescendents: Node[];
+                const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
 
-                    let promise = _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.imageData, true).then(() => {
-                        this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
+                return _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.imageData, true).then(() => {
+                    this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
 
-                        this.totalByteLength = binaryWriter.getByteOffset();
+                    this.totalByteLength = binaryWriter.getByteOffset();
 
 
-                        // Build Hierarchy with the node map.
-                        for (let babylonTransformNode of nodes) {
-                            glTFNodeIndex = this.nodeMap[babylonTransformNode.uniqueId];
-                            if (glTFNodeIndex != null) {
-                                glTFNode = this.nodes[glTFNodeIndex];
-                                if (!babylonTransformNode.parent) {
-                                    if (!this.shouldExportTransformNode(babylonTransformNode)) {
-                                        Tools.Log("Omitting " + babylonTransformNode.name + " from scene.");
-                                    }
-                                    else {
-                                        if (this.convertToRightHandedSystem) {
-                                            if (glTFNode.translation) {
-                                                glTFNode.translation[2] *= -1;
-                                                glTFNode.translation[0] *= -1;
-                                            }
-                                            glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
-                                        }
-
-                                        scene.nodes.push(glTFNodeIndex);
-                                    }
+                    // Build Hierarchy with the node map.
+                    for (let babylonTransformNode of nodes) {
+                        glTFNodeIndex = this.nodeMap[babylonTransformNode.uniqueId];
+                        if (glTFNodeIndex != null) {
+                            glTFNode = this.nodes[glTFNodeIndex];
+                            if (!babylonTransformNode.parent) {
+                                if (!this.shouldExportTransformNode(babylonTransformNode)) {
+                                    Tools.Log("Omitting " + babylonTransformNode.name + " from scene.");
                                 }
-
-                                directDescendents = babylonTransformNode.getDescendants(true);
-                                if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                    glTFNode.children = [];
-                                    for (let descendent of directDescendents) {
-                                        if (this.nodeMap[descendent.uniqueId] != null) {
-                                            glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
+                                else {
+                                    if (this.convertToRightHandedSystem) {
+                                        if (glTFNode.translation) {
+                                            glTFNode.translation[2] *= -1;
+                                            glTFNode.translation[0] *= -1;
                                         }
+                                        glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
+                                    }
+
+                                    scene.nodes.push(glTFNodeIndex);
+                                }
+                            }
+
+                            directDescendents = babylonTransformNode.getDescendants(true);
+                            if (!glTFNode.children && directDescendents && directDescendents.length) {
+                                glTFNode.children = [];
+                                for (let descendent of directDescendents) {
+                                    if (this.nodeMap[descendent.uniqueId] != null) {
+                                        glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
                                     }
                                 }
                             }
-                        };
-                        if (scene.nodes.length) {
-                            this.scenes.push(scene);
                         }
-                    });
-                    promises.push(promise);
-                }
-                Promise.all(promises).then(() => {
-                    resolve();
+                    };
+                    if (scene.nodes.length) {
+                        this.scenes.push(scene);
+                    }
                 });
-            });
+            }
+            else {
+                return Promise.resolve();
+            }
         }
 
         /**
