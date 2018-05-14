@@ -595,7 +595,7 @@ module BABYLON.GLTF2 {
          * @returns GLTFData with glTF file data
          */
         public _generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
-            return this.generateBinaryAsync().then(binaryBuffer => {
+            return this._generateBinaryAsync().then(binaryBuffer => {
                 const jsonText = this.generateJSON(false, glTFPrefix, true);
                 const bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
 
@@ -622,7 +622,7 @@ module BABYLON.GLTF2 {
          * Creates a binary buffer for glTF
          * @returns array buffer for binary data
          */
-        private generateBinaryAsync(): Promise<ArrayBuffer> {
+        private _generateBinaryAsync(): Promise<ArrayBuffer> {
             let binaryWriter = new _BinaryWriter(4);
             return this.createSceneAsync(this.babylonScene, binaryWriter).then(() => {
                 return binaryWriter.getArrayBuffer();
@@ -648,7 +648,7 @@ module BABYLON.GLTF2 {
          * @returns object with glb filename as key and data as value
          */
         public _generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
-            return this.generateBinaryAsync().then(binaryBuffer => {
+            return this._generateBinaryAsync().then(binaryBuffer => {
                 const jsonText = this.generateJSON(true);
                 const glbFileName = glTFPrefix + '.glb';
                 const headerLength = 12;
@@ -952,8 +952,7 @@ module BABYLON.GLTF2 {
                         let materialIndex: Nullable<number> = null;
                         if (babylonMaterial) {
                             if (babylonMaterial instanceof MultiMaterial) {
-                                const babylonMultiMaterial = babylonMaterial as MultiMaterial;
-                                babylonMaterial = babylonMultiMaterial.subMaterials[submesh.materialIndex];
+                                babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                                 if (babylonMaterial) {
                                     materialIndex = this.babylonScene.materials.indexOf(babylonMaterial);
                                 }
@@ -1053,60 +1052,55 @@ module BABYLON.GLTF2 {
          * @param binaryWriter Buffer to write binary data to
          */
         private createSceneAsync(babylonScene: Scene, binaryWriter: _BinaryWriter): Promise<void> {
-            if (this.setNodeTransformation.length) {
-                const scene: IScene = { nodes: [] };
-                let glTFNodeIndex: number;
-                let glTFNode: INode;
-                let directDescendents: Node[];
-                const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
+            const scene: IScene = { nodes: [] };
+            let glTFNodeIndex: number;
+            let glTFNode: INode;
+            let directDescendents: Node[];
+            const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
 
-                return _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.imageData, true).then(() => {
-                    this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
+            return _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.imageData, true).then(() => {
+                this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
 
-                    this.totalByteLength = binaryWriter.getByteOffset();
+                this.totalByteLength = binaryWriter.getByteOffset();
 
 
-                    // Build Hierarchy with the node map.
-                    for (let babylonTransformNode of nodes) {
-                        glTFNodeIndex = this.nodeMap[babylonTransformNode.uniqueId];
-                        if (glTFNodeIndex != null) {
-                            glTFNode = this.nodes[glTFNodeIndex];
-                            if (!babylonTransformNode.parent) {
-                                if (!this.shouldExportTransformNode(babylonTransformNode)) {
-                                    Tools.Log("Omitting " + babylonTransformNode.name + " from scene.");
-                                }
-                                else {
-                                    if (this.convertToRightHandedSystem) {
-                                        if (glTFNode.translation) {
-                                            glTFNode.translation[2] *= -1;
-                                            glTFNode.translation[0] *= -1;
-                                        }
-                                        glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
-                                    }
-
-                                    scene.nodes.push(glTFNodeIndex);
-                                }
+                // Build Hierarchy with the node map.
+                for (let babylonTransformNode of nodes) {
+                    glTFNodeIndex = this.nodeMap[babylonTransformNode.uniqueId];
+                    if (glTFNodeIndex != null) {
+                        glTFNode = this.nodes[glTFNodeIndex];
+                        if (!babylonTransformNode.parent) {
+                            if (!this.shouldExportTransformNode(babylonTransformNode)) {
+                                Tools.Log("Omitting " + babylonTransformNode.name + " from scene.");
                             }
-
-                            directDescendents = babylonTransformNode.getDescendants(true);
-                            if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                glTFNode.children = [];
-                                for (let descendent of directDescendents) {
-                                    if (this.nodeMap[descendent.uniqueId] != null) {
-                                        glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
+                            else {
+                                if (this.convertToRightHandedSystem) {
+                                    if (glTFNode.translation) {
+                                        glTFNode.translation[2] *= -1;
+                                        glTFNode.translation[0] *= -1;
                                     }
+                                    glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
+                                }
+
+                                scene.nodes.push(glTFNodeIndex);
+                            }
+                        }
+
+                        directDescendents = babylonTransformNode.getDescendants(true);
+                        if (!glTFNode.children && directDescendents && directDescendents.length) {
+                            glTFNode.children = [];
+                            for (let descendent of directDescendents) {
+                                if (this.nodeMap[descendent.uniqueId] != null) {
+                                    glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
                                 }
                             }
                         }
-                    };
-                    if (scene.nodes.length) {
-                        this.scenes.push(scene);
                     }
-                });
-            }
-            else {
-                return Promise.resolve();
-            }
+                };
+                if (scene.nodes.length) {
+                    this.scenes.push(scene);
+                }
+            });
         }
 
         /**
