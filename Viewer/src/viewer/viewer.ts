@@ -533,7 +533,7 @@ export abstract class AbstractViewer {
             throw new Error("no model url provided");
         }
         if (clearScene) {
-
+            this.sceneManager.clearScene(true, false);
         }
         let configuration: IModelConfiguration;
         if (typeof modelConfig === 'string') {
@@ -546,7 +546,8 @@ export abstract class AbstractViewer {
 
         //merge the configuration for future models:
         if (this._configuration.model && typeof this._configuration.model === 'object') {
-            deepmerge(this._configuration.model, configuration)
+            let globalConfig = deepmerge({}, this._configuration.model)
+            configuration = deepmerge(globalConfig, configuration);
         } else {
             this._configuration.model = configuration;
         }

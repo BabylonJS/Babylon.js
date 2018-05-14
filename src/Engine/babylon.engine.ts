@@ -4864,6 +4864,7 @@
             gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), width, height, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
 
             // Create the framebuffer
+            var currentFrameBuffer = this._currentFramebuffer;
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
@@ -4877,7 +4878,7 @@
             // Unbind
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            this.bindUnboundFramebuffer(null);
+            this.bindUnboundFramebuffer(currentFrameBuffer);
 
             texture._framebuffer = framebuffer;
             texture.baseWidth = width;

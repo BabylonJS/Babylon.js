@@ -2,17 +2,22 @@
 
 ## Major updates
 
+- Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
+
 ## Updates
+
+- All NPM packages have `latest`and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
 
 ### Core Engine
 
-- Added new `Animatable.waitAsync` function to use Promises with animations. Demo [Here](https://www.babylonjs-playground.com/#HZBCXR) ([Deltakosh](https://github.com/deltakosh)) 
+- Added new `Animatable.waitAsync` function to use Promises with animations. Demo [Here](https://www.babylonjs-playground.com/#HZBCXR) ([Deltakosh](https://github.com/deltakosh))
 - Added the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catamull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
 - Added support for specifying the center of rotation to textures ([bghgary](http://www.github.com/bghgary))
 - Added webVR support for Oculus Go ([TrevorDev](https://github.com/TrevorDev))
 - Added ability to not generate polynomials harmonics upon prefiltered texture creation ([sebavan](http://www.github.com/sebavan))
 - Added predicate function to customize the list of mesh included in the computation of bounding vectors in the ```getHierarchyBoundingVectors``` method ([sebavan](http://www.github.com/sebavan))
 - Added webVR constructor options: disable laser pointer toggle, teleportation floor meshes ([TrevorDev](https://github.com/TrevorDev))
+- Get a root mesh from an asset container, load a mesh from a file with a single string url ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
@@ -23,6 +28,7 @@
 - No fullscreen button on small devices ([RaananW](https://github.com/RaananW))
 - Nav-Bar is now disaplayed on fullscreen per default ([RaananW](https://github.com/RaananW))
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
+- Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
@@ -31,7 +37,7 @@
 - Fixed ```shadowEnabled``` property on lights. Shadows are not visble anymore when disabled ([sebavan](http://www.github.com/sebavan))
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
-- Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh)) 
+- Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh))
 
 ### Viewer
 
@@ -39,5 +45,6 @@
 - Fix Animation Slider Interaction on Mozilla/Firefox ([sebavan](http://www.github.com/sebavan))
 - Fix Animation Slider Clickable area size Cross Plat ([sebavan](http://www.github.com/sebavan))
 - Ground material didn't take the default main color is no material definition was provided ([RaananW](https://github.com/RaananW))
+- Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
