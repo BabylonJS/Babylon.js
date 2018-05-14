@@ -3723,6 +3723,8 @@ var INSPECTOR;
             title.appendChild(versionSpan);
             title.appendChild(fpsSpan);
             _this._updateLoopHandler = _this._update.bind(_this);
+            _this._refreshRateCounter = 0;
+            _this.refreshRate = 4;
             // Count block
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Count";
@@ -3797,8 +3799,16 @@ var INSPECTOR;
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Duration";
             {
-                _this._createStatLabel("Meshes selection", _this._panel);
+                _this._createStatLabel("Refresh rate (refresh by second)", _this._panel);
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+                _this._inputElement.value = _this.refreshRate;
+                elemValue.appendChild(_this._inputElement);
+                _this._inputElement.addEventListener('keyup', function (evt) {
+                    _this.refreshRate = _this._inputElement.value;
+                });
+                _this._createStatLabel("Meshes selection", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTimeCounter.current); }
@@ -4003,9 +4013,20 @@ var INSPECTOR;
         };
         /** Update each properties of the stats panel */
         StatsTab.prototype._update = function () {
-            for (var _i = 0, _a = this._updatableProperties; _i < _a.length; _i++) {
-                var prop = _a[_i];
-                prop.elem.textContent = prop.updateFct();
+            if (this._refreshRateCounter > 1) {
+                this._refreshRateCounter--;
+            }
+            else {
+                for (var _i = 0, _a = this._updatableProperties; _i < _a.length; _i++) {
+                    var prop = _a[_i];
+                    prop.elem.textContent = prop.updateFct();
+                }
+                if (this._inspector.scene.getEngine().getFps() / this.refreshRate == Infinity) {
+                    this._refreshRateCounter = 1;
+                }
+                else {
+                    this._refreshRateCounter = this._inspector.scene.getEngine().getFps() / this.refreshRate;
+                }
             }
         };
         StatsTab.prototype.dispose = function () {
