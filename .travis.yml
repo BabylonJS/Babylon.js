@@ -21,7 +21,7 @@ install:
 
 jobs:
   include:
-    - stage: Whats New Update
+    - stage: BabylonJS Build and test
       env: JOB=WhatsNewUpdate
       script: gulp tests-whatsnew
     - env: JOB=DocumentationCheck
@@ -45,5 +45,5 @@ notifications:
     secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=
 env:
   global:
-  - secure: XVMhWPm3ByrZduLmbyBMsKU462bEbYPNRp+42HcdOuC3YOl2ODPvANrE/qZneZzGqlyiFAg6X4mDGD71Qw9ekbFt5q0PmvIxkRrX0KNJEJl9/gnFadOz3xFWEfFw4tiSHp36PUu9aT6ti9mn9gnM8C+vQZhqVpaMgkLpWzeEeXQ=
-  - secure: jaGc/NJwACWJPLfI/L1UfYvWKX6AGVjFwXA+31elOVNAmG4XRwaTUaugqP4FhjTw0g2pqTB1BlSML+Fs3dVaUGy3bpslQLL74iG06XZbFUqrtVV2/sOcJaoWxIc69ld0tcqLdPvMSrCIzGQYAWaNNllyMnBjsWBZ+0J0ghtbBDA=
+  - secure: bcwvHPt8fMIpmif+mMUg6gcJIrxfbPk1BhRNdEuJMLqih/qjzSrBYwR4cYnlfwnQuytyxyzakWKXZQWlEAekyl6SSSvm/bQ58I0UV36yTvWIR4WaLqvydsI2Q/mavdw7qm7ImPsONbJlg16WEb4Z2cp5Dq1sS+VdL4XUsx+z/vQ=
+  - secure: It48XCNkUDIU9UBp7RS5O/5nnsKi4YOmmphRStIUDfHrirxfIiWD38IPkECY+Qp2LRSRkUUqMBtuF9+aBCBIs4zz/mJ1IWztOxsY2sa2584tzBsOAG6uTskNvD2s4ZIPzYw0p3BSNFaYsILhOMzHWfv68+Jj0KwCZKIqwplO0H8=
