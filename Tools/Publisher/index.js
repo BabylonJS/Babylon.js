@@ -185,8 +185,15 @@ function processCore(package, version) {
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
 
     console.log('Publishing ' + package.name + " from " + basePath + '/package/');
+
+    let tagDef = "";
+    // check for alpha or beta
+    if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1) {
+        tagDef = '--tag preview';
+    }
+
     //publish the respected package
-    shelljs.exec('npm publish \"' + basePath + '/package/' + "\"");
+    shelljs.exec('npm publish \"' + basePath + '/package/' + "\"" + ' ' + tagDef);
 
     // remove package directory
     fs.removeSync(basePath + '/package/');
