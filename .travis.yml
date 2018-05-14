@@ -42,7 +42,7 @@ jobs:
 
 notifications:
   slack:
-    secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=
+    secure: U5Z8IyrnweEQjkuqilARavJlcBwvwAv/PAMCgJpNRA2winRxJBnd+2rc7mhlsTYNbhqj/wXU2DZa+RXhfmmE8WCr7DhQDv5UJL3mHKa8NouIivWTK6YkYfDiIoKuGONwNAzlF3Eq+U6AwLb1Wg8MSnxrb/+mafQ7VWVXB/O0wqg=
 env:
   global:
   - secure: bcwvHPt8fMIpmif+mMUg6gcJIrxfbPk1BhRNdEuJMLqih/qjzSrBYwR4cYnlfwnQuytyxyzakWKXZQWlEAekyl6SSSvm/bQ58I0UV36yTvWIR4WaLqvydsI2Q/mavdw7qm7ImPsONbJlg16WEb4Z2cp5Dq1sS+VdL4XUsx+z/vQ=
