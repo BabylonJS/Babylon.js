@@ -26,6 +26,7 @@
 - No fullscreen button on small devices ([RaananW](https://github.com/RaananW))
 - Nav-Bar is now disaplayed on fullscreen per default ([RaananW](https://github.com/RaananW))
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
+- Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
@@ -42,5 +43,6 @@
 - Fix Animation Slider Interaction on Mozilla/Firefox ([sebavan](http://www.github.com/sebavan))
 - Fix Animation Slider Clickable area size Cross Plat ([sebavan](http://www.github.com/sebavan))
 - Ground material didn't take the default main color is no material definition was provided ([RaananW](https://github.com/RaananW))
+- Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
