@@ -807,158 +807,160 @@ export class SceneManager {
                 this.environmentHelper.dispose();
                 delete this.environmentHelper;
             };
-            return Promise.resolve(this.scene);
-        }
+        } else {
 
 
-        const options: Partial<IEnvironmentHelperOptions> = {
-            createGround: !!groundConfiguration && this._groundEnabled,
-            createSkybox: !!skyboxConifguration,
-            setupImageProcessing: false, // will be done at the scene level!,
-        };
+            const options: Partial<IEnvironmentHelperOptions> = {
+                createGround: !!groundConfiguration && this._groundEnabled,
+                createSkybox: !!skyboxConifguration,
+                setupImageProcessing: false, // will be done at the scene level!,
+            };
 
-        // will that cause problems with model ground configuration?
-        /*if (model) {
-            const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
-            const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
-            const halfSizeVec = sizeVec.scale(0.5);
-            const center = boundingInfo.min.add(halfSizeVec);
-            options.groundYBias = -center.y;
-        }*/
+            // will that cause problems with model ground configuration?
+            /*if (model) {
+                const boundingInfo = model.rootMesh.getHierarchyBoundingVectors(true);
+                const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+                const halfSizeVec = sizeVec.scale(0.5);
+                const center = boundingInfo.min.add(halfSizeVec);
+                options.groundYBias = -center.y;
+            }*/
 
-        if (groundConfiguration) {
-            let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
+            if (groundConfiguration) {
+                let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
 
-            let groundSize = groundConfig.size || (typeof skyboxConifguration === 'object' && skyboxConifguration.scale);
-            if (groundSize) {
-                options.groundSize = groundSize;
-            }
+                let groundSize = groundConfig.size || (typeof skyboxConifguration === 'object' && skyboxConifguration.scale);
+                if (groundSize) {
+                    options.groundSize = groundSize;
+                }
 
-            options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
-            if (groundConfig.shadowLevel !== undefined) {
-                options.groundShadowLevel = groundConfig.shadowLevel;
-            }
-            options.enableGroundMirror = !!groundConfig.mirror && this.groundMirrorEnabled;
-            if (groundConfig.texture) {
-                options.groundTexture = this.labs.getAssetUrl(groundConfig.texture);
-            }
-            if (groundConfig.color) {
-                options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
-            }
+                options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
+                if (groundConfig.shadowLevel !== undefined) {
+                    options.groundShadowLevel = groundConfig.shadowLevel;
+                }
+                options.enableGroundMirror = !!groundConfig.mirror && this.groundMirrorEnabled;
+                if (groundConfig.texture) {
+                    options.groundTexture = this.labs.getAssetUrl(groundConfig.texture);
+                }
+                if (groundConfig.color) {
+                    options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
+                }
 
-            if (groundConfig.opacity !== undefined) {
-                options.groundOpacity = groundConfig.opacity;
-            }
+                if (groundConfig.opacity !== undefined) {
+                    options.groundOpacity = groundConfig.opacity;
+                }
 
-            if (groundConfig.mirror) {
-                options.enableGroundMirror = true;
-                // to prevent undefines
-                if (typeof groundConfig.mirror === "object") {
-                    if (groundConfig.mirror.amount !== undefined)
-                        options.groundMirrorAmount = groundConfig.mirror.amount;
-                    if (groundConfig.mirror.sizeRatio !== undefined)
-                        options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                    if (groundConfig.mirror.blurKernel !== undefined)
-                        options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                    if (groundConfig.mirror.fresnelWeight !== undefined)
-                        options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                    if (groundConfig.mirror.fallOffDistance !== undefined)
-                        options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                    if (this._defaultPipelineTextureType !== undefined)
-                        options.groundMirrorTextureType = this._defaultPipelineTextureType;
+                if (groundConfig.mirror) {
+                    options.enableGroundMirror = true;
+                    // to prevent undefines
+                    if (typeof groundConfig.mirror === "object") {
+                        if (groundConfig.mirror.amount !== undefined)
+                            options.groundMirrorAmount = groundConfig.mirror.amount;
+                        if (groundConfig.mirror.sizeRatio !== undefined)
+                            options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
+                        if (groundConfig.mirror.blurKernel !== undefined)
+                            options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
+                        if (groundConfig.mirror.fresnelWeight !== undefined)
+                            options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
+                        if (groundConfig.mirror.fallOffDistance !== undefined)
+                            options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
+                        if (this._defaultPipelineTextureType !== undefined)
+                            options.groundMirrorTextureType = this._defaultPipelineTextureType;
+                    }
                 }
             }
-        }
 
-        let postInitSkyboxMaterial = false;
-        if (skyboxConifguration) {
-            let conf = skyboxConifguration === true ? {} : skyboxConifguration;
-            if (conf.material && conf.material.imageProcessingConfiguration) {
-                options.setupImageProcessing = false; // will be configured later manually.
-            }
-            let skyboxSize = conf.scale;
-            if (skyboxSize) {
-                options.skyboxSize = skyboxSize;
-            }
-            options.sizeAuto = !options.skyboxSize;
-            if (conf.color) {
-                options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
-            }
-            if (conf.cubeTexture && conf.cubeTexture.url) {
-                if (typeof conf.cubeTexture.url === "string") {
-                    options.skyboxTexture = this.labs.getAssetUrl(conf.cubeTexture.url);
-                } else {
-                    // init later!
+            let postInitSkyboxMaterial = false;
+            if (skyboxConifguration) {
+                let conf = skyboxConifguration === true ? {} : skyboxConifguration;
+                if (conf.material && conf.material.imageProcessingConfiguration) {
+                    options.setupImageProcessing = false; // will be configured later manually.
+                }
+                let skyboxSize = conf.scale;
+                if (skyboxSize) {
+                    options.skyboxSize = skyboxSize;
+                }
+                options.sizeAuto = !options.skyboxSize;
+                if (conf.color) {
+                    options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
+                }
+                if (conf.cubeTexture && conf.cubeTexture.url) {
+                    if (typeof conf.cubeTexture.url === "string") {
+                        options.skyboxTexture = this.labs.getAssetUrl(conf.cubeTexture.url);
+                    } else {
+                        // init later!
+                        postInitSkyboxMaterial = true;
+                    }
+                }
+
+                if (conf.material) {
                     postInitSkyboxMaterial = true;
                 }
             }
 
-            if (conf.material) {
-                postInitSkyboxMaterial = true;
-            }
-        }
+            options.setupImageProcessing = false; // TMP
 
-        options.setupImageProcessing = false; // TMP
-
-        if (!this.environmentHelper) {
-            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
-        } else {
-            // unlikely, but there might be a new scene! we need to dispose.
-
-            // get the scene used by the envHelper
-            let scene: Scene = this.environmentHelper.rootMesh.getScene();
-            // is it a different scene? Oh no!
-            if (scene !== this.scene) {
-                this.environmentHelper.dispose();
+            if (!this.environmentHelper) {
                 this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
             } else {
-                this.environmentHelper.updateOptions(options)!;
-            }
-        }
+                // unlikely, but there might be a new scene! we need to dispose.
 
-        if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
-            this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
-        }
-
-        let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
-        if (this.environmentHelper.groundMaterial && groundConfig) {
-            this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
-            if (groundConfig.material) {
-                extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
-            }
-
-            if (this.environmentHelper.groundMirror) {
-                const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
-                // TODO user camera exposure value to set the mirror clear color
-                let exposure = Math.pow(2.0, -this.scene.imageProcessingConfiguration.exposure) * Math.PI;
-                mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
-
-                this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
-                this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
-                this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
-                this.environmentHelper.groundMirror.clearColor.a = 1;
-
-                if (!this.groundMirrorEnabled) {
-                    this.environmentHelper.groundMaterial.reflectionTexture = null;
+                // get the scene used by the envHelper
+                let scene: Scene = this.environmentHelper.rootMesh.getScene();
+                // is it a different scene? Oh no!
+                if (scene !== this.scene) {
+                    this.environmentHelper.dispose();
+                    this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                } else {
+                    this.environmentHelper.updateOptions(options)!;
                 }
             }
-        }
 
+            if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
+                this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
+            }
 
-        let skyboxMaterial = this.environmentHelper.skyboxMaterial;
-        if (skyboxMaterial) {
-            skyboxMaterial._perceptualColor = this.mainColor;
+            let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
+            if (this.environmentHelper.groundMaterial && groundConfig) {
+                this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
+                if (groundConfig.material) {
+                    extendClassWithConfig(this.environmentHelper.groundMaterial, groundConfig.material);
+                }
 
-            if (postInitSkyboxMaterial) {
-                if (typeof skyboxConifguration === 'object' && skyboxConifguration.material) {
-                    extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
+                if (this.environmentHelper.groundMirror) {
+                    const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
+                    // TODO user camera exposure value to set the mirror clear color
+                    let exposure = Math.pow(2.0, -this.scene.imageProcessingConfiguration.exposure) * Math.PI;
+                    mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
+
+                    this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
+                    this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
+                    this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
+                    this.environmentHelper.groundMirror.clearColor.a = 1;
+
+                    if (!this.groundMirrorEnabled) {
+                        this.environmentHelper.groundMaterial.reflectionTexture = null;
+                    }
                 }
             }
+
+
+            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
+            if (skyboxMaterial) {
+                skyboxMaterial._perceptualColor = this.mainColor;
+
+                if (postInitSkyboxMaterial) {
+                    if (typeof skyboxConifguration === 'object' && skyboxConifguration.material) {
+                        extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
+                    }
+                }
+            }
+
         }
 
         this._viewer.onModelLoadedObservable.add((model) => {
             this._updateGroundMirrorRenderList(model);
         });
+
 
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
@@ -982,136 +984,136 @@ export class SceneManager {
         if (!Object.keys(lightsConfiguration).length) {
             if (!this.scene.lights.length)
                 this.scene.createDefaultLight(true);
-            return;
-        };
+        } else {
 
-        let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
-        // compare to the global (!) configuration object and dispose unneeded:
-        let lightsToConfigure = Object.keys(this._viewer.configuration.lights || []);
-        if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
-            lightsAvailable.forEach(lName => {
-                if (lightsToConfigure.indexOf(lName) === -1) {
-                    this.scene.getLightByName(lName)!.dispose();
-                }
-            });
-        }
-
-        Object.keys(lightsConfiguration).forEach((name, idx) => {
-            let lightConfig: ILightConfiguration = { type: 0 };
-            if (typeof lightsConfiguration[name] === 'object') {
-                lightConfig = <ILightConfiguration>lightsConfiguration[name];
+            let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
+            // compare to the global (!) configuration object and dispose unneeded:
+            let lightsToConfigure = Object.keys(this._viewer.configuration.lights || []);
+            if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
+                lightsAvailable.forEach(lName => {
+                    if (lightsToConfigure.indexOf(lName) === -1) {
+                        this.scene.getLightByName(lName)!.dispose();
+                    }
+                });
             }
 
-            lightConfig.name = name;
+            Object.keys(lightsConfiguration).forEach((name, idx) => {
+                let lightConfig: ILightConfiguration = { type: 0 };
+                if (typeof lightsConfiguration[name] === 'object') {
+                    lightConfig = <ILightConfiguration>lightsConfiguration[name];
+                }
 
-            let light: Light;
-            // light is not already available
-            if (lightsAvailable.indexOf(name) === -1) {
-                let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                if (!constructor) return;
-                light = constructor();
-            } else {
-                // available? get it from the scene
-                light = <Light>this.scene.getLightByName(name);
-                lightsAvailable = lightsAvailable.filter(ln => ln !== name);
-                if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
-                    light.dispose();
+                lightConfig.name = name;
+
+                let light: Light;
+                // light is not already available
+                if (lightsAvailable.indexOf(name) === -1) {
                     let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
                     if (!constructor) return;
                     light = constructor();
-                }
-            }
-
-            // if config set the light to false, dispose it.
-            if (lightsConfiguration[name] === false) {
-                light.dispose();
-                return;
-            }
-
-            //enabled
-            var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
-            light.setEnabled(enabled);
-
-
-            extendClassWithConfig(light, lightConfig);
-
-
-
-            //position. Some lights don't support shadows
-            if (light instanceof ShadowLight) {
-                // set default values
-                light.shadowMinZ = light.shadowMinZ || 0.2;
-                light.shadowMaxZ = Math.min(10, light.shadowMaxZ || 10); //large far clips reduce shadow depth precision
-
-                if (lightConfig.target) {
-                    if (light.setDirectionToTarget) {
-                        let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
-                        light.setDirectionToTarget(target);
+                } else {
+                    // available? get it from the scene
+                    light = <Light>this.scene.getLightByName(name);
+                    lightsAvailable = lightsAvailable.filter(ln => ln !== name);
+                    if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
+                        light.dispose();
+                        let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                        if (!constructor) return;
+                        light = constructor();
                     }
-                } else if (lightConfig.direction) {
-                    let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
-                    light.direction = direction;
                 }
 
-                let isShadowEnabled = false;
-                if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                    (<BABYLON.DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
-                    isShadowEnabled = true;
-                }
-                else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-                    let spotLight: BABYLON.SpotLight = <BABYLON.SpotLight>light;
-                    if (lightConfig.spotAngle !== undefined) {
-                        spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
-                    }
-                    if (spotLight.angle && lightConfig.shadowFieldOfView) {
-                        spotLight.shadowAngleScale = lightConfig.shadowFieldOfView / spotLight.angle;
-                    }
-                    isShadowEnabled = true;
-                }
-                else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
-                    if (lightConfig.shadowFieldOfView) {
-                        (<BABYLON.PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
-                    }
-                    isShadowEnabled = true;
+                // if config set the light to false, dispose it.
+                if (lightsConfiguration[name] === false) {
+                    light.dispose();
+                    return;
                 }
 
-                let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
-                if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
-                    let bufferSize = lightConfig.shadowBufferSize || 256;
+                //enabled
+                var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
+                light.setEnabled(enabled);
 
-                    if (!shadowGenerator) {
-                        shadowGenerator = new ShadowGenerator(bufferSize, light);
+
+                extendClassWithConfig(light, lightConfig);
+
+
+
+                //position. Some lights don't support shadows
+                if (light instanceof ShadowLight) {
+                    // set default values
+                    light.shadowMinZ = light.shadowMinZ || 0.2;
+                    light.shadowMaxZ = Math.min(10, light.shadowMaxZ || 10); //large far clips reduce shadow depth precision
+
+                    if (lightConfig.target) {
+                        if (light.setDirectionToTarget) {
+                            let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
+                            light.setDirectionToTarget(target);
+                        }
+                    } else if (lightConfig.direction) {
+                        let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
+                        light.direction = direction;
                     }
 
-                    var blurKernel = this.getBlurKernel(light, bufferSize);
-                    shadowGenerator.bias = this._shadowGeneratorBias;
-                    shadowGenerator.blurKernel = blurKernel;
-                    //override defaults
-                    extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
+                    let isShadowEnabled = false;
+                    if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                        (<BABYLON.DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
+                        isShadowEnabled = true;
+                    }
+                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
+                        let spotLight: BABYLON.SpotLight = <BABYLON.SpotLight>light;
+                        if (lightConfig.spotAngle !== undefined) {
+                            spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
+                        }
+                        if (spotLight.angle && lightConfig.shadowFieldOfView) {
+                            spotLight.shadowAngleScale = lightConfig.shadowFieldOfView / spotLight.angle;
+                        }
+                        isShadowEnabled = true;
+                    }
+                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
+                        if (lightConfig.shadowFieldOfView) {
+                            (<BABYLON.PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
+                        }
+                        isShadowEnabled = true;
+                    }
 
-                    // add the focues meshes to the shadow list
-                    this._viewer.onModelLoadedObservable.add((model) => {
-                        this._updateShadowRenderList(shadowGenerator, model);
-                    });
+                    let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
+                    if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
+                        let bufferSize = lightConfig.shadowBufferSize || 256;
 
-                    //if (model) {
-                    this._updateShadowRenderList(shadowGenerator);
-                    //}
-                } else if (shadowGenerator) {
-                    shadowGenerator.dispose();
+                        if (!shadowGenerator) {
+                            shadowGenerator = new ShadowGenerator(bufferSize, light);
+                        }
+
+                        var blurKernel = this.getBlurKernel(light, bufferSize);
+                        shadowGenerator.bias = this._shadowGeneratorBias;
+                        shadowGenerator.blurKernel = blurKernel;
+                        //override defaults
+                        extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
+
+                        // add the focues meshes to the shadow list
+                        this._viewer.onModelLoadedObservable.add((model) => {
+                            this._updateShadowRenderList(shadowGenerator, model);
+                        });
+
+                        //if (model) {
+                        this._updateShadowRenderList(shadowGenerator);
+                        //}
+                    } else if (shadowGenerator) {
+                        shadowGenerator.dispose();
+                    }
                 }
-            }
-        });
+            });
 
-        // render priority
-        let globalLightsConfiguration = this._viewer.configuration.lights || {};
-        Object.keys(globalLightsConfiguration).sort().forEach((name, idx) => {
-            let configuration = globalLightsConfiguration[name];
-            let light = this.scene.getLightByName(name);
-            // sanity check
-            if (!light) return;
-            light.renderPriority = -idx;
-        });
+            // render priority
+            let globalLightsConfiguration = this._viewer.configuration.lights || {};
+            Object.keys(globalLightsConfiguration).sort().forEach((name, idx) => {
+                let configuration = globalLightsConfiguration[name];
+                let light = this.scene.getLightByName(name);
+                // sanity check
+                if (!light) return;
+                light.renderPriority = -idx;
+            });
+        }
 
         this.onLightsConfiguredObservable.notifyObservers({
             sceneManager: this,
