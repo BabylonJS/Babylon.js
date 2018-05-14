@@ -15,9 +15,13 @@ module INSPECTOR {
         private _glInfo: any;
 
         private _updateLoopHandler: any;
+        private _refreshRateCounter: any;
+        private refreshRate: any;
 
         private _sceneInstrumentation: BABYLON.Nullable<BABYLON.SceneInstrumentation>;
         private _engineInstrumentation: BABYLON.Nullable<BABYLON.EngineInstrumentation>;
+
+        private _inputElement: HTMLInputElement;
 
         private _connectToInstrumentation() {
             if (this._sceneInstrumentation) {
@@ -67,6 +71,8 @@ module INSPECTOR {
             title.appendChild(fpsSpan);
 
             this._updateLoopHandler = this._update.bind(this);
+            this._refreshRateCounter = 0;
+            this.refreshRate = 4;
 
             // Count block
             title = Helpers.CreateDiv('stat-title2', this._panel);
@@ -153,8 +159,16 @@ module INSPECTOR {
             title = Helpers.CreateDiv('stat-title2', this._panel);
             title.textContent = "Duration";
             {
-                this._createStatLabel("Meshes selection", this._panel);
+                this._createStatLabel("Refresh rate (refresh by second)", this._panel);
                 let elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._inputElement = Inspector.DOCUMENT.createElement('input');
+                this._inputElement.value = this.refreshRate;
+                elemValue.appendChild(this._inputElement);
+                this._inputElement.addEventListener('keyup', (evt : KeyboardEvent)=> {
+                this.refreshRate = this._inputElement.value;
+                })
+                this._createStatLabel("Meshes selection", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: () => { return BABYLON.Tools.Format(this._sceneInstrumentation!.activeMeshesEvaluationTimeCounter.current) }
@@ -345,9 +359,22 @@ module INSPECTOR {
 
         /** Update each properties of the stats panel */
         private _update() {
-            for (let prop of this._updatableProperties) {
-                prop.elem.textContent = prop.updateFct();
+            
+            if(this._refreshRateCounter > 1){
+                this._refreshRateCounter--;
+                console.log(this._refreshRateCounter);
+            }else{
+                for (let prop of this._updatableProperties) {
+                    prop.elem.textContent = prop.updateFct();
+                }
+                if(this._inspector.scene.getEngine().getFps()/this.refreshRate == Infinity){
+                    this._refreshRateCounter = 1;
+                }else{
+                    this._refreshRateCounter = this._inspector.scene.getEngine().getFps()/this.refreshRate;
+                }
+                
             }
+            
         }
 
         public dispose() {
