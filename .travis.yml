@@ -38,9 +38,6 @@ jobs:
         - gulp tests-unit
         - travis_retry gulp tests-validation-virtualscreen
         - travis_retry gulp tests-validation-browserstack
-    - stage: test
-      script: bundle show
-      rvm: 2.3
 
 notifications:
   slack:
