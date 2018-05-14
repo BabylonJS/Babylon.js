@@ -22,12 +22,13 @@ install:
 jobs:
   include:
     - stage: Whats New Update
+      env: JOB=WhatsNewUpdate
       script: gulp tests-whatsnew
-    - stage: Documentation Check
+    - env: JOB=DocumentationCheck
       script: gulp typedoc-check
-    - stage: Build
+    - env: JOB=Build
       script: gulp typescript-all
-    - stage: Tests
+    - env: JOB=Tests
       script:
         - "export DISPLAY=:99.0"
         - "sh -e /etc/init.d/xvfb start"
