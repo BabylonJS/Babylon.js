@@ -123,20 +123,25 @@ export class SceneManager {
         this.labs = new ViewerLabs(this);
 
         this.onSceneInitObservable.add((scene) => {
-            scene.registerBeforeRender(() => {
-                if (this.models.length && scene.animatables && scene.animatables.length > 0) {
-                    // make sure all models are loaded
-                    if (this.models.every((model) => model.state === ModelState.COMPLETE && !model.currentAnimation)) return;
-                    for (let light of this.scene.lights) {
-                        let generator = light.getShadowGenerator();
-                        if (generator) {
-                            // Processing shadows if animates
-                            let shadowMap = generator.getShadowMap();
-                            if (shadowMap) {
-                                shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
-                            }
+
+            let updateShadows = () => {
+                for (let light of this.scene.lights) {
+                    let generator = light.getShadowGenerator();
+                    if (generator) {
+                        // Processing shadows if animates
+                        let shadowMap = generator.getShadowMap();
+                        if (shadowMap) {
+                            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
                         }
                     }
+                }
+            }
+            scene.registerBeforeRender(() => {
+                if (scene.animatables && scene.animatables.length > 0) {
+                    // make sure all models are loaded
+                    updateShadows();
+                } else if (!(this.models.every((model) => model.state === ModelState.COMPLETE && !model.currentAnimation))) {
+                    updateShadows();
                 }
             });
             return this._viewer.onSceneInitObservable.notifyObserversWithPromise(this.scene);
