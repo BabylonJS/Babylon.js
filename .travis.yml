@@ -1,34 +1,49 @@
 sudo: required
 dist: trusty
+
 language: node_js
 node_js:
 - '6'
+
+git:
+  depth: 3
+
 cache:
   directories:
     - Tools/Gulp/node_modules
     - Playground/node_modules
     - tests/unit/node_modules
-git:
-  depth: 3
-before_script:
-- travis_retry npm install -g gulp
-- cd ./Tools/Gulp
-- travis_retry npm install
-- "export DISPLAY=:99.0"
-- "sh -e /etc/init.d/xvfb start"
-- sleep 3 # give xvfb some time to start
-script: 
-- gulp tests-whatsnew
-- set -e
-- gulp typescript-all
-- gulp typedoc-all
-- gulp tests-unit
-- travis_retry gulp tests-validation-virtualscreen
-- travis_retry gulp tests-validation-browserstack
+
+install:
+  - travis_retry npm install -g gulp
+  - cd ./Tools/Gulp
+  - travis_retry npm install
+
+jobs:
+  include:
+    - stage: BabylonJS Build and test
+      env: JOB=WhatsNewUpdate
+      script: gulp tests-whatsnew
+    - env: JOB=DocumentationCheck
+      script: gulp typedoc-check
+    - env: JOB=Build
+      script: gulp typescript-all
+    - env: JOB=Tests
+      script:
+        - "export DISPLAY=:99.0"
+        - "sh -e /etc/init.d/xvfb start"
+        - sleep 3 # give xvfb some time to start
+        - set -e
+        - gulp typescript-all
+        - gulp typedoc-all
+        - gulp tests-unit
+        - travis_retry gulp tests-validation-virtualscreen
+        - travis_retry gulp tests-validation-browserstack
+
 notifications:
   slack:
-    secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=
+    secure: U5Z8IyrnweEQjkuqilARavJlcBwvwAv/PAMCgJpNRA2winRxJBnd+2rc7mhlsTYNbhqj/wXU2DZa+RXhfmmE8WCr7DhQDv5UJL3mHKa8NouIivWTK6YkYfDiIoKuGONwNAzlF3Eq+U6AwLb1Wg8MSnxrb/+mafQ7VWVXB/O0wqg=
 env:
   global:
-  - secure: XVMhWPm3ByrZduLmbyBMsKU462bEbYPNRp+42HcdOuC3YOl2ODPvANrE/qZneZzGqlyiFAg6X4mDGD71Qw9ekbFt5q0PmvIxkRrX0KNJEJl9/gnFadOz3xFWEfFw4tiSHp36PUu9aT6ti9mn9gnM8C+vQZhqVpaMgkLpWzeEeXQ=
-  - secure: jaGc/NJwACWJPLfI/L1UfYvWKX6AGVjFwXA+31elOVNAmG4XRwaTUaugqP4FhjTw0g2pqTB1BlSML+Fs3dVaUGy3bpslQLL74iG06XZbFUqrtVV2/sOcJaoWxIc69ld0tcqLdPvMSrCIzGQYAWaNNllyMnBjsWBZ+0J0ghtbBDA=
+  - secure: bcwvHPt8fMIpmif+mMUg6gcJIrxfbPk1BhRNdEuJMLqih/qjzSrBYwR4cYnlfwnQuytyxyzakWKXZQWlEAekyl6SSSvm/bQ58I0UV36yTvWIR4WaLqvydsI2Q/mavdw7qm7ImPsONbJlg16WEb4Z2cp5Dq1sS+VdL4XUsx+z/vQ=
+  - secure: It48XCNkUDIU9UBp7RS5O/5nnsKi4YOmmphRStIUDfHrirxfIiWD38IPkECY+Qp2LRSRkUUqMBtuF9+aBCBIs4zz/mJ1IWztOxsY2sa2584tzBsOAG6uTskNvD2s4ZIPzYw0p3BSNFaYsILhOMzHWfv68+Jj0KwCZKIqwplO0H8=
