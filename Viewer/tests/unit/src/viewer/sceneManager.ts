@@ -99,6 +99,12 @@ describe(name, function () {
             }
         });
 
+        viewer.runRenderLoop = false;
+        viewer.sceneManager.onSceneInitObservable.clear();
+        viewer.sceneManager.onSceneInitObservable.add((scene) => {
+            viewer.onSceneInitObservable.notifyObserversWithPromise(scene);
+        })
+
         viewer.onInitDoneObservable.add(() => {
             assert.isDefined(viewer.sceneManager.defaultRenderingPipeline);
             assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
@@ -111,6 +117,15 @@ describe(name, function () {
             viewer.sceneManager.defaultRenderingPipelineEnabled = true;
 
             assert.isDefined(viewer.sceneManager.defaultRenderingPipeline);
+            assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
+
+            viewer.updateConfiguration({
+                lab: {
+                    defaultRenderingPipelines: false
+                }
+            });
+
+            assert.isNull(viewer.sceneManager.defaultRenderingPipeline);
             assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
 
             viewer.dispose();
