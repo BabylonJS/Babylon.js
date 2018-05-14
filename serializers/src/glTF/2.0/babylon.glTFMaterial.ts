@@ -106,9 +106,7 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            return Promise.all(promises).then(() => {
-
-            });
+            return Promise.all(promises).then(() => { /* do nothing */ });
         }
 
         /**
@@ -330,7 +328,7 @@ module BABYLON.GLTF2 {
             if (hasTextureCoords) {
                 if (babylonStandardMaterial.diffuseTexture) {
                     let promise = _GLTFMaterial._ExportTextureAsync(babylonStandardMaterial.diffuseTexture, mimeType, images, textures, samplers, imageData, useAlpha).then(glTFTexture => {
-                        if (glTFTexture != null) {
+                        if (glTFTexture) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
                     });
@@ -386,9 +384,7 @@ module BABYLON.GLTF2 {
 
             materials.push(glTFMaterial);
 
-            return Promise.all(promises).then(() => {
-
-            });
+            return Promise.all(promises).then(() => { /* do nothing */ });
         }
 
         /**
@@ -398,27 +394,29 @@ module BABYLON.GLTF2 {
          * @returns Promise with texture
          */
         public static _SetAlphaToOneAsync(texture: BaseTexture, useAlpha: boolean): Promise<Texture> {
-            if (useAlpha) {
-                return Promise.resolve(texture as Texture);
-            }
-            else {
-                const scene = texture.getScene();
-                if (scene == null) {
-                    return Promise.reject(`Scene not available for texture ${texture.name}`);
+            return Promise.resolve().then((() => {
+                if (useAlpha) {
+                    return Promise.resolve(texture as Texture);
                 }
                 else {
-                    const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
-                    if (proceduralTexture == null) {
-                        return Promise.reject(`Cannot create procedural texture for ${texture.name}!`);
+                    const scene = texture.getScene();
+                    if (scene == null) {
+                        return Promise.reject(`Scene not available for texture ${texture.name}`);
                     }
                     else {
-                        proceduralTexture.setTexture('textureSampler', texture as Texture);
-                        return scene.whenReadyAsync().then(() => {
-                            return proceduralTexture;
-                        });
+                        const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
+                        if (proceduralTexture == null) {
+                            return Promise.reject(`Cannot create procedural texture for ${texture.name}!`);
+                        }
+                        else {
+                            proceduralTexture.setTexture('textureSampler', texture as Texture);
+                            return scene.whenReadyAsync().then(() => {
+                                return proceduralTexture;
+                            });
+                        }
                     }
                 }
-            }
+            }));
         }
 
         /**
@@ -477,7 +475,7 @@ module BABYLON.GLTF2 {
             if (hasTextureCoords) {
                 if (babylonPBRMetalRoughMaterial.baseTexture != null) {
                     let promise = _GLTFMaterial._ExportTextureAsync(babylonPBRMetalRoughMaterial.baseTexture, mimeType, images, textures, samplers, imageData, useAlpha).then(glTFTexture => {
-                        if (glTFTexture != null) {
+                        if (glTFTexture) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
                     });
@@ -507,7 +505,7 @@ module BABYLON.GLTF2 {
                 }
                 if (babylonPBRMetalRoughMaterial.emissiveTexture) {
                     let promise = _GLTFMaterial._ExportTextureAsync(babylonPBRMetalRoughMaterial.emissiveTexture, mimeType, images, textures, samplers, imageData, useAlpha).then(glTFTexture => {
-                        if (glTFTexture != null) {
+                        if (glTFTexture) {
                             glTFMaterial.emissiveTexture = glTFTexture;
                         }
                     });
@@ -523,8 +521,7 @@ module BABYLON.GLTF2 {
 
             materials.push(glTFMaterial);
 
-            return Promise.all(promises).then(() => {
-            });
+            return Promise.all(promises).then(() => { /* do nothing */ });
         }
 
         /**
@@ -840,7 +837,7 @@ module BABYLON.GLTF2 {
                 }
                 if (babylonPBRMaterial.metallicTexture) {
                     let promise = _GLTFMaterial._ExportTextureAsync(babylonPBRMaterial.metallicTexture, mimeType, images, textures, samplers, imageData, useAlpha).then(glTFTexture => {
-                        if (glTFTexture != null) {
+                        if (glTFTexture) {
                             glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                         }
                     });
@@ -1115,7 +1112,7 @@ module BABYLON.GLTF2 {
                     }
                     if (babylonPBRMaterial.emissiveTexture) {
                         let promise = _GLTFMaterial._ExportTextureAsync(babylonPBRMaterial.emissiveTexture, mimeType, images, textures, samplers, imageData, useAlpha).then(glTFTexture => {
-                            if (glTFTexture != null) {
+                            if (glTFTexture) {
                                 glTFMaterial.emissiveTexture = glTFTexture;
                             }
                         });
@@ -1129,7 +1126,7 @@ module BABYLON.GLTF2 {
                 glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
                 materials.push(glTFMaterial);
             }
-            return Promise.all(promises).then(result => { });
+            return Promise.all(promises).then(result => { /* do nothing */ });
         }
 
         private static GetPixelsFromTexture(babylonTexture: Texture): Uint8Array | Float32Array {
