@@ -10,6 +10,12 @@ export let minimalConfiguration: ViewerConfiguration = {
         main: {
             html: require("../../../assets/templates/default/defaultTemplate.html")
         },
+        fillContainer: {
+            html: require("../../../assets/templates/default/fillContainer.html"),
+            params: {
+                disable: false
+            }
+        },
         loadingScreen: {
             html: require("../../../assets/templates/default/loadingScreen.html"),
             params: {

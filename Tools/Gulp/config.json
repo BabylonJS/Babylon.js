@@ -111,6 +111,7 @@
             "instrumentation",
             "backgroundMaterial",
             "environmentHelper",
+            "particleHelper",
             "videoDome"
         ],
         "minimal": [
@@ -1168,6 +1169,14 @@
                 "core",
                 "backgroundMaterial",
                 "additionalTextures"
+            ]
+        },
+        "particleHelper": {
+            "files": [
+                "../../src/Helpers/babylon.particleHelper.js"
+            ],
+            "dependUpon": [
+                "particles"
             ]
         },
         "videoDome": {

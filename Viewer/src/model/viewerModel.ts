@@ -125,6 +125,11 @@ export class ViewerModel implements IDisposable {
 
         this._viewer.sceneManager.models.push(this);
         this._viewer.onModelAddedObservable.notifyObservers(this);
+
+        if (this._modelConfiguration.entryAnimation) {
+            this.rootMesh.setEnabled(false);
+        }
+
         this.onLoadedObservable.add(() => {
             this.updateConfiguration(this._modelConfiguration);
             this._viewer.onModelLoadedObservable.notifyObservers(this);
@@ -273,6 +278,7 @@ export class ViewerModel implements IDisposable {
             callback();
             return;
         }
+        this.rootMesh.setEnabled(true);
         // disable blending for the sake of the entry animation;
         this._viewer.sceneManager.animationBlendingEnabled = false;
         this._applyAnimation(this._entryAnimation, true, callback);
