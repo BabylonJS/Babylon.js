@@ -435,7 +435,8 @@ export class SceneManager {
     private _defaultRenderingPipelineShouldBuild: boolean = true;
 
     private _rebuildPostprocesses(configuration?: IDefaultRenderingPipelineConfiguration): void {
-        if (!this.defaultRenderingPipelineEnabled || !getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", this._viewer.configuration)) {
+        console.log("_rebuild");
+        if (!this._defaultRenderingPipelineEnabled || !getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", this._viewer.configuration)) {
             if (this._defaultRenderingPipeline) {
                 this._defaultRenderingPipeline.dispose();
                 this._defaultRenderingPipeline = null;
@@ -448,6 +449,7 @@ export class SceneManager {
         }
 
         let pipelineConfig = configuration || (this._viewer.configuration.lab && this._viewer.configuration.lab.defaultRenderingPipelines);
+        console.log(pipelineConfig);
         if (pipelineConfig) {
 
             if (!this._defaultRenderingPipeline) {
