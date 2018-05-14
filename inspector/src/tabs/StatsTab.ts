@@ -362,7 +362,6 @@ module INSPECTOR {
             
             if(this._refreshRateCounter > 1){
                 this._refreshRateCounter--;
-                console.log(this._refreshRateCounter);
             }else{
                 for (let prop of this._updatableProperties) {
                     prop.elem.textContent = prop.updateFct();
