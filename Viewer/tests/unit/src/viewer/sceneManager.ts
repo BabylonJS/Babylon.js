@@ -17,6 +17,7 @@ describe(name, function () {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isDefined(viewer.sceneManager.scene);
+            assert.isDefined(viewer.sceneManager.labs);
             assert.isDefined(viewer.sceneManager.scene.animationPropertiesOverride);
             assert.isDefined(viewer.sceneManager.camera);
             assert.isDefined(viewer.sceneManager.mainColor);
@@ -69,7 +70,6 @@ describe(name, function () {
 
         viewer.sceneManager.onCameraConfiguredObservable.add(update.bind(null, "camera"));
         viewer.sceneManager.onLightsConfiguredObservable.add(update.bind(null, "light"));
-        // ATM not testable due to null engine restrictions.
         viewer.sceneManager.onEnvironmentConfiguredObservable.add(update.bind(null, "env"));
         viewer.sceneManager.onSceneConfiguredObservable.add(update.bind(null, "scene"));
         viewer.sceneManager.onSceneOptimizerConfiguredObservable.add(update.bind(null, "optimizer"));
@@ -82,6 +82,37 @@ describe(name, function () {
             });
             assert.isTrue(sceneInitCalled);
             assert.lengthOf(s, 5);
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it("should delete and rebuild post process pipeline when enabled and disabled", (done) => {
+        let viewer = Helper.getNewViewerInstance(undefined, {
+            scene: {
+                imageProcessingConfiguration: {
+                    isEnabled: true
+                }
+            },
+            lab: {
+                defaultRenderingPipelines: true
+            }
+        });
+
+        viewer.onInitDoneObservable.add(() => {
+            assert.isDefined(viewer.sceneManager.defaultRenderingPipeline);
+            assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
+
+            viewer.sceneManager.defaultRenderingPipelineEnabled = false;
+
+            assert.isNull(viewer.sceneManager.defaultRenderingPipeline);
+            assert.isFalse(viewer.sceneManager.defaultRenderingPipelineEnabled);
+
+            viewer.sceneManager.defaultRenderingPipelineEnabled = true;
+
+            assert.isDefined(viewer.sceneManager.defaultRenderingPipeline);
+            assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
+
             viewer.dispose();
             done();
         });
