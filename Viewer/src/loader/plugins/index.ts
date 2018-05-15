@@ -22,7 +22,7 @@ export function getLoaderPluginByName(name: string) {
                 pluginCache[name] = new MSFTLodLoaderPlugin();
                 break;
             case 'applyMaterialConfig':
-                pluginCache[name] = new MSFTLodLoaderPlugin();
+                pluginCache[name] = new ApplyMaterialConfigPlugin();
                 break;
             case 'extendedMaterial':
                 pluginCache[name] = new ExtendedMaterialLoaderPlugin();

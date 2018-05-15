@@ -399,7 +399,7 @@
         }
 
         /**
-		 * Transition property of the Camera to the target Value
+		 * Transition property of an host to the target Value
 		 * @param property The property to transition
 		 * @param targetValue The target Value of the property
          * @param host The object where the property to animate belongs
