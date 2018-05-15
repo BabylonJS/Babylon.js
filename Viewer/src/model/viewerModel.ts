@@ -102,6 +102,8 @@ export class ViewerModel implements IDisposable {
     private _animatables: Array<Animatable> = [];
     private _frameRate: number = 60;
 
+    private _shadowsRenderedAfterLoad: boolean = false;
+
     constructor(protected _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
@@ -139,6 +141,18 @@ export class ViewerModel implements IDisposable {
         this.onCompleteObservable.add(() => {
             this.state = ModelState.COMPLETE;
         });
+    }
+
+    public get shadowsRenderedAfterLoad() {
+        return this._shadowsRenderedAfterLoad;
+    }
+
+    public set shadowsRenderedAfterLoad(rendered: boolean) {
+        if (!rendered) {
+            throw new Error("can only be enabled");
+        } else {
+            this._shadowsRenderedAfterLoad = rendered;
+        }
     }
 
     /**
