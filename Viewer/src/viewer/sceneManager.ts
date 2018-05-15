@@ -140,7 +140,13 @@ export class SceneManager {
                 if (scene.animatables && scene.animatables.length > 0) {
                     // make sure all models are loaded
                     updateShadows();
-                } else if (!(this.models.every((model) => model.state === ModelState.COMPLETE && !model.currentAnimation))) {
+                } else if (!(this.models.every((model) => {
+                    if (!model.shadowsRenderedAfterLoad) {
+                        model.shadowsRenderedAfterLoad = true;
+                        return false;
+                    }
+                    return model.state === ModelState.COMPLETE && !model.currentAnimation
+                }))) {
                     updateShadows();
                 }
             });
