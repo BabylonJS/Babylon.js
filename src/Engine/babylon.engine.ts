@@ -987,6 +987,18 @@
         private _contextWasLost = false;
         private _doNotHandleContextLost = false;
 
+        /**
+         * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#handling-webgl-context-lost
+         */
+        public get doNotHandleContextLost(): boolean {
+            return this._doNotHandleContextLost;
+        }
+
+        public set doNotHandleContextLost(value: boolean) {
+            this._doNotHandleContextLost = value;
+        }
+
         // FPS
         private _performanceMonitor = new PerformanceMonitor();
         private _fps = 60;
