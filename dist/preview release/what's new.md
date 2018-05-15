@@ -22,6 +22,7 @@
 ### glTF Loader
 
 - Added support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
+- Added `onNodeLODsLoadedObservable` and `onMaterialLODsLoadedObservable` to MSFT_lod loader extension ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
