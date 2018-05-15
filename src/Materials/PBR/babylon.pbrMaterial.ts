@@ -487,7 +487,7 @@
          * If set to true, no lighting calculations will be applied.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        @expandToProperty("_markAllSubMeshesAsMiscDirty")
         public unlit = false;
 
         /**
