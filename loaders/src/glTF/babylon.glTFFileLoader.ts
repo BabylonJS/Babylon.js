@@ -406,9 +406,9 @@ module BABYLON {
          */
         public whenCompleteAsync(): Promise<void> {
             return new Promise(resolve => {
-                this.onCompleteObservable.add(() => {
+                this.onCompleteObservable.addOnce(() => {
                     resolve();
-                }, undefined, undefined, undefined, true);
+                });
             });
         }
 
