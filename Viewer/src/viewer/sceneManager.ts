@@ -240,7 +240,7 @@ export class SceneManager {
         }
     }
 
-    private _groundMirrorEnabled = false;
+    private _groundMirrorEnabled = true;
     /**
      * gets wether the reflection is disabled.
      */
@@ -257,7 +257,7 @@ export class SceneManager {
 
         this._groundMirrorEnabled = value;
         if (this.environmentHelper && this.environmentHelper.groundMaterial && this.environmentHelper.groundMirror) {
-            if (value) {
+            if (!value) {
                 this.environmentHelper.groundMaterial.reflectionTexture = null;
             } else {
                 this.environmentHelper.groundMaterial.reflectionTexture = this.environmentHelper.groundMirror;

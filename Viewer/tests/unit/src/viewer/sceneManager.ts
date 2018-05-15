@@ -113,11 +113,79 @@ describe(name, function () {
 
             assert.isNull(viewer.sceneManager.defaultRenderingPipeline);
             assert.isFalse(viewer.sceneManager.defaultRenderingPipelineEnabled);
+            assert.isFalse(viewer.sceneManager.scene.imageProcessingConfiguration.applyByPostProcess);
 
             viewer.sceneManager.defaultRenderingPipelineEnabled = true;
 
             assert.isDefined(viewer.sceneManager.defaultRenderingPipeline);
             assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
+            assert.isTrue(viewer.sceneManager.scene.imageProcessingConfiguration.applyByPostProcess);
+
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it("should allow disabling and enabling ground", (done) => {
+        let viewer = Helper.getNewViewerInstance(undefined, {
+            ground: true
+        });
+
+        viewer.onInitDoneObservable.add(() => {
+            // ground should be defined, and mirror should be enabled
+            assert.isDefined(viewer.sceneManager.environmentHelper.ground);
+
+            viewer.sceneManager.groundEnabled = false;
+
+            assert.isFalse(viewer.sceneManager.environmentHelper.ground!.isEnabled());
+
+            viewer.sceneManager.groundEnabled = true;
+
+            assert.isTrue(viewer.sceneManager.environmentHelper.ground!.isEnabled());
+
+            viewer.updateConfiguration({
+                ground: false
+            });
+
+            assert.isUndefined(viewer.sceneManager.environmentHelper);
+            assert.isTrue(viewer.sceneManager.groundEnabled);
+
+            viewer.dispose();
+            done();
+        });
+    });
+
+    it("should allow disabling and enabling ground texture", (done) => {
+        let viewer = Helper.getNewViewerInstance(undefined, {
+            ground: {
+                mirror: true
+            }
+        });
+
+        viewer.onInitDoneObservable.add(() => {
+            // ground should be defined, and mirror should be enabled
+            assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
+            assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+
+            viewer.sceneManager.groundMirrorEnabled = false;
+
+            assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
+            assert.isNull(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+
+            viewer.sceneManager.groundMirrorEnabled = true;
+
+            assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
+            assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+
+            viewer.updateConfiguration({
+                ground: {
+                    mirror: false
+                }
+            });
+
+            assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
+            assert.isNull(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+            assert.isTrue(viewer.sceneManager.groundMirrorEnabled);
 
             viewer.dispose();
             done();
