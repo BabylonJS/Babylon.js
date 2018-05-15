@@ -2,7 +2,8 @@
     export class Buffer {
         private _engine: Engine;
         private _buffer: Nullable<WebGLBuffer>;
-        private _data: Nullable<DataArray>;
+        /** @hidden */
+        public _data: Nullable<DataArray>;
         private _updatable: boolean;
         private _instanced: boolean;
 
@@ -104,7 +105,7 @@
             } else if (this._updatable) { // update buffer
                 this._engine.updateDynamicVertexBuffer(this._buffer, data);
                 this._data = data;
-            }
+            }     
         }
 
         public _rebuild(): void {
