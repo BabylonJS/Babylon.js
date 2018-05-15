@@ -22,6 +22,7 @@
 ### glTF Loader
 
 - Added support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
+- Added `onNodeLODsLoadedObservable` and `onMaterialLODsLoadedObservable` to MSFT_lod loader extension ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
@@ -38,6 +39,7 @@
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
 - Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh))
+- Fixed a bug with setting `unlit` on `PBRMaterial` after the material is ready ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
