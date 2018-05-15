@@ -26,8 +26,10 @@
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
-        private _indices: IndicesArray;
-        private _vertexBuffers: { [key: string]: VertexBuffer; };
+        /** @hidden */
+        public _indices: IndicesArray;
+        /** @hidden */
+        public _vertexBuffers: { [key: string]: VertexBuffer; };
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
@@ -799,13 +801,13 @@
             if (this._positions)
                 return true;
 
-            this._positions = [];
-
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
-            if (!data) {
+            if (!data || data.length === 0) {
                 return false;
             }
+
+            this._positions = [];
 
             for (var index = 0; index < data.length; index += 3) {
                 this._positions.push(Vector3.FromArray(data, index));

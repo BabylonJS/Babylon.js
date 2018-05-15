@@ -23,6 +23,9 @@ module BABYLON.GLTF2 {
         /** @hidden */
         public _completePromises = new Array<Promise<void>>();
 
+        /** @hidden */
+        public _onReadyObservable = new Observable<IGLTFLoader>();
+
         private _disposed = false;
         private _state: Nullable<GLTFLoaderState> = null;
         private _extensions: { [name: string]: GLTFLoaderExtension } = {};
@@ -238,6 +241,7 @@ module BABYLON.GLTF2 {
 
                 const resultPromise = Promise.all(promises).then(() => {
                     this._state = GLTFLoaderState.READY;
+                    this._onReadyObservable.notifyObservers(this);
                     this._startAnimations();
                 });
 
@@ -1753,6 +1757,7 @@ module BABYLON.GLTF2 {
             delete this._gltf;
             delete this._babylonScene;
             this._completePromises.length = 0;
+            this._onReadyObservable.clear();
 
             for (const name in this._extensions) {
                 this._extensions[name].dispose();
