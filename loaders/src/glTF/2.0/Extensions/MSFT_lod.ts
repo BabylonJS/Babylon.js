@@ -18,11 +18,57 @@ module BABYLON.GLTF2.Extensions {
          */
         public maxLODsToLoad = Number.MAX_VALUE;
 
+        /**
+         * Observable raised when all node LODs of one level are loaded.
+         * The event data is the index of the loaded LOD starting from zero.
+         * Dispose the loader to cancel the loading of the next level of LODs.
+         */
+        public onNodeLODsLoadedObservable = new Observable<number>();
+
+        /**
+         * Observable raised when all material LODs of one level are loaded.
+         * The event data is the index of the loaded LOD starting from zero.
+         * Dispose the loader to cancel the loading of the next level of LODs.
+         */
+        public onMaterialLODsLoadedObservable = new Observable<number>();
+
         private _loadingNodeLOD: Nullable<_ILoaderNode> = null;
         private _loadNodeSignals: { [nodeIndex: number]: Deferred<void> } = {};
+        private _loadNodePromises = new Array<Array<Promise<void>>>();
 
         private _loadingMaterialLOD: Nullable<_ILoaderMaterial> = null;
         private _loadMaterialSignals: { [materialIndex: number]: Deferred<void> } = {};
+        private _loadMaterialPromises = new Array<Array<Promise<void>>>();
+
+        constructor(loader: GLTFLoader) {
+            super(loader);
+
+            this._loader._onReadyObservable.addOnce(() => {
+                for (let indexLOD = 0; indexLOD < this._loadNodePromises.length; indexLOD++) {
+                    Promise.all(this._loadNodePromises[indexLOD]).then(() => {
+                        this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
+                    });
+                }
+
+                for (let indexLOD = 0; indexLOD < this._loadMaterialPromises.length; indexLOD++) {
+                    Promise.all(this._loadMaterialPromises[indexLOD]).then(() => {
+                        this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
+                    });
+                }
+            });
+        }
+
+        public dispose() {
+            super.dispose();
+
+            this._loadingNodeLOD = null;
+            this._loadNodeSignals = {};
+            this._loadingMaterialLOD = null;
+            this._loadMaterialSignals = {};
+
+            this.onMaterialLODsLoadedObservable.clear();
+            this.onNodeLODsLoadedObservable.clear();
+        }
 
         protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IMSFTLOD>(context, node, (extensionContext, extension) => {
@@ -66,6 +112,9 @@ module BABYLON.GLTF2.Extensions {
                         this._loader._completePromises.push(promise);
                         this._loadingNodeLOD = null;
                     }
+
+                    this._loadNodePromises[indexLOD] = this._loadNodePromises[indexLOD] || [];
+                    this._loadNodePromises[indexLOD].push(promise);
                 }
 
                 return firstPromise!;
@@ -121,6 +170,9 @@ module BABYLON.GLTF2.Extensions {
                         this._loader._completePromises.push(promise);
                         this._loadingMaterialLOD = null;
                     }
+
+                    this._loadMaterialPromises[indexLOD] = this._loadMaterialPromises[indexLOD] || [];
+                    this._loadMaterialPromises[indexLOD].push(promise);
                 }
 
                 return firstPromise!;

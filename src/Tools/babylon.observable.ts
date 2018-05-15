@@ -196,6 +196,15 @@
         }
 
         /**
+         * Create a new Observer with the specified callback and unregisters after the next notification
+         * @param callback the callback that will be executed for that Observer
+         * @returns the new observer created for the callback
+         */
+        public addOnce(callback: (eventData: T, eventState: EventState) => void): Nullable<Observer<T>> {
+            return this.add(callback, undefined, undefined, undefined, true);
+        }
+
+        /**
          * Remove an Observer from the Observable object
          * @param observer the instance of the Observer to remove
          * @returns false if it doesn't belong to this Observable
