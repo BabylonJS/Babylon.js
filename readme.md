@@ -3,7 +3,7 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it.
 
-[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js) 
+[![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg)](https://travis-ci.com/BabylonJS/Babylon.js) 
 
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 

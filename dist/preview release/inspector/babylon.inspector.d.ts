@@ -1011,8 +1011,11 @@ declare module INSPECTOR {
         private _engine;
         private _glInfo;
         private _updateLoopHandler;
+        private _refreshRateCounter;
+        private refreshRate;
         private _sceneInstrumentation;
         private _engineInstrumentation;
+        private _inputElement;
         private _connectToInstrumentation();
         constructor(tabbar: TabBar, insp: Inspector);
         private _createStatLabel(content, parent);
