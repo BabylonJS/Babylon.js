@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     export class VertexBuffer {
-        private _buffer: Buffer;
+        /** @hidden */
+        public _buffer: Buffer;
         private _kind: string;
         private _size: number;
         private _ownsBuffer: boolean;

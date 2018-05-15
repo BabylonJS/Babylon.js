@@ -5375,6 +5375,28 @@
             }
         }
 
+        /**
+         * Call this function to reduce memory footprint of the scene.
+         * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
+         */
+        public clearCachedVertexData(): void {
+            for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+                var mesh = this.meshes[meshIndex];
+                var geometry = (<Mesh>mesh).geometry;
+
+                if (geometry) {
+                    geometry._indices = [];
+    
+                    for (var vbName in geometry._vertexBuffers) {
+                        if (!geometry._vertexBuffers.hasOwnProperty(vbName)) {
+                            continue;
+                        }
+                        geometry._vertexBuffers[vbName]._buffer._data = null;
+                    }
+                }
+            }
+        }
+
         // Octrees
 
         /**
