@@ -119,15 +119,6 @@ describe(name, function () {
             assert.isDefined(viewer.sceneManager.defaultRenderingPipeline);
             assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
 
-            viewer.updateConfiguration({
-                lab: {
-                    defaultRenderingPipelines: false
-                }
-            });
-
-            assert.isNull(viewer.sceneManager.defaultRenderingPipeline);
-            assert.isTrue(viewer.sceneManager.defaultRenderingPipelineEnabled);
-
             viewer.dispose();
             done();
         });
