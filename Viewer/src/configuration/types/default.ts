@@ -30,7 +30,7 @@ export let defaultConfiguration: ViewerConfiguration = {
         viewer: {
             html: require("../../../assets/templates/default/defaultViewer.html"),
             params: {
-                disableDragAndDrop: false
+                enableDragAndDrop: false
             }
         },
         navBar: {
