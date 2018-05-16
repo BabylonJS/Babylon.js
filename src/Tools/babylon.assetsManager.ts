@@ -836,17 +836,6 @@ module BABYLON {
             this._waitingTasksCount--;
 
             try {
-                if (task.taskState === AssetTaskState.DONE) {
-                    // Let's remove successfull tasks
-                    Tools.SetImmediate(() => {
-                        let index = this._tasks.indexOf(task);
-
-                        if (index > -1) {
-                            this._tasks.splice(index, 1);
-                        }
-                    });
-                }
-
                 if (this.onProgress) {
                     this.onProgress(
                         this._waitingTasksCount,
@@ -871,6 +860,18 @@ module BABYLON {
                 try {
                     if (this.onFinish) {
                         this.onFinish(this._tasks);
+                    }
+
+                    // Let's remove successfull tasks
+                    var currentTasks = this._tasks.slice();
+                    for (var task of currentTasks) {
+                        if (task.taskState === AssetTaskState.DONE) {                  
+                            let index = this._tasks.indexOf(task);
+
+                            if (index > -1) {
+                                this._tasks.splice(index, 1);
+                            }
+                        }
                     }
 
                     this.onTasksDoneObservable.notifyObservers(this._tasks);
