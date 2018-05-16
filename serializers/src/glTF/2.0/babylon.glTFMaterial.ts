@@ -402,12 +402,13 @@ module BABYLON.GLTF2 {
                     const scene = texture.getScene();
                     if (scene) {
                         const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
-                        if (proceduralTexture == null) {
-                            reject(`Cannot create procedural texture for ${texture.name}!`);
-                        }
-                        else {
+                        
+                        if (proceduralTexture) {
                             proceduralTexture.setTexture('textureSampler', texture as Texture);
                             proceduralTexture.onLoadObservable.add(() => { resolve(proceduralTexture) });
+                        }
+                        else {
+                            reject(`Cannot create procedural texture for ${texture.name}!`);
                         }
                     }
                     else {
