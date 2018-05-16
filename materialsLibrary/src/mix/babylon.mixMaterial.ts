@@ -329,7 +329,7 @@ module BABYLON {
                         }
                         if (this._diffuseTexture6) {
                             this._activeEffect.setTexture("diffuse6Sampler", this._diffuseTexture6);
-                            this._activeEffect.setFloat2("diffuse66nfos", this._diffuseTexture6.uScale, this._diffuseTexture6.vScale);
+                            this._activeEffect.setFloat2("diffuse6Infos", this._diffuseTexture6.uScale, this._diffuseTexture6.vScale);
                         }
                         if (this._diffuseTexture7) {
                             this._activeEffect.setTexture("diffuse7Sampler", this._diffuseTexture7);

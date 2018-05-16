@@ -132,7 +132,7 @@ void main(void) {
    	diffuse7Color.rgb = mix(diffuse6Color.rgb, diffuse7Color.rgb, mixColor.b);
 	mixColor.rgb = mix(diffuse7Color.rgb, diffuse8Color.rgb, 1.0 - mixColor.a);
 
-	finalMixColor.rgb = mix(finalMixColor.rgb, mixColor.rgb, 1.0);
+	finalMixColor.rgb = mix(finalMixColor.rgb, mixColor.rgb, 0.5);
 #endif
 	
 #endif
