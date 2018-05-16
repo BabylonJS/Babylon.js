@@ -14,6 +14,7 @@ module BABYLON {
         public shouldRender:boolean = true;
 
         private _afterRenderObservable:Nullable<Observer<Scene>>;
+        private _sceneDisposeObservable:Nullable<Observer<Scene>>;
         /**
          * Instantiates a UtilityLayerRenderer
          * @param originalScene the original scene that will be rendered on top of
@@ -31,6 +32,10 @@ module BABYLON {
                 if(this.shouldRender){
                     this.render();
                 }
+            });
+
+            this._sceneDisposeObservable = this.originalScene.onDisposeObservable.add(()=>{
+                this.dispose();
             })
         }
 
@@ -48,6 +53,9 @@ module BABYLON {
         public dispose(){
             if(this._afterRenderObservable){
                 this.originalScene.onAfterRenderObservable.remove(this._afterRenderObservable);
+            }
+            if(this._sceneDisposeObservable){
+                this.originalScene.onDisposeObservable.remove(this._sceneDisposeObservable);
             }
             this.utilityLayerScene.dispose();
         }
