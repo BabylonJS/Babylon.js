@@ -166,7 +166,7 @@ export interface IModelConfiguration {
     id?: string;
     url?: string;
     root?: string; //optional
-    file?: string; // is a file being loaded? root and url ignored
+    file?: string | File; // is a file being loaded? root and url ignored
     loader?: string; // obj, gltf?
     position?: { x: number, y: number, z: number };
     rotation?: { x: number, y: number, z: number, w?: number };
