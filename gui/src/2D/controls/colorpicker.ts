@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
     export class ColorPicker extends Control {

@@ -3343,247 +3343,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Analyser {
-        /**
-         * Gets or sets the smoothing
-         * @ignorenaming
-         */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
-         */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
-         */
-        getFrequencyBinCount(): number;
-        /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
-         */
-        getByteFrequencyData(): Uint8Array;
-        /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
-         */
-        getByteTimeDomainData(): Uint8Array;
-        /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
-         */
-        getFloatFrequencyData(): Float32Array;
-        /**
-         * Renders the debug canvas
-         */
-        drawDebugCanvas(): void;
-        /**
-         * Stops rendering the debug canvas and removes it
-         */
-        stopDebugCanvas(): void;
-        /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
-         */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: Nullable<AudioContext>;
-        constructor();
-        private _unlockiOSaudio();
-        private _initializeAudioContext();
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _ouputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded(audioData);
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters();
-        private _updateSpatialParameters();
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel();
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection();
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended();
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate(node);
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph();
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -4624,11 +4383,529 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: Nullable<AudioContext>;
+        constructor();
+        private _unlockiOSaudio();
+        private _initializeAudioContext();
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _ouputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded(audioData);
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters();
+        private _updateSpatialParameters();
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel();
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended();
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate(node);
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph();
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
     interface Behavior<T extends Node> {
         name: string;
         init(): void;
         attach(node: T): void;
         detach(): void;
+    }
+}
+
+declare module BABYLON {
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _radius: Vector3;
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        _velocityWorldLength: number;
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        _initialVelocity: Vector3;
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    /** Defines supported task for worker process */
+    enum WorkerTaskType {
+        /** Initialization */
+        INIT = 0,
+        /** Update of geometry */
+        UPDATE = 1,
+        /** Evaluate collision */
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    /** Defines kind of replies returned by worker */
+    enum WorkerReplyType {
+        /** Success */
+        SUCCESS = 0,
+        /** Unkown error */
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Nullable<Vector3>;
+        pickedMesh: Nullable<AbstractMesh>;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Nullable<Sprite>;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        getTextureCoordinates(): Nullable<Vector2>;
     }
 }
 
@@ -6437,424 +6714,6 @@ interface Window {
 }
 interface Gamepad {
     readonly displayId: number;
-}
-
-declare module BABYLON {
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _radius: Vector3;
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        _velocityWorldLength: number;
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        _initialVelocity: Vector3;
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    /** Defines supported task for worker process */
-    enum WorkerTaskType {
-        /** Initialization */
-        INIT = 0,
-        /** Update of geometry */
-        UPDATE = 1,
-        /** Evaluate collision */
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    /** Defines kind of replies returned by worker */
-    enum WorkerReplyType {
-        /** Success */
-        SUCCESS = 0,
-        /** Unkown error */
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Nullable<Vector3>;
-        pickedMesh: Nullable<AbstractMesh>;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Nullable<Sprite>;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Nullable<Scene>;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     */
-    class BoneAxesViewer extends AxesViewer {
-        mesh: Nullable<Mesh>;
-        bone: Nullable<Bone>;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh.
-     */
-    class PhysicsViewer {
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        protected _scene: Nullable<Scene>;
-        protected _numMeshes: number;
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        constructor(scene: Scene);
-        protected _updateDebugMeshes(): void;
-        showImpostor(impostor: PhysicsImpostor): void;
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial(scene);
-        private _getDebugBoxMesh(scene);
-        private _getDebugSphereMesh(scene);
-        private _getDebugMesh(impostor, scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
-    }
 }
 
 declare module BABYLON {
@@ -9106,66 +8965,144 @@ declare var WebGLVertexArrayObject: {
     new (): WebGLVertexArrayObject;
 };
 
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
     /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     * The Axes viewer will show 3 axes in a specific point in space
      */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Nullable<Scene>;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     */
+    class BoneAxesViewer extends AxesViewer {
+        mesh: Nullable<Mesh>;
+        bone: Nullable<Bone>;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
     }
 }
 
 declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
     }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
+}
+
+declare module BABYLON.Debug {
     /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     * Used to show the physics impostor around the specific mesh.
      */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
+    class PhysicsViewer {
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        protected _scene: Nullable<Scene>;
+        protected _numMeshes: number;
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        constructor(scene: Scene);
+        protected _updateDebugMeshes(): void;
+        showImpostor(impostor: PhysicsImpostor): void;
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial(scene);
+        private _getDebugBoxMesh(scene);
+        private _getDebugSphereMesh(scene);
+        private _getDebugMesh(impostor, scene);
+        dispose(): void;
     }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
     /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
     }
 }
 
@@ -9406,6 +9343,526 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Represents the different options available during the creation of
+     * a Environment helper.
+     *
+     * This can control the default ground, skybox and image processing setup of your scene.
+     */
+    interface IEnvironmentHelperOptions {
+        /**
+         * Specifies wether or not to create a ground.
+         * True by default.
+         */
+        createGround: boolean;
+        /**
+         * Specifies the ground size.
+         * 15 by default.
+         */
+        groundSize: number;
+        /**
+         * The texture used on the ground for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        groundTexture: string | BaseTexture;
+        /**
+         * The color mixed in the ground texture by default.
+         * BabylonJS clearColor by default.
+         */
+        groundColor: Color3;
+        /**
+         * Specifies the ground opacity.
+         * 1 by default.
+         */
+        groundOpacity: number;
+        /**
+         * Enables the ground to receive shadows.
+         * True by default.
+         */
+        enableGroundShadow: boolean;
+        /**
+         * Helps preventing the shadow to be fully black on the ground.
+         * 0.5 by default.
+         */
+        groundShadowLevel: number;
+        /**
+         * Creates a mirror texture attach to the ground.
+         * false by default.
+         */
+        enableGroundMirror: boolean;
+        /**
+         * Specifies the ground mirror size ratio.
+         * 0.3 by default as the default kernel is 64.
+         */
+        groundMirrorSizeRatio: number;
+        /**
+         * Specifies the ground mirror blur kernel size.
+         * 64 by default.
+         */
+        groundMirrorBlurKernel: number;
+        /**
+         * Specifies the ground mirror visibility amount.
+         * 1 by default
+         */
+        groundMirrorAmount: number;
+        /**
+         * Specifies the ground mirror reflectance weight.
+         * This uses the standard weight of the background material to setup the fresnel effect
+         * of the mirror.
+         * 1 by default.
+         */
+        groundMirrorFresnelWeight: number;
+        /**
+         * Specifies the ground mirror Falloff distance.
+         * This can helps reducing the size of the reflection.
+         * 0 by Default.
+         */
+        groundMirrorFallOffDistance: number;
+        /**
+         * Specifies the ground mirror texture type.
+         * Unsigned Int by Default.
+         */
+        groundMirrorTextureType: number;
+        /**
+         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
+         * the shown objects.
+         */
+        groundYBias: number;
+        /**
+         * Specifies wether or not to create a skybox.
+         * True by default.
+         */
+        createSkybox: boolean;
+        /**
+         * Specifies the skybox size.
+         * 20 by default.
+         */
+        skyboxSize: number;
+        /**
+         * The texture used on the skybox for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        skyboxTexture: string | BaseTexture;
+        /**
+         * The color mixed in the skybox texture by default.
+         * BabylonJS clearColor by default.
+         */
+        skyboxColor: Color3;
+        /**
+         * The background rotation around the Y axis of the scene.
+         * This helps aligning the key lights of your scene with the background.
+         * 0 by default.
+         */
+        backgroundYRotation: number;
+        /**
+         * Compute automatically the size of the elements to best fit with the scene.
+         */
+        sizeAuto: boolean;
+        /**
+         * Default position of the rootMesh if autoSize is not true.
+         */
+        rootPosition: Vector3;
+        /**
+         * Sets up the image processing in the scene.
+         * true by default.
+         */
+        setupImageProcessing: boolean;
+        /**
+         * The texture used as your environment texture in the scene.
+         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        environmentTexture: string | BaseTexture;
+        /**
+         * The value of the exposure to apply to the scene.
+         * 0.6 by default if setupImageProcessing is true.
+         */
+        cameraExposure: number;
+        /**
+         * The value of the contrast to apply to the scene.
+         * 1.6 by default if setupImageProcessing is true.
+         */
+        cameraContrast: number;
+        /**
+         * Specifies wether or not tonemapping should be enabled in the scene.
+         * true by default if setupImageProcessing is true.
+         */
+        toneMappingEnabled: boolean;
+    }
+    /**
+     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
+     * It also helps with the default setup of your imageProcessing configuration.
+     */
+    class EnvironmentHelper {
+        /**
+         * Default ground texture URL.
+         */
+        private static _groundTextureCDNUrl;
+        /**
+         * Default skybox texture URL.
+         */
+        private static _skyboxTextureCDNUrl;
+        /**
+         * Default environment texture URL.
+         */
+        private static _environmentTextureCDNUrl;
+        /**
+         * Creates the default options for the helper.
+         */
+        private static _getDefaultOptions();
+        private _rootMesh;
+        /**
+         * Gets the root mesh created by the helper.
+         */
+        readonly rootMesh: Mesh;
+        private _skybox;
+        /**
+         * Gets the skybox created by the helper.
+         */
+        readonly skybox: Nullable<Mesh>;
+        private _skyboxTexture;
+        /**
+         * Gets the skybox texture created by the helper.
+         */
+        readonly skyboxTexture: Nullable<BaseTexture>;
+        private _skyboxMaterial;
+        /**
+         * Gets the skybox material created by the helper.
+         */
+        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
+        private _ground;
+        /**
+         * Gets the ground mesh created by the helper.
+         */
+        readonly ground: Nullable<Mesh>;
+        private _groundTexture;
+        /**
+         * Gets the ground texture created by the helper.
+         */
+        readonly groundTexture: Nullable<BaseTexture>;
+        private _groundMirror;
+        /**
+         * Gets the ground mirror created by the helper.
+         */
+        readonly groundMirror: Nullable<MirrorTexture>;
+        /**
+         * Gets the ground mirror render list to helps pushing the meshes
+         * you wish in the ground reflection.
+         */
+        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
+        private _groundMaterial;
+        /**
+         * Gets the ground material created by the helper.
+         */
+        readonly groundMaterial: Nullable<BackgroundMaterial>;
+        /**
+         * Stores the creation options.
+         */
+        private readonly _scene;
+        private _options;
+        /**
+         * This observable will be notified with any error during the creation of the environment,
+         * mainly texture creation errors.
+         */
+        onErrorObservable: Observable<{
+            message?: string;
+            exception?: any;
+        }>;
+        /**
+         * constructor
+         * @param options
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
+        /**
+         * Sets the primary color of all the available elements.
+         * @param color the main color to affect to the ground and the background
+         */
+        setMainColor(color: Color3): void;
+        /**
+         * Setup the image processing according to the specified options.
+         */
+        private _setupImageProcessing();
+        /**
+         * Setup the environment texture according to the specified options.
+         */
+        private _setupEnvironmentTexture();
+        /**
+         * Setup the background according to the specified options.
+         */
+        private _setupBackground();
+        /**
+         * Get the scene sizes according to the setup.
+         */
+        private _getSceneSize();
+        /**
+         * Setup the ground according to the specified options.
+         */
+        private _setupGround(sceneSize);
+        /**
+         * Setup the ground material according to the specified options.
+         */
+        private _setupGroundMaterial();
+        /**
+         * Setup the ground diffuse texture according to the specified options.
+         */
+        private _setupGroundDiffuseTexture();
+        /**
+         * Setup the ground mirror texture according to the specified options.
+         */
+        private _setupGroundMirrorTexture(sceneSize);
+        /**
+         * Setup the ground to receive the mirror texture.
+         */
+        private _setupMirrorInGroundMaterial();
+        /**
+         * Setup the skybox according to the specified options.
+         */
+        private _setupSkybox(sceneSize);
+        /**
+         * Setup the skybox material according to the specified options.
+         */
+        private _setupSkyboxMaterial();
+        /**
+         * Setup the skybox reflection texture according to the specified options.
+         */
+        private _setupSkyboxReflectionTexture();
+        private _errorHandler;
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents all the data needed to create a ParticleSystem.
+     */
+    interface IParticleSystemData {
+        /**
+         * ParticleSystem type
+         */
+        type: string;
+        /**
+         * Shape of the emitter
+         */
+        emitterType: string;
+        /**
+         * Maximum number of particles in the system
+         */
+        capacity: number;
+        /**
+         * Link for the texture file
+         */
+        textureFile: string;
+        /**
+         * minEmitBox Vector3
+         */
+        minEmitBox?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        /**
+         * maxEmitBox Vector3
+         */
+        maxEmitBox?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        /**
+         * color1 Color4
+         */
+        color1: {
+            r: number;
+            g: number;
+            b: number;
+            a: number;
+        };
+        /**
+         * color2 Color4
+         */
+        color2: {
+            r: number;
+            g: number;
+            b: number;
+            a: number;
+        };
+        /**
+         * colorDead Color4
+         */
+        colorDead: {
+            r: number;
+            g: number;
+            b: number;
+            a: number;
+        };
+        /**
+         * Minimum size of each particle
+         */
+        minSize: number;
+        /**
+         * Maximum size of each particle
+         */
+        maxSize: number;
+        /**
+         * Minimum lifetime for each particle
+         */
+        minLifeTime: number;
+        /**
+         * Maximum lifetime for each particle
+         */
+        maxLifeTime: number;
+        /**
+         * Emit rate
+         */
+        emitRate: number;
+        /**
+         * Blend Mode
+         */
+        blendMode: number;
+        /**
+         * gravity Vector3
+         */
+        gravity: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        /**
+         * direction1 Vector3
+         */
+        direction1?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        /**
+         * direction2 Vector3
+         */
+        direction2?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        /**
+         * Minimum Angular Speed
+         */
+        minAngularSpeed: number;
+        /**
+         * Maximum Angular Speed
+         */
+        maxAngularSpeed: number;
+        /**
+         * Minimum Emit Power
+         */
+        minEmitPower: number;
+        /**
+         * Maximum Emit Power
+         */
+        maxEmitPower: number;
+        /**
+         * Update Speed
+         */
+        updateSpeed: number;
+        /**
+         * Radius
+         */
+        radius?: number;
+        /**
+         * Angle
+         */
+        angle?: number;
+    }
+    /**
+     * This class is made for on one-liner static method to help creating particle systems.
+     */
+    class ParticleHelper {
+        /**
+         * Base Assets URL.
+         */
+        private static _baseAssetsUrl;
+        private static _scene;
+        private static _emitter;
+        /**
+         * This is the main static method (one-liner) of this helper to create different particle systems.
+         * @param type This string represents the type to the particle system to create
+         * @param emitter The object where the particle system will start to emit from.
+         * @param scene The scene where the particle system should live.
+         * @param gpu If the system will use gpu.
+         * @returns the ParticleSystem created.
+         */
+        static CreateAsync(type: string, emitter: AbstractMesh, scene?: Nullable<Scene>, gpu?: boolean): Promise<ParticleSystem>;
+        private static _createSystem(data);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of Node, this allow parenting to the camera or multiple videos with different locations in the scene.
+     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
+     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     */
+    class VideoDome extends Node {
+        /**
+         * The video texture being displayed on the sphere
+         */
+        protected _videoTexture: VideoTexture;
+        /**
+         * The skybox material
+         */
+        protected _material: BackgroundMaterial;
+        /**
+         * The surface used for the skybox
+         */
+        protected _mesh: Mesh;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        fovMultiplier: number;
+        /**
+         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
+         * @param name Element's name, child elements will append suffixes for their own names.
+         * @param urlsOrVideo
+         * @param options An object containing optional or exposed sub element properties:
+         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
+         * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
+         * @param options **autoPlay=true** Automatically attempt to being playing the video.
+         * @param options **loop=true** Automatically loop video on end.
+         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
+         */
+        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
+            resolution?: number;
+            clickToPlay?: boolean;
+            autoPlay?: boolean;
+            loop?: boolean;
+            size?: number;
+        }, scene: Scene);
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
      * This class can be used to get instrumentation data from a Babylon engine
      */
     class EngineInstrumentation implements IDisposable {
@@ -9606,6 +10063,69 @@ declare module BABYLON {
         _endTimeQuery: Nullable<WebGLQuery>;
         _timeElapsedQuery: Nullable<WebGLQuery>;
         _timeElapsedQueryEnded: boolean;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -10285,6 +10805,268 @@ declare module BABYLON {
         _rebuild(): void;
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    class SceneLoaderProgressEvent {
+        readonly lengthComputable: boolean;
+        readonly loaded: number;
+        readonly total: number;
+        constructor(lengthComputable: boolean, loaded: number, total: number);
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPluginFactory {
+        name: string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+        */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded scene
+        */
+        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Append(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The given scene
+        */
+        static AppendAsync(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static LoadAssetContainer(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded asset container
+        */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -11269,268 +12051,6 @@ declare module BABYLON {
          * Disposes the light and the associated resources.
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    class SceneLoaderProgressEvent {
-        readonly lengthComputable: boolean;
-        readonly loaded: number;
-        readonly total: number;
-        constructor(lengthComputable: boolean, loaded: number, total: number);
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPluginFactory {
-        name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
-        */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded scene
-        */
-        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Append(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The given scene
-        */
-        static AppendAsync(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static LoadAssetContainer(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources OR the concatenation of rootURL and filename (eg. http://example.com/test.glb)
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene (default: empty string)
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded asset container
-        */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: any, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -14055,526 +14575,6 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents the different options available during the creation of
-     * a Environment helper.
-     *
-     * This can control the default ground, skybox and image processing setup of your scene.
-     */
-    interface IEnvironmentHelperOptions {
-        /**
-         * Specifies wether or not to create a ground.
-         * True by default.
-         */
-        createGround: boolean;
-        /**
-         * Specifies the ground size.
-         * 15 by default.
-         */
-        groundSize: number;
-        /**
-         * The texture used on the ground for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        groundTexture: string | BaseTexture;
-        /**
-         * The color mixed in the ground texture by default.
-         * BabylonJS clearColor by default.
-         */
-        groundColor: Color3;
-        /**
-         * Specifies the ground opacity.
-         * 1 by default.
-         */
-        groundOpacity: number;
-        /**
-         * Enables the ground to receive shadows.
-         * True by default.
-         */
-        enableGroundShadow: boolean;
-        /**
-         * Helps preventing the shadow to be fully black on the ground.
-         * 0.5 by default.
-         */
-        groundShadowLevel: number;
-        /**
-         * Creates a mirror texture attach to the ground.
-         * false by default.
-         */
-        enableGroundMirror: boolean;
-        /**
-         * Specifies the ground mirror size ratio.
-         * 0.3 by default as the default kernel is 64.
-         */
-        groundMirrorSizeRatio: number;
-        /**
-         * Specifies the ground mirror blur kernel size.
-         * 64 by default.
-         */
-        groundMirrorBlurKernel: number;
-        /**
-         * Specifies the ground mirror visibility amount.
-         * 1 by default
-         */
-        groundMirrorAmount: number;
-        /**
-         * Specifies the ground mirror reflectance weight.
-         * This uses the standard weight of the background material to setup the fresnel effect
-         * of the mirror.
-         * 1 by default.
-         */
-        groundMirrorFresnelWeight: number;
-        /**
-         * Specifies the ground mirror Falloff distance.
-         * This can helps reducing the size of the reflection.
-         * 0 by Default.
-         */
-        groundMirrorFallOffDistance: number;
-        /**
-         * Specifies the ground mirror texture type.
-         * Unsigned Int by Default.
-         */
-        groundMirrorTextureType: number;
-        /**
-         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
-         * the shown objects.
-         */
-        groundYBias: number;
-        /**
-         * Specifies wether or not to create a skybox.
-         * True by default.
-         */
-        createSkybox: boolean;
-        /**
-         * Specifies the skybox size.
-         * 20 by default.
-         */
-        skyboxSize: number;
-        /**
-         * The texture used on the skybox for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        skyboxTexture: string | BaseTexture;
-        /**
-         * The color mixed in the skybox texture by default.
-         * BabylonJS clearColor by default.
-         */
-        skyboxColor: Color3;
-        /**
-         * The background rotation around the Y axis of the scene.
-         * This helps aligning the key lights of your scene with the background.
-         * 0 by default.
-         */
-        backgroundYRotation: number;
-        /**
-         * Compute automatically the size of the elements to best fit with the scene.
-         */
-        sizeAuto: boolean;
-        /**
-         * Default position of the rootMesh if autoSize is not true.
-         */
-        rootPosition: Vector3;
-        /**
-         * Sets up the image processing in the scene.
-         * true by default.
-         */
-        setupImageProcessing: boolean;
-        /**
-         * The texture used as your environment texture in the scene.
-         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        environmentTexture: string | BaseTexture;
-        /**
-         * The value of the exposure to apply to the scene.
-         * 0.6 by default if setupImageProcessing is true.
-         */
-        cameraExposure: number;
-        /**
-         * The value of the contrast to apply to the scene.
-         * 1.6 by default if setupImageProcessing is true.
-         */
-        cameraContrast: number;
-        /**
-         * Specifies wether or not tonemapping should be enabled in the scene.
-         * true by default if setupImageProcessing is true.
-         */
-        toneMappingEnabled: boolean;
-    }
-    /**
-     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
-     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
-     * It also helps with the default setup of your imageProcessing configuration.
-     */
-    class EnvironmentHelper {
-        /**
-         * Default ground texture URL.
-         */
-        private static _groundTextureCDNUrl;
-        /**
-         * Default skybox texture URL.
-         */
-        private static _skyboxTextureCDNUrl;
-        /**
-         * Default environment texture URL.
-         */
-        private static _environmentTextureCDNUrl;
-        /**
-         * Creates the default options for the helper.
-         */
-        private static _getDefaultOptions();
-        private _rootMesh;
-        /**
-         * Gets the root mesh created by the helper.
-         */
-        readonly rootMesh: Mesh;
-        private _skybox;
-        /**
-         * Gets the skybox created by the helper.
-         */
-        readonly skybox: Nullable<Mesh>;
-        private _skyboxTexture;
-        /**
-         * Gets the skybox texture created by the helper.
-         */
-        readonly skyboxTexture: Nullable<BaseTexture>;
-        private _skyboxMaterial;
-        /**
-         * Gets the skybox material created by the helper.
-         */
-        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
-        private _ground;
-        /**
-         * Gets the ground mesh created by the helper.
-         */
-        readonly ground: Nullable<Mesh>;
-        private _groundTexture;
-        /**
-         * Gets the ground texture created by the helper.
-         */
-        readonly groundTexture: Nullable<BaseTexture>;
-        private _groundMirror;
-        /**
-         * Gets the ground mirror created by the helper.
-         */
-        readonly groundMirror: Nullable<MirrorTexture>;
-        /**
-         * Gets the ground mirror render list to helps pushing the meshes
-         * you wish in the ground reflection.
-         */
-        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
-        private _groundMaterial;
-        /**
-         * Gets the ground material created by the helper.
-         */
-        readonly groundMaterial: Nullable<BackgroundMaterial>;
-        /**
-         * Stores the creation options.
-         */
-        private readonly _scene;
-        private _options;
-        /**
-         * This observable will be notified with any error during the creation of the environment,
-         * mainly texture creation errors.
-         */
-        onErrorObservable: Observable<{
-            message?: string;
-            exception?: any;
-        }>;
-        /**
-         * constructor
-         * @param options
-         * @param scene The scene to add the material to
-         */
-        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
-        /**
-         * Updates the background according to the new options
-         * @param options
-         */
-        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
-        /**
-         * Sets the primary color of all the available elements.
-         * @param color the main color to affect to the ground and the background
-         */
-        setMainColor(color: Color3): void;
-        /**
-         * Setup the image processing according to the specified options.
-         */
-        private _setupImageProcessing();
-        /**
-         * Setup the environment texture according to the specified options.
-         */
-        private _setupEnvironmentTexture();
-        /**
-         * Setup the background according to the specified options.
-         */
-        private _setupBackground();
-        /**
-         * Get the scene sizes according to the setup.
-         */
-        private _getSceneSize();
-        /**
-         * Setup the ground according to the specified options.
-         */
-        private _setupGround(sceneSize);
-        /**
-         * Setup the ground material according to the specified options.
-         */
-        private _setupGroundMaterial();
-        /**
-         * Setup the ground diffuse texture according to the specified options.
-         */
-        private _setupGroundDiffuseTexture();
-        /**
-         * Setup the ground mirror texture according to the specified options.
-         */
-        private _setupGroundMirrorTexture(sceneSize);
-        /**
-         * Setup the ground to receive the mirror texture.
-         */
-        private _setupMirrorInGroundMaterial();
-        /**
-         * Setup the skybox according to the specified options.
-         */
-        private _setupSkybox(sceneSize);
-        /**
-         * Setup the skybox material according to the specified options.
-         */
-        private _setupSkyboxMaterial();
-        /**
-         * Setup the skybox reflection texture according to the specified options.
-         */
-        private _setupSkyboxReflectionTexture();
-        private _errorHandler;
-        /**
-         * Dispose all the elements created by the Helper.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents all the data needed to create a ParticleSystem.
-     */
-    interface IParticleSystemData {
-        /**
-         * ParticleSystem type
-         */
-        type: string;
-        /**
-         * Shape of the emitter
-         */
-        emitterType: string;
-        /**
-         * Maximum number of particles in the system
-         */
-        capacity: number;
-        /**
-         * Link for the texture file
-         */
-        textureFile: string;
-        /**
-         * minEmitBox Vector3
-         */
-        minEmitBox?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        /**
-         * maxEmitBox Vector3
-         */
-        maxEmitBox?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        /**
-         * color1 Color4
-         */
-        color1: {
-            r: number;
-            g: number;
-            b: number;
-            a: number;
-        };
-        /**
-         * color2 Color4
-         */
-        color2: {
-            r: number;
-            g: number;
-            b: number;
-            a: number;
-        };
-        /**
-         * colorDead Color4
-         */
-        colorDead: {
-            r: number;
-            g: number;
-            b: number;
-            a: number;
-        };
-        /**
-         * Minimum size of each particle
-         */
-        minSize: number;
-        /**
-         * Maximum size of each particle
-         */
-        maxSize: number;
-        /**
-         * Minimum lifetime for each particle
-         */
-        minLifeTime: number;
-        /**
-         * Maximum lifetime for each particle
-         */
-        maxLifeTime: number;
-        /**
-         * Emit rate
-         */
-        emitRate: number;
-        /**
-         * Blend Mode
-         */
-        blendMode: number;
-        /**
-         * gravity Vector3
-         */
-        gravity: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        /**
-         * direction1 Vector3
-         */
-        direction1?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        /**
-         * direction2 Vector3
-         */
-        direction2?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        /**
-         * Minimum Angular Speed
-         */
-        minAngularSpeed: number;
-        /**
-         * Maximum Angular Speed
-         */
-        maxAngularSpeed: number;
-        /**
-         * Minimum Emit Power
-         */
-        minEmitPower: number;
-        /**
-         * Maximum Emit Power
-         */
-        maxEmitPower: number;
-        /**
-         * Update Speed
-         */
-        updateSpeed: number;
-        /**
-         * Radius
-         */
-        radius?: number;
-        /**
-         * Angle
-         */
-        angle?: number;
-    }
-    /**
-     * This class is made for on one-liner static method to help creating particle systems.
-     */
-    class ParticleHelper {
-        /**
-         * Base Assets URL.
-         */
-        private static _baseAssetsUrl;
-        private static _scene;
-        private static _emitter;
-        /**
-         * This is the main static method (one-liner) of this helper to create different particle systems.
-         * @param type This string represents the type to the particle system to create
-         * @param emitter The object where the particle system will start to emit from.
-         * @param scene The scene where the particle system should live.
-         * @param gpu If the system will use gpu.
-         * @returns the ParticleSystem created.
-         */
-        static CreateAsync(type: string, emitter: AbstractMesh, scene?: Nullable<Scene>, gpu?: boolean): Promise<ParticleSystem>;
-        private static _createSystem(data);
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of Node, this allow parenting to the camera or multiple videos with different locations in the scene.
-     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
-     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
-     */
-    class VideoDome extends Node {
-        /**
-         * The video texture being displayed on the sphere
-         */
-        protected _videoTexture: VideoTexture;
-        /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the skybox
-         */
-        protected _mesh: Mesh;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        fovMultiplier: number;
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOrVideo
-         * @param options An object containing optional or exposed sub element properties:
-         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
-         * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
-         * @param options **autoPlay=true** Automatically attempt to being playing the video.
-         * @param options **loop=true** Automatically loop video on end.
-         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
-         */
-        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
-            resolution?: number;
-            clickToPlay?: boolean;
-            autoPlay?: boolean;
-            loop?: boolean;
-            size?: number;
-        }, scene: Scene);
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 
@@ -26365,6 +26365,169 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _AlphaState {
+        private _isAlphaBlendDirty;
+        private _isBlendFunctionParametersDirty;
+        private _isBlendEquationParametersDirty;
+        private _isBlendConstantsDirty;
+        private _alphaBlend;
+        private _blendFunctionParameters;
+        private _blendEquationParameters;
+        private _blendConstants;
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        alphaBlend: boolean;
+        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
+        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
+        setAlphaEquationParameters(rgb: number, alpha: number): void;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _DepthCullingState {
+        private _isDepthTestDirty;
+        private _isDepthMaskDirty;
+        private _isDepthFuncDirty;
+        private _isCullFaceDirty;
+        private _isCullDirty;
+        private _isZOffsetDirty;
+        private _isFrontFaceDirty;
+        private _depthTest;
+        private _depthMask;
+        private _depthFunc;
+        private _cull;
+        private _cullFace;
+        private _zOffset;
+        private _frontFace;
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        zOffset: number;
+        cullFace: Nullable<number>;
+        cull: Nullable<boolean>;
+        depthFunc: Nullable<number>;
+        depthMask: boolean;
+        depthTest: boolean;
+        frontFace: Nullable<number>;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    class _StencilState {
+        private _isStencilTestDirty;
+        private _isStencilMaskDirty;
+        private _isStencilFuncDirty;
+        private _isStencilOpDirty;
+        private _stencilTest;
+        private _stencilMask;
+        private _stencilFunc;
+        private _stencilFuncRef;
+        private _stencilFuncMask;
+        private _stencilOpStencilFail;
+        private _stencilOpDepthFail;
+        private _stencilOpStencilDepthPass;
+        readonly isDirty: boolean;
+        stencilFunc: number;
+        stencilFuncRef: number;
+        stencilFuncMask: number;
+        stencilOpStencilFail: number;
+        stencilOpDepthFail: number;
+        stencilOpStencilDepthPass: number;
+        stencilMask: number;
+        stencilTest: boolean;
+        constructor();
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -26709,169 +26872,6 @@ declare module BABYLON {
          * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _AlphaState {
-        private _isAlphaBlendDirty;
-        private _isBlendFunctionParametersDirty;
-        private _isBlendEquationParametersDirty;
-        private _isBlendConstantsDirty;
-        private _alphaBlend;
-        private _blendFunctionParameters;
-        private _blendEquationParameters;
-        private _blendConstants;
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        alphaBlend: boolean;
-        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
-        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
-        setAlphaEquationParameters(rgb: number, alpha: number): void;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _DepthCullingState {
-        private _isDepthTestDirty;
-        private _isDepthMaskDirty;
-        private _isDepthFuncDirty;
-        private _isCullFaceDirty;
-        private _isCullDirty;
-        private _isZOffsetDirty;
-        private _isFrontFaceDirty;
-        private _depthTest;
-        private _depthMask;
-        private _depthFunc;
-        private _cull;
-        private _cullFace;
-        private _zOffset;
-        private _frontFace;
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        zOffset: number;
-        cullFace: Nullable<number>;
-        cull: Nullable<boolean>;
-        depthFunc: Nullable<number>;
-        depthMask: boolean;
-        depthTest: boolean;
-        frontFace: Nullable<number>;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    class _StencilState {
-        private _isStencilTestDirty;
-        private _isStencilMaskDirty;
-        private _isStencilFuncDirty;
-        private _isStencilOpDirty;
-        private _stencilTest;
-        private _stencilMask;
-        private _stencilFunc;
-        private _stencilFuncRef;
-        private _stencilFuncMask;
-        private _stencilOpStencilFail;
-        private _stencilOpDepthFail;
-        private _stencilOpStencilDepthPass;
-        readonly isDirty: boolean;
-        stencilFunc: number;
-        stencilFuncRef: number;
-        stencilFuncMask: number;
-        stencilOpStencilFail: number;
-        stencilOpDepthFail: number;
-        stencilOpStencilDepthPass: number;
-        stencilMask: number;
-        stencilTest: boolean;
-        constructor();
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
     }
 }
 
@@ -31099,6 +31099,9 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+}
+
+declare module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -31588,9 +31591,6 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {

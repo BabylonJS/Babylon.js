@@ -23,7 +23,225 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Define a style used by control to automatically setup properties based on a template.
+         * Only support font related properties so far
+         */
+        var Style = /** @class */ (function () {
+            /**
+             * Creates a new style object
+             * @param host defines the AdvancedDynamicTexture which hosts this style
+             */
+            function Style(host) {
+                this._fontFamily = "Arial";
+                this._fontStyle = "";
+                /** @hidden */
+                this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
+                /**
+                 * Observable raised when the style values are changed
+                 */
+                this.onChangedObservable = new BABYLON.Observable();
+                this._host = host;
+            }
+            Object.defineProperty(Style.prototype, "fontSize", {
+                /**
+                 * Gets or sets the font size
+                 */
+                get: function () {
+                    return this._fontSize.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._fontSize.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._fontSize.fromString(value)) {
+                        this.onChangedObservable.notifyObservers(this);
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Style.prototype, "fontFamily", {
+                /**
+                 * Gets or sets the font family
+                 */
+                get: function () {
+                    return this._fontFamily;
+                },
+                set: function (value) {
+                    if (this._fontFamily === value) {
+                        return;
+                    }
+                    this._fontFamily = value;
+                    this.onChangedObservable.notifyObservers(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Style.prototype, "fontStyle", {
+                /**
+                 * Gets or sets the font style
+                 */
+                get: function () {
+                    return this._fontStyle;
+                },
+                set: function (value) {
+                    if (this._fontStyle === value) {
+                        return;
+                    }
+                    this._fontStyle = value;
+                    this.onChangedObservable.notifyObservers(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /** Dispose all associated resources */
+            Style.prototype.dispose = function () {
+                this.onChangedObservable.clear();
+            };
+            return Style;
+        }());
+        GUI.Style = Style;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=style.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var ValueAndUnit = /** @class */ (function () {
+            function ValueAndUnit(value, unit, negativeValueAllowed) {
+                if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
+                if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
+                this.unit = unit;
+                this.negativeValueAllowed = negativeValueAllowed;
+                this._value = 1;
+                this.ignoreAdaptiveScaling = false;
+                this._value = value;
+            }
+            Object.defineProperty(ValueAndUnit.prototype, "isPercentage", {
+                get: function () {
+                    return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ValueAndUnit.prototype, "isPixel", {
+                get: function () {
+                    return this.unit === ValueAndUnit.UNITMODE_PIXEL;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ValueAndUnit.prototype, "internalValue", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ValueAndUnit.prototype.getValueInPixel = function (host, refValue) {
+                if (this.isPixel) {
+                    return this.getValue(host);
+                }
+                return this.getValue(host) * refValue;
+            };
+            ValueAndUnit.prototype.getValue = function (host) {
+                if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
+                    var width = 0;
+                    var height = 0;
+                    if (host.idealWidth) {
+                        width = (this._value * host.getSize().width) / host.idealWidth;
+                    }
+                    if (host.idealHeight) {
+                        height = (this._value * host.getSize().height) / host.idealHeight;
+                    }
+                    if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {
+                        return window.innerWidth < window.innerHeight ? width : height;
+                    }
+                    if (host.idealWidth) { // horizontal
+                        return width;
+                    }
+                    if (host.idealHeight) { // vertical
+                        return height;
+                    }
+                }
+                return this._value;
+            };
+            ValueAndUnit.prototype.toString = function (host) {
+                switch (this.unit) {
+                    case ValueAndUnit.UNITMODE_PERCENTAGE:
+                        return (this.getValue(host) * 100) + "%";
+                    case ValueAndUnit.UNITMODE_PIXEL:
+                        return this.getValue(host) + "px";
+                }
+                return this.unit.toString();
+            };
+            ValueAndUnit.prototype.fromString = function (source) {
+                var match = ValueAndUnit._Regex.exec(source.toString());
+                if (!match || match.length === 0) {
+                    return false;
+                }
+                var sourceValue = parseFloat(match[1]);
+                var sourceUnit = this.unit;
+                if (!this.negativeValueAllowed) {
+                    if (sourceValue < 0) {
+                        sourceValue = 0;
+                    }
+                }
+                if (match.length === 4) {
+                    switch (match[3]) {
+                        case "px":
+                            sourceUnit = ValueAndUnit.UNITMODE_PIXEL;
+                            break;
+                        case "%":
+                            sourceUnit = ValueAndUnit.UNITMODE_PERCENTAGE;
+                            sourceValue /= 100.0;
+                            break;
+                    }
+                }
+                if (sourceValue === this._value && sourceUnit === this.unit) {
+                    return false;
+                }
+                this._value = sourceValue;
+                this.unit = sourceUnit;
+                return true;
+            };
+            Object.defineProperty(ValueAndUnit, "UNITMODE_PERCENTAGE", {
+                get: function () {
+                    return ValueAndUnit._UNITMODE_PERCENTAGE;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ValueAndUnit, "UNITMODE_PIXEL", {
+                get: function () {
+                    return ValueAndUnit._UNITMODE_PIXEL;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            // Static
+            ValueAndUnit._Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
+            ValueAndUnit._UNITMODE_PERCENTAGE = 0;
+            ValueAndUnit._UNITMODE_PIXEL = 1;
+            return ValueAndUnit;
+        }());
+        GUI.ValueAndUnit = ValueAndUnit;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=valueAndUnit.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -233,6 +451,12 @@ var BABYLON;
                         control._resetFontCache();
                     }
                 });
+            };
+            /**
+             * Helper function used to create a new style
+             */
+            AdvancedDynamicTexture.prototype.createStyle = function () {
+                return new GUI.Style(this);
             };
             AdvancedDynamicTexture.prototype.addControl = function (control) {
                 this._rootContainer.addControl(control);
@@ -568,7 +792,7 @@ var BABYLON;
 
 //# sourceMappingURL=advancedDynamicTexture.js.map
 
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -612,7 +836,7 @@ var BABYLON;
 
 //# sourceMappingURL=measure.js.map
 
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -745,136 +969,7 @@ var BABYLON;
 
 //# sourceMappingURL=math2D.js.map
 
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
-var BABYLON;
-(function (BABYLON) {
-    var GUI;
-    (function (GUI) {
-        var ValueAndUnit = /** @class */ (function () {
-            function ValueAndUnit(value, unit, negativeValueAllowed) {
-                if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
-                if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
-                this.unit = unit;
-                this.negativeValueAllowed = negativeValueAllowed;
-                this._value = 1;
-                this.ignoreAdaptiveScaling = false;
-                this._value = value;
-            }
-            Object.defineProperty(ValueAndUnit.prototype, "isPercentage", {
-                get: function () {
-                    return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ValueAndUnit.prototype, "isPixel", {
-                get: function () {
-                    return this.unit === ValueAndUnit.UNITMODE_PIXEL;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ValueAndUnit.prototype, "internalValue", {
-                get: function () {
-                    return this._value;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            ValueAndUnit.prototype.getValueInPixel = function (host, refValue) {
-                if (this.isPixel) {
-                    return this.getValue(host);
-                }
-                return this.getValue(host) * refValue;
-            };
-            ValueAndUnit.prototype.getValue = function (host) {
-                if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
-                    var width = 0;
-                    var height = 0;
-                    if (host.idealWidth) {
-                        width = (this._value * host.getSize().width) / host.idealWidth;
-                    }
-                    if (host.idealHeight) {
-                        height = (this._value * host.getSize().height) / host.idealHeight;
-                    }
-                    if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {
-                        return window.innerWidth < window.innerHeight ? width : height;
-                    }
-                    if (host.idealWidth) { // horizontal
-                        return width;
-                    }
-                    if (host.idealHeight) { // vertical
-                        return height;
-                    }
-                }
-                return this._value;
-            };
-            ValueAndUnit.prototype.toString = function (host) {
-                switch (this.unit) {
-                    case ValueAndUnit.UNITMODE_PERCENTAGE:
-                        return (this.getValue(host) * 100) + "%";
-                    case ValueAndUnit.UNITMODE_PIXEL:
-                        return this.getValue(host) + "px";
-                }
-                return this.unit.toString();
-            };
-            ValueAndUnit.prototype.fromString = function (source) {
-                var match = ValueAndUnit._Regex.exec(source.toString());
-                if (!match || match.length === 0) {
-                    return false;
-                }
-                var sourceValue = parseFloat(match[1]);
-                var sourceUnit = this.unit;
-                if (!this.negativeValueAllowed) {
-                    if (sourceValue < 0) {
-                        sourceValue = 0;
-                    }
-                }
-                if (match.length === 4) {
-                    switch (match[3]) {
-                        case "px":
-                            sourceUnit = ValueAndUnit.UNITMODE_PIXEL;
-                            break;
-                        case "%":
-                            sourceUnit = ValueAndUnit.UNITMODE_PERCENTAGE;
-                            sourceValue /= 100.0;
-                            break;
-                    }
-                }
-                if (sourceValue === this._value && sourceUnit === this.unit) {
-                    return false;
-                }
-                this._value = sourceValue;
-                this.unit = sourceUnit;
-                return true;
-            };
-            Object.defineProperty(ValueAndUnit, "UNITMODE_PERCENTAGE", {
-                get: function () {
-                    return ValueAndUnit._UNITMODE_PERCENTAGE;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ValueAndUnit, "UNITMODE_PIXEL", {
-                get: function () {
-                    return ValueAndUnit._UNITMODE_PIXEL;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            // Static
-            ValueAndUnit._Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
-            ValueAndUnit._UNITMODE_PERCENTAGE = 0;
-            ValueAndUnit._UNITMODE_PIXEL = 1;
-            return ValueAndUnit;
-        }());
-        GUI.ValueAndUnit = ValueAndUnit;
-    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=valueAndUnit.js.map
-
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -987,7 +1082,7 @@ var BABYLON;
 
 //# sourceMappingURL=multiLinePoint.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GUI;
@@ -1006,6 +1101,7 @@ var BABYLON;
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._color = "";
+                this._style = null;
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 this._isDirty = true;
@@ -1266,7 +1362,7 @@ var BABYLON;
                         return;
                     }
                     this._fontFamily = value;
-                    this._fontSet = true;
+                    this._resetFontCache();
                 },
                 enumerable: true,
                 configurable: true
@@ -1280,7 +1376,30 @@ var BABYLON;
                         return;
                     }
                     this._fontStyle = value;
-                    this._fontSet = true;
+                    this._resetFontCache();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "style", {
+                get: function () {
+                    return this._style;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._style) {
+                        this._style.onChangedObservable.remove(this._styleObserver);
+                        this._styleObserver = null;
+                    }
+                    this._style = value;
+                    if (this._style) {
+                        this._styleObserver = this._style.onChangedObservable.add(function () {
+                            _this._markAsDirty();
+                            _this._resetFontCache();
+                        });
+                    }
+                    this._markAsDirty();
+                    this._resetFontCache();
                 },
                 enumerable: true,
                 configurable: true
@@ -1295,10 +1414,11 @@ var BABYLON;
             });
             Object.defineProperty(Control.prototype, "fontSizeInPixels", {
                 get: function () {
-                    if (this._fontSize.isPixel) {
-                        return this._fontSize.getValue(this._host);
+                    var fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
+                    if (fontSizeToUse.isPixel) {
+                        return fontSizeToUse.getValue(this._host);
                     }
-                    return this._fontSize.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
+                    return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1313,7 +1433,7 @@ var BABYLON;
                     }
                     if (this._fontSize.fromString(value)) {
                         this._markAsDirty();
-                        this._fontSet = true;
+                        this._resetFontCache();
                     }
                 },
                 enumerable: true,
@@ -1966,7 +2086,12 @@ var BABYLON;
                 if (!this._font && !this._fontSet) {
                     return;
                 }
-                this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+                if (this._style) {
+                    this._font = this._style.fontStyle + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+                }
+                else {
+                    this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+                }
                 this._fontOffset = Control._GetFontOffset(this._font);
             };
             Control.prototype.dispose = function () {
@@ -1978,6 +2103,10 @@ var BABYLON;
                 this.onPointerOutObservable.clear();
                 this.onPointerUpObservable.clear();
                 this.onPointerClickObservable.clear();
+                if (this._styleObserver && this._style) {
+                    this._style.onChangedObservable.remove(this._styleObserver);
+                    this._styleObserver = null;
+                }
                 if (this._root) {
                     this._root.removeControl(this);
                     this._root = null;
@@ -2115,7 +2244,7 @@ var BABYLON;
 
 //# sourceMappingURL=control.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -2363,7 +2492,7 @@ var BABYLON;
 
 //# sourceMappingURL=container.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -2505,7 +2634,7 @@ var BABYLON;
 
 //# sourceMappingURL=stackPanel.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -2632,7 +2761,7 @@ var BABYLON;
 
 //# sourceMappingURL=rectangle.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -2709,7 +2838,7 @@ var BABYLON;
 
 //# sourceMappingURL=ellipse.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -2952,7 +3081,7 @@ var BABYLON;
 
 //# sourceMappingURL=line.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -3240,7 +3369,7 @@ var BABYLON;
 
 //# sourceMappingURL=slider.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -3367,7 +3496,7 @@ var BABYLON;
 
 //# sourceMappingURL=checkbox.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -3517,7 +3646,7 @@ var BABYLON;
 
 //# sourceMappingURL=radioButton.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -3864,7 +3993,7 @@ var BABYLON;
 
 //# sourceMappingURL=textBlock.js.map
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var DOMImage = Image;
 var BABYLON;
@@ -4173,9 +4302,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=image.js.map
-
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -4302,7 +4429,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -4660,7 +4787,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -5103,7 +5230,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -5264,7 +5391,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -5462,6 +5589,30 @@ var BABYLON;
             return MultiLine;
         }(GUI.Control));
         GUI.MultiLine = MultiLine;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var Control3D = /** @class */ (function () {
+            function Control3D() {
+            }
+            Object.defineProperty(Control3D.prototype, "typeName", {
+                get: function () {
+                    return this._getTypeName();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Control3D.prototype._getTypeName = function () {
+                return "Control3D";
+            };
+            return Control3D;
+        }());
+        GUI.Control3D = Control3D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

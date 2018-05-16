@@ -1,5 +1,67 @@
 
 declare module BABYLON.GUI {
+    /**
+     * Define a style used by control to automatically setup properties based on a template.
+     * Only support font related properties so far
+     */
+    class Style implements BABYLON.IDisposable {
+        private _fontFamily;
+        private _fontStyle;
+        /** @hidden */
+        _host: AdvancedDynamicTexture;
+        /** @hidden */
+        _fontSize: ValueAndUnit;
+        /**
+         * Observable raised when the style values are changed
+         */
+        onChangedObservable: Observable<Style>;
+        /**
+         * Creates a new style object
+         * @param host defines the AdvancedDynamicTexture which hosts this style
+         */
+        constructor(host: AdvancedDynamicTexture);
+        /**
+         * Gets or sets the font size
+         */
+        fontSize: string | number;
+        /**
+         * Gets or sets the font family
+         */
+        fontFamily: string;
+        /**
+         * Gets or sets the font style
+         */
+        fontStyle: string;
+        /** Dispose all associated resources */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class ValueAndUnit {
+        unit: number;
+        negativeValueAllowed: boolean;
+        private _value;
+        ignoreAdaptiveScaling: boolean;
+        constructor(value: number, unit?: number, negativeValueAllowed?: boolean);
+        readonly isPercentage: boolean;
+        readonly isPixel: boolean;
+        readonly internalValue: number;
+        getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
+        getValue(host: AdvancedDynamicTexture): number;
+        toString(host: AdvancedDynamicTexture): string;
+        fromString(source: string | number): boolean;
+        private static _Regex;
+        private static _UNITMODE_PERCENTAGE;
+        private static _UNITMODE_PIXEL;
+        static readonly UNITMODE_PERCENTAGE: number;
+        static readonly UNITMODE_PIXEL: number;
+    }
+}
+
+
+declare module BABYLON.GUI {
     interface IFocusableControl {
         onFocus(): void;
         onBlur(): void;
@@ -50,6 +112,10 @@ declare module BABYLON.GUI {
         constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
+        /**
+         * Helper function used to create a new style
+         */
+        createStyle(): Style;
         addControl(control: Control): AdvancedDynamicTexture;
         removeControl(control: Control): AdvancedDynamicTexture;
         dispose(): void;
@@ -129,29 +195,6 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
-    class ValueAndUnit {
-        unit: number;
-        negativeValueAllowed: boolean;
-        private _value;
-        ignoreAdaptiveScaling: boolean;
-        constructor(value: number, unit?: number, negativeValueAllowed?: boolean);
-        readonly isPercentage: boolean;
-        readonly isPixel: boolean;
-        readonly internalValue: number;
-        getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
-        getValue(host: AdvancedDynamicTexture): number;
-        toString(host: AdvancedDynamicTexture): string;
-        fromString(source: string | number): boolean;
-        private static _Regex;
-        private static _UNITMODE_PERCENTAGE;
-        private static _UNITMODE_PIXEL;
-        static readonly UNITMODE_PERCENTAGE: number;
-        static readonly UNITMODE_PIXEL: number;
-    }
-}
-
-
-declare module BABYLON.GUI {
     class MultiLinePoint {
         private _multiLine;
         private _x;
@@ -195,6 +238,8 @@ declare module BABYLON.GUI {
             descent: number;
         };
         private _color;
+        private _style;
+        private _styleObserver;
         protected _horizontalAlignment: number;
         protected _verticalAlignment: number;
         private _isDirty;
@@ -288,6 +333,7 @@ declare module BABYLON.GUI {
         readonly heightInPixels: number;
         fontFamily: string;
         fontStyle: string;
+        style: BABYLON.Nullable<Style>;
         /** @hidden */
         readonly _isFontSizeInPercentage: boolean;
         readonly fontSizeInPixels: number;
@@ -914,5 +960,13 @@ declare module BABYLON.GUI {
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class Control3D {
+        readonly typeName: string;
+        protected _getTypeName(): string;
     }
 }

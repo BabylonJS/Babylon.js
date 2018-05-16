@@ -1,4 +1,4 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
     export interface IFocusableControl {
@@ -217,6 +217,13 @@ module BABYLON.GUI {
                     control._resetFontCache();
                 }
             });
+        }
+
+        /**
+         * Helper function used to create a new style
+         */
+        public createStyle(): Style {
+            return new Style(this);
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {
