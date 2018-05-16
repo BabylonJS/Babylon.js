@@ -1382,12 +1382,15 @@
             return this._boundingBoxRenderer;
         }
 
+        private _utilityLayerRenderer:UtilityLayerRenderer;
         /** 
-         * Creates a utility layer renderer
-         * @returns a BoundingBoxRenderer
+         * Gets the UtilityLayerRenderer used to render an overlay scene layer without impacting the existing scene
          */
-        public createUtilityLayerRenderer(): UtilityLayerRenderer {
-            return new UtilityLayerRenderer(this);
+        public get utilityLayerRenderer(): UtilityLayerRenderer {
+            if(!this._utilityLayerRenderer){
+                this._utilityLayerRenderer = new UtilityLayerRenderer(this);
+            }
+            return this._utilityLayerRenderer;
         }
 
         /** 
