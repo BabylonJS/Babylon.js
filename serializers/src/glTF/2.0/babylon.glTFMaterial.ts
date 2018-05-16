@@ -394,29 +394,27 @@ module BABYLON.GLTF2 {
          * @returns Promise with texture
          */
         public static _SetAlphaToOneAsync(texture: BaseTexture, useAlpha: boolean): Promise<Texture> {
-            return Promise.resolve().then((() => {
-                if (useAlpha) {
-                    return Promise.resolve(texture as Texture);
+            if (useAlpha) {
+                return Promise.resolve(texture as Texture);
+            }
+            else {
+                const scene = texture.getScene();
+                if (scene == null) {
+                    return Promise.reject(`Scene not available for texture ${texture.name}`);
                 }
                 else {
-                    const scene = texture.getScene();
-                    if (scene == null) {
-                        return Promise.reject(`Scene not available for texture ${texture.name}`);
+                    const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
+                    if (proceduralTexture == null) {
+                        return Promise.reject(`Cannot create procedural texture for ${texture.name}!`);
                     }
                     else {
-                        const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
-                        if (proceduralTexture == null) {
-                            return Promise.reject(`Cannot create procedural texture for ${texture.name}!`);
-                        }
-                        else {
-                            proceduralTexture.setTexture('textureSampler', texture as Texture);
-                            return scene.whenReadyAsync().then(() => {
-                                return proceduralTexture;
-                            });
-                        }
+                        proceduralTexture.setTexture('textureSampler', texture as Texture);
+                        return new Promise((resolve, reject) => {
+                            proceduralTexture.onLoadObservable.add(() => { return proceduralTexture });
+                        })
                     }
                 }
-            }));
+            }
         }
 
         /**
