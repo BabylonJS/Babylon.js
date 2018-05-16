@@ -47,9 +47,7 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         if (this.configuration.templates && this.configuration.templates.viewer) {
-            if (this.configuration.templates.viewer.params && this.configuration.templates.viewer.params.disableDragAndDrop) {
-                // noop for now
-            } else {
+            if (this.configuration.templates.viewer.params && this.configuration.templates.viewer.params.enableDragAndDrop) {
                 let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
                 }, () => {
                 }, () => {
