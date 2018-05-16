@@ -1383,6 +1383,14 @@
         }
 
         /** 
+         * Creates a utility layer renderer
+         * @returns a BoundingBoxRenderer
+         */
+        public createUtilityLayerRenderer(): UtilityLayerRenderer {
+            return new UtilityLayerRenderer(this);
+        }
+
+        /** 
          * Gets the outline renderer associated with the scene
          * @returns a OutlineRenderer
          */        
