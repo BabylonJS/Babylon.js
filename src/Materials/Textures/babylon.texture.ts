@@ -106,7 +106,8 @@
         private _cachedProjectionMatrixId: number;
         private _cachedCoordinatesMode: number;
         public _samplingMode: number;
-        private _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
+        /** @hidden */
+        public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
         private _deleteBuffer: boolean;
         protected _format: Nullable<number>;
         private _delayedOnLoad: Nullable<() => void>;

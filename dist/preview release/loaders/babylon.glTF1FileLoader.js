@@ -251,9 +251,9 @@ var BABYLON;
         GLTFFileLoader.prototype.whenCompleteAsync = function () {
             var _this = this;
             return new Promise(function (resolve) {
-                _this.onCompleteObservable.add(function () {
+                _this.onCompleteObservable.addOnce(function () {
                     resolve();
-                }, undefined, undefined, undefined, true);
+                });
             });
         };
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
