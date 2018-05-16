@@ -612,6 +612,7 @@ declare module BabylonViewer {
             loadId: number;
             loadInfo: BABYLON.GLTF2.IAsset;
             constructor(_viewer: AbstractViewer, modelConfiguration: IModelConfiguration);
+            shadowsRenderedAfterLoad: boolean;
             /**
                 * Set whether this model is enabled or not.
                 */
@@ -1856,7 +1857,7 @@ declare module BabylonViewer {
                 * @param model optionally use the model to configure the camera.
                 */
             protected _configureCamera(cameraConfig?: ICameraConfiguration): void;
-            protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<BABYLON.Scene> | undefined;
+            protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): void;
             /**
                 * configure the lights.
                 *

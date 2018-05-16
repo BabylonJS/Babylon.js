@@ -3799,7 +3799,7 @@ var INSPECTOR;
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Duration";
             {
-                _this._createStatLabel("Refresh rate (refresh by second)", _this._panel);
+                _this._createStatLabel("Properties refresh rate (per second)", _this._panel);
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
                 _this._inputElement.value = _this.refreshRate;

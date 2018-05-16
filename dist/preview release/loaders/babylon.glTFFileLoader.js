@@ -251,9 +251,9 @@ var BABYLON;
         GLTFFileLoader.prototype.whenCompleteAsync = function () {
             var _this = this;
             return new Promise(function (resolve) {
-                _this.onCompleteObservable.add(function () {
+                _this.onCompleteObservable.addOnce(function () {
                     resolve();
-                }, undefined, undefined, undefined, true);
+                });
             });
         };
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
@@ -2851,6 +2851,8 @@ var BABYLON;
             function GLTFLoader() {
                 /** @hidden */
                 this._completePromises = new Array();
+                /** @hidden */
+                this._onReadyObservable = new BABYLON.Observable();
                 this._disposed = false;
                 this._state = null;
                 this._extensions = {};
@@ -3032,6 +3034,7 @@ var BABYLON;
                     }
                     var resultPromise = Promise.all(promises).then(function () {
                         _this._state = BABYLON.GLTFLoaderState.READY;
+                        _this._onReadyObservable.notifyObservers(_this);
                         _this._startAnimations();
                     });
                     resultPromise.then(function () {
@@ -4347,6 +4350,7 @@ var BABYLON;
                 delete this._gltf;
                 delete this._babylonScene;
                 this._completePromises.length = 0;
+                this._onReadyObservable.clear();
                 for (var name_4 in this._extensions) {
                     this._extensions[name_4].dispose();
                 }
@@ -4488,25 +4492,66 @@ var BABYLON;
              */
             var MSFT_lod = /** @class */ (function (_super) {
                 __extends(MSFT_lod, _super);
-                function MSFT_lod() {
-                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                function MSFT_lod(loader) {
+                    var _this = _super.call(this, loader) || this;
                     _this.name = NAME;
                     /**
                      * Maximum number of LODs to load, starting from the lowest LOD.
                      */
                     _this.maxLODsToLoad = Number.MAX_VALUE;
+                    /**
+                     * Observable raised when all node LODs of one level are loaded.
+                     * The event data is the index of the loaded LOD starting from zero.
+                     * Dispose the loader to cancel the loading of the next level of LODs.
+                     */
+                    _this.onNodeLODsLoadedObservable = new BABYLON.Observable();
+                    /**
+                     * Observable raised when all material LODs of one level are loaded.
+                     * The event data is the index of the loaded LOD starting from zero.
+                     * Dispose the loader to cancel the loading of the next level of LODs.
+                     */
+                    _this.onMaterialLODsLoadedObservable = new BABYLON.Observable();
                     _this._loadingNodeLOD = null;
                     _this._loadNodeSignals = {};
+                    _this._loadNodePromises = new Array();
                     _this._loadingMaterialLOD = null;
                     _this._loadMaterialSignals = {};
+                    _this._loadMaterialPromises = new Array();
+                    _this._loader._onReadyObservable.addOnce(function () {
+                        var _loop_1 = function (indexLOD) {
+                            Promise.all(_this._loadNodePromises[indexLOD]).then(function () {
+                                _this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
+                            });
+                        };
+                        for (var indexLOD = 0; indexLOD < _this._loadNodePromises.length; indexLOD++) {
+                            _loop_1(indexLOD);
+                        }
+                        var _loop_2 = function (indexLOD) {
+                            Promise.all(_this._loadMaterialPromises[indexLOD]).then(function () {
+                                _this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
+                            });
+                        };
+                        for (var indexLOD = 0; indexLOD < _this._loadMaterialPromises.length; indexLOD++) {
+                            _loop_2(indexLOD);
+                        }
+                    });
                     return _this;
                 }
+                MSFT_lod.prototype.dispose = function () {
+                    _super.prototype.dispose.call(this);
+                    this._loadingNodeLOD = null;
+                    this._loadNodeSignals = {};
+                    this._loadingMaterialLOD = null;
+                    this._loadMaterialSignals = {};
+                    this.onMaterialLODsLoadedObservable.clear();
+                    this.onNodeLODsLoadedObservable.clear();
+                };
                 MSFT_lod.prototype._loadNodeAsync = function (context, node) {
                     var _this = this;
                     return this._loadExtensionAsync(context, node, function (extensionContext, extension) {
                         var firstPromise;
                         var nodeLODs = _this._getLODs(extensionContext, node, _this._loader._gltf.nodes, extension.ids);
-                        var _loop_1 = function (indexLOD) {
+                        var _loop_3 = function (indexLOD) {
                             var nodeLOD = nodeLODs[indexLOD];
                             if (indexLOD !== 0) {
                                 _this._loadingNodeLOD = nodeLOD;
@@ -4537,9 +4582,11 @@ var BABYLON;
                                 _this._loader._completePromises.push(promise);
                                 _this._loadingNodeLOD = null;
                             }
+                            _this._loadNodePromises[indexLOD] = _this._loadNodePromises[indexLOD] || [];
+                            _this._loadNodePromises[indexLOD].push(promise);
                         };
                         for (var indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
-                            _loop_1(indexLOD);
+                            _loop_3(indexLOD);
                         }
                         return firstPromise;
                     });
@@ -4553,7 +4600,7 @@ var BABYLON;
                     return this._loadExtensionAsync(context, material, function (extensionContext, extension) {
                         var firstPromise;
                         var materialLODs = _this._getLODs(extensionContext, material, _this._loader._gltf.materials, extension.ids);
-                        var _loop_2 = function (indexLOD) {
+                        var _loop_4 = function (indexLOD) {
                             var materialLOD = materialLODs[indexLOD];
                             if (indexLOD !== 0) {
                                 _this._loadingMaterialLOD = materialLOD;
@@ -4586,9 +4633,11 @@ var BABYLON;
                                 _this._loader._completePromises.push(promise);
                                 _this._loadingMaterialLOD = null;
                             }
+                            _this._loadMaterialPromises[indexLOD] = _this._loadMaterialPromises[indexLOD] || [];
+                            _this._loadMaterialPromises[indexLOD].push(promise);
                         };
                         for (var indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
-                            _loop_2(indexLOD);
+                            _loop_4(indexLOD);
                         }
                         return firstPromise;
                     });

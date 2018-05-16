@@ -1082,6 +1082,8 @@ declare module BABYLON.GLTF2 {
         _babylonScene: Scene;
         /** @hidden */
         _completePromises: Promise<void>[];
+        /** @hidden */
+        _onReadyObservable: Observable<IGLTFLoader>;
         private _disposed;
         private _state;
         private _extensions;
@@ -1321,10 +1323,26 @@ declare module BABYLON.GLTF2.Extensions {
          * Maximum number of LODs to load, starting from the lowest LOD.
          */
         maxLODsToLoad: number;
+        /**
+         * Observable raised when all node LODs of one level are loaded.
+         * The event data is the index of the loaded LOD starting from zero.
+         * Dispose the loader to cancel the loading of the next level of LODs.
+         */
+        onNodeLODsLoadedObservable: Observable<number>;
+        /**
+         * Observable raised when all material LODs of one level are loaded.
+         * The event data is the index of the loaded LOD starting from zero.
+         * Dispose the loader to cancel the loading of the next level of LODs.
+         */
+        onMaterialLODsLoadedObservable: Observable<number>;
         private _loadingNodeLOD;
         private _loadNodeSignals;
+        private _loadNodePromises;
         private _loadingMaterialLOD;
         private _loadMaterialSignals;
+        private _loadMaterialPromises;
+        constructor(loader: GLTFLoader);
+        dispose(): void;
         protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>>;
         protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;

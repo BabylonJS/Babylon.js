@@ -5397,6 +5397,21 @@
             }
         }
 
+        /**
+         * This function will remove the local cached buffer data from texture.
+         * It will save memory but will prevent the texture from being rebuilt
+         */
+        public cleanCachedTextureBuffer(): void {
+            for (var baseTexture of this.textures) {
+                let buffer = (<Texture>baseTexture)._buffer;
+
+                if (buffer) {
+                    (<Texture>baseTexture)._buffer = null;
+                }
+            }
+        }
+        
+
         // Octrees
 
         /**

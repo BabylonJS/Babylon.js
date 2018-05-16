@@ -159,7 +159,7 @@ module INSPECTOR {
             title = Helpers.CreateDiv('stat-title2', this._panel);
             title.textContent = "Duration";
             {
-                this._createStatLabel("Refresh rate (refresh by second)", this._panel);
+                this._createStatLabel("Properties refresh rate (per second)", this._panel);
                 let elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._inputElement = Inspector.DOCUMENT.createElement('input');
                 this._inputElement.value = this.refreshRate;
