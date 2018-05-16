@@ -30,6 +30,7 @@
 - Nav-Bar is now disaplayed on fullscreen per default ([RaananW](https://github.com/RaananW))
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
+- Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
