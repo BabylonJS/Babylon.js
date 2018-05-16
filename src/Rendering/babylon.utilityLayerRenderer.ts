@@ -13,8 +13,8 @@ module BABYLON {
         */
         public shouldRender:boolean = true;
 
-        private _afterRenderObservable:Nullable<Observer<Scene>>;
-        private _sceneDisposeObservable:Nullable<Observer<Scene>>;
+        private _afterRenderObserver:Nullable<Observer<Scene>>;
+        private _sceneDisposeObserver:Nullable<Observer<Scene>>;
         /**
          * Instantiates a UtilityLayerRenderer
          * @param originalScene the original scene that will be rendered on top of
@@ -28,13 +28,13 @@ module BABYLON {
             this.utilityLayerScene.clearColor = new BABYLON.Color4(0,0,0,0);
             this.utilityLayerScene.autoClear = false;
 
-            this._afterRenderObservable = this.originalScene.onAfterRenderObservable.add(()=>{
+            this._afterRenderObserver = this.originalScene.onAfterRenderObservable.add(()=>{
                 if(this.shouldRender){
                     this.render();
                 }
             });
 
-            this._sceneDisposeObservable = this.originalScene.onDisposeObservable.add(()=>{
+            this._sceneDisposeObserver = this.originalScene.onDisposeObservable.add(()=>{
                 this.dispose();
             })
         }
@@ -51,11 +51,11 @@ module BABYLON {
          * Disposes of the renderer
          */
         public dispose(){
-            if(this._afterRenderObservable){
-                this.originalScene.onAfterRenderObservable.remove(this._afterRenderObservable);
+            if(this._afterRenderObserver){
+                this.originalScene.onAfterRenderObservable.remove(this._afterRenderObserver);
             }
-            if(this._sceneDisposeObservable){
-                this.originalScene.onDisposeObservable.remove(this._sceneDisposeObservable);
+            if(this._sceneDisposeObserver){
+                this.originalScene.onDisposeObservable.remove(this._sceneDisposeObserver);
             }
             this.utilityLayerScene.dispose();
         }
