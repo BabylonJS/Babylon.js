@@ -1,21 +1,29 @@
-window.prepareTerrain = function() {
-    var terrain = new BABYLON.TerrainMaterial("terrain", scene);
-    terrain.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-    terrain.specularPower = 64;
-    terrain.mixTexture = new BABYLON.Texture("/playground/textures/mixMap.png", scene);
-    terrain.diffuseTexture1 = new BABYLON.Texture("/playground/textures/floor.png", scene);
-    terrain.diffuseTexture2 = new BABYLON.Texture("/playground/textures/rock.png", scene);
-    terrain.diffuseTexture3 = new BABYLON.Texture("/playground/textures/grass.png", scene);
-    terrain.diffuseTexture4 = new BABYLON.Texture("/playground/textures/floor.png", scene);
+window.prepareMix = function() {
+    var mix = new BABYLON.MixMaterial("mix", scene);
+    mix.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    mix.specularPower = 64;
+    mix.mixTexture1 = new BABYLON.Texture("/playground/textures/mixMap.png", scene);
+    mix.mixTexture2 = new BABYLON.Texture("/playground/textures/mixMap_2.png", scene);
+
+    mix.diffuseTexture1 = new BABYLON.Texture("/playground/textures/floor.png", scene);
+    mix.diffuseTexture2 = new BABYLON.Texture("/playground/textures/rock.png", scene);
+    mix.diffuseTexture3 = new BABYLON.Texture("/playground/textures/grass.png", scene);
+    mix.diffuseTexture4 = new BABYLON.Texture("/playground/textures/floor.png", scene);
+
+    mix.diffuseTexture1.uScale = mix.diffuseTexture1.vScale = 10;
+    mix.diffuseTexture2.uScale = mix.diffuseTexture2.vScale = 10;
+    mix.diffuseTexture3.uScale = mix.diffuseTexture3.vScale = 10;
+    mix.diffuseTexture4.uScale = mix.diffuseTexture4.vScale = 10;
+
+    mix.diffuseTexture5 = new BABYLON.Texture("/playground/textures/leopard_fur.jpg", scene);
+    mix.diffuseTexture6 = new BABYLON.Texture("/playground/textures/wood.jpg", scene);
+    mix.diffuseTexture7 = new BABYLON.Texture("/playground/textures/sand.jpg", scene);
+    mix.diffuseTexture8 = new BABYLON.Texture("/playground/textures/crate.png", scene);
+
+    mix.diffuseTexture5.uScale = mix.diffuseTexture5.vScale = 10;
+    mix.diffuseTexture6.uScale = mix.diffuseTexture6.vScale = 10;
+    mix.diffuseTexture7.uScale = mix.diffuseTexture7.vScale = 10;
+    mix.diffuseTexture8.uScale = mix.diffuseTexture8.vScale = 10;
     
-    terrain.bumpTexture1 = new BABYLON.Texture("/playground/textures/floor_bump.PNG", scene);
-    terrain.bumpTexture2 = new BABYLON.Texture("/playground/textures/rockn.png", scene);
-    terrain.bumpTexture3 = new BABYLON.Texture("/playground/textures/grassn.png", scene);
-    terrain.bumpTexture4 = new BABYLON.Texture("/playground/textures/floor_bump.PNG", scene);
-    
-    terrain.diffuseTexture1.uScale = terrain.diffuseTexture1.vScale = 10;
-    terrain.diffuseTexture2.uScale = terrain.diffuseTexture2.vScale = 10;
-    terrain.diffuseTexture3.uScale = terrain.diffuseTexture3.vScale = 10;
-    
-    return terrain;
+    return mix;
 };

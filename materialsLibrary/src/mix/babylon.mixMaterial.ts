@@ -1,10 +1,8 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-
     class MixMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
-        public BUMP = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
@@ -32,12 +30,12 @@ module BABYLON {
          * Mix textures
          */
 
-        @serializeAsTexture("mixTexture")
-        private _mixTexture: BaseTexture;
+        @serializeAsTexture("mixTexture1")
+        private _mixTexture1: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public mixTexture: BaseTexture;
+        public mixTexture1: BaseTexture;
 
-        @serializeAsTexture("mixTexture")
+        @serializeAsTexture("mixTexture2")
         private _mixTexture2: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public mixTexture2: BaseTexture;
@@ -66,29 +64,25 @@ module BABYLON {
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture4: Texture;
 
-        /**
-         * Bump textures
-         */
-
-        @serializeAsTexture("bumpTexture1")
-        private _bumpTexture1: Texture;
+        @serializeAsTexture("diffuseTexture1")
+        private _diffuseTexture5: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture1: Texture;
+        public diffuseTexture5: Texture;
 
-        @serializeAsTexture("bumpTexture2")
-        private _bumpTexture2: Texture;
+        @serializeAsTexture("diffuseTexture2")
+        private _diffuseTexture6: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture2: Texture;
+        public diffuseTexture6: Texture;
 
-        @serializeAsTexture("bumpTexture3")
-        private _bumpTexture3: Texture;
+        @serializeAsTexture("diffuseTexture3")
+        private _diffuseTexture7: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture3: Texture;
+        public diffuseTexture7: Texture;
 
-        @serializeAsTexture("bumpTexture4")
-        private _bumpTexture4: Texture;
+        @serializeAsTexture("diffuseTexture4")
+        private _diffuseTexture8: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture4: Texture;
+        public diffuseTexture8: Texture;
 
         /**
          * Uniforms
@@ -157,8 +151,8 @@ module BABYLON {
             // Textures
             if (scene.texturesEnabled) {
                 if (StandardMaterial.DiffuseTextureEnabled) {
-                    if (this.mixTexture) {
-                        if (!this.mixTexture.isReady()) {
+                    if (this._mixTexture1) {
+                        if (!this._mixTexture1.isReady()) {
                             return false;
                         } else {
                             defines._needUVs = true;
@@ -171,10 +165,6 @@ module BABYLON {
                         } else {
                             defines.MIXMAP2 = true;
                         }
-                    }
-                    if ((this.bumpTexture1 || this.bumpTexture2 || this.bumpTexture3 || this.bumpTexture4) && StandardMaterial.BumpTextureEnabled) {
-                        defines._needNormals = true;
-                        defines.BUMP = true;
                     }
                 }
             }
@@ -231,19 +221,21 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
                 // Legacy browser patch
-                var shaderName = "terrain";
+                var shaderName = "mix";
                 var join = defines.toString();
-                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
+                var uniforms = [
+                    "world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vTextureInfos",
                     "mBones",
                     "vClipPlane", "textureMatrix",
-                    "diffuse1Infos", "diffuse2Infos", "diffuse3Infos", "diffuse4Infos"
+                    "diffuse1Infos", "diffuse2Infos", "diffuse3Infos", "diffuse4Infos",
+                    "diffuse5Infos", "diffuse6Infos", "diffuse7Infos", "diffuse8Infos"
                 ];
                 var samplers = [
                     "mixMap1Sampler", "mixMap2Sampler",
                     "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler", "diffuse4Sampler",
-                    "bump1Sampler", "bump2Sampler", "bump3Sampler"
+                    "diffuse5Sampler", "diffuse6Sampler", "diffuse7Sampler", "diffuse8Sampler"
                 ];
 
                 var uniformBuffers = new Array<string>()
@@ -302,10 +294,10 @@ module BABYLON {
 
             if (this._mustRebind(scene, effect)) {
                 // Textures        
-                if (this.mixTexture) {
-                    this._activeEffect.setTexture("mixMap1Sampler", this._mixTexture);
-                    this._activeEffect.setFloat2("vTextureInfos", this._mixTexture.coordinatesIndex, this._mixTexture.level);
-                    this._activeEffect.setMatrix("textureMatrix", this._mixTexture.getTextureMatrix());
+                if (this._mixTexture1) {
+                    this._activeEffect.setTexture("mixMap1Sampler", this._mixTexture1);
+                    this._activeEffect.setFloat2("vTextureInfos", this._mixTexture1.coordinatesIndex, this._mixTexture1.level);
+                    this._activeEffect.setMatrix("textureMatrix", this._mixTexture1.getTextureMatrix());
 
                     if (StandardMaterial.DiffuseTextureEnabled) {
                         if (this._diffuseTexture1) {
@@ -325,25 +317,29 @@ module BABYLON {
                             this._activeEffect.setFloat2("diffuse4Infos", this._diffuseTexture4.uScale, this._diffuseTexture4.vScale);
                         }
                     }
-
-                    if (StandardMaterial.BumpTextureEnabled && scene.getEngine().getCaps().standardDerivatives) {
-                        if (this._bumpTexture1) {
-                            this._activeEffect.setTexture("bump1Sampler", this._bumpTexture1);
-                        }
-                        if (this._bumpTexture2) {
-                            this._activeEffect.setTexture("bump2Sampler", this._bumpTexture2);
-                        }
-                        if (this._bumpTexture3) {
-                            this._activeEffect.setTexture("bump3Sampler", this._bumpTexture3);
-                        }
-                        if (this.bumpTexture4) {
-                            this._activeEffect.setTexture("bump4Sampler", this._bumpTexture4);
-                        }
-                    }
                 }
 
                 if (this.mixTexture2) {
                     this._activeEffect.setTexture("mixMap2Sampler", this._mixTexture2);
+
+                    if (StandardMaterial.DiffuseTextureEnabled) {
+                        if (this._diffuseTexture5) {
+                            this._activeEffect.setTexture("diffuse5Sampler", this._diffuseTexture5);
+                            this._activeEffect.setFloat2("diffuse5Infos", this._diffuseTexture5.uScale, this._diffuseTexture5.vScale);
+                        }
+                        if (this._diffuseTexture6) {
+                            this._activeEffect.setTexture("diffuse6Sampler", this._diffuseTexture6);
+                            this._activeEffect.setFloat2("diffuse66nfos", this._diffuseTexture6.uScale, this._diffuseTexture6.vScale);
+                        }
+                        if (this._diffuseTexture7) {
+                            this._activeEffect.setTexture("diffuse7Sampler", this._diffuseTexture7);
+                            this._activeEffect.setFloat2("diffuse7Infos", this._diffuseTexture7.uScale, this._diffuseTexture7.vScale);
+                        }
+                        if (this._diffuseTexture8) {
+                            this._activeEffect.setTexture("diffuse8Sampler", this._diffuseTexture8);
+                            this._activeEffect.setFloat2("diffuse8Infos", this._diffuseTexture8.uScale, this._diffuseTexture8.vScale);
+                        }
+                    }
                 }
 
                 // Clip plane
@@ -381,8 +377,8 @@ module BABYLON {
         public getAnimatables(): IAnimatable[] {
             var results = [];
 
-            if (this.mixTexture && this.mixTexture.animations && this.mixTexture.animations.length > 0) {
-                results.push(this.mixTexture);
+            if (this._mixTexture1 && this._mixTexture1.animations && this._mixTexture1.animations.length > 0) {
+                results.push(this._mixTexture1);
             }
 
             return results;
@@ -391,8 +387,8 @@ module BABYLON {
         public getActiveTextures(): BaseTexture[] {
             var activeTextures = super.getActiveTextures();
 
-            if (this._mixTexture) {
-                activeTextures.push(this._mixTexture);
+            if (this._mixTexture1) {
+                activeTextures.push(this._mixTexture1);
             }
 
             if (this._diffuseTexture1) {
@@ -407,16 +403,8 @@ module BABYLON {
                 activeTextures.push(this._diffuseTexture3);
             }
 
-            if (this._bumpTexture1) {
-                activeTextures.push(this._bumpTexture1);
-            }
-
-            if (this._bumpTexture2) {
-                activeTextures.push(this._bumpTexture2);
-            }
-
-            if (this._bumpTexture3) {
-                activeTextures.push(this._bumpTexture3);
+            if (this._diffuseTexture4) {
+                activeTextures.push(this._diffuseTexture4);
             }
 
             return activeTextures;
@@ -427,7 +415,7 @@ module BABYLON {
                 return true;
             }
 
-            if (this._mixTexture === texture) {
+            if (this._mixTexture1 === texture) {
                 return true;
             }
 
@@ -443,15 +431,7 @@ module BABYLON {
                 return true;
             }
 
-            if (this._bumpTexture1 === texture) {
-                return true;
-            }
-
-            if (this._bumpTexture2 === texture) {
-                return true;
-            }
-
-            if (this._bumpTexture3 === texture) {
+            if (this._diffuseTexture4 === texture) {
                 return true;
             }
 
@@ -459,8 +439,8 @@ module BABYLON {
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
-            if (this.mixTexture) {
-                this.mixTexture.dispose();
+            if (this._mixTexture1) {
+                this._mixTexture1.dispose();
             }
 
             super.dispose(forceDisposeEffect);
