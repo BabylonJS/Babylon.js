@@ -34,6 +34,7 @@
 - Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
+- VR experience helper will now fire pointer events even when no mesh is currently hit ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
