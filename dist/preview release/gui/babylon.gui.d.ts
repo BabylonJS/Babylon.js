@@ -965,8 +965,105 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
-    class Control3D {
+    /**
+     * Class used to manage 3D user interface
+     */
+    class GUI3DManager implements BABYLON.IDisposable {
+        private _scene;
+        private _sceneDisposeObserver;
+        private _utilityLayer;
+        private _rootContainer;
+        /** Gets the hosting scene */
+        readonly scene: Scene;
+        /**
+         * Creates a new GUI3DManager
+         * @param scene
+         */
+        constructor(scene?: Scene);
+        /**
+         * Gets the root container
+         */
+        readonly rootContainer: Container3D;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used as base class for controls
+     */
+    class Control3D implements IDisposable, IBehaviorAware<Control3D> {
+        /** Defines the control name */
+        name: string | undefined;
+        /** @hidden */
+        _host: GUI3DManager;
+        private _behaviors;
+        /**
+         * Gets the list of attached behaviors
+         * @see http://doc.babylonjs.com/features/behaviour
+         */
+        readonly behaviors: Behavior<Control3D>[];
+        /**
+         * Attach a behavior to the control
+         * @see http://doc.babylonjs.com/features/behaviour
+         * @param behavior defines the behavior to attach
+         * @returns the current control
+         */
+        addBehavior(behavior: Behavior<Control3D>): Control3D;
+        /**
+         * Remove an attached behavior
+         * @see http://doc.babylonjs.com/features/behaviour
+         * @param behavior defines the behavior to attach
+         * @returns the current control
+         */
+        removeBehavior(behavior: Behavior<Control3D>): Control3D;
+        /**
+         * Gets an attached behavior by name
+         * @param name defines the name of the behavior to look for
+         * @see http://doc.babylonjs.com/features/behaviour
+         * @returns null if behavior was not found else the requested behavior
+         */
+        getBehaviorByName(name: string): Nullable<Behavior<Control3D>>;
+        /**
+         * Creates a new control
+         * @param name defines the control name
+         */
+        constructor(
+            /** Defines the control name */
+            name?: string | undefined);
+        /**
+         * Gets a string representing the class name
+         */
         readonly typeName: string;
         protected _getTypeName(): string;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create containers for controls
+     */
+    class Container3D extends Control3D {
+        private _children;
+        /**
+         * Creates a new container
+         * @param name defines the container name
+         */
+        constructor(name?: string);
+        readonly typeName: string;
+        protected _getTypeName(): string;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }

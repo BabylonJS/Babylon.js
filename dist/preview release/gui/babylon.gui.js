@@ -5592,15 +5592,159 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to manage 3D user interface
+         */
+        var GUI3DManager = /** @class */ (function () {
+            /**
+             * Creates a new GUI3DManager
+             * @param scene
+             */
+            function GUI3DManager(scene) {
+                var _this = this;
+                this._scene = scene || BABYLON.Engine.LastCreatedScene;
+                this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                    _this._sceneDisposeObserver = null;
+                    _this._utilityLayer = null;
+                    _this.dispose();
+                });
+                this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
+                this._rootContainer = new GUI.Container3D("RootContainer");
+                this._rootContainer._host = this;
+            }
+            Object.defineProperty(GUI3DManager.prototype, "scene", {
+                /** Gets the hosting scene */
+                get: function () {
+                    return this._scene;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(GUI3DManager.prototype, "rootContainer", {
+                /**
+                 * Gets the root container
+                 */
+                get: function () {
+                    return this._rootContainer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Releases all associated resources
+             */
+            GUI3DManager.prototype.dispose = function () {
+                this._rootContainer.dispose();
+                if (this._scene && this._sceneDisposeObserver) {
+                    this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+                    this._sceneDisposeObserver = null;
+                }
+                if (this._utilityLayer) {
+                    this._utilityLayer.dispose();
+                }
+            };
+            return GUI3DManager;
+        }());
+        GUI.GUI3DManager = GUI3DManager;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used as base class for controls
+         */
         var Control3D = /** @class */ (function () {
-            function Control3D() {
+            /**
+             * Creates a new control
+             * @param name defines the control name
+             */
+            function Control3D(
+            /** Defines the control name */
+            name) {
+                this.name = name;
+                // Behaviors
+                this._behaviors = new Array();
             }
+            Object.defineProperty(Control3D.prototype, "behaviors", {
+                /**
+                 * Gets the list of attached behaviors
+                 * @see http://doc.babylonjs.com/features/behaviour
+                 */
+                get: function () {
+                    return this._behaviors;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Attach a behavior to the control
+             * @see http://doc.babylonjs.com/features/behaviour
+             * @param behavior defines the behavior to attach
+             * @returns the current control
+             */
+            Control3D.prototype.addBehavior = function (behavior) {
+                var _this = this;
+                var index = this._behaviors.indexOf(behavior);
+                if (index !== -1) {
+                    return this;
+                }
+                behavior.init();
+                var scene = this._host.scene;
+                if (scene.isLoading) {
+                    // We defer the attach when the scene will be loaded
+                    scene.onDataLoadedObservable.addOnce(function () {
+                        behavior.attach(_this);
+                    });
+                }
+                else {
+                    behavior.attach(this);
+                }
+                this._behaviors.push(behavior);
+                return this;
+            };
+            /**
+             * Remove an attached behavior
+             * @see http://doc.babylonjs.com/features/behaviour
+             * @param behavior defines the behavior to attach
+             * @returns the current control
+             */
+            Control3D.prototype.removeBehavior = function (behavior) {
+                var index = this._behaviors.indexOf(behavior);
+                if (index === -1) {
+                    return this;
+                }
+                this._behaviors[index].detach();
+                this._behaviors.splice(index, 1);
+                return this;
+            };
+            /**
+             * Gets an attached behavior by name
+             * @param name defines the name of the behavior to look for
+             * @see http://doc.babylonjs.com/features/behaviour
+             * @returns null if behavior was not found else the requested behavior
+             */
+            Control3D.prototype.getBehaviorByName = function (name) {
+                for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
+                    var behavior = _a[_i];
+                    if (behavior.name === name) {
+                        return behavior;
+                    }
+                }
+                return null;
+            };
             Object.defineProperty(Control3D.prototype, "typeName", {
+                /**
+                 * Gets a string representing the class name
+                 */
                 get: function () {
                     return this._getTypeName();
                 },
@@ -5610,9 +5754,66 @@ var BABYLON;
             Control3D.prototype._getTypeName = function () {
                 return "Control3D";
             };
+            /**
+             * Releases all associated resources
+             */
+            Control3D.prototype.dispose = function () {
+                // Behaviors
+                for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
+                    var behavior = _a[_i];
+                    behavior.detach();
+                }
+            };
             return Control3D;
         }());
         GUI.Control3D = Control3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create containers for controls
+         */
+        var Container3D = /** @class */ (function (_super) {
+            __extends(Container3D, _super);
+            /**
+             * Creates a new container
+             * @param name defines the container name
+             */
+            function Container3D(name) {
+                var _this = _super.call(this, name) || this;
+                _this._children = new Array();
+                return _this;
+            }
+            Object.defineProperty(Container3D.prototype, "typeName", {
+                get: function () {
+                    return this._getTypeName();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Container3D.prototype._getTypeName = function () {
+                return "Container3D";
+            };
+            /**
+             * Releases all associated resources
+             */
+            Container3D.prototype.dispose = function () {
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control.dispose();
+                }
+                this._children = [];
+                _super.prototype.dispose.call(this);
+            };
+            return Container3D;
+        }(GUI.Control3D));
+        GUI.Container3D = Container3D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

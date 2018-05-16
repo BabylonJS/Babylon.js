@@ -1659,7 +1659,10 @@
                     "../../gui/src/2D/controls/inputText.ts",
                     "../../gui/src/2D/controls/virtualKeyboard.ts",
                     "../../gui/src/2D/controls/multiLine.ts",
-                    "../../gui/src/3D/controls/control3D.ts"
+                    "../../gui/src/3D/gui3DManager.ts",
+                    "../../gui/src/3D/controls/control3D.ts",
+                    "../../gui/src/3D/controls/container3D.ts",
+                    "../../gui/src/3D/controls/button3D.ts"
                 ],
                 "output": "babylon.gui.js",
                 "buildAsModule": true,
