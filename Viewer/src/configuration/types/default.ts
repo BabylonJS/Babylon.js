@@ -28,7 +28,10 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         },
         viewer: {
-            html: require("../../../assets/templates/default/defaultViewer.html")
+            html: require("../../../assets/templates/default/defaultViewer.html"),
+            params: {
+                enableDragAndDrop: false
+            }
         },
         navBar: {
             html: require("../../../assets/templates/default/navbar.html"),
