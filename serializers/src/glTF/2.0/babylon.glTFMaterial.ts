@@ -394,27 +394,29 @@ module BABYLON.GLTF2 {
          * @returns Promise with texture
          */
         public static _SetAlphaToOneAsync(texture: BaseTexture, useAlpha: boolean): Promise<Texture> {
-            if (useAlpha) {
-                return Promise.resolve(texture as Texture);
-            }
-            else {
-                const scene = texture.getScene();
-                if (scene == null) {
-                    return Promise.reject(`Scene not available for texture ${texture.name}`);
+            return new Promise((resolve, reject) => {
+                if (useAlpha) {
+                    resolve(texture as Texture);
                 }
                 else {
-                    const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
-                    if (proceduralTexture == null) {
-                        return Promise.reject(`Cannot create procedural texture for ${texture.name}!`);
+                    const scene = texture.getScene();
+                    if (scene == null) {
+                        reject(`Scene not available for texture ${texture.name}`);
                     }
                     else {
-                        return new Promise((resolve, reject) => {
+                        const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
+                        if (proceduralTexture == null) {
+                            reject(`Cannot create procedural texture for ${texture.name}!`);
+                        }
+                        else {
                             proceduralTexture.setTexture('textureSampler', texture as Texture);
                             proceduralTexture.onLoadObservable.add(() => { resolve(proceduralTexture) });
-                        })
+                        }
                     }
                 }
-            }
+
+            })
+
         }
 
         /**
