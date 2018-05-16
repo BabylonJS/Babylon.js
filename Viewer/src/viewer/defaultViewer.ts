@@ -46,16 +46,23 @@ export class DefaultViewer extends AbstractViewer {
             });
         }
 
-        let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
-        }, () => {
-        }, () => {
-        }, () => {
-        }, function () {
-        }, (file: File) => {
-            this.loadModel(file);
-        }, () => {
-        });
-        filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
+        if (this.configuration.templates && this.configuration.templates.viewer) {
+            if (this.configuration.templates.viewer.params && this.configuration.templates.viewer.params.disableDragAndDrop) {
+                // noop for now
+            } else {
+                let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
+                }, () => {
+                }, () => {
+                }, () => {
+                }, function () {
+                }, (file: File) => {
+                    this.loadModel(file);
+                }, () => {
+                });
+                filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
+            }
+        }
+
 
         return super._onTemplatesLoaded();
     }
