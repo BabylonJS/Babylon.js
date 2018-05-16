@@ -408,9 +408,9 @@ module BABYLON.GLTF2 {
                         return Promise.reject(`Cannot create procedural texture for ${texture.name}!`);
                     }
                     else {
-                        proceduralTexture.setTexture('textureSampler', texture as Texture);
                         return new Promise((resolve, reject) => {
-                            proceduralTexture.onLoadObservable.add(() => { return proceduralTexture });
+                            proceduralTexture.setTexture('textureSampler', texture as Texture);
+                            proceduralTexture.onLoadObservable.add(() => { resolve(proceduralTexture) });
                         })
                     }
                 }
