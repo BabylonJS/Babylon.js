@@ -3,7 +3,7 @@
 import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration/configuration';
 import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight, FilesInput } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
@@ -43,10 +43,25 @@ export class DefaultViewer extends AbstractViewer {
         if (closeButton) {
             closeButton.addEventListener('pointerdown', () => {
                 this.hideOverlayScreen();
-            })
+            });
         }
 
+        let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
+        }, () => {
+        }, () => {
+        }, () => {
+        }, function () {
+        }, (file: File) => {
+            this.loadModel(file);
+        }, () => {
+        });
+        filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
+
         return super._onTemplatesLoaded();
+    }
+
+    private _dropped(evt: EventCallback) {
+
     }
 
     private _initNavbar() {
@@ -302,7 +317,7 @@ export class DefaultViewer extends AbstractViewer {
      * The scene will automatically be cleared of the old models, if exist.
      * @param model the configuration object (or URL) to load.
      */
-    public loadModel(model?: string | IModelConfiguration): Promise<ViewerModel> {
+    public loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel> {
         if (!model) {
             model = this.configuration.model;
         }

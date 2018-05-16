@@ -527,27 +527,37 @@ export abstract class AbstractViewer {
      * @param clearScene should the scene be cleared before loading this model
      * @returns a ViewerModel object that is not yet fully loaded.
      */
-    public initModel(modelConfig: string | IModelConfiguration, clearScene: boolean = true): ViewerModel {
-        let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
-        if (!modelUrl) {
-            throw new Error("no model url provided");
-        }
-        if (clearScene) {
-            this.sceneManager.clearScene(true, false);
-        }
+    public initModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): ViewerModel {
+
         let configuration: IModelConfiguration;
         if (typeof modelConfig === 'string') {
             configuration = {
                 url: modelConfig
             }
+        } else if (modelConfig instanceof File) {
+            configuration = {
+                file: modelConfig,
+                root: "file:"
+            }
         } else {
             configuration = modelConfig
+        }
+
+        if (!configuration.url && !configuration.file) {
+            throw new Error("no model provided");
+        }
+
+        if (clearScene) {
+            this.sceneManager.clearScene(true, false);
         }
 
         //merge the configuration for future models:
         if (this._configuration.model && typeof this._configuration.model === 'object') {
             let globalConfig = deepmerge({}, this._configuration.model)
             configuration = deepmerge(globalConfig, configuration);
+            if (modelConfig instanceof File) {
+                configuration.file = modelConfig;
+            }
         } else {
             this._configuration.model = configuration;
         }
@@ -581,7 +591,7 @@ export abstract class AbstractViewer {
      * @param clearScene Should the scene be cleared before loading the model
      * @returns a Promise the fulfills when the model finished loading successfully. 
      */
-    public loadModel(modelConfig: string | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
+    public loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
             return Promise.reject("another model is curently being loaded.");
