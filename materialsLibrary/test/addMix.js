@@ -16,13 +16,13 @@ window.prepareMix = function() {
     mix.diffuseTexture4.uScale = mix.diffuseTexture4.vScale = 10;
 
     mix.diffuseTexture5 = new BABYLON.Texture("/playground/textures/leopard_fur.jpg", scene);
-    mix.diffuseTexture6 = new BABYLON.Texture("/playground/textures/wood.jpg", scene);
+    mix.diffuseTexture6 = new BABYLON.Texture("/playground/textures/fur.jpg", scene);
     mix.diffuseTexture7 = new BABYLON.Texture("/playground/textures/sand.jpg", scene);
     mix.diffuseTexture8 = new BABYLON.Texture("/playground/textures/crate.png", scene);
 
     mix.diffuseTexture5.uScale = mix.diffuseTexture5.vScale = 10;
     mix.diffuseTexture6.uScale = mix.diffuseTexture6.vScale = 10;
-    mix.diffuseTexture7.uScale = mix.diffuseTexture7.vScale = 10;
+    mix.diffuseTexture7.uScale = mix.diffuseTexture7.vScale = 5;
     mix.diffuseTexture8.uScale = mix.diffuseTexture8.vScale = 10;
     
     return mix;
