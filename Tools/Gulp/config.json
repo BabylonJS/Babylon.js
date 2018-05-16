@@ -1011,7 +1011,8 @@
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Debug/babylon.physicsViewer.js",
-                "../../src/Rendering/babylon.boundingBoxRenderer.js"
+                "../../src/Rendering/babylon.boundingBoxRenderer.js",
+                "../../src/Rendering/babylon.utilityLayerRenderer.js"
             ],
             "dependUpon": [
                 "shaderMaterial",
