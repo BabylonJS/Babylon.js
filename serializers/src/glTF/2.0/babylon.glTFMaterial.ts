@@ -400,10 +400,7 @@ module BABYLON.GLTF2 {
                 }
                 else {
                     const scene = texture.getScene();
-                    if (scene == null) {
-                        reject(`Scene not available for texture ${texture.name}`);
-                    }
-                    else {
+                    if (scene) {
                         const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
                         if (proceduralTexture == null) {
                             reject(`Cannot create procedural texture for ${texture.name}!`);
@@ -412,6 +409,9 @@ module BABYLON.GLTF2 {
                             proceduralTexture.setTexture('textureSampler', texture as Texture);
                             proceduralTexture.onLoadObservable.add(() => { resolve(proceduralTexture) });
                         }
+                    }
+                    else {
+                        reject(`Scene not available for texture ${texture.name}`);
                     }
                 }
 
