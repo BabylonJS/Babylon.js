@@ -1382,17 +1382,6 @@
             return this._boundingBoxRenderer;
         }
 
-        private _utilityLayerRenderer:UtilityLayerRenderer;
-        /** 
-         * Gets the UtilityLayerRenderer used to render an overlay scene layer without impacting the existing scene
-         */
-        public get utilityLayerRenderer(): UtilityLayerRenderer {
-            if(!this._utilityLayerRenderer){
-                this._utilityLayerRenderer = new UtilityLayerRenderer(this);
-            }
-            return this._utilityLayerRenderer;
-        }
-
         /** 
          * Gets the outline renderer associated with the scene
          * @returns a OutlineRenderer
