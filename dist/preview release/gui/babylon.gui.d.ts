@@ -975,6 +975,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         /** Gets the hosting scene */
         readonly scene: Scene;
+        readonly utilityLayer: Nullable<UtilityLayerRenderer>;
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -984,6 +985,24 @@ declare module BABYLON.GUI {
          * Gets the root container
          */
         readonly rootContainer: Container3D;
+        /**
+         * Gets a boolean indicating if the given control is in the root child list
+         * @param control defines the control to check
+         * @returns true if the control is in the root child list
+         */
+        containsControl(control: Control3D): boolean;
+        /**
+         * Adds a control to the root child list
+         * @param control defines the control to add
+         * @returns the current manager
+         */
+        addControl(control: Control3D): GUI3DManager;
+        /**
+         * Removes the control from the root child list
+         * @param control defines the control to remove
+         * @returns the current container
+         */
+        removeControl(control: Control3D): GUI3DManager;
         /**
          * Releases all associated resources
          */
@@ -1001,6 +1020,11 @@ declare module BABYLON.GUI {
         name: string | undefined;
         /** @hidden */
         _host: GUI3DManager;
+        private _mesh;
+        /**
+         * Gets or sets the parent container
+         */
+        parent: Nullable<Container3D>;
         private _behaviors;
         /**
          * Gets the list of attached behaviors
@@ -1041,6 +1065,19 @@ declare module BABYLON.GUI {
         readonly typeName: string;
         protected _getTypeName(): string;
         /**
+         * Get the attached mesh used to render the control
+         * @param scene defines the scene where the mesh must be attached
+         * @returns the attached mesh or null if none
+         */
+        getAttachedMesh(scene: Scene): Nullable<Mesh>;
+        /**
+         * Mesh creation.
+         * Can be overriden by children
+         * @param scene defines the scene where the mesh must be attached
+         * @returns the attached mesh or null if none
+         */
+        protected _createMesh(scene: Scene): Nullable<Mesh>;
+        /**
          * Releases all associated resources
          */
         dispose(): void;
@@ -1059,11 +1096,44 @@ declare module BABYLON.GUI {
          * @param name defines the container name
          */
         constructor(name?: string);
-        readonly typeName: string;
+        /**
+         * Gets a boolean indicating if the given control is in the children of this control
+         * @param control defines the control to check
+         * @returns true if the control is in the child list
+         */
+        containsControl(control: Control3D): boolean;
+        /**
+         * Adds a control to the children of this control
+         * @param control defines the control to add
+         * @returns the current container
+         */
+        addControl(control: Control3D): Container3D;
+        /**
+         * Removes the control from the children of this control
+         * @param control defines the control to remove
+         * @returns the current container
+         */
+        removeControl(control: Control3D): Container3D;
         protected _getTypeName(): string;
         /**
          * Releases all associated resources
          */
         dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a button in 3D
+     */
+    class Button3D extends Control3D {
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        protected _getTypeName(): string;
+        protected _createMesh(scene: Scene): Mesh;
     }
 }

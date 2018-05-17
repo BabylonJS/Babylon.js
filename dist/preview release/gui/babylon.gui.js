@@ -5625,6 +5625,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(GUI3DManager.prototype, "utilityLayer", {
+                get: function () {
+                    return this._utilityLayer;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(GUI3DManager.prototype, "rootContainer", {
                 /**
                  * Gets the root container
@@ -5635,6 +5642,32 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Gets a boolean indicating if the given control is in the root child list
+             * @param control defines the control to check
+             * @returns true if the control is in the root child list
+             */
+            GUI3DManager.prototype.containsControl = function (control) {
+                return this._rootContainer.containsControl(control);
+            };
+            /**
+             * Adds a control to the root child list
+             * @param control defines the control to add
+             * @returns the current manager
+             */
+            GUI3DManager.prototype.addControl = function (control) {
+                this._rootContainer.addControl(control);
+                return this;
+            };
+            /**
+             * Removes the control from the root child list
+             * @param control defines the control to remove
+             * @returns the current container
+             */
+            GUI3DManager.prototype.removeControl = function (control) {
+                this._rootContainer.removeControl(control);
+                return this;
+            };
             /**
              * Releases all associated resources
              */
@@ -5755,6 +5788,27 @@ var BABYLON;
                 return "Control3D";
             };
             /**
+             * Get the attached mesh used to render the control
+             * @param scene defines the scene where the mesh must be attached
+             * @returns the attached mesh or null if none
+             */
+            Control3D.prototype.getAttachedMesh = function (scene) {
+                if (!this._mesh) {
+                    this._mesh = this._createMesh(scene);
+                }
+                return this._mesh;
+            };
+            /**
+             * Mesh creation.
+             * Can be overriden by children
+             * @param scene defines the scene where the mesh must be attached
+             * @returns the attached mesh or null if none
+             */
+            Control3D.prototype._createMesh = function (scene) {
+                // Do nothing by default
+                return null;
+            };
+            /**
              * Releases all associated resources
              */
             Control3D.prototype.dispose = function () {
@@ -5790,13 +5844,44 @@ var BABYLON;
                 _this._children = new Array();
                 return _this;
             }
-            Object.defineProperty(Container3D.prototype, "typeName", {
-                get: function () {
-                    return this._getTypeName();
-                },
-                enumerable: true,
-                configurable: true
-            });
+            /**
+             * Gets a boolean indicating if the given control is in the children of this control
+             * @param control defines the control to check
+             * @returns true if the control is in the child list
+             */
+            Container3D.prototype.containsControl = function (control) {
+                return this._children.indexOf(control) !== -1;
+            };
+            /**
+             * Adds a control to the children of this control
+             * @param control defines the control to add
+             * @returns the current container
+             */
+            Container3D.prototype.addControl = function (control) {
+                var index = this._children.indexOf(control);
+                if (index !== -1) {
+                    return this;
+                }
+                control.parent = this;
+                control._host = this._host;
+                if (this._host.utilityLayer) {
+                    control.getAttachedMesh(this._host.utilityLayer.utilityLayerScene);
+                }
+                return this;
+            };
+            /**
+             * Removes the control from the children of this control
+             * @param control defines the control to remove
+             * @returns the current container
+             */
+            Container3D.prototype.removeControl = function (control) {
+                var index = this._children.indexOf(control);
+                if (index !== -1) {
+                    this._children.splice(index, 1);
+                    control.parent = null;
+                }
+                return this;
+            };
             Container3D.prototype._getTypeName = function () {
                 return "Container3D";
             };
@@ -5814,6 +5899,41 @@ var BABYLON;
             return Container3D;
         }(GUI.Control3D));
         GUI.Container3D = Container3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a button in 3D
+         */
+        var Button3D = /** @class */ (function (_super) {
+            __extends(Button3D, _super);
+            /**
+             * Creates a new button
+             * @param name defines the control name
+             */
+            function Button3D(name) {
+                return _super.call(this, name) || this;
+            }
+            Button3D.prototype._getTypeName = function () {
+                return "Button3D";
+            };
+            // Mesh association
+            Button3D.prototype._createMesh = function (scene) {
+                return BABYLON.MeshBuilder.CreateBox(this.name + "Mesh", {
+                    width: 1.0,
+                    height: 1.0,
+                    depth: 0.1
+                }, scene);
+            };
+            return Button3D;
+        }(GUI.Control3D));
+        GUI.Button3D = Button3D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
