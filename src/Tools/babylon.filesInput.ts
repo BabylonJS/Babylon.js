@@ -217,7 +217,6 @@
                         Tools.ClearLogCache();
                     }
                     this._engine.stopRenderLoop();
-                    this._currentScene.dispose();
                 }
 
                 SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, progress => {
@@ -225,6 +224,10 @@
                         this._progressCallback(progress);
                     }
                 }).then(scene => {
+                    if (this._currentScene) {
+                        this._currentScene.dispose();
+                    }
+
                     this._currentScene = scene;
 
                     if (this._sceneLoadedCallback) {
