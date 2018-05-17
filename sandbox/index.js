@@ -83,17 +83,15 @@ if (BABYLON.Engine.isSupported()) {
 
     var sceneLoaded = function (sceneFile, babylonScene) {
         function displayDebugLayerAndLogs() {
-            currentScene.debugLayer._displayLogs = true;
             enableDebugLayer = true;
             currentScene.debugLayer.show();
         };
         function hideDebugLayerAndLogs() {
-            currentScene.debugLayer._displayLogs = false;
             enableDebugLayer = false;
             currentScene.debugLayer.hide();
         };
-    
-            if (enableDebugLayer) {
+
+        if (enableDebugLayer) {
             hideDebugLayerAndLogs();
         }
 
@@ -248,9 +246,9 @@ if (BABYLON.Engine.isSupported()) {
         }).bind(this);
         filesInput.monitorElementForDragNDrop(canvas);
 
-        window.addEventListener("keydown", function (evt) {
+        window.addEventListener("keydown", function (event) {
             // Press R to reload
-            if (evt.keyCode === 82 && !enableDebugLayer) {
+            if (event.keyCode === 82 && event.target.nodeName !== "INPUT") {
                 filesInput.reload();
             }
         });
@@ -290,9 +288,9 @@ if (BABYLON.Engine.isSupported()) {
         }
     }, false);
 
-    window.addEventListener("keydown", function (evt) {
+    window.addEventListener("keydown", function (event) {
         // Press space to toggle footer
-        if (evt.keyCode === 32 && !enableDebugLayer) {
+        if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
             }
