@@ -84,5 +84,12 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the active tab
+         * @return the index of the active tab or -1 if the inspector is hidden
+         */
+        public getActiveTab(): number {
+            return this._inspector ? this._inspector.getActiveTabIndex() : -1;
+        }
     }
 }
