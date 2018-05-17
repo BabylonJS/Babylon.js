@@ -9,6 +9,12 @@ module BABYLON.GUI {
         private _sceneDisposeObserver: Nullable<Observer<Scene>>;
         private _utilityLayer: Nullable<UtilityLayerRenderer>;
         private _rootContainer: Container3D;
+        private _pointerObserver: Nullable<Observer<PointerInfoPre>>;
+        public _lastPickedControl: Control3D;
+        /** @hidden */
+        public _lastControlOver: {[pointerId:number]: Control3D} = {};
+        /** @hidden */
+        public _lastControlDown: {[pointerId:number]: Control3D} = {};      
 
         /** Gets the hosting scene */
         public get scene(): Scene {
@@ -35,6 +41,62 @@ module BABYLON.GUI {
 
             this._rootContainer = new Container3D("RootContainer");
             this._rootContainer._host = this;
+            
+            this._pointerObserver = this._scene.onPrePointerObservable.add((pi, state) => {
+                let pointerEvent = <PointerEvent>(pi.event);
+                if (this._scene.isPointerCaptured(pointerEvent.pointerId)) {
+                    return;
+                }
+
+                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                    && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                    return;
+                }
+
+                let camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
+
+                if (!camera) {
+                    return;
+                }
+
+                pi.skipOnPointerObservable = this._doPicking(pi.type, pointerEvent)
+            });
+        }
+
+        private _doPicking(type: number, pointerEvent: PointerEvent): boolean {
+            if (!this._utilityLayer || this._utilityLayer.utilityLayerScene.activeCamera === null) {
+                return false;                
+            }
+
+            let pointerId = pointerEvent.pointerId || 0;
+            let buttonIndex = pointerEvent.button;
+            var utilityScene = this._utilityLayer.utilityLayerScene;
+
+            let pickingInfo = utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
+            if (!pickingInfo || !pickingInfo.hit) {
+                var previousControlOver = this._lastControlOver[pointerId];
+                if (previousControlOver) {
+                    previousControlOver._onPointerOut(previousControlOver);
+                    delete this._lastControlOver[pointerId];
+                }                
+                return false;
+            }
+
+            let control = <Control3D>(pickingInfo.pickedMesh!.metadata);
+
+            if (!control._processObservables(type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
+
+                if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    if (this._lastControlOver[pointerId]) {
+                        this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    }
+
+                    delete this._lastControlOver[pointerId];
+                }
+            }
+
+            return true;
         }
 
         /**
@@ -79,9 +141,15 @@ module BABYLON.GUI {
         public dispose() {
             this._rootContainer.dispose();
 
-            if (this._scene && this._sceneDisposeObserver) {
-                this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
-                this._sceneDisposeObserver = null;
+            if (this._scene) {
+                if (this._pointerObserver) {
+                    this._scene.onPrePointerObservable.remove(this._pointerObserver);
+                    this._pointerObserver = null;
+                }
+                if (this._sceneDisposeObserver) {
+                    this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+                    this._sceneDisposeObserver = null;
+                }                
             }
 
             if (this._utilityLayer) {
