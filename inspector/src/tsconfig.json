@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
-        "module": "commonjs", 
+        "module": "commonjs",
         "target": "es5",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
-        "noUnusedLocals": true,    
-        "strictNullChecks": true
+        "noUnusedLocals": true,
+        "strictNullChecks": true,
+        "lib": ["dom", "es2015.promise", "es5"]
     }
 }
