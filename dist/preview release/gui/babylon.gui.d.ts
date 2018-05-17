@@ -973,6 +973,16 @@ declare module BABYLON.GUI {
         private _sceneDisposeObserver;
         private _utilityLayer;
         private _rootContainer;
+        private _pointerMoveObserver;
+        _lastPickedControl: Control3D;
+        /** @hidden */
+        _lastControlOver: {
+            [pointerId: number]: Control3D;
+        };
+        /** @hidden */
+        _lastControlDown: {
+            [pointerId: number]: Control3D;
+        };
         /** Gets the hosting scene */
         readonly scene: Scene;
         readonly utilityLayer: Nullable<UtilityLayerRenderer>;
@@ -981,6 +991,7 @@ declare module BABYLON.GUI {
          * @param scene
          */
         constructor(scene?: Scene);
+        private _doPicking(type, pointerEvent);
         /**
          * Gets the root container
          */
@@ -1012,6 +1023,14 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    class Vector3WithInfo extends Vector2 {
+        buttonIndex: number;
+        constructor(source: Vector3, buttonIndex?: number);
+    }
+}
+
+
+declare module BABYLON.GUI {
     /**
      * Class used as base class for controls
      */
@@ -1021,6 +1040,34 @@ declare module BABYLON.GUI {
         /** @hidden */
         _host: GUI3DManager;
         private _mesh;
+        private _downCount;
+        private _enterCount;
+        private _downPointerIds;
+        private _isVisible;
+        /**
+        * An event triggered when the pointer move over the control.
+        */
+        onPointerMoveObservable: Observable<Vector3>;
+        /**
+        * An event triggered when the pointer move out of the control.
+        */
+        onPointerOutObservable: Observable<Control3D>;
+        /**
+        * An event triggered when the pointer taps the control
+        */
+        onPointerDownObservable: Observable<Vector3WithInfo>;
+        /**
+        * An event triggered when pointer up
+        */
+        onPointerUpObservable: Observable<Vector3WithInfo>;
+        /**
+        * An event triggered when a control is clicked on
+        */
+        onPointerClickObservable: Observable<Vector3WithInfo>;
+        /**
+        * An event triggered when pointer enters the control
+        */
+        onPointerEnterObservable: Observable<Control3D>;
         /**
          * Gets or sets the parent container
          */
@@ -1052,6 +1099,8 @@ declare module BABYLON.GUI {
          * @returns null if behavior was not found else the requested behavior
          */
         getBehaviorByName(name: string): Nullable<Behavior<Control3D>>;
+        /** Gets or sets a boolean indicating if the control is visible */
+        isVisible: boolean;
         /**
          * Creates a new control
          * @param name defines the control name
@@ -1077,6 +1126,18 @@ declare module BABYLON.GUI {
          * @returns the attached mesh or null if none
          */
         protected _createMesh(scene: Scene): Nullable<Mesh>;
+        /** @hidden */
+        _onPointerMove(target: Control3D, coordinates: Vector3): void;
+        /** @hidden */
+        _onPointerEnter(target: Control3D): boolean;
+        /** @hidden */
+        _onPointerOut(target: Control3D): void;
+        /** @hidden */
+        _onPointerDown(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number): boolean;
+        /** @hidden */
+        _onPointerUp(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        /** @hidden */
+        _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean;
         /**
          * Releases all associated resources
          */

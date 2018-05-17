@@ -5607,6 +5607,10 @@ var BABYLON;
              */
             function GUI3DManager(scene) {
                 var _this = this;
+                /** @hidden */
+                this._lastControlOver = {};
+                /** @hidden */
+                this._lastControlDown = {};
                 this._scene = scene || BABYLON.Engine.LastCreatedScene;
                 this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
                     _this._sceneDisposeObserver = null;
@@ -5616,6 +5620,22 @@ var BABYLON;
                 this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
                 this._rootContainer = new GUI.Container3D("RootContainer");
                 this._rootContainer._host = this;
+                this._pointerMoveObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
+                    var pointerEvent = (pi.event);
+                    if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
+                        return;
+                    }
+                    if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
+                        && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                        && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                        return;
+                    }
+                    var camera = _this._scene.cameraToUseForPointers || _this._scene.activeCamera;
+                    if (!camera) {
+                        return;
+                    }
+                    pi.skipOnPointerObservable = _this._doPicking(pi.type, pointerEvent);
+                });
             }
             Object.defineProperty(GUI3DManager.prototype, "scene", {
                 /** Gets the hosting scene */
@@ -5632,6 +5652,31 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            GUI3DManager.prototype._doPicking = function (type, pointerEvent) {
+                if (!this._utilityLayer) {
+                    return false;
+                }
+                var pointerId = pointerEvent.pointerId || 0;
+                var buttonIndex = pointerEvent.button;
+                var utilityScene = this._utilityLayer.utilityLayerScene;
+                var pickingInfo = utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
+                if (!pickingInfo) {
+                    return false;
+                }
+                if (!pickingInfo.hit) {
+                    return false;
+                }
+                var control = (pickingInfo.pickedMesh.metadata);
+                if (!control._processObservables(type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
+                    if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                        if (this._lastControlOver[pointerId]) {
+                            this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                        }
+                        delete this._lastControlOver[pointerId];
+                    }
+                }
+                return true;
+            };
             Object.defineProperty(GUI3DManager.prototype, "rootContainer", {
                 /**
                  * Gets the root container
@@ -5673,9 +5718,15 @@ var BABYLON;
              */
             GUI3DManager.prototype.dispose = function () {
                 this._rootContainer.dispose();
-                if (this._scene && this._sceneDisposeObserver) {
-                    this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
-                    this._sceneDisposeObserver = null;
+                if (this._scene) {
+                    if (this._pointerMoveObserver) {
+                        this._scene.onPrePointerObservable.remove(this._pointerMoveObserver);
+                        this._pointerMoveObserver = null;
+                    }
+                    if (this._sceneDisposeObserver) {
+                        this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+                        this._sceneDisposeObserver = null;
+                    }
                 }
                 if (this._utilityLayer) {
                     this._utilityLayer.dispose();
@@ -5684,6 +5735,26 @@ var BABYLON;
             return GUI3DManager;
         }());
         GUI.GUI3DManager = GUI3DManager;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var Vector3WithInfo = /** @class */ (function (_super) {
+            __extends(Vector3WithInfo, _super);
+            function Vector3WithInfo(source, buttonIndex) {
+                if (buttonIndex === void 0) { buttonIndex = 0; }
+                var _this = _super.call(this, source.x, source.y) || this;
+                _this.buttonIndex = buttonIndex;
+                return _this;
+            }
+            return Vector3WithInfo;
+        }(BABYLON.Vector2));
+        GUI.Vector3WithInfo = Vector3WithInfo;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
@@ -5704,6 +5775,34 @@ var BABYLON;
             /** Defines the control name */
             name) {
                 this.name = name;
+                this._downCount = 0;
+                this._enterCount = 0;
+                this._downPointerIds = {};
+                this._isVisible = true;
+                /**
+                * An event triggered when the pointer move over the control.
+                */
+                this.onPointerMoveObservable = new BABYLON.Observable();
+                /**
+                * An event triggered when the pointer move out of the control.
+                */
+                this.onPointerOutObservable = new BABYLON.Observable();
+                /**
+                * An event triggered when the pointer taps the control
+                */
+                this.onPointerDownObservable = new BABYLON.Observable();
+                /**
+                * An event triggered when pointer up
+                */
+                this.onPointerUpObservable = new BABYLON.Observable();
+                /**
+                * An event triggered when a control is clicked on
+                */
+                this.onPointerClickObservable = new BABYLON.Observable();
+                /**
+                * An event triggered when pointer enters the control
+                */
+                this.onPointerEnterObservable = new BABYLON.Observable();
                 // Behaviors
                 this._behaviors = new Array();
             }
@@ -5774,6 +5873,23 @@ var BABYLON;
                 }
                 return null;
             };
+            Object.defineProperty(Control3D.prototype, "isVisible", {
+                /** Gets or sets a boolean indicating if the control is visible */
+                get: function () {
+                    return this._isVisible;
+                },
+                set: function (value) {
+                    if (this._isVisible === value) {
+                        return;
+                    }
+                    this._isVisible = value;
+                    if (this._mesh) {
+                        this._mesh.isVisible = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control3D.prototype, "typeName", {
                 /**
                  * Gets a string representing the class name
@@ -5795,6 +5911,8 @@ var BABYLON;
             Control3D.prototype.getAttachedMesh = function (scene) {
                 if (!this._mesh) {
                     this._mesh = this._createMesh(scene);
+                    this._mesh.isPickable = true;
+                    this._mesh.metadata = this; // Store the control on the metadata field in order to get it when picking
                 }
                 return this._mesh;
             };
@@ -5808,10 +5926,94 @@ var BABYLON;
                 // Do nothing by default
                 return null;
             };
+            // Pointers
+            /** @hidden */
+            Control3D.prototype._onPointerMove = function (target, coordinates) {
+                var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerMove(target, coordinates);
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerEnter = function (target) {
+                if (this._enterCount !== 0) {
+                    return false;
+                }
+                this._enterCount++;
+                var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerEnter(target);
+                return true;
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerOut = function (target) {
+                this._enterCount = 0;
+                var canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerOut(target);
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+                if (this._downCount !== 0) {
+                    return false;
+                }
+                this._downCount++;
+                this._downPointerIds[pointerId] = true;
+                var canNotify = this.onPointerDownObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
+                return true;
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+                this._downCount = 0;
+                delete this._downPointerIds[pointerId];
+                var canNotifyClick = notifyClick;
+                if (notifyClick && this._enterCount > 0) {
+                    canNotifyClick = this.onPointerClickObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+                }
+                var canNotify = this.onPointerUpObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
+            };
+            /** @hidden */
+            Control3D.prototype._processObservables = function (type, pickedPoint, pointerId, buttonIndex) {
+                if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    this._onPointerMove(this, pickedPoint);
+                    var previousControlOver = this._host._lastControlOver[pointerId];
+                    if (previousControlOver && previousControlOver !== this) {
+                        previousControlOver._onPointerOut(this);
+                    }
+                    if (previousControlOver !== this) {
+                        this._onPointerEnter(this);
+                    }
+                    this._host._lastControlOver[pointerId] = this;
+                    return true;
+                }
+                if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    this._onPointerDown(this, pickedPoint, pointerId, buttonIndex);
+                    this._host._lastControlDown[pointerId] = this;
+                    this._host._lastPickedControl = this;
+                    return true;
+                }
+                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (this._host._lastControlDown[pointerId]) {
+                        this._host._lastControlDown[pointerId]._onPointerUp(this, pickedPoint, pointerId, buttonIndex, true);
+                    }
+                    delete this._host._lastControlDown[pointerId];
+                    return true;
+                }
+                return false;
+            };
             /**
              * Releases all associated resources
              */
             Control3D.prototype.dispose = function () {
+                this.onPointerDownObservable.clear();
+                this.onPointerEnterObservable.clear();
+                this.onPointerMoveObservable.clear();
+                this.onPointerOutObservable.clear();
+                this.onPointerUpObservable.clear();
+                this.onPointerClickObservable.clear();
                 // Behaviors
                 for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
                     var behavior = _a[_i];
