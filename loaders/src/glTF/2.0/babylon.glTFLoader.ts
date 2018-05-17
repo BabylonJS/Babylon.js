@@ -164,6 +164,11 @@ module BABYLON.GLTF2 {
          */
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
+                this._babylonScene = scene;
+                this._rootUrl = rootUrl;
+                this._progressCallback = onProgress;
+                this._loadData(data);
+
                 let nodes: Nullable<Array<_ILoaderNode>> = null;
 
                 if (meshesNames) {
@@ -187,7 +192,7 @@ module BABYLON.GLTF2 {
                     });
                 }
 
-                return this._loadAsync(nodes, scene, data, rootUrl, onProgress).then(() => {
+                return this._loadAsync(nodes).then(() => {
                     return {
                         meshes: this._getMeshes(),
                         particleSystems: [],
@@ -207,17 +212,19 @@ module BABYLON.GLTF2 {
          * @returns a promise which completes when objects have been loaded to the scene
          */
         public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
-            return this._loadAsync(null, scene, data, rootUrl, onProgress);
-        }
-
-        private _loadAsync(nodes: Nullable<Array<_ILoaderNode>>, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return Promise.resolve().then(() => {
                 this._babylonScene = scene;
                 this._rootUrl = rootUrl;
                 this._progressCallback = onProgress;
+                this._loadData(data);
+                return this._loadAsync(null);
+            });
+        }
+
+        private _loadAsync(nodes: Nullable<Array<_ILoaderNode>>): Promise<void> {
+            return Promise.resolve().then(() => {
                 this._state = GLTFLoaderState.LOADING;
 
-                this._loadData(data);
                 this._loadExtensions();
                 this._checkExtensions();
 
@@ -246,7 +253,9 @@ module BABYLON.GLTF2 {
                 });
 
                 resultPromise.then(() => {
-                    this._rootBabylonMesh.setEnabled(true);
+                    if (this._rootBabylonMesh) {
+                        this._rootBabylonMesh.setEnabled(true);
+                    }
 
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
@@ -375,7 +384,7 @@ module BABYLON.GLTF2 {
             return rootNode;
         }
 
-        private _loadNodesAsync(nodes: _ILoaderNode[], ): Promise<void> {
+        private _loadNodesAsync(nodes: _ILoaderNode[]): Promise<void> {
             const promises = new Array<Promise<void>>();
 
             for (let node of nodes) {
