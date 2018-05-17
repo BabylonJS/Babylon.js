@@ -5,17 +5,35 @@
 declare function Split(elements: HTMLElement[], options: any): any;
 
 module INSPECTOR {
+    interface ILoaderExtensionSettings {
+        [extensionName: string]: {
+            [settingName: string]: any
+        }
+    };
+
     export class GLTFTab extends Tab {
-        private static _LoaderExtensionSettings: {
-            [extensionName: string]: {
-                [propertyName: string]: any
-            }
-        };
+        private static _LoaderExtensionSettings: ILoaderExtensionSettings | null = null;
 
         private _inspector: Inspector;
         private _actions: HTMLDivElement;
         private _detailsPanel: DetailPanel | null = null;
         private _split: any;
+
+        /** @hidden */
+        public static _Initialize(): void {
+            // Must register with OnPluginActivatedObservable as early as possible to
+            // override the default settings for each extension.
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                if (loader.name === "gltf" && GLTFTab._LoaderExtensionSettings) {
+                    loader.onExtensionLoadedObservable.add(extension => {
+                        const settings = GLTFTab._LoaderExtensionSettings![extension.name];
+                        for (const settingName in settings) {
+                            (extension as any)[settingName] = settings[settingName];
+                        }
+                    });
+                }
+            });
+        }
 
         constructor(tabbar: TabBar, inspector: Inspector) {
             super(tabbar, 'GLTF');
@@ -38,23 +56,9 @@ module INSPECTOR {
         }
 
         private _addImport() {
-            if (!GLTFTab._LoaderExtensionSettings) {
-                BABYLON.SceneLoader.OnPluginActivatedObservable.add(plugin => {
-                    if (plugin.name === "gltf") {
-                        const loader = plugin as BABYLON.GLTFFileLoader;
-                        loader.onExtensionLoadedObservable.add(extension => {
-                            const settings = GLTFTab._LoaderExtensionSettings[extension.name];
-                            for (const key in settings) {
-                                (extension as any)[key] = settings[key];
-                            }
-                        });
-                    }
-                });
-            }
-
             const importActions = Helpers.CreateDiv(null, this._actions) as HTMLDivElement;
 
-            this._ensureLoaderExtensionSettingsAsync().then(() => {
+            this._getLoaderExtensionOverridesAsync().then(loaderExtensionSettings => {
                 const title = Helpers.CreateDiv('gltf-title', importActions);
                 title.textContent = 'Import';
 
@@ -63,12 +67,12 @@ module INSPECTOR {
                 const extensionsTitle = Helpers.CreateDiv('gltf-title', extensionActions) as HTMLDivElement;
                 extensionsTitle.textContent = "Extensions";
 
-                for (const name in GLTFTab._LoaderExtensionSettings) {
-                    const settings = GLTFTab._LoaderExtensionSettings[name];
+                for (const extensionName in loaderExtensionSettings) {
+                    const settings = loaderExtensionSettings[extensionName];
 
                     const extensionAction = Helpers.CreateDiv('gltf-action', extensionActions);
                     extensionAction.addEventListener('click', event => {
-                        if (this._updateLoaderExtensionDetails(name)) {
+                        if (this._updateLoaderExtensionDetails(settings)) {
                             event.stopPropagation();
                         }
                     });
@@ -85,23 +89,24 @@ module INSPECTOR {
                     });
 
                     const label = Helpers.CreateElement('span', null, extensionAction);
-                    label.textContent = name;
+                    label.textContent = extensionName;
                 }
             });
         }
 
-        private _ensureLoaderExtensionSettingsAsync(): Promise<void> {
+        private _getLoaderExtensionOverridesAsync(): Promise<ILoaderExtensionSettings> {
             if (GLTFTab._LoaderExtensionSettings) {
-                return Promise.resolve();
+                return Promise.resolve(GLTFTab._LoaderExtensionSettings);
             }
 
-            GLTFTab._LoaderExtensionSettings = {};
+            const loaderExtensionSettings: ILoaderExtensionSettings = {};
 
             const engine = new BABYLON.NullEngine();
             const scene = new BABYLON.Scene(engine);
             const loader = new BABYLON.GLTF2.GLTFLoader();
             loader.onExtensionLoadedObservable.add(extension => {
-                const settings: { [propertyName: string]: any } = {};
+                loaderExtensionSettings[extension.name] = {};
+                const settings = loaderExtensionSettings[extension.name];
                 for (const key of Object.keys(extension)) {
                     if (key !== "name" && key[0] !== '_') {
                         const value = (extension as any)[key];
@@ -110,19 +115,18 @@ module INSPECTOR {
                         }
                     }
                 }
-
-                GLTFTab._LoaderExtensionSettings[extension.name] = settings;
             });
 
             const data = { json: {}, bin: null };
             return loader.importMeshAsync([], scene, data, "").then(() => {
                 scene.dispose();
                 engine.dispose();
+
+                return (GLTFTab._LoaderExtensionSettings = loaderExtensionSettings);
             });
         }
 
-        private _updateLoaderExtensionDetails(name: string): boolean {
-            const settings = GLTFTab._LoaderExtensionSettings[name];
+        private _updateLoaderExtensionDetails(settings: { [settingName: string]: any }): boolean {
             if (Object.keys(settings).length === 1) {
                 return false;
             }
@@ -198,4 +202,6 @@ module INSPECTOR {
             return false;
         }
     }
+
+    GLTFTab._Initialize();
 }
