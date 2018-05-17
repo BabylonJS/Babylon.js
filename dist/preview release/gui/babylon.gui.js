@@ -5620,7 +5620,7 @@ var BABYLON;
                 this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
                 this._rootContainer = new GUI.Container3D("RootContainer");
                 this._rootContainer._host = this;
-                this._pointerMoveObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
+                this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
                     var pointerEvent = (pi.event);
                     if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
                         return;
@@ -5653,17 +5653,19 @@ var BABYLON;
                 configurable: true
             });
             GUI3DManager.prototype._doPicking = function (type, pointerEvent) {
-                if (!this._utilityLayer) {
+                if (!this._utilityLayer || this._utilityLayer.utilityLayerScene.activeCamera === null) {
                     return false;
                 }
                 var pointerId = pointerEvent.pointerId || 0;
                 var buttonIndex = pointerEvent.button;
                 var utilityScene = this._utilityLayer.utilityLayerScene;
                 var pickingInfo = utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
-                if (!pickingInfo) {
-                    return false;
-                }
-                if (!pickingInfo.hit) {
+                if (!pickingInfo || !pickingInfo.hit) {
+                    var previousControlOver = this._lastControlOver[pointerId];
+                    if (previousControlOver) {
+                        previousControlOver._onPointerOut(previousControlOver);
+                        delete this._lastControlOver[pointerId];
+                    }
                     return false;
                 }
                 var control = (pickingInfo.pickedMesh.metadata);
@@ -5719,9 +5721,9 @@ var BABYLON;
             GUI3DManager.prototype.dispose = function () {
                 this._rootContainer.dispose();
                 if (this._scene) {
-                    if (this._pointerMoveObserver) {
-                        this._scene.onPrePointerObservable.remove(this._pointerMoveObserver);
-                        this._pointerMoveObserver = null;
+                    if (this._pointerObserver) {
+                        this._scene.onPrePointerObservable.remove(this._pointerObserver);
+                        this._pointerObserver = null;
                     }
                     if (this._sceneDisposeObserver) {
                         this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
@@ -5748,12 +5750,12 @@ var BABYLON;
             __extends(Vector3WithInfo, _super);
             function Vector3WithInfo(source, buttonIndex) {
                 if (buttonIndex === void 0) { buttonIndex = 0; }
-                var _this = _super.call(this, source.x, source.y) || this;
+                var _this = _super.call(this, source.x, source.y, source.z) || this;
                 _this.buttonIndex = buttonIndex;
                 return _this;
             }
             return Vector3WithInfo;
-        }(BABYLON.Vector2));
+        }(BABYLON.Vector3));
         GUI.Vector3WithInfo = Vector3WithInfo;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));

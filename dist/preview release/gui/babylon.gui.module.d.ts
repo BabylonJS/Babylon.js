@@ -978,7 +978,7 @@ declare module BABYLON.GUI {
         private _sceneDisposeObserver;
         private _utilityLayer;
         private _rootContainer;
-        private _pointerMoveObserver;
+        private _pointerObserver;
         _lastPickedControl: Control3D;
         /** @hidden */
         _lastControlOver: {
@@ -1028,7 +1028,7 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
-    class Vector3WithInfo extends Vector2 {
+    class Vector3WithInfo extends Vector3 {
         buttonIndex: number;
         constructor(source: Vector3, buttonIndex?: number);
     }
