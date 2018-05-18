@@ -341,7 +341,7 @@
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 
-            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined) {
+            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined && mesh._edgesRenderer.isEnabled) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }

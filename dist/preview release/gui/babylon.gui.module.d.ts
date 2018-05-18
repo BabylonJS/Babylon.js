@@ -1032,6 +1032,31 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to render controls with fluent desgin
+     */
+    class FluentMaterial extends PushMaterial {
+        private _emissiveTexture;
+        emissiveTexture: BaseTexture;
+        private _renderId;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): FluentMaterial;
+    }
+}
+
+
+declare module BABYLON.GUI {
     class Vector3WithInfo extends Vector3 {
         buttonIndex: number;
         constructor(source: Vector3, buttonIndex?: number);
@@ -1155,6 +1180,11 @@ declare module BABYLON.GUI {
          * @returns the attached mesh or null if none
          */
         protected _createMesh(scene: Scene): Nullable<Mesh>;
+        /**
+         * Affect a material to the given mesh
+         * @param mesh defines the mesh which will represent the control
+         */
+        protected _affectMaterial(mesh: Mesh): void;
         /** @hidden */
         _onPointerMove(target: Control3D, coordinates: Vector3): void;
         /** @hidden */
@@ -1220,7 +1250,31 @@ declare module BABYLON.GUI {
      * Class used to create a button in 3D
      */
     class Button3D extends Control3D {
-        private _currentMaterial;
+        /** @hidden */
+        protected _currentMaterial: Material;
+        private _facadeTexture;
+        private _content;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets or sets the GUI 2D content used to display the button's facade
+         */
+        content: Control;
+        protected _getTypeName(): string;
+        protected _createMesh(scene: Scene): Mesh;
+        protected _affectMaterial(mesh: Mesh): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a button in 3D
+     */
+    class HolographicButton extends Button3D {
         /**
          * Creates a new button
          * @param name defines the control name
@@ -1228,5 +1282,6 @@ declare module BABYLON.GUI {
         constructor(name?: string);
         protected _getTypeName(): string;
         protected _createMesh(scene: Scene): Mesh;
+        protected _affectMaterial(mesh: Mesh): void;
     }
 }

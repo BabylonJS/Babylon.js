@@ -5,6 +5,7 @@ module BABYLON.GUI {
      * Class used to create a button in 3D
      */
     export class HolographicButton extends Button3D {
+        private _edgesRenderer: EdgesRenderer;
         /**
          * Creates a new button
          * @param name defines the control name
@@ -18,33 +19,16 @@ module BABYLON.GUI {
                 if (!this.mesh) {
                     return;
                 }
-                this.mesh.enableEdgesRendering();
+                this._edgesRenderer.isEnabled = true;
             }
 
             this.pointerOutAnimation = () => {
                 if (!this.mesh) {
                     return;
                 }
-                this.mesh.disableEdgesRendering();
-            }    
-
-            this.pointerDownAnimation = () => {
-                if (!this.mesh) {
-                    return;
-                }
-
-                this.mesh.scaling.scaleInPlace(0.95);
-            }
-
-            this.pointerUpAnimation = () => {
-                if (!this.mesh) {
-                    return;
-                }
-
-                this.mesh.scaling.scaleInPlace(1.0 / 0.95);
-            }                     
+                this._edgesRenderer.isEnabled = false;
+            }                      
         }
-
     
         protected _getTypeName(): string {
             return "HolographicButton";
@@ -56,6 +40,9 @@ module BABYLON.GUI {
 
             mesh.edgesWidth = 0.5;
             mesh.edgesColor = new Color4(1.0, 1.0, 1.0, 1.0);
+            mesh.enableEdgesRendering();
+            this._edgesRenderer = mesh.edgesRenderer!;
+            this._edgesRenderer.isEnabled = false
             
             return mesh;
         }

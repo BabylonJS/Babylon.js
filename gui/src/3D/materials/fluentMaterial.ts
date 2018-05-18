@@ -106,10 +106,10 @@ module BABYLON.GUI {
 
             if (this._mustRebind(scene, effect)) {
                 // Textures        
-                if (this.emissiveTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    this._activeEffect.setTexture("emissiveSampler", this.emissiveTexture);
+                if (this._emissiveTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    this._activeEffect.setTexture("emissiveSampler", this._emissiveTexture);
 
-                    this._activeEffect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                    this._activeEffect.setMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
                 }                
             }
 
@@ -119,8 +119,8 @@ module BABYLON.GUI {
         public getActiveTextures(): BaseTexture[] {
             var activeTextures = super.getActiveTextures();
 
-            if (this.emissiveTexture) {
-                activeTextures.push(this.emissiveTexture);
+            if (this._emissiveTexture) {
+                activeTextures.push(this._emissiveTexture);
             }
 
             return activeTextures;
@@ -131,7 +131,7 @@ module BABYLON.GUI {
                 return true;
             }
 
-            if (this.emissiveTexture === texture) {
+            if (this._emissiveTexture === texture) {
                 return true;
             }
 
@@ -139,8 +139,8 @@ module BABYLON.GUI {
         }        
         
         public dispose(forceDisposeEffect?: boolean): void {
-            if (this.emissiveTexture) {
-                this.emissiveTexture.dispose();
+            if (this._emissiveTexture) {
+                this._emissiveTexture.dispose();
             }
 
             super.dispose(forceDisposeEffect);
