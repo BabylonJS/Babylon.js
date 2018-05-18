@@ -22,6 +22,9 @@ module BABYLON {
 
         public onAnimationEndObservable = new Observable<TargetedAnimation>();
 
+        /**
+         * This observable will notify when all animations have ended.
+         */
         public onAnimationGroupEndObservable = new Observable<AnimationGroup>();
 
         /**
