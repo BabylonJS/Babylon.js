@@ -76,7 +76,7 @@ module BABYLON.GUI {
         }        
 
         // Mesh association
-        protected _createMesh(scene: Scene): Mesh {
+        protected _createNode(scene: Scene): TransformNode {
             var faceUV = new Array(6);
 
             for (var i = 0; i < 6; i++) {
@@ -87,7 +87,7 @@ module BABYLON.GUI {
             let mesh = MeshBuilder.CreateBox(this.name + "Mesh", {
                 width: 1.0, 
                 height: 1.0,
-                depth: 0.1,
+                depth: 0.05,
                 faceUV: faceUV
             }, scene); 
            

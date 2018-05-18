@@ -1,0 +1,102 @@
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+module BABYLON.GUI {
+    /**
+     * Class used to create a stack panel in 3D on XY plane
+     */
+    export class StackPanel3D extends Container3D {
+        private _isVertical = false;
+
+        /**
+         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+         */
+        public get isVertical(): boolean {
+            return this._isVertical;
+        }
+
+        public set isVertical(value: boolean) {
+            if (this._isVertical === value) {
+                return;
+            }
+
+            this._isVertical = value;
+            this._arrangeChildren();
+        }
+
+        /**
+         * Gets or sets the distance between elements
+         */
+        public margin = 0.1;
+        
+        /**
+         * Creates new StackPanel
+         * @param isVertical 
+         */
+        public constructor() {
+            super();
+        }
+
+        protected _arrangeChildren() {
+            let width = 0;
+            let height = 0;
+            let controlCount = 0;
+            let extendSizes = [];
+
+            let currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
+
+            // Measure
+            for (var child of this._children) {
+                if (!child.mesh) {
+                    continue;
+                }
+
+                controlCount++;
+                child.mesh.computeWorldMatrix(true);
+                let boundingBox = child.mesh.getBoundingInfo().boundingBox;
+                let extendSize = Vector3.TransformNormal(boundingBox.extendSizeWorld, currentInverseWorld);
+                extendSizes.push(extendSize);
+
+                if (this._isVertical) {
+                    height += extendSize.y;
+                } else {
+                    width += extendSize.x;
+                }
+            }
+
+            if (this._isVertical) {
+                height += (controlCount - 1) * this.margin / 2;
+            } else {
+                width += (controlCount - 1) * this.margin / 2;
+            }
+
+            // Arrange
+            let offset: number;
+            if (this._isVertical) {
+                offset = -height;
+            } else {
+                offset = -width;
+            }
+
+            let index = 0;
+            for (var child of this._children) {
+                if (!child.mesh) {
+                    continue;
+                }                
+                controlCount--;
+                let extendSize = extendSizes[index++];
+
+                if (this._isVertical) {
+                    child.position.y = offset + extendSize.y;
+                    child.position.x = 0;
+                    offset += extendSize.y * 2;
+                } else {
+                    child.position.x = offset + extendSize.x;
+                    child.position.y = 0;
+                    offset += extendSize.x * 2;
+                }
+
+                offset += (controlCount > 0 ? this.margin : 0)
+            }
+        }
+    }
+}

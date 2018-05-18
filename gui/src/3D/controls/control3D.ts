@@ -7,11 +7,16 @@ module BABYLON.GUI {
     export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         /** @hidden */
         public _host: GUI3DManager;
-        private _mesh: Nullable<Mesh>;
+        private _node: Nullable<TransformNode>;
         private _downCount = 0;
         private _enterCount = 0;
         private _downPointerIds:{[id:number] : boolean} = {};
         private _isVisible = true;
+
+        /** Gets or sets the control position */
+        public position = new Vector3(0, 0, 0);
+        /** Gets or sets the control scaling */
+        public scaling = new Vector3(1, 1, 1);
 
         /** Callback used to start pointer enter animation */
         public pointerEnterAnimation: () => void;
@@ -142,24 +147,11 @@ module BABYLON.GUI {
             }
 
             this._isVisible = value;
-            if (this._mesh) {
-                this._mesh.isVisible = value;
+
+            let mesh = this.mesh;
+            if (mesh) {
+                mesh.isVisible = value;
             }
-        }
-
-        /** Gets or sets the control position */
-        public get position(): Vector3 {
-            if (this._mesh) {
-                return this._mesh.position;
-            }
-
-            return Vector3.Zero();
-        }
-
-        public set position(value: Vector3) {
-            if (this._mesh) {
-                this._mesh.position = value;
-            }            
         }
 
         /**
@@ -185,46 +177,57 @@ module BABYLON.GUI {
         /**
          * Gets the mesh used to render this control
          */
-        public get mesh(): Nullable<Mesh> {
-            return this._mesh;
+        public get node(): Nullable<TransformNode> {
+            return this._node;
         }
 
         /**
-         * Link the control as child of the given mesh
-         * @param mesh defines the mesh to link to. Use null to unlink the control
+         * Gets the mesh used to render this control
+         */
+        public get mesh(): Nullable<Mesh> {
+            return this._node as Mesh;
+        }
+
+        /**
+         * Link the control as child of the given node
+         * @param node defines the node to link to. Use null to unlink the control
          * @returns the current control
          */
-        public linkToMesh(mesh: Nullable<AbstractMesh>): Control3D {
-            if (this._mesh) {
-                this._mesh.parent = mesh;
+        public linkToTransformNode(node: Nullable<TransformNode>): Control3D {
+            if (this._node) {
+                this._node.parent = node;
             }
             return this;
         }    
 
-        /**
-         * Get the attached mesh used to render the control
-         * @param scene defines the scene where the mesh must be attached
-         * @returns the attached mesh or null if none
-         */        
-        public prepareMesh(scene: Scene): Nullable<Mesh> {
-            if (!this._mesh) {
-                this._mesh = this._createMesh(scene);
-                this._mesh!.isPickable = true;
-                this._mesh!.metadata = this; // Store the control on the metadata field in order to get it when picking
+        /** @hidden **/      
+        public _prepareNode(scene: Scene): void{
+            if (!this._node) {
+                this._node = this._createNode(scene);
 
-                this._affectMaterial(this._mesh!);
+                if (!this.node) {
+                    return;
+                }
+                this._node!.metadata = this; // Store the control on the metadata field in order to get it when picking
+                this._node!.position = this.position;
+                this._node!.scaling = this.scaling;
+
+                let mesh = this.mesh;
+                if (mesh) {
+                    mesh.isPickable = true;
+
+                    this._affectMaterial(mesh);
+                }
             }
-
-            return this._mesh;
         }
 
         /**
-         * Mesh creation.
+         * Node creation.
          * Can be overriden by children
-         * @param scene defines the scene where the mesh must be attached
-         * @returns the attached mesh or null if none
+         * @param scene defines the scene where the node must be attached
+         * @returns the attached node or null if none
          */
-        protected _createMesh(scene: Scene): Nullable<Mesh> {
+        protected _createNode(scene: Scene): Nullable<TransformNode> {
             // Do nothing by default
             return null;
         }
@@ -366,9 +369,9 @@ module BABYLON.GUI {
             this.onPointerUpObservable.clear();
             this.onPointerClickObservable.clear();
 
-            if (this._mesh) {
-                this._mesh.dispose(false, true);
-                this._mesh = null;
+            if (this._node) {
+                this._node.dispose(false, true);
+                this._node = null;
             }
 
             // Behaviors

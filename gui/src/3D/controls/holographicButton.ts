@@ -5,7 +5,8 @@ module BABYLON.GUI {
      * Class used to create a holographic button in 3D
      */
     export class HolographicButton extends Button3D {
-        private _edgesRenderer: EdgesRenderer;
+        private _frontPlate: Mesh;
+
         /**
          * Creates a new button
          * @param name defines the control name
@@ -19,14 +20,14 @@ module BABYLON.GUI {
                 if (!this.mesh) {
                     return;
                 }
-                this._edgesRenderer.isEnabled = true;
+                this._frontPlate.setEnabled(true);
             }
 
             this.pointerOutAnimation = () => {
                 if (!this.mesh) {
                     return;
                 }
-                this._edgesRenderer.isEnabled = false;
+                this._frontPlate.setEnabled(false);
             }                      
         }
     
@@ -35,14 +36,19 @@ module BABYLON.GUI {
         }        
 
         // Mesh association
-        protected _createMesh(scene: Scene): Mesh {
-            var mesh = super._createMesh(scene);
+        protected _createNode(scene: Scene): TransformNode {
+            var mesh = <Mesh>super._createNode(scene);
 
-            mesh.edgesWidth = 0.5;
-            mesh.edgesColor = new Color4(1.0, 1.0, 1.0, 1.0);
-            mesh.enableEdgesRendering();
-            this._edgesRenderer = mesh.edgesRenderer!;
-            this._edgesRenderer.isEnabled = false
+            this._frontPlate= <Mesh>super._createNode(scene);
+            this._frontPlate.parent = mesh;
+            this._frontPlate.position.z = -0.05;
+            this._frontPlate.setEnabled(false);
+            this._frontPlate.isPickable = false;
+            this._frontPlate.visibility = 0.001;
+
+            this._frontPlate.edgesWidth = 1.0;
+            this._frontPlate.edgesColor = new Color4(1.0, 1.0, 1.0, 1.0);
+            this._frontPlate.enableEdgesRendering();
             
             return mesh;
         }

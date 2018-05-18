@@ -5,7 +5,10 @@ module BABYLON.GUI {
      * Class used to create containers for controls
      */
     export class Container3D extends Control3D {
-        private _children = new Array<Control3D>();
+        /**
+         * Gets the list of child controls
+         */
+        protected _children = new Array<Control3D>();
 
         /**
          * Creates a new container
@@ -38,11 +41,30 @@ module BABYLON.GUI {
             control.parent = this;
             control._host = this._host;
 
+            this._children.push(control);
+
             if (this._host.utilityLayer) {
-                control.prepareMesh(this._host.utilityLayer.utilityLayerScene);
+                control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+
+                if (control.node) {
+                    control.node.parent = this.node;
+                }
+
+                this._arrangeChildren();
             }
 
             return this;
+        }
+
+
+        /**
+         * This function will be called everytime a new control is added 
+         */
+        protected _arrangeChildren() {
+        }
+
+        protected _createNode(scene: Scene): Nullable<TransformNode> {
+            return new TransformNode("ContainerNode", scene);
         }
 
         /**
