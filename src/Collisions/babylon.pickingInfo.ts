@@ -7,18 +7,52 @@
         }
     }
 
+    /**
+     * Information about the result of picking within a scene
+     * See https://doc.babylonjs.com/babylon101/picking_collisions
+     */
     export class PickingInfo {
+        /**
+         * If the pick collided with an object
+         */
         public hit = false;
+        /**
+         * Distance away where the pick collided
+         */
         public distance = 0;
+        /**
+         * The location of pick collision
+         */
         public pickedPoint: Nullable<Vector3> = null;
+        /**
+         * The mesh corrisponding the the pick collision
+         */
         public pickedMesh: Nullable<AbstractMesh> = null;
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
         public bu = 0;
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
         public bv = 0;
+        /** The id of the face on the mesh that was picked  */
         public faceId = -1;
+        /** Id of the the submesh that was picked */
         public subMeshId = 0;
+        /** If a sprite was picked, this will be the sprite the pick collided with */
         public pickedSprite: Nullable<Sprite> = null;
+        /**
+         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         */
+        public originMesh: Nullable<AbstractMesh> = null;
+        /**
+         * The ray that was used to perform the picking.
+         */
+        public ray: Nullable<Ray> = null;
 
-        // Methods
+        /**
+         * Gets the normal corrispodning to the face the pick collided with
+         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
+         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+         * @returns The normal corrispodning to the face the pick collided with
+         */
         public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 return null;
@@ -64,6 +98,10 @@
             return Vector3.Normalize(result);
         }
 
+        /**
+         * Gets the texture coordinates of where the pick occured
+         * @returns the vector containing the coordnates of the texture
+         */
         public getTextureCoordinates(): Nullable<Vector2> {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 return null;
