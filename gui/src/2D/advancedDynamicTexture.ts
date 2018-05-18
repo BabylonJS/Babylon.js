@@ -34,6 +34,11 @@ module BABYLON.GUI {
         private _blockNextFocusCheck = false;
         private _renderScale = 1;
 
+        /**
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
+        public premulAlpha = false;
+
         public get renderScale(): number {
             return this._renderScale;
         }
@@ -382,7 +387,7 @@ module BABYLON.GUI {
             this._isDirty = false;
 
             this._render();
-            this.update();
+            this.update(true, this.premulAlpha);
         }
 
         private _render(): void {
