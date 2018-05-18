@@ -1667,7 +1667,8 @@
                     "../../gui/src/3D/vector3WithInfo.ts",
                     "../../gui/src/3D/controls/control3D.ts",
                     "../../gui/src/3D/controls/container3D.ts",
-                    "../../gui/src/3D/controls/button3D.ts"
+                    "../../gui/src/3D/controls/button3D.ts",
+                    "../../gui/src/3D/controls/holographicButton.ts",
                 ],
                 "shaderFiles": [
                     "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
