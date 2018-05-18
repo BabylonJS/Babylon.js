@@ -5751,7 +5751,7 @@
                 return this._cachedRayForTransform;
             }, predicate, fastCheck);
             if(result){
-                result.ray = new Ray(ray.origin, ray.direction);
+                result.ray = ray;
             }
             return result;
         }
