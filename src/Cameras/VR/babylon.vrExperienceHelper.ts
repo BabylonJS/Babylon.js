@@ -83,13 +83,13 @@ module BABYLON {
 
         public _selectionPointerDown() {
             this._pointerDownOnMeshAsked = true;
-            if (this._currentMeshSelected && this._currentHit) {
+            if (this._currentHit) {
                 this.scene.simulatePointerDown(this._currentHit, {pointerId: this._id});
             }
         }
 
         public _selectionPointerUp() {
-            if (this._currentMeshSelected && this._currentHit) {
+            if (this._currentHit) {
                 this.scene.simulatePointerUp(this._currentHit, {pointerId: this._id});
             }
             this._pointerDownOnMeshAsked = false;
@@ -679,7 +679,7 @@ module BABYLON {
             //create easing functions
             this._circleEase = new CircleEase();
             this._circleEase.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-
+            
             if(this.webVROptions.floorMeshes){
                 this.enableTeleportation({floorMeshes: this.webVROptions.floorMeshes});
             }
@@ -1581,9 +1581,17 @@ module BABYLON {
              
             var ray = gazer._getForwardRay(this._rayLength);
             var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
+            if(hit){
+                // Populate the contrllers mesh that can be used for drag/drop
+                if((<any>gazer)._laserPointer){
+                    hit.originMesh = (<any>gazer)._laserPointer.parent;
+                }
+                this._scene.simulatePointerMove(hit, {pointerId: gazer._id});
+            }
+            gazer._currentHit = hit;
 
             // Moving the gazeTracker on the mesh face targetted
-            if (hit && hit.pickedPoint) {
+            if (hit && hit.pickedPoint) {                
                 if (this._displayGaze) {
                     let multiplier = 1;
 
@@ -1634,12 +1642,8 @@ module BABYLON {
                 gazer._updatePointerDistance();   
                 gazer._gazeTracker.isVisible = false;
             }
-
+            
             if (hit && hit.pickedMesh) {
-                gazer._currentHit = hit;
-                if (gazer._pointerDownOnMeshAsked) {
-                    this._scene.simulatePointerMove(gazer._currentHit, {pointerId: gazer._id});
-                }
                 // The object selected is the floor, we're in a teleportation scenario
                 if (this._teleportationInitialized && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
                     // Moving the teleportation area to this targetted point
@@ -1687,7 +1691,6 @@ module BABYLON {
                 }
             }
             else {
-                gazer._currentHit = null;
                 this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
                 gazer._currentMeshSelected = null;
                 //this._teleportationAllowed = false;

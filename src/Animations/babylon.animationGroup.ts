@@ -23,12 +23,17 @@ module BABYLON {
         public onAnimationEndObservable = new Observable<TargetedAnimation>();
 
         /**
+         * This observable will notify when all animations have ended.
+         */
+        public onAnimationGroupEndObservable = new Observable<AnimationGroup>();
+
+        /**
          * Gets the first frame
          */
         public get from(): number {
             return this._from;
         }
-        
+
         /**
          * Gets the last frame
          */
@@ -171,9 +176,12 @@ module BABYLON {
             }
 
             for (const targetedAnimation of this._targetedAnimations) {
-                this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio, () => {
+                let animatable = this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio);
+                animatable.onAnimationEnd = () => {
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
-                }));
+                    this._checkAnimationGroupEnded(animatable);
+                }
+                this._animatables.push(animatable);
             }
 
             this._speedRatio = speedRatio;
@@ -205,7 +213,8 @@ module BABYLON {
          * @param loop defines if animations must loop
          */
         public play(loop?: boolean): AnimationGroup {
-            if (this.isStarted) {
+            // only if all animatables are ready and exist
+            if (this.isStarted && this._animatables.length === this._targetedAnimations.length) {
                 if (loop !== undefined) {
                     for (var index = 0; index < this._animatables.length; index++) {
                         let animatable = this._animatables[index];
@@ -214,6 +223,7 @@ module BABYLON {
                 }
                 this.restart();
             } else {
+                this.stop();
                 this.start(loop, this._speedRatio);
             }
 
@@ -329,6 +339,20 @@ module BABYLON {
 
             if (index > -1) {
                 this._scene.animationGroups.splice(index, 1);
+            }
+        }
+
+        private _checkAnimationGroupEnded(animatable: Animatable) {
+            // animatable should be taken out of the array
+            let idx = this._animatables.indexOf(animatable);
+            if (idx > -1) {
+                this._animatables.splice(idx, 1);
+            }
+
+            // all animatables were removed? animation group ended!
+            if (this._animatables.length === 0) {
+                this._isStarted = false;
+                this.onAnimationGroupEndObservable.notifyObservers(this);
             }
         }
     }
