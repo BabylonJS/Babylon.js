@@ -1622,6 +1622,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
                 ],
+                "shaderFiles": [
+                    "../../serializers/src/glTF/2.0/shaders/setAlphaToOne.fragment.fx"
+                ],
                 "output": "babylon.glTF2Serializer.js"
             }
         ],
@@ -1668,7 +1671,17 @@
                     "../../gui/src/2D/controls/inputText.ts",
                     "../../gui/src/2D/controls/virtualKeyboard.ts",
                     "../../gui/src/2D/controls/multiLine.ts",
-                    "../../gui/src/3D/controls/control3D.ts"
+                    "../../gui/src/3D/gui3DManager.ts",
+                    "../../gui/src/3D/materials/fluentMaterial.ts",
+                    "../../gui/src/3D/vector3WithInfo.ts",
+                    "../../gui/src/3D/controls/control3D.ts",
+                    "../../gui/src/3D/controls/container3D.ts",
+                    "../../gui/src/3D/controls/button3D.ts",
+                    "../../gui/src/3D/controls/holographicButton.ts"
+                ],
+                "shaderFiles": [
+                    "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
+                    "../../gui/src/3D/materials/shaders/fluent.fragment.fx"
                 ],
                 "output": "babylon.gui.js",
                 "buildAsModule": true,
