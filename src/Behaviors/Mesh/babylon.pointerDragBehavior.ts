@@ -7,7 +7,7 @@ module BABYLON {
         private _dragPlane: Mesh;
         private _scene:Scene;
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
-        private static planeScene:Scene;
+        private static _planeScene:Scene;
         private _draggingID = -1;
         
         /**
@@ -72,11 +72,11 @@ module BABYLON {
             this._attachedNode = ownerNode;
 
             // Initialize drag plane to not interfere with existing scene
-            if(!PointerDragBehavior.planeScene){
-                PointerDragBehavior.planeScene = new BABYLON.Scene(this._scene.getEngine())
+            if(!PointerDragBehavior._planeScene){
+                PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine())
                 this._scene.getEngine().scenes.pop();
             }
-            this._dragPlane = BABYLON.Mesh.CreatePlane("pointerDragPlane", 1000, PointerDragBehavior.planeScene, false, BABYLON.Mesh.DOUBLESIDE);
+            this._dragPlane = BABYLON.Mesh.CreatePlane("pointerDragPlane", 1000, PointerDragBehavior._planeScene, false, BABYLON.Mesh.DOUBLESIDE);
 
             // State of the drag
             var dragging = false
@@ -132,7 +132,7 @@ module BABYLON {
             if(!ray){
                 return null;
             }
-            var pickResult = PointerDragBehavior.planeScene.pickWithRay(ray, (m)=>{return m == this._dragPlane})
+            var pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m)=>{return m == this._dragPlane})
             if (pickResult && pickResult.hit && pickResult.pickedMesh && pickResult.pickedPoint) {
                 return pickResult.pickedPoint;
             }else{
