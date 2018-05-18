@@ -5,6 +5,68 @@ declare module 'babylonjs-gui' {
 }
 
 declare module BABYLON.GUI {
+    /**
+     * Define a style used by control to automatically setup properties based on a template.
+     * Only support font related properties so far
+     */
+    class Style implements BABYLON.IDisposable {
+        private _fontFamily;
+        private _fontStyle;
+        /** @hidden */
+        _host: AdvancedDynamicTexture;
+        /** @hidden */
+        _fontSize: ValueAndUnit;
+        /**
+         * Observable raised when the style values are changed
+         */
+        onChangedObservable: Observable<Style>;
+        /**
+         * Creates a new style object
+         * @param host defines the AdvancedDynamicTexture which hosts this style
+         */
+        constructor(host: AdvancedDynamicTexture);
+        /**
+         * Gets or sets the font size
+         */
+        fontSize: string | number;
+        /**
+         * Gets or sets the font family
+         */
+        fontFamily: string;
+        /**
+         * Gets or sets the font style
+         */
+        fontStyle: string;
+        /** Dispose all associated resources */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class ValueAndUnit {
+        unit: number;
+        negativeValueAllowed: boolean;
+        private _value;
+        ignoreAdaptiveScaling: boolean;
+        constructor(value: number, unit?: number, negativeValueAllowed?: boolean);
+        readonly isPercentage: boolean;
+        readonly isPixel: boolean;
+        readonly internalValue: number;
+        getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
+        getValue(host: AdvancedDynamicTexture): number;
+        toString(host: AdvancedDynamicTexture): string;
+        fromString(source: string | number): boolean;
+        private static _Regex;
+        private static _UNITMODE_PERCENTAGE;
+        private static _UNITMODE_PIXEL;
+        static readonly UNITMODE_PERCENTAGE: number;
+        static readonly UNITMODE_PIXEL: number;
+    }
+}
+
+
+declare module BABYLON.GUI {
     interface IFocusableControl {
         onFocus(): void;
         onBlur(): void;
@@ -42,6 +104,10 @@ declare module BABYLON.GUI {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
+        /**
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
+        premulAlpha: boolean;
         renderScale: number;
         background: string;
         idealWidth: number;
@@ -55,6 +121,10 @@ declare module BABYLON.GUI {
         constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number);
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         markAsDirty(): void;
+        /**
+         * Helper function used to create a new style
+         */
+        createStyle(): Style;
         addControl(control: Control): AdvancedDynamicTexture;
         removeControl(control: Control): AdvancedDynamicTexture;
         dispose(): void;
@@ -134,29 +204,6 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
-    class ValueAndUnit {
-        unit: number;
-        negativeValueAllowed: boolean;
-        private _value;
-        ignoreAdaptiveScaling: boolean;
-        constructor(value: number, unit?: number, negativeValueAllowed?: boolean);
-        readonly isPercentage: boolean;
-        readonly isPixel: boolean;
-        readonly internalValue: number;
-        getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
-        getValue(host: AdvancedDynamicTexture): number;
-        toString(host: AdvancedDynamicTexture): string;
-        fromString(source: string | number): boolean;
-        private static _Regex;
-        private static _UNITMODE_PERCENTAGE;
-        private static _UNITMODE_PIXEL;
-        static readonly UNITMODE_PERCENTAGE: number;
-        static readonly UNITMODE_PIXEL: number;
-    }
-}
-
-
-declare module BABYLON.GUI {
     class MultiLinePoint {
         private _multiLine;
         private _x;
@@ -200,6 +247,8 @@ declare module BABYLON.GUI {
             descent: number;
         };
         private _color;
+        private _style;
+        private _styleObserver;
         protected _horizontalAlignment: number;
         protected _verticalAlignment: number;
         private _isDirty;
@@ -293,6 +342,7 @@ declare module BABYLON.GUI {
         readonly heightInPixels: number;
         fontFamily: string;
         fontStyle: string;
+        style: BABYLON.Nullable<Style>;
         /** @hidden */
         readonly _isFontSizeInPercentage: boolean;
         readonly fontSizeInPixels: number;
@@ -919,5 +969,359 @@ declare module BABYLON.GUI {
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to manage 3D user interface
+     */
+    class GUI3DManager implements BABYLON.IDisposable {
+        private _scene;
+        private _sceneDisposeObserver;
+        private _utilityLayer;
+        private _rootContainer;
+        private _pointerObserver;
+        _lastPickedControl: Control3D;
+        /** @hidden */
+        _lastControlOver: {
+            [pointerId: number]: Control3D;
+        };
+        /** @hidden */
+        _lastControlDown: {
+            [pointerId: number]: Control3D;
+        };
+        /** Gets the hosting scene */
+        readonly scene: Scene;
+        readonly utilityLayer: Nullable<UtilityLayerRenderer>;
+        /**
+         * Creates a new GUI3DManager
+         * @param scene
+         */
+        constructor(scene?: Scene);
+        private _doPicking(type, pointerEvent);
+        /**
+         * Gets the root container
+         */
+        readonly rootContainer: Container3D;
+        /**
+         * Gets a boolean indicating if the given control is in the root child list
+         * @param control defines the control to check
+         * @returns true if the control is in the root child list
+         */
+        containsControl(control: Control3D): boolean;
+        /**
+         * Adds a control to the root child list
+         * @param control defines the control to add
+         * @returns the current manager
+         */
+        addControl(control: Control3D): GUI3DManager;
+        /**
+         * Removes the control from the root child list
+         * @param control defines the control to remove
+         * @returns the current container
+         */
+        removeControl(control: Control3D): GUI3DManager;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to render controls with fluent desgin
+     */
+    class FluentMaterial extends PushMaterial {
+        private _emissiveTexture;
+        emissiveTexture: BaseTexture;
+        private _renderId;
+        /**
+         * Creates a new Fluent material
+         * @param name defines the name of the material
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): FluentMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: Scene, rootUrl: string): FluentMaterial;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    class Vector3WithInfo extends Vector3 {
+        buttonIndex: number;
+        constructor(source: Vector3, buttonIndex?: number);
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used as base class for controls
+     */
+    class Control3D implements IDisposable, IBehaviorAware<Control3D> {
+        /** Defines the control name */
+        name: string | undefined;
+        /** @hidden */
+        _host: GUI3DManager;
+        private _node;
+        private _downCount;
+        private _enterCount;
+        private _downPointerIds;
+        private _isVisible;
+        /** Gets or sets the control position */
+        position: Vector3;
+        /** Gets or sets the control scaling */
+        scaling: Vector3;
+        /** Callback used to start pointer enter animation */
+        pointerEnterAnimation: () => void;
+        /** Callback used to start pointer out animation */
+        pointerOutAnimation: () => void;
+        /** Callback used to start pointer down animation */
+        pointerDownAnimation: () => void;
+        /** Callback used to start pointer up animation */
+        pointerUpAnimation: () => void;
+        /**
+        * An event triggered when the pointer move over the control.
+        */
+        onPointerMoveObservable: Observable<Vector3>;
+        /**
+         * An event triggered when the pointer move out of the control.
+         */
+        onPointerOutObservable: Observable<Control3D>;
+        /**
+         * An event triggered when the pointer taps the control
+         */
+        onPointerDownObservable: Observable<Vector3WithInfo>;
+        /**
+         * An event triggered when pointer up
+         */
+        onPointerUpObservable: Observable<Vector3WithInfo>;
+        /**
+         * An event triggered when a control is clicked on
+         */
+        onPointerClickObservable: Observable<Vector3WithInfo>;
+        /**
+         * An event triggered when pointer enters the control
+         */
+        onPointerEnterObservable: Observable<Control3D>;
+        /**
+         * Gets or sets the parent container
+         */
+        parent: Nullable<Container3D>;
+        private _behaviors;
+        /**
+         * Gets the list of attached behaviors
+         * @see http://doc.babylonjs.com/features/behaviour
+         */
+        readonly behaviors: Behavior<Control3D>[];
+        /**
+         * Attach a behavior to the control
+         * @see http://doc.babylonjs.com/features/behaviour
+         * @param behavior defines the behavior to attach
+         * @returns the current control
+         */
+        addBehavior(behavior: Behavior<Control3D>): Control3D;
+        /**
+         * Remove an attached behavior
+         * @see http://doc.babylonjs.com/features/behaviour
+         * @param behavior defines the behavior to attach
+         * @returns the current control
+         */
+        removeBehavior(behavior: Behavior<Control3D>): Control3D;
+        /**
+         * Gets an attached behavior by name
+         * @param name defines the name of the behavior to look for
+         * @see http://doc.babylonjs.com/features/behaviour
+         * @returns null if behavior was not found else the requested behavior
+         */
+        getBehaviorByName(name: string): Nullable<Behavior<Control3D>>;
+        /** Gets or sets a boolean indicating if the control is visible */
+        isVisible: boolean;
+        /**
+         * Creates a new control
+         * @param name defines the control name
+         */
+        constructor(
+            /** Defines the control name */
+            name?: string | undefined);
+        /**
+         * Gets a string representing the class name
+         */
+        readonly typeName: string;
+        protected _getTypeName(): string;
+        /**
+         * Gets the mesh used to render this control
+         */
+        readonly node: Nullable<TransformNode>;
+        /**
+         * Gets the mesh used to render this control
+         */
+        readonly mesh: Nullable<Mesh>;
+        /**
+         * Link the control as child of the given node
+         * @param node defines the node to link to. Use null to unlink the control
+         * @returns the current control
+         */
+        linkToTransformNode(node: Nullable<TransformNode>): Control3D;
+        /** @hidden **/
+        _prepareNode(scene: Scene): void;
+        /**
+         * Node creation.
+         * Can be overriden by children
+         * @param scene defines the scene where the node must be attached
+         * @returns the attached node or null if none
+         */
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
+        /**
+         * Affect a material to the given mesh
+         * @param mesh defines the mesh which will represent the control
+         */
+        protected _affectMaterial(mesh: Mesh): void;
+        /** @hidden */
+        _onPointerMove(target: Control3D, coordinates: Vector3): void;
+        /** @hidden */
+        _onPointerEnter(target: Control3D): boolean;
+        /** @hidden */
+        _onPointerOut(target: Control3D): void;
+        /** @hidden */
+        _onPointerDown(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number): boolean;
+        /** @hidden */
+        _onPointerUp(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        /** @hidden */
+        forcePointerUp(pointerId?: Nullable<number>): void;
+        /** @hidden */
+        _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create containers for controls
+     */
+    class Container3D extends Control3D {
+        /**
+         * Gets the list of child controls
+         */
+        protected _children: Control3D[];
+        /**
+         * Creates a new container
+         * @param name defines the container name
+         */
+        constructor(name?: string);
+        /**
+         * Gets a boolean indicating if the given control is in the children of this control
+         * @param control defines the control to check
+         * @returns true if the control is in the child list
+         */
+        containsControl(control: Control3D): boolean;
+        /**
+         * Adds a control to the children of this control
+         * @param control defines the control to add
+         * @returns the current container
+         */
+        addControl(control: Control3D): Container3D;
+        /**
+         * This function will be called everytime a new control is added
+         */
+        protected _arrangeChildren(): void;
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
+        /**
+         * Removes the control from the children of this control
+         * @param control defines the control to remove
+         * @returns the current container
+         */
+        removeControl(control: Control3D): Container3D;
+        protected _getTypeName(): string;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a button in 3D
+     */
+    class Button3D extends Control3D {
+        /** @hidden */
+        protected _currentMaterial: Material;
+        private _facadeTexture;
+        private _content;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        /**
+         * Gets or sets the GUI 2D content used to display the button's facade
+         */
+        content: Control;
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+        protected _affectMaterial(mesh: Mesh): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a holographic button in 3D
+     */
+    class HolographicButton extends Button3D {
+        private _frontPlate;
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+        protected _affectMaterial(mesh: Mesh): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a stack panel in 3D on XY plane
+     */
+    class StackPanel3D extends Container3D {
+        private _isVertical;
+        /**
+         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+         */
+        isVertical: boolean;
+        /**
+         * Gets or sets the distance between elements
+         */
+        margin: number;
+        /**
+         * Creates new StackPanel
+         * @param isVertical
+         */
+        constructor();
+        protected _arrangeChildren(): void;
     }
 }

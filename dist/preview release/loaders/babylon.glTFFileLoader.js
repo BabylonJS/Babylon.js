@@ -2967,6 +2967,10 @@ var BABYLON;
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
                 var _this = this;
                 return Promise.resolve().then(function () {
+                    _this._babylonScene = scene;
+                    _this._rootUrl = rootUrl;
+                    _this._progressCallback = onProgress;
+                    _this._loadData(data);
                     var nodes = null;
                     if (meshesNames) {
                         var nodeMap_1 = {};
@@ -2987,7 +2991,7 @@ var BABYLON;
                             return node;
                         });
                     }
-                    return _this._loadAsync(nodes, scene, data, rootUrl, onProgress).then(function () {
+                    return _this._loadAsync(nodes).then(function () {
                         return {
                             meshes: _this._getMeshes(),
                             particleSystems: [],
@@ -3006,16 +3010,19 @@ var BABYLON;
              * @returns a promise which completes when objects have been loaded to the scene
              */
             GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
-                return this._loadAsync(null, scene, data, rootUrl, onProgress);
-            };
-            GLTFLoader.prototype._loadAsync = function (nodes, scene, data, rootUrl, onProgress) {
                 var _this = this;
                 return Promise.resolve().then(function () {
                     _this._babylonScene = scene;
                     _this._rootUrl = rootUrl;
                     _this._progressCallback = onProgress;
-                    _this._state = BABYLON.GLTFLoaderState.LOADING;
                     _this._loadData(data);
+                    return _this._loadAsync(null);
+                });
+            };
+            GLTFLoader.prototype._loadAsync = function (nodes) {
+                var _this = this;
+                return Promise.resolve().then(function () {
+                    _this._state = BABYLON.GLTFLoaderState.LOADING;
                     _this._loadExtensions();
                     _this._checkExtensions();
                     var promises = new Array();
@@ -3023,8 +3030,8 @@ var BABYLON;
                         promises.push(_this._loadNodesAsync(nodes));
                     }
                     else {
-                        var scene_1 = GLTFLoader._GetProperty("#/scene", _this._gltf.scenes, _this._gltf.scene || 0);
-                        promises.push(_this._loadSceneAsync("#/scenes/" + scene_1._index, scene_1));
+                        var scene = GLTFLoader._GetProperty("#/scene", _this._gltf.scenes, _this._gltf.scene || 0);
+                        promises.push(_this._loadSceneAsync("#/scenes/" + scene._index, scene));
                     }
                     if (_this.compileMaterials) {
                         promises.push(_this._compileMaterialsAsync());
@@ -3038,7 +3045,9 @@ var BABYLON;
                         _this._startAnimations();
                     });
                     resultPromise.then(function () {
-                        _this._rootBabylonMesh.setEnabled(true);
+                        if (_this._rootBabylonMesh) {
+                            _this._rootBabylonMesh.setEnabled(true);
+                        }
                         BABYLON.Tools.SetImmediate(function () {
                             if (!_this._disposed) {
                                 Promise.all(_this._completePromises).then(function () {

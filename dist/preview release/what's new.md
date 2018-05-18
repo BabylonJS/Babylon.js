@@ -18,11 +18,14 @@
 - Added predicate function to customize the list of mesh included in the computation of bounding vectors in the ```getHierarchyBoundingVectors``` method ([sebavan](http://www.github.com/sebavan))
 - Added webVR constructor options: disable laser pointer toggle, teleportation floor meshes ([TrevorDev](https://github.com/TrevorDev))
 - Get a root mesh from an asset container, load a mesh from a file with a single string url ([TrevorDev](https://github.com/TrevorDev))
+- UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
+- AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
 
 ### glTF Loader
 
 - Added support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
 - Added `onNodeLODsLoadedObservable` and `onMaterialLODsLoadedObservable` to MSFT_lod loader extension ([bghgary](http://www.github.com/bghgary))
+- Added glTF loader settings to the GLTF tab in the debug layer ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
@@ -30,8 +33,10 @@
 - Nav-Bar is now disaplayed on fullscreen per default ([RaananW](https://github.com/RaananW))
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
+- Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
+- VR experience helper will now fire pointer events even when no mesh is currently hit ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

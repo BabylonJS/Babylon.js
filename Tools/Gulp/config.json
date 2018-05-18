@@ -1011,7 +1011,8 @@
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Debug/babylon.physicsViewer.js",
-                "../../src/Rendering/babylon.boundingBoxRenderer.js"
+                "../../src/Rendering/babylon.boundingBoxRenderer.js",
+                "../../src/Rendering/babylon.utilityLayerRenderer.js"
             ],
             "dependUpon": [
                 "shaderMaterial",
@@ -1612,6 +1613,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
                 ],
+                "shaderFiles": [
+                    "../../serializers/src/glTF/2.0/shaders/setAlphaToOne.fragment.fx"
+                ],
                 "output": "babylon.glTF2Serializer.js"
             }
         ],
@@ -1636,27 +1640,40 @@
         "libraries": [
             {
                 "files": [
-                    "../../gui/src/advancedDynamicTexture.ts",
-                    "../../gui/src/measure.ts",
-                    "../../gui/src/math2D.ts",
-                    "../../gui/src/valueAndUnit.ts",
-                    "../../gui/src/multiLinePoint.ts",
-                    "../../gui/src/controls/control.ts",
-                    "../../gui/src/controls/container.ts",
-                    "../../gui/src/controls/stackPanel.ts",
-                    "../../gui/src/controls/rectangle.ts",
-                    "../../gui/src/controls/ellipse.ts",
-                    "../../gui/src/controls/line.ts",
-                    "../../gui/src/controls/slider.ts",
-                    "../../gui/src/controls/checkbox.ts",
-                    "../../gui/src/controls/radioButton.ts",
-                    "../../gui/src/controls/textBlock.ts",
-                    "../../gui/src/controls/image.ts",
-                    "../../gui/src/controls/button.ts",
-                    "../../gui/src/controls/colorpicker.ts",
-                    "../../gui/src/controls/inputText.ts",
-                    "../../gui/src/controls/virtualKeyboard.ts",
-                    "../../gui/src/controls/multiLine.ts"
+                    "../../gui/src/2D/style.ts",
+                    "../../gui/src/2D/valueAndUnit.ts",
+                    "../../gui/src/2D/advancedDynamicTexture.ts",
+                    "../../gui/src/2D/measure.ts",
+                    "../../gui/src/2D/math2D.ts",
+                    "../../gui/src/2D/multiLinePoint.ts",
+                    "../../gui/src/2D/controls/control.ts",
+                    "../../gui/src/2D/controls/container.ts",
+                    "../../gui/src/2D/controls/stackPanel.ts",
+                    "../../gui/src/2D/controls/rectangle.ts",
+                    "../../gui/src/2D/controls/ellipse.ts",
+                    "../../gui/src/2D/controls/line.ts",
+                    "../../gui/src/2D/controls/slider.ts",
+                    "../../gui/src/2D/controls/checkbox.ts",
+                    "../../gui/src/2D/controls/radioButton.ts",
+                    "../../gui/src/2D/controls/textBlock.ts",
+                    "../../gui/src/2D/controls/image.ts",
+                    "../../gui/src/2D/controls/button.ts",
+                    "../../gui/src/2D/controls/colorpicker.ts",
+                    "../../gui/src/2D/controls/inputText.ts",
+                    "../../gui/src/2D/controls/virtualKeyboard.ts",
+                    "../../gui/src/2D/controls/multiLine.ts",
+                    "../../gui/src/3D/gui3DManager.ts",
+                    "../../gui/src/3D/materials/fluentMaterial.ts",
+                    "../../gui/src/3D/vector3WithInfo.ts",
+                    "../../gui/src/3D/controls/control3D.ts",
+                    "../../gui/src/3D/controls/container3D.ts",
+                    "../../gui/src/3D/controls/button3D.ts",
+                    "../../gui/src/3D/controls/holographicButton.ts",
+                    "../../gui/src/3D/controls/stackPanel3D.ts"
+                ],
+                "shaderFiles": [
+                    "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
+                    "../../gui/src/3D/materials/shaders/fluent.fragment.fx"
                 ],
                 "output": "babylon.gui.js",
                 "buildAsModule": true,

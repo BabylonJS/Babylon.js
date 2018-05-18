@@ -1,4 +1,4 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
     export interface IFocusableControl {
@@ -33,6 +33,11 @@ module BABYLON.GUI {
         private _focusedControl: Nullable<IFocusableControl>;
         private _blockNextFocusCheck = false;
         private _renderScale = 1;
+
+        /**
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
+        public premulAlpha = false;
 
         public get renderScale(): number {
             return this._renderScale;
@@ -219,6 +224,13 @@ module BABYLON.GUI {
             });
         }
 
+        /**
+         * Helper function used to create a new style
+         */
+        public createStyle(): Style {
+            return new Style(this);
+        }
+
         public addControl(control: Control): AdvancedDynamicTexture {
             this._rootContainer.addControl(control);
 
@@ -375,7 +387,7 @@ module BABYLON.GUI {
             this._isDirty = false;
 
             this._render();
-            this.update();
+            this.update(true, this.premulAlpha);
         }
 
         private _render(): void {

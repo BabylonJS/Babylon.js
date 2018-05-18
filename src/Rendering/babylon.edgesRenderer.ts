@@ -23,6 +23,9 @@
         private _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
         private _checkVerticesInsteadOfIndices = false;
 
+        /** Gets or sets a boolean indicating if the edgesRenderer is active */
+        public isEnabled = true;
+
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
             this._source = source;

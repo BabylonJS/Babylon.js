@@ -1,7 +1,7 @@
 {
-  "errors": 4307,
+  "errors": 4287,
   "babylon.typedoc.json": {
-    "errors": 4307,
+    "errors": 4287,
     "Animatable": {
       "Class": {
         "Comments": {
@@ -12027,84 +12027,6 @@
         }
       }
     },
-    "PickingInfo": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "bu": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "bv": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "distance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "faceId": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "hit": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "pickedMesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "pickedPoint": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "pickedSprite": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "subMeshId": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "getNormal": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "useWorldCoordinates": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useVerticesNormals": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getTextureCoordinates": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "Plane": {
       "Class": {
         "Comments": {
@@ -22162,44 +22084,6 @@
           }
         },
         "taskType": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "Behavior": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attach": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "node": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detach": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "init": {
           "Comments": {
             "MissingText": true
           }

@@ -5716,7 +5716,7 @@
          * @returns a PickingInfo
          */
         public pickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-            return this._internalPick(world => {
+            var result = this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();
                 }
@@ -5729,6 +5729,10 @@
                 Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
                 return this._cachedRayForTransform;
             }, predicate, fastCheck);
+            if(result){
+                result.ray = ray;
+            }
+            return result;
         }
 
         /**

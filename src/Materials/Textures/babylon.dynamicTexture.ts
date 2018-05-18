@@ -111,9 +111,10 @@
         /**
          * Updates the texture
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
          */
-        public update(invertY?: boolean): void {
-            this._engine.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, undefined, this._format || undefined);
+        public update(invertY?: boolean, premulAlpha = false): void {
+            this._engine.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
         }
 
         /**

@@ -187,7 +187,7 @@ declare module BabylonViewer {
                 * The scene will automatically be cleared of the old models, if exist.
                 * @param model the configuration object (or URL) to load.
                 */
-            loadModel(model?: string | IModelConfiguration): Promise<ViewerModel>;
+            loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel>;
             /**
                 * Show the overlay and the defined sub-screen.
                 * Mainly used for help and errors
@@ -428,7 +428,7 @@ declare module BabylonViewer {
                 * @param clearScene should the scene be cleared before loading this model
                 * @returns a ViewerModel object that is not yet fully loaded.
                 */
-            initModel(modelConfig: string | IModelConfiguration, clearScene?: boolean): ViewerModel;
+            initModel(modelConfig: string | File | IModelConfiguration, clearScene?: boolean): ViewerModel;
             /**
                 * load a model using the provided configuration.
                 * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
@@ -438,7 +438,7 @@ declare module BabylonViewer {
                 * @param clearScene Should the scene be cleared before loading the model
                 * @returns a Promise the fulfills when the model finished loading successfully.
                 */
-            loadModel(modelConfig: string | IModelConfiguration, clearScene?: boolean): Promise<ViewerModel>;
+            loadModel(modelConfig: string | File | IModelConfiguration, clearScene?: boolean): Promise<ViewerModel>;
             protected _initTelemetryEvents(): void;
             /**
                 * Injects all the spectre shader in the babylon shader store
@@ -1087,7 +1087,7 @@ declare module BabylonViewer {
             id?: string;
             url?: string;
             root?: string;
-            file?: string;
+            file?: string | File;
             loader?: string;
             position?: {
                     x: number;

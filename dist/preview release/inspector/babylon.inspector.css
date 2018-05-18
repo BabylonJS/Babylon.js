@@ -250,6 +250,31 @@
       padding-bottom: 10px;
       border-bottom: 1px solid #5db0d7;
       margin: 10px 0 10px 0; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-action, .insp-wrapper .tab-panel .gltf-actions .gltf-checkbox {
+      height: 20px;
+      line-height: 20px;
+      width: 100%;
+      cursor: pointer;
+      white-space: nowrap; }
+      .insp-wrapper .tab-panel .gltf-actions .gltf-action:hover, .insp-wrapper .tab-panel .gltf-actions .gltf-checkbox:hover {
+        background-color: #2c2c2c; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-checkbox:before {
+      width: 1em;
+      height: 1em;
+      line-height: 1em;
+      display: inline-block;
+      font-family: 'FontAwesome', sans-serif;
+      content: "\f096";
+      margin-right: 10px; }
+    .insp-wrapper .tab-panel .gltf-actions .gltf-checkbox.active:before {
+      width: 1em;
+      height: 1em;
+      line-height: 1em;
+      display: inline-block;
+      font-family: 'FontAwesome', sans-serif;
+      content: "\f14a";
+      color: #5db0d7;
+      margin-right: 10px; }
     .insp-wrapper .tab-panel .gltf-actions .gltf-input {
       background-color: #2c2c2c;
       border: none;

@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
     export class Control {
@@ -17,6 +17,8 @@ module BABYLON.GUI {
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
         protected _fontOffset: { ascent: number, height: number, descent: number };
         private _color = "";
+        private _style: BABYLON.Nullable<Style> = null;
+        private _styleObserver: BABYLON.Nullable<BABYLON.Observer<Style>>;
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
@@ -271,7 +273,7 @@ module BABYLON.GUI {
             }
 
             this._fontFamily = value;
-            this._fontSet = true;
+            this._resetFontCache();
         }
 
         public get fontStyle(): string {
@@ -284,7 +286,30 @@ module BABYLON.GUI {
             }
 
             this._fontStyle = value;
-            this._fontSet = true;
+            this._resetFontCache();
+        }
+
+        public get style(): BABYLON.Nullable<Style> {
+            return this._style;
+        }
+
+        public set style(value: BABYLON.Nullable<Style>) {
+            if (this._style) {
+                this._style.onChangedObservable.remove(this._styleObserver);
+                this._styleObserver = null;
+            }
+
+            this._style = value;
+
+            if (this._style) {
+                this._styleObserver = this._style.onChangedObservable.add(() => {
+                    this._markAsDirty();
+                    this._resetFontCache();
+                });
+            }
+
+            this._markAsDirty();
+            this._resetFontCache();
         }
 
         /** @hidden */
@@ -293,11 +318,13 @@ module BABYLON.GUI {
         }
 
         public get fontSizeInPixels(): number {
-            if (this._fontSize.isPixel) {
-                return this._fontSize.getValue(this._host);
+            let fontSizeToUse =  this._style ? this._style._fontSize : this._fontSize;
+
+            if (fontSizeToUse.isPixel) {
+                return fontSizeToUse.getValue(this._host);
             }
 
-            return this._fontSize.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
+            return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
         }
 
         public get fontSize(): string | number {
@@ -311,7 +338,7 @@ module BABYLON.GUI {
 
             if (this._fontSize.fromString(value)) {
                 this._markAsDirty();
-                this._fontSet = true;
+                this._resetFontCache();
             }
         }
 
@@ -1018,7 +1045,11 @@ module BABYLON.GUI {
                 return;
             }
 
-            this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+            if (this._style) {
+                this._font = this._style.fontStyle + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+            } else {
+                this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+            }
 
             this._fontOffset = Control._GetFontOffset(this._font);
         }
@@ -1031,7 +1062,12 @@ module BABYLON.GUI {
             this.onPointerMoveObservable.clear();
             this.onPointerOutObservable.clear();
             this.onPointerUpObservable.clear();
-			this.onPointerClickObservable.clear();
+            this.onPointerClickObservable.clear();
+            
+            if (this._styleObserver && this._style) {
+                this._style.onChangedObservable.remove(this._styleObserver);
+                this._styleObserver = null;
+            }
 
             if (this._root) {
                 this._root.removeControl(this);
