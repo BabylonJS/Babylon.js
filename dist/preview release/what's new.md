@@ -19,6 +19,7 @@
 - Added webVR constructor options: disable laser pointer toggle, teleportation floor meshes ([TrevorDev](https://github.com/TrevorDev))
 - Get a root mesh from an asset container, load a mesh from a file with a single string url ([TrevorDev](https://github.com/TrevorDev))
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
+- AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
 
 ### glTF Loader
 
