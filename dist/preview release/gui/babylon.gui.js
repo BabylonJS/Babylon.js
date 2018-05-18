@@ -23,6 +23,9 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
+BABYLON.Effect.ShadersStore['fluentVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n\nuniform mat4 world;\nuniform mat4 viewProjection;\nuniform mat4 emissiveMatrix;\nvarying vec2 vEmissiveUV;\nvoid main(void) {\nvEmissiveUV=vec2(emissiveMatrix*vec4(uv,1.0,0.0));\ngl_Position=viewProjection*world*vec4(position,1.0);\n}\n";
+BABYLON.Effect.ShadersStore['fluentPixelShader'] = "precision highp float;\nvarying vec2 vEmissiveUV;\nuniform sampler2D emissiveSampler;\nvoid main(void) {\nvec3 emissiveColor=texture2D(emissiveSampler,vEmissiveUV).rgb;\ngl_FragColor=vec4(emissiveColor,1.0);\n}";
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -269,6 +272,10 @@ var BABYLON;
                 _this._renderAtIdealSize = false;
                 _this._blockNextFocusCheck = false;
                 _this._renderScale = 1;
+                /**
+                 * Gets or sets a boolean defining if alpha is stored as premultiplied
+                 */
+                _this.premulAlpha = false;
                 scene = _this.getScene();
                 if (!scene || !_this._texture) {
                     return _this;
@@ -578,7 +585,7 @@ var BABYLON;
                 }
                 this._isDirty = false;
                 this._render();
-                this.update();
+                this.update(true, this.premulAlpha);
             };
             AdvancedDynamicTexture.prototype._render = function () {
                 var textureSize = this.getSize();
@@ -5592,15 +5599,484 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to manage 3D user interface
+         */
+        var GUI3DManager = /** @class */ (function () {
+            /**
+             * Creates a new GUI3DManager
+             * @param scene
+             */
+            function GUI3DManager(scene) {
+                var _this = this;
+                /** @hidden */
+                this._lastControlOver = {};
+                /** @hidden */
+                this._lastControlDown = {};
+                this._scene = scene || BABYLON.Engine.LastCreatedScene;
+                this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                    _this._sceneDisposeObserver = null;
+                    _this._utilityLayer = null;
+                    _this.dispose();
+                });
+                this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
+                // Root
+                this._rootContainer = new GUI.Container3D("RootContainer");
+                this._rootContainer._host = this;
+                // Events
+                this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
+                    var pointerEvent = (pi.event);
+                    if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
+                        return;
+                    }
+                    if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
+                        && pi.type !== BABYLON.PointerEventTypes.POINTERUP
+                        && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                        return;
+                    }
+                    var camera = _this._scene.cameraToUseForPointers || _this._scene.activeCamera;
+                    if (!camera) {
+                        return;
+                    }
+                    pi.skipOnPointerObservable = _this._doPicking(pi.type, pointerEvent);
+                });
+                // Scene
+                this._utilityLayer.utilityLayerScene.autoClear = false;
+                this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+                new BABYLON.HemisphericLight("hemi", BABYLON.Vector3.Up(), this._utilityLayer.utilityLayerScene);
+            }
+            Object.defineProperty(GUI3DManager.prototype, "scene", {
+                /** Gets the hosting scene */
+                get: function () {
+                    return this._scene;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(GUI3DManager.prototype, "utilityLayer", {
+                get: function () {
+                    return this._utilityLayer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            GUI3DManager.prototype._doPicking = function (type, pointerEvent) {
+                if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
+                    return false;
+                }
+                var pointerId = pointerEvent.pointerId || 0;
+                var buttonIndex = pointerEvent.button;
+                var utilityScene = this._utilityLayer.utilityLayerScene;
+                var pickingInfo = utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
+                if (!pickingInfo || !pickingInfo.hit) {
+                    var previousControlOver = this._lastControlOver[pointerId];
+                    if (previousControlOver) {
+                        previousControlOver._onPointerOut(previousControlOver);
+                        delete this._lastControlOver[pointerId];
+                    }
+                    if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                        if (this._lastControlDown[pointerEvent.pointerId]) {
+                            this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                            delete this._lastControlDown[pointerEvent.pointerId];
+                        }
+                    }
+                    return false;
+                }
+                var control = (pickingInfo.pickedMesh.metadata);
+                if (!control._processObservables(type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
+                    if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                        if (this._lastControlOver[pointerId]) {
+                            this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                        }
+                        delete this._lastControlOver[pointerId];
+                    }
+                }
+                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (this._lastControlDown[pointerEvent.pointerId]) {
+                        this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                        delete this._lastControlDown[pointerEvent.pointerId];
+                    }
+                }
+                return true;
+            };
+            Object.defineProperty(GUI3DManager.prototype, "rootContainer", {
+                /**
+                 * Gets the root container
+                 */
+                get: function () {
+                    return this._rootContainer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Gets a boolean indicating if the given control is in the root child list
+             * @param control defines the control to check
+             * @returns true if the control is in the root child list
+             */
+            GUI3DManager.prototype.containsControl = function (control) {
+                return this._rootContainer.containsControl(control);
+            };
+            /**
+             * Adds a control to the root child list
+             * @param control defines the control to add
+             * @returns the current manager
+             */
+            GUI3DManager.prototype.addControl = function (control) {
+                this._rootContainer.addControl(control);
+                return this;
+            };
+            /**
+             * Removes the control from the root child list
+             * @param control defines the control to remove
+             * @returns the current container
+             */
+            GUI3DManager.prototype.removeControl = function (control) {
+                this._rootContainer.removeControl(control);
+                return this;
+            };
+            /**
+             * Releases all associated resources
+             */
+            GUI3DManager.prototype.dispose = function () {
+                this._rootContainer.dispose();
+                if (this._scene) {
+                    if (this._pointerObserver) {
+                        this._scene.onPrePointerObservable.remove(this._pointerObserver);
+                        this._pointerObserver = null;
+                    }
+                    if (this._sceneDisposeObserver) {
+                        this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+                        this._sceneDisposeObserver = null;
+                    }
+                }
+                if (this._utilityLayer) {
+                    this._utilityLayer.dispose();
+                }
+            };
+            return GUI3DManager;
+        }());
+        GUI.GUI3DManager = GUI3DManager;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to render controls with fluent desgin
+         */
+        var FluentMaterial = /** @class */ (function (_super) {
+            __extends(FluentMaterial, _super);
+            function FluentMaterial(name, scene) {
+                return _super.call(this, name, scene) || this;
+            }
+            FluentMaterial.prototype.needAlphaBlending = function () {
+                return false;
+            };
+            FluentMaterial.prototype.needAlphaTesting = function () {
+                return false;
+            };
+            FluentMaterial.prototype.getAlphaTestTexture = function () {
+                return null;
+            };
+            FluentMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+                if (this.isFrozen) {
+                    if (this._wasPreviouslyReady && subMesh.effect) {
+                        return true;
+                    }
+                }
+                var scene = this.getScene();
+                if (!this.checkReadyOnEveryCall && subMesh.effect) {
+                    if (this._renderId === scene.getRenderId()) {
+                        return true;
+                    }
+                }
+                var engine = scene.getEngine();
+                scene.resetCachedMaterial();
+                //Attributes
+                var attribs = [BABYLON.VertexBuffer.PositionKind];
+                attribs.push(BABYLON.VertexBuffer.NormalKind);
+                attribs.push(BABYLON.VertexBuffer.UVKind);
+                var shaderName = "fluent";
+                var uniforms = ["world", "viewProjection", "emissiveMatrix"];
+                var samplers = ["emissiveSampler"];
+                var uniformBuffers = new Array();
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: "",
+                    maxSimultaneousLights: 4
+                });
+                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: "",
+                    fallbacks: null,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousLights: 4 }
+                }, engine));
+                if (!subMesh.effect || !subMesh.effect.isReady()) {
+                    return false;
+                }
+                this._renderId = scene.getRenderId();
+                this._wasPreviouslyReady = true;
+                return true;
+            };
+            FluentMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
+                var scene = this.getScene();
+                var effect = subMesh.effect;
+                if (!effect) {
+                    return;
+                }
+                this._activeEffect = effect;
+                // Matrices        
+                this.bindOnlyWorldMatrix(world);
+                this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+                if (this._mustRebind(scene, effect)) {
+                    // Textures        
+                    if (this._emissiveTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
+                        this._activeEffect.setTexture("emissiveSampler", this._emissiveTexture);
+                        this._activeEffect.setMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
+                    }
+                }
+                this._afterBind(mesh, this._activeEffect);
+            };
+            FluentMaterial.prototype.getActiveTextures = function () {
+                var activeTextures = _super.prototype.getActiveTextures.call(this);
+                if (this._emissiveTexture) {
+                    activeTextures.push(this._emissiveTexture);
+                }
+                return activeTextures;
+            };
+            FluentMaterial.prototype.hasTexture = function (texture) {
+                if (_super.prototype.hasTexture.call(this, texture)) {
+                    return true;
+                }
+                if (this._emissiveTexture === texture) {
+                    return true;
+                }
+                return false;
+            };
+            FluentMaterial.prototype.dispose = function (forceDisposeEffect) {
+                if (this._emissiveTexture) {
+                    this._emissiveTexture.dispose();
+                }
+                _super.prototype.dispose.call(this, forceDisposeEffect);
+            };
+            FluentMaterial.prototype.clone = function (name) {
+                var _this = this;
+                return BABYLON.SerializationHelper.Clone(function () { return new FluentMaterial(name, _this.getScene()); }, this);
+            };
+            FluentMaterial.prototype.serialize = function () {
+                var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+                serializationObject.customType = "BABYLON.GUI.FluentMaterial";
+                return serializationObject;
+            };
+            FluentMaterial.prototype.getClassName = function () {
+                return "FluentMaterial";
+            };
+            // Statics
+            FluentMaterial.Parse = function (source, scene, rootUrl) {
+                return BABYLON.SerializationHelper.Parse(function () { return new FluentMaterial(source.name, scene); }, source, scene, rootUrl);
+            };
+            __decorate([
+                BABYLON.serializeAsTexture("emissiveTexture")
+            ], FluentMaterial.prototype, "_emissiveTexture", void 0);
+            __decorate([
+                BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            ], FluentMaterial.prototype, "emissiveTexture", void 0);
+            return FluentMaterial;
+        }(BABYLON.PushMaterial));
+        GUI.FluentMaterial = FluentMaterial;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var Vector3WithInfo = /** @class */ (function (_super) {
+            __extends(Vector3WithInfo, _super);
+            function Vector3WithInfo(source, buttonIndex) {
+                if (buttonIndex === void 0) { buttonIndex = 0; }
+                var _this = _super.call(this, source.x, source.y, source.z) || this;
+                _this.buttonIndex = buttonIndex;
+                return _this;
+            }
+            return Vector3WithInfo;
+        }(BABYLON.Vector3));
+        GUI.Vector3WithInfo = Vector3WithInfo;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used as base class for controls
+         */
         var Control3D = /** @class */ (function () {
-            function Control3D() {
+            /**
+             * Creates a new control
+             * @param name defines the control name
+             */
+            function Control3D(
+            /** Defines the control name */
+            name) {
+                this.name = name;
+                this._downCount = 0;
+                this._enterCount = 0;
+                this._downPointerIds = {};
+                this._isVisible = true;
+                /**
+                * An event triggered when the pointer move over the control.
+                */
+                this.onPointerMoveObservable = new BABYLON.Observable();
+                /**
+                 * An event triggered when the pointer move out of the control.
+                 */
+                this.onPointerOutObservable = new BABYLON.Observable();
+                /**
+                 * An event triggered when the pointer taps the control
+                 */
+                this.onPointerDownObservable = new BABYLON.Observable();
+                /**
+                 * An event triggered when pointer up
+                 */
+                this.onPointerUpObservable = new BABYLON.Observable();
+                /**
+                 * An event triggered when a control is clicked on
+                 */
+                this.onPointerClickObservable = new BABYLON.Observable();
+                /**
+                 * An event triggered when pointer enters the control
+                 */
+                this.onPointerEnterObservable = new BABYLON.Observable();
+                // Behaviors
+                this._behaviors = new Array();
             }
+            Object.defineProperty(Control3D.prototype, "behaviors", {
+                /**
+                 * Gets the list of attached behaviors
+                 * @see http://doc.babylonjs.com/features/behaviour
+                 */
+                get: function () {
+                    return this._behaviors;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Attach a behavior to the control
+             * @see http://doc.babylonjs.com/features/behaviour
+             * @param behavior defines the behavior to attach
+             * @returns the current control
+             */
+            Control3D.prototype.addBehavior = function (behavior) {
+                var _this = this;
+                var index = this._behaviors.indexOf(behavior);
+                if (index !== -1) {
+                    return this;
+                }
+                behavior.init();
+                var scene = this._host.scene;
+                if (scene.isLoading) {
+                    // We defer the attach when the scene will be loaded
+                    scene.onDataLoadedObservable.addOnce(function () {
+                        behavior.attach(_this);
+                    });
+                }
+                else {
+                    behavior.attach(this);
+                }
+                this._behaviors.push(behavior);
+                return this;
+            };
+            /**
+             * Remove an attached behavior
+             * @see http://doc.babylonjs.com/features/behaviour
+             * @param behavior defines the behavior to attach
+             * @returns the current control
+             */
+            Control3D.prototype.removeBehavior = function (behavior) {
+                var index = this._behaviors.indexOf(behavior);
+                if (index === -1) {
+                    return this;
+                }
+                this._behaviors[index].detach();
+                this._behaviors.splice(index, 1);
+                return this;
+            };
+            /**
+             * Gets an attached behavior by name
+             * @param name defines the name of the behavior to look for
+             * @see http://doc.babylonjs.com/features/behaviour
+             * @returns null if behavior was not found else the requested behavior
+             */
+            Control3D.prototype.getBehaviorByName = function (name) {
+                for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
+                    var behavior = _a[_i];
+                    if (behavior.name === name) {
+                        return behavior;
+                    }
+                }
+                return null;
+            };
+            Object.defineProperty(Control3D.prototype, "isVisible", {
+                /** Gets or sets a boolean indicating if the control is visible */
+                get: function () {
+                    return this._isVisible;
+                },
+                set: function (value) {
+                    if (this._isVisible === value) {
+                        return;
+                    }
+                    this._isVisible = value;
+                    if (this._mesh) {
+                        this._mesh.isVisible = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control3D.prototype, "position", {
+                /** Gets or sets the control position */
+                get: function () {
+                    if (this._mesh) {
+                        return this._mesh.position;
+                    }
+                    return BABYLON.Vector3.Zero();
+                },
+                set: function (value) {
+                    if (this._mesh) {
+                        this._mesh.position = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control3D.prototype, "typeName", {
+                /**
+                 * Gets a string representing the class name
+                 */
                 get: function () {
                     return this._getTypeName();
                 },
@@ -5610,9 +6086,398 @@ var BABYLON;
             Control3D.prototype._getTypeName = function () {
                 return "Control3D";
             };
+            Object.defineProperty(Control3D.prototype, "mesh", {
+                /**
+                 * Gets the mesh used to render this control
+                 */
+                get: function () {
+                    return this._mesh;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Link the control as child of the given mesh
+             * @param mesh defines the mesh to link to. Use null to unlink the control
+             * @returns the current control
+             */
+            Control3D.prototype.linkToMesh = function (mesh) {
+                if (this._mesh) {
+                    this._mesh.parent = mesh;
+                }
+                return this;
+            };
+            /**
+             * Get the attached mesh used to render the control
+             * @param scene defines the scene where the mesh must be attached
+             * @returns the attached mesh or null if none
+             */
+            Control3D.prototype.prepareMesh = function (scene) {
+                if (!this._mesh) {
+                    this._mesh = this._createMesh(scene);
+                    this._mesh.isPickable = true;
+                    this._mesh.metadata = this; // Store the control on the metadata field in order to get it when picking
+                    this._affectMaterial(this._mesh);
+                }
+                return this._mesh;
+            };
+            /**
+             * Mesh creation.
+             * Can be overriden by children
+             * @param scene defines the scene where the mesh must be attached
+             * @returns the attached mesh or null if none
+             */
+            Control3D.prototype._createMesh = function (scene) {
+                // Do nothing by default
+                return null;
+            };
+            /**
+             * Affect a material to the given mesh
+             * @param mesh defines the mesh which will represent the control
+             */
+            Control3D.prototype._affectMaterial = function (mesh) {
+                mesh.material = null;
+            };
+            // Pointers
+            /** @hidden */
+            Control3D.prototype._onPointerMove = function (target, coordinates) {
+                this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerEnter = function (target) {
+                if (this._enterCount !== 0) {
+                    return false;
+                }
+                this._enterCount++;
+                this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+                if (this.pointerEnterAnimation) {
+                    this.pointerEnterAnimation();
+                }
+                return true;
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerOut = function (target) {
+                this._enterCount = 0;
+                this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+                if (this.pointerOutAnimation) {
+                    this.pointerOutAnimation();
+                }
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+                if (this._downCount !== 0) {
+                    return false;
+                }
+                this._downCount++;
+                this._downPointerIds[pointerId] = true;
+                this.onPointerDownObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+                if (this.pointerDownAnimation) {
+                    this.pointerDownAnimation();
+                }
+                return true;
+            };
+            /** @hidden */
+            Control3D.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+                this._downCount = 0;
+                delete this._downPointerIds[pointerId];
+                if (notifyClick && this._enterCount > 0) {
+                    this.onPointerClickObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+                }
+                this.onPointerUpObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+                if (this.pointerUpAnimation) {
+                    this.pointerUpAnimation();
+                }
+            };
+            /** @hidden */
+            Control3D.prototype.forcePointerUp = function (pointerId) {
+                if (pointerId === void 0) { pointerId = null; }
+                if (pointerId !== null) {
+                    this._onPointerUp(this, BABYLON.Vector3.Zero(), pointerId, 0, true);
+                }
+                else {
+                    for (var key in this._downPointerIds) {
+                        this._onPointerUp(this, BABYLON.Vector3.Zero(), +key, 0, true);
+                    }
+                }
+            };
+            /** @hidden */
+            Control3D.prototype._processObservables = function (type, pickedPoint, pointerId, buttonIndex) {
+                if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    this._onPointerMove(this, pickedPoint);
+                    var previousControlOver = this._host._lastControlOver[pointerId];
+                    if (previousControlOver && previousControlOver !== this) {
+                        previousControlOver._onPointerOut(this);
+                    }
+                    if (previousControlOver !== this) {
+                        this._onPointerEnter(this);
+                    }
+                    this._host._lastControlOver[pointerId] = this;
+                    return true;
+                }
+                if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    this._onPointerDown(this, pickedPoint, pointerId, buttonIndex);
+                    this._host._lastControlDown[pointerId] = this;
+                    this._host._lastPickedControl = this;
+                    return true;
+                }
+                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (this._host._lastControlDown[pointerId]) {
+                        this._host._lastControlDown[pointerId]._onPointerUp(this, pickedPoint, pointerId, buttonIndex, true);
+                    }
+                    delete this._host._lastControlDown[pointerId];
+                    return true;
+                }
+                return false;
+            };
+            /**
+             * Releases all associated resources
+             */
+            Control3D.prototype.dispose = function () {
+                this.onPointerDownObservable.clear();
+                this.onPointerEnterObservable.clear();
+                this.onPointerMoveObservable.clear();
+                this.onPointerOutObservable.clear();
+                this.onPointerUpObservable.clear();
+                this.onPointerClickObservable.clear();
+                if (this._mesh) {
+                    this._mesh.dispose(false, true);
+                    this._mesh = null;
+                }
+                // Behaviors
+                for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
+                    var behavior = _a[_i];
+                    behavior.detach();
+                }
+            };
             return Control3D;
         }());
         GUI.Control3D = Control3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create containers for controls
+         */
+        var Container3D = /** @class */ (function (_super) {
+            __extends(Container3D, _super);
+            /**
+             * Creates a new container
+             * @param name defines the container name
+             */
+            function Container3D(name) {
+                var _this = _super.call(this, name) || this;
+                _this._children = new Array();
+                return _this;
+            }
+            /**
+             * Gets a boolean indicating if the given control is in the children of this control
+             * @param control defines the control to check
+             * @returns true if the control is in the child list
+             */
+            Container3D.prototype.containsControl = function (control) {
+                return this._children.indexOf(control) !== -1;
+            };
+            /**
+             * Adds a control to the children of this control
+             * @param control defines the control to add
+             * @returns the current container
+             */
+            Container3D.prototype.addControl = function (control) {
+                var index = this._children.indexOf(control);
+                if (index !== -1) {
+                    return this;
+                }
+                control.parent = this;
+                control._host = this._host;
+                if (this._host.utilityLayer) {
+                    control.prepareMesh(this._host.utilityLayer.utilityLayerScene);
+                }
+                return this;
+            };
+            /**
+             * Removes the control from the children of this control
+             * @param control defines the control to remove
+             * @returns the current container
+             */
+            Container3D.prototype.removeControl = function (control) {
+                var index = this._children.indexOf(control);
+                if (index !== -1) {
+                    this._children.splice(index, 1);
+                    control.parent = null;
+                }
+                return this;
+            };
+            Container3D.prototype._getTypeName = function () {
+                return "Container3D";
+            };
+            /**
+             * Releases all associated resources
+             */
+            Container3D.prototype.dispose = function () {
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control.dispose();
+                }
+                this._children = [];
+                _super.prototype.dispose.call(this);
+            };
+            return Container3D;
+        }(GUI.Control3D));
+        GUI.Container3D = Container3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a button in 3D
+         */
+        var Button3D = /** @class */ (function (_super) {
+            __extends(Button3D, _super);
+            /**
+             * Creates a new button
+             * @param name defines the control name
+             */
+            function Button3D(name) {
+                var _this = _super.call(this, name) || this;
+                // Default animations
+                _this.pointerEnterAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this._currentMaterial.emissiveColor = BABYLON.Color3.Red();
+                };
+                _this.pointerOutAnimation = function () {
+                    _this._currentMaterial.emissiveColor = BABYLON.Color3.Black();
+                };
+                _this.pointerDownAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(0.95);
+                };
+                _this.pointerUpAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(1.0 / 0.95);
+                };
+                return _this;
+            }
+            Object.defineProperty(Button3D.prototype, "content", {
+                /**
+                 * Gets or sets the GUI 2D content used to display the button's facade
+                 */
+                get: function () {
+                    return this._content;
+                },
+                set: function (value) {
+                    if (!this._host || !this._host.utilityLayer) {
+                        return;
+                    }
+                    if (!this._facadeTexture) {
+                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", 512, 512, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                        this._facadeTexture.rootContainer.scaleX = 2;
+                        this._facadeTexture.rootContainer.scaleY = 2;
+                        this._facadeTexture.premulAlpha = true;
+                    }
+                    this._facadeTexture.addControl(value);
+                    this._currentMaterial.emissiveTexture = this._facadeTexture;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Button3D.prototype._getTypeName = function () {
+                return "Button3D";
+            };
+            // Mesh association
+            Button3D.prototype._createMesh = function (scene) {
+                var faceUV = new Array(6);
+                for (var i = 0; i < 6; i++) {
+                    faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
+                }
+                faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
+                var mesh = BABYLON.MeshBuilder.CreateBox(this.name + "Mesh", {
+                    width: 1.0,
+                    height: 1.0,
+                    depth: 0.1,
+                    faceUV: faceUV
+                }, scene);
+                return mesh;
+            };
+            Button3D.prototype._affectMaterial = function (mesh) {
+                var material = new BABYLON.StandardMaterial(this.name + "Material", mesh.getScene());
+                material.specularColor = BABYLON.Color3.Black();
+                mesh.material = material;
+                this._currentMaterial = material;
+            };
+            return Button3D;
+        }(GUI.Control3D));
+        GUI.Button3D = Button3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a button in 3D
+         */
+        var HolographicButton = /** @class */ (function (_super) {
+            __extends(HolographicButton, _super);
+            /**
+             * Creates a new button
+             * @param name defines the control name
+             */
+            function HolographicButton(name) {
+                var _this = _super.call(this, name) || this;
+                // Default animations
+                _this.pointerEnterAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.edgesRenderer.isEnabled = true;
+                };
+                _this.pointerOutAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.edgesRenderer.isEnabled = false;
+                };
+                return _this;
+            }
+            HolographicButton.prototype._getTypeName = function () {
+                return "HolographicButton";
+            };
+            // Mesh association
+            HolographicButton.prototype._createMesh = function (scene) {
+                var mesh = _super.prototype._createMesh.call(this, scene);
+                mesh.edgesWidth = 0.5;
+                mesh.edgesColor = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+                mesh.enableEdgesRendering();
+                mesh.edgesRenderer.isEnabled = false;
+                return mesh;
+            };
+            HolographicButton.prototype._affectMaterial = function (mesh) {
+                this._currentMaterial = new GUI.FluentMaterial(this.name + "Material", mesh.getScene());
+                mesh.material = this._currentMaterial;
+            };
+            return HolographicButton;
+        }(GUI.Button3D));
+        GUI.HolographicButton = HolographicButton;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

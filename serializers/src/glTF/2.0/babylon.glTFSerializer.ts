@@ -22,20 +22,6 @@ module BABYLON {
      */
     export class GLTF2Export {
         /**
-         * Exports the geometry of the scene to .gltf file format synchronously
-         * @param scene Babylon scene with scene hierarchy information
-         * @param filePrefix File prefix to use when generating the glTF file
-         * @param options Exporter options
-         * @returns Returns an object with a .gltf file and associates texture names
-         * as keys and their data and paths as values
-         */
-        private static GLTF(scene: Scene, filePrefix: string, options?: IExportOptions): GLTFData {
-            const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
-            const gltfGenerator = new GLTF2._Exporter(scene, options);
-            return gltfGenerator._generateGLTF(glTFPrefix);
-        }
-
-        /**
          * Exports the geometry of the scene to .gltf file format asynchronously
          * @param scene Babylon scene with scene hierarchy information
          * @param filePrefix File prefix to use when generating the glTF file
@@ -44,22 +30,11 @@ module BABYLON {
          * as keys and their data and paths as values
          */
         public static GLTFAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData> {
-            return Promise.resolve(scene.whenReadyAsync()).then(() => {
-                return GLTF2Export.GLTF(scene, filePrefix, options);
+            return scene.whenReadyAsync().then(() => {
+                const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
+                const gltfGenerator = new GLTF2._Exporter(scene, options);
+                return gltfGenerator._generateGLTFAsync(glTFPrefix);
             });
-        }
-
-        /**
-         * Exports the geometry of the scene to .glb file format synchronously
-         * @param scene Babylon scene with scene hierarchy information
-         * @param filePrefix File prefix to use when generating glb file
-         * @param options Exporter options
-         * @returns Returns an object with a .glb filename as key and data as value
-         */
-        private static GLB(scene: Scene, filePrefix: string, options?: IExportOptions): GLTFData {
-            const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
-            const gltfGenerator = new GLTF2._Exporter(scene, options);
-            return gltfGenerator._generateGLB(glTFPrefix);
         }
 
         /**
@@ -70,8 +45,10 @@ module BABYLON {
          * @returns Returns an object with a .glb filename as key and data as value
          */
         public static GLBAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData> {
-            return Promise.resolve(scene.whenReadyAsync()).then(() => {
-                return GLTF2Export.GLB(scene, filePrefix, options);
+            return scene.whenReadyAsync().then(() => {
+                const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
+                const gltfGenerator = new GLTF2._Exporter(scene, options);
+                return gltfGenerator._generateGLBAsync(glTFPrefix);
             });
         }
     }

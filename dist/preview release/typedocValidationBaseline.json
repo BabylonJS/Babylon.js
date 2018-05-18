@@ -1,7 +1,7 @@
 {
-  "errors": 4307,
+  "errors": 4301,
   "babylon.typedoc.json": {
-    "errors": 4307,
+    "errors": 4301,
     "Animatable": {
       "Class": {
         "Comments": {
@@ -22162,44 +22162,6 @@
           }
         },
         "taskType": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "Behavior": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attach": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "node": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "detach": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "init": {
           "Comments": {
             "MissingText": true
           }

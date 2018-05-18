@@ -195,7 +195,7 @@
             this._paused = false;
         }
 
-        private _raiseOnAnimationEnd() {            
+        private _raiseOnAnimationEnd() {
             if (this.onAnimationEnd) {
                 this.onAnimationEnd();
             }
@@ -299,9 +299,7 @@
                 for (index = 0; index < runtimeAnimations.length; index++) {
                     runtimeAnimations[index].dispose();
                 }
-            }
 
-            if (!running) {
                 this._raiseOnAnimationEnd();
                 this.onAnimationEnd = null
                 this.onAnimationEndObservable.clear();

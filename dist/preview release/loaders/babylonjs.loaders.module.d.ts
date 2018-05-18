@@ -1295,7 +1295,7 @@ declare module BABYLON.GLTF2 {
          * @returns a promise which completes when objects have been loaded to the scene
          */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
-        private _loadAsync(nodes, scene, data, rootUrl, onProgress?);
+        private _loadAsync(nodes);
         private _loadData(data);
         private _setupData();
         private _loadExtensions();

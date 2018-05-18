@@ -4049,6 +4049,7 @@ var INSPECTOR;
 })(INSPECTOR || (INSPECTOR = {}));
 
 /// <reference path="../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts"/>
 /// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -4062,27 +4063,148 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
+    ;
     var GLTFTab = /** @class */ (function (_super) {
         __extends(GLTFTab, _super);
         function GLTFTab(tabbar, inspector) {
             var _this = _super.call(this, tabbar, 'GLTF') || this;
+            _this._detailsPanel = null;
+            _this._inspector = inspector;
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
-            var actions = INSPECTOR.Helpers.CreateDiv('gltf-actions', _this._panel);
-            _this._addExport(inspector, actions);
+            _this._actions = INSPECTOR.Helpers.CreateDiv('gltf-actions', _this._panel);
+            _this._actions.addEventListener('click', function (event) {
+                _this._closeDetailsPanel();
+            });
+            _this._addImport();
+            _this._addExport();
             return _this;
         }
-        GLTFTab.prototype.dispose = function () {
-            // Nothing to dispose
+        /** @hidden */
+        GLTFTab._Initialize = function () {
+            // Must register with OnPluginActivatedObservable as early as possible to
+            // override the default settings for each extension.
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (loader) {
+                if (loader.name === "gltf" && GLTFTab._LoaderExtensionSettings) {
+                    loader.onExtensionLoadedObservable.add(function (extension) {
+                        var settings = GLTFTab._LoaderExtensionSettings[extension.name];
+                        for (var settingName in settings) {
+                            extension[settingName] = settings[settingName];
+                        }
+                    });
+                }
+            });
         };
-        GLTFTab.prototype._addExport = function (inspector, actions) {
-            var title = INSPECTOR.Helpers.CreateDiv('gltf-title', actions);
+        GLTFTab.prototype.dispose = function () {
+            if (this._detailsPanel) {
+                this._detailsPanel.dispose();
+            }
+        };
+        GLTFTab.prototype._addImport = function () {
+            var _this = this;
+            var importActions = INSPECTOR.Helpers.CreateDiv(null, this._actions);
+            this._getLoaderExtensionOverridesAsync().then(function (loaderExtensionSettings) {
+                var title = INSPECTOR.Helpers.CreateDiv('gltf-title', importActions);
+                title.textContent = 'Import';
+                var extensionActions = INSPECTOR.Helpers.CreateDiv('gltf-actions', importActions);
+                var extensionsTitle = INSPECTOR.Helpers.CreateDiv('gltf-title', extensionActions);
+                extensionsTitle.textContent = "Extensions";
+                var _loop_1 = function (extensionName) {
+                    var settings = loaderExtensionSettings[extensionName];
+                    var extensionAction = INSPECTOR.Helpers.CreateDiv('gltf-action', extensionActions);
+                    extensionAction.addEventListener('click', function (event) {
+                        if (_this._updateLoaderExtensionDetails(settings)) {
+                            event.stopPropagation();
+                        }
+                    });
+                    var checkbox = INSPECTOR.Helpers.CreateElement('span', 'gltf-checkbox', extensionAction);
+                    if (settings.enabled) {
+                        checkbox.classList.add('action', 'active');
+                    }
+                    checkbox.addEventListener('click', function () {
+                        checkbox.classList.toggle('active');
+                        settings.enabled = checkbox.classList.contains('active');
+                    });
+                    var label = INSPECTOR.Helpers.CreateElement('span', null, extensionAction);
+                    label.textContent = extensionName;
+                };
+                for (var extensionName in loaderExtensionSettings) {
+                    _loop_1(extensionName);
+                }
+            });
+        };
+        GLTFTab.prototype._getLoaderExtensionOverridesAsync = function () {
+            if (GLTFTab._LoaderExtensionSettings) {
+                return Promise.resolve(GLTFTab._LoaderExtensionSettings);
+            }
+            var loaderExtensionSettings = {};
+            var engine = new BABYLON.NullEngine();
+            var scene = new BABYLON.Scene(engine);
+            var loader = new BABYLON.GLTF2.GLTFLoader();
+            loader.onExtensionLoadedObservable.add(function (extension) {
+                loaderExtensionSettings[extension.name] = {};
+                var settings = loaderExtensionSettings[extension.name];
+                for (var _i = 0, _a = Object.keys(extension); _i < _a.length; _i++) {
+                    var key = _a[_i];
+                    if (key !== "name" && key[0] !== '_') {
+                        var value = extension[key];
+                        if (typeof value !== "object") {
+                            settings[key] = value;
+                        }
+                    }
+                }
+            });
+            var data = { json: {}, bin: null };
+            return loader.importMeshAsync([], scene, data, "").then(function () {
+                scene.dispose();
+                engine.dispose();
+                return (GLTFTab._LoaderExtensionSettings = loaderExtensionSettings);
+            });
+        };
+        GLTFTab.prototype._updateLoaderExtensionDetails = function (settings) {
+            if (Object.keys(settings).length === 1) {
+                return false;
+            }
+            if (!this._detailsPanel) {
+                this._detailsPanel = new INSPECTOR.DetailPanel();
+                this._panel.appendChild(this._detailsPanel.toHtml());
+                this._split = Split([this._actions, this._detailsPanel.toHtml()], {
+                    blockDrag: this._inspector.popupMode,
+                    sizes: [50, 50],
+                    direction: 'vertical'
+                });
+            }
+            this._detailsPanel.clean();
+            var details = new Array();
+            for (var key in settings) {
+                if (key !== "enabled") {
+                    details.push(new INSPECTOR.PropertyLine(new INSPECTOR.Property(key, settings)));
+                }
+            }
+            this._detailsPanel.details = details;
+            return true;
+        };
+        GLTFTab.prototype._closeDetailsPanel = function () {
+            if (this._detailsPanel) {
+                this._detailsPanel.toHtml().remove();
+                this._detailsPanel.dispose();
+                this._detailsPanel = null;
+            }
+            if (this._split) {
+                this._split.destroy();
+                delete this._split;
+            }
+        };
+        GLTFTab.prototype._addExport = function () {
+            var _this = this;
+            var exportActions = INSPECTOR.Helpers.CreateDiv(null, this._actions);
+            var title = INSPECTOR.Helpers.CreateDiv('gltf-title', exportActions);
             title.textContent = 'Export';
-            var name = INSPECTOR.Helpers.CreateInput('gltf-input', actions);
+            var name = INSPECTOR.Helpers.CreateInput('gltf-input', exportActions);
             name.placeholder = "File name...";
-            var button = INSPECTOR.Helpers.CreateElement('button', 'gltf-button', actions);
+            var button = INSPECTOR.Helpers.CreateElement('button', 'gltf-button', exportActions);
             button.innerText = 'Export GLB';
             button.addEventListener('click', function () {
-                BABYLON.GLTF2Export.GLBAsync(inspector.scene, name.value || "scene", {
+                BABYLON.GLTF2Export.GLBAsync(_this._inspector.scene, name.value || "scene", {
                     shouldExportTransformNode: function (transformNode) { return !GLTFTab._IsSkyBox(transformNode); }
                 }).then(function (glb) {
                     glb.downloadFiles();
@@ -4101,9 +4223,11 @@ var INSPECTOR;
             }
             return false;
         };
+        GLTFTab._LoaderExtensionSettings = null;
         return GLTFTab;
     }(INSPECTOR.Tab));
     INSPECTOR.GLTFTab = GLTFTab;
+    GLTFTab._Initialize();
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {

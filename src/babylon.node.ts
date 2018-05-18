@@ -3,7 +3,7 @@
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
      */
-    export class Node {
+    export class Node implements IBehaviorAware<Node> {
         /**
          * Gets or sets the name of the node
          */
@@ -198,12 +198,8 @@
             behavior.init();
             if (this._scene.isLoading) {
                 // We defer the attach when the scene will be loaded
-                var observer = this._scene.onDataLoadedObservable.add(() => {
+                this._scene.onDataLoadedObservable.addOnce(() => {
                     behavior.attach(this);
-                    setTimeout(() => {
-                        // Need to use a timeout to avoid removing an observer while iterating the list of observers
-                        this._scene.onDataLoadedObservable.remove(observer);
-                    }, 0);
                 });
             } else {
                 behavior.attach(this);

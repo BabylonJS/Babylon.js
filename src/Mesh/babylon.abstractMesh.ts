@@ -777,6 +777,7 @@
             }
             return this;
         }
+
         /**
          * Enables the edge rendering mode on the mesh.  
          * This mode makes the mesh edges visible
@@ -789,6 +790,13 @@
             this.disableEdgesRendering();
             this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
             return this;
+        }
+
+        /**
+         * Gets the edgesRenderer associated with the mesh
+         */
+        public get edgesRenderer(): Nullable<EdgesRenderer> {
+            return this._edgesRenderer;
         }
 
         /**

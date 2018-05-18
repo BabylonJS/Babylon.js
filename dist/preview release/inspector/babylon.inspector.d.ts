@@ -1028,11 +1028,24 @@ declare module INSPECTOR {
 
 
 
+
+declare function Split(elements: HTMLElement[], options: any): any;
 declare module INSPECTOR {
     class GLTFTab extends Tab {
+        private static _LoaderExtensionSettings;
+        private _inspector;
+        private _actions;
+        private _detailsPanel;
+        private _split;
+        /** @hidden */
+        static _Initialize(): void;
         constructor(tabbar: TabBar, inspector: Inspector);
         dispose(): void;
-        private _addExport(inspector, actions);
+        private _addImport();
+        private _getLoaderExtensionOverridesAsync();
+        private _updateLoaderExtensionDetails(settings);
+        private _closeDetailsPanel();
+        private _addExport();
         private static _IsSkyBox(transformNode);
     }
 }
