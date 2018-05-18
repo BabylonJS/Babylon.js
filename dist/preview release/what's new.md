@@ -19,6 +19,7 @@
 - Added webVR constructor options: disable laser pointer toggle, teleportation floor meshes ([TrevorDev](https://github.com/TrevorDev))
 - Get a root mesh from an asset container, load a mesh from a file with a single string url ([TrevorDev](https://github.com/TrevorDev))
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
+- Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
