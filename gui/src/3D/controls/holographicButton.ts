@@ -6,6 +6,7 @@ module BABYLON.GUI {
      */
     export class HolographicButton extends Button3D {
         private _frontPlate: Mesh;
+        private _fluentMaterial: FluentMaterial;
 
         /**
          * Creates a new button
@@ -20,14 +21,14 @@ module BABYLON.GUI {
                 if (!this.mesh) {
                     return;
                 }
-                this._frontPlate.setEnabled(true);
+                this._frontPlate.edgesRenderer!.isEnabled = true;
             }
 
             this.pointerOutAnimation = () => {
                 if (!this.mesh) {
                     return;
                 }
-                this._frontPlate.setEnabled(false);
+                this._frontPlate.edgesRenderer!.isEnabled = false;
             }                      
         }
     
@@ -42,21 +43,26 @@ module BABYLON.GUI {
             this._frontPlate= <Mesh>super._createNode(scene);
             this._frontPlate.parent = mesh;
             this._frontPlate.position.z = -0.05;
-            this._frontPlate.setEnabled(false);
             this._frontPlate.isPickable = false;
-            this._frontPlate.visibility = 0.001;
 
             this._frontPlate.edgesWidth = 1.0;
             this._frontPlate.edgesColor = new Color4(1.0, 1.0, 1.0, 1.0);
             this._frontPlate.enableEdgesRendering();
+            this._frontPlate.edgesRenderer!.isEnabled = false;
             
             return mesh;
         }
 
-        protected _affectMaterial(mesh: Mesh) {
-            this._currentMaterial = new FluentMaterial(this.name + "Material", mesh.getScene());
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+            (<any>this._currentMaterial).emissiveTexture = facadeTexture;
+            (<any>this._currentMaterial).opacityTexture = facadeTexture;
+        }        
 
-            mesh.material = this._currentMaterial;
+        protected _affectMaterial(mesh: Mesh) {
+            super._affectMaterial(this._frontPlate);
+            this._fluentMaterial = new FluentMaterial(this.name + "Material", mesh.getScene());
+
+            mesh.material = this._fluentMaterial;
         }
     }
 }
