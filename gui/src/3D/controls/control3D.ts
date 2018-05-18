@@ -211,6 +211,8 @@ module BABYLON.GUI {
                 this._mesh = this._createMesh(scene);
                 this._mesh!.isPickable = true;
                 this._mesh!.metadata = this; // Store the control on the metadata field in order to get it when picking
+
+                this._affectMaterial(this._mesh!);
             }
 
             return this._mesh;
@@ -226,6 +228,15 @@ module BABYLON.GUI {
             // Do nothing by default
             return null;
         }
+
+        /**
+         * Affect a material to the given mesh
+         * @param mesh defines the mesh which will represent the control
+         */
+        protected _affectMaterial(mesh: Mesh) {
+            mesh.material = null;
+        }
+
 
         // Pointers
 

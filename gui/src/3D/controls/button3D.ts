@@ -5,7 +5,8 @@ module BABYLON.GUI {
      * Class used to create a button in 3D
      */
     export class Button3D extends Control3D {
-        private _currentMaterial: FluentMaterial;
+        /** @hidden */
+        protected _currentMaterial: Material;
         private _facadeTexture: AdvancedDynamicTexture;
         private _content: Control;
 
@@ -22,11 +23,11 @@ module BABYLON.GUI {
                 if (!this.mesh) {
                     return;
                 }
-               // this._currentMaterial.emissiveColor = Color3.Red();
+                (<StandardMaterial>this._currentMaterial).emissiveColor = Color3.Red();
             }
 
             this.pointerOutAnimation = () => {
-               // this._currentMaterial.emissiveColor = Color3.Black();
+                (<StandardMaterial>this._currentMaterial).emissiveColor = Color3.Black();
             }    
 
             this.pointerDownAnimation = () => {
@@ -67,7 +68,7 @@ module BABYLON.GUI {
             
             this._facadeTexture.addControl(value);
         
-            this._currentMaterial.emissiveTexture = this._facadeTexture;
+            (<any>this._currentMaterial).emissiveTexture = this._facadeTexture;
         }
 
         protected _getTypeName(): string {
@@ -89,12 +90,16 @@ module BABYLON.GUI {
                 depth: 0.1,
                 faceUV: faceUV
             }, scene); 
-
-            this._currentMaterial = new FluentMaterial(this.name + "Material", scene);
-
-            mesh.material = this._currentMaterial;
-            
+           
             return mesh;
+        }
+
+        protected _affectMaterial(mesh: Mesh) {
+            let material = new StandardMaterial(this.name + "Material", mesh.getScene());
+            material.specularColor = Color3.Black();
+
+            mesh.material = material;
+            this._currentMaterial = material;
         }
     }
 }
