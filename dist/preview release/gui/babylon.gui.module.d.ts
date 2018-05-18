@@ -104,6 +104,10 @@ declare module BABYLON.GUI {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
+        /**
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
+        premulAlpha: boolean;
         renderScale: number;
         background: string;
         idealWidth: number;
@@ -1049,29 +1053,37 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** Callback used to start pointer enter animation */
+        pointerEnterAnimation: () => void;
+        /** Callback used to start pointer out animation */
+        pointerOutAnimation: () => void;
+        /** Callback used to start pointer down animation */
+        pointerDownAnimation: () => void;
+        /** Callback used to start pointer up animation */
+        pointerUpAnimation: () => void;
         /**
         * An event triggered when the pointer move over the control.
         */
         onPointerMoveObservable: Observable<Vector3>;
         /**
-        * An event triggered when the pointer move out of the control.
-        */
+         * An event triggered when the pointer move out of the control.
+         */
         onPointerOutObservable: Observable<Control3D>;
         /**
-        * An event triggered when the pointer taps the control
-        */
+         * An event triggered when the pointer taps the control
+         */
         onPointerDownObservable: Observable<Vector3WithInfo>;
         /**
-        * An event triggered when pointer up
-        */
+         * An event triggered when pointer up
+         */
         onPointerUpObservable: Observable<Vector3WithInfo>;
         /**
-        * An event triggered when a control is clicked on
-        */
+         * An event triggered when a control is clicked on
+         */
         onPointerClickObservable: Observable<Vector3WithInfo>;
         /**
-        * An event triggered when pointer enters the control
-        */
+         * An event triggered when pointer enters the control
+         */
         onPointerEnterObservable: Observable<Control3D>;
         /**
          * Gets or sets the parent container
@@ -1106,6 +1118,8 @@ declare module BABYLON.GUI {
         getBehaviorByName(name: string): Nullable<Behavior<Control3D>>;
         /** Gets or sets a boolean indicating if the control is visible */
         isVisible: boolean;
+        /** Gets or sets the control position */
+        position: Vector3;
         /**
          * Creates a new control
          * @param name defines the control name
@@ -1119,11 +1133,21 @@ declare module BABYLON.GUI {
         readonly typeName: string;
         protected _getTypeName(): string;
         /**
+         * Gets the mesh used to render this control
+         */
+        readonly mesh: Nullable<Mesh>;
+        /**
+         * Link the control as child of the given mesh
+         * @param mesh defines the mesh to link to. Use null to unlink the control
+         * @returns the current control
+         */
+        linkToMesh(mesh: Nullable<AbstractMesh>): Control3D;
+        /**
          * Get the attached mesh used to render the control
          * @param scene defines the scene where the mesh must be attached
          * @returns the attached mesh or null if none
          */
-        getAttachedMesh(scene: Scene): Nullable<Mesh>;
+        prepareMesh(scene: Scene): Nullable<Mesh>;
         /**
          * Mesh creation.
          * Can be overriden by children
@@ -1141,6 +1165,8 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
         _onPointerUp(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        /** @hidden */
+        forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
         _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -1194,6 +1220,7 @@ declare module BABYLON.GUI {
      * Class used to create a button in 3D
      */
     class Button3D extends Control3D {
+        private _currentMaterial;
         /**
          * Creates a new button
          * @param name defines the control name

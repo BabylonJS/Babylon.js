@@ -269,6 +269,10 @@ var BABYLON;
                 _this._renderAtIdealSize = false;
                 _this._blockNextFocusCheck = false;
                 _this._renderScale = 1;
+                /**
+                 * Gets or sets a boolean defining if alpha is stored as premultiplied
+                 */
+                _this.premulAlpha = false;
                 scene = _this.getScene();
                 if (!scene || !_this._texture) {
                     return _this;
@@ -578,7 +582,7 @@ var BABYLON;
                 }
                 this._isDirty = false;
                 this._render();
-                this.update();
+                this.update(false, this.premulAlpha);
             };
             AdvancedDynamicTexture.prototype._render = function () {
                 var textureSize = this.getSize();
@@ -5618,8 +5622,10 @@ var BABYLON;
                     _this.dispose();
                 });
                 this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
+                // Root
                 this._rootContainer = new GUI.Container3D("RootContainer");
                 this._rootContainer._host = this;
+                // Events
                 this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
                     var pointerEvent = (pi.event);
                     if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
@@ -5636,6 +5642,10 @@ var BABYLON;
                     }
                     pi.skipOnPointerObservable = _this._doPicking(pi.type, pointerEvent);
                 });
+                // Scene
+                this._utilityLayer.utilityLayerScene.autoClear = false;
+                this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+                new BABYLON.HemisphericLight("hemi", BABYLON.Vector3.Up(), this._utilityLayer.utilityLayerScene);
             }
             Object.defineProperty(GUI3DManager.prototype, "scene", {
                 /** Gets the hosting scene */
@@ -5653,7 +5663,7 @@ var BABYLON;
                 configurable: true
             });
             GUI3DManager.prototype._doPicking = function (type, pointerEvent) {
-                if (!this._utilityLayer || this._utilityLayer.utilityLayerScene.activeCamera === null) {
+                if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
                     return false;
                 }
                 var pointerId = pointerEvent.pointerId || 0;
@@ -5666,6 +5676,12 @@ var BABYLON;
                         previousControlOver._onPointerOut(previousControlOver);
                         delete this._lastControlOver[pointerId];
                     }
+                    if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                        if (this._lastControlDown[pointerEvent.pointerId]) {
+                            this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                            delete this._lastControlDown[pointerEvent.pointerId];
+                        }
+                    }
                     return false;
                 }
                 var control = (pickingInfo.pickedMesh.metadata);
@@ -5675,6 +5691,12 @@ var BABYLON;
                             this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
                         }
                         delete this._lastControlOver[pointerId];
+                    }
+                }
+                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (this._lastControlDown[pointerEvent.pointerId]) {
+                        this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                        delete this._lastControlDown[pointerEvent.pointerId];
                     }
                 }
                 return true;
@@ -5786,24 +5808,24 @@ var BABYLON;
                 */
                 this.onPointerMoveObservable = new BABYLON.Observable();
                 /**
-                * An event triggered when the pointer move out of the control.
-                */
+                 * An event triggered when the pointer move out of the control.
+                 */
                 this.onPointerOutObservable = new BABYLON.Observable();
                 /**
-                * An event triggered when the pointer taps the control
-                */
+                 * An event triggered when the pointer taps the control
+                 */
                 this.onPointerDownObservable = new BABYLON.Observable();
                 /**
-                * An event triggered when pointer up
-                */
+                 * An event triggered when pointer up
+                 */
                 this.onPointerUpObservable = new BABYLON.Observable();
                 /**
-                * An event triggered when a control is clicked on
-                */
+                 * An event triggered when a control is clicked on
+                 */
                 this.onPointerClickObservable = new BABYLON.Observable();
                 /**
-                * An event triggered when pointer enters the control
-                */
+                 * An event triggered when pointer enters the control
+                 */
                 this.onPointerEnterObservable = new BABYLON.Observable();
                 // Behaviors
                 this._behaviors = new Array();
@@ -5892,6 +5914,22 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control3D.prototype, "position", {
+                /** Gets or sets the control position */
+                get: function () {
+                    if (this._mesh) {
+                        return this._mesh.position;
+                    }
+                    return BABYLON.Vector3.Zero();
+                },
+                set: function (value) {
+                    if (this._mesh) {
+                        this._mesh.position = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control3D.prototype, "typeName", {
                 /**
                  * Gets a string representing the class name
@@ -5905,12 +5943,33 @@ var BABYLON;
             Control3D.prototype._getTypeName = function () {
                 return "Control3D";
             };
+            Object.defineProperty(Control3D.prototype, "mesh", {
+                /**
+                 * Gets the mesh used to render this control
+                 */
+                get: function () {
+                    return this._mesh;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Link the control as child of the given mesh
+             * @param mesh defines the mesh to link to. Use null to unlink the control
+             * @returns the current control
+             */
+            Control3D.prototype.linkToMesh = function (mesh) {
+                if (this._mesh) {
+                    this._mesh.parent = mesh;
+                }
+                return this;
+            };
             /**
              * Get the attached mesh used to render the control
              * @param scene defines the scene where the mesh must be attached
              * @returns the attached mesh or null if none
              */
-            Control3D.prototype.getAttachedMesh = function (scene) {
+            Control3D.prototype.prepareMesh = function (scene) {
                 if (!this._mesh) {
                     this._mesh = this._createMesh(scene);
                     this._mesh.isPickable = true;
@@ -5944,6 +6003,9 @@ var BABYLON;
                 var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerEnter(target);
+                if (this.pointerEnterAnimation) {
+                    this.pointerEnterAnimation();
+                }
                 return true;
             };
             /** @hidden */
@@ -5952,6 +6014,9 @@ var BABYLON;
                 var canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerOut(target);
+                if (this.pointerOutAnimation) {
+                    this.pointerOutAnimation();
+                }
             };
             /** @hidden */
             Control3D.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
@@ -5963,6 +6028,9 @@ var BABYLON;
                 var canNotify = this.onPointerDownObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
+                if (this.pointerDownAnimation) {
+                    this.pointerDownAnimation();
+                }
                 return true;
             };
             /** @hidden */
@@ -5976,6 +6044,21 @@ var BABYLON;
                 var canNotify = this.onPointerUpObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
+                if (this.pointerUpAnimation) {
+                    this.pointerUpAnimation();
+                }
+            };
+            /** @hidden */
+            Control3D.prototype.forcePointerUp = function (pointerId) {
+                if (pointerId === void 0) { pointerId = null; }
+                if (pointerId !== null) {
+                    this._onPointerUp(this, BABYLON.Vector3.Zero(), pointerId, 0, true);
+                }
+                else {
+                    for (var key in this._downPointerIds) {
+                        this._onPointerUp(this, BABYLON.Vector3.Zero(), +key, 0, true);
+                    }
+                }
             };
             /** @hidden */
             Control3D.prototype._processObservables = function (type, pickedPoint, pointerId, buttonIndex) {
@@ -6069,7 +6152,7 @@ var BABYLON;
                 control.parent = this;
                 control._host = this._host;
                 if (this._host.utilityLayer) {
-                    control.getAttachedMesh(this._host.utilityLayer.utilityLayerScene);
+                    control.prepareMesh(this._host.utilityLayer.utilityLayerScene);
                 }
                 return this;
             };
@@ -6122,18 +6205,45 @@ var BABYLON;
              * @param name defines the control name
              */
             function Button3D(name) {
-                return _super.call(this, name) || this;
+                var _this = _super.call(this, name) || this;
+                // Default animations
+                _this.pointerEnterAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this._currentMaterial.emissiveColor = BABYLON.Color3.Red();
+                };
+                _this.pointerOutAnimation = function () {
+                    _this._currentMaterial.emissiveColor = BABYLON.Color3.Black();
+                };
+                _this.pointerDownAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(0.95);
+                };
+                _this.pointerUpAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(1.05);
+                };
+                return _this;
             }
             Button3D.prototype._getTypeName = function () {
                 return "Button3D";
             };
             // Mesh association
             Button3D.prototype._createMesh = function (scene) {
-                return BABYLON.MeshBuilder.CreateBox(this.name + "Mesh", {
+                var mesh = BABYLON.MeshBuilder.CreateBox(this.name + "Mesh", {
                     width: 1.0,
                     height: 1.0,
                     depth: 0.1
                 }, scene);
+                this._currentMaterial = new BABYLON.StandardMaterial(this.name + "Material", scene);
+                this._currentMaterial.specularColor = BABYLON.Color3.Black();
+                mesh.material = this._currentMaterial;
+                return mesh;
             };
             return Button3D;
         }(GUI.Control3D));

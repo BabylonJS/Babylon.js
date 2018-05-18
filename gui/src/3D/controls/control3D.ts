@@ -12,38 +12,46 @@ module BABYLON.GUI {
         private _enterCount = 0;
         private _downPointerIds:{[id:number] : boolean} = {};
         private _isVisible = true;
-        
+
+        /** Callback used to start pointer enter animation */
+        public pointerEnterAnimation: () => void;
+        /** Callback used to start pointer out animation */
+        public pointerOutAnimation: () => void;
+        /** Callback used to start pointer down animation */
+        public pointerDownAnimation: () => void;
+        /** Callback used to start pointer up animation */
+        public pointerUpAnimation: () => void;
+
         /**
         * An event triggered when the pointer move over the control.
         */
-       public onPointerMoveObservable = new Observable<Vector3>();
+        public onPointerMoveObservable = new Observable<Vector3>();
 
-       /**
-       * An event triggered when the pointer move out of the control.
-       */
-       public onPointerOutObservable = new Observable<Control3D>();
+        /**
+         * An event triggered when the pointer move out of the control.
+         */
+        public onPointerOutObservable = new Observable<Control3D>();
 
-       /**
-       * An event triggered when the pointer taps the control
-       */
-       public onPointerDownObservable = new Observable<Vector3WithInfo>();
+        /**
+         * An event triggered when the pointer taps the control
+         */
+        public onPointerDownObservable = new Observable<Vector3WithInfo>();
 
-       /**
-       * An event triggered when pointer up
-       */
-       public onPointerUpObservable = new Observable<Vector3WithInfo>();
+        /**
+         * An event triggered when pointer up
+         */
+        public onPointerUpObservable = new Observable<Vector3WithInfo>();
 
-       /**
-       * An event triggered when a control is clicked on
-       */
-       public onPointerClickObservable = new Observable<Vector3WithInfo>();
+        /**
+         * An event triggered when a control is clicked on
+         */
+        public onPointerClickObservable = new Observable<Vector3WithInfo>();
 
-       /**
-       * An event triggered when pointer enters the control
-       */
-       public onPointerEnterObservable = new Observable<Control3D>();
-       
-
+        /**
+         * An event triggered when pointer enters the control
+         */
+        public onPointerEnterObservable = new Observable<Control3D>();
+        
         /**
          * Gets or sets the parent container
          */
@@ -139,6 +147,21 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets the control position */
+        public get position(): Vector3 {
+            if (this._mesh) {
+                return this._mesh.position;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set position(value: Vector3) {
+            if (this._mesh) {
+                this._mesh.position = value;
+            }            
+        }
+
         /**
          * Creates a new control
          * @param name defines the control name
@@ -160,11 +183,30 @@ module BABYLON.GUI {
         }
 
         /**
+         * Gets the mesh used to render this control
+         */
+        public get mesh(): Nullable<Mesh> {
+            return this._mesh;
+        }
+
+        /**
+         * Link the control as child of the given mesh
+         * @param mesh defines the mesh to link to. Use null to unlink the control
+         * @returns the current control
+         */
+        public linkToMesh(mesh: Nullable<AbstractMesh>): Control3D {
+            if (this._mesh) {
+                this._mesh.parent = mesh;
+            }
+            return this;
+        }    
+
+        /**
          * Get the attached mesh used to render the control
          * @param scene defines the scene where the mesh must be attached
          * @returns the attached mesh or null if none
          */        
-        public getAttachedMesh(scene: Scene): Nullable<Mesh> {
+        public prepareMesh(scene: Scene): Nullable<Mesh> {
             if (!this._mesh) {
                 this._mesh = this._createMesh(scene);
                 this._mesh!.isPickable = true;
@@ -189,9 +231,7 @@ module BABYLON.GUI {
 
         /** @hidden */
         public _onPointerMove(target: Control3D, coordinates: Vector3): void {
-            var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
-
-            if (canNotify && this.parent != null) this.parent._onPointerMove(target, coordinates);
+            this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
         }
 
         /** @hidden */
@@ -202,9 +242,11 @@ module BABYLON.GUI {
 
             this._enterCount++;
 
-            var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+            this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerEnter(target);
+            if (this.pointerEnterAnimation) {
+                this.pointerEnterAnimation();
+            }
 
             return true;
         }
@@ -213,9 +255,11 @@ module BABYLON.GUI {
         public _onPointerOut(target: Control3D): void {
             this._enterCount = 0;
 
-            var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+            this.onPointerOutObservable.notifyObservers(this, -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerOut(target);
+            if (this.pointerOutAnimation) {
+                this.pointerOutAnimation();
+            }            
         }
 
         /** @hidden */
@@ -228,9 +272,11 @@ module BABYLON.GUI {
 
             this._downPointerIds[pointerId] = true;
 
-            var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+            this.onPointerDownObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
+            if (this.pointerDownAnimation) {
+                this.pointerDownAnimation();
+            }                 
 
             return true;
         }
@@ -241,14 +287,26 @@ module BABYLON.GUI {
 
             delete this._downPointerIds[pointerId];
 
-            var canNotifyClick: boolean = notifyClick;
 			if (notifyClick && this._enterCount > 0) {
-				canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+				this.onPointerClickObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
 			}
-			var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
+			this.onPointerUpObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);            
 
-            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
+            if (this.pointerUpAnimation) {
+                this.pointerUpAnimation();
+            }          
         }  
+
+        /** @hidden */
+        public forcePointerUp(pointerId: Nullable<number> = null) {
+            if(pointerId !== null){
+                this._onPointerUp(this, Vector3.Zero(), pointerId, 0, true);
+            }else{
+                for(var key in this._downPointerIds){
+                    this._onPointerUp(this, Vector3.Zero(), +key as number, 0, true);
+                }
+            }
+        }
         
         /** @hidden */
         public _processObservables(type: number, pickedPoint: Vector3, pointerId:number, buttonIndex: number): boolean {
@@ -296,6 +354,11 @@ module BABYLON.GUI {
             this.onPointerOutObservable.clear();
             this.onPointerUpObservable.clear();
             this.onPointerClickObservable.clear();
+
+            if (this._mesh) {
+                this._mesh.dispose(false, true);
+                this._mesh = null;
+            }
 
             // Behaviors
             for (var behavior of this._behaviors) {

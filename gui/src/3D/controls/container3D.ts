@@ -39,7 +39,7 @@ module BABYLON.GUI {
             control._host = this._host;
 
             if (this._host.utilityLayer) {
-                control.getAttachedMesh(this._host.utilityLayer.utilityLayerScene);
+                control.prepareMesh(this._host.utilityLayer.utilityLayerScene);
             }
 
             return this;

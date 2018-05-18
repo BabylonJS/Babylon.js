@@ -39,9 +39,11 @@ module BABYLON.GUI {
 
             this._utilityLayer = new UtilityLayerRenderer(this._scene);
 
+            // Root
             this._rootContainer = new Container3D("RootContainer");
             this._rootContainer._host = this;
             
+            // Events
             this._pointerObserver = this._scene.onPrePointerObservable.add((pi, state) => {
                 let pointerEvent = <PointerEvent>(pi.event);
                 if (this._scene.isPointerCaptured(pointerEvent.pointerId)) {
@@ -62,10 +64,15 @@ module BABYLON.GUI {
 
                 pi.skipOnPointerObservable = this._doPicking(pi.type, pointerEvent)
             });
+
+            // Scene
+            this._utilityLayer.utilityLayerScene.autoClear = false;
+            this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+            new BABYLON.HemisphericLight("hemi", Vector3.Up(), this._utilityLayer.utilityLayerScene);
         }
 
         private _doPicking(type: number, pointerEvent: PointerEvent): boolean {
-            if (!this._utilityLayer || this._utilityLayer.utilityLayerScene.activeCamera === null) {
+            if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
                 return false;                
             }
 
@@ -79,6 +86,13 @@ module BABYLON.GUI {
                 if (previousControlOver) {
                     previousControlOver._onPointerOut(previousControlOver);
                     delete this._lastControlOver[pointerId];
+                }               
+                
+                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (this._lastControlDown[pointerEvent.pointerId]) {
+                        this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                        delete this._lastControlDown[pointerEvent.pointerId];
+                    }
                 }                
                 return false;
             }
@@ -93,6 +107,13 @@ module BABYLON.GUI {
                     }
 
                     delete this._lastControlOver[pointerId];
+                }
+            }
+
+            if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                if (this._lastControlDown[pointerEvent.pointerId]) {
+                    this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                    delete this._lastControlDown[pointerEvent.pointerId];
                 }
             }
 
