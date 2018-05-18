@@ -10,6 +10,44 @@
             margin        : 10px 0 10px 0;
         }
 
+        .gltf-action {
+            height     : 20px;
+            line-height: 20px;
+            width      : 100%;
+            cursor     : pointer;
+            white-space: nowrap;
+
+            &:hover {
+                background-color: $background-lighter;
+            }
+        }
+
+        .gltf-checkbox {
+            @extend .gltf-action;
+            &:before {
+                width      : 1em;
+                height     : 1em;
+                line-height: 1em;
+                display    : inline-block;
+                font-family: 'FontAwesome', sans-serif;
+                content    : "\f096";
+                margin-right:10px;
+            }
+
+            &.active {
+                &:before {
+                    width      : 1em;
+                    height     : 1em;
+                    line-height: 1em;
+                    display    : inline-block;
+                    font-family: 'FontAwesome', sans-serif;
+                    content    : "\f14a";
+                    color      : $color-bot;
+                    margin-right:10px;
+                }
+            }
+        }
+
         .gltf-input {
             background-color: $background-lighter;
             border          : none;

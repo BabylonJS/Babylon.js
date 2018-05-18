@@ -66,6 +66,22 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
+        it('Load TwoQuads with ImportMesh and one node name', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync("node0", "http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+                expect(scene.getMeshByName("node0"), "node0").to.exist;
+                expect(scene.getMeshByName("node1"), "node1").to.not.exist;
+            });
+        });
+
+        it('Load TwoQuads with ImporMesh and two node names', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(["node0", "node1"], "http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+                expect(scene.getMeshByName("node0"), "node0").to.exist;
+                expect(scene.getMeshByName("node1"), "node1").to.exist;
+            });
+        });
+
         it('Load BoomBox with callbacks', () => {
             let parsedCount = 0;
             let meshCount = 0;
@@ -482,7 +498,6 @@ describe('Babylon Scene Loader', function () {
 
         // TODO: test animation group callback
         // TODO: test material instancing
-        // TODO: test ImportMesh with specific node name
         // TODO: test KHR_materials_pbrSpecularGlossiness
         // TODO: test KHR_lights
     });
