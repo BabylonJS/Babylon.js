@@ -12,6 +12,11 @@ module BABYLON.GUI {
 
         private _renderId: number;
 
+        /**
+         * Creates a new Fluent material
+         * @param name defines the name of the material
+         * @param scene defines the hosting scene
+         */
         constructor(name: string, scene: Scene) {
             super(name, scene);
         }

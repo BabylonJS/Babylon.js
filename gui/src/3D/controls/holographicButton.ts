@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
     /**
-     * Class used to create a button in 3D
+     * Class used to create a holographic button in 3D
      */
     export class HolographicButton extends Button3D {
         private _edgesRenderer: EdgesRenderer;
