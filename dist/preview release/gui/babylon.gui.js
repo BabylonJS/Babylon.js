@@ -5777,6 +5777,11 @@ var BABYLON;
          */
         var FluentMaterial = /** @class */ (function (_super) {
             __extends(FluentMaterial, _super);
+            /**
+             * Creates a new Fluent material
+             * @param name defines the name of the material
+             * @param scene defines the hosting scene
+             */
             function FluentMaterial(name, scene) {
                 return _super.call(this, name, scene) || this;
             }
@@ -5946,6 +5951,10 @@ var BABYLON;
                 this._enterCount = 0;
                 this._downPointerIds = {};
                 this._isVisible = true;
+                /** Gets or sets the control position */
+                this.position = new BABYLON.Vector3(0, 0, 0);
+                /** Gets or sets the control scaling */
+                this.scaling = new BABYLON.Vector3(1, 1, 1);
                 /**
                 * An event triggered when the pointer move over the control.
                 */
@@ -6050,24 +6059,9 @@ var BABYLON;
                         return;
                     }
                     this._isVisible = value;
-                    if (this._mesh) {
-                        this._mesh.isVisible = value;
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Control3D.prototype, "position", {
-                /** Gets or sets the control position */
-                get: function () {
-                    if (this._mesh) {
-                        return this._mesh.position;
-                    }
-                    return BABYLON.Vector3.Zero();
-                },
-                set: function (value) {
-                    if (this._mesh) {
-                        this._mesh.position = value;
+                    var mesh = this.mesh;
+                    if (mesh) {
+                        mesh.isVisible = value;
                     }
                 },
                 enumerable: true,
@@ -6086,48 +6080,61 @@ var BABYLON;
             Control3D.prototype._getTypeName = function () {
                 return "Control3D";
             };
+            Object.defineProperty(Control3D.prototype, "node", {
+                /**
+                 * Gets the mesh used to render this control
+                 */
+                get: function () {
+                    return this._node;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control3D.prototype, "mesh", {
                 /**
                  * Gets the mesh used to render this control
                  */
                 get: function () {
-                    return this._mesh;
+                    return this._node;
                 },
                 enumerable: true,
                 configurable: true
             });
             /**
-             * Link the control as child of the given mesh
-             * @param mesh defines the mesh to link to. Use null to unlink the control
+             * Link the control as child of the given node
+             * @param node defines the node to link to. Use null to unlink the control
              * @returns the current control
              */
-            Control3D.prototype.linkToMesh = function (mesh) {
-                if (this._mesh) {
-                    this._mesh.parent = mesh;
+            Control3D.prototype.linkToTransformNode = function (node) {
+                if (this._node) {
+                    this._node.parent = node;
                 }
                 return this;
             };
-            /**
-             * Get the attached mesh used to render the control
-             * @param scene defines the scene where the mesh must be attached
-             * @returns the attached mesh or null if none
-             */
-            Control3D.prototype.prepareMesh = function (scene) {
-                if (!this._mesh) {
-                    this._mesh = this._createMesh(scene);
-                    this._mesh.isPickable = true;
-                    this._mesh.metadata = this; // Store the control on the metadata field in order to get it when picking
-                    this._affectMaterial(this._mesh);
+            /** @hidden **/
+            Control3D.prototype._prepareNode = function (scene) {
+                if (!this._node) {
+                    this._node = this._createNode(scene);
+                    if (!this.node) {
+                        return;
+                    }
+                    this._node.metadata = this; // Store the control on the metadata field in order to get it when picking
+                    this._node.position = this.position;
+                    this._node.scaling = this.scaling;
+                    var mesh = this.mesh;
+                    if (mesh) {
+                        mesh.isPickable = true;
+                        this._affectMaterial(mesh);
+                    }
                 }
-                return this._mesh;
             };
             /**
-             * Mesh creation.
+             * Node creation.
              * Can be overriden by children
-             * @param scene defines the scene where the mesh must be attached
-             * @returns the attached mesh or null if none
+             * @param scene defines the scene where the node must be attached
+             * @returns the attached node or null if none
              */
-            Control3D.prototype._createMesh = function (scene) {
+            Control3D.prototype._createNode = function (scene) {
                 // Do nothing by default
                 return null;
             };
@@ -6239,9 +6246,9 @@ var BABYLON;
                 this.onPointerOutObservable.clear();
                 this.onPointerUpObservable.clear();
                 this.onPointerClickObservable.clear();
-                if (this._mesh) {
-                    this._mesh.dispose(false, true);
-                    this._mesh = null;
+                if (this._node) {
+                    this._node.dispose(false, true);
+                    this._node = null;
                 }
                 // Behaviors
                 for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
@@ -6272,6 +6279,9 @@ var BABYLON;
              */
             function Container3D(name) {
                 var _this = _super.call(this, name) || this;
+                /**
+                 * Gets the list of child controls
+                 */
                 _this._children = new Array();
                 return _this;
             }
@@ -6295,10 +6305,23 @@ var BABYLON;
                 }
                 control.parent = this;
                 control._host = this._host;
+                this._children.push(control);
                 if (this._host.utilityLayer) {
-                    control.prepareMesh(this._host.utilityLayer.utilityLayerScene);
+                    control._prepareNode(this._host.utilityLayer.utilityLayerScene);
+                    if (control.node) {
+                        control.node.parent = this.node;
+                    }
+                    this._arrangeChildren();
                 }
                 return this;
+            };
+            /**
+             * This function will be called everytime a new control is added
+             */
+            Container3D.prototype._arrangeChildren = function () {
+            };
+            Container3D.prototype._createNode = function (scene) {
+                return new BABYLON.TransformNode("ContainerNode", scene);
             };
             /**
              * Removes the control from the children of this control
@@ -6401,7 +6424,7 @@ var BABYLON;
                 return "Button3D";
             };
             // Mesh association
-            Button3D.prototype._createMesh = function (scene) {
+            Button3D.prototype._createNode = function (scene) {
                 var faceUV = new Array(6);
                 for (var i = 0; i < 6; i++) {
                     faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
@@ -6410,7 +6433,7 @@ var BABYLON;
                 var mesh = BABYLON.MeshBuilder.CreateBox(this.name + "Mesh", {
                     width: 1.0,
                     height: 1.0,
-                    depth: 0.1,
+                    depth: 0.05,
                     faceUV: faceUV
                 }, scene);
                 return mesh;
@@ -6434,7 +6457,7 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
-         * Class used to create a button in 3D
+         * Class used to create a holographic button in 3D
          */
         var HolographicButton = /** @class */ (function (_super) {
             __extends(HolographicButton, _super);
@@ -6449,13 +6472,13 @@ var BABYLON;
                     if (!_this.mesh) {
                         return;
                     }
-                    _this.mesh.edgesRenderer.isEnabled = true;
+                    _this._frontPlate.setEnabled(true);
                 };
                 _this.pointerOutAnimation = function () {
                     if (!_this.mesh) {
                         return;
                     }
-                    _this.mesh.edgesRenderer.isEnabled = false;
+                    _this._frontPlate.setEnabled(false);
                 };
                 return _this;
             }
@@ -6463,12 +6486,17 @@ var BABYLON;
                 return "HolographicButton";
             };
             // Mesh association
-            HolographicButton.prototype._createMesh = function (scene) {
-                var mesh = _super.prototype._createMesh.call(this, scene);
-                mesh.edgesWidth = 0.5;
-                mesh.edgesColor = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-                mesh.enableEdgesRendering();
-                mesh.edgesRenderer.isEnabled = false;
+            HolographicButton.prototype._createNode = function (scene) {
+                var mesh = _super.prototype._createNode.call(this, scene);
+                this._frontPlate = _super.prototype._createNode.call(this, scene);
+                this._frontPlate.parent = mesh;
+                this._frontPlate.position.z = -0.05;
+                this._frontPlate.setEnabled(false);
+                this._frontPlate.isPickable = false;
+                this._frontPlate.visibility = 0.001;
+                this._frontPlate.edgesWidth = 1.0;
+                this._frontPlate.edgesColor = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+                this._frontPlate.enableEdgesRendering();
                 return mesh;
             };
             HolographicButton.prototype._affectMaterial = function (mesh) {
@@ -6478,6 +6506,112 @@ var BABYLON;
             return HolographicButton;
         }(GUI.Button3D));
         GUI.HolographicButton = HolographicButton;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a stack panel in 3D on XY plane
+         */
+        var StackPanel3D = /** @class */ (function (_super) {
+            __extends(StackPanel3D, _super);
+            /**
+             * Creates new StackPanel
+             * @param isVertical
+             */
+            function StackPanel3D() {
+                var _this = _super.call(this) || this;
+                _this._isVertical = false;
+                /**
+                 * Gets or sets the distance between elements
+                 */
+                _this.margin = 0.1;
+                return _this;
+            }
+            Object.defineProperty(StackPanel3D.prototype, "isVertical", {
+                /**
+                 * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+                 */
+                get: function () {
+                    return this._isVertical;
+                },
+                set: function (value) {
+                    if (this._isVertical === value) {
+                        return;
+                    }
+                    this._isVertical = value;
+                    this._arrangeChildren();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            StackPanel3D.prototype._arrangeChildren = function () {
+                var width = 0;
+                var height = 0;
+                var controlCount = 0;
+                var extendSizes = [];
+                var currentInverseWorld = BABYLON.Matrix.Invert(this.node.computeWorldMatrix(true));
+                // Measure
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    controlCount++;
+                    child.mesh.computeWorldMatrix(true);
+                    var boundingBox = child.mesh.getBoundingInfo().boundingBox;
+                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSizeWorld, currentInverseWorld);
+                    extendSizes.push(extendSize);
+                    if (this._isVertical) {
+                        height += extendSize.y;
+                    }
+                    else {
+                        width += extendSize.x;
+                    }
+                }
+                if (this._isVertical) {
+                    height += (controlCount - 1) * this.margin / 2;
+                }
+                else {
+                    width += (controlCount - 1) * this.margin / 2;
+                }
+                // Arrange
+                var offset;
+                if (this._isVertical) {
+                    offset = -height;
+                }
+                else {
+                    offset = -width;
+                }
+                var index = 0;
+                for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                    var child = _c[_b];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    controlCount--;
+                    var extendSize = extendSizes[index++];
+                    if (this._isVertical) {
+                        child.position.y = offset + extendSize.y;
+                        child.position.x = 0;
+                        offset += extendSize.y * 2;
+                    }
+                    else {
+                        child.position.x = offset + extendSize.x;
+                        child.position.y = 0;
+                        offset += extendSize.x * 2;
+                    }
+                    offset += (controlCount > 0 ? this.margin : 0);
+                }
+            };
+            return StackPanel3D;
+        }(GUI.Container3D));
+        GUI.StackPanel3D = StackPanel3D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

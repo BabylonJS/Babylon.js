@@ -1039,6 +1039,11 @@ declare module BABYLON.GUI {
         private _emissiveTexture;
         emissiveTexture: BaseTexture;
         private _renderId;
+        /**
+         * Creates a new Fluent material
+         * @param name defines the name of the material
+         * @param scene defines the hosting scene
+         */
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -1073,11 +1078,15 @@ declare module BABYLON.GUI {
         name: string | undefined;
         /** @hidden */
         _host: GUI3DManager;
-        private _mesh;
+        private _node;
         private _downCount;
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** Gets or sets the control position */
+        position: Vector3;
+        /** Gets or sets the control scaling */
+        scaling: Vector3;
         /** Callback used to start pointer enter animation */
         pointerEnterAnimation: () => void;
         /** Callback used to start pointer out animation */
@@ -1143,8 +1152,6 @@ declare module BABYLON.GUI {
         getBehaviorByName(name: string): Nullable<Behavior<Control3D>>;
         /** Gets or sets a boolean indicating if the control is visible */
         isVisible: boolean;
-        /** Gets or sets the control position */
-        position: Vector3;
         /**
          * Creates a new control
          * @param name defines the control name
@@ -1160,26 +1167,26 @@ declare module BABYLON.GUI {
         /**
          * Gets the mesh used to render this control
          */
+        readonly node: Nullable<TransformNode>;
+        /**
+         * Gets the mesh used to render this control
+         */
         readonly mesh: Nullable<Mesh>;
         /**
-         * Link the control as child of the given mesh
-         * @param mesh defines the mesh to link to. Use null to unlink the control
+         * Link the control as child of the given node
+         * @param node defines the node to link to. Use null to unlink the control
          * @returns the current control
          */
-        linkToMesh(mesh: Nullable<AbstractMesh>): Control3D;
+        linkToTransformNode(node: Nullable<TransformNode>): Control3D;
+        /** @hidden **/
+        _prepareNode(scene: Scene): void;
         /**
-         * Get the attached mesh used to render the control
-         * @param scene defines the scene where the mesh must be attached
-         * @returns the attached mesh or null if none
-         */
-        prepareMesh(scene: Scene): Nullable<Mesh>;
-        /**
-         * Mesh creation.
+         * Node creation.
          * Can be overriden by children
-         * @param scene defines the scene where the mesh must be attached
-         * @returns the attached mesh or null if none
+         * @param scene defines the scene where the node must be attached
+         * @returns the attached node or null if none
          */
-        protected _createMesh(scene: Scene): Nullable<Mesh>;
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
         /**
          * Affect a material to the given mesh
          * @param mesh defines the mesh which will represent the control
@@ -1212,7 +1219,10 @@ declare module BABYLON.GUI {
      * Class used to create containers for controls
      */
     class Container3D extends Control3D {
-        private _children;
+        /**
+         * Gets the list of child controls
+         */
+        protected _children: Control3D[];
         /**
          * Creates a new container
          * @param name defines the container name
@@ -1230,6 +1240,11 @@ declare module BABYLON.GUI {
          * @returns the current container
          */
         addControl(control: Control3D): Container3D;
+        /**
+         * This function will be called everytime a new control is added
+         */
+        protected _arrangeChildren(): void;
+        protected _createNode(scene: Scene): Nullable<TransformNode>;
         /**
          * Removes the control from the children of this control
          * @param control defines the control to remove
@@ -1264,7 +1279,7 @@ declare module BABYLON.GUI {
          */
         content: Control;
         protected _getTypeName(): string;
-        protected _createMesh(scene: Scene): Mesh;
+        protected _createNode(scene: Scene): TransformNode;
         protected _affectMaterial(mesh: Mesh): void;
     }
 }
@@ -1272,16 +1287,41 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
-     * Class used to create a button in 3D
+     * Class used to create a holographic button in 3D
      */
     class HolographicButton extends Button3D {
+        private _frontPlate;
         /**
          * Creates a new button
          * @param name defines the control name
          */
         constructor(name?: string);
         protected _getTypeName(): string;
-        protected _createMesh(scene: Scene): Mesh;
+        protected _createNode(scene: Scene): TransformNode;
         protected _affectMaterial(mesh: Mesh): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a stack panel in 3D on XY plane
+     */
+    class StackPanel3D extends Container3D {
+        private _isVertical;
+        /**
+         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+         */
+        isVertical: boolean;
+        /**
+         * Gets or sets the distance between elements
+         */
+        margin: number;
+        /**
+         * Creates new StackPanel
+         * @param isVertical
+         */
+        constructor();
+        protected _arrangeChildren(): void;
     }
 }
