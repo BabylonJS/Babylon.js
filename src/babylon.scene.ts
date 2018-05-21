@@ -1621,6 +1621,16 @@
          */
         public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointermove", pointerEventInit);
+            // PreObservable support
+            if (this.onPrePointerObservable.hasObservers() && !this._pointerCaptures[evt.pointerId]) {
+                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                pi.ray = pickResult.ray;
+                this.onPrePointerObservable.notifyObservers(pi, type);
+                if (pi.skipOnPointerObservable) {
+                    return this;
+                }
+            }
             return this._processPointerMove(pickResult, evt);
         }
 
@@ -1691,6 +1701,16 @@
          */
         public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerdown", pointerEventInit);
+            // PreObservable support
+            if (this.onPrePointerObservable.hasObservers()) {
+                let type = PointerEventTypes.POINTERDOWN;
+                let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                pi.ray = pickResult.ray;
+                this.onPrePointerObservable.notifyObservers(pi, type);
+                if (pi.skipOnPointerObservable) {
+                    return this;
+                }
+            }
 
             return this._processPointerDown(pickResult, evt);
         }
@@ -1764,6 +1784,17 @@
             let clickInfo = new ClickInfo();
             clickInfo.singleClick = true;
             clickInfo.ignore = true;
+
+            // PreObservable support
+            if (this.onPrePointerObservable.hasObservers()) {
+                let type = PointerEventTypes.POINTERUP;
+                let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                pi.ray = pickResult.ray;
+                this.onPrePointerObservable.notifyObservers(pi, type);
+                if (pi.skipOnPointerObservable) {
+                    return this;
+                }
+            }
 
             return this._processPointerUp(pickResult, evt, clickInfo);
         }
@@ -5736,7 +5767,7 @@
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
          * @returns a PickingInfo
          */
-        public pickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+        public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
             var result = this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();

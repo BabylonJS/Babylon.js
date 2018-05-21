@@ -47,6 +47,10 @@ module BABYLON {
      * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
     export class PointerInfoPre extends PointerInfoBase {
+        /**
+         * Ray from a pointer if availible (eg. 6dof controller)
+         */
+        public ray:Nullable<Ray> = null;
         constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number) {
             super(type, event);
             this.skipOnPointerObservable = false;

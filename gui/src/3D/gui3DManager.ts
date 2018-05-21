@@ -62,7 +62,7 @@ module BABYLON.GUI {
                     return;
                 }
 
-                pi.skipOnPointerObservable = this._doPicking(pi.type, pointerEvent)
+                pi.skipOnPointerObservable = this._doPicking(pi.type, pointerEvent, pi.ray)
             });
 
             // Scene
@@ -71,7 +71,7 @@ module BABYLON.GUI {
             new BABYLON.HemisphericLight("hemi", Vector3.Up(), this._utilityLayer.utilityLayerScene);
         }
 
-        private _doPicking(type: number, pointerEvent: PointerEvent): boolean {
+        private _doPicking(type: number, pointerEvent: PointerEvent, ray?:Ray): boolean {
             if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
                 return false;                
             }
@@ -80,7 +80,7 @@ module BABYLON.GUI {
             let buttonIndex = pointerEvent.button;
             var utilityScene = this._utilityLayer.utilityLayerScene;
 
-            let pickingInfo = utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
+            let pickingInfo = ray ? utilityScene.pickWithRay(ray): utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
             if (!pickingInfo || !pickingInfo.hit) {
                 var previousControlOver = this._lastControlOver[pointerId];
                 if (previousControlOver) {
