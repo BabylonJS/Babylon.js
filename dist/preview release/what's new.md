@@ -51,5 +51,6 @@
 - Fix Animation Slider Clickable area size Cross Plat ([sebavan](http://www.github.com/sebavan))
 - Ground material didn't take the default main color is no material definition was provided ([RaananW](https://github.com/RaananW))
 - Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
+- It wasn't possible to disable behavior using oconfiguration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
