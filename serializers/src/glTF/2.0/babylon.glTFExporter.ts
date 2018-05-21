@@ -799,6 +799,9 @@ module BABYLON.GLTF2 {
          * @param babylonMesh The BabylonJS mesh
          */
         private getMeshPrimitiveMode(babylonMesh: AbstractMesh): number {
+            if (babylonMesh instanceof LinesMesh) {
+                return Material.LineListDrawMode;
+            }
             return babylonMesh.material ? babylonMesh.material.fillMode : Material.TriangleFillMode;
         }
 
@@ -951,6 +954,21 @@ module BABYLON.GLTF2 {
 
                         let materialIndex: Nullable<number> = null;
                         if (babylonMaterial) {
+                            if (babylonMaterial instanceof ShaderMaterial) {
+                                if (bufferMesh instanceof LinesMesh) {
+                                    // get the color from the lines mesh and set it in the material
+                                    const material: IMaterial = {
+                                        name: bufferMesh.name + ' material'
+                                    }
+                                    if (!bufferMesh.color.equals(Color3.White()) || bufferMesh.alpha < 1) {
+                                        material.pbrMetallicRoughness = {
+                                            baseColorFactor: bufferMesh.color.asArray().concat([bufferMesh.alpha])
+                                        }
+                                    }
+                                    this.materials.push(material);
+                                    materialIndex = this.materials.length - 1;
+                                }
+                            }
                             if (babylonMaterial instanceof MultiMaterial) {
                                 babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                                 if (babylonMaterial) {
@@ -965,6 +983,7 @@ module BABYLON.GLTF2 {
                         let glTFMaterial: Nullable<IMaterial> = materialIndex != null ? this.materials[materialIndex] : null;
 
                         const meshPrimitive: IMeshPrimitive = { attributes: {} };
+                        this.setPrimitiveMode(meshPrimitive, primitiveMode);
 
                         for (const attribute of attributeData) {
                             const attributeKind = attribute.kind;
@@ -1003,7 +1022,6 @@ module BABYLON.GLTF2 {
                         if (babylonMaterial) {
                             if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                                 let sideOrientation = this.babylonScene.materials[materialIndex].sideOrientation;
-                                this.setPrimitiveMode(meshPrimitive, primitiveMode);
 
                                 if (this.convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
                                     //Overwrite the indices to be counter-clockwise
