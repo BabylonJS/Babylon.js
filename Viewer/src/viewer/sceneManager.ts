@@ -41,7 +41,7 @@ export class SceneManager {
     /**
      * Will notify after the lights were configured. Can be used to further configure lights
      */
-    onLightsConfiguredObservable: Observable<IPostConfigurationCallback<Array<Light>, { [name: string]: ILightConfiguration | boolean }>>;
+    onLightsConfiguredObservable: Observable<IPostConfigurationCallback<Array<Light>, { [name: string]: ILightConfiguration | boolean | number }>>;
     /**
      * Will notify after the model(s) were configured. Can be used to further configure models
      */
@@ -93,6 +93,8 @@ export class SceneManager {
     private _reflectionColor = Color3.White();
     private readonly _white = Color3.White();
 
+    private _forceShadowUpdate: boolean = false;
+
     /**
      * The labs variable consists of objects that will have their API change.
      * Please be careful when using labs in production.
@@ -137,7 +139,7 @@ export class SceneManager {
                 }
             }
             scene.registerBeforeRender(() => {
-                if (scene.animatables && scene.animatables.length > 0) {
+                if (this._forceShadowUpdate || (scene.animatables && scene.animatables.length > 0)) {
                     // make sure all models are loaded
                     updateShadows();
                 } else if (!(this.models.every((model) => {
@@ -430,6 +432,15 @@ export class SceneManager {
             if (newConfiguration.lab.environmentMainColor) {
                 let mainColor = new Color3().copyFrom(newConfiguration.lab.environmentMainColor as Color3);
                 this.environmentHelper.setMainColor(mainColor);
+            }
+
+            if (newConfiguration.lab.globalLightRotation !== undefined) {
+                // rotate all lights that are shadow lights
+                this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
+                    // casting and '!' are safe, due to the constraints tested before
+                    this.labs.rotateShadowLight(<ShadowLight>light, newConfiguration.lab!.globalLightRotation!);
+                });
+                this._forceShadowUpdate = true;
             }
         }
 
@@ -989,10 +1000,12 @@ export class SceneManager {
      * @param lightsConfiguration the (new) light(s) configuration
      * @param model optionally use the model to configure the camera.
      */
-    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}) {
+    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}) {
 
         // sanity check!
-        if (!Object.keys(lightsConfiguration).length) {
+        let lightKeys = Object.keys(lightsConfiguration).filter(name => name !== 'globalRotation');
+
+        if (!lightKeys.length) {
             if (!this.scene.lights.length)
                 this.scene.createDefaultLight(true);
         } else {
@@ -1008,10 +1021,13 @@ export class SceneManager {
                 });
             }
 
-            Object.keys(lightsConfiguration).forEach((name, idx) => {
+            lightKeys.forEach((name, idx) => {
                 let lightConfig: ILightConfiguration = { type: 0 };
                 if (typeof lightsConfiguration[name] === 'object') {
                     lightConfig = <ILightConfiguration>lightsConfiguration[name];
+                }
+                if (typeof lightsConfiguration[name] === 'number') {
+                    lightConfig.type = <number>lightsConfiguration[name];
                 }
 
                 lightConfig.name = name;
@@ -1025,6 +1041,9 @@ export class SceneManager {
                 } else {
                     // available? get it from the scene
                     light = <Light>this.scene.getLightByName(name);
+                    if (typeof lightsConfiguration[name] === 'boolean') {
+                        lightConfig.type = light.getTypeID();
+                    }
                     lightsAvailable = lightsAvailable.filter(ln => ln !== name);
                     if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
                         light.dispose();
