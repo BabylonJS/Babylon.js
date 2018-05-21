@@ -33,6 +33,7 @@
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 - Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
+- New lab feature - global light rotation [#4347](https://github.com/BabylonJS/Babylon.js/issues/4347) ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
