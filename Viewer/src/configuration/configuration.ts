@@ -438,15 +438,17 @@ export interface ICameraConfiguration {
     exposure?: number;
     pinchPrecision?: number;
     behaviors?: {
-        [name: string]: number | {
-            type: number;
-            [propName: string]: any;
-        };
+        [name: string]: boolean | number | ICameraBehaviorConfiguration;
     };
     disableCameraControl?: boolean;
     disableCtrlForPanning?: boolean;
     disableAutoFocus?: boolean;
 
+    [propName: string]: any;
+}
+
+export interface ICameraBehaviorConfiguration {
+    type: number;
     [propName: string]: any;
 }
 

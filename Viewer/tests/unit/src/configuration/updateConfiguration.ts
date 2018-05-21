@@ -312,3 +312,34 @@ describe(name + " scene optimizer", () => {
         });
     });
 });
+
+describe(name + " camera", () => {
+
+    it("should enable and disable camera behaviors", (done) => {
+        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+
+        viewer.onInitDoneObservable.add(() => {
+            assert.isFalse(viewer.sceneManager.camera.useAutoRotationBehavior);
+            viewer.updateConfiguration({
+                camera: {
+                    behaviors: {
+                        autoRotate: {
+                            type: 0
+                        }
+                    }
+                }
+            });
+            assert.isTrue(viewer.sceneManager.camera.useAutoRotationBehavior);
+            viewer.updateConfiguration({
+                camera: {
+                    behaviors: {
+                        autoRotate: false
+                    }
+                }
+            });
+            assert.isFalse(viewer.sceneManager.camera.useAutoRotationBehavior);
+            viewer.dispose();
+            done();
+        });
+    })
+})
