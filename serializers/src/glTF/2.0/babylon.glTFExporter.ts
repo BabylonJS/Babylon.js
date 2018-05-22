@@ -967,7 +967,7 @@ module BABYLON.GLTF2 {
                                 this.materials.push(material);
                                 materialIndex = this.materials.length - 1;
                             }
-                            if (babylonMaterial instanceof MultiMaterial) {
+                            else if (babylonMaterial instanceof MultiMaterial) {
                                 babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                                 if (babylonMaterial) {
                                     materialIndex = this.babylonScene.materials.indexOf(babylonMaterial);
