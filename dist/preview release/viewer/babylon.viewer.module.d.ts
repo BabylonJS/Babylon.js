@@ -969,7 +969,7 @@ declare module 'babylonjs-viewer/configuration/configuration' {
             skybox?: boolean | ISkyboxConfiguration;
             ground?: boolean | IGroundConfiguration;
             lights?: {
-                    [name: string]: boolean | ILightConfiguration;
+                    [name: string]: number | boolean | ILightConfiguration;
             };
             engine?: {
                     renderInBackground?: boolean;
@@ -1035,6 +1035,7 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                             tintLevel: number;
                     };
                     defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
+                    globalLightRotation?: number;
             };
     }
     /**
@@ -1751,7 +1752,7 @@ declare module 'babylonjs-viewer/viewer/sceneManager' {
                 * Will notify after the lights were configured. Can be used to further configure lights
                 */
             onLightsConfiguredObservable: Observable<IPostConfigurationCallback<Array<Light>, {
-                    [name: string]: ILightConfiguration | boolean;
+                    [name: string]: ILightConfiguration | boolean | number;
             }>>;
             /**
                 * Will notify after the model(s) were configured. Can be used to further configure models
@@ -1866,7 +1867,7 @@ declare module 'babylonjs-viewer/viewer/sceneManager' {
                 * @param model optionally use the model to configure the camera.
                 */
             protected _configureLights(lightsConfiguration?: {
-                    [name: string]: ILightConfiguration | boolean;
+                    [name: string]: ILightConfiguration | boolean | number;
             }): void;
             /**
                 * Gets the shadow map blur kernel according to the light configuration.
@@ -1980,6 +1981,7 @@ declare module 'babylonjs-viewer/eventManager' {
 declare module 'babylonjs-viewer/labs/viewerLabs' {
     import { PBREnvironment } from "babylonjs-viewer/labs/environmentSerializer";
     import { SceneManager } from 'babylonjs-viewer/viewer/sceneManager';
+    import { ShadowLight, Vector3 } from 'babylonjs';
     /**
         * The ViewerLabs class will hold functions that are not (!) backwards compatible.
         * The APIs in all labs-related classes and configuration  might change.
@@ -2024,6 +2026,7 @@ declare module 'babylonjs-viewer/labs/viewerLabs' {
                 * @returns The Asset url using the `environmentAssetsRootURL` if the url is not an absolute path.
                 */
             getAssetUrl(url: string): string;
+            rotateShadowLight(shadowLight: ShadowLight, amount: number, point?: Vector3, axis?: Vector3, target?: Vector3): void;
     }
 }
 
