@@ -969,7 +969,7 @@ declare module BabylonViewer {
             skybox?: boolean | ISkyboxConfiguration;
             ground?: boolean | IGroundConfiguration;
             lights?: {
-                    [name: string]: boolean | ILightConfiguration;
+                    [name: string]: number | boolean | ILightConfiguration;
             };
             engine?: {
                     renderInBackground?: boolean;
@@ -1035,6 +1035,7 @@ declare module BabylonViewer {
                             tintLevel: number;
                     };
                     defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
+                    globalLightRotation?: number;
             };
     }
     /**
@@ -1751,7 +1752,7 @@ declare module BabylonViewer {
                 * Will notify after the lights were configured. Can be used to further configure lights
                 */
             onLightsConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<Array<BABYLON.Light>, {
-                    [name: string]: ILightConfiguration | boolean;
+                    [name: string]: ILightConfiguration | boolean | number;
             }>>;
             /**
                 * Will notify after the model(s) were configured. Can be used to further configure models
@@ -1866,7 +1867,7 @@ declare module BabylonViewer {
                 * @param model optionally use the model to configure the camera.
                 */
             protected _configureLights(lightsConfiguration?: {
-                    [name: string]: ILightConfiguration | boolean;
+                    [name: string]: ILightConfiguration | boolean | number;
             }): void;
             /**
                 * Gets the shadow map blur kernel according to the light configuration.
@@ -1951,6 +1952,7 @@ declare module BabylonViewer {
 declare module BabylonViewer {
     
     
+    
     /**
         * The ViewerLabs class will hold functions that are not (!) backwards compatible.
         * The APIs in all labs-related classes and configuration  might change.
@@ -1995,6 +1997,7 @@ declare module BabylonViewer {
                 * @returns The Asset url using the `environmentAssetsRootURL` if the url is not an absolute path.
                 */
             getAssetUrl(url: string): string;
+            rotateShadowLight(shadowLight: BABYLON.ShadowLight, amount: number, point?: BABYLON.Vector3, axis?: BABYLON.Vector3, target?: BABYLON.Vector3): void;
     }
 }
 

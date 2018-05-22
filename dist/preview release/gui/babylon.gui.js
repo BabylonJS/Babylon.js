@@ -5643,7 +5643,7 @@ var BABYLON;
                     if (!camera) {
                         return;
                     }
-                    pi.skipOnPointerObservable = _this._doPicking(pi.type, pointerEvent);
+                    pi.skipOnPointerObservable = _this._doPicking(pi.type, pointerEvent, pi.ray);
                 });
                 // Scene
                 this._utilityLayer.utilityLayerScene.autoClear = false;
@@ -5665,14 +5665,14 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            GUI3DManager.prototype._doPicking = function (type, pointerEvent) {
+            GUI3DManager.prototype._doPicking = function (type, pointerEvent, ray) {
                 if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
                     return false;
                 }
                 var pointerId = pointerEvent.pointerId || 0;
                 var buttonIndex = pointerEvent.button;
                 var utilityScene = this._utilityLayer.utilityLayerScene;
-                var pickingInfo = utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
+                var pickingInfo = ray ? utilityScene.pickWithRay(ray) : utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
                 if (!pickingInfo || !pickingInfo.hit) {
                     var previousControlOver = this._lastControlOver[pointerId];
                     if (previousControlOver) {
@@ -6214,7 +6214,7 @@ var BABYLON;
              * Node creation.
              * Can be overriden by children
              * @param scene defines the scene where the node must be attached
-             * @returns the attached node or null if none
+             * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an atttached visible object
              */
             Control3D.prototype._createNode = function (scene) {
                 // Do nothing by default
@@ -6573,6 +6573,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(HolographicButton.prototype, "text", {
+                // private _imageUrl: string;
                 /**
                  * Gets or sets text for the button
                  */
@@ -6682,11 +6683,14 @@ var BABYLON;
                     return this._isVertical;
                 },
                 set: function (value) {
+                    var _this = this;
                     if (this._isVertical === value) {
                         return;
                     }
                     this._isVertical = value;
-                    this._arrangeChildren();
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
                 },
                 enumerable: true,
                 configurable: true

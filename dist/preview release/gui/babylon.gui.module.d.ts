@@ -1000,7 +1000,7 @@ declare module BABYLON.GUI {
          * @param scene
          */
         constructor(scene?: Scene);
-        private _doPicking(type, pointerEvent);
+        private _doPicking(type, pointerEvent, ray?);
         /**
          * Gets the root container
          */
@@ -1219,7 +1219,7 @@ declare module BABYLON.GUI {
          * Node creation.
          * Can be overriden by children
          * @param scene defines the scene where the node must be attached
-         * @returns the attached node or null if none
+         * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an atttached visible object
          */
         protected _createNode(scene: Scene): Nullable<TransformNode>;
         /**
@@ -1337,7 +1337,6 @@ declare module BABYLON.GUI {
         private _backFluentMaterial;
         private _frontFluentMaterial;
         private _text;
-        private _imageUrl;
         /**
          * Gets or sets text for the button
          */
