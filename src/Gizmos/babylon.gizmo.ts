@@ -3,10 +3,20 @@ module BABYLON {
      * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
      */
     export class Gizmo implements IDisposable {
+        /**
+         * The root mesh of the gizmo
+         */
         protected _rootMesh:Mesh;
+        /**
+         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+         */
         public attachedMesh:Nullable<Mesh>;
         private _beforeRenderObserver:Nullable<Observer<Scene>>;
-        constructor(public gizmoLayer:UtilityLayerRenderer){
+        /**
+         * Creates a gizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(/** The utility layer the gizmo will be added to */ public gizmoLayer:UtilityLayerRenderer){
             this._rootMesh = new BABYLON.Mesh("gizmoRootNode",gizmoLayer.utilityLayerScene);
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(()=>{
                 if(this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
@@ -18,6 +28,9 @@ module BABYLON {
                 }
             })
         }
+        /**
+         * Disposes of the gizmo
+         */
         public dispose(){
             this._rootMesh.dispose()
             if(this._beforeRenderObserver){
@@ -26,8 +39,17 @@ module BABYLON {
         }
     }
 
+    /**
+     * Single axis drag gizmo
+     */
     export class AxisDragGizmo extends Gizmo {
         private _dragBehavior:PointerDragBehavior;
+        /**
+         * Creates an AxisDragGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to drag on
+         * @param color The color of the gizmo
+         */
         constructor(gizmoLayer:UtilityLayerRenderer, dragAxis:Vector3, color:Color3){
             super(gizmoLayer);
 
@@ -62,12 +84,18 @@ module BABYLON {
                 }
             })
         }
+        /**
+         * Disposes of the gizmo
+         */
         public dispose(){
             this._dragBehavior.detach();
             super.dispose();
         } 
     }
 
+    /**
+     * Gizmo that enables dragging a mesh along 3 axis
+     */
     export class PositionGizmo extends Gizmo {
         private _xDrag:AxisDragGizmo;
         private _yDrag:AxisDragGizmo;
@@ -78,7 +106,10 @@ module BABYLON {
             this._yDrag.attachedMesh = mesh;
             this._zDrag.attachedMesh = mesh;
         }
-
+        /**
+         * Creates a PositionGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
         constructor(gizmoLayer:UtilityLayerRenderer){
             super(gizmoLayer);
             this._xDrag = new AxisDragGizmo(gizmoLayer, new Vector3(1,0,0), BABYLON.Color3.FromHexString("#00b894"));
@@ -86,6 +117,9 @@ module BABYLON {
             this._zDrag = new AxisDragGizmo(gizmoLayer, new Vector3(0,0,1), BABYLON.Color3.FromHexString("#0984e3"));
         }
 
+        /**
+         * Disposes of the gizmo
+         */
         public dispose(){
             this._xDrag.dispose();
             this._yDrag.dispose();
