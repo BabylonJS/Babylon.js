@@ -142,6 +142,7 @@ export class SceneManager {
                 if (this._forceShadowUpdate || (scene.animatables && scene.animatables.length > 0)) {
                     // make sure all models are loaded
                     updateShadows();
+                    this._forceShadowUpdate = false;
                 } else if (!(this.models.every((model) => {
                     if (!model.shadowsRenderedAfterLoad) {
                         model.shadowsRenderedAfterLoad = true;
@@ -800,7 +801,7 @@ export class SceneManager {
         if (this.scene.imageProcessingConfiguration) {
             this.scene.imageProcessingConfiguration.colorCurvesEnabled = true;
             this.scene.imageProcessingConfiguration.vignetteEnabled = true;
-            this.scene.imageProcessingConfiguration.toneMappingEnabled = !!cameraConfig.toneMappingEnabled;
+            this.scene.imageProcessingConfiguration.toneMappingEnabled = !!getConfigurationKey("camera.toneMappingEnabled", this._viewer.configuration);
         }
 
         extendClassWithConfig(this.camera, cameraConfig);
@@ -821,6 +822,11 @@ export class SceneManager {
         this.camera.alpha = (this._viewer.configuration.camera && this._viewer.configuration.camera.alpha) || this.camera.alpha;
         this.camera.beta = (this._viewer.configuration.camera && this._viewer.configuration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._viewer.configuration.camera && this._viewer.configuration.camera.radius) || this.camera.radius;
+
+        /*this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
+            // casting ais safe, due to the constraints tested before
+            (<ShadowLight>light).setDirectionToTarget(center);
+        });*/
     }
 
     protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
