@@ -43,7 +43,7 @@ module BABYLON {
          */
         public render(){
             this._updateCamera();
-            this.utilityLayerScene.render();
+            this.utilityLayerScene.render(false);
         }
 
         /**

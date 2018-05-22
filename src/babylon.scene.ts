@@ -4710,8 +4710,9 @@
 
         /** 
          * Render the scene
+         * @param updateCamerasd defines a boolean indicating if cameras must update according to their inputs (true by default)
          */
-        public render(): void {
+        public render(updateCameras = true): void {
             if (this.isDisposed) {
                 return;
             }
@@ -4799,23 +4800,25 @@
             }
 
             // Update Cameras
-            if (this.activeCameras.length > 0) {
-                for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                    let camera = this.activeCameras[cameraIndex];
-                    camera.update();
-                    if (camera.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                        // rig cameras
-                        for (var index = 0; index < camera._rigCameras.length; index++) {
-                            camera._rigCameras[index].update();
+            if (updateCameras) {
+                if (this.activeCameras.length > 0) {
+                    for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                        let camera = this.activeCameras[cameraIndex];
+                        camera.update();
+                        if (camera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                            // rig cameras
+                            for (var index = 0; index < camera._rigCameras.length; index++) {
+                                camera._rigCameras[index].update();
+                            }
                         }
                     }
-                }
-            } else if (this.activeCamera) {
-                this.activeCamera.update();
-                if (this.activeCamera.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                    // rig cameras
-                    for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
-                        this.activeCamera._rigCameras[index].update();
+                } else if (this.activeCamera) {
+                    this.activeCamera.update();
+                    if (this.activeCamera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                        // rig cameras
+                        for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
+                            this.activeCamera._rigCameras[index].update();
+                        }
                     }
                 }
             }
