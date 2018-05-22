@@ -1621,15 +1621,9 @@
          */
         public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointermove", pointerEventInit);
-            // PreObservable support
-            if (this.onPrePointerObservable.hasObservers() && !this._pointerCaptures[evt.pointerId]) {
-                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
-                let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                pi.ray = pickResult.ray;
-                this.onPrePointerObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
-                    return this;
-                }
+
+            if(this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERMOVE)){
+                return this;
             }
             return this._processPointerMove(pickResult, evt);
         }
@@ -1692,6 +1686,19 @@
             return this;
         }
 
+        private _checkPrePointerObservable(pickResult: Nullable<PickingInfo>, evt: PointerEvent, type: number){
+            let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+            if(pickResult){
+                pi.ray = pickResult.ray;
+            }
+            this.onPrePointerObservable.notifyObservers(pi, type);
+            if (pi.skipOnPointerObservable) {
+                return true;
+            }else{
+                return false;
+            }
+        }
+
         /**
          * Use this method to simulate a pointer down on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
@@ -1701,17 +1708,11 @@
          */
         public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerdown", pointerEventInit);
-            // PreObservable support
-            if (this.onPrePointerObservable.hasObservers()) {
-                let type = PointerEventTypes.POINTERDOWN;
-                let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                pi.ray = pickResult.ray;
-                this.onPrePointerObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
-                    return this;
-                }
+            
+            if(this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERDOWN)){
+                return this;
             }
-
+            
             return this._processPointerDown(pickResult, evt);
         }
 
@@ -1785,15 +1786,8 @@
             clickInfo.singleClick = true;
             clickInfo.ignore = true;
 
-            // PreObservable support
-            if (this.onPrePointerObservable.hasObservers()) {
-                let type = PointerEventTypes.POINTERUP;
-                let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                pi.ray = pickResult.ray;
-                this.onPrePointerObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
-                    return this;
-                }
+            if(this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERUP)){
+                return this;
             }
 
             return this._processPointerUp(pickResult, evt, clickInfo);
@@ -2022,13 +2016,8 @@
                 this._updatePointerPosition(evt);
 
                 // PreObservable support
-                if (this.onPrePointerObservable.hasObservers() && !this._pointerCaptures[evt.pointerId]) {
-                    let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
-                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                    this.onPrePointerObservable.notifyObservers(pi, type);
-                    if (pi.skipOnPointerObservable) {
-                        return;
-                    }
+                if(this._checkPrePointerObservable(null, evt, evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE)){
+                    return;
                 }
 
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
@@ -2058,13 +2047,8 @@
                 }
 
                 // PreObservable support
-                if (this.onPrePointerObservable.hasObservers()) {
-                    let type = PointerEventTypes.POINTERDOWN;
-                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                    this.onPrePointerObservable.notifyObservers(pi, type);
-                    if (pi.skipOnPointerObservable) {
-                        return;
-                    }
+                if(this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)){
+                    return;
                 }
 
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
@@ -2131,28 +2115,19 @@
                         if (!clickInfo.ignore) {
                             if (!clickInfo.hasSwiped) {
                                 if (clickInfo.singleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                                    let type = PointerEventTypes.POINTERTAP;
-                                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                                    this.onPrePointerObservable.notifyObservers(pi, type);
-                                    if (pi.skipOnPointerObservable) {
+                                    if(this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERTAP)){
                                         return;
                                     }
                                 }
                                 if (clickInfo.doubleClick && this.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                                    let type = PointerEventTypes.POINTERDOUBLETAP;
-                                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                                    this.onPrePointerObservable.notifyObservers(pi, type);
-                                    if (pi.skipOnPointerObservable) {
+                                    if(this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOUBLETAP)){
                                         return;
                                     }
                                 }
                             }
                         }
                         else {
-                            let type = PointerEventTypes.POINTERUP;
-                            let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
-                            this.onPrePointerObservable.notifyObservers(pi, type);
-                            if (pi.skipOnPointerObservable) {
+                            if(this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)){
                                 return;
                             }
                         }
