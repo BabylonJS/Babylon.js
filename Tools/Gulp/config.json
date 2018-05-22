@@ -1022,7 +1022,9 @@
                 "../../src/Debug/babylon.physicsViewer.js",
                 "../../src/Rendering/babylon.boundingBoxRenderer.js",
                 "../../src/Rendering/babylon.utilityLayerRenderer.js",
-                "../../src/Gizmos/babylon.gizmo.js"
+                "../../src/Gizmos/babylon.gizmo.js",
+                "../../src/Gizmos/babylon.axisDragGizmo.js",
+                "../../src/Gizmos/babylon.positionGizmo.js"
             ],
             "dependUpon": [
                 "shaderMaterial",

@@ -33,7 +33,7 @@ module BABYLON {
         
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
-         * @param options The drag axis or normal of the plane that will be dragged accross. pointerObservableScene can be used to listen to drag events from anther scene(eg. if the attached mesh is in an overlay scene).
+         * @param options The drag axis or normal of the plane that will be dragged across. pointerObservableScene can be used to listen to drag events from another scene(eg. if the attached mesh is in an overlay scene).
          */
         constructor(private options:{dragAxis?:Vector3, dragPlaneNormal?:Vector3, pointerObservableScene?:Scene}){
             var optionCount = 0;
@@ -122,7 +122,7 @@ module BABYLON {
                     }
                 }else if(pointerInfoPre.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     if(this._draggingID == (<PointerEvent>pointerInfoPre.event).pointerId && dragging && pickInfo && pickInfo.ray){
-                        var pickedPoint = this._pickWithRayOnDragPlane(pickInfo.ray)
+                        var pickedPoint = this._pickWithRayOnDragPlane(pickInfo.ray);
                         this._updateDragPlanePosition(pickInfo.ray);
                         if (pickedPoint) {
                             // depending on the drag mode option drag accordingly
