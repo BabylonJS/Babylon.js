@@ -67,8 +67,17 @@ module BABYLON.GUI {
             }
             
             this._facadeTexture.addControl(value);
-        
-            (<any>this._currentMaterial).emissiveTexture = this._facadeTexture;
+
+            this._applyFacade(this._facadeTexture);
+        }
+
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+            (<any>this._currentMaterial).emissiveTexture = facadeTexture;
         }
 
         protected _getTypeName(): string {
@@ -84,17 +93,17 @@ module BABYLON.GUI {
             }
             faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
 
-            let mesh = MeshBuilder.CreateBox(this.name + "Mesh", {
+            let mesh = MeshBuilder.CreateBox(this.name + "_rootMesh", {
                 width: 1.0, 
                 height: 1.0,
-                depth: 0.05,
+                depth: 0.08,
                 faceUV: faceUV
             }, scene); 
            
             return mesh;
         }
 
-        protected _affectMaterial(mesh: Mesh) {
+        protected _affectMaterial(mesh: AbstractMesh) {
             let material = new StandardMaterial(this.name + "Material", mesh.getScene());
             material.specularColor = Color3.Black();
 

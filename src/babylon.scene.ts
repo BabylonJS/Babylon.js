@@ -1596,6 +1596,21 @@
         }
 
         // Pointers handling
+        private _pickSpriteButKeepRay(originalPointerInfo:Nullable<PickingInfo>, x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>{
+            var result = this.pickSprite(x,y,predicate,fastCheck,camera);
+            if(result){
+                result.ray = originalPointerInfo ? originalPointerInfo.ray : null;
+            }
+            return result;
+        }
+
+        private _setRayOnPointerInfo(pointerInfo:PointerInfo){
+            if(pointerInfo.pickInfo){
+                if(!pointerInfo.pickInfo.ray){
+                    pointerInfo.pickInfo.ray = this.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), this.activeCamera);
+                }
+            }
+        }
 
         /**
          * Use this method to simulate a pointer move on a mesh
@@ -1634,8 +1649,8 @@
             } else {
                 this.setPointerOverMesh(null);
                 // Sprites
-                pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
+                pickResult = this._pickSpriteButKeepRay(pickResult, this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
+                
                 if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                     this.setPointerOverSprite(pickResult.pickedSprite);
                     if (this._pointerOverSprite && this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
@@ -1659,6 +1674,7 @@
 
                 if (this.onPointerObservable.hasObservers()) {
                     let pi = new PointerInfo(type, evt, pickResult);
+                    this._setRayOnPointerInfo(pi);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
             }
@@ -1728,6 +1744,7 @@
 
                 if (this.onPointerObservable.hasObservers()) {
                     let pi = new PointerInfo(type, evt, pickResult);
+                    this._setRayOnPointerInfo(pi);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
             }
@@ -1761,6 +1778,7 @@
                     if (clickInfo.singleClick && !clickInfo.ignore && this.onPointerObservable.hasObservers()) {
                         let type = PointerEventTypes.POINTERPICK;
                         let pi = new PointerInfo(type, evt, pickResult);
+                        this._setRayOnPointerInfo(pi);
                         this.onPointerObservable.notifyObservers(pi, type);
                     }
                 }
@@ -1790,17 +1808,20 @@
                         if (clickInfo.singleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
                             let type = PointerEventTypes.POINTERTAP;
                             let pi = new PointerInfo(type, evt, pickResult);
+                            this._setRayOnPointerInfo(pi);
                             this.onPointerObservable.notifyObservers(pi, type);
                         }
                         if (clickInfo.doubleClick && this.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
                             let type = PointerEventTypes.POINTERDOUBLETAP;
                             let pi = new PointerInfo(type, evt, pickResult);
+                            this._setRayOnPointerInfo(pi);
                             this.onPointerObservable.notifyObservers(pi, type);
                         }
                     }
                 }
                 else {
                     let pi = new PointerInfo(type, evt, pickResult);
+                    this._setRayOnPointerInfo(pi);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
             }
