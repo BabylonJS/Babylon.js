@@ -23,8 +23,8 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-BABYLON.Effect.ShadersStore['fluentVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n\nuniform mat4 world;\nuniform mat4 viewProjection;\nuniform mat4 emissiveMatrix;\nvarying vec2 vEmissiveUV;\nvoid main(void) {\nvEmissiveUV=vec2(emissiveMatrix*vec4(uv,1.0,0.0));\ngl_Position=viewProjection*world*vec4(position,1.0);\n}\n";
-BABYLON.Effect.ShadersStore['fluentPixelShader'] = "precision highp float;\nvarying vec2 vEmissiveUV;\nuniform sampler2D emissiveSampler;\nvoid main(void) {\nvec3 emissiveColor=texture2D(emissiveSampler,vEmissiveUV).rgb;\ngl_FragColor=vec4(emissiveColor,1.0);\n}";
+BABYLON.Effect.ShadersStore['fluentVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n\nuniform mat4 world;\nuniform mat4 viewProjection;\nvarying vec2 vUV;\n#ifdef BORDER\nvarying vec2 scaleInfo;\nuniform float borderWidth;\nuniform vec3 scaleFactor;\n#endif\nvoid main(void) {\nvUV=uv;\n#ifdef BORDER\nvec3 scale=scaleFactor;\nfloat minScale=min(min(scale.x,scale.y),scale.z);\nfloat maxScale=max(max(scale.x,scale.y),scale.z);\nfloat minOverMiddleScale=minScale/(scale.x+scale.y+scale.z-minScale-maxScale);\nfloat areaYZ=scale.y*scale.z;\nfloat areaXZ=scale.x*scale.z;\nfloat areaXY=scale.x*scale.y;\nfloat scaledBorderWidth=borderWidth; \nif (abs(normal.x) == 1.0) \n{\nscale.x=scale.y;\nscale.y=scale.z;\nif (areaYZ>areaXZ && areaYZ>areaXY)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nelse if (abs(normal.y) == 1.0) \n{\nscale.x=scale.z;\nif (areaXZ>areaXY && areaXZ>areaYZ)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nelse \n{\nif (areaXY>areaYZ && areaXY>areaXZ)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nfloat scaleRatio=min(scale.x,scale.y)/max(scale.x,scale.y);\nif (scale.x>scale.y)\n{\nscaleInfo.x=1.0-(scaledBorderWidth*scaleRatio);\nscaleInfo.y=1.0-scaledBorderWidth;\n}\nelse\n{\nscaleInfo.x=1.0-scaledBorderWidth;\nscaleInfo.y=1.0-(scaledBorderWidth*scaleRatio);\n} \n#endif \ngl_Position=viewProjection*world*vec4(position,1.0);\n}\n";
+BABYLON.Effect.ShadersStore['fluentPixelShader'] = "precision highp float;\nvarying vec2 vUV;\nuniform vec4 albedoColor;\n#ifdef INNERGLOW\nuniform vec4 innerGlowColor;\n#endif\n#ifdef BORDER\nvarying vec2 scaleInfo;\nuniform float edgeSmoothingValue;\nuniform float borderMinValue;\n#endif\nvoid main(void) {\nvec3 albedo=albedoColor.rgb;\nfloat alpha=albedoColor.a;\n#ifdef BORDER \nfloat borderPower=10.0;\nfloat inverseBorderPower=1.0/borderPower;\nfloat pointToHover=1.0;\nvec3 borderColor=albedo*borderPower;\nvec2 distanceToEdge;\ndistanceToEdge.x=abs(vUV.x-0.5)*2.0;\ndistanceToEdge.y=abs(vUV.y-0.5)*2.0;\nfloat borderValue=max(smoothstep(scaleInfo.x-edgeSmoothingValue,scaleInfo.x+edgeSmoothingValue,distanceToEdge.x),\nsmoothstep(scaleInfo.y-edgeSmoothingValue,scaleInfo.y+edgeSmoothingValue,distanceToEdge.y));\nborderColor=borderColor*borderValue*max(borderMinValue*inverseBorderPower,pointToHover); \nalbedo+=borderColor;\nalpha=max(alpha,borderValue);\n#endif\n#ifdef INNERGLOW\n\nvec2 uvGlow=(vUV-vec2(0.5,0.5))*(innerGlowColor.a*2.0);\nuvGlow=uvGlow*uvGlow;\nuvGlow=uvGlow*uvGlow;\nalbedo+=mix(vec3(0.0,0.0,0.0),innerGlowColor.rgb,uvGlow.x+uvGlow.y); \n#endif\ngl_FragColor=vec4(albedo,alpha);\n}";
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
@@ -5772,6 +5772,19 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /** @hidden */
+        var FluentMaterialDefines = /** @class */ (function (_super) {
+            __extends(FluentMaterialDefines, _super);
+            function FluentMaterialDefines() {
+                var _this = _super.call(this) || this;
+                _this.INNERGLOW = false;
+                _this.BORDER = false;
+                _this.rebuild();
+                return _this;
+            }
+            return FluentMaterialDefines;
+        }(BABYLON.MaterialDefines));
+        GUI.FluentMaterialDefines = FluentMaterialDefines;
         /**
          * Class used to render controls with fluent desgin
          */
@@ -5783,10 +5796,43 @@ var BABYLON;
              * @param scene defines the hosting scene
              */
             function FluentMaterial(name, scene) {
-                return _super.call(this, name, scene) || this;
+                var _this = _super.call(this, name, scene) || this;
+                /**
+                 * Gets or sets inner glow intensity. A value of 0 means no glow (default is 0.5)
+                 */
+                _this.innerGlowColorIntensity = 0.5;
+                /**
+                 * Gets or sets the inner glow color (white by default)
+                 */
+                _this.innerGlowColor = new BABYLON.Color3(1.0, 1.0, 1.0);
+                /**
+                 * Gets or sets alpha value (default is 1.0)
+                 */
+                _this.alpha = 1.0;
+                /**
+                 * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
+                 */
+                _this.albedoColor = new BABYLON.Color3(0.3, 0.35, 0.4);
+                /**
+                 * Gets or sets a boolean indicating if borders must be rendered (default is false)
+                 */
+                _this.renderBorders = false;
+                /**
+                 * Gets or sets border width (default is 0.5)
+                 */
+                _this.borderWidth = 0.5;
+                /**
+                 * Gets or sets a value indicating the smoothing value applied to border edges (0.02 by default)
+                 */
+                _this.edgeSmoothingValue = 0.02;
+                /**
+                 * Gets or sets the minimum value that can be applied to border width (default is 0.1)
+                 */
+                _this.borderMinValue = 0.1;
+                return _this;
             }
             FluentMaterial.prototype.needAlphaBlending = function () {
-                return false;
+                return this.alpha !== 1.0;
             };
             FluentMaterial.prototype.needAlphaTesting = function () {
                 return false;
@@ -5800,49 +5846,66 @@ var BABYLON;
                         return true;
                     }
                 }
+                if (!subMesh._materialDefines) {
+                    subMesh._materialDefines = new FluentMaterialDefines();
+                }
                 var scene = this.getScene();
+                var defines = subMesh._materialDefines;
                 if (!this.checkReadyOnEveryCall && subMesh.effect) {
-                    if (this._renderId === scene.getRenderId()) {
+                    if (defines._renderId === scene.getRenderId()) {
                         return true;
                     }
                 }
+                if (defines._areTexturesDirty) {
+                    defines.INNERGLOW = this.innerGlowColorIntensity > 0;
+                    defines.BORDER = this.renderBorders;
+                }
                 var engine = scene.getEngine();
-                scene.resetCachedMaterial();
-                //Attributes
-                var attribs = [BABYLON.VertexBuffer.PositionKind];
-                attribs.push(BABYLON.VertexBuffer.NormalKind);
-                attribs.push(BABYLON.VertexBuffer.UVKind);
-                var shaderName = "fluent";
-                var uniforms = ["world", "viewProjection", "emissiveMatrix"];
-                var samplers = ["emissiveSampler"];
-                var uniformBuffers = new Array();
-                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: "",
-                    maxSimultaneousLights: 4
-                });
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: "",
-                    fallbacks: null,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine));
+                // Get correct effect      
+                if (defines.isDirty) {
+                    defines.markAsProcessed();
+                    scene.resetCachedMaterial();
+                    //Attributes
+                    var attribs = [BABYLON.VertexBuffer.PositionKind];
+                    attribs.push(BABYLON.VertexBuffer.NormalKind);
+                    attribs.push(BABYLON.VertexBuffer.UVKind);
+                    var shaderName = "fluent";
+                    var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue"];
+                    var samplers = new Array();
+                    var uniformBuffers = new Array();
+                    BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: defines,
+                        maxSimultaneousLights: 4
+                    });
+                    var join = defines.toString();
+                    subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: null,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 }
+                    }, engine));
+                }
                 if (!subMesh.effect || !subMesh.effect.isReady()) {
                     return false;
                 }
-                this._renderId = scene.getRenderId();
+                defines._renderId = scene.getRenderId();
                 this._wasPreviouslyReady = true;
                 return true;
             };
             FluentMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
                 var scene = this.getScene();
+                var defines = subMesh._materialDefines;
+                if (!defines) {
+                    return;
+                }
                 var effect = subMesh.effect;
                 if (!effect) {
                     return;
@@ -5852,34 +5915,30 @@ var BABYLON;
                 this.bindOnlyWorldMatrix(world);
                 this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
                 if (this._mustRebind(scene, effect)) {
-                    // Textures        
-                    if (this._emissiveTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
-                        this._activeEffect.setTexture("emissiveSampler", this._emissiveTexture);
-                        this._activeEffect.setMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
+                    this._activeEffect.setColor4("albedoColor", this.albedoColor, this.alpha);
+                    if (defines.INNERGLOW) {
+                        this._activeEffect.setColor4("innerGlowColor", this.innerGlowColor, this.innerGlowColorIntensity);
+                    }
+                    if (defines.BORDER) {
+                        this._activeEffect.setFloat("borderWidth", this.borderWidth);
+                        this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
+                        this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
+                        this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
                     }
                 }
                 this._afterBind(mesh, this._activeEffect);
             };
             FluentMaterial.prototype.getActiveTextures = function () {
                 var activeTextures = _super.prototype.getActiveTextures.call(this);
-                if (this._emissiveTexture) {
-                    activeTextures.push(this._emissiveTexture);
-                }
                 return activeTextures;
             };
             FluentMaterial.prototype.hasTexture = function (texture) {
                 if (_super.prototype.hasTexture.call(this, texture)) {
                     return true;
                 }
-                if (this._emissiveTexture === texture) {
-                    return true;
-                }
                 return false;
             };
             FluentMaterial.prototype.dispose = function (forceDisposeEffect) {
-                if (this._emissiveTexture) {
-                    this._emissiveTexture.dispose();
-                }
                 _super.prototype.dispose.call(this, forceDisposeEffect);
             };
             FluentMaterial.prototype.clone = function (name) {
@@ -5899,11 +5958,31 @@ var BABYLON;
                 return BABYLON.SerializationHelper.Parse(function () { return new FluentMaterial(source.name, scene); }, source, scene, rootUrl);
             };
             __decorate([
-                BABYLON.serializeAsTexture("emissiveTexture")
-            ], FluentMaterial.prototype, "_emissiveTexture", void 0);
-            __decorate([
+                BABYLON.serialize(),
                 BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-            ], FluentMaterial.prototype, "emissiveTexture", void 0);
+            ], FluentMaterial.prototype, "innerGlowColorIntensity", void 0);
+            __decorate([
+                BABYLON.serializeAsColor3()
+            ], FluentMaterial.prototype, "innerGlowColor", void 0);
+            __decorate([
+                BABYLON.serialize()
+            ], FluentMaterial.prototype, "alpha", void 0);
+            __decorate([
+                BABYLON.serializeAsColor3()
+            ], FluentMaterial.prototype, "albedoColor", void 0);
+            __decorate([
+                BABYLON.serialize(),
+                BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            ], FluentMaterial.prototype, "renderBorders", void 0);
+            __decorate([
+                BABYLON.serialize()
+            ], FluentMaterial.prototype, "borderWidth", void 0);
+            __decorate([
+                BABYLON.serialize()
+            ], FluentMaterial.prototype, "edgeSmoothingValue", void 0);
+            __decorate([
+                BABYLON.serialize()
+            ], FluentMaterial.prototype, "borderMinValue", void 0);
             return FluentMaterial;
         }(BABYLON.PushMaterial));
         GUI.FluentMaterial = FluentMaterial;
@@ -6095,7 +6174,10 @@ var BABYLON;
                  * Gets the mesh used to render this control
                  */
                 get: function () {
-                    return this._node;
+                    if (this._node instanceof BABYLON.AbstractMesh) {
+                        return this._node;
+                    }
+                    return null;
                 },
                 enumerable: true,
                 configurable: true
@@ -6415,11 +6497,19 @@ var BABYLON;
                         this._facadeTexture.premulAlpha = true;
                     }
                     this._facadeTexture.addControl(value);
-                    this._currentMaterial.emissiveTexture = this._facadeTexture;
+                    this._applyFacade(this._facadeTexture);
                 },
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Apply the facade texture (created from the content property).
+             * This function can be overloaded by child classes
+             * @param facadeTexture defines the AdvancedDynamicTexture to use
+             */
+            Button3D.prototype._applyFacade = function (facadeTexture) {
+                this._currentMaterial.emissiveTexture = facadeTexture;
+            };
             Button3D.prototype._getTypeName = function () {
                 return "Button3D";
             };
@@ -6430,10 +6520,10 @@ var BABYLON;
                     faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
                 }
                 faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
-                var mesh = BABYLON.MeshBuilder.CreateBox(this.name + "Mesh", {
+                var mesh = BABYLON.MeshBuilder.CreateBox(this.name + "_rootMesh", {
                     width: 1.0,
                     height: 1.0,
-                    depth: 0.05,
+                    depth: 0.08,
                     faceUV: faceUV
                 }, scene);
                 return mesh;
@@ -6482,26 +6572,77 @@ var BABYLON;
                 };
                 return _this;
             }
+            Object.defineProperty(HolographicButton.prototype, "text", {
+                /**
+                 * Gets or sets text for the button
+                 */
+                get: function () {
+                    return this._text;
+                },
+                set: function (value) {
+                    if (this._text === value) {
+                        return;
+                    }
+                    this._text = value;
+                    this._rebuildContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
             HolographicButton.prototype._getTypeName = function () {
                 return "HolographicButton";
             };
+            HolographicButton.prototype._rebuildContent = function () {
+                var panel = new GUI.StackPanel();
+                panel.isVertical = true;
+                if (this._text) {
+                    var text = new BABYLON.GUI.TextBlock();
+                    text.text = this._text;
+                    text.color = "white";
+                    text.height = "30px";
+                    text.fontSize = 24;
+                    panel.addControl(text);
+                }
+                if (this._frontPlate) {
+                    this.content = panel;
+                }
+            };
             // Mesh association
             HolographicButton.prototype._createNode = function (scene) {
-                var mesh = _super.prototype._createNode.call(this, scene);
-                this._frontPlate = _super.prototype._createNode.call(this, scene);
-                this._frontPlate.parent = mesh;
-                this._frontPlate.position.z = -0.05;
-                this._frontPlate.setEnabled(false);
+                this._backPlate = BABYLON.MeshBuilder.CreateBox(this.name + "BackMesh", {
+                    width: 1.0,
+                    height: 1.0,
+                    depth: 0.08
+                }, scene);
+                this._frontPlate = BABYLON.MeshBuilder.CreateBox(this.name + "FrontMesh", {
+                    width: 1.0,
+                    height: 1.0,
+                    depth: 0.08
+                }, scene);
+                this._frontPlate.parent = this._backPlate;
+                this._frontPlate.position.z = -0.08;
                 this._frontPlate.isPickable = false;
-                this._frontPlate.visibility = 0.001;
-                this._frontPlate.edgesWidth = 1.0;
-                this._frontPlate.edgesColor = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-                this._frontPlate.enableEdgesRendering();
-                return mesh;
+                this._frontPlate.setEnabled(false);
+                this._textPlate = _super.prototype._createNode.call(this, scene);
+                this._textPlate.parent = this._backPlate;
+                this._textPlate.position.z = -0.08;
+                this._textPlate.isPickable = false;
+                return this._backPlate;
+            };
+            HolographicButton.prototype._applyFacade = function (facadeTexture) {
+                this._currentMaterial.emissiveTexture = facadeTexture;
+                this._currentMaterial.opacityTexture = facadeTexture;
             };
             HolographicButton.prototype._affectMaterial = function (mesh) {
-                this._currentMaterial = new GUI.FluentMaterial(this.name + "Material", mesh.getScene());
-                mesh.material = this._currentMaterial;
+                this._backFluentMaterial = new GUI.FluentMaterial(this.name + "Back Material", mesh.getScene());
+                mesh.material = this._backFluentMaterial;
+                this._frontFluentMaterial = new GUI.FluentMaterial(this.name + "Front Material", mesh.getScene());
+                this._frontPlate.material = this._frontFluentMaterial;
+                this._frontFluentMaterial.innerGlowColorIntensity = 0; // No inner glow
+                this._frontFluentMaterial.alpha = 0.5; // Additive
+                this._frontFluentMaterial.renderBorders = true;
+                _super.prototype._affectMaterial.call(this, this._textPlate);
+                this._rebuildContent();
             };
             return HolographicButton;
         }(GUI.Button3D));

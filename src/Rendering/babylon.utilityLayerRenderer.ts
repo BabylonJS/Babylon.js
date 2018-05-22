@@ -25,7 +25,6 @@ module BABYLON {
             originalScene.getEngine().scenes.pop();
 
             // Render directly on top of existing scene without clearing
-            this.utilityLayerScene.clearColor = new BABYLON.Color4(0,0,0,0);
             this.utilityLayerScene.autoClear = false;
 
             this._afterRenderObserver = this.originalScene.onAfterRenderObservable.add(()=>{
@@ -61,7 +60,7 @@ module BABYLON {
         }
 
         private _updateCamera(){
-            this.utilityLayerScene.activeCamera=this.originalScene.activeCamera;
+            this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
         }
     }
 }

@@ -1032,13 +1032,48 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /** @hidden */
+    class FluentMaterialDefines extends MaterialDefines {
+        INNERGLOW: boolean;
+        BORDER: boolean;
+        constructor();
+    }
     /**
      * Class used to render controls with fluent desgin
      */
     class FluentMaterial extends PushMaterial {
-        private _emissiveTexture;
-        emissiveTexture: BaseTexture;
-        private _renderId;
+        /**
+         * Gets or sets inner glow intensity. A value of 0 means no glow (default is 0.5)
+         */
+        innerGlowColorIntensity: number;
+        /**
+         * Gets or sets the inner glow color (white by default)
+         */
+        innerGlowColor: Color3;
+        /**
+         * Gets or sets alpha value (default is 1.0)
+         */
+        alpha: number;
+        /**
+         * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
+         */
+        albedoColor: Color3;
+        /**
+         * Gets or sets a boolean indicating if borders must be rendered (default is false)
+         */
+        renderBorders: boolean;
+        /**
+         * Gets or sets border width (default is 0.5)
+         */
+        borderWidth: number;
+        /**
+         * Gets or sets a value indicating the smoothing value applied to border edges (0.02 by default)
+         */
+        edgeSmoothingValue: number;
+        /**
+         * Gets or sets the minimum value that can be applied to border width (default is 0.1)
+         */
+        borderMinValue: number;
         /**
          * Creates a new Fluent material
          * @param name defines the name of the material
@@ -1171,7 +1206,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the mesh used to render this control
          */
-        readonly mesh: Nullable<Mesh>;
+        readonly mesh: Nullable<AbstractMesh>;
         /**
          * Link the control as child of the given node
          * @param node defines the node to link to. Use null to unlink the control
@@ -1191,7 +1226,7 @@ declare module BABYLON.GUI {
          * Affect a material to the given mesh
          * @param mesh defines the mesh which will represent the control
          */
-        protected _affectMaterial(mesh: Mesh): void;
+        protected _affectMaterial(mesh: AbstractMesh): void;
         /** @hidden */
         _onPointerMove(target: Control3D, coordinates: Vector3): void;
         /** @hidden */
@@ -1278,9 +1313,15 @@ declare module BABYLON.GUI {
          * Gets or sets the GUI 2D content used to display the button's facade
          */
         content: Control;
+        /**
+         * Apply the facade texture (created from the content property).
+         * This function can be overloaded by child classes
+         * @param facadeTexture defines the AdvancedDynamicTexture to use
+         */
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
         protected _getTypeName(): string;
         protected _createNode(scene: Scene): TransformNode;
-        protected _affectMaterial(mesh: Mesh): void;
+        protected _affectMaterial(mesh: AbstractMesh): void;
     }
 }
 
@@ -1290,14 +1331,26 @@ declare module BABYLON.GUI {
      * Class used to create a holographic button in 3D
      */
     class HolographicButton extends Button3D {
+        private _backPlate;
+        private _textPlate;
         private _frontPlate;
+        private _backFluentMaterial;
+        private _frontFluentMaterial;
+        private _text;
+        private _imageUrl;
+        /**
+         * Gets or sets text for the button
+         */
+        text: string;
         /**
          * Creates a new button
          * @param name defines the control name
          */
         constructor(name?: string);
         protected _getTypeName(): string;
+        private _rebuildContent();
         protected _createNode(scene: Scene): TransformNode;
+        protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
         protected _affectMaterial(mesh: Mesh): void;
     }
 }

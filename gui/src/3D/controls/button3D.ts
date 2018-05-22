@@ -93,17 +93,17 @@ module BABYLON.GUI {
             }
             faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
 
-            let mesh = MeshBuilder.CreateBox(this.name + "Mesh", {
+            let mesh = MeshBuilder.CreateBox(this.name + "_rootMesh", {
                 width: 1.0, 
                 height: 1.0,
-                depth: 0.05,
+                depth: 0.08,
                 faceUV: faceUV
             }, scene); 
            
             return mesh;
         }
 
-        protected _affectMaterial(mesh: Mesh) {
+        protected _affectMaterial(mesh: AbstractMesh) {
             let material = new StandardMaterial(this.name + "Material", mesh.getScene());
             material.specularColor = Color3.Black();
 
