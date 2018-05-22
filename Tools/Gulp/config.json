@@ -1021,7 +1021,10 @@
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Debug/babylon.physicsViewer.js",
                 "../../src/Rendering/babylon.boundingBoxRenderer.js",
-                "../../src/Rendering/babylon.utilityLayerRenderer.js"
+                "../../src/Rendering/babylon.utilityLayerRenderer.js",
+                "../../src/Gizmos/babylon.gizmo.js",
+                "../../src/Gizmos/babylon.axisDragGizmo.js",
+                "../../src/Gizmos/babylon.positionGizmo.js"
             ],
             "dependUpon": [
                 "shaderMaterial",
@@ -1316,6 +1319,16 @@
                     "../../materialsLibrary/src/terrain/terrain.fragment.fx"
                 ],
                 "output": "babylon.terrainMaterial.js"
+            },
+            {
+                "files": [
+                    "../../materialsLibrary/src/mix/babylon.mixMaterial.ts"
+                ],
+                "shaderFiles": [
+                    "../../materialsLibrary/src/mix/mix.vertex.fx",
+                    "../../materialsLibrary/src/mix/mix.fragment.fx"
+                ],
+                "output": "babylon.mixMaterial.js"
             },
             {
                 "files": [

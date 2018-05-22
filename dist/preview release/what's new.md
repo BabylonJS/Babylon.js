@@ -3,6 +3,7 @@
 ## Major updates
 
 - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
+- Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 
 ## Updates
 
@@ -21,6 +22,7 @@
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
 - AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
 - Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo class used to manipulate meshes in a scene, position gizmo ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
