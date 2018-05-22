@@ -159,8 +159,8 @@ module BABYLON {
                             defines.DIFFUSE = true;
                         }
                     }
-                    if (this.mixTexture2) {
-                        if (!this.mixTexture2.isReady()) {
+                    if (this._mixTexture2) {
+                        if (!this._mixTexture2.isReady()) {
                             return false;
                         } else {
                             defines.MIXMAP2 = true;
@@ -381,12 +381,17 @@ module BABYLON {
                 results.push(this._mixTexture1);
             }
 
+            if (this._mixTexture2 && this._mixTexture2.animations && this._mixTexture2.animations.length > 0) {
+                results.push(this._mixTexture2);
+            }
+
             return results;
         }
 
         public getActiveTextures(): BaseTexture[] {
             var activeTextures = super.getActiveTextures();
 
+            // Mix map 1
             if (this._mixTexture1) {
                 activeTextures.push(this._mixTexture1);
             }
@@ -407,6 +412,27 @@ module BABYLON {
                 activeTextures.push(this._diffuseTexture4);
             }
 
+            // Mix map 2
+            if (this._mixTexture2) {
+                activeTextures.push(this._mixTexture2);
+            }
+
+            if (this._diffuseTexture5) {
+                activeTextures.push(this._diffuseTexture5);
+            }
+
+            if (this._diffuseTexture6) {
+                activeTextures.push(this._diffuseTexture6);
+            }
+
+            if (this._diffuseTexture7) {
+                activeTextures.push(this._diffuseTexture7);
+            }
+
+            if (this._diffuseTexture8) {
+                activeTextures.push(this._diffuseTexture8);
+            }
+
             return activeTextures;
         }
 
@@ -415,6 +441,7 @@ module BABYLON {
                 return true;
             }
 
+            // Mix map 1
             if (this._mixTexture1 === texture) {
                 return true;
             }
@@ -432,6 +459,27 @@ module BABYLON {
             }
 
             if (this._diffuseTexture4 === texture) {
+                return true;
+            }
+
+            // Mix map 2
+            if (this._mixTexture2 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture5 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture6 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture7 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture8 === texture) {
                 return true;
             }
 
