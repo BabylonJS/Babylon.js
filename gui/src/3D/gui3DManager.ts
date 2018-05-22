@@ -71,7 +71,7 @@ module BABYLON.GUI {
             new BABYLON.HemisphericLight("hemi", Vector3.Up(), this._utilityLayer.utilityLayerScene);
         }
 
-        private _doPicking(type: number, pointerEvent: PointerEvent, ray?:Ray): boolean {
+        private _doPicking(type: number, pointerEvent: PointerEvent, ray?:Nullable<Ray>): boolean {
             if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
                 return false;                
             }
