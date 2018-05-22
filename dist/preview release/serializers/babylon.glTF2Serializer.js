@@ -698,6 +698,9 @@ var BABYLON;
              * @param babylonMesh The BabylonJS mesh
              */
             _Exporter.prototype.getMeshPrimitiveMode = function (babylonMesh) {
+                if (babylonMesh instanceof BABYLON.LinesMesh) {
+                    return BABYLON.Material.LineListDrawMode;
+                }
                 return babylonMesh.material ? babylonMesh.material.fillMode : BABYLON.Material.TriangleFillMode;
             };
             /**
@@ -841,7 +844,20 @@ var BABYLON;
                             var babylonMaterial = submesh.getMaterial();
                             var materialIndex = null;
                             if (babylonMaterial) {
-                                if (babylonMaterial instanceof BABYLON.MultiMaterial) {
+                                if (bufferMesh instanceof BABYLON.LinesMesh) {
+                                    // get the color from the lines mesh and set it in the material
+                                    var material = {
+                                        name: bufferMesh.name + ' material'
+                                    };
+                                    if (!bufferMesh.color.equals(BABYLON.Color3.White()) || bufferMesh.alpha < 1) {
+                                        material.pbrMetallicRoughness = {
+                                            baseColorFactor: bufferMesh.color.asArray().concat([bufferMesh.alpha])
+                                        };
+                                    }
+                                    this.materials.push(material);
+                                    materialIndex = this.materials.length - 1;
+                                }
+                                else if (babylonMaterial instanceof BABYLON.MultiMaterial) {
                                     babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                                     if (babylonMaterial) {
                                         materialIndex = this.babylonScene.materials.indexOf(babylonMaterial);
@@ -853,6 +869,7 @@ var BABYLON;
                             }
                             var glTFMaterial = materialIndex != null ? this.materials[materialIndex] : null;
                             var meshPrimitive = { attributes: {} };
+                            this.setPrimitiveMode(meshPrimitive, primitiveMode);
                             for (var _c = 0, attributeData_2 = attributeData; _c < attributeData_2.length; _c++) {
                                 var attribute = attributeData_2[_c];
                                 var attributeKind = attribute.kind;
@@ -891,7 +908,6 @@ var BABYLON;
                             if (babylonMaterial) {
                                 if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                                     var sideOrientation = this.babylonScene.materials[materialIndex].sideOrientation;
-                                    this.setPrimitiveMode(meshPrimitive, primitiveMode);
                                     if (this.convertToRightHandedSystem && sideOrientation === BABYLON.Material.ClockWiseSideOrientation) {
                                         //Overwrite the indices to be counter-clockwise
                                         var byteOffset = indexBufferViewIndex != null ? this.bufferViews[indexBufferViewIndex].byteOffset : null;
