@@ -4716,7 +4716,7 @@
 
         /** 
          * Render the scene
-         * @param updateCamerasd defines a boolean indicating if cameras must update according to their inputs (true by default)
+         * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
          */
         public render(updateCameras = true): void {
             if (this.isDisposed) {
