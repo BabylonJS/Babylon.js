@@ -20,6 +20,7 @@
 - Get a root mesh from an asset container, load a mesh from a file with a single string url ([TrevorDev](https://github.com/TrevorDev))
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
 - AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
+- Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
@@ -53,5 +54,6 @@
 - Fix Animation Slider Clickable area size Cross Plat ([sebavan](http://www.github.com/sebavan))
 - Ground material didn't take the default main color is no material definition was provided ([RaananW](https://github.com/RaananW))
 - Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
+- It wasn't possible to disable camera behavior(s) using configuration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes

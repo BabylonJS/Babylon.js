@@ -8,12 +8,67 @@ attribute vec2 uv;
 // Uniforms
 uniform mat4 world;
 uniform mat4 viewProjection;
-uniform mat4 emissiveMatrix;
 
-varying vec2 vEmissiveUV;
+varying vec2 vUV;
+
+#ifdef BORDER
+varying vec2 scaleInfo;
+uniform float borderWidth;
+uniform vec3 scaleFactor;
+#endif
 
 void main(void) {
-	vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));
+	vUV = uv;
+
+#ifdef BORDER
+	vec3 scale = scaleFactor;
+	float minScale = min(min(scale.x, scale.y), scale.z);
+    float maxScale = max(max(scale.x, scale.y), scale.z);
+	float minOverMiddleScale = minScale / (scale.x + scale.y + scale.z - minScale - maxScale);
+    float areaYZ = scale.y * scale.z;
+    float areaXZ = scale.x * scale.z;
+    float areaXY = scale.x * scale.y;
+    float scaledBorderWidth = borderWidth;	
+
+	if (abs(normal.x) == 1.0) // Y,Z plane.
+	{
+		scale.x = scale.y;
+		scale.y = scale.z;
+		
+		if (areaYZ > areaXZ && areaYZ > areaXY)
+		{
+			scaledBorderWidth *= minOverMiddleScale;
+		}
+	}
+	else if (abs(normal.y) == 1.0) // X,Z plane.
+	{
+		scale.x = scale.z;
+
+		if (areaXZ > areaXY && areaXZ > areaYZ)
+		{
+			scaledBorderWidth *= minOverMiddleScale;
+		}
+	}
+	else  // X,Y plane.
+	{
+		if (areaXY > areaYZ && areaXY > areaXZ)
+		{
+			scaledBorderWidth *= minOverMiddleScale;
+		}
+	}
+
+ 	float scaleRatio = min(scale.x, scale.y) / max(scale.x, scale.y);
+	if (scale.x > scale.y)
+	{
+		scaleInfo.x = 1.0 - (scaledBorderWidth * scaleRatio);
+		scaleInfo.y = 1.0 - scaledBorderWidth;
+	}
+	else
+	{
+		scaleInfo.x = 1.0 - scaledBorderWidth;
+		scaleInfo.y = 1.0 - (scaledBorderWidth * scaleRatio);
+	}	
+#endif		
 
 	gl_Position = viewProjection * world * vec4(position, 1.0);
 }

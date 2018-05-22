@@ -768,8 +768,8 @@ export class SceneManager {
 
         if (cameraConfig.behaviors) {
             for (let name in cameraConfig.behaviors) {
-                if (cameraConfig.behaviors[name]) {
-                    this._setCameraBehavior(cameraConfig.behaviors[name]);
+                if (cameraConfig.behaviors[name] !== undefined) {
+                    this._setCameraBehavior(name, cameraConfig.behaviors[name]);
                 }
             }
         };
@@ -1290,28 +1290,44 @@ export class SceneManager {
         }
     }
 
-    private _setCameraBehavior(behaviorConfig: number | {
+    private _cameraBehaviorMapping: { [name: string]: number } = {};
+
+    private _setCameraBehavior(name: string, behaviorConfig: boolean | number | {
         type: number;
         [propName: string]: any;
     }, payload?: any) {
 
         let behavior: Behavior<ArcRotateCamera> | null;
-        let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
+        let type: number;
+        if (typeof behaviorConfig === 'object') {
+            type = behaviorConfig.type
+        } else if (typeof behaviorConfig === 'number') {
+            type = behaviorConfig;
+        } else {
+            type = this._cameraBehaviorMapping[name];
+        }
+
+        if (type === undefined) return;
 
         let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
+
+        let enabled = true;
+        if (typeof behaviorConfig === 'boolean') {
+            enabled = behaviorConfig;
+        }
 
         // constructing behavior
         switch (type) {
             case CameraBehavior.AUTOROTATION:
-                this.camera.useAutoRotationBehavior = true;
+                this.camera.useAutoRotationBehavior = enabled;
                 behavior = this.camera.autoRotationBehavior;
                 break;
             case CameraBehavior.BOUNCING:
-                this.camera.useBouncingBehavior = true;
+                this.camera.useBouncingBehavior = enabled;
                 behavior = this.camera.bouncingBehavior;
                 break;
             case CameraBehavior.FRAMING:
-                this.camera.useFramingBehavior = true;
+                this.camera.useFramingBehavior = enabled;
                 behavior = this.camera.framingBehavior;
                 break;
             default:
@@ -1320,6 +1336,8 @@ export class SceneManager {
         }
 
         if (behavior) {
+            this._cameraBehaviorMapping[name] = type;
+
             if (typeof behaviorConfig === "object") {
                 extendClassWithConfig(behavior, behaviorConfig);
             }
