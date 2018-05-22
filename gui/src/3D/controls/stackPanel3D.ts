@@ -20,7 +20,10 @@ module BABYLON.GUI {
             }
 
             this._isVertical = value;
-            this._arrangeChildren();
+
+            Tools.SetImmediate(() => {
+                this._arrangeChildren();               
+            });
         }
 
         /**

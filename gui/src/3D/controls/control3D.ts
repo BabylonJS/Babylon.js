@@ -184,8 +184,12 @@ module BABYLON.GUI {
         /**
          * Gets the mesh used to render this control
          */
-        public get mesh(): Nullable<Mesh> {
-            return this._node as Mesh;
+        public get mesh(): Nullable<AbstractMesh> {
+            if (this._node instanceof AbstractMesh) {
+                return this._node as AbstractMesh;
+            }
+
+            return null;
         }
 
         /**
@@ -225,7 +229,7 @@ module BABYLON.GUI {
          * Node creation.
          * Can be overriden by children
          * @param scene defines the scene where the node must be attached
-         * @returns the attached node or null if none
+         * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an atttached visible object
          */
         protected _createNode(scene: Scene): Nullable<TransformNode> {
             // Do nothing by default
@@ -236,7 +240,7 @@ module BABYLON.GUI {
          * Affect a material to the given mesh
          * @param mesh defines the mesh which will represent the control
          */
-        protected _affectMaterial(mesh: Mesh) {
+        protected _affectMaterial(mesh: AbstractMesh) {
             mesh.material = null;
         }
 
