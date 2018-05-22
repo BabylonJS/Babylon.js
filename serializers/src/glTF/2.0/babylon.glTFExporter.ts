@@ -954,20 +954,18 @@ module BABYLON.GLTF2 {
 
                         let materialIndex: Nullable<number> = null;
                         if (babylonMaterial) {
-                            if (babylonMaterial instanceof ShaderMaterial) {
-                                if (bufferMesh instanceof LinesMesh) {
-                                    // get the color from the lines mesh and set it in the material
-                                    const material: IMaterial = {
-                                        name: bufferMesh.name + ' material'
-                                    }
-                                    if (!bufferMesh.color.equals(Color3.White()) || bufferMesh.alpha < 1) {
-                                        material.pbrMetallicRoughness = {
-                                            baseColorFactor: bufferMesh.color.asArray().concat([bufferMesh.alpha])
-                                        }
-                                    }
-                                    this.materials.push(material);
-                                    materialIndex = this.materials.length - 1;
+                            if (bufferMesh instanceof LinesMesh) {
+                                // get the color from the lines mesh and set it in the material
+                                const material: IMaterial = {
+                                    name: bufferMesh.name + ' material'
                                 }
+                                if (!bufferMesh.color.equals(Color3.White()) || bufferMesh.alpha < 1) {
+                                    material.pbrMetallicRoughness = {
+                                        baseColorFactor: bufferMesh.color.asArray().concat([bufferMesh.alpha])
+                                    }
+                                }
+                                this.materials.push(material);
+                                materialIndex = this.materials.length - 1;
                             }
                             if (babylonMaterial instanceof MultiMaterial) {
                                 babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
