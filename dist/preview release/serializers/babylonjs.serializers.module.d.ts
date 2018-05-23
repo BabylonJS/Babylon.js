@@ -93,6 +93,7 @@ declare module BABYLON.GLTF2 {
          * Stores all the generated material information, which represents the appearance of each primitive
          */
         private materials;
+        private materialMap;
         /**
          * Stores all the generated texture information, which is referenced by glTF materials
          */
@@ -436,7 +437,9 @@ declare module BABYLON.GLTF2 {
          * @param imageData mapping of texture names to base64 textures
          * @param hasTextureCoords specifies if texture coordinates are present on the material
          */
-        static _ConvertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
+        static _ConvertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: {
+            [materialID: number]: number;
+        }, imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -484,7 +487,9 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        static _ConvertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
+        static _ConvertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: {
+            [materialID: number]: number;
+        }, imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -507,7 +512,9 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        static _ConvertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
+        static _ConvertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: {
+            [materialID: number]: number;
+        }, imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
@@ -604,13 +611,15 @@ declare module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        static _ConvertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: {
+        static _ConvertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: {
+            [materialID: number]: number;
+        }, imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;
             };
         }, hasTextureCoords: boolean): Promise<void>;
-        private static SetMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords);
+        private static SetMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, images, textures, samplers, materials, materialMap, imageData, hasTextureCoords);
         private static GetPixelsFromTexture(babylonTexture);
         /**
          * Extracts a texture from a Babylon texture into file data and glTF data

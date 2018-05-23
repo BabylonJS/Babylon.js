@@ -6778,20 +6778,12 @@ var BABYLON;
                     else {
                         this._frontMaterial = this._host.sharedMaterials["frontFluentMaterial"];
                     }
-                    // Plate
-                    if (!this._host.sharedMaterials["plateMaterial"]) {
-                        this._createPlateMaterial(mesh);
-                        this._host.sharedMaterials["plateMaterial"] = this._plateMaterial;
-                    }
-                    else {
-                        this._plateMaterial = this._host.sharedMaterials["plateMaterial"];
-                    }
                 }
                 else {
                     this._createBackMaterial(mesh);
                     this._createFrontMaterial(mesh);
-                    this._createPlateMaterial(mesh);
                 }
+                this._createPlateMaterial(mesh);
                 this._backPlate.material = this._backMaterial;
                 this._frontPlate.material = this._frontMaterial;
                 this._textPlate.material = this._plateMaterial;
