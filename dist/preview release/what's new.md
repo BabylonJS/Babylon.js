@@ -50,7 +50,7 @@
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
 - Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh))
 - Fixed a bug with setting `unlit` on `PBRMaterial` after the material is ready (Wrong dirty flags) ([bghgary](http://www.github.com/bghgary))
-- Fixed `HighlightLayer` support on none HalfFloat supporting browsers ([sebavan](http://www.github.com/sebavan))
+- Fixed `HighlightLayer` support on browsers not supporting HalfFloat ([sebavan](http://www.github.com/sebavan))
 - Fixed support for R and RG texture formats ([sebavan](http://www.github.com/sebavan))
 
 ### Viewer
