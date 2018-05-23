@@ -1,5 +1,5 @@
 import { extendedUpgrade, extendedDegrade } from "./extended";
-import { SceneManager } from "viewer/sceneManager";
+import { SceneManager } from "../../viewer/sceneManager";
 
 const cache: { [key: string]: (sceneManager: SceneManager) => boolean } = {};
 
