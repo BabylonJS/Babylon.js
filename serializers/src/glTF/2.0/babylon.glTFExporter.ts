@@ -61,6 +61,8 @@ module BABYLON.GLTF2 {
          * Stores all the generated material information, which represents the appearance of each primitive
          */
         private materials: IMaterial[];
+
+        private materialMap: { [materialID: number]: number };
         /**
          * Stores all the generated texture information, which is referenced by glTF materials
          */
@@ -130,6 +132,7 @@ module BABYLON.GLTF2 {
             this.nodes = [];
             this.images = [];
             this.materials = [];
+            this.materialMap = [];
             this.textures = [];
             this.samplers = [];
             this.animations = [];
@@ -970,11 +973,11 @@ module BABYLON.GLTF2 {
                             else if (babylonMaterial instanceof MultiMaterial) {
                                 babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                                 if (babylonMaterial) {
-                                    materialIndex = this.babylonScene.materials.indexOf(babylonMaterial);
+                                    materialIndex = this.materialMap[babylonMaterial.uniqueId];
                                 }
                             }
                             else {
-                                materialIndex = this.babylonScene.materials.indexOf(babylonMaterial);
+                                materialIndex = this.materialMap[babylonMaterial.uniqueId];
                             }
                         }
 
@@ -1017,43 +1020,42 @@ module BABYLON.GLTF2 {
                             this.accessors.push(accessor);
                             meshPrimitive.indices = this.accessors.length - 1;
                         }
-                        if (babylonMaterial) {
-                            if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
-                                let sideOrientation = this.babylonScene.materials[materialIndex].sideOrientation;
+                        if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
+                            let sideOrientation = this.babylonScene.materials[materialIndex].sideOrientation;
 
-                                if (this.convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
-                                    //Overwrite the indices to be counter-clockwise
-                                    let byteOffset = indexBufferViewIndex != null ? this.bufferViews[indexBufferViewIndex].byteOffset : null;
-                                    if (byteOffset == null) { byteOffset = 0; }
-                                    let babylonIndices: Nullable<IndicesArray> = null;
-                                    if (indexBufferViewIndex != null) {
-                                        babylonIndices = bufferMesh.getIndices();
-                                    }
-                                    if (babylonIndices) {
-                                        this.reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
-                                    }
-                                    else {
-                                        for (let attribute of attributeData) {
-                                            let vertexData = bufferMesh.getVerticesData(attribute.kind);
-                                            if (vertexData) {
-                                                let byteOffset = this.bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
-                                                if (!byteOffset) {
-                                                    byteOffset = 0
-                                                }
-                                                this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset, binaryWriter);
+                            if (this.convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
+                                //Overwrite the indices to be counter-clockwise
+                                let byteOffset = indexBufferViewIndex != null ? this.bufferViews[indexBufferViewIndex].byteOffset : null;
+                                if (byteOffset == null) { byteOffset = 0; }
+                                let babylonIndices: Nullable<IndicesArray> = null;
+                                if (indexBufferViewIndex != null) {
+                                    babylonIndices = bufferMesh.getIndices();
+                                }
+                                if (babylonIndices) {
+                                    this.reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
+                                }
+                                else {
+                                    for (let attribute of attributeData) {
+                                        let vertexData = bufferMesh.getVerticesData(attribute.kind);
+                                        if (vertexData) {
+                                            let byteOffset = this.bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
+                                            if (!byteOffset) {
+                                                byteOffset = 0
                                             }
+                                            this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset, binaryWriter);
                                         }
                                     }
                                 }
-
-                                if (!uvCoordsPresent && _GLTFMaterial._HasTexturesPresent(this.materials[materialIndex])) {
-                                    const newMat = _GLTFMaterial._StripTexturesFromMaterial(this.materials[materialIndex]);
-                                    this.materials.push(newMat);
-                                    materialIndex = this.materials.length - 1;
-                                }
-
-                                meshPrimitive.material = materialIndex;
                             }
+
+                            if (!uvCoordsPresent && _GLTFMaterial._HasTexturesPresent(this.materials[materialIndex])) {
+                                const newMat = _GLTFMaterial._StripTexturesFromMaterial(this.materials[materialIndex]);
+                                this.materials.push(newMat);
+                                materialIndex = this.materials.length - 1;
+                            }
+
+                            meshPrimitive.material = materialIndex;
+
                         }
                         mesh.primitives.push(meshPrimitive);
                     }
@@ -1074,7 +1076,7 @@ module BABYLON.GLTF2 {
             let directDescendents: Node[];
             const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
 
-            return _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.imageData, true).then(() => {
+            return _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.materialMap, this.imageData, true).then(() => {
                 this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
 
                 this.totalByteLength = binaryWriter.getByteOffset();
