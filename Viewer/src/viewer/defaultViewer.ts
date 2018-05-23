@@ -1,7 +1,7 @@
 
 
-import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration/configuration';
-import { Template, EventCallback } from './../templateManager';
+import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration';
+import { Template, EventCallback, TemplateManager } from '../templating/templateManager';
 import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight, FilesInput } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
@@ -16,17 +16,25 @@ import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 export class DefaultViewer extends AbstractViewer {
 
     /**
+     * The corresponsing template manager of this viewer.
+     */
+    public templateManager: TemplateManager;
+
+    /**
      * Create a new default viewer
      * @param containerElement the element in which the templates will be rendered
      * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
      */
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
+
         this.onModelLoadedObservable.add(this._onModelLoaded);
 
-        this.sceneManager.onLightsConfiguredObservable.add((data) => {
-            this._configureLights(data.newConfiguration, data.model!);
-        })
+        this.onEngineInitObservable.add(() => {
+            this.sceneManager.onLightsConfiguredObservable.add((data) => {
+                this._configureLights(data.newConfiguration, data.model!);
+            })
+        });
     }
 
     /**
@@ -474,6 +482,28 @@ export class DefaultViewer extends AbstractViewer {
             template.parent.addEventListener("transitionend", onTransitionEnd);
             return Promise.resolve(template);
         }));
+    }
+
+    public dispose() {
+        this.templateManager.dispose();
+        super.dispose();
+    }
+
+    protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
+        super._onConfigurationLoaded(configuration);
+
+        // initialize the templates
+        let templateConfiguration = this._configuration.templates || {};
+        this.templateManager = new TemplateManager(this.containerElement);
+        this.templateManager.initTemplate(templateConfiguration);
+        // when done, execute onTemplatesLoaded()
+        this.templateManager.onAllLoaded.add(() => {
+            let canvas = this.templateManager.getCanvas();
+            if (canvas) {
+                this._canvas = canvas;
+            }
+            this._onTemplateLoaded();
+        });
     }
 
     /**

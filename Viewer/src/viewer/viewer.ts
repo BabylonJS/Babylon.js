@@ -1,11 +1,9 @@
 import { viewerManager } from './viewerManager';
 import { SceneManager } from './sceneManager';
-import { TemplateManager } from './../templateManager';
 import { ConfigurationLoader } from './../configuration/loader';
 import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
+import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/';
 
-import * as deepmerge from '../../assets/deepmerge.min.js';
 import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
 import { ModelLoader } from '../loader/modelLoader';
@@ -14,17 +12,14 @@ import { viewerGlobals } from '../configuration/globals';
 import { extendClassWithConfig } from '../helper';
 import { telemetryManager } from '../telemetryManager';
 import { Version } from '..';
+import { deepmerge } from '../helper/';
+import { ObservablesManager } from '../managers/observablesManager';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
  * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
  */
 export abstract class AbstractViewer {
-
-    /**
-     * The corresponsing template manager of this viewer.
-     */
-    public templateManager: TemplateManager;
 
     /**
      * Babylon Engine corresponding with this viewer
@@ -64,47 +59,69 @@ export abstract class AbstractViewer {
     /**
      * Will notify when the scene was initialized
      */
-    public onSceneInitObservable: Observable<Scene>;
+    public get onSceneInitObservable(): Observable<Scene> {
+        return this.observablesManager.onSceneInitObservable;
+    }
     /**
      * will notify when the engine was initialized
      */
-    public onEngineInitObservable: Observable<Engine>;
+    public get onEngineInitObservable(): Observable<Engine> {
+        return this.observablesManager.onEngineInitObservable;
+    }
 
     /**
      * Will notify when a new model was added to the scene.
      * Note that added does not neccessarily mean loaded!
      */
-    public onModelAddedObservable: Observable<ViewerModel>;
+    public get onModelAddedObservable(): Observable<ViewerModel> {
+        return this.observablesManager.onModelAddedObservable;
+    }
     /**
      * will notify after every model load
      */
-    public onModelLoadedObservable: Observable<ViewerModel>;
+    public get onModelLoadedObservable(): Observable<ViewerModel> {
+        return this.observablesManager.onModelLoadedObservable;
+    }
     /**
      * will notify when any model notify of progress
      */
-    public onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    public get onModelLoadProgressObservable(): Observable<SceneLoaderProgressEvent> {
+        return this.observablesManager.onModelLoadProgressObservable;
+    }
     /**
      * will notify when any model load failed.
      */
-    public onModelLoadErrorObservable: Observable<{ message: string; exception: any }>;
+    public get onModelLoadErrorObservable(): Observable<{ message: string; exception: any }> {
+        return this.observablesManager.onModelLoadErrorObservable;
+    }
     /**
      * Will notify when a model was removed from the scene;
      */
-    public onModelRemovedObservable: Observable<ViewerModel>;
+    public get onModelRemovedObservable(): Observable<ViewerModel> {
+        return this.observablesManager.onModelRemovedObservable;
+    }
     /**
      * will notify when a new loader was initialized.
      * Used mainly to know when a model starts loading.
      */
-    public onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+    public get onLoaderInitObservable(): Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return this.observablesManager.onLoaderInitObservable;
+    }
     /**
      * Observers registered here will be executed when the entire load process has finished.
      */
-    public onInitDoneObservable: Observable<AbstractViewer>;
+    public get onInitDoneObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onViewerInitDoneObservable;
+    }
 
     /**
      * Functions added to this observable will be executed on each frame rendered.
      */
-    public onFrameRenderedObservable: Observable<AbstractViewer>;
+    public get onFrameRenderedObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onFrameRenderedObservable;
+    }
+
+    public observablesManager: ObservablesManager;
 
     /**
      * The canvas associated with this viewer
@@ -147,26 +164,13 @@ export abstract class AbstractViewer {
             this.baseId = containerElement.id = 'bjs' + Math.random().toString(32).substr(2, 8);
         }
 
-        this.onSceneInitObservable = new Observable();
-        this.onEngineInitObservable = new Observable();
-        this.onModelLoadedObservable = new Observable();
-        this.onModelLoadProgressObservable = new Observable();
-        this.onModelLoadErrorObservable = new Observable();
-        this.onModelAddedObservable = new Observable();
-        this.onModelRemovedObservable = new Observable();
-        this.onInitDoneObservable = new Observable();
-        this.onLoaderInitObservable = new Observable();
-        this.onFrameRenderedObservable = new Observable();
-
         this._registeredOnBeforeRenderFunctions = [];
         this.modelLoader = new ModelLoader(this);
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
 
-        // create a new template manager for this viewer
-        this.templateManager = new TemplateManager(containerElement);
-        this.sceneManager = new SceneManager(this);
+        this.observablesManager = new ObservablesManager();
 
         this._prepareContainerElement();
 
@@ -175,33 +179,7 @@ export abstract class AbstractViewer {
         // extend the configuration
         this._configurationLoader = new ConfigurationLoader();
         this._configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
-            this._configuration = deepmerge(this._configuration || {}, configuration);
-            if (this._configuration.observers) {
-                this._configureObservers(this._configuration.observers);
-            }
-            // TODO remove this after testing, as this is done in the updateCOnfiguration as well.
-            if (this._configuration.loaderPlugins) {
-                Object.keys(this._configuration.loaderPlugins).forEach((name => {
-                    if (this._configuration.loaderPlugins && this._configuration.loaderPlugins[name]) {
-                        this.modelLoader.addPlugin(name);
-                    }
-                }))
-            }
-            // initialize the templates
-            let templateConfiguration = this._configuration.templates || {};
-            this.templateManager.initTemplate(templateConfiguration);
-            // when done, execute onTemplatesLoaded()
-            this.templateManager.onAllLoaded.add(() => {
-                let canvas = this.templateManager.getCanvas();
-                if (canvas) {
-                    this._canvas = canvas;
-                }
-                this._onTemplateLoaded();
-            });
-        });
-
-        this.onModelLoadedObservable.add((model) => {
-            //this.updateConfiguration(this._configuration, model);
+            this._onConfigurationLoaded(configuration);
         });
 
         this.onSceneInitObservable.add(() => {
@@ -278,6 +256,21 @@ export abstract class AbstractViewer {
         }
 
         this.engine.resize();
+    }
+
+    protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
+        this._configuration = deepmerge(this._configuration || {}, configuration);
+        if (this._configuration.observers) {
+            this._configureObservers(this._configuration.observers);
+        }
+        // TODO remove this after testing, as this is done in the updateCOnfiguration as well.
+        if (this._configuration.loaderPlugins) {
+            Object.keys(this._configuration.loaderPlugins).forEach((name => {
+                if (this._configuration.loaderPlugins && this._configuration.loaderPlugins[name]) {
+                    this.modelLoader.addPlugin(name);
+                }
+            }))
+        }
     }
 
     /**
@@ -398,18 +391,6 @@ export abstract class AbstractViewer {
         }
         window.removeEventListener('resize', this._resize);
 
-        //observers
-        this.onEngineInitObservable.clear();
-        this.onInitDoneObservable.clear();
-        this.onLoaderInitObservable.clear();
-        this.onModelLoadedObservable.clear();
-        this.onModelLoadErrorObservable.clear();
-        this.onModelLoadProgressObservable.clear();
-        this.onSceneInitObservable.clear();
-        this.onFrameRenderedObservable.clear();
-        this.onModelAddedObservable.clear();
-        this.onModelRemovedObservable.clear();
-
         if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
             this.sceneManager.scene.activeCamera.detachControl(this.canvas);
         }
@@ -419,13 +400,14 @@ export abstract class AbstractViewer {
 
         this.sceneManager.dispose();
 
+        this.observablesManager.dispose();
+
         this.modelLoader.dispose();
 
         if (this.engine) {
             this.engine.dispose();
         }
 
-        this.templateManager.dispose();
         viewerManager.removeViewer(this);
         this._isDisposed = true;
     }
@@ -450,7 +432,7 @@ export abstract class AbstractViewer {
      * It will also load a model if preconfigured.
      * But first - it will load the extendible onTemplateLoaded()!
      */
-    private _onTemplateLoaded(): Promise<AbstractViewer> {
+    protected _onTemplateLoaded(): Promise<AbstractViewer> {
         // check if viewer was disposed right after created
         if (this._isDisposed) {
             return Promise.reject("viewer was disposed");
@@ -487,8 +469,8 @@ export abstract class AbstractViewer {
         // init custom shaders
         this._injectCustomShaders();
 
-        let canvasElement = this.templateManager.getCanvas();
-        if (!canvasElement) {
+        //let canvasElement = this.templateManager.getCanvas();
+        if (!this.canvas) {
             return Promise.reject('Canvas element not found!');
         }
         let config = this._configuration.engine || {};
@@ -500,7 +482,7 @@ export abstract class AbstractViewer {
             config.engineOptions.disableWebGL2Support = true;
         }
 
-        this.engine = new Engine(canvasElement, !!config.antialiasing, config.engineOptions);
+        this.engine = new Engine(this.canvas, !!config.antialiasing, config.engineOptions);
 
         // Disable manifest checking
         Database.IDBStorageEnabled = false;
@@ -513,6 +495,10 @@ export abstract class AbstractViewer {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
+
+
+        // create a new template manager for this viewer
+        this.sceneManager = new SceneManager(this.engine, this.observablesManager);
 
         return Promise.resolve(this.engine);
     }
