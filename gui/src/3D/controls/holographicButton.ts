@@ -9,6 +9,7 @@ module BABYLON.GUI {
         private _textPlate: Mesh;
         private _frontPlate: Mesh;
         private _text: string;
+        private _imageUrl: string;
         private _shareMaterials = true;
         private _frontMaterial: FluentMaterial;
         private _backMaterial: FluentMaterial;
@@ -32,6 +33,22 @@ module BABYLON.GUI {
             this._text = value;
             this._rebuildContent();
         }
+
+        /**
+         * Gets or sets the image url for the button
+         */
+        public get imageUrl(): string {
+            return this._imageUrl;
+        }
+
+        public set imageUrl(value: string) {
+            if (this._imageUrl === value) {
+                return;
+            }
+
+            this._imageUrl = value;
+            this._rebuildContent();
+        }        
 
         /**
          * Gets the back material used by this button
@@ -93,6 +110,16 @@ module BABYLON.GUI {
         private _rebuildContent(): void {
             let panel = new StackPanel();
             panel.isVertical = true;
+
+            if (this._imageUrl) {
+                let image = new BABYLON.GUI.Image();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);                
+            }
 
             if (this._text) {
                 let text = new BABYLON.GUI.TextBlock();

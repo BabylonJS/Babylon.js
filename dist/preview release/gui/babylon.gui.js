@@ -43,6 +43,7 @@ var BABYLON;
             function Style(host) {
                 this._fontFamily = "Arial";
                 this._fontStyle = "";
+                this._fontWeight = "";
                 /** @hidden */
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 /**
@@ -98,6 +99,21 @@ var BABYLON;
                         return;
                     }
                     this._fontStyle = value;
+                    this.onChangedObservable.notifyObservers(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Style.prototype, "fontWeight", {
+                /** Gets or sets font weight */
+                get: function () {
+                    return this._fontWeight;
+                },
+                set: function (value) {
+                    if (this._fontWeight === value) {
+                        return;
+                    }
+                    this._fontWeight = value;
                     this.onChangedObservable.notifyObservers(this);
                 },
                 enumerable: true,
@@ -1104,6 +1120,7 @@ var BABYLON;
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
                 this._fontStyle = "";
+                this._fontWeight = "";
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -1375,6 +1392,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "fontStyle", {
+                /** Gets or sets font style */
                 get: function () {
                     return this._fontStyle;
                 },
@@ -1383,6 +1401,21 @@ var BABYLON;
                         return;
                     }
                     this._fontStyle = value;
+                    this._resetFontCache();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontWeight", {
+                /** Gets or sets font weight */
+                get: function () {
+                    return this._fontWeight;
+                },
+                set: function (value) {
+                    if (this._fontWeight === value) {
+                        return;
+                    }
+                    this._fontWeight = value;
                     this._resetFontCache();
                 },
                 enumerable: true,
@@ -2094,10 +2127,10 @@ var BABYLON;
                     return;
                 }
                 if (this._style) {
-                    this._font = this._style.fontStyle + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+                    this._font = (this._style.fontWeight ? this._style.fontWeight : this._style.fontStyle) + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
                 }
                 else {
-                    this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+                    this._font = (this._fontWeight ? this._fontWeight : this._fontStyle) + " " + this.fontSizeInPixels + "px " + this._fontFamily;
                 }
                 this._fontOffset = Control._GetFontOffset(this._font);
             };
@@ -6652,6 +6685,23 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(HolographicButton.prototype, "imageUrl", {
+                /**
+                 * Gets or sets the image url for the button
+                 */
+                get: function () {
+                    return this._imageUrl;
+                },
+                set: function (value) {
+                    if (this._imageUrl === value) {
+                        return;
+                    }
+                    this._imageUrl = value;
+                    this._rebuildContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(HolographicButton.prototype, "backMaterial", {
                 /**
                  * Gets the back material used by this button
@@ -6698,6 +6748,15 @@ var BABYLON;
             HolographicButton.prototype._rebuildContent = function () {
                 var panel = new GUI.StackPanel();
                 panel.isVertical = true;
+                if (this._imageUrl) {
+                    var image = new BABYLON.GUI.Image();
+                    image.source = this._imageUrl;
+                    image.paddingTop = "40px";
+                    image.height = "180px";
+                    image.width = "100px";
+                    image.paddingBottom = "40px";
+                    panel.addControl(image);
+                }
                 if (this._text) {
                     var text = new BABYLON.GUI.TextBlock();
                     text.text = this._text;
