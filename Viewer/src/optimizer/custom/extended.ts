@@ -1,6 +1,5 @@
-import { AbstractViewer } from '../../viewer/viewer';
 import { Scalar, DefaultRenderingPipeline, Scene } from 'babylonjs';
-import { SceneManager } from 'viewer/sceneManager';
+import { SceneManager } from '../../viewer/sceneManager';
 
 /**
  * A custom upgrade-oriented function configuration for the scene optimizer.

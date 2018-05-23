@@ -1,6 +1,7 @@
 import { BABYLON, AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPlayMode, AnimationState } from "../../src";
 import { ViewerConfiguration } from "../../src/configuration/configuration";
 import { IModelAnimation } from "../../src/model/modelAnimation";
+import { SceneManager } from "../../src/viewer/sceneManager";
 
 export const useNullEngine = true;
 
@@ -117,6 +118,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
 
     protected _initEngine() {
         let config: any = this._configuration.engine || {};
+
         // TDO enable further configuration
         config.engineOptions = config.engineOptions || {};
 
@@ -133,6 +135,8 @@ export class NullEngineAbstractViewer extends AbstractViewer {
         this.engine.getRenderingCanvas = () => {
             return this.canvas;
         }
+
+        this.sceneManager = new SceneManager(this.engine, this.observablesManager);
 
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;
@@ -173,6 +177,8 @@ export class NullEngineDefaultViewer extends DefaultViewer {
         this.engine.getRenderingCanvas = () => {
             return this.canvas;
         }
+
+        this.sceneManager = new SceneManager(this.engine, this.observablesManager);
 
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;

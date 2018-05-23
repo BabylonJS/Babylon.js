@@ -391,14 +391,16 @@ export abstract class AbstractViewer {
         }
         window.removeEventListener('resize', this._resize);
 
-        if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
-            this.sceneManager.scene.activeCamera.detachControl(this.canvas);
+        if (this.sceneManager) {
+            if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
+                this.sceneManager.scene.activeCamera.detachControl(this.canvas);
+            }
+            this.sceneManager.dispose();
         }
 
         this._fpsTimeoutInterval && clearInterval(this._fpsTimeoutInterval);
 
 
-        this.sceneManager.dispose();
 
         this.observablesManager.dispose();
 
