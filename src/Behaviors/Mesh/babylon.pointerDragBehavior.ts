@@ -98,8 +98,8 @@ module BABYLON {
                     if(!pickInfo.ray){
                         pickInfo.ray = this.options.pointerObservableScene!.createPickingRay(this._scene.pointerX, this._scene.pointerY, Matrix.Identity(), this._scene.activeCamera);
                     }
-                    if(pickInfo.hit){
-                        eventState.skipNextObservers = true;
+                    if(pickInfo.hit && pointerInfoPre.type == BABYLON.PointerEventTypes.POINTERDOWN){
+                        pointerInfoPre.skipOnPointerObservable = true;
                     }
                 }
                 

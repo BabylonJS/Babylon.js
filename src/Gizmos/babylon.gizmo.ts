@@ -10,7 +10,7 @@ module BABYLON {
         /**
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          */
-        public attachedMesh:Nullable<Mesh>;
+        public attachedMesh:Nullable<AbstractMesh>;
         private _beforeRenderObserver:Nullable<Observer<Scene>>;
         /**
          * Creates a gizmo
