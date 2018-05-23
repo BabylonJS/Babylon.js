@@ -446,10 +446,8 @@
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 5;
-        private static _TEXTUREFORMAT_R32F = 6;
-        private static _TEXTUREFORMAT_RG32F = 7;
-        private static _TEXTUREFORMAT_RGB32F = 8;
-        private static _TEXTUREFORMAT_RGBA32F = 9;
+        private static _TEXTUREFORMAT_R = 6;
+        private static _TEXTUREFORMAT_RG = 7;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -645,32 +643,18 @@
         }
 
         /**
-         * R32F
+         * R
          */
-        public static get TEXTUREFORMAT_R32F(): number {
-            return Engine._TEXTUREFORMAT_R32F;
+        public static get TEXTUREFORMAT_R(): number {
+            return Engine._TEXTUREFORMAT_R;
         }       
         
         /**
-         * RG32F
+         * RG
          */
-        public static get TEXTUREFORMAT_RG32F(): number {
-            return Engine._TEXTUREFORMAT_RG32F;
-        }       
-        
-        /**
-         * RGB32F
-         */
-        public static get TEXTUREFORMAT_RGB32F(): number {
-            return Engine._TEXTUREFORMAT_RGB32F;
-        }       
-        
-        /**
-         * RGBA32F
-         */
-        public static get TEXTUREFORMAT_RGBA32F(): number {
-            return Engine._TEXTUREFORMAT_RGBA32F;
-        }             
+        public static get TEXTUREFORMAT_RG(): number {
+            return Engine._TEXTUREFORMAT_RG;
+        }
 
         /** LUMINANCE_ALPHA */
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
@@ -5903,9 +5887,13 @@
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
          */
-        public updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null): void {
+        public updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType = Engine.TEXTURETYPE_UNSIGNED_INT): void {
+            var internalType = this._getWebGLTextureType(textureType);
             var internalFormat = this._getInternalFormat(format);
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
+
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
@@ -5923,7 +5911,7 @@
             if (compression && data) {
                 this._gl.compressedTexImage3D(this._gl.TEXTURE_3D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
             } else {
-                this._gl.texImage3D(this._gl.TEXTURE_3D, 0, internalFormat, texture.width, texture.height, texture.depth, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+                this._gl.texImage3D(this._gl.TEXTURE_3D, 0, internalSizedFomat, texture.width, texture.height, texture.depth, 0, internalFormat, internalType, data);
             }
 
             if (texture.generateMipMaps) {
@@ -5945,9 +5933,10 @@
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compressed used (can be null)
+         * @param textureType defines the compressed used (can be null)
          * @returns a new raw 3D texture (stored in an InternalTexture)
          */
-        public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+        public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW3D);
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -5956,6 +5945,7 @@
             texture.height = height;
             texture.depth = depth;
             texture.format = format;
+            texture.type = textureType;
             texture.generateMipMaps = generateMipMaps;
             texture.samplingMode = samplingMode;
             texture.is3D = true;
@@ -5964,7 +5954,7 @@
                 texture._bufferView = data;
             }
 
-            this.updateRawTexture3D(texture, data, format, invertY, compression);
+            this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
 
             // Filters
@@ -7078,17 +7068,15 @@
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
                 case Engine.TEXTUREFORMAT_RGB:
-                case Engine.TEXTUREFORMAT_RGB32F:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
-                case Engine.TEXTUREFORMAT_RGBA32F:
                     internalFormat = this._gl.RGBA;
                     break;
-                case Engine.TEXTUREFORMAT_R32F:
+                case Engine.TEXTUREFORMAT_R:
                     internalFormat = this._gl.RED;
                     break;       
-                case Engine.TEXTUREFORMAT_RG32F:
+                case Engine.TEXTUREFORMAT_RG:
                     internalFormat = this._gl.RG;
                     break;                                    
             }
@@ -7111,17 +7099,28 @@
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 if (format) {
                     switch(format) {
-                        case Engine.TEXTUREFORMAT_R32F:
+                        case Engine.TEXTUREFORMAT_R:
                             return this._gl.R32F;
-                        case Engine.TEXTUREFORMAT_RG32F:
+                        case Engine.TEXTUREFORMAT_RG:
                             return this._gl.RG32F;
-                            case Engine.TEXTUREFORMAT_RGB32F:
-                            return this._gl.RGB32F;                            
+                            case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB32F;
                     }                    
                 }
                 return this._gl.RGBA32F;
             }
-            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+
+            if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                if (format) {
+                    switch(format) {
+                        case Engine.TEXTUREFORMAT_R:
+                            return this._gl.R16F;
+                        case Engine.TEXTUREFORMAT_RG:
+                            return this._gl.RG16F;
+                            case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB16F;
+                    }                    
+                }
                 return this._gl.RGBA16F;
             }
 
@@ -7130,7 +7129,11 @@
                     case Engine.TEXTUREFORMAT_LUMINANCE:
                         return this._gl.LUMINANCE;
                     case Engine.TEXTUREFORMAT_RGB:
-                        return this._gl.RGB;                        
+                        return this._gl.RGB;
+                    case Engine.TEXTUREFORMAT_R:
+                        return this._gl.R8;
+                    case Engine.TEXTUREFORMAT_RG:
+                        return this._gl.RG8;
                 }                    
             }
             return this._gl.RGBA;
