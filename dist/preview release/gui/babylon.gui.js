@@ -23,8 +23,8 @@
 
 var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
 var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
-BABYLON.Effect.ShadersStore['fluentVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n\nuniform mat4 world;\nuniform mat4 viewProjection;\nvarying vec2 vUV;\n#ifdef BORDER\nvarying vec2 scaleInfo;\nuniform float borderWidth;\nuniform vec3 scaleFactor;\n#endif\nvoid main(void) {\nvUV=uv;\n#ifdef BORDER\nvec3 scale=scaleFactor;\nfloat minScale=min(min(scale.x,scale.y),scale.z);\nfloat maxScale=max(max(scale.x,scale.y),scale.z);\nfloat minOverMiddleScale=minScale/(scale.x+scale.y+scale.z-minScale-maxScale);\nfloat areaYZ=scale.y*scale.z;\nfloat areaXZ=scale.x*scale.z;\nfloat areaXY=scale.x*scale.y;\nfloat scaledBorderWidth=borderWidth; \nif (abs(normal.x) == 1.0) \n{\nscale.x=scale.y;\nscale.y=scale.z;\nif (areaYZ>areaXZ && areaYZ>areaXY)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nelse if (abs(normal.y) == 1.0) \n{\nscale.x=scale.z;\nif (areaXZ>areaXY && areaXZ>areaYZ)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nelse \n{\nif (areaXY>areaYZ && areaXY>areaXZ)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nfloat scaleRatio=min(scale.x,scale.y)/max(scale.x,scale.y);\nif (scale.x>scale.y)\n{\nscaleInfo.x=1.0-(scaledBorderWidth*scaleRatio);\nscaleInfo.y=1.0-scaledBorderWidth;\n}\nelse\n{\nscaleInfo.x=1.0-scaledBorderWidth;\nscaleInfo.y=1.0-(scaledBorderWidth*scaleRatio);\n} \n#endif \ngl_Position=viewProjection*world*vec4(position,1.0);\n}\n";
-BABYLON.Effect.ShadersStore['fluentPixelShader'] = "precision highp float;\nvarying vec2 vUV;\nuniform vec4 albedoColor;\n#ifdef INNERGLOW\nuniform vec4 innerGlowColor;\n#endif\n#ifdef BORDER\nvarying vec2 scaleInfo;\nuniform float edgeSmoothingValue;\nuniform float borderMinValue;\n#endif\nvoid main(void) {\nvec3 albedo=albedoColor.rgb;\nfloat alpha=albedoColor.a;\n#ifdef BORDER \nfloat borderPower=10.0;\nfloat inverseBorderPower=1.0/borderPower;\nfloat pointToHover=1.0;\nvec3 borderColor=albedo*borderPower;\nvec2 distanceToEdge;\ndistanceToEdge.x=abs(vUV.x-0.5)*2.0;\ndistanceToEdge.y=abs(vUV.y-0.5)*2.0;\nfloat borderValue=max(smoothstep(scaleInfo.x-edgeSmoothingValue,scaleInfo.x+edgeSmoothingValue,distanceToEdge.x),\nsmoothstep(scaleInfo.y-edgeSmoothingValue,scaleInfo.y+edgeSmoothingValue,distanceToEdge.y));\nborderColor=borderColor*borderValue*max(borderMinValue*inverseBorderPower,pointToHover); \nalbedo+=borderColor;\nalpha=max(alpha,borderValue);\n#endif\n#ifdef INNERGLOW\n\nvec2 uvGlow=(vUV-vec2(0.5,0.5))*(innerGlowColor.a*2.0);\nuvGlow=uvGlow*uvGlow;\nuvGlow=uvGlow*uvGlow;\nalbedo+=mix(vec3(0.0,0.0,0.0),innerGlowColor.rgb,uvGlow.x+uvGlow.y); \n#endif\ngl_FragColor=vec4(albedo,alpha);\n}";
+BABYLON.Effect.ShadersStore['fluentVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec2 uv;\n\nuniform mat4 world;\nuniform mat4 viewProjection;\nvarying vec2 vUV;\n#ifdef BORDER\nvarying vec2 scaleInfo;\nuniform float borderWidth;\nuniform vec3 scaleFactor;\n#endif\n#ifdef HOVERLIGHT\nvarying vec3 worldPosition;\n#endif\nvoid main(void) {\nvUV=uv;\n#ifdef BORDER\nvec3 scale=scaleFactor;\nfloat minScale=min(min(scale.x,scale.y),scale.z);\nfloat maxScale=max(max(scale.x,scale.y),scale.z);\nfloat minOverMiddleScale=minScale/(scale.x+scale.y+scale.z-minScale-maxScale);\nfloat areaYZ=scale.y*scale.z;\nfloat areaXZ=scale.x*scale.z;\nfloat areaXY=scale.x*scale.y;\nfloat scaledBorderWidth=borderWidth; \nif (abs(normal.x) == 1.0) \n{\nscale.x=scale.y;\nscale.y=scale.z;\nif (areaYZ>areaXZ && areaYZ>areaXY)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nelse if (abs(normal.y) == 1.0) \n{\nscale.x=scale.z;\nif (areaXZ>areaXY && areaXZ>areaYZ)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nelse \n{\nif (areaXY>areaYZ && areaXY>areaXZ)\n{\nscaledBorderWidth*=minOverMiddleScale;\n}\n}\nfloat scaleRatio=min(scale.x,scale.y)/max(scale.x,scale.y);\nif (scale.x>scale.y)\n{\nscaleInfo.x=1.0-(scaledBorderWidth*scaleRatio);\nscaleInfo.y=1.0-scaledBorderWidth;\n}\nelse\n{\nscaleInfo.x=1.0-scaledBorderWidth;\nscaleInfo.y=1.0-(scaledBorderWidth*scaleRatio);\n} \n#endif \nvec4 worldPos=world*vec4(position,1.0);\n#ifdef HOVERLIGHT\nworldPosition=worldPos.xyz;\n#endif\ngl_Position=viewProjection*worldPos;\n}\n";
+BABYLON.Effect.ShadersStore['fluentPixelShader'] = "precision highp float;\nvarying vec2 vUV;\nuniform vec4 albedoColor;\n#ifdef INNERGLOW\nuniform vec4 innerGlowColor;\n#endif\n#ifdef BORDER\nvarying vec2 scaleInfo;\nuniform float edgeSmoothingValue;\nuniform float borderMinValue;\n#endif\n#ifdef HOVERLIGHT\nvarying vec3 worldPosition;\nuniform vec3 hoverPosition;\nuniform vec4 hoverColor;\nuniform float hoverRadius;\n#endif\nvoid main(void) {\nvec3 albedo=albedoColor.rgb;\nfloat alpha=albedoColor.a;\n#ifdef HOVERLIGHT\nfloat pointToHover=(1.0-clamp(length(hoverPosition-worldPosition)/hoverRadius,0.,1.))*hoverColor.a;\nalbedo=clamp(albedo+hoverColor.rgb*pointToHover,0.,1.);\n#else\nfloat pointToHover=1.0;\n#endif\n#ifdef BORDER \nfloat borderPower=10.0;\nfloat inverseBorderPower=1.0/borderPower;\nvec3 borderColor=albedo*borderPower;\nvec2 distanceToEdge;\ndistanceToEdge.x=abs(vUV.x-0.5)*2.0;\ndistanceToEdge.y=abs(vUV.y-0.5)*2.0;\nfloat borderValue=max(smoothstep(scaleInfo.x-edgeSmoothingValue,scaleInfo.x+edgeSmoothingValue,distanceToEdge.x),\nsmoothstep(scaleInfo.y-edgeSmoothingValue,scaleInfo.y+edgeSmoothingValue,distanceToEdge.y));\nborderColor=borderColor*borderValue*max(borderMinValue*inverseBorderPower,pointToHover); \nalbedo+=borderColor;\nalpha=max(alpha,borderValue);\n#endif\n#ifdef INNERGLOW\n\nvec2 uvGlow=(vUV-vec2(0.5,0.5))*(innerGlowColor.a*2.0);\nuvGlow=uvGlow*uvGlow;\nuvGlow=uvGlow*uvGlow;\nalbedo+=mix(vec3(0.0,0.0,0.0),innerGlowColor.rgb,uvGlow.x+uvGlow.y); \n#endif\ngl_FragColor=vec4(albedo,alpha);\n}";
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
@@ -5618,6 +5618,12 @@ var BABYLON;
                 this._lastControlOver = {};
                 /** @hidden */
                 this._lastControlDown = {};
+                /**
+                 * Observable raised when the point picked by the pointer events changed
+                 */
+                this.onPickedPointChangedObservable = new BABYLON.Observable();
+                // Shared resources
+                this.sharedMaterials = {};
                 this._scene = scene || BABYLON.Engine.LastCreatedScene;
                 this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
                     _this._sceneDisposeObserver = null;
@@ -5685,9 +5691,13 @@ var BABYLON;
                             delete this._lastControlDown[pointerEvent.pointerId];
                         }
                     }
+                    this.onPickedPointChangedObservable.notifyObservers(null);
                     return false;
                 }
                 var control = (pickingInfo.pickedMesh.metadata);
+                if (pickingInfo.pickedPoint) {
+                    this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
+                }
                 if (!control._processObservables(type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
                     if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (this._lastControlOver[pointerId]) {
@@ -5745,6 +5755,8 @@ var BABYLON;
              */
             GUI3DManager.prototype.dispose = function () {
                 this._rootContainer.dispose();
+                this.sharedMaterials = {};
+                this.onPickedPointChangedObservable.clear();
                 if (this._scene) {
                     if (this._pointerObserver) {
                         this._scene.onPrePointerObservable.remove(this._pointerObserver);
@@ -5779,6 +5791,7 @@ var BABYLON;
                 var _this = _super.call(this) || this;
                 _this.INNERGLOW = false;
                 _this.BORDER = false;
+                _this.HOVERLIGHT = false;
                 _this.rebuild();
                 return _this;
             }
@@ -5829,6 +5842,22 @@ var BABYLON;
                  * Gets or sets the minimum value that can be applied to border width (default is 0.1)
                  */
                 _this.borderMinValue = 0.1;
+                /**
+                 * Gets or sets a boolean indicating if hover light must be rendered (default is false)
+                 */
+                _this.renderHoverLight = false;
+                /**
+                 * Gets or sets the radius used to render the hover light (default is 0.15)
+                 */
+                _this.hoverRadius = 1.0;
+                /**
+                 * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
+                 */
+                _this.hoverColor = new BABYLON.Color4(0.3, 0.3, 0.3, 1.0);
+                /**
+                 * Gets or sets the hover light position in world space (default is Vector3.Zero())
+                 */
+                _this.hoverPosition = BABYLON.Vector3.Zero();
                 return _this;
             }
             FluentMaterial.prototype.needAlphaBlending = function () {
@@ -5859,6 +5888,7 @@ var BABYLON;
                 if (defines._areTexturesDirty) {
                     defines.INNERGLOW = this.innerGlowColorIntensity > 0;
                     defines.BORDER = this.renderBorders;
+                    defines.HOVERLIGHT = this.renderHoverLight;
                 }
                 var engine = scene.getEngine();
                 // Get correct effect      
@@ -5870,7 +5900,9 @@ var BABYLON;
                     attribs.push(BABYLON.VertexBuffer.NormalKind);
                     attribs.push(BABYLON.VertexBuffer.UVKind);
                     var shaderName = "fluent";
-                    var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue"];
+                    var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue",
+                        "hoverColor", "hoverPosition", "hoverRadius"
+                    ];
                     var samplers = new Array();
                     var uniformBuffers = new Array();
                     BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
@@ -5924,6 +5956,11 @@ var BABYLON;
                         this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                         this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
                         this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                    }
+                    if (defines.HOVERLIGHT) {
+                        this._activeEffect.setDirectColor4("hoverColor", this.hoverColor);
+                        this._activeEffect.setFloat("hoverRadius", this.hoverRadius);
+                        this._activeEffect.setVector3("hoverPosition", this.hoverPosition);
                     }
                 }
                 this._afterBind(mesh, this._activeEffect);
@@ -5983,6 +6020,19 @@ var BABYLON;
             __decorate([
                 BABYLON.serialize()
             ], FluentMaterial.prototype, "borderMinValue", void 0);
+            __decorate([
+                BABYLON.serialize(),
+                BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
+            ], FluentMaterial.prototype, "renderHoverLight", void 0);
+            __decorate([
+                BABYLON.serialize()
+            ], FluentMaterial.prototype, "hoverRadius", void 0);
+            __decorate([
+                BABYLON.serializeAsColor4()
+            ], FluentMaterial.prototype, "hoverColor", void 0);
+            __decorate([
+                BABYLON.serializeAsVector3()
+            ], FluentMaterial.prototype, "hoverPosition", void 0);
             return FluentMaterial;
         }(BABYLON.PushMaterial));
         GUI.FluentMaterial = FluentMaterial;
@@ -6329,7 +6379,7 @@ var BABYLON;
                 this.onPointerUpObservable.clear();
                 this.onPointerClickObservable.clear();
                 if (this._node) {
-                    this._node.dispose(false, true);
+                    this._node.dispose();
                     this._node = null;
                 }
                 // Behaviors
@@ -6534,6 +6584,15 @@ var BABYLON;
                 mesh.material = material;
                 this._currentMaterial = material;
             };
+            /**
+             * Releases all associated resources
+             */
+            Button3D.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                if (this._currentMaterial) {
+                    this._currentMaterial.dispose();
+                }
+            };
             return Button3D;
         }(GUI.Control3D));
         GUI.Button3D = Button3D;
@@ -6555,8 +6614,11 @@ var BABYLON;
              * Creates a new button
              * @param name defines the control name
              */
-            function HolographicButton(name) {
+            function HolographicButton(name, shareMaterials) {
+                if (shareMaterials === void 0) { shareMaterials = true; }
                 var _this = _super.call(this, name) || this;
+                _this._shareMaterials = true;
+                _this._shareMaterials = shareMaterials;
                 // Default animations
                 _this.pointerEnterAnimation = function () {
                     if (!_this.mesh) {
@@ -6586,6 +6648,46 @@ var BABYLON;
                     }
                     this._text = value;
                     this._rebuildContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(HolographicButton.prototype, "backMaterial", {
+                /**
+                 * Gets the back material used by this button
+                 */
+                get: function () {
+                    return this._backMaterial;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(HolographicButton.prototype, "frontMaterial", {
+                /**
+                 * Gets the front material used by this button
+                 */
+                get: function () {
+                    return this._frontMaterial;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(HolographicButton.prototype, "plateMaterial", {
+                /**
+                 * Gets the plate material used by this button
+                 */
+                get: function () {
+                    return this._plateMaterial;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(HolographicButton.prototype, "shareMaterials", {
+                /**
+                 * Gets a boolean indicating if this button shares its material with other HolographicButtons
+                 */
+                get: function () {
+                    return this._shareMaterials;
                 },
                 enumerable: true,
                 configurable: true
@@ -6631,19 +6733,84 @@ var BABYLON;
                 return this._backPlate;
             };
             HolographicButton.prototype._applyFacade = function (facadeTexture) {
-                this._currentMaterial.emissiveTexture = facadeTexture;
-                this._currentMaterial.opacityTexture = facadeTexture;
+                this._plateMaterial.emissiveTexture = facadeTexture;
+                this._plateMaterial.opacityTexture = facadeTexture;
+            };
+            HolographicButton.prototype._createBackMaterial = function (mesh) {
+                var _this = this;
+                this._backMaterial = new GUI.FluentMaterial(this.name + "Back Material", mesh.getScene());
+                this._backMaterial.renderHoverLight = true;
+                this._pickedPointObserver = this._host.onPickedPointChangedObservable.add(function (pickedPoint) {
+                    if (pickedPoint) {
+                        _this._backMaterial.hoverPosition = pickedPoint;
+                        _this._backMaterial.hoverColor.a = 1.0;
+                    }
+                    else {
+                        _this._backMaterial.hoverColor.a = 0;
+                    }
+                });
+            };
+            HolographicButton.prototype._createFrontMaterial = function (mesh) {
+                this._frontMaterial = new GUI.FluentMaterial(this.name + "Front Material", mesh.getScene());
+                this._frontMaterial.innerGlowColorIntensity = 0; // No inner glow
+                this._frontMaterial.alpha = 0.5; // Additive
+                this._frontMaterial.renderBorders = true;
+            };
+            HolographicButton.prototype._createPlateMaterial = function (mesh) {
+                this._plateMaterial = new BABYLON.StandardMaterial(this.name + "Plate Material", mesh.getScene());
+                this._plateMaterial.specularColor = BABYLON.Color3.Black();
             };
             HolographicButton.prototype._affectMaterial = function (mesh) {
-                this._backFluentMaterial = new GUI.FluentMaterial(this.name + "Back Material", mesh.getScene());
-                mesh.material = this._backFluentMaterial;
-                this._frontFluentMaterial = new GUI.FluentMaterial(this.name + "Front Material", mesh.getScene());
-                this._frontPlate.material = this._frontFluentMaterial;
-                this._frontFluentMaterial.innerGlowColorIntensity = 0; // No inner glow
-                this._frontFluentMaterial.alpha = 0.5; // Additive
-                this._frontFluentMaterial.renderBorders = true;
-                _super.prototype._affectMaterial.call(this, this._textPlate);
+                // Back
+                if (this._shareMaterials) {
+                    if (!this._host.sharedMaterials["backFluentMaterial"]) {
+                        this._createBackMaterial(mesh);
+                        this._host.sharedMaterials["backFluentMaterial"] = this._backMaterial;
+                    }
+                    else {
+                        this._backMaterial = this._host.sharedMaterials["backFluentMaterial"];
+                    }
+                    // Front
+                    if (!this._host.sharedMaterials["frontFluentMaterial"]) {
+                        this._createFrontMaterial(mesh);
+                        this._host.sharedMaterials["frontFluentMaterial"] = this._frontMaterial;
+                    }
+                    else {
+                        this._frontMaterial = this._host.sharedMaterials["frontFluentMaterial"];
+                    }
+                    // Plate
+                    if (!this._host.sharedMaterials["plateMaterial"]) {
+                        this._createPlateMaterial(mesh);
+                        this._host.sharedMaterials["plateMaterial"] = this._plateMaterial;
+                    }
+                    else {
+                        this._plateMaterial = this._host.sharedMaterials["plateMaterial"];
+                    }
+                }
+                else {
+                    this._createBackMaterial(mesh);
+                    this._createFrontMaterial(mesh);
+                    this._createPlateMaterial(mesh);
+                }
+                this._backPlate.material = this._backMaterial;
+                this._frontPlate.material = this._frontMaterial;
+                this._textPlate.material = this._plateMaterial;
                 this._rebuildContent();
+            };
+            /**
+             * Releases all associated resources
+             */
+            HolographicButton.prototype.dispose = function () {
+                _super.prototype.dispose.call(this); // will dispose main mesh ie. back plate
+                if (!this.shareMaterials) {
+                    this._backMaterial.dispose();
+                    this._frontMaterial.dispose();
+                    this._plateMaterial.dispose();
+                    if (this._pickedPointObserver) {
+                        this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+                        this._pickedPointObserver = null;
+                    }
+                }
             };
             return HolographicButton;
         }(GUI.Button3D));

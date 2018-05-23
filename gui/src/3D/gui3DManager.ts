@@ -16,6 +16,14 @@ module BABYLON.GUI {
         /** @hidden */
         public _lastControlDown: {[pointerId:number]: Control3D} = {};      
 
+        /**
+         * Observable raised when the point picked by the pointer events changed
+         */
+        public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
+
+        // Shared resources
+        public sharedMaterials: {[key:string]: Material} = {};     
+
         /** Gets the hosting scene */
         public get scene(): Scene {
             return this._scene;
@@ -93,11 +101,16 @@ module BABYLON.GUI {
                         this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                         delete this._lastControlDown[pointerEvent.pointerId];
                     }
-                }                
+                }        
+                
+                this.onPickedPointChangedObservable.notifyObservers(null);
                 return false;
             }
 
             let control = <Control3D>(pickingInfo.pickedMesh!.metadata);
+            if (pickingInfo.pickedPoint) {
+                this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
+            }
 
             if (!control._processObservables(type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
 
@@ -161,6 +174,10 @@ module BABYLON.GUI {
          */
         public dispose() {
             this._rootContainer.dispose();
+
+            this.sharedMaterials = {};
+
+            this.onPickedPointChangedObservable.clear();
 
             if (this._scene) {
                 if (this._pointerObserver) {
