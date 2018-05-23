@@ -49,7 +49,9 @@
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
 - Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh))
-- Fixed a bug with setting `unlit` on `PBRMaterial` after the material is ready ([bghgary](http://www.github.com/bghgary))
+- Fixed a bug with setting `unlit` on `PBRMaterial` after the material is ready (Wrong dirty flags) ([bghgary](http://www.github.com/bghgary))
+- Fixed `HighlightLayer` support on none HalfFloat supporting browsers ([sebavan](http://www.github.com/sebavan))
+- Fixed support for R and RG texture formats ([sebavan](http://www.github.com/sebavan))
 
 ### Viewer
 
@@ -61,3 +63,4 @@
 - It wasn't possible to disable camera behavior(s) using configuration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
+- Fixing support for R and RG texture formats made us remove TextureFormat_R32F and TextureFormat_RG32F as they were mixing formats and types. Please, use the respective TextureFormat_R and TextureFormat_RG with the Float types ([sebavan](http://www.github.com/sebavan))
