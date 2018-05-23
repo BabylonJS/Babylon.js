@@ -435,7 +435,7 @@
             this._previousDelay = delay;
             this._previousRatio = ratio;
 
-            if (((to > from && ratio > range) || (from > to && ratio < range)) && !loop) { // If we are out of range and not looping get back to caller
+            if (((to > from && ratio >= range) || (from > to && ratio <= range)) && !loop) { // If we are out of range and not looping get back to caller
                 returnValue = false;
                 highLimitValue = this._animation._getKeyValue(keys[keys.length - 1].value);
             } else {
