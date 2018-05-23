@@ -86,7 +86,7 @@ varying vec4 vColor;
 	#else
 		varying vec2 vEmissiveUV;
 	#endif
-	uniform sampler2D emissiveSampler;
+	uniform highp sampler3D emissiveSampler;
 #endif
 
 #ifdef LIGHTMAP
@@ -366,7 +366,7 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 	// Emissive
 	vec3 emissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
-	emissiveColor += texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb * vEmissiveInfos.y;
+	emissiveColor += texture(emissiveSampler, vec3(vEmissiveUV + uvOffset, 0.)).rgb * vEmissiveInfos.y;
 #endif
 
 #ifdef EMISSIVEFRESNEL
