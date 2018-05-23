@@ -3,6 +3,7 @@ import { ILoaderPlugin } from "./loaderPlugin";
 import { MSFTLodLoaderPlugin } from './msftLodLoaderPlugin';
 import { ApplyMaterialConfigPlugin } from './applyMaterialConfig';
 import { ExtendedMaterialLoaderPlugin } from './extendedMaterialLoaderPlugin';
+import { Tools } from "babylonjs";
 
 const pluginCache: { [key: string]: ILoaderPlugin } = {};
 
@@ -31,4 +32,14 @@ export function getLoaderPluginByName(name: string) {
     }
 
     return pluginCache[name];
+}
+
+/**
+ * 
+ */
+export function addLoaderPlugin(name: string, plugin: ILoaderPlugin) {
+    if (pluginCache[name]) {
+        Tools.Warn("Overwriting plugin with the same name - " + name);
+    }
+    pluginCache[name] = plugin;
 }

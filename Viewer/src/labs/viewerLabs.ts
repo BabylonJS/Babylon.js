@@ -1,8 +1,6 @@
 import { PBREnvironment, EnvironmentDeserializer } from "./environmentSerializer";
-import { SceneManager } from '../viewer/sceneManager';
 
-import { Tools, Quaternion, ShadowLight, Vector3, Axis, Matrix, SphericalPolynomial, Tmp } from 'babylonjs';
-import { ViewerConfiguration } from "../configuration/configuration";
+import { Tools, Quaternion, ShadowLight, Vector3, Axis, Matrix, SphericalPolynomial, Tmp, Scene } from 'babylonjs';
 import { TextureUtils } from "./texture";
 
 /**
@@ -12,7 +10,7 @@ import { TextureUtils } from "./texture";
  */
 export class ViewerLabs {
 
-    constructor(private _sceneManager: SceneManager) { }
+    constructor(private _scene: Scene) { }
 
     public assetsRootURL: string;
     public environment: PBREnvironment = {
@@ -63,7 +61,7 @@ export class ViewerLabs {
             if (onSuccess) onSuccess(this.environment);
         } else if (typeof data === 'string') {
             let url = this.getAssetUrl(data);
-            this._sceneManager.scene._loadFile(
+            this._scene._loadFile(
                 url,
                 (arrayBuffer: ArrayBuffer) => {
                     this.environment = EnvironmentDeserializer.Parse(arrayBuffer);
@@ -98,15 +96,15 @@ export class ViewerLabs {
         // Add env texture to the scene.
         if (this.environment.specularTexture) {
             // IE crashes when disposing the old texture and setting a new one
-            if (!this._sceneManager.scene.environmentTexture) {
-                this._sceneManager.scene.environmentTexture = TextureUtils.GetBabylonCubeTexture(this._sceneManager.scene, this.environment.specularTexture, false, true);
+            if (!this._scene.environmentTexture) {
+                this._scene.environmentTexture = TextureUtils.GetBabylonCubeTexture(this._scene, this.environment.specularTexture, false, true);
             }
-            if (this._sceneManager.scene.environmentTexture) {
-                this._sceneManager.scene.environmentTexture.level = this.environment.textureIntensityScale;
-                this._sceneManager.scene.environmentTexture.invertZ = true;
-                this._sceneManager.scene.environmentTexture.lodLevelInAlpha = true;
+            if (this._scene.environmentTexture) {
+                this._scene.environmentTexture.level = this.environment.textureIntensityScale;
+                this._scene.environmentTexture.invertZ = true;
+                this._scene.environmentTexture.lodLevelInAlpha = true;
 
-                var poly = this._sceneManager.scene.environmentTexture.sphericalPolynomial || new SphericalPolynomial();
+                var poly = this._scene.environmentTexture.sphericalPolynomial || new SphericalPolynomial();
                 poly.x = this.environment.irradiancePolynomialCoefficients.x;
                 poly.y = this.environment.irradiancePolynomialCoefficients.y;
                 poly.z = this.environment.irradiancePolynomialCoefficients.z;
@@ -116,10 +114,10 @@ export class ViewerLabs {
                 poly.yz = this.environment.irradiancePolynomialCoefficients.yz;
                 poly.zx = this.environment.irradiancePolynomialCoefficients.zx;
                 poly.zz = this.environment.irradiancePolynomialCoefficients.zz;
-                this._sceneManager.scene.environmentTexture.sphericalPolynomial = poly;
+                this._scene.environmentTexture.sphericalPolynomial = poly;
 
                 //set orientation
-                Matrix.FromQuaternionToRef(rotatquatRotationionY, this._sceneManager.scene.environmentTexture.getReflectionTextureMatrix());
+                Matrix.FromQuaternionToRef(rotatquatRotationionY, this._scene.environmentTexture.getReflectionTextureMatrix());
             }
         }
     }

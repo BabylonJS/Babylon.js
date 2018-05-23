@@ -1,3 +1,7 @@
+import * as deepmerge from '../../assets/deepmerge.min.js';
+
+export { deepmerge };
+
 /**
  * Is the provided string a URL?
  * 
