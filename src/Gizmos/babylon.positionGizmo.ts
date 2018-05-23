@@ -7,7 +7,7 @@ module BABYLON {
         private _yDrag:AxisDragGizmo;
         private _zDrag:AxisDragGizmo;
 
-        public set attachedMesh(mesh:Nullable<Mesh>){
+        public set attachedMesh(mesh:Nullable<AbstractMesh>){
             this._xDrag.attachedMesh = mesh;
             this._yDrag.attachedMesh = mesh;
             this._zDrag.attachedMesh = mesh;
