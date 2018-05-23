@@ -12,7 +12,14 @@ uniform vec4 innerGlowColor;
 varying vec2 scaleInfo;
 uniform float edgeSmoothingValue;
 uniform float borderMinValue;
+#endif
 
+#ifdef HOVERLIGHT
+varying vec3 worldPosition;
+
+uniform vec3 hoverPosition;
+uniform vec4 hoverColor;
+uniform float hoverRadius;
 #endif
 
 void main(void) {
@@ -20,10 +27,16 @@ void main(void) {
 	vec3 albedo = albedoColor.rgb;
 	float alpha = albedoColor.a;
 
+#ifdef HOVERLIGHT
+	float pointToHover = (1.0 - clamp(length(hoverPosition - worldPosition) / hoverRadius, 0., 1.)) * hoverColor.a;
+	albedo = clamp(albedo + hoverColor.rgb * pointToHover, 0., 1.);
+#else
+	float pointToHover = 1.0;
+#endif
+
 #ifdef BORDER	
 	float borderPower = 10.0;
 	float inverseBorderPower = 1.0 / borderPower;
-	float pointToHover = 1.0;
 	vec3 borderColor = albedo * borderPower;
 
 	vec2 distanceToEdge;
