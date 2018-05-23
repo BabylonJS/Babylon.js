@@ -8,9 +8,13 @@ module BABYLON.GUI {
         private _backPlate: Mesh;
         private _textPlate: Mesh;
         private _frontPlate: Mesh;
-        private _backFluentMaterial: FluentMaterial;
-        private _frontFluentMaterial: FluentMaterial;
         private _text: string;
+        private _shareMaterials = true;
+        private _frontMaterial: FluentMaterial;
+        private _backMaterial: FluentMaterial;
+        private _plateMaterial: StandardMaterial;
+        private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
+
         // private _imageUrl: string;
 
         /**
@@ -30,14 +34,43 @@ module BABYLON.GUI {
         }
 
         /**
+         * Gets the back material used by this button
+         */
+        public get backMaterial(): FluentMaterial {
+            return this._backMaterial;
+        }
+
+        /**
+         * Gets the front material used by this button
+         */
+        public get frontMaterial(): FluentMaterial {
+            return this._frontMaterial;
+        }       
+        
+        /**
+         * Gets the plate material used by this button
+         */
+        public get plateMaterial(): StandardMaterial {
+            return this._plateMaterial;
+        }          
+
+        /**
+         * Gets a boolean indicating if this button shares its material with other HolographicButtons
+         */
+        public get shareMaterials(): boolean {
+            return this._shareMaterials;
+        }
+
+        /**
          * Creates a new button
          * @param name defines the control name
          */
-        constructor(name?: string) {
+        constructor(name?: string, shareMaterials = true) {
             super(name);
 
-            // Default animations
+            this._shareMaterials = shareMaterials;
 
+            // Default animations
             this.pointerEnterAnimation = () => {
                 if (!this.mesh) {
                     return;
@@ -103,22 +136,89 @@ module BABYLON.GUI {
         }
 
         protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
-            (<any>this._currentMaterial).emissiveTexture = facadeTexture;
-            (<any>this._currentMaterial).opacityTexture = facadeTexture;
-        }        
+            this._plateMaterial.emissiveTexture = facadeTexture;
+            this._plateMaterial.opacityTexture = facadeTexture;
+        }   
+        
+        private _createBackMaterial(mesh: Mesh) {
+            this._backMaterial = new FluentMaterial(this.name + "Back Material", mesh.getScene());
+            this._backMaterial.renderHoverLight = true;
+            this._pickedPointObserver = this._host.onPickedPointChangedObservable.add(pickedPoint => {
+                if (pickedPoint) {
+                    this._backMaterial.hoverPosition = pickedPoint;
+                    this._backMaterial.hoverColor.a = 1.0;
+                } else {
+                    this._backMaterial.hoverColor.a = 0;
+                }
+            });
+        }
+
+        private _createFrontMaterial(mesh: Mesh) {
+            this._frontMaterial = new FluentMaterial(this.name + "Front Material", mesh.getScene());
+            this._frontMaterial.innerGlowColorIntensity = 0; // No inner glow
+            this._frontMaterial.alpha = 0.5; // Additive
+            this._frontMaterial.renderBorders = true;
+        }     
+        
+        private _createPlateMaterial(mesh: Mesh) {
+            this._plateMaterial = new StandardMaterial(this.name + "Plate Material", mesh.getScene());
+            this._plateMaterial.specularColor = Color3.Black();
+        }
 
         protected _affectMaterial(mesh: Mesh) {
-            this._backFluentMaterial = new FluentMaterial(this.name + "Back Material", mesh.getScene());
-            mesh.material = this._backFluentMaterial;
+            // Back
+            if (this._shareMaterials) {
+                if (!this._host.sharedMaterials["backFluentMaterial"]) {
+                    this._createBackMaterial(mesh);
+                    this._host.sharedMaterials["backFluentMaterial"] =  this._backMaterial;
+                } else {
+                    this._backMaterial = this._host.sharedMaterials["backFluentMaterial"] as FluentMaterial;
+                }
 
-            this._frontFluentMaterial = new FluentMaterial(this.name + "Front Material", mesh.getScene());
-            this._frontPlate.material = this._frontFluentMaterial;
-            this._frontFluentMaterial.innerGlowColorIntensity = 0; // No inner glow
-            this._frontFluentMaterial.alpha = 0.5; // Additive
-            this._frontFluentMaterial.renderBorders = true;
+                // Front
+                if (!this._host.sharedMaterials["frontFluentMaterial"]) {
+                    this._createFrontMaterial(mesh);
+                    this._host.sharedMaterials["frontFluentMaterial"] = this._frontMaterial;                
+                } else {
+                    this._frontMaterial = this._host.sharedMaterials["frontFluentMaterial"] as FluentMaterial;
+                }  
 
-            super._affectMaterial(this._textPlate);
+                // Plate
+                if (!this._host.sharedMaterials["plateMaterial"]) {
+                    this._createPlateMaterial(mesh);
+                    this._host.sharedMaterials["plateMaterial"] = this._plateMaterial;
+                } else {
+                    this._plateMaterial = this._host.sharedMaterials["plateMaterial"] as StandardMaterial;
+                }            
+            } else {
+                this._createBackMaterial(mesh);
+                this._createFrontMaterial(mesh);
+                this._createPlateMaterial(mesh);
+            }
+
+            this._backPlate.material =  this._backMaterial;
+            this._frontPlate.material = this._frontMaterial;
+            this._textPlate.material = this._plateMaterial;
+
             this._rebuildContent();
         }
+
+        /**
+         * Releases all associated resources
+         */
+        public dispose() {
+            super.dispose(); // will dispose main mesh ie. back plate
+            
+            if (!this.shareMaterials) {
+                this._backMaterial.dispose();
+                this._frontMaterial.dispose();
+                this._plateMaterial.dispose();
+
+                if (this._pickedPointObserver) {
+                    this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+                    this._pickedPointObserver = null;
+                }
+            }
+        }        
     }
 }

@@ -110,5 +110,16 @@ module BABYLON.GUI {
             mesh.material = material;
             this._currentMaterial = material;
         }
+
+        /**
+         * Releases all associated resources
+         */
+        public dispose() {
+            super.dispose();
+
+            if (this._currentMaterial) {
+                this._currentMaterial.dispose();
+            }
+        }
     }
 }

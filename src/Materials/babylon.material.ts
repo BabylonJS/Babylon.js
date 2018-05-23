@@ -395,6 +395,12 @@
         public id: string;
 
         /**
+         * Gets or sets the unique id of the material
+         */
+        @serialize()
+        public uniqueId: number;
+
+        /**
          * The name of the material
          */
         @serialize()
@@ -776,6 +782,7 @@
             this.id = name || Tools.RandomId();
 
             this._scene = scene || Engine.LastCreatedScene;
+            this.uniqueId = this._scene.getUniqueId();
 
             if (this._scene.useRightHandedSystem) {
                 this.sideOrientation = Material.ClockWiseSideOrientation;
