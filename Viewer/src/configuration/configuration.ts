@@ -43,7 +43,10 @@ export interface ViewerConfiguration {
     skybox?: boolean | ISkyboxConfiguration;
 
     ground?: boolean | IGroundConfiguration;
-    lights?: { [name: string]: boolean | ILightConfiguration },
+    lights?: {
+        //globalRotation: number,
+        [name: string]: number | boolean | ILightConfiguration
+    },
     // engine configuration. optional!
     engine?: {
         renderInBackground?: boolean;
@@ -107,6 +110,7 @@ export interface ViewerConfiguration {
             tintLevel: number;
         }
         defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
+        globalLightRotation?: number;
     }
 }
 
