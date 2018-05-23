@@ -53,6 +53,7 @@
 	<script src="test/addpbrspecularglossiness.js"></script>
 	<script src="test/addCell.js"></script>
 	<script src="test/addbackground.js"></script>
+	<script src="test/addMix.js"></script>
 	
 	<script>
 	var backgroundSkybox = null;
@@ -215,13 +216,15 @@
 				var shadowOnly = new BABYLON.ShadowOnlyMaterial();
 
 				var cell = prepareCell();
+
+				var mix = prepareMix();
 				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell', 'background']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'pbrmetallicroughness', 'pbrspecularglossiness', 'fur', 'triPlanar', 'gradient', 'sky', 'grid', 'shadowOnly', 'cell', 'background', 'mix']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -286,6 +289,9 @@
 						case "background":
 							currentMaterial = back;
 							backgroundSkybox.setEnabled(true);
+							break;
+						case "mix":
+							currentMaterial = mix;
 							break;
 						default:
 							currentMaterial = std;
