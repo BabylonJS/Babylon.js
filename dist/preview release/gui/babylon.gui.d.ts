@@ -7,6 +7,7 @@ declare module BABYLON.GUI {
     class Style implements BABYLON.IDisposable {
         private _fontFamily;
         private _fontStyle;
+        private _fontWeight;
         /** @hidden */
         _host: AdvancedDynamicTexture;
         /** @hidden */
@@ -32,6 +33,8 @@ declare module BABYLON.GUI {
          * Gets or sets the font style
          */
         fontStyle: string;
+        /** Gets or sets font weight */
+        fontWeight: string;
         /** Dispose all associated resources */
         dispose(): void;
     }
@@ -232,6 +235,7 @@ declare module BABYLON.GUI {
         _currentMeasure: Measure;
         private _fontFamily;
         private _fontStyle;
+        private _fontWeight;
         private _fontSize;
         private _font;
         _width: ValueAndUnit;
@@ -336,7 +340,10 @@ declare module BABYLON.GUI {
         height: string | number;
         readonly heightInPixels: number;
         fontFamily: string;
+        /** Gets or sets font style */
         fontStyle: string;
+        /** Gets or sets font weight */
+        fontWeight: string;
         style: BABYLON.Nullable<Style>;
         /** @hidden */
         readonly _isFontSizeInPercentage: boolean;
@@ -1358,6 +1365,7 @@ declare module BABYLON.GUI {
         private _textPlate;
         private _frontPlate;
         private _text;
+        private _imageUrl;
         private _shareMaterials;
         private _frontMaterial;
         private _backMaterial;
@@ -1367,6 +1375,10 @@ declare module BABYLON.GUI {
          * Gets or sets text for the button
          */
         text: string;
+        /**
+         * Gets or sets the image url for the button
+         */
+        imageUrl: string;
         /**
          * Gets the back material used by this button
          */
