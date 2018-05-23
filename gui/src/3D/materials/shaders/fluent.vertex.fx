@@ -17,6 +17,10 @@ uniform float borderWidth;
 uniform vec3 scaleFactor;
 #endif
 
+#ifdef HOVERLIGHT
+varying vec3 worldPosition;
+#endif
+
 void main(void) {
 	vUV = uv;
 
@@ -70,5 +74,11 @@ void main(void) {
 	}	
 #endif		
 
-	gl_Position = viewProjection * world * vec4(position, 1.0);
+	vec4 worldPos = world * vec4(position, 1.0);
+
+#ifdef HOVERLIGHT
+	worldPosition = worldPos.xyz;
+#endif
+
+	gl_Position = viewProjection * worldPos;
 }

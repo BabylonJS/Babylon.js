@@ -992,6 +992,13 @@ declare module BABYLON.GUI {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        /**
+         * Observable raised when the point picked by the pointer events changed
+         */
+        onPickedPointChangedObservable: Observable<Nullable<Vector3>>;
+        sharedMaterials: {
+            [key: string]: Material;
+        };
         /** Gets the hosting scene */
         readonly scene: Scene;
         readonly utilityLayer: Nullable<UtilityLayerRenderer>;
@@ -1036,6 +1043,7 @@ declare module BABYLON.GUI {
     class FluentMaterialDefines extends MaterialDefines {
         INNERGLOW: boolean;
         BORDER: boolean;
+        HOVERLIGHT: boolean;
         constructor();
     }
     /**
@@ -1074,6 +1082,22 @@ declare module BABYLON.GUI {
          * Gets or sets the minimum value that can be applied to border width (default is 0.1)
          */
         borderMinValue: number;
+        /**
+         * Gets or sets a boolean indicating if hover light must be rendered (default is false)
+         */
+        renderHoverLight: boolean;
+        /**
+         * Gets or sets the radius used to render the hover light (default is 0.15)
+         */
+        hoverRadius: number;
+        /**
+         * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
+         */
+        hoverColor: Color4;
+        /**
+         * Gets or sets the hover light position in world space (default is Vector3.Zero())
+         */
+        hoverPosition: Vector3;
         /**
          * Creates a new Fluent material
          * @param name defines the name of the material
@@ -1322,6 +1346,10 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         protected _createNode(scene: Scene): TransformNode;
         protected _affectMaterial(mesh: AbstractMesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }
 
@@ -1334,23 +1362,49 @@ declare module BABYLON.GUI {
         private _backPlate;
         private _textPlate;
         private _frontPlate;
-        private _backFluentMaterial;
-        private _frontFluentMaterial;
         private _text;
+        private _shareMaterials;
+        private _frontMaterial;
+        private _backMaterial;
+        private _plateMaterial;
+        private _pickedPointObserver;
         /**
          * Gets or sets text for the button
          */
         text: string;
         /**
+         * Gets the back material used by this button
+         */
+        readonly backMaterial: FluentMaterial;
+        /**
+         * Gets the front material used by this button
+         */
+        readonly frontMaterial: FluentMaterial;
+        /**
+         * Gets the plate material used by this button
+         */
+        readonly plateMaterial: StandardMaterial;
+        /**
+         * Gets a boolean indicating if this button shares its material with other HolographicButtons
+         */
+        readonly shareMaterials: boolean;
+        /**
          * Creates a new button
          * @param name defines the control name
          */
-        constructor(name?: string);
+        constructor(name?: string, shareMaterials?: boolean);
         protected _getTypeName(): string;
         private _rebuildContent();
         protected _createNode(scene: Scene): TransformNode;
         protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
+        private _createBackMaterial(mesh);
+        private _createFrontMaterial(mesh);
+        private _createPlateMaterial(mesh);
         protected _affectMaterial(mesh: Mesh): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
     }
 }
 

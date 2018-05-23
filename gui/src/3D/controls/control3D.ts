@@ -12,7 +12,7 @@ module BABYLON.GUI {
         private _enterCount = 0;
         private _downPointerIds:{[id:number] : boolean} = {};
         private _isVisible = true;
-
+    
         /** Gets or sets the control position */
         public position = new Vector3(0, 0, 0);
         /** Gets or sets the control scaling */
@@ -244,7 +244,6 @@ module BABYLON.GUI {
             mesh.material = null;
         }
 
-
         // Pointers
 
         /** @hidden */
@@ -374,7 +373,7 @@ module BABYLON.GUI {
             this.onPointerClickObservable.clear();
 
             if (this._node) {
-                this._node.dispose(false, true);
+                this._node.dispose();
                 this._node = null;
             }
 
