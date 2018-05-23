@@ -11,6 +11,7 @@ module BABYLON.GUI {
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
         private _fontStyle = "";
+        private _fontWeight = "";
         private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
         private _font: string;
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -276,6 +277,7 @@ module BABYLON.GUI {
             this._resetFontCache();
         }
 
+        /** Gets or sets font style */
         public get fontStyle(): string {
             return this._fontStyle;
         }
@@ -288,6 +290,20 @@ module BABYLON.GUI {
             this._fontStyle = value;
             this._resetFontCache();
         }
+
+        /** Gets or sets font weight */
+        public get fontWeight(): string {
+            return this._fontWeight;
+        }
+
+        public set fontWeight(value: string) {
+            if (this._fontWeight === value) {
+                return;
+            }
+
+            this._fontWeight = value;
+            this._resetFontCache();
+        }        
 
         public get style(): BABYLON.Nullable<Style> {
             return this._style;
@@ -1046,9 +1062,9 @@ module BABYLON.GUI {
             }
 
             if (this._style) {
-                this._font = this._style.fontStyle + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+                this._font = (this._style.fontWeight ? this._style.fontWeight : this._style.fontStyle) + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
             } else {
-                this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+                this._font = (this._fontWeight ? this._fontWeight : this._fontStyle) + " " + this.fontSizeInPixels + "px " + this._fontFamily;
             }
 
             this._fontOffset = Control._GetFontOffset(this._font);
