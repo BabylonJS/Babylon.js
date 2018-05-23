@@ -4363,8 +4363,9 @@
         public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {            if (!texture) {
                 return;
             }
-
+            // babylon's internalSizedFomat but gl's texImage2D internalFormat
             var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format);
+            // babylon's internalFormat but gl's texImage2D format
             var internalFormat = this._getInternalFormat(format);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
@@ -4381,7 +4382,7 @@
             if (texture.width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
             }
-
+            
             if (compression && data) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, <DataView>data);
             } else {
@@ -4576,7 +4577,7 @@
                     }
 
                     texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
-
+                    
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
                 } else {
                     this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
@@ -7099,17 +7100,19 @@
         /** @hidden */
         public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
-                if (format) {
+                if (format !== undefined) {
                     switch(format) {
                         case Engine.TEXTUREFORMAT_LUMINANCE:
                             return this._gl.LUMINANCE;
+                        case Engine.TEXTUREFORMAT_ALPHA:
+                            return this._gl.ALPHA;     
                     }                    
                 }
                 return this._gl.RGBA;
             }
 
             if (type === Engine.TEXTURETYPE_FLOAT) {
-                if (format) {
+                if (format !== undefined) {
                     switch(format) {
                         case Engine.TEXTUREFORMAT_R32F:
                             return this._gl.R32F;
@@ -7125,12 +7128,14 @@
                 return this._gl.RGBA16F;
             }
 
-            if (format) {
+            if (format !== undefined) {
                 switch(format) {
                     case Engine.TEXTUREFORMAT_LUMINANCE:
                         return this._gl.LUMINANCE;
                     case Engine.TEXTUREFORMAT_RGB:
-                        return this._gl.RGB;                        
+                        return this._gl.RGB;     
+                    case Engine.TEXTUREFORMAT_ALPHA:
+                        return this._gl.ALPHA;                        
                 }                    
             }
             return this._gl.RGBA;

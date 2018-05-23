@@ -41,6 +41,7 @@
 
 ## Bug fixes
 - VR experience helper will now fire pointer events even when no mesh is currently hit ([TrevorDev](https://github.com/TrevorDev))
+- RawTexture.CreateAlphaTexture no longer fails to create a usable texture ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
