@@ -63,6 +63,7 @@ module BABYLON.GUI {
 
         /**
          * Creates an empty measure
+         * @returns a new measure
          */
         public static Empty(): Measure {
             return new Measure(0, 0, 0, 0);

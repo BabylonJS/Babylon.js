@@ -109,6 +109,7 @@ module BABYLON.GUI {
             }
         }                       
         
+        /** Gets or sets line width */
         public get lineWidth(): number {
             return this._lineWidth;
         }
@@ -122,10 +123,12 @@ module BABYLON.GUI {
             this._markAsDirty();
         }   
 
+        /** Gets or sets horizontal alignment */
         public set horizontalAlignment(value: number) {
             return;
         } 
 
+        /** Gets or sets vertical alignment */
         public set verticalAlignment(value: number) {
             return;
         }    
@@ -138,6 +141,10 @@ module BABYLON.GUI {
             return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
         }           
 
+        /**
+         * Creates a new Line
+         * @param name defines the control name
+         */
         constructor(public name?: string) {
             super(name);
 

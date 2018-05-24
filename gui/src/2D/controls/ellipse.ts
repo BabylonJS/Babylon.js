@@ -1,7 +1,7 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
-    /** Class used to render 2D ellipses */
+    /** Class used to create 2D ellipse containers */
     export class Ellipse extends Container {
         private _thickness = 1;       
         
