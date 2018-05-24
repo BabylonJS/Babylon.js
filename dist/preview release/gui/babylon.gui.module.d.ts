@@ -374,6 +374,7 @@ declare module BABYLON.GUI {
         isEqualsTo(other: Measure): boolean;
         /**
          * Creates an empty measure
+         * @returns a new measure
          */
         static Empty(): Measure;
     }
@@ -385,25 +386,91 @@ declare module BABYLON.GUI {
      * Class used to transport Vector2 information for pointer events
      */
     class Vector2WithInfo extends Vector2 {
+        /** defines the current mouse button index */
         buttonIndex: number;
         /**
          * Creates a new Vector2WithInfo
          * @param source defines the vector2 data to transport
          * @param buttonIndex defines the current mouse button index
          */
-        constructor(source: Vector2, buttonIndex?: number);
+        constructor(source: Vector2, 
+            /** defines the current mouse button index */
+            buttonIndex?: number);
     }
+    /** Class used to provide 2D matrix features */
     class Matrix2D {
+        /** Gets the internal array of 6 floats used to store matrix data */
         m: Float32Array;
+        /**
+         * Creates a new matrix
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         */
         constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
+        /**
+         * Fills the matrix from direct values
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         * @returns the current modified matrix
+         */
         fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
+        /**
+         * Gets matrix determinant
+         * @returns the determinant
+         */
         determinant(): number;
+        /**
+         * Inverses the matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
         invertToRef(result: Matrix2D): Matrix2D;
+        /**
+         * Multiplies the current matrix with another one
+         * @param other defines the second operand
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
         multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
+        /**
+         * Apply the current matrix to a set of 2 floats and stores the result in a vector2
+         * @param x defines the x coordinate to transform
+         * @param y defines the x coordinate to transform
+         * @param result defines the target vector2
+         * @returns the current matrix
+         */
         transformCoordinates(x: number, y: number, result: Vector2): Matrix2D;
+        /**
+         * Creates an identity matrix
+         */
         static Identity(): Matrix2D;
+        /**
+         * Creates a translation matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the translation
+         * @param y defines the y coordinate of the translation
+         * @param result defines the target matrix
+         */
         static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a scaling matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the scaling
+         * @param y defines the y coordinate of the scaling
+         * @param result defines the target matrix
+         */
         static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a rotation matrix and stores it in a target matrix
+         * @param angle defines the rotation angle
+         * @param result defines the target matrix
+         */
         static RotationToRef(angle: number, result: Matrix2D): void;
         private static _TempPreTranslationMatrix;
         private static _TempPostTranslationMatrix;
@@ -412,6 +479,16 @@ declare module BABYLON.GUI {
         private static _TempCompose0;
         private static _TempCompose1;
         private static _TempCompose2;
+        /**
+         * Compose a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+         * @param tx defines the x coordinate of the translation
+         * @param ty defines the y coordinate of the translation
+         * @param angle defines the rotation angle
+         * @param scaleX defines the x coordinate of the scaling
+         * @param scaleY defines the y coordinate of the scaling
+         * @param parentMatrix defines the parent matrix to multiply by (can be null)
+         * @param result defines the target matrix
+         */
         static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Nullable<Matrix2D>, result: Matrix2D): void;
     }
 }
@@ -981,6 +1058,9 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to create a 2D stack panel container
+     */
     class StackPanel extends Container {
         name: string | undefined;
         private _isVertical;
@@ -988,9 +1068,16 @@ declare module BABYLON.GUI {
         private _manualHeight;
         private _doNotTrackManualChanges;
         private _tempMeasureStore;
+        /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         isVertical: boolean;
+        /** Gets or sets panel width */
         width: string | number;
+        /** Gets or sets panel height */
         height: string | number;
+        /**
+         * Creates a new StackPanel
+         * @param name defines control name
+         */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -999,12 +1086,19 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /** Class used to create rectangle container */
     class Rectangle extends Container {
         name: string | undefined;
         private _thickness;
         private _cornerRadius;
+        /** Gets or sets border thickness */
         thickness: number;
+        /** Gets or sets the corner radius angle */
         cornerRadius: number;
+        /**
+         * Creates a new Rectangle
+         * @param name defines the control name
+         */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _localDraw(context: CanvasRenderingContext2D): void;
@@ -1016,7 +1110,7 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
-    /** Class used to render 2D ellipses */
+    /** Class used to create 2D ellipse containers */
     class Ellipse extends Container {
         name: string | undefined;
         private _thickness;
@@ -1049,16 +1143,28 @@ declare module BABYLON.GUI {
         private _connectedControlDirtyObserver;
         /** Gets or sets the dash pattern */
         dash: Array<number>;
+        /** Gets or sets the control connected with the line end */
         connectedControl: Control;
+        /** Gets or sets start coordinates on X axis */
         x1: string | number;
+        /** Gets or sets start coordinates on Y axis */
         y1: string | number;
+        /** Gets or sets end coordinates on X axis */
         x2: string | number;
+        /** Gets or sets end coordinates on Y axis */
         y2: string | number;
+        /** Gets or sets line width */
         lineWidth: number;
+        /** Gets or sets horizontal alignment */
         horizontalAlignment: number;
+        /** Gets or sets vertical alignment */
         verticalAlignment: number;
         private readonly _effectiveX2;
         private readonly _effectiveY2;
+        /**
+         * Creates a new Line
+         * @param name defines the control name
+         */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -1082,6 +1188,9 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to create slider controls
+     */
     class Slider extends Control {
         name: string | undefined;
         private _thumbWidth;
@@ -1093,18 +1202,34 @@ declare module BABYLON.GUI {
         private _barOffset;
         private _isThumbCircle;
         private _isThumbClamped;
+        /** Observable raised when the sldier value changes */
         onValueChangedObservable: Observable<number>;
+        /** Gets or sets border color */
         borderColor: string;
+        /** Gets or sets background color */
         background: string;
+        /** Gets or sets main bar offset */
         barOffset: string | number;
+        /** Gets main bar offset in pixels*/
         readonly barOffsetInPixels: number;
+        /** Gets or sets thumb width */
         thumbWidth: string | number;
+        /** Gets thumb width in pixels */
         readonly thumbWidthInPixels: number;
+        /** Gets or sets minimum value */
         minimum: number;
+        /** Gets or sets maximum value */
         maximum: number;
+        /** Gets or sets current value */
         value: number;
+        /** Gets or sets a boolean indicating if the thumb should be round or square */
         isThumbCircle: boolean;
+        /** Gets or sets a value indicating if the thumb can go over main bar extends */
         isThumbClamped: boolean;
+        /**
+         * Creates a new Slider
+         * @param name defines the control name
+         */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -1154,18 +1279,31 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to create radio button controls
+     */
     class RadioButton extends Control {
         name: string | undefined;
         private _isChecked;
         private _background;
         private _checkSizeRatio;
         private _thickness;
+        /** Gets or sets border thickness */
         thickness: number;
+        /** Gets or sets group name */
         group: string;
+        /** Observable raised when isChecked is changed */
         onIsCheckedChangedObservable: Observable<boolean>;
+        /** Gets or sets a value indicating the ratio between overall size and check size */
         checkSizeRatio: number;
+        /** Gets or sets background color */
         background: string;
+        /** Gets or sets a boolean indicating if the checkbox is checked or not */
         isChecked: boolean;
+        /**
+         * Creates a new RadioButton
+         * @param name defines the control name
+         */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -1175,6 +1313,9 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to create text block control
+     */
     class TextBlock extends Control {
         /**
          * Defines the name of the control
@@ -1577,46 +1718,96 @@ declare module BABYLON.GUI {
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to store key control properties
+     */
     class KeyPropertySet {
+        /** Width */
         width?: string;
+        /** Height */
         height?: string;
+        /** Left padding */
         paddingLeft?: string;
+        /** Right padding */
         paddingRight?: string;
+        /** Top padding */
         paddingTop?: string;
+        /** Bottom padding */
         paddingBottom?: string;
+        /** Foreground color */
         color?: string;
+        /** Background color */
         background?: string;
     }
+    /**
+     * Class used to create virtual keyboard
+     */
     class VirtualKeyboard extends StackPanel {
+        /** Observable raised when a key is pressed */
         onKeyPressObservable: Observable<string>;
+        /** Gets or sets default key button width */
         defaultButtonWidth: string;
+        /** Gets or sets default key button height */
         defaultButtonHeight: string;
+        /** Gets or sets default key button left padding */
         defaultButtonPaddingLeft: string;
+        /** Gets or sets default key button right padding */
         defaultButtonPaddingRight: string;
+        /** Gets or sets default key button top padding */
         defaultButtonPaddingTop: string;
+        /** Gets or sets default key button bottom padding */
         defaultButtonPaddingBottom: string;
+        /** Gets or sets default key button foreground color */
         defaultButtonColor: string;
+        /** Gets or sets default key button background color */
         defaultButtonBackground: string;
+        /** Gets or sets shift button foreground color */
         shiftButtonColor: string;
+        /** Gets or sets shift button thickness*/
         selectedShiftThickness: number;
+        /** Gets shift key state */
         shiftState: number;
         protected _getTypeName(): string;
         private _createKey(key, propertySet);
+        /**
+         * Adds a new row of keys
+         * @param keys defines the list of keys to add
+         * @param propertySets defines the associated property sets
+         */
         addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
+        /**
+         * Set the shift key to a specific state
+         * @param shiftState defines the new shift state
+         */
         applyShiftState(shiftState: number): void;
         private _connectedInputText;
         private _onFocusObserver;
         private _onBlurObserver;
         private _onKeyPressObserver;
+        /** Gets the input text control attached with the keyboard */
         readonly connectedInputText: Nullable<InputText>;
+        /**
+         * Connects the keyboard with an input text control
+         * @param input defines the target control
+         */
         connect(input: InputText): void;
+        /**
+         * Disconnects the keyboard from an input text control
+         */
         disconnect(): void;
+        /**
+         * Creates a new keyboard using a default layout
+         * @returns a new VirtualKeyboard
+         */
         static CreateDefaultLayout(): VirtualKeyboard;
     }
 }
 
 
 declare module BABYLON.GUI {
+    /**
+     * Class used to create multi line control
+     */
     class MultiLine extends Control {
         name: string | undefined;
         private _lineWidth;
@@ -1626,19 +1817,45 @@ declare module BABYLON.GUI {
         private _minY;
         private _maxX;
         private _maxY;
+        /**
+         * Creates a new MultiLine
+         * @param name defines the control name
+         */
         constructor(name?: string | undefined);
+        /** Gets or sets dash pattern */
         dash: Array<number>;
+        /**
+         * Gets point stored at specified index
+         * @param index defines the index to look for
+         * @returns the requested point if found
+         */
         getAt(index: number): MultiLinePoint;
+        /** Function called when a point is updated */
         onPointUpdate: () => void;
+        /**
+         * Adds new points to the point collection
+         * @param items defines the list of items (mesh, control or 2d coordiantes) to add
+         * @returns the list of created MultiLinePoint
+         */
         add(...items: (AbstractMesh | Control | {
             x: string | number;
             y: string | number;
         })[]): MultiLinePoint[];
+        /**
+         * Adds a new point to the point collection
+         * @param item defines the item (mesh, control or 2d coordiantes) to add
+         * @returns the created MultiLinePoint
+         */
         push(item?: (AbstractMesh | Control | {
             x: string | number;
             y: string | number;
         })): MultiLinePoint;
+        /**
+         * Remove a specific value or point from the active point collection
+         * @param value defines the value or point to remove
+         */
         remove(value: number | MultiLinePoint): void;
+        /** Gets or sets line width */
         lineWidth: number;
         horizontalAlignment: number;
         verticalAlignment: number;
@@ -1807,13 +2024,16 @@ declare module BABYLON.GUI {
      * Class used to transport Vector3 information for pointer events
      */
     class Vector3WithInfo extends Vector3 {
+        /** defines the current mouse button index */
         buttonIndex: number;
         /**
          * Creates a new Vector3WithInfo
          * @param source defines the vector3 data to transport
          * @param buttonIndex defines the current mouse button index
          */
-        constructor(source: Vector3, buttonIndex?: number);
+        constructor(source: Vector3, 
+            /** defines the current mouse button index */
+            buttonIndex?: number);
     }
 }
 

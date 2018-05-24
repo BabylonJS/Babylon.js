@@ -1,6 +1,9 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Class used to create a 2D stack panel container
+     */
     export class StackPanel extends Container {
         private _isVertical = true;
         private _manualWidth = false;
@@ -8,6 +11,7 @@ module BABYLON.GUI {
         private _doNotTrackManualChanges = false;
         private _tempMeasureStore = Measure.Empty();
 
+        /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         public get isVertical(): boolean {
             return this._isVertical;
         }
@@ -21,6 +25,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
        
+        /** Gets or sets panel width */
         public set width(value: string | number ) {
             if (!this._doNotTrackManualChanges) {
                 this._manualWidth = true;
@@ -39,6 +44,7 @@ module BABYLON.GUI {
             return this._width.toString(this._host);
         }        
 
+        /** Gets or sets panel height */
         public set height(value: string | number ) {
             if (!this._doNotTrackManualChanges) {
                 this._manualHeight = true;
@@ -57,6 +63,10 @@ module BABYLON.GUI {
             return this._height.toString(this._host);
         }
     
+        /**
+         * Creates a new StackPanel
+         * @param name defines control name
+         */
         constructor(public name?: string) {
             super(name);
         }

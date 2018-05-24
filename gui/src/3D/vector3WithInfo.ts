@@ -10,7 +10,9 @@ module BABYLON.GUI {
          * @param source defines the vector3 data to transport
          * @param buttonIndex defines the current mouse button index
          */
-        public constructor(source: Vector3, public buttonIndex: number = 0) {
+        public constructor(source: Vector3, 
+            /** defines the current mouse button index */
+            public buttonIndex: number = 0) {
             super(source.x, source.y, source.z);
         }
     }

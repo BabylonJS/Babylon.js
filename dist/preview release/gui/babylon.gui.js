@@ -1028,6 +1028,7 @@ var BABYLON;
             };
             /**
              * Creates an empty measure
+             * @returns a new measure
              */
             Measure.Empty = function () {
                 return new Measure(0, 0, 0, 0);
@@ -1056,7 +1057,9 @@ var BABYLON;
              * @param source defines the vector2 data to transport
              * @param buttonIndex defines the current mouse button index
              */
-            function Vector2WithInfo(source, buttonIndex) {
+            function Vector2WithInfo(source, 
+            /** defines the current mouse button index */
+            buttonIndex) {
                 if (buttonIndex === void 0) { buttonIndex = 0; }
                 var _this = _super.call(this, source.x, source.y) || this;
                 _this.buttonIndex = buttonIndex;
@@ -1065,11 +1068,32 @@ var BABYLON;
             return Vector2WithInfo;
         }(BABYLON.Vector2));
         GUI.Vector2WithInfo = Vector2WithInfo;
+        /** Class used to provide 2D matrix features */
         var Matrix2D = /** @class */ (function () {
+            /**
+             * Creates a new matrix
+             * @param m00 defines value for (0, 0)
+             * @param m01 defines value for (0, 1)
+             * @param m10 defines value for (1, 0)
+             * @param m11 defines value for (1, 1)
+             * @param m20 defines value for (2, 0)
+             * @param m21 defines value for (2, 1)
+             */
             function Matrix2D(m00, m01, m10, m11, m20, m21) {
+                /** Gets the internal array of 6 floats used to store matrix data */
                 this.m = new Float32Array(6);
                 this.fromValues(m00, m01, m10, m11, m20, m21);
             }
+            /**
+             * Fills the matrix from direct values
+             * @param m00 defines value for (0, 0)
+             * @param m01 defines value for (0, 1)
+             * @param m10 defines value for (1, 0)
+             * @param m11 defines value for (1, 1)
+             * @param m20 defines value for (2, 0)
+             * @param m21 defines value for (2, 1)
+             * @returns the current modified matrix
+             */
             Matrix2D.prototype.fromValues = function (m00, m01, m10, m11, m20, m21) {
                 this.m[0] = m00;
                 this.m[1] = m01;
@@ -1079,9 +1103,18 @@ var BABYLON;
                 this.m[5] = m21;
                 return this;
             };
+            /**
+             * Gets matrix determinant
+             * @returns the determinant
+             */
             Matrix2D.prototype.determinant = function () {
                 return this.m[0] * this.m[3] - this.m[1] * this.m[2];
             };
+            /**
+             * Inverses the matrix and stores it in a target matrix
+             * @param result defines the target matrix
+             * @returns the current matrix
+             */
             Matrix2D.prototype.invertToRef = function (result) {
                 var l0 = this.m[0];
                 var l1 = this.m[1];
@@ -1110,6 +1143,12 @@ var BABYLON;
                 result.m[5] = det5 * detDiv;
                 return this;
             };
+            /**
+             * Multiplies the current matrix with another one
+             * @param other defines the second operand
+             * @param result defines the target matrix
+             * @returns the current matrix
+             */
             Matrix2D.prototype.multiplyToRef = function (other, result) {
                 var l0 = this.m[0];
                 var l1 = this.m[1];
@@ -1131,26 +1170,63 @@ var BABYLON;
                 result.m[5] = l4 * r1 + l5 * r3 + r5;
                 return this;
             };
+            /**
+             * Apply the current matrix to a set of 2 floats and stores the result in a vector2
+             * @param x defines the x coordinate to transform
+             * @param y defines the x coordinate to transform
+             * @param result defines the target vector2
+             * @returns the current matrix
+             */
             Matrix2D.prototype.transformCoordinates = function (x, y, result) {
                 result.x = x * this.m[0] + y * this.m[2] + this.m[4];
                 result.y = x * this.m[1] + y * this.m[3] + this.m[5];
                 return this;
             };
             // Statics
+            /**
+             * Creates an identity matrix
+             */
             Matrix2D.Identity = function () {
                 return new Matrix2D(1, 0, 0, 1, 0, 0);
             };
+            /**
+             * Creates a translation matrix and stores it in a target matrix
+             * @param x defines the x coordinate of the translation
+             * @param y defines the y coordinate of the translation
+             * @param result defines the target matrix
+             */
             Matrix2D.TranslationToRef = function (x, y, result) {
                 result.fromValues(1, 0, 0, 1, x, y);
             };
+            /**
+             * Creates a scaling matrix and stores it in a target matrix
+             * @param x defines the x coordinate of the scaling
+             * @param y defines the y coordinate of the scaling
+             * @param result defines the target matrix
+             */
             Matrix2D.ScalingToRef = function (x, y, result) {
                 result.fromValues(x, 0, 0, y, 0, 0);
             };
+            /**
+             * Creates a rotation matrix and stores it in a target matrix
+             * @param angle defines the rotation angle
+             * @param result defines the target matrix
+             */
             Matrix2D.RotationToRef = function (angle, result) {
                 var s = Math.sin(angle);
                 var c = Math.cos(angle);
                 result.fromValues(c, s, -s, c, 0, 0);
             };
+            /**
+             * Compose a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+             * @param tx defines the x coordinate of the translation
+             * @param ty defines the y coordinate of the translation
+             * @param angle defines the rotation angle
+             * @param scaleX defines the x coordinate of the scaling
+             * @param scaleY defines the y coordinate of the scaling
+             * @param parentMatrix defines the parent matrix to multiply by (can be null)
+             * @param result defines the target matrix
+             */
             Matrix2D.ComposeToRef = function (tx, ty, angle, scaleX, scaleY, parentMatrix, result) {
                 Matrix2D.TranslationToRef(tx, ty, Matrix2D._TempPreTranslationMatrix);
                 Matrix2D.ScalingToRef(scaleX, scaleY, Matrix2D._TempScalingMatrix);
@@ -3017,8 +3093,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create a 2D stack panel container
+         */
         var StackPanel = /** @class */ (function (_super) {
             __extends(StackPanel, _super);
+            /**
+             * Creates a new StackPanel
+             * @param name defines control name
+             */
             function StackPanel(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3030,6 +3113,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(StackPanel.prototype, "isVertical", {
+                /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
                 get: function () {
                     return this._isVertical;
                 },
@@ -3047,6 +3131,7 @@ var BABYLON;
                 get: function () {
                     return this._width.toString(this._host);
                 },
+                /** Gets or sets panel width */
                 set: function (value) {
                     if (!this._doNotTrackManualChanges) {
                         this._manualWidth = true;
@@ -3065,6 +3150,7 @@ var BABYLON;
                 get: function () {
                     return this._height.toString(this._host);
                 },
+                /** Gets or sets panel height */
                 set: function (value) {
                     if (!this._doNotTrackManualChanges) {
                         this._manualHeight = true;
@@ -3159,8 +3245,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /** Class used to create rectangle container */
         var Rectangle = /** @class */ (function (_super) {
             __extends(Rectangle, _super);
+            /**
+             * Creates a new Rectangle
+             * @param name defines the control name
+             */
             function Rectangle(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3169,6 +3260,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Rectangle.prototype, "thickness", {
+                /** Gets or sets border thickness */
                 get: function () {
                     return this._thickness;
                 },
@@ -3183,6 +3275,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Rectangle.prototype, "cornerRadius", {
+                /** Gets or sets the corner radius angle */
                 get: function () {
                     return this._cornerRadius;
                 },
@@ -3286,7 +3379,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        /** Class used to render 2D ellipses */
+        /** Class used to create 2D ellipse containers */
         var Ellipse = /** @class */ (function (_super) {
             __extends(Ellipse, _super);
             /**
@@ -3372,6 +3465,10 @@ var BABYLON;
         /** Class used to render 2D lines */
         var Line = /** @class */ (function (_super) {
             __extends(Line, _super);
+            /**
+             * Creates a new Line
+             * @param name defines the control name
+             */
             function Line(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3402,6 +3499,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "connectedControl", {
+                /** Gets or sets the control connected with the line end */
                 get: function () {
                     return this._connectedControl;
                 },
@@ -3424,6 +3522,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "x1", {
+                /** Gets or sets start coordinates on X axis */
                 get: function () {
                     return this._x1.toString(this._host);
                 },
@@ -3439,6 +3538,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "y1", {
+                /** Gets or sets start coordinates on Y axis */
                 get: function () {
                     return this._y1.toString(this._host);
                 },
@@ -3454,6 +3554,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "x2", {
+                /** Gets or sets end coordinates on X axis */
                 get: function () {
                     return this._x2.toString(this._host);
                 },
@@ -3469,6 +3570,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "y2", {
+                /** Gets or sets end coordinates on Y axis */
                 get: function () {
                     return this._y2.toString(this._host);
                 },
@@ -3484,6 +3586,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "lineWidth", {
+                /** Gets or sets line width */
                 get: function () {
                     return this._lineWidth;
                 },
@@ -3498,6 +3601,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "horizontalAlignment", {
+                /** Gets or sets horizontal alignment */
                 set: function (value) {
                     return;
                 },
@@ -3505,6 +3609,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "verticalAlignment", {
+                /** Gets or sets vertical alignment */
                 set: function (value) {
                     return;
                 },
@@ -3614,8 +3719,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create slider controls
+         */
         var Slider = /** @class */ (function (_super) {
             __extends(Slider, _super);
+            /**
+             * Creates a new Slider
+             * @param name defines the control name
+             */
             function Slider(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3628,6 +3740,7 @@ var BABYLON;
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 _this._isThumbCircle = false;
                 _this._isThumbClamped = false;
+                /** Observable raised when the sldier value changes */
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -3635,6 +3748,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Slider.prototype, "borderColor", {
+                /** Gets or sets border color */
                 get: function () {
                     return this._borderColor;
                 },
@@ -3649,6 +3763,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "background", {
+                /** Gets or sets background color */
                 get: function () {
                     return this._background;
                 },
@@ -3663,6 +3778,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "barOffset", {
+                /** Gets or sets main bar offset */
                 get: function () {
                     return this._barOffset.toString(this._host);
                 },
@@ -3678,6 +3794,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "barOffsetInPixels", {
+                /** Gets main bar offset in pixels*/
                 get: function () {
                     return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -3685,6 +3802,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "thumbWidth", {
+                /** Gets or sets thumb width */
                 get: function () {
                     return this._thumbWidth.toString(this._host);
                 },
@@ -3700,6 +3818,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "thumbWidthInPixels", {
+                /** Gets thumb width in pixels */
                 get: function () {
                     return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -3707,6 +3826,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "minimum", {
+                /** Gets or sets minimum value */
                 get: function () {
                     return this._minimum;
                 },
@@ -3722,6 +3842,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "maximum", {
+                /** Gets or sets maximum value */
                 get: function () {
                     return this._maximum;
                 },
@@ -3737,6 +3858,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "value", {
+                /** Gets or sets current value */
                 get: function () {
                     return this._value;
                 },
@@ -3753,6 +3875,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "isThumbCircle", {
+                /** Gets or sets a boolean indicating if the thumb should be round or square */
                 get: function () {
                     return this._isThumbCircle;
                 },
@@ -3767,6 +3890,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "isThumbClamped", {
+                /** Gets or sets a value indicating if the thumb can go over main bar extends */
                 get: function () {
                     return this._isThumbClamped;
                 },
@@ -4045,8 +4169,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create radio button controls
+         */
         var RadioButton = /** @class */ (function (_super) {
             __extends(RadioButton, _super);
+            /**
+             * Creates a new RadioButton
+             * @param name defines the control name
+             */
             function RadioButton(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -4054,12 +4185,15 @@ var BABYLON;
                 _this._background = "black";
                 _this._checkSizeRatio = 0.8;
                 _this._thickness = 1;
+                /** Gets or sets group name */
                 _this.group = "";
+                /** Observable raised when isChecked is changed */
                 _this.onIsCheckedChangedObservable = new BABYLON.Observable();
                 _this.isPointerBlocker = true;
                 return _this;
             }
             Object.defineProperty(RadioButton.prototype, "thickness", {
+                /** Gets or sets border thickness */
                 get: function () {
                     return this._thickness;
                 },
@@ -4074,6 +4208,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(RadioButton.prototype, "checkSizeRatio", {
+                /** Gets or sets a value indicating the ratio between overall size and check size */
                 get: function () {
                     return this._checkSizeRatio;
                 },
@@ -4089,6 +4224,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(RadioButton.prototype, "background", {
+                /** Gets or sets background color */
                 get: function () {
                     return this._background;
                 },
@@ -4103,6 +4239,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(RadioButton.prototype, "isChecked", {
+                /** Gets or sets a boolean indicating if the checkbox is checked or not */
                 get: function () {
                     return this._isChecked;
                 },
@@ -4195,6 +4332,9 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create text block control
+         */
         var TextBlock = /** @class */ (function (_super) {
             __extends(TextBlock, _super);
             /**
@@ -5906,27 +6046,45 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to store key control properties
+         */
         var KeyPropertySet = /** @class */ (function () {
             function KeyPropertySet() {
             }
             return KeyPropertySet;
         }());
         GUI.KeyPropertySet = KeyPropertySet;
+        /**
+         * Class used to create virtual keyboard
+         */
         var VirtualKeyboard = /** @class */ (function (_super) {
             __extends(VirtualKeyboard, _super);
             function VirtualKeyboard() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
+                /** Observable raised when a key is pressed */
                 _this.onKeyPressObservable = new BABYLON.Observable();
+                /** Gets or sets default key button width */
                 _this.defaultButtonWidth = "40px";
+                /** Gets or sets default key button height */
                 _this.defaultButtonHeight = "40px";
+                /** Gets or sets default key button left padding */
                 _this.defaultButtonPaddingLeft = "2px";
+                /** Gets or sets default key button right padding */
                 _this.defaultButtonPaddingRight = "2px";
+                /** Gets or sets default key button top padding */
                 _this.defaultButtonPaddingTop = "2px";
+                /** Gets or sets default key button bottom padding */
                 _this.defaultButtonPaddingBottom = "2px";
+                /** Gets or sets default key button foreground color */
                 _this.defaultButtonColor = "#DDD";
+                /** Gets or sets default key button background color */
                 _this.defaultButtonBackground = "#070707";
+                /** Gets or sets shift button foreground color */
                 _this.shiftButtonColor = "#7799FF";
+                /** Gets or sets shift button thickness*/
                 _this.selectedShiftThickness = 1;
+                /** Gets shift key state */
                 _this.shiftState = 0;
                 return _this;
             }
@@ -5955,6 +6113,11 @@ var BABYLON;
                 });
                 return button;
             };
+            /**
+             * Adds a new row of keys
+             * @param keys defines the list of keys to add
+             * @param propertySets defines the associated property sets
+             */
             VirtualKeyboard.prototype.addKeysRow = function (keys, propertySets) {
                 var panel = new GUI.StackPanel();
                 panel.isVertical = false;
@@ -5968,6 +6131,10 @@ var BABYLON;
                 }
                 this.addControl(panel);
             };
+            /**
+             * Set the shift key to a specific state
+             * @param shiftState defines the new shift state
+             */
             VirtualKeyboard.prototype.applyShiftState = function (shiftState) {
                 if (!this.children) {
                     return;
@@ -5993,12 +6160,17 @@ var BABYLON;
                 }
             };
             Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
+                /** Gets the input text control attached with the keyboard */
                 get: function () {
                     return this._connectedInputText;
                 },
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Connects the keyboard with an input text control
+             * @param input defines the target control
+             */
             VirtualKeyboard.prototype.connect = function (input) {
                 var _this = this;
                 this.isVisible = false;
@@ -6036,6 +6208,9 @@ var BABYLON;
                     }
                 });
             };
+            /**
+             * Disconnects the keyboard from an input text control
+             */
             VirtualKeyboard.prototype.disconnect = function () {
                 if (!this._connectedInputText) {
                     return;
@@ -6046,6 +6221,10 @@ var BABYLON;
                 this._connectedInputText = null;
             };
             // Statics
+            /**
+             * Creates a new keyboard using a default layout
+             * @returns a new VirtualKeyboard
+             */
             VirtualKeyboard.CreateDefaultLayout = function () {
                 var returnValue = new VirtualKeyboard();
                 returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
@@ -6067,12 +6246,20 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create multi line control
+         */
         var MultiLine = /** @class */ (function (_super) {
             __extends(MultiLine, _super);
+            /**
+             * Creates a new MultiLine
+             * @param name defines the control name
+             */
             function MultiLine(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._lineWidth = 1;
+                /** Function called when a point is updated */
                 _this.onPointUpdate = function () {
                     _this._markAsDirty();
                 };
@@ -6084,6 +6271,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(MultiLine.prototype, "dash", {
+                /** Gets or sets dash pattern */
                 get: function () {
                     return this._dash;
                 },
@@ -6097,12 +6285,22 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Gets point stored at specified index
+             * @param index defines the index to look for
+             * @returns the requested point if found
+             */
             MultiLine.prototype.getAt = function (index) {
                 if (!this._points[index]) {
                     this._points[index] = new GUI.MultiLinePoint(this);
                 }
                 return this._points[index];
             };
+            /**
+             * Adds new points to the point collection
+             * @param items defines the list of items (mesh, control or 2d coordiantes) to add
+             * @returns the list of created MultiLinePoint
+             */
             MultiLine.prototype.add = function () {
                 var _this = this;
                 var items = [];
@@ -6111,6 +6309,11 @@ var BABYLON;
                 }
                 return items.map(function (item) { return _this.push(item); });
             };
+            /**
+             * Adds a new point to the point collection
+             * @param item defines the item (mesh, control or 2d coordiantes) to add
+             * @returns the created MultiLinePoint
+             */
             MultiLine.prototype.push = function (item) {
                 var point = this.getAt(this._points.length);
                 if (item == null)
@@ -6127,6 +6330,10 @@ var BABYLON;
                 }
                 return point;
             };
+            /**
+             * Remove a specific value or point from the active point collection
+             * @param value defines the value or point to remove
+             */
             MultiLine.prototype.remove = function (value) {
                 var index;
                 if (value instanceof GUI.MultiLinePoint) {
@@ -6146,6 +6353,7 @@ var BABYLON;
                 this._points.splice(index, 1);
             };
             Object.defineProperty(MultiLine.prototype, "lineWidth", {
+                /** Gets or sets line width */
                 get: function () {
                     return this._lineWidth;
                 },
@@ -6726,7 +6934,9 @@ var BABYLON;
              * @param source defines the vector3 data to transport
              * @param buttonIndex defines the current mouse button index
              */
-            function Vector3WithInfo(source, buttonIndex) {
+            function Vector3WithInfo(source, 
+            /** defines the current mouse button index */
+            buttonIndex) {
                 if (buttonIndex === void 0) { buttonIndex = 0; }
                 var _this = _super.call(this, source.x, source.y, source.z) || this;
                 _this.buttonIndex = buttonIndex;
