@@ -30,7 +30,7 @@ module BABYLON.GLTF2 {
         protected _loadVertexDataAsync(context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> { return null; }
 
         /** Override this method to modify the default behavior for loading materials. */
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
 
         /** Override this method to modify the default behavior for loading textures. */
         protected _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>> { return null; }
@@ -40,8 +40,8 @@ module BABYLON.GLTF2 {
 
         // #endregion
 
-        /** Helper method called by a loader extension to load an glTF extension. */
-        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>> {
+        /** Helper method called by a loader extension to load an extension on a glTF property. */
+        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, extension: TProperty) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>> {
             if (!property.extensions) {
                 return null;
             }
@@ -53,7 +53,7 @@ module BABYLON.GLTF2 {
                 return null;
             }
 
-            // Clear out the extension before executing the action to avoid recursing into the same property.
+            // Clear out the extension before executing the action to avoid infinite recursion.
             delete extensions[this.name];
 
             try {
@@ -62,6 +62,31 @@ module BABYLON.GLTF2 {
             finally {
                 // Restore the extension after executing the action.
                 extensions[this.name] = extension;
+            }
+        }
+
+        /** Helper method called by a loader extension to load an extras value on a glTF property. */
+        protected _loadExtrasValueAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, value: TProperty) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>> {
+            if (!property.extras) {
+                return null;
+            }
+
+            const extras = property.extras;
+
+            const value = extras[this.name] as TProperty;
+            if (value === undefined) {
+                return null;
+            }
+
+            // Clear out the extras value before executing the action to avoid infinite recursion.
+            delete extras[this.name];
+
+            try {
+                return actionAsync(`${context}/extras/${this.name}`, value);
+            }
+            finally {
+                // Restore the extras value after executing the action.
+                extras[this.name] = value;
             }
         }
 
@@ -81,8 +106,8 @@ module BABYLON.GLTF2 {
         }
 
         /** Helper method called by the loader to allow extensions to override loading materials. */
-        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign));
+        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, assign));
         }
 
         /** Helper method called by the loader to allow extensions to override loading textures. */
