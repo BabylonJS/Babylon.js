@@ -10,6 +10,16 @@ module BABYLON.GLTF2 {
         _total?: number;
     }
 
+    class _ArrayItem {
+        public static Assign(values?: _IArrayItem[]): void {
+            if (values) {
+                for (let index = 0; index < values.length; index++) {
+                    values[index]._index = index;
+                }
+            }
+        }
+    }
+
     /**
      * Loader for loading a glTF 2.0 asset
      */
@@ -520,7 +530,7 @@ module BABYLON.GLTF2 {
 
             const promises = new Array<Promise<void>>();
 
-            const babylonMesh = new Mesh(node.name || `node${node._index}`, this._babylonScene, node._parent._babylonMesh);
+            const babylonMesh = new Mesh(node.name || `node${node._index}`, this._babylonScene, node._parent ? node._parent._babylonMesh : null);
             node._babylonMesh = babylonMesh;
 
             GLTFLoader._LoadTransform(node, babylonMesh);
@@ -598,7 +608,7 @@ module BABYLON.GLTF2 {
             }
             else {
                 const material = GLTFLoader._GetProperty(`${context}/material}`, this._gltf.materials, primitive.material);
-                promises.push(this._loadMaterialAsync(`#/materials/${material._index}`, material, babylonMesh, babylonDrawMode, babylonMaterial => {
+                promises.push(this._loadMaterialAsync(`#/materials/${material._index}`, material, mesh, babylonMesh, babylonDrawMode, babylonMaterial => {
                     babylonMesh.material = babylonMaterial;
                 }));
             }
@@ -822,7 +832,7 @@ module BABYLON.GLTF2 {
             }
 
             let babylonParentBone: Nullable<Bone> = null;
-            if (node._parent._babylonMesh !== this._rootBabylonMesh) {
+            if (node._parent && node._parent._babylonMesh !== this._rootBabylonMesh) {
                 babylonParentBone = this._loadBone(node._parent, skin, babylonBones);
             }
 
@@ -1336,8 +1346,8 @@ module BABYLON.GLTF2 {
         }
 
         /** @hidden */
-        public _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, babylonDrawMode, assign);
+        public _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, mesh, babylonMesh, babylonDrawMode, assign);
             if (promise) {
                 return promise;
             }
@@ -1347,7 +1357,7 @@ module BABYLON.GLTF2 {
             if (!babylonData) {
                 const promises = new Array<Promise<void>>();
 
-                const name = material.name || `materialSG_${material._index}`;
+                const name = material.name || `material_${material._index}`;
                 const babylonMaterial = this._createMaterial(name, babylonDrawMode);
 
                 promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));

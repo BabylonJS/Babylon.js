@@ -7,29 +7,25 @@ module BABYLON.GLTF2.Extensions {
     export class MSFT_sRGBFactors extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        constructor(loader: GLTFLoader) {
-            super(loader);
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+            return this._loadExtrasValueAsync<boolean>(context, material, (extensionContext, value) => {
+                if (value) {
+                    return this._loader._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, (babylonMaterial: PBRMaterial) => {
+                        if (!babylonMaterial.albedoTexture) {
+                            babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor);
+                        }
 
-            const materials = loader._gltf.materials;
-            if (materials && materials.length) {
-                for (const material of materials) {
-                    if (material && material.extras && material.extras.MSFT_sRGBFactors) {
-                        this._loader.onMaterialLoadedObservable.add(this._onMaterialLoaded);
-                        break;
-                    }
+                        if (!babylonMaterial.reflectivityTexture) {
+                            babylonMaterial.reflectivityColor.toLinearSpaceToRef(babylonMaterial.reflectivityColor);
+                        }
+
+                        assign(babylonMaterial);
+                    });
                 }
-            }
+
+                return null;
+            });
         }
-
-        private _onMaterialLoaded = (material: PBRMaterial): void => {
-            if (!material.albedoTexture) {
-                material.albedoColor.toLinearSpaceToRef(material.albedoColor);
-            }
-
-            if (!material.reflectivityTexture) {
-                material.reflectivityColor.toLinearSpaceToRef(material.reflectivityColor);
-            }
-        };
     }
 
     GLTFLoader._Register(NAME, loader => new MSFT_sRGBFactors(loader));

@@ -7,29 +7,25 @@ module BABYLON.GLTF2.Extensions {
     export class MSFT_minecraftMesh extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        constructor(loader: GLTFLoader) {
-            super(loader);
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+            return this._loadExtrasValueAsync<boolean>(context, mesh, (extensionContext, value) => {
+                if (value) {
+                    return this._loader._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, (babylonMaterial: PBRMaterial) => {
+                        if (babylonMaterial.needAlphaBlending()) {
+                            babylonMaterial.forceDepthWrite = true;
+                            babylonMaterial.separateCullingPass = true;
+                        }
 
-            const meshes = loader._gltf.meshes;
-            if (meshes && meshes.length) {
-                for (const mesh of meshes) {
-                    if (mesh && mesh.extras && mesh.extras.MSFT_minecraftMesh) {
-                        this._loader.onMaterialLoadedObservable.add(this._onMaterialLoaded);
-                        break;
-                    }
+                        babylonMaterial.backFaceCulling = babylonMaterial.forceDepthWrite;
+                        babylonMaterial.twoSidedLighting = true;
+
+                        assign(babylonMaterial);
+                    });
                 }
-            }
+
+                return null;
+            });
         }
-
-        private _onMaterialLoaded = (material: PBRMaterial): void => {
-            if (material.needAlphaBlending()) {
-                material.forceDepthWrite = true;
-                material.separateCullingPass = true;
-            }
-
-            material.backFaceCulling = material.forceDepthWrite;
-            material.twoSidedLighting = true;
-        };
     }
 
     GLTFLoader._Register(NAME, loader => new MSFT_minecraftMesh(loader));
