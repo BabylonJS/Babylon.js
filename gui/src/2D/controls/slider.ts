@@ -1,6 +1,9 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Class used to create slider controls
+     */
     export class Slider extends Control {
         private _thumbWidth = new ValueAndUnit(30, ValueAndUnit.UNITMODE_PIXEL, false);
         private _minimum = 0;
@@ -12,8 +15,10 @@ module BABYLON.GUI {
         private _isThumbCircle = false;
         private _isThumbClamped = false;
 
+        /** Observable raised when the sldier value changes */
         public onValueChangedObservable = new Observable<number>();
 
+        /** Gets or sets border color */
         public get borderColor(): string {
             return this._borderColor;
         }
@@ -27,6 +32,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets background color */
         public get background(): string {
             return this._background;
         }
@@ -40,10 +46,12 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets main bar offset */
         public get barOffset(): string | number {
             return this._barOffset.toString(this._host);
         }
 
+        /** Gets main bar offset in pixels*/
         public get barOffsetInPixels(): number {
             return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -58,10 +66,12 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets thumb width */
         public get thumbWidth(): string | number {
             return this._thumbWidth.toString(this._host);
         }
 
+        /** Gets thumb width in pixels */       
         public get thumbWidthInPixels(): number {
             return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -76,6 +86,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets minimum value */
         public get minimum(): number {
             return this._minimum;
         }
@@ -91,6 +102,7 @@ module BABYLON.GUI {
             this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
         }
 
+        /** Gets or sets maximum value */        
         public get maximum(): number {
             return this._maximum;
         }
@@ -106,6 +118,7 @@ module BABYLON.GUI {
             this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
         }
 
+        /** Gets or sets current value */
         public get value(): number {
             return this._value;
         }
@@ -122,6 +135,7 @@ module BABYLON.GUI {
             this.onValueChangedObservable.notifyObservers(this._value);
         }
 
+        /** Gets or sets a boolean indicating if the thumb should be round or square */
         public get isThumbCircle(): boolean {
             return this._isThumbCircle;
         }
@@ -135,11 +149,10 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-
+        /** Gets or sets a value indicating if the thumb can go over main bar extends */
         public get isThumbClamped(): boolean {
             return this._isThumbClamped;
         }
-
 
         public set isThumbClamped(value: boolean) {
             if (this._isThumbClamped === value) {
@@ -150,7 +163,10 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-
+       /**
+        * Creates a new Slider
+        * @param name defines the control name
+        */
         constructor(public name?: string) {
             super(name);
 
