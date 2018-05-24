@@ -1,9 +1,11 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /** Class used to render 2D ellipses */
     export class Ellipse extends Container {
         private _thickness = 1;       
         
+        /** Gets or sets border thickness */
         public get thickness(): number {
             return this._thickness;
         }
@@ -17,6 +19,10 @@ module BABYLON.GUI {
             this._markAsDirty();
         }                
      
+        /**
+         * Creates a new Ellipse
+         * @param name defines the control name
+         */
         constructor(public name?: string) {
             super(name);
         }

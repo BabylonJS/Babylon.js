@@ -270,9 +270,16 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
         return;
     }
 
+    // Check first sub module like BABYLON.Debug or BABYLON.GUI
+    var firstChild = namespace.children[0];
+    if (firstChild.kindString === "Module") {
+        namespace = firstChild;
+    }
+
     // Validate Classes
     for (var a in namespace.children) {
         containerNode = namespace.children[a];
+
 
         // Account for undefined access modifiers.
         if (!containerNode.flags.isPublic &&

@@ -1,8 +1,10 @@
 module BABYLON.Debug {
     /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
+     * Class used to render a debug view of a given skeleton
+     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+     */
     export class SkeletonViewer {
+        /** Gets or sets the color used to render the skeleton */
         public color: Color3 = Color3.White();
 
         private _scene: Scene;
@@ -11,7 +13,24 @@ module BABYLON.Debug {
         private _isEnabled = false;
         private _renderFunction: () => void;
 
-        constructor(public skeleton: Skeleton, public mesh: AbstractMesh, scene: Scene, public autoUpdateBonesMatrices = true, public renderingGroupId = 1) {
+        /**
+         * Creates a new SkeletonViewer
+         * @param skeleton defines the skeleton to render
+         * @param mesh defines the mesh attached to the skeleton
+         * @param scene defines the hosting scene
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default) 
+         * @param renderingGroupId defines the rendering group id to use with the viewer
+         */
+        constructor(
+            /** defines the skeleton to render */
+            public skeleton: Skeleton, 
+            /** defines the mesh attached to the skeleton */
+            public mesh: AbstractMesh, 
+            scene: Scene, 
+            /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+            public autoUpdateBonesMatrices = true, 
+            /** defines the rendering group id to use with the viewer */
+            public renderingGroupId = 1) {
             this._scene = scene;
 
             this.update();
@@ -19,6 +38,7 @@ module BABYLON.Debug {
             this._renderFunction = this.update.bind(this);
         }
 
+        /** Gets or sets a boolean indicating if the viewer is enabled */
         public set isEnabled(value: boolean) {
             if (this._isEnabled === value) {
                 return;
@@ -102,6 +122,7 @@ module BABYLON.Debug {
             }
         }
 
+        /** Update the viewer to sync with current skeleton state */
         public update() {
             if (this.autoUpdateBonesMatrices) {
                 this.skeleton.computeAbsoluteTransforms();
@@ -123,6 +144,7 @@ module BABYLON.Debug {
             this._debugMesh.color = this.color;
         }
 
+        /** Release associated resources */
         public dispose() {
             if (this._debugMesh) {
                 this.isEnabled = false;

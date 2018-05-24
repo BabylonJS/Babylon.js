@@ -1,7 +1,15 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
-    export class Vector2WithInfo extends Vector2 {        
+    /**
+     * Class used to transport Vector2 information for pointer events
+     */    
+    export class Vector2WithInfo extends Vector2 {    
+        /**
+         * Creates a new Vector2WithInfo
+         * @param source defines the vector2 data to transport
+         * @param buttonIndex defines the current mouse button index
+         */    
         public constructor(source: Vector2, public buttonIndex: number = 0) {
             super(source.x, source.y);
         }
