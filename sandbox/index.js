@@ -209,12 +209,16 @@ if (BABYLON.Engine.isSupported()) {
         });
     };
 
-    if (assetUrl) {
+    var loadFromAssetUrl = function () {
         var rootUrl = BABYLON.Tools.GetFolderPath(assetUrl);
         var fileName = BABYLON.Tools.GetFilename(assetUrl);
         BABYLON.SceneLoader.LoadAsync(rootUrl, fileName, engine).then(function (scene) {
+            if (currentScene) {
+                currentScene.dispose();
+            }
+
             sceneLoaded({ name: fileName }, scene);
-            currentScene = scene;
+
             scene.whenReadyAsync().then(function () {
                 engine.runRenderLoop(function () {
                     scene.render();
@@ -223,6 +227,10 @@ if (BABYLON.Engine.isSupported()) {
         }).catch(function (reason) {
             sceneError({ name: fileName }, null, reason.message || reason);
         });
+    };
+
+    if (assetUrl) {
+        loadFromAssetUrl();
     }
     else {
         filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
@@ -235,14 +243,6 @@ if (BABYLON.Engine.isSupported()) {
             return true;
         }).bind(this);
         filesInput.monitorElementForDragNDrop(canvas);
-
-        window.addEventListener("keydown", function (event) {
-            // Press R to reload
-            if (event.keyCode === 82 && event.target.nodeName !== "INPUT") {
-                debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
-                filesInput.reload();
-            }
-        });
 
         htmlInput.addEventListener('change', function (event) {
             var filestoLoad;
@@ -257,6 +257,19 @@ if (BABYLON.Engine.isSupported()) {
             filesInput.loadFiles(event);
         }, false);
     }
+
+    window.addEventListener("keydown", function (event) {
+        // Press R to reload
+        if (event.keyCode === 82 && event.target.nodeName !== "INPUT") {
+            debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
+            if (assetUrl) {
+                loadFromAssetUrl();
+            }
+            else {
+                filesInput.reload();
+            }
+        }
+    });
 
     if (kiosk) {
         footer.style.display = "none";
