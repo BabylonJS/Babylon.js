@@ -2189,28 +2189,51 @@ var BABYLON;
          * Abstract class that can be implemented to extend existing glTF loader behavior.
          */
         var GLTFLoaderExtension = /** @class */ (function () {
+            /**
+             * Creates new GLTFLoaderExtension
+             * @param loader defines the GLTFLoader to use
+             */
             function GLTFLoaderExtension(loader) {
+                /** Gets or sets a boolean indicating if the extension is enabled */
                 this.enabled = true;
                 this._loader = loader;
             }
+            /** Release all resources */
             GLTFLoaderExtension.prototype.dispose = function () {
                 delete this._loader;
             };
             // #region Overridable Methods
-            /** Override this method to modify the default behavior for loading scenes. */
+            /**
+             * Override this method to modify the default behavior for loading scenes.
+             * @hidden
+             */
             GLTFLoaderExtension.prototype._loadSceneAsync = function (context, node) { return null; };
-            /** Override this method to modify the default behavior for loading nodes. */
+            /**
+             * Override this method to modify the default behavior for loading nodes.
+             * @hidden
+             */
             GLTFLoaderExtension.prototype._loadNodeAsync = function (context, node) { return null; };
             /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
             GLTFLoaderExtension.prototype._loadVertexDataAsync = function (context, primitive, babylonMesh) { return null; };
-            /** Override this method to modify the default behavior for loading materials. */
+            /** Override this method to modify the default behavior for loading materials.
+             * @hidden
+             */
             GLTFLoaderExtension.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) { return null; };
-            /** Override this method to modify the default behavior for loading textures. */
+            /**
+             * Override this method to modify the default behavior for loading textures.
+             * @hidden
+             */
             GLTFLoaderExtension.prototype._loadTextureAsync = function (context, textureInfo, assign) { return null; };
-            /** Override this method to modify the default behavior for loading uris. */
+            /**
+             * Override this method to modify the default behavior for loading uris.
+             * @hidden
+             */
             GLTFLoaderExtension.prototype._loadUriAsync = function (context, uri) { return null; };
             // #endregion
-            /** Helper method called by a loader extension to load an glTF extension. */
+            /**
+             * Helper method called by a loader extension to load an glTF extension.
+             * @hidden
+             */
             GLTFLoaderExtension.prototype._loadExtensionAsync = function (context, property, actionAsync) {
                 if (!property.extensions) {
                     return null;
@@ -2230,27 +2253,45 @@ var BABYLON;
                     extensions[this.name] = extension;
                 }
             };
-            /** Helper method called by the loader to allow extensions to override loading scenes. */
+            /**
+             * Helper method called by the loader to allow extensions to override loading scenes.
+             * @hidden
+             */
             GLTFLoaderExtension._LoadSceneAsync = function (loader, context, scene) {
                 return loader._applyExtensions(function (extension) { return extension._loadSceneAsync(context, scene); });
             };
-            /** Helper method called by the loader to allow extensions to override loading nodes. */
+            /**
+             * Helper method called by the loader to allow extensions to override loading nodes.
+             * @hidden
+             */
             GLTFLoaderExtension._LoadNodeAsync = function (loader, context, node) {
                 return loader._applyExtensions(function (extension) { return extension._loadNodeAsync(context, node); });
             };
-            /** Helper method called by the loader to allow extensions to override loading mesh primitive vertex data. */
+            /**
+             * Helper method called by the loader to allow extensions to override loading mesh primitive vertex data.
+             * @hidden
+             */
             GLTFLoaderExtension._LoadVertexDataAsync = function (loader, context, primitive, babylonMesh) {
                 return loader._applyExtensions(function (extension) { return extension._loadVertexDataAsync(context, primitive, babylonMesh); });
             };
-            /** Helper method called by the loader to allow extensions to override loading materials. */
+            /**
+             * Helper method called by the loader to allow extensions to override loading materials.
+             * @hidden
+             */
             GLTFLoaderExtension._LoadMaterialAsync = function (loader, context, material, babylonMesh, babylonDrawMode, assign) {
                 return loader._applyExtensions(function (extension) { return extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign); });
             };
-            /** Helper method called by the loader to allow extensions to override loading textures. */
+            /**
+             * Helper method called by the loader to allow extensions to override loading textures.
+             * @hidden
+             */
             GLTFLoaderExtension._LoadTextureAsync = function (loader, context, textureInfo, assign) {
                 return loader._applyExtensions(function (extension) { return extension._loadTextureAsync(context, textureInfo, assign); });
             };
-            /** Helper method called by the loader to allow extensions to override loading uris. */
+            /**
+             * Helper method called by the loader to allow extensions to override loading uris.
+             * @hidden
+             */
             GLTFLoaderExtension._LoadUriAsync = function (loader, context, uri) {
                 return loader._applyExtensions(function (extension) { return extension._loadUriAsync(context, uri); });
             };
@@ -2715,6 +2756,7 @@ var BABYLON;
                     _this.name = NAME;
                     return _this;
                 }
+                /** @hidden */
                 KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
                     var _this = this;
                     return this._loadExtensionAsync(context, material, function (extensionContext, extension) {

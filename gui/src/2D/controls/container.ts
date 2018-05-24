@@ -1,13 +1,23 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Root class for 2D containers
+     * @see http://doc.babylonjs.com/how_to/gui#containers
+     */
     export class Container extends Control {
+        /** @hidden */
         protected _children = new Array<Control>();
+        /** @hidden */
         protected _measureForChildren = Measure.Empty();  
+        /** @hidden */
         protected _background: string;   
+        /** @hidden */
         protected _adaptWidthToChildren = false;
+        /** @hidden */
         protected _adaptHeightToChildren = false;
 
+        /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         public get adaptHeightToChildren(): boolean {
             return this._adaptHeightToChildren;
         }
@@ -26,6 +36,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }       
         
+        /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
         public get adaptWidthToChildren(): boolean {
             return this._adaptWidthToChildren;
         }
@@ -44,6 +55,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }           
 
+        /** Gets or sets background color */
         public get background(): string {
             return this._background;
         }
@@ -57,10 +69,15 @@ module BABYLON.GUI {
             this._markAsDirty();
         }  
 
+        /** Gets the list of children */
         public get children(): Control[] {
             return this._children;
         }        
 
+        /**
+         * Creates a new Container
+         * @param name defines the name of the container
+         */
         constructor(public name?: string) {
             super(name);
         }
@@ -69,6 +86,11 @@ module BABYLON.GUI {
             return "Container";
         }           
 
+        /**
+         * Gets a child using its name
+         * @param name defines the child name to look for
+         * @returns the child control if found
+         */
         public getChildByName(name: string): Nullable<Control> {
             for (var child of this._children) {
                 if (child.name === name) {
@@ -79,6 +101,12 @@ module BABYLON.GUI {
             return null;
         }       
 
+        /**
+         * Gets a child using its type and its name
+         * @param name defines the child name to look for
+         * @param type defines the child type to look for
+         * @returns the child control if found
+         */        
         public getChildByType(name: string, type: string): Nullable<Control> {
             for (var child of this._children) {
                 if (child.typeName === type) {
@@ -89,10 +117,20 @@ module BABYLON.GUI {
             return null;
         }            
 
+        /**
+         * Search for a specific control in children
+         * @param control defines the control to look for
+         * @returns true if the control is in child list
+         */
         public containsControl(control: Control): boolean {
             return this._children.indexOf(control) !== -1;
         }
 
+        /**
+         * Adds a new control to the current container
+         * @param control defines the control to add
+         * @returns the current container
+         */
         public addControl(control: Control): Container {
            var index = this._children.indexOf(control);
 
@@ -109,6 +147,11 @@ module BABYLON.GUI {
             return this;
         }
 
+        /**
+         * Removes a control from the current container
+         * @param control defines the control to remove
+         * @returns the current container
+         */        
         public removeControl(control: Control): Container {
             var index = this._children.indexOf(control);
 
@@ -128,6 +171,7 @@ module BABYLON.GUI {
             return this;
         }
 
+        /** @hidden */
         public _reOrderControl(control: Control): void {
             this.removeControl(control);
 
@@ -145,6 +189,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** @hidden */       
         public _markMatrixAsDirty(): void {
             super._markMatrixAsDirty();
 
@@ -153,6 +198,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */ 
         public _markAllAsDirty(): void {
             super._markAllAsDirty();
 
@@ -161,6 +207,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */ 
         protected _localDraw(context: CanvasRenderingContext2D): void {
             if (this._background) {
                 if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
@@ -181,6 +228,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */ 
         public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
             super._link(root, host);
 
@@ -189,6 +237,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */ 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {      
             if (!this.isVisible || this.notRenderable) {
                 return;
@@ -237,6 +286,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */ 
         public _processPicking(x: number, y: number, type: number, pointerId:number, buttonIndex: number): boolean {
             if (!this.isVisible || this.notRenderable) {
                 return false;
@@ -261,16 +311,19 @@ module BABYLON.GUI {
             return this._processObservables(type, x, y, pointerId, buttonIndex);
         }
 
+        /** @hidden */ 
         protected _clipForChildren(context: CanvasRenderingContext2D): void {
             // DO nothing
         }
 
+        /** @hidden */ 
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
             super._additionalProcessing(parentMeasure, context);
 
             this._measureForChildren.copyFrom(this._currentMeasure);
         }
 
+        /** Releases associated resources */
         public dispose() {
             super.dispose();
 

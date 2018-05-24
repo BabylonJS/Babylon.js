@@ -1,6 +1,7 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /** Class used to create color pickers */
     export class ColorPicker extends Control {
         private _colorWheelCanvas: HTMLCanvasElement;
         
@@ -18,8 +19,12 @@ module BABYLON.GUI {
         private _s = 1;
         private _v = 1;
         
+        /**
+         * Observable raised when the value changes
+         */
         public onValueChangedObservable = new Observable<Color3>();
 
+        /** Gets or sets the color of the color picker */
         public get value(): Color3 {
             return this._value;
         }
@@ -42,6 +47,7 @@ module BABYLON.GUI {
             this.onValueChangedObservable.notifyObservers(this._value);
         }
 
+        /** Gets or sets control width */
         public set width(value: string | number ) {
             if (this._width.toString(this._host) === value) {
                 return;
@@ -53,6 +59,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets control height */
         public set height(value: string | number ) {
             if (this._height.toString(this._host) === value) {
                 return;
@@ -64,6 +71,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets control size */
         public get size(): string | number {
             return this.width;
         }
@@ -72,6 +80,10 @@ module BABYLON.GUI {
             this.width = value;
         }              
 
+        /**
+         * Creates a new ColorPicker
+         * @param name defines the control name
+         */
         constructor(public name?: string) {
             super(name);
             this.value = new BABYLON.Color3(.88, .1, .1);
@@ -259,6 +271,7 @@ module BABYLON.GUI {
             result.set((r+m), (g+m), (b+m));            
         }
 
+        /** @hidden */
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
