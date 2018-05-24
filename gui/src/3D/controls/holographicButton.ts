@@ -195,19 +195,19 @@ module BABYLON.GUI {
         protected _affectMaterial(mesh: Mesh) {
             // Back
             if (this._shareMaterials) {
-                if (!this._host.sharedMaterials["backFluentMaterial"]) {
+                if (!this._host._sharedMaterials["backFluentMaterial"]) {
                     this._createBackMaterial(mesh);
-                    this._host.sharedMaterials["backFluentMaterial"] =  this._backMaterial;
+                    this._host._sharedMaterials["backFluentMaterial"] =  this._backMaterial;
                 } else {
-                    this._backMaterial = this._host.sharedMaterials["backFluentMaterial"] as FluentMaterial;
+                    this._backMaterial = this._host._sharedMaterials["backFluentMaterial"] as FluentMaterial;
                 }
 
                 // Front
-                if (!this._host.sharedMaterials["frontFluentMaterial"]) {
+                if (!this._host._sharedMaterials["frontFluentMaterial"]) {
                     this._createFrontMaterial(mesh);
-                    this._host.sharedMaterials["frontFluentMaterial"] = this._frontMaterial;                
+                    this._host._sharedMaterials["frontFluentMaterial"] = this._frontMaterial;                
                 } else {
-                    this._frontMaterial = this._host.sharedMaterials["frontFluentMaterial"] as FluentMaterial;
+                    this._frontMaterial = this._host._sharedMaterials["frontFluentMaterial"] as FluentMaterial;
                 }  
             } else {
                 this._createBackMaterial(mesh);

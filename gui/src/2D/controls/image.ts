@@ -3,6 +3,9 @@
 var DOMImage = Image;
 
 module BABYLON.GUI {
+    /**
+     * Class used to create 2D images
+     */
     export class Image extends Control {
         private _domImage: HTMLImageElement;
         private _imageWidth: number;
@@ -21,6 +24,9 @@ module BABYLON.GUI {
         private _cellHeight: number = 0;
         private _cellId: number = -1;
 
+        /**
+         * Gets or sets the left coordinate in the source image
+         */
         public get sourceLeft(): number {
             return this._sourceLeft;
         }
@@ -35,6 +41,9 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets the top coordinate in the source image
+         */        
         public get sourceTop(): number {
             return this._sourceTop;
         }
@@ -49,6 +58,9 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets the width to capture in the source image
+         */        
         public get sourceWidth(): number {
             return this._sourceWidth;
         }
@@ -63,6 +75,9 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets the height to capture in the source image
+         */        
         public get sourceHeight(): number {
             return this._sourceHeight;
         }
@@ -77,6 +92,10 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** 
+         * Gets or sets a boolean indicating if the image can force its container to adapt its size 
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
         public get autoScale(): boolean {
             return this._autoScale;
         }
@@ -93,6 +112,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets the streching mode used by the image */
         public get stretch(): number {
             return this._stretch;
         }
@@ -107,6 +127,9 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets the internal DOM image used to render the control
+         */
         public set domImage(value: HTMLImageElement) {
             this._domImage = value;
             this._loaded = false;
@@ -136,6 +159,9 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets image source url
+         */
         public set source(value: Nullable<string>) {
             if (this._source === value) {
                 return;
@@ -155,6 +181,10 @@ module BABYLON.GUI {
             }
         }
 
+        /** 
+         * Gets or sets the cell width to use when animation sheet is enabled 
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
         get cellWidth(): number {
             return this._cellWidth;
         }
@@ -167,6 +197,10 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** 
+         * Gets or sets the cell height to use when animation sheet is enabled 
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
         get cellHeight(): number {
             return this._cellHeight;
         }
@@ -178,7 +212,11 @@ module BABYLON.GUI {
             this._cellHeight = value;
             this._markAsDirty();
         }
-
+    
+        /** 
+         * Gets or sets the cell id to use (this will turn on the animation sheet mode)
+         * @see http://doc.babylonjs.com/how_to/gui#image
+         */
         get cellId(): number {
             return this._cellId;
         }
@@ -191,6 +229,11 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Creates a new Image
+         * @param name defines the control name
+         * @param url defines the image url
+         */
         constructor(public name?: string, url: Nullable<string> = null) {
             super(name);
 
@@ -201,6 +244,7 @@ module BABYLON.GUI {
             return "Image";
         }
 
+        /** Force the control to synchronize with its content */
         public synchronizeSizeWithContent() {
             if (!this._loaded) {
                 return;
@@ -284,18 +328,22 @@ module BABYLON.GUI {
         private static _STRETCH_UNIFORM = 2;
         private static _STRETCH_EXTEND = 3;
 
+        /** STRETCH_NONE */
         public static get STRETCH_NONE(): number {
             return Image._STRETCH_NONE;
         }
 
+        /** STRETCH_FILL */
         public static get STRETCH_FILL(): number {
             return Image._STRETCH_FILL;
         }
 
+        /** STRETCH_UNIFORM */
         public static get STRETCH_UNIFORM(): number {
             return Image._STRETCH_UNIFORM;
         }
 
+        /** STRETCH_EXTEND */
         public static get STRETCH_EXTEND(): number {
             return Image._STRETCH_EXTEND;
         }
