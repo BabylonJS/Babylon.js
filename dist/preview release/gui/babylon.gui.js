@@ -1185,6 +1185,7 @@ var BABYLON;
             // Statics
             /**
              * Creates an identity matrix
+             * @returns a new matrix
              */
             Matrix2D.Identity = function () {
                 return new Matrix2D(1, 0, 0, 1, 0, 0);

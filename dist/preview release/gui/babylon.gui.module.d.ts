@@ -450,6 +450,7 @@ declare module BABYLON.GUI {
         transformCoordinates(x: number, y: number, result: Vector2): Matrix2D;
         /**
          * Creates an identity matrix
+         * @returns a new matrix
          */
         static Identity(): Matrix2D;
         /**

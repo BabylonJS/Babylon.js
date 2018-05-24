@@ -223,7 +223,9 @@ Validate.prototype.add = function (filePath, content) {
     var json = JSON.parse(contentString);
 
     this.validateTypedoc(json);
-    this.results.errors += this.results[this.filePath].errors;
+    if (this.results[this.filePath]) {
+        this.results.errors += this.results[this.filePath].errors;
+    }
 }
 
 Validate.prototype.getResults = function () {
@@ -271,15 +273,16 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
     }
 
     // Check first sub module like BABYLON.Debug or BABYLON.GUI
-    var firstChild = namespace.children[0];
-    if (firstChild.kindString === "Module") {
-        namespace = firstChild;
+    if (namespace.children && namespace.children.length > 0) {
+        var firstChild = namespace.children[0];
+        if (firstChild.kindString === "Module") {
+            namespace = firstChild;
+        }
     }
 
     // Validate Classes
     for (var a in namespace.children) {
         containerNode = namespace.children[a];
-
 
         // Account for undefined access modifiers.
         if (!containerNode.flags.isPublic &&
