@@ -1,10 +1,12 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /** Class used to create rectangle container */
     export class Rectangle extends Container {
         private _thickness = 1;
         private _cornerRadius = 0;
         
+        /** Gets or sets border thickness */        
         public get thickness(): number {
             return this._thickness;
         }
@@ -18,6 +20,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }   
         
+        /** Gets or sets the corner radius angle */
         public get cornerRadius(): number {
             return this._cornerRadius;
         }
@@ -34,7 +37,11 @@ module BABYLON.GUI {
             this._cornerRadius = value;
             this._markAsDirty();
         }   
-       
+     
+        /**
+         * Creates a new Rectangle
+         * @param name defines the control name
+         */       
         constructor(public name?: string) {
             super(name);
         }

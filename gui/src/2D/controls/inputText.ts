@@ -1,6 +1,9 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Class used to create input text control
+     */
     export class InputText extends Control implements IFocusableControl {
         private _text = "";
         private _placeholderText = "";
@@ -19,16 +22,22 @@ module BABYLON.GUI {
         private _textWidth: number;
         private _clickedCoordinate: Nullable<number>;
 
+        /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         public promptMessage = "Please enter text:";
 
+        /** Observable raised when the text changes */
         public onTextChangedObservable = new Observable<InputText>();
+        /** Observable raised when the control gets the focus */
         public onFocusObservable = new Observable<InputText>();
+        /** Observable raised when the control loses the focus */
         public onBlurObservable = new Observable<InputText>();
 
+        /** Gets or sets the maximum width allowed by the control */
         public get maxWidth(): string | number {
             return this._maxWidth.toString(this._host);
         }
 
+        /** Gets the maximum width allowed by the control in pixels */
         public get maxWidthInPixels(): number {
             return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -43,10 +52,12 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets control margin */
         public get margin(): string {
             return this._margin.toString(this._host);
         }
 
+        /** Gets control margin in pixels */
         public get marginInPixels(): number {
             return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -61,6 +72,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets a boolean indicating if the control can auto stretch its width to adapt to the text */
         public get autoStretchWidth(): boolean {
             return this._autoStretchWidth;
         }
@@ -74,6 +86,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets border thickness */
         public get thickness(): number {
             return this._thickness;
         }
@@ -87,6 +100,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets the background color when focused */
         public get focusedBackground(): string {
             return this._focusedBackground;
         }
@@ -100,6 +114,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets the background color */
         public get background(): string {
             return this._background;
         }
@@ -113,6 +128,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets the placeholder color */
         public get placeholderColor(): string {
             return this._placeholderColor;
         }
@@ -126,6 +142,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets the text displayed when the control is empty */
         public get placeholderText(): string {
             return this._placeholderText;
         }
@@ -138,6 +155,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets the text displayed in the control */
         public get text(): string {
             return this._text;
         }
@@ -152,6 +170,7 @@ module BABYLON.GUI {
             this.onTextChangedObservable.notifyObservers(this);
         }
 
+        /** Gets or sets control width */
         public get width(): string | number {
             return this._width.toString(this._host);
         }
@@ -168,12 +187,18 @@ module BABYLON.GUI {
             this.autoStretchWidth = false;
         }
 
+        /**
+         * Creates a new InputText
+         * @param name defines the control name
+         * @param text defines the text of the control
+         */
         constructor(public name?: string, text: string = "") {
             super(name);
 
             this.text = text;
         }
 
+        /** @hidden */
         public onBlur(): void {
             this._isFocused = false;
             this._scrollLeft = null;
@@ -184,6 +209,7 @@ module BABYLON.GUI {
             this.onBlurObservable.notifyObservers(this);
         }
 
+        /** @hidden */
         public onFocus(): void {
             this._scrollLeft = null;
             this._isFocused = true;
@@ -208,6 +234,7 @@ module BABYLON.GUI {
             return "InputText";
         }
 
+        /** @hidden */
         public processKey(keyCode: number, key?: string) {
             // Specific cases
             switch (keyCode) {
@@ -283,6 +310,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */       
         public processKeyboard(evt: KeyboardEvent): void {
             this.processKey(evt.keyCode, evt.key);
         }
