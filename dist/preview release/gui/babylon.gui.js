@@ -1171,7 +1171,7 @@ var BABYLON;
                 return this;
             };
             /**
-             * Apply the current matrix to a set of 2 floats and stores the result in a vector2
+             * Applies the current matrix to a set of 2 floats and stores the result in a vector2
              * @param x defines the x coordinate to transform
              * @param y defines the x coordinate to transform
              * @param result defines the target vector2
@@ -1219,7 +1219,7 @@ var BABYLON;
                 result.fromValues(c, s, -s, c, 0, 0);
             };
             /**
-             * Compose a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+             * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
              * @param tx defines the x coordinate of the translation
              * @param ty defines the y coordinate of the translation
              * @param angle defines the rotation angle
