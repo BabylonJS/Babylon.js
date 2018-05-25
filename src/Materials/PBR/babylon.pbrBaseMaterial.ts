@@ -611,6 +611,14 @@
 
         /**
          * Sets the transparency mode of the material.
+         *
+         * | Value | Type                                | Description |
+         * | ----- | ----------------------------------- | ----------- |
+         * | 0     | OPAQUE                              |             |
+         * | 1     | ALPHATEST                           |             |
+         * | 2     | ALPHABLEND                          |             |
+         * | 3     | ALPHATESTANDBLEND                   |             |
+         *
          */
         public set transparencyMode(value: Nullable<number>) {
             if (this._transparencyMode === value) {
