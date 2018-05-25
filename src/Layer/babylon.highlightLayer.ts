@@ -271,6 +271,14 @@
             blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
             blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
+            var textureType = 0;
+            if (this._engine.getCaps().textureHalfFloatRender) {
+                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            }
+            else {
+                textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
+
             this._blurTexture = new RenderTargetTexture("HighlightLayerBlurRTT",
                 {
                     width: blurTextureWidth,
@@ -279,7 +287,7 @@
                 this._scene,
                 false,
                 true,
-                Engine.TEXTURETYPE_HALF_FLOAT);
+                textureType);
             this._blurTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._blurTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._blurTexture.anisotropicFilteringLevel = 16;
@@ -315,7 +323,7 @@
                         width:  blurTextureWidth,
                         height: blurTextureHeight
                     },
-                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_HALF_FLOAT);
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
                 this._horizontalBlurPostprocess.width = blurTextureWidth;
                 this._horizontalBlurPostprocess.height = blurTextureHeight;
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
@@ -326,7 +334,7 @@
                         width:  blurTextureWidth,
                         height: blurTextureHeight
                     },
-                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_HALF_FLOAT);
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
 
                 this._postProcesses = [this._horizontalBlurPostprocess, this._verticalBlurPostprocess];
             }

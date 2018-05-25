@@ -10,6 +10,7 @@ module BABYLON.GUI {
         private _utilityLayer: Nullable<UtilityLayerRenderer>;
         private _rootContainer: Container3D;
         private _pointerObserver: Nullable<Observer<PointerInfoPre>>;
+        /** @hidden */
         public _lastPickedControl: Control3D;
         /** @hidden */
         public _lastControlOver: {[pointerId:number]: Control3D} = {};
@@ -22,13 +23,15 @@ module BABYLON.GUI {
         public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
 
         // Shared resources
-        public sharedMaterials: {[key:string]: Material} = {};     
+        /** @hidden */
+        public _sharedMaterials: {[key:string]: Material} = {};     
 
         /** Gets the hosting scene */
         public get scene(): Scene {
             return this._scene;
         }
 
+        /** Gets associated utility layer */
         public get utilityLayer(): Nullable<UtilityLayerRenderer> {
             return this._utilityLayer;
         }
@@ -175,7 +178,15 @@ module BABYLON.GUI {
         public dispose() {
             this._rootContainer.dispose();
 
-            this.sharedMaterials = {};
+            for (var materialName in this._sharedMaterials) {
+                if (!this._sharedMaterials.hasOwnProperty(materialName)) {
+                    continue;
+                }
+
+                this._sharedMaterials[materialName].dispose();
+            }
+
+            this._sharedMaterials = {};
 
             this.onPickedPointChangedObservable.clear();
 

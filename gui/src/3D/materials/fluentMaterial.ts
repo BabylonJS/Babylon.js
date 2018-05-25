@@ -61,7 +61,7 @@ module BABYLON.GUI {
          * Gets or sets a value indicating the smoothing value applied to border edges (0.02 by default)
          */
         @serialize()
-        public edgeSmoothingValue = 0.02;       
+        public edgeSmoothingValue = 0.02;
         
         /**
          * Gets or sets the minimum value that can be applied to border width (default is 0.1)

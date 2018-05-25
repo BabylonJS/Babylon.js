@@ -2,34 +2,60 @@
 
 module BABYLON.GUI {
 
+    /**
+     * Class used to store key control properties
+     */
     export class KeyPropertySet {
+        /** Width */
         width?: string;
+        /** Height */
         height?: string;
+        /** Left padding */
         paddingLeft?: string;
+        /** Right padding */
         paddingRight?: string;
+        /** Top padding */
         paddingTop?: string;
+        /** Bottom padding */
         paddingBottom?: string;
+        /** Foreground color */
         color?: string;
+        /** Background color */
         background?: string;
     }
 
+    /**
+     * Class used to create virtual keyboard
+     */
     export class VirtualKeyboard extends StackPanel {
+        /** Observable raised when a key is pressed */
         public onKeyPressObservable = new Observable<string>();
 
+        /** Gets or sets default key button width */
         public defaultButtonWidth = "40px";
+        /** Gets or sets default key button height */
         public defaultButtonHeight = "40px";
 
+        /** Gets or sets default key button left padding */
         public defaultButtonPaddingLeft = "2px";
+        /** Gets or sets default key button right padding */
         public defaultButtonPaddingRight = "2px";
+        /** Gets or sets default key button top padding */
         public defaultButtonPaddingTop = "2px";
+        /** Gets or sets default key button bottom padding */
         public defaultButtonPaddingBottom = "2px";
 
+        /** Gets or sets default key button foreground color */
         public defaultButtonColor = "#DDD";
+        /** Gets or sets default key button background color */
         public defaultButtonBackground = "#070707";
 
+        /** Gets or sets shift button foreground color */
         public shiftButtonColor = "#7799FF";
+        /** Gets or sets shift button thickness*/
         public selectedShiftThickness = 1;
 
+        /** Gets shift key state */
         public shiftState = 0;
 
         protected _getTypeName(): string {
@@ -63,6 +89,11 @@ module BABYLON.GUI {
             return button;
         }
 
+        /**
+         * Adds a new row of keys
+         * @param keys defines the list of keys to add
+         * @param propertySets defines the associated property sets
+         */
         public addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void {
             let panel = new StackPanel();
             panel.isVertical = false;
@@ -81,6 +112,10 @@ module BABYLON.GUI {
             this.addControl(panel);
         }
 
+        /**
+         * Set the shift key to a specific state
+         * @param shiftState defines the new shift state
+         */
         public applyShiftState(shiftState: number): void {
             if (!this.children) {
                 return;
@@ -117,10 +152,15 @@ module BABYLON.GUI {
         private _onBlurObserver: Nullable<Observer<InputText>>;
         private _onKeyPressObserver: Nullable<Observer<string>>;
 
+        /** Gets the input text control attached with the keyboard */
         public get connectedInputText(): Nullable<InputText> {
             return this._connectedInputText;
         }
 
+        /**
+         * Connects the keyboard with an input text control
+         * @param input defines the target control
+         */
         public connect(input: InputText): void {
             this.isVisible = false;
             this._connectedInputText = input;
@@ -162,6 +202,9 @@ module BABYLON.GUI {
             });
         }
 
+        /**
+         * Disconnects the keyboard from an input text control
+         */
         public disconnect(): void {
             if (!this._connectedInputText) {
                 return;
@@ -175,6 +218,11 @@ module BABYLON.GUI {
         }
 
         // Statics
+
+        /**
+         * Creates a new keyboard using a default layout
+         * @returns a new VirtualKeyboard
+         */
         public static CreateDefaultLayout(): VirtualKeyboard {
             let returnValue = new VirtualKeyboard();
 

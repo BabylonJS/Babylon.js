@@ -8,6 +8,7 @@ module BABYLON.GUI {
     export class Style implements BABYLON.IDisposable {
         private _fontFamily = "Arial";
         private _fontStyle = "";       
+        private _fontWeight = "";     
         /** @hidden */ 
         public _host: AdvancedDynamicTexture;
         /** @hidden */
@@ -74,6 +75,20 @@ module BABYLON.GUI {
             this._fontStyle = value;
             this.onChangedObservable.notifyObservers(this);
         }
+
+        /** Gets or sets font weight */
+        public get fontWeight(): string {
+            return this._fontWeight;
+        }
+
+        public set fontWeight(value: string) {
+            if (this._fontWeight === value) {
+                return;
+            }
+
+            this._fontWeight = value;            
+            this.onChangedObservable.notifyObservers(this);
+        }          
 
         /** Dispose all associated resources */
         public dispose() {
