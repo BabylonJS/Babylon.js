@@ -1171,7 +1171,7 @@ var BABYLON;
                 return this;
             };
             /**
-             * Apply the current matrix to a set of 2 floats and stores the result in a vector2
+             * Applies the current matrix to a set of 2 floats and stores the result in a vector2
              * @param x defines the x coordinate to transform
              * @param y defines the x coordinate to transform
              * @param result defines the target vector2
@@ -1219,7 +1219,7 @@ var BABYLON;
                 result.fromValues(c, s, -s, c, 0, 0);
             };
             /**
-             * Compose a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+             * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
              * @param tx defines the x coordinate of the translation
              * @param ty defines the y coordinate of the translation
              * @param angle defines the rotation angle
@@ -7395,6 +7395,8 @@ var BABYLON;
              */
             function Button3D(name) {
                 var _this = _super.call(this, name) || this;
+                _this._contentResolution = 512;
+                _this._contentScaleRatio = 2;
                 // Default animations
                 _this.pointerEnterAnimation = function () {
                     if (!_this.mesh) {
@@ -7419,6 +7421,47 @@ var BABYLON;
                 };
                 return _this;
             }
+            Object.defineProperty(Button3D.prototype, "contentResolution", {
+                /**
+                 * Gets or sets the texture resolution used to render content (512 by default)
+                 */
+                get: function () {
+                    return this._contentResolution;
+                },
+                set: function (value) {
+                    if (this._contentResolution === value) {
+                        return;
+                    }
+                    this._contentResolution = value;
+                    this._resetContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Button3D.prototype, "contentScaleRatio", {
+                /**
+                 * Gets or sets the texture scale ratio used to render content (2 by default)
+                 */
+                get: function () {
+                    return this._contentScaleRatio;
+                },
+                set: function (value) {
+                    if (this._contentScaleRatio === value) {
+                        return;
+                    }
+                    this._contentScaleRatio = value;
+                    this._resetContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Button3D.prototype._resetContent = function () {
+                if (this._facadeTexture) {
+                    this._facadeTexture.dispose();
+                    this._facadeTexture = null;
+                }
+                this.content = this._content;
+            };
             Object.defineProperty(Button3D.prototype, "content", {
                 /**
                  * Gets or sets the GUI 2D content used to display the button's facade
@@ -7430,10 +7473,11 @@ var BABYLON;
                     if (!this._host || !this._host.utilityLayer) {
                         return;
                     }
+                    this._content = value;
                     if (!this._facadeTexture) {
-                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", 512, 512, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
-                        this._facadeTexture.rootContainer.scaleX = 2;
-                        this._facadeTexture.rootContainer.scaleY = 2;
+                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                        this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+                        this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
                         this._facadeTexture.premulAlpha = true;
                     }
                     this._facadeTexture.addControl(value);
