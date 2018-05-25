@@ -1024,7 +1024,11 @@
                 "../../src/Rendering/babylon.utilityLayerRenderer.js",
                 "../../src/Gizmos/babylon.gizmo.js",
                 "../../src/Gizmos/babylon.axisDragGizmo.js",
-                "../../src/Gizmos/babylon.positionGizmo.js"
+                "../../src/Gizmos/babylon.axisScaleGizmo.js",
+                "../../src/Gizmos/babylon.planeRotationGizmo.js",
+                "../../src/Gizmos/babylon.positionGizmo.js",
+                "../../src/Gizmos/babylon.rotationGizmo.js",
+                "../../src/Gizmos/babylon.scaleGizmo.js"
             ],
             "dependUpon": [
                 "shaderMaterial",
