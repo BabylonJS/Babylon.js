@@ -6510,6 +6510,9 @@ var BABYLON;
                 this._rootContainer._host = this;
                 // Events
                 this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
                     var pointerEvent = (pi.event);
                     if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
                         return;
@@ -7456,11 +7459,14 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Button3D.prototype._resetContent = function () {
+            Button3D.prototype._disposeFaceTexture = function () {
                 if (this._facadeTexture) {
                     this._facadeTexture.dispose();
                     this._facadeTexture = null;
                 }
+            };
+            Button3D.prototype._resetContent = function () {
+                this._disposeFaceTexture();
                 this.content = this._content;
             };
             Object.defineProperty(Button3D.prototype, "content", {
@@ -7524,6 +7530,7 @@ var BABYLON;
              */
             Button3D.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
+                this._disposeFaceTexture();
                 if (this._currentMaterial) {
                     this._currentMaterial.dispose();
                 }
@@ -7570,7 +7577,6 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(HolographicButton.prototype, "text", {
-                // private _imageUrl: string;
                 /**
                  * Gets or sets text for the button
                  */
@@ -7648,6 +7654,7 @@ var BABYLON;
                 return "HolographicButton";
             };
             HolographicButton.prototype._rebuildContent = function () {
+                this._disposeFaceTexture();
                 var panel = new GUI.StackPanel();
                 panel.isVertical = true;
                 if (this._imageUrl) {
