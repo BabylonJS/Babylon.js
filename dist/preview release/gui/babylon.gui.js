@@ -6478,6 +6478,7 @@ var BABYLON;
     (function (GUI) {
         /**
          * Class used to manage 3D user interface
+         * @see http://doc.babylonjs.com/how_to/gui3d
          */
         var GUI3DManager = /** @class */ (function () {
             /**
@@ -6616,7 +6617,7 @@ var BABYLON;
                 return this;
             };
             /**
-             * Removes the control from the root child list
+             * Removes a control from the root child list
              * @param control defines the control to remove
              * @returns the current container
              */
@@ -6970,16 +6971,16 @@ var BABYLON;
                 this._enterCount = 0;
                 this._downPointerIds = {};
                 this._isVisible = true;
-                /** Gets or sets the control position */
+                /** Gets or sets the control position  in world space */
                 this.position = new BABYLON.Vector3(0, 0, 0);
-                /** Gets or sets the control scaling */
+                /** Gets or sets the control scaling  in world space */
                 this.scaling = new BABYLON.Vector3(1, 1, 1);
                 /**
-                * An event triggered when the pointer move over the control.
+                * An event triggered when the pointer move over the control
                 */
                 this.onPointerMoveObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when the pointer move out of the control.
+                 * An event triggered when the pointer move out of the control
                  */
                 this.onPointerOutObservable = new BABYLON.Observable();
                 /**
@@ -6987,11 +6988,11 @@ var BABYLON;
                  */
                 this.onPointerDownObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when pointer up
+                 * An event triggered when pointer is up
                  */
                 this.onPointerUpObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when a control is clicked on
+                 * An event triggered when a control is clicked on (with a mouse)
                  */
                 this.onPointerClickObservable = new BABYLON.Observable();
                 /**
@@ -7101,7 +7102,7 @@ var BABYLON;
             };
             Object.defineProperty(Control3D.prototype, "node", {
                 /**
-                 * Gets the mesh used to render this control
+                 * Gets the transform node used by this control
                  */
                 get: function () {
                     return this._node;
@@ -7346,7 +7347,7 @@ var BABYLON;
                 return new BABYLON.TransformNode("ContainerNode", scene);
             };
             /**
-             * Removes the control from the children of this control
+             * Removes a control from the children of this control
              * @param control defines the control to remove
              * @returns the current container
              */

@@ -3,6 +3,7 @@
 module BABYLON.GUI {
     /**
      * Class used to manage 3D user interface
+     * @see http://doc.babylonjs.com/how_to/gui3d
      */
     export class GUI3DManager implements BABYLON.IDisposable {
         private _scene: Scene;
@@ -163,7 +164,7 @@ module BABYLON.GUI {
         }
 
         /**
-         * Removes the control from the root child list
+         * Removes a control from the root child list
          * @param control defines the control to remove
          * @returns the current container
          */
