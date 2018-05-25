@@ -121,7 +121,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             // Don't load material LODs if already loading a node LOD.
             if (this._loadingNodeLOD) {
                 return null;
@@ -142,7 +142,7 @@ module BABYLON.GLTF2.Extensions {
                         }
                     }
 
-                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : () => {}).then(() => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, mesh, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : () => {}).then(() => {
                         if (indexLOD !== 0) {
                             const babylonDataLOD = materialLOD._babylonData!;
                             assign(babylonDataLOD[babylonDrawMode].material);
