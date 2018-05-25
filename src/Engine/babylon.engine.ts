@@ -5259,6 +5259,23 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, faceIndex: number, lod: number, image: HTMLImageElement) {
+            var gl = this._gl;
+
+            var textureType = this._getWebGLTextureType(texture.type);
+            var format = this._getInternalFormat(texture.format);
+            var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.invertY ? 1 : 0);
+
+            var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            gl.texImage2D(target, lod, internalFormat, format, textureType, image);
+
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null, true);
+        }
+
         /**
          * Creates a new render target cube texture
          * @param size defines the size of the texture
@@ -5474,6 +5491,7 @@
 
             var isKTX = false;
             var isDDS = false;
+            var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
             if (this._textureFormatInUse) {
@@ -5482,6 +5500,7 @@
                 isKTX = true;
             } else {
                 isDDS = (extension === ".dds");
+                isEnv = (extension.indexOf(".env") === 0);
             }
 
             let onerror = (request?: XMLHttpRequest, exception?: any) => {
@@ -5507,7 +5526,30 @@
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
                 }, undefined, undefined, true, onerror);
-            } else if (isDDS) {
+            }
+            else if (isEnv) {
+                texture._isRGBM = true;
+                this._loadFile(rootUrl, (data) => {
+                    data = data as ArrayBuffer;
+                    var info = EnvironmentTextureTools.GetEnvInfo(data);
+                    if (info) {
+                        texture.width = info.width;
+                        texture.height = info.width;
+
+                        EnvironmentTextureTools.UploadPolynomials(texture, data, info!);
+                        EnvironmentTextureTools.UploadLevelsAsync(texture, data, info!).then(() => {
+                            texture.isReady = true;
+                            if (onLoad) {
+                                onLoad();
+                            }
+                        });
+                    }
+                    else if (onError) {
+                        onError("Can not parse the environment file", null);
+                    }
+                }, undefined, undefined, true, onerror);
+            }
+            else if (isDDS) {
                 if (files && files.length === 6) {
                     this._cascadeLoadFiles(
                         scene,

@@ -106,6 +106,7 @@
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
+        public RGBMREFLECTION = false;
         public EQUIRECTANGULAR_RELFECTION_FOV = false;
 
         // Default BJS.
@@ -655,6 +656,7 @@
 
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
+                        defines.RGBMREFLECTION = reflectionTexture.isRGBM;
                         defines.REFLECTIONBLUR = this._reflectionBlur > 0;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
@@ -730,6 +732,7 @@
                         defines.REFLECTIONMAP_OPPOSITEZ = false;
                         defines.LODINREFLECTIONALPHA = false;
                         defines.GAMMAREFLECTION = false;
+                        defines.RGBMREFLECTION = false;
                     }
                 }
 

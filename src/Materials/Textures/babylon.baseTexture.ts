@@ -103,6 +103,13 @@
         @serialize()
         public gammaSpace = true;
 
+        /**
+         * Gets whether or not the texture contains RGBM data.
+         */
+        public get isRGBM(): boolean {
+            return this._texture != null && this._texture._isRGBM;
+        }
+
         @serialize()
         public invertZ = false;
 
