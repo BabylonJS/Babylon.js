@@ -2234,6 +2234,17 @@ declare module BABYLON.GUI {
         protected _currentMaterial: Material;
         private _facadeTexture;
         private _content;
+        private _contentResolution;
+        private _contentScaleRatio;
+        /**
+         * Gets or sets the texture resolution used to render content (512 by default)
+         */
+        contentResolution: int;
+        /**
+         * Gets or sets the texture scale ratio used to render content (2 by default)
+         */
+        contentScaleRatio: number;
+        private _resetContent();
         /**
          * Creates a new button
          * @param name defines the control name

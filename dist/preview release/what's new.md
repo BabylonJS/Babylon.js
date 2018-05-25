@@ -23,6 +23,7 @@
 - AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
 - Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo class used to manipulate meshes in a scene, position gizmo ([TrevorDev](https://github.com/TrevorDev))
+- Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
 
 ### glTF Loader
 
