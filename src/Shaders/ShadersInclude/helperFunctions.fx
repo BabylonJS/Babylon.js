@@ -76,3 +76,18 @@ float dither(vec2 seed, float varianceAmount) {
 	
 	return dither;
 }
+
+const float rgbmMaxRange = 255.0;
+
+vec4 toRGBM(vec3 color) {
+	vec4 rgbm = vec4(0.);
+	color *= 1.0 / rgbmMaxRange;
+	rgbm.a = clamp( max( max( color.r, color.g ), max( color.b, 0.000001 ) ), 0., 1. );
+	rgbm.a = ceil( rgbm.a * 255.0 ) / 255.0;
+	rgbm.rgb = color / rgbm.a;
+	return rgbm;
+}
+
+vec3 fromRGBM(vec4 color) {
+	return rgbmMaxRange * rgbm.rgb * rgbm.a;
+}

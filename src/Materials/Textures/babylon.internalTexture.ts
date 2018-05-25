@@ -201,12 +201,23 @@ module BABYLON {
         public _lodTextureMid: BaseTexture;
         /** @hidden */
         public _lodTextureLow: BaseTexture;
+        /** @hidden */
+        public _isRGBM: boolean = false;
 
         /** @hidden */
         public _webGLTexture: Nullable<WebGLTexture>;
         /** @hidden */
         public _references: number = 1;
+
         private _engine: Engine;
+
+        /**
+         * Gets the Engine the texture belongs to.
+         * @returns The babylon engine
+         */
+        public getEngine(): Engine {
+            return this._engine;
+        }
 
         /**
          * Gets the data source type of the texture (can be one of the BABYLON.InternalTexture.DATASOURCE_XXXX)
