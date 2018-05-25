@@ -44,7 +44,7 @@ module BABYLON.GUI {
             this._resetContent();
         }   
         
-        protected _disposeFaceTexture() {
+        protected _disposeFacadeTexture() {
             if (this._facadeTexture) {
                 this._facadeTexture.dispose();
                 this._facadeTexture = null;
@@ -52,7 +52,7 @@ module BABYLON.GUI {
         }
 
         private _resetContent() {
-            this._disposeFaceTexture();
+            this._disposeFacadeTexture();
             this.content = this._content;
         }
 

@@ -106,7 +106,7 @@ module BABYLON.GUI {
         }        
 
         private _rebuildContent(): void {
-            this._disposeFaceTexture();
+            this._disposeFacadeTexture();
 
             let panel = new StackPanel();
             panel.isVertical = true;
