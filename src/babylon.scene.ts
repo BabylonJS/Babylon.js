@@ -5716,11 +5716,14 @@
             if (!PickingInfo) {
                 return null;
             }
-
-            return this._internalPick(world => {
+            var result = this._internalPick(world => {
                 this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
                 return this._tempPickingRay!;
             }, predicate, fastCheck);
+            if(result){
+                result.ray = this.createPickingRay(x, y, Matrix.Identity(), camera || null);
+            }
+            return result;
         }
 
         /** Launch a ray to try to pick a sprite in the scene
