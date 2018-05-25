@@ -16,8 +16,6 @@ module BABYLON.GUI {
         private _plateMaterial: StandardMaterial;
         private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
 
-        // private _imageUrl: string;
-
         /**
          * Gets or sets text for the button
          */
@@ -108,6 +106,8 @@ module BABYLON.GUI {
         }        
 
         private _rebuildContent(): void {
+            this._disposeFaceTexture();
+
             let panel = new StackPanel();
             panel.isVertical = true;
 

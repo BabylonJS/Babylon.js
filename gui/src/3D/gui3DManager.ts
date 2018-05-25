@@ -57,6 +57,11 @@ module BABYLON.GUI {
             
             // Events
             this._pointerObserver = this._scene.onPrePointerObservable.add((pi, state) => {
+
+                if (pi.skipOnPointerObservable) {
+                    return;
+                }
+
                 let pointerEvent = <PointerEvent>(pi.event);
                 if (this._scene.isPointerCaptured(pointerEvent.pointerId)) {
                     return;
