@@ -10,8 +10,24 @@ module BABYLON {
         /**
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          */
-        public attachedMesh:Nullable<Mesh>;
+        public attachedMesh:Nullable<AbstractMesh>;
+        protected _interactionsEnabled = true;
+        protected _onInteractionsEnabledChanged(value:boolean){
+        }
+
+        /**
+         * If interactions are enabled with this gizmo. (eg. dragging/rotation)
+         */
+        public set interactionsEnabled(value:boolean){
+            this._interactionsEnabled = value;
+            this._onInteractionsEnabledChanged(value);
+        }
+        public get interactionsEnabled(){
+            return this._interactionsEnabled;
+        }
+
         private _beforeRenderObserver:Nullable<Observer<Scene>>;
+        
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -20,7 +36,7 @@ module BABYLON {
             this._rootMesh = new BABYLON.Mesh("gizmoRootNode",gizmoLayer.utilityLayerScene);
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(()=>{
                 if(this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
-                    var dist = this.attachedMesh.position.subtract(this.gizmoLayer.utilityLayerScene.activeCamera.position).length()/5;
+                    var dist = this.attachedMesh.position.subtract(this.gizmoLayer.utilityLayerScene.activeCamera.position).length()/3;
                     this._rootMesh.scaling.set(dist, dist, dist);
                 }
                 if(this.attachedMesh){
