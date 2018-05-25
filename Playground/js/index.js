@@ -458,6 +458,8 @@
 
             } catch (e) {
                 showError(e.message, e);
+                // Also log error in console to help debug playgrounds
+                console.error(e);
             }
         };
         window.addEventListener("resize",
