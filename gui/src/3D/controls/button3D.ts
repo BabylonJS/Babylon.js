@@ -42,13 +42,17 @@ module BABYLON.GUI {
 
             this._contentScaleRatio = value;
             this._resetContent();
-        }        
-
-        private _resetContent() {
+        }   
+        
+        protected _disposeFacadeTexture() {
             if (this._facadeTexture) {
                 this._facadeTexture.dispose();
                 this._facadeTexture = null;
             }
+        }
+
+        private _resetContent() {
+            this._disposeFacadeTexture();
             this.content = this._content;
         }
 
@@ -160,6 +164,8 @@ module BABYLON.GUI {
          */
         public dispose() {
             super.dispose();
+
+            this._disposeFaceTexture();
 
             if (this._currentMaterial) {
                 this._currentMaterial.dispose();
