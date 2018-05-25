@@ -32,7 +32,7 @@ module INSPECTOR {
             this._tabs.push(this._meshTab);
             this._tabs.push(new LightTab(this, this._inspector));
             this._tabs.push(new MaterialTab(this, this._inspector));
-            if (BABYLON.GLTF2Export) {
+            if (GLTFTab.IsSupported) {
                 this._tabs.push(new GLTFTab(this, this._inspector));
             }
             if (BABYLON.GUI) {
