@@ -2,6 +2,9 @@
 
 module BABYLON.GUI {
 
+    /**
+     * Class used to create multi line control
+     */
     export class MultiLine extends Control {
 
         private _lineWidth: number = 1;
@@ -13,6 +16,10 @@ module BABYLON.GUI {
         private _maxX: Nullable<number>;
         private _maxY: Nullable<number>;
 
+        /**
+         * Creates a new MultiLine
+         * @param name defines the control name
+         */
         constructor(public name?: string) {
             super(name);
 
@@ -24,6 +31,7 @@ module BABYLON.GUI {
             this._points = [];
         }
 
+        /** Gets or sets dash pattern */
         public get dash(): Array<number> {
             return this._dash;
         }
@@ -37,6 +45,11 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets point stored at specified index
+         * @param index defines the index to look for
+         * @returns the requested point if found
+         */
         public getAt(index: number): MultiLinePoint {
             if (!this._points[index]) {
                 this._points[index] = new MultiLinePoint(this);
@@ -45,14 +58,25 @@ module BABYLON.GUI {
             return this._points[index] as MultiLinePoint;
         }
 
+        /** Function called when a point is updated */
         public onPointUpdate = (): void => {
             this._markAsDirty();
         }
 
+        /**
+         * Adds new points to the point collection
+         * @param items defines the list of items (mesh, control or 2d coordiantes) to add 
+         * @returns the list of created MultiLinePoint
+         */
         public add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): MultiLinePoint[] {
             return items.map(item => this.push(item));
         }
 
+        /**
+         * Adds a new point to the point collection
+         * @param item defines the item (mesh, control or 2d coordiantes) to add 
+         * @returns the created MultiLinePoint
+         */
         public push(item?: (AbstractMesh | Control | { x: string | number, y: string | number })): MultiLinePoint {
             var point: MultiLinePoint = this.getAt(this._points.length);
 
@@ -72,6 +96,10 @@ module BABYLON.GUI {
             return point;
         }
 
+        /**
+         * Remove a specific value or point from the active point collection
+         * @param value defines the value or point to remove
+         */
         public remove(value: number | MultiLinePoint): void {
             var index: number;
             
@@ -97,6 +125,7 @@ module BABYLON.GUI {
             this._points.splice(index, 1);
         }
         
+        /** Gets or sets line width */
         public get lineWidth(): number {
             return this._lineWidth;
         }

@@ -1,12 +1,33 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+/**
+ * This module hosts all controls for 2D and 3D GUIs
+ * @see http://doc.babylonjs.com/how_to/gui
+ */
 module BABYLON.GUI {
+    /**
+     * Interface used to define a control that can receive focus
+     */
     export interface IFocusableControl {
+        /**
+         * Function called when the control receives the focus
+         */
         onFocus(): void;
+        /**
+         * Function called when the control loses the focus
+         */
         onBlur(): void;
+        /**
+         * Function called to let the control handle keyboard events
+         * @param evt defines the current keyboard event
+         */
         processKeyboard(evt: KeyboardEvent): void;
     }
 
+    /**
+     * Class used to create texture to support 2D GUI elements
+     * @see http://doc.babylonjs.com/how_to/gui
+     */
     export class AdvancedDynamicTexture extends DynamicTexture {
         private _isDirty = false;
         private _renderObserver: Nullable<Observer<Camera>>;
@@ -16,13 +37,21 @@ module BABYLON.GUI {
         private _pointerObserver: Nullable<Observer<PointerInfo>>;
         private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
         private _background: string;
+        /** @hidden */
         public _rootContainer = new Container("root");
+        /** @hidden */
         public _lastPickedControl: Control;
+        /** @hidden */
         public _lastControlOver: {[pointerId:number]:Control} = {};
+        /** @hidden */
         public _lastControlDown: {[pointerId:number]:Control} = {};
+        /** @hidden */
         public _capturingControl: {[pointerId:number]:Control} = {};
+        /** @hidden */
         public _shouldBlockPointer: boolean;
+        /** @hidden */
         public _layerToDispose: Nullable<Layer>;
+        /** @hidden */
         public _linkedControls = new Array<Control>();
         private _isFullscreen = false;
         private _fullscreenViewport = new Viewport(0, 0, 1, 1);
@@ -39,6 +68,10 @@ module BABYLON.GUI {
          */
         public premulAlpha = false;
 
+        /**
+         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+         * Useful when you want more antialiasing
+         */
         public get renderScale(): number {
             return this._renderScale;
         }
@@ -53,6 +86,7 @@ module BABYLON.GUI {
             this._onResize();
         }
 
+        /** Gets or sets the background color */
         public get background(): string {
             return this._background;
         }
@@ -66,6 +100,11 @@ module BABYLON.GUI {
             this.markAsDirty();
         }
 
+        /**
+         * Gets or sets the ideal width used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         public get idealWidth(): number {
             return this._idealWidth;
         }
@@ -80,6 +119,11 @@ module BABYLON.GUI {
             this._rootContainer._markAllAsDirty();
         }
 
+        /**
+         * Gets or sets the ideal height used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */        
         public get idealHeight(): number {
             return this._idealHeight;
         }
@@ -94,6 +138,10 @@ module BABYLON.GUI {
             this._rootContainer._markAllAsDirty();
         }
 
+        /**
+         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         public get useSmallestIdeal(): boolean {
             return this._useSmallestIdeal;
         }
@@ -108,6 +156,10 @@ module BABYLON.GUI {
             this._rootContainer._markAllAsDirty();
         }
 
+        /**
+         * Gets or sets a boolean indicating if adaptive scaling must be used
+         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         public get renderAtIdealSize(): boolean {
             return this._renderAtIdealSize;
         }
@@ -121,14 +173,23 @@ module BABYLON.GUI {
             this._onResize();
         }
 
+        /**
+         * Gets the underlying layer used to render the texture when in fullscreen mode
+         */
         public get layer(): Nullable<Layer> {
             return this._layerToDispose;
         }
 
+        /**
+         * Gets the root container control
+         */
         public get rootContainer(): Container {
             return this._rootContainer;
         }
 
+        /**
+         * Gets or sets the current focused control
+         */
         public get focusedControl(): Nullable<IFocusableControl> {
             return this._focusedControl;
         }
@@ -149,6 +210,9 @@ module BABYLON.GUI {
             this._focusedControl = control;
         }
 
+        /**
+         * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+         */
         public get isForeground(): boolean {
             if (!this.layer) {
                 return true;
@@ -166,6 +230,15 @@ module BABYLON.GUI {
             this.layer.isBackground = !value;
         }
 
+        /**
+         * Creates a new AdvancedDynamicTexture
+         * @param name defines the name of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+         * @param samplingMode defines the texture sampling mode (BABYLON.Texture.NEAREST_SAMPLINGMODE by default)
+         */
         constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
             super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
@@ -200,6 +273,11 @@ module BABYLON.GUI {
             this._texture.isReady = true;
         }
 
+        /**
+         * Function used to execute a function on all controls
+         * @param func defines the function to execute
+         * @param container defines the container where controls belong. If null the root container will be used
+         */
         public executeOnAllControls(func: (control: Control) => void, container?: Container) {
             if (!container) {
                 container = this._rootContainer;
@@ -214,6 +292,9 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Marks the texture as dirty forcing a complete update
+         */
         public markAsDirty() {
             this._isDirty = true;
 
@@ -226,22 +307,37 @@ module BABYLON.GUI {
 
         /**
          * Helper function used to create a new style
+         * @returns a new style
+         * @see http://doc.babylonjs.com/how_to/gui#styles
          */
         public createStyle(): Style {
             return new Style(this);
         }
 
+        /**
+         * Adds a new control to the root container
+         * @param control defines the control to add
+         * @returns the current texture
+         */
         public addControl(control: Control): AdvancedDynamicTexture {
             this._rootContainer.addControl(control);
 
             return this;
         }
 
+        /**
+         * Removes a control from the root container
+         * @param control defines the control to remove
+         * @returns the current texture
+         */        
         public removeControl(control: Control): AdvancedDynamicTexture {
             this._rootContainer.removeControl(control);
             return this;
         }
 
+        /**
+         * Release all resources
+         */
         public dispose(): void {
             let scene = this.getScene();
 
@@ -316,11 +412,18 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         public _getGlobalViewport(scene: Scene): Viewport {
             var engine = scene.getEngine();
             return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
         }
 
+        /**
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position
+         */
         public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
             var scene = this.getScene();
 
@@ -446,6 +549,7 @@ module BABYLON.GUI {
             this._manageFocus();
         }
 
+        /** @hidden */
         public _cleanControlAfterRemovalFromList(list: {[pointerId:number]:Control}, control:Control) {
             for (var pointerId in list) {
                 if (!list.hasOwnProperty(pointerId)) {
@@ -459,11 +563,13 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         public _cleanControlAfterRemoval(control: Control) {
             this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
             this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
         }
 
+        /** Attach to all scene events required to support pointer events */
         public attach(): void {
             var scene = this.getScene();
             if (!scene) {
@@ -504,6 +610,11 @@ module BABYLON.GUI {
             this._attachToOnPointerOut(scene);
         }
 
+        /**
+         * Connect the texture to a hosting mesh to enable interactions
+         * @param mesh defines the mesh to attach to
+         * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+         */
         public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
             var scene = this.getScene();
             if (!scene) {
@@ -526,7 +637,7 @@ module BABYLON.GUI {
                     }
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._lastControlDown[pointerId]) {
-                        this._lastControlDown[pointerId].forcePointerUp(pointerId);
+                        this._lastControlDown[pointerId]._forcePointerUp(pointerId);
                     }
                     delete this._lastControlDown[pointerId];
 
@@ -543,6 +654,10 @@ module BABYLON.GUI {
             this._attachToOnPointerOut(scene);
         }
 
+        /**
+         * Move the focus to a specific control
+         * @param control defines the control which will receive the focus
+         */
         public moveFocusToControl(control: IFocusableControl): void {
             this.focusedControl = control;
             this._lastPickedControl = <any>control;
@@ -576,13 +691,21 @@ module BABYLON.GUI {
                 delete this._lastControlOver[pointerEvent.pointerId];
 
                 if (this._lastControlDown[pointerEvent.pointerId]) {
-                    this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                    this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
                 }
                 delete this._lastControlDown[pointerEvent.pointerId];
             });
         }
 
         // Statics
+        /**
+         * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
+         * @param mesh defines the mesh which will receive the texture
+         * @param width defines the texture width (1024 by default)
+         * @param height defines the texture height (1024 by default)
+         * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+         * @returns a new AdvancedDynamicTexture
+         */
         public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
 
@@ -601,15 +724,16 @@ module BABYLON.GUI {
         }
 
         /**
-         * FullScreenUI is created in a layer. This allows it to be treated like any other layer.
+         * Creates a new AdvancedDynamicTexture in fullscreen mode.
+         * In this mode the texture will rely on a layer for its rendering.
+         * This allows it to be treated like any other layer.
          * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
-         * When the GUI is not Created as FullscreenUI it does not respect the layerMask.
-         * layerMask is set through advancedTexture.layer.layerMask
-		 * @param name name for the Texture
-		 * @param foreground render in foreground (default is true)
-		 * @param scene scene to be rendered in
-		 * @param sampling method for scaling to fit screen
-		 * @returns AdvancedDynamicTexture
+         * LayerMask is set through advancedTexture.layer.layerMask
+		 * @param name defines name for the texture
+		 * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
+		 * @param scene defines the hsoting scene
+		 * @param sampling defines the texture sampling mode (BABYLON.Texture.BILINEAR_SAMPLINGMODE by default)
+		 * @returns a new AdvancedDynamicTexture
          */
         public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
