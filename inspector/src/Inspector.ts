@@ -370,14 +370,7 @@ module INSPECTOR {
         public openPopup(firstTime?: boolean) {
 
             // Create popup
-            let popup;
-            if(Helpers.IsBrowserEdge()) {
-                popup = window.open('about:blank', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');   
-                alert("This function work only on Edge build 16299 and more. Please update your browser if the popup is blank.");
-            }
-            else {
-                popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
-            }
+            let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
             if (!popup) {
                 return;
             }

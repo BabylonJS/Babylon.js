@@ -1868,6 +1868,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to manage 3D user interface
+     * @see http://doc.babylonjs.com/how_to/gui3d
      */
     class GUI3DManager implements BABYLON.IDisposable {
         private _scene;
@@ -1920,7 +1921,7 @@ declare module BABYLON.GUI {
          */
         addControl(control: Control3D): GUI3DManager;
         /**
-         * Removes the control from the root child list
+         * Removes a control from the root child list
          * @param control defines the control to remove
          * @returns the current container
          */
@@ -2048,9 +2049,9 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
-        /** Gets or sets the control position */
+        /** Gets or sets the control position  in world space */
         position: Vector3;
-        /** Gets or sets the control scaling */
+        /** Gets or sets the control scaling  in world space */
         scaling: Vector3;
         /** Callback used to start pointer enter animation */
         pointerEnterAnimation: () => void;
@@ -2061,11 +2062,11 @@ declare module BABYLON.GUI {
         /** Callback used to start pointer up animation */
         pointerUpAnimation: () => void;
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer move over the control
         */
         onPointerMoveObservable: Observable<Vector3>;
         /**
-         * An event triggered when the pointer move out of the control.
+         * An event triggered when the pointer move out of the control
          */
         onPointerOutObservable: Observable<Control3D>;
         /**
@@ -2073,11 +2074,11 @@ declare module BABYLON.GUI {
          */
         onPointerDownObservable: Observable<Vector3WithInfo>;
         /**
-         * An event triggered when pointer up
+         * An event triggered when pointer is up
          */
         onPointerUpObservable: Observable<Vector3WithInfo>;
         /**
-         * An event triggered when a control is clicked on
+         * An event triggered when a control is clicked on (with a mouse)
          */
         onPointerClickObservable: Observable<Vector3WithInfo>;
         /**
@@ -2130,7 +2131,7 @@ declare module BABYLON.GUI {
         readonly typeName: string;
         protected _getTypeName(): string;
         /**
-         * Gets the mesh used to render this control
+         * Gets the transform node used by this control
          */
         readonly node: Nullable<TransformNode>;
         /**
@@ -2211,7 +2212,7 @@ declare module BABYLON.GUI {
         protected _arrangeChildren(): void;
         protected _createNode(scene: Scene): Nullable<TransformNode>;
         /**
-         * Removes the control from the children of this control
+         * Removes a control from the children of this control
          * @param control defines the control to remove
          * @returns the current container
          */
