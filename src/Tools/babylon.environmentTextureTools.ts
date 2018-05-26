@@ -85,27 +85,26 @@ module BABYLON {
         }
 
         public static CreateEnvTexture(texture: CubeTexture): Nullable<Promise<ArrayBuffer>> {
-            var internalTexture = texture.getInternalTexture();
+            let internalTexture = texture.getInternalTexture();
             if (!internalTexture) {
                 return null;
             }
 
-            var engine = internalTexture.getEngine();
-            var hostingScene = new Scene(engine);
-            var screenshotCanvas = document.createElement('canvas');
+            let engine = internalTexture.getEngine();
+            let hostingScene = new Scene(engine);
 
-            var info: EnvironmentTextureInfo = {
+            let info: EnvironmentTextureInfo = {
                 version: 1,
                 width: internalTexture.width,
                 irradiance: null,
                 specular: null
             };
 
-            var specularTextures: { [key: number]: ArrayBuffer } = { };
-            var promises: Promise<void>[] = [];
+            let specularTextures: { [key: number]: ArrayBuffer } = { };
+            let promises: Promise<void>[] = [];
 
             // All mipmaps
-            var mipmapsCount = Scalar.Log2(internalTexture.width);
+            let mipmapsCount = Scalar.Log2(internalTexture.width);
             mipmapsCount = Math.round(mipmapsCount);
             for (let i = 0; i <= mipmapsCount; i++) {
                 let faceWidth = Math.pow(2, mipmapsCount - i);
@@ -118,73 +117,39 @@ module BABYLON {
                     let textureType = Engine.TEXTURETYPE_FLOAT;
                     let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE, null, textureType);
 
-                    let rtt = new RenderTargetTexture(
-                        'resized' + i + "_" + face,
-                        faceWidth,
-                        hostingScene,
-                        true,
-                        true,
-                        Engine.TEXTURETYPE_UNSIGNED_INT,
-                        false,
-                        Texture.NEAREST_SAMPLINGMODE,
-                        false
-                    );
-        
                     let promise = new Promise<void>((resolve, reject) => {
-                        //let passPostProcess = new PassPostProcess("rgbmEncode", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
                         let rgbmPostProcess = new PostProcess("rgbmEncode", "rgbmEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
                         rgbmPostProcess.getEffect().executeWhenCompiled(() => {
-                            rgbmPostProcess.onApply = function (effect) {
+                            rgbmPostProcess.onApply = (effect) => {
                                 effect._bindTexture("textureSampler", tempTexture);
                             }
             
-                            let internalTexture = rtt.getInternalTexture();
+                            //let internalTexture = rtt.getInternalTexture();
+                            let currentW = engine.getRenderWidth();
+                            let currentH = engine.getRenderHeight();
+                            engine.setSize(faceWidth, faceWidth);
             
                             if (internalTexture) {
-                                hostingScene.postProcessManager.directRender([rgbmPostProcess], internalTexture);
+                                hostingScene.postProcessManager.directRender([rgbmPostProcess], null);
                             }
 
                             //Reading datas from WebGL
-                            let data = engine.readPixels(0, 0, faceWidth, faceWidth);
+                            let canvas = engine.getRenderingCanvas();
+                            if (canvas) {
+                                canvas.toBlob((blob) => {
+                                    // let url = window.URL.createObjectURL(blob);
 
-                            // //To flip image on Y axis.
-                            // for (var i = 0; i < halfHeight; i++) {
-                            //     for (var j = 0; j < numberOfChannelsByLine; j++) {
-                            //         var currentCell = j + i * numberOfChannelsByLine;
-                            //         var targetLine = height - i - 1;
-                            //         var targetCell = j + targetLine * numberOfChannelsByLine;
+                                    // let a: any = document.createElement("a");
+                                    //     document.body.appendChild(a);
+                                    //     a.style = "display: none";
 
-                            //         var temp = data[currentCell];
-                            //         data[currentCell] = data[targetCell];
-                            //         data[targetCell] = temp;
-                            //     }
-                            // }
-
-                            screenshotCanvas.width = faceWidth;
-                            screenshotCanvas.height = faceWidth;
-                            let context = screenshotCanvas.getContext('2d');
-
-                            if (context) {
-                                // Copy the pixels to a 2D canvas
-                                let imageData = context.createImageData(faceWidth, faceWidth);
-                                let castData = <any>(imageData.data);
-                                castData.set(data);
-                                context.putImageData(imageData, 0, 0);
-
-                                screenshotCanvas.toBlob((blob) => {
-                                    var url = window.URL.createObjectURL(blob);
-
-                                    var a: any = document.createElement("a");
-                                        document.body.appendChild(a);
-                                        a.style = "display: none";
-
-                                    a.href = url;
-                                    a.download = "env_" + i + "_" + face + ".png";
-                                    a.click();
-                                    window.URL.revokeObjectURL(url);
+                                    // a.href = url;
+                                    // a.download = "env_" + i + "_" + face + ".png";
+                                    // a.click();
+                                    // window.URL.revokeObjectURL(url);
 
                                     let fileReader = new FileReader();
-                                    fileReader.onload = function(event) {
+                                    fileReader.onload = (event) => {
                                         let arrayBuffer = event.target!.result as ArrayBuffer;
                                         specularTextures[i * 6 + face] = arrayBuffer;
                                         resolve();
@@ -192,6 +157,7 @@ module BABYLON {
                                     fileReader.readAsArrayBuffer(blob!);
                                 });
                             }
+                            engine.setSize(currentW, currentH);
                         });
                     });
                     promises.push(promise);
@@ -245,7 +211,7 @@ module BABYLON {
 
                 for (let i = 0; i <= mipmapsCount; i++) {
                     for (let face = 0; face < 6; face++) {
-                        var dataBuffer = specularTextures[i * 6 + face];
+                        let dataBuffer = specularTextures[i * 6 + face];
                         finalBufferView.set(new Uint8Array(dataBuffer), pos);
                         pos += dataBuffer.byteLength;
                     }
@@ -255,37 +221,52 @@ module BABYLON {
             });
         }
 
-        public static UploadLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void[]> {
+        public static UploadLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
             if (info.version !== 1) {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
             }
 
-            var specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+            let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
             if (!specularInfo) {
-                return Promise.resolve([]);
+                return Promise.resolve();
             }
 
-            var mipmapsCount = Scalar.Log2(info.width);
+            let mipmapsCount = Scalar.Log2(info.width);
             mipmapsCount = Math.round(mipmapsCount) + 1;
             if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
                 Tools.Warn('Unsupported specular mipmaps number "' + specularInfo.mipmaps.length + '"');
             }
 
-            var engine = texture.getEngine();
-            var textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var targetTextureType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var expandTexture = false;
+            let engine = texture.getEngine();
+            let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            let expandTexture = false;
+            let rgbmPostProcess: Nullable<PostProcess> = null;
+            let cubeRtt: Nullable<InternalTexture> = null;
+
             if (engine.getCaps().textureHalfFloatRender) {
-                targetTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
                 expandTexture = true;
+                rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, textureType, undefined, null, false);
+                texture._isRGBM = false;
+                texture.invertY = false;
+                cubeRtt = engine.createRenderTargetCubeTexture(texture.width, {
+                    generateDepthBuffer: false,
+                    generateMipMaps: true,
+                    generateStencilBuffer: false,
+                    samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+                    type: textureType,
+                    format: Engine.TEXTUREFORMAT_RGBA
+                })
+            }
+            else {
+                texture.invertY = true;
+                texture._isRGBM = true;
             }
             texture.type = textureType;
             texture.format = Engine.TEXTUREFORMAT_RGBA;
-            texture.invertY = false;
-            texture._isRGBM = true;
             texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
 
-            var promises: Promise<void>[] = [];
+            let promises: Promise<void>[] = [];
             // All mipmaps
             for (let i = 0; i < mipmapsCount; i++) {
                 // All faces
@@ -300,8 +281,31 @@ module BABYLON {
                     // Enqueue promise to upload to the texture.
                     let promise = new Promise<void>((resolve, reject) => {;
                         image.onload = () => {
-                            engine._uploadImageToTexture(texture, face, i, image);
-                            resolve();
+                            if (expandTexture) {
+                                let tempTexture = engine.createTexture(null, true, true, null, Texture.NEAREST_SAMPLINGMODE, null,
+                                (message) => {
+                                    reject(message);
+                                },
+                                image);
+
+                                rgbmPostProcess!.getEffect().executeWhenCompiled(() => {
+                                    rgbmPostProcess!.onApply = (effect) => {
+                                        effect._bindTexture("textureSampler", tempTexture);
+                                        // TODO
+                                        if (i) {
+                                            effect.setFloat2("scale", i + 1, i + 1);
+                                        }
+                                    }
+                                    engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
+                                    engine.restoreDefaultFramebuffer();
+                                    tempTexture.dispose();
+                                    resolve();
+                                });
+                            }
+                            else {
+                                engine._uploadImageToTexture(texture, face, i, image);
+                                resolve();
+                            }
                         };
                         image.onerror = (error) => {
                             reject(error);
@@ -311,14 +315,14 @@ module BABYLON {
                 }
             }
 
-            // if (expandTexture) {
-            //     return Promise.all(promises).then(() => {
-            //         return this._expandTexture(texture, targetTextureType);
-            //     });
-            // }
-            // else {
-                return Promise.all(promises);
-            //}
+            return Promise.all(promises).then(() => {
+                if (cubeRtt) {
+                    texture._webGLTexture = cubeRtt._webGLTexture;
+                }
+                if (rgbmPostProcess) {
+                    rgbmPostProcess.dispose();
+                }
+            });
         }
 
         public static UploadPolynomials(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): void {
@@ -326,7 +330,7 @@ module BABYLON {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
             }
 
-            var irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;
+            let irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;
             if (!irradianceInfo) {
                 return;
             }
