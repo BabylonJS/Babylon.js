@@ -2415,8 +2415,9 @@
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
          * @param depthStencilTexture The depth stencil texture to use to render
+         * @param lodLevel defines le lod level to bind to the frame buffer
          */
-        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture): void {
+        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel = 0): void {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
             }
@@ -2427,14 +2428,14 @@
                 if (faceIndex === undefined) {
                     faceIndex = 0;
                 }
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, lodLevel);
 
                 if (depthStencilTexture) {
                     if (depthStencilTexture._generateStencilBuffer) {
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, 0);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
                     }
                     else {
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, 0);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
                     }
                 }
             }
@@ -2442,7 +2443,20 @@
             if (this._cachedViewport && !forceFullscreenViewport) {
                 this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
             } else {
-                gl.viewport(0, 0, requiredWidth || texture.width, requiredHeight || texture.height);
+                if (!requiredWidth) {
+                    requiredWidth = texture.width;
+                    if (lodLevel) {
+                        requiredWidth = requiredWidth / (2 * lodLevel);
+                    }
+                }
+                if (!requiredHeight) {
+                    requiredHeight = texture.height;
+                    if (lodLevel) {
+                        requiredHeight = requiredHeight / (2 * lodLevel);
+                    }
+                }
+
+                gl.viewport(0, 0, requiredWidth, requiredHeight);
             }
 
             this.wipeCaches();
@@ -5528,7 +5542,6 @@
                 }, undefined, undefined, true, onerror);
             }
             else if (isEnv) {
-                texture._isRGBM = true;
                 this._loadFile(rootUrl, (data) => {
                     data = data as ArrayBuffer;
                     var info = EnvironmentTextureTools.GetEnvInfo(data);
