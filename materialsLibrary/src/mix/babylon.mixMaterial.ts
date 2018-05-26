@@ -319,7 +319,7 @@ module BABYLON {
                     }
                 }
 
-                if (this.mixTexture2) {
+                if (this._mixTexture2) {
                     this._activeEffect.setTexture("mixMap2Sampler", this._mixTexture2);
 
                     if (StandardMaterial.DiffuseTextureEnabled) {
