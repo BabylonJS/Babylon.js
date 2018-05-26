@@ -283,12 +283,14 @@
             return (this._texture.format !== undefined) ? this._texture.format : Engine.TEXTUREFORMAT_RGBA;
         }
 
-        public readPixels(faceIndex = 0): Nullable<ArrayBufferView> {
+        public readPixels(faceIndex = 0, level = 0): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
             }
 
             var size = this.getSize();
+            var width = size.width;
+            var height = size.height;
             let scene = this.getScene();
 
             if (!scene) {
@@ -298,10 +300,17 @@
             var engine = scene.getEngine();
 
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+                if (level != 0) {
+                    for (var u = 0; u < level; u++) {
+                        width = Math.round(width / 2);
+                        height = Math.round(height / 2);
+                    }
+                }
+
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level);
             }
 
-            return engine._readTexturePixels(this._texture, size.width, size.height, -1);
+            return engine._readTexturePixels(this._texture, width, height, -1, level);
         }
 
         public releaseInternalTexture(): void {

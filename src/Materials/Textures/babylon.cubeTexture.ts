@@ -121,6 +121,10 @@
             const isDDS = (extension === ".dds");
             const isEnv = (extension === ".env");
 
+            if (isEnv) {
+                this.gammaSpace = false;
+            }
+
             if (!files) {
                 if (!isEnv && !isDDS && !extensions) {
                     extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];

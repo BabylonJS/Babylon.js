@@ -953,6 +953,7 @@
                 "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js",
                 "../../src/Tools/HDR/babylon.panoramaToCubemap.js",
                 "../../src/Tools/HDR/babylon.hdr.js",
+                "../../src/Tools/babylon.environmentTextureTools.js",
                 "../../src/Materials/Textures/babylon.hdrCubeTexture.js"
             ],
             "dependUpon": [
