@@ -13,9 +13,9 @@ module BABYLON.GUI {
         private _downPointerIds:{[id:number] : boolean} = {};
         private _isVisible = true;
     
-        /** Gets or sets the control position */
+        /** Gets or sets the control position  in world space */
         public position = new Vector3(0, 0, 0);
-        /** Gets or sets the control scaling */
+        /** Gets or sets the control scaling  in world space */
         public scaling = new Vector3(1, 1, 1);
 
         /** Callback used to start pointer enter animation */
@@ -28,12 +28,12 @@ module BABYLON.GUI {
         public pointerUpAnimation: () => void;
 
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer move over the control
         */
         public onPointerMoveObservable = new Observable<Vector3>();
 
         /**
-         * An event triggered when the pointer move out of the control.
+         * An event triggered when the pointer move out of the control
          */
         public onPointerOutObservable = new Observable<Control3D>();
 
@@ -43,12 +43,12 @@ module BABYLON.GUI {
         public onPointerDownObservable = new Observable<Vector3WithInfo>();
 
         /**
-         * An event triggered when pointer up
+         * An event triggered when pointer is up
          */
         public onPointerUpObservable = new Observable<Vector3WithInfo>();
 
         /**
-         * An event triggered when a control is clicked on
+         * An event triggered when a control is clicked on (with a mouse)
          */
         public onPointerClickObservable = new Observable<Vector3WithInfo>();
 
@@ -175,7 +175,7 @@ module BABYLON.GUI {
         }
 
         /**
-         * Gets the mesh used to render this control
+         * Gets the transform node used by this control
          */
         public get node(): Nullable<TransformNode> {
             return this._node;

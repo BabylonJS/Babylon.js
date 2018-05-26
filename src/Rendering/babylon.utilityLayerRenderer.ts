@@ -36,6 +36,8 @@ module BABYLON {
             this._sceneDisposeObserver = this.originalScene.onDisposeObservable.add(()=>{
                 this.dispose();
             })
+            
+            this._updateCamera();
         }
 
         /**

@@ -9,7 +9,7 @@ module BABYLON.GLTF2.Extensions {
     export class KHR_materials_unlit extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             return this._loadExtensionAsync<{}>(context, material, () => {
                 material._babylonData = material._babylonData || {};
                 let babylonData = material._babylonData[babylonDrawMode];

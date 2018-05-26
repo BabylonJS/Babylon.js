@@ -34,16 +34,18 @@
             height     : 1em;
             line-height: 1em;
             display    : inline-block;
-            font-family: 'FontAwesome', sans-serif;
-            content    : "\f078";            
+            font-family: $font-family-icons;
+            content    : "\f107";
+            font-weight: 900;          
         }
         &.folded:before{            
             width      : 1em;
             height     : 1em;
             line-height: 1em;
             display    : inline-block;
-            font-family: 'FontAwesome', sans-serif;
-            content    : "\f054";
+            font-family: $font-family-icons;
+            content    : "\f105";
+            font-weight: 900;
         }
         
         &.unfolded.transformNode > span:first-of-type{

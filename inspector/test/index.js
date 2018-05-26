@@ -77,10 +77,10 @@ var Test = (function () {
         }
 
         let t = 0;
-        // scene.registerBeforeRender(() => {
-        //     ground.rotation.y += 0.01;
-        //     ground.position.y = Math.cos(t += 0.01);
-        // });
+        scene.registerBeforeRender(() => {
+            ground.rotation.y += 0.01;
+            ground.position.y = Math.cos(t += 0.01);
+        });
 
         scene.createDefaultCameraOrLight(true);
         scene.activeCamera.attachControl(canvas);

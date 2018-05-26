@@ -6478,6 +6478,7 @@ var BABYLON;
     (function (GUI) {
         /**
          * Class used to manage 3D user interface
+         * @see http://doc.babylonjs.com/how_to/gui3d
          */
         var GUI3DManager = /** @class */ (function () {
             /**
@@ -6509,6 +6510,9 @@ var BABYLON;
                 this._rootContainer._host = this;
                 // Events
                 this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
                     var pointerEvent = (pi.event);
                     if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
                         return;
@@ -6616,7 +6620,7 @@ var BABYLON;
                 return this;
             };
             /**
-             * Removes the control from the root child list
+             * Removes a control from the root child list
              * @param control defines the control to remove
              * @returns the current container
              */
@@ -6970,16 +6974,16 @@ var BABYLON;
                 this._enterCount = 0;
                 this._downPointerIds = {};
                 this._isVisible = true;
-                /** Gets or sets the control position */
+                /** Gets or sets the control position  in world space */
                 this.position = new BABYLON.Vector3(0, 0, 0);
-                /** Gets or sets the control scaling */
+                /** Gets or sets the control scaling  in world space */
                 this.scaling = new BABYLON.Vector3(1, 1, 1);
                 /**
-                * An event triggered when the pointer move over the control.
+                * An event triggered when the pointer move over the control
                 */
                 this.onPointerMoveObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when the pointer move out of the control.
+                 * An event triggered when the pointer move out of the control
                  */
                 this.onPointerOutObservable = new BABYLON.Observable();
                 /**
@@ -6987,11 +6991,11 @@ var BABYLON;
                  */
                 this.onPointerDownObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when pointer up
+                 * An event triggered when pointer is up
                  */
                 this.onPointerUpObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when a control is clicked on
+                 * An event triggered when a control is clicked on (with a mouse)
                  */
                 this.onPointerClickObservable = new BABYLON.Observable();
                 /**
@@ -7101,7 +7105,7 @@ var BABYLON;
             };
             Object.defineProperty(Control3D.prototype, "node", {
                 /**
-                 * Gets the mesh used to render this control
+                 * Gets the transform node used by this control
                  */
                 get: function () {
                     return this._node;
@@ -7346,7 +7350,7 @@ var BABYLON;
                 return new BABYLON.TransformNode("ContainerNode", scene);
             };
             /**
-             * Removes the control from the children of this control
+             * Removes a control from the children of this control
              * @param control defines the control to remove
              * @returns the current container
              */
@@ -7395,6 +7399,8 @@ var BABYLON;
              */
             function Button3D(name) {
                 var _this = _super.call(this, name) || this;
+                _this._contentResolution = 512;
+                _this._contentScaleRatio = 2;
                 // Default animations
                 _this.pointerEnterAnimation = function () {
                     if (!_this.mesh) {
@@ -7419,6 +7425,50 @@ var BABYLON;
                 };
                 return _this;
             }
+            Object.defineProperty(Button3D.prototype, "contentResolution", {
+                /**
+                 * Gets or sets the texture resolution used to render content (512 by default)
+                 */
+                get: function () {
+                    return this._contentResolution;
+                },
+                set: function (value) {
+                    if (this._contentResolution === value) {
+                        return;
+                    }
+                    this._contentResolution = value;
+                    this._resetContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Button3D.prototype, "contentScaleRatio", {
+                /**
+                 * Gets or sets the texture scale ratio used to render content (2 by default)
+                 */
+                get: function () {
+                    return this._contentScaleRatio;
+                },
+                set: function (value) {
+                    if (this._contentScaleRatio === value) {
+                        return;
+                    }
+                    this._contentScaleRatio = value;
+                    this._resetContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Button3D.prototype._disposeFaceTexture = function () {
+                if (this._facadeTexture) {
+                    this._facadeTexture.dispose();
+                    this._facadeTexture = null;
+                }
+            };
+            Button3D.prototype._resetContent = function () {
+                this._disposeFaceTexture();
+                this.content = this._content;
+            };
             Object.defineProperty(Button3D.prototype, "content", {
                 /**
                  * Gets or sets the GUI 2D content used to display the button's facade
@@ -7430,10 +7480,11 @@ var BABYLON;
                     if (!this._host || !this._host.utilityLayer) {
                         return;
                     }
+                    this._content = value;
                     if (!this._facadeTexture) {
-                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", 512, 512, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
-                        this._facadeTexture.rootContainer.scaleX = 2;
-                        this._facadeTexture.rootContainer.scaleY = 2;
+                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                        this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+                        this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
                         this._facadeTexture.premulAlpha = true;
                     }
                     this._facadeTexture.addControl(value);
@@ -7479,6 +7530,7 @@ var BABYLON;
              */
             Button3D.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
+                this._disposeFaceTexture();
                 if (this._currentMaterial) {
                     this._currentMaterial.dispose();
                 }
@@ -7525,7 +7577,6 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(HolographicButton.prototype, "text", {
-                // private _imageUrl: string;
                 /**
                  * Gets or sets text for the button
                  */
@@ -7603,6 +7654,7 @@ var BABYLON;
                 return "HolographicButton";
             };
             HolographicButton.prototype._rebuildContent = function () {
+                this._disposeFaceTexture();
                 var panel = new GUI.StackPanel();
                 panel.isVertical = true;
                 if (this._imageUrl) {

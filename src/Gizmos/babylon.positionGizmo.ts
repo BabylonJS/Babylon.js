@@ -7,7 +7,7 @@ module BABYLON {
         private _yDrag:AxisDragGizmo;
         private _zDrag:AxisDragGizmo;
 
-        public set attachedMesh(mesh:Nullable<Mesh>){
+        public set attachedMesh(mesh:Nullable<AbstractMesh>){
             this._xDrag.attachedMesh = mesh;
             this._yDrag.attachedMesh = mesh;
             this._zDrag.attachedMesh = mesh;
@@ -23,6 +23,12 @@ module BABYLON {
             this._zDrag = new AxisDragGizmo(gizmoLayer, new Vector3(0,0,1), BABYLON.Color3.FromHexString("#0984e3"));
         }
 
+        protected _onInteractionsEnabledChanged(value:boolean){
+            this._xDrag.interactionsEnabled = value
+            this._yDrag.interactionsEnabled = value
+            this._zDrag.interactionsEnabled = value
+        }
+        
         /**
          * Disposes of the gizmo
          */
