@@ -19,11 +19,6 @@ module BABYLON {
         irradiance: any;
 
         /**
-         * Radiance information stored in the file.
-         */
-        radiance: any;
-
-        /**
          * Specular information stored in the file.
          */
         specular: any;
@@ -49,32 +44,31 @@ module BABYLON {
     }
 
     interface EnvironmentTextureSpecularInfoV1 {
+        /**
+         * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
+         */
+        specularDataPosition?: number;
         mipmaps: Array<BufferImageData>
     }
 
     export class EnvironmentTextureTools {
 
+        private static _MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
+
         public static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo> {
             // Close to network
-            let littleEndian = false;
-
-            let magicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
+            // let littleEndian = false;
 
             let dataView = new DataView(data);
             let pos = 0;
 
-            for (let i = 0; i < magicBytes.length; i++) {
-                if (dataView.getUint8(pos++) !== magicBytes[i]) {
+            for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
+                if (dataView.getUint8(pos++) !== EnvironmentTextureTools._MagicBytes[i]) {
                     Tools.Error('Not a babylon environment map');
                     return null;
                 }
             }
-
-            let version = dataView.getUint16(pos,  littleEndian); pos += 2;
-            if (version !== 1) {
-                Tools.Warn('Unsupported babylon environment map version "' + version + '"');
-            }
-
+            
             // Read json manifest - collect characters up to null terminator
             let manifestString = '';
             let charCode = 0x00;
@@ -83,7 +77,182 @@ module BABYLON {
             }
 
             let manifest: EnvironmentTextureInfo = JSON.parse(manifestString);
+            if (manifest.specular) {
+                manifest.specular.specularDataPosition = pos;
+            }
+
             return manifest;
+        }
+
+        public static CreateEnvTexture(texture: CubeTexture): Nullable<Promise<ArrayBuffer>> {
+            var internalTexture = texture.getInternalTexture();
+            if (!internalTexture) {
+                return null;
+            }
+
+            var engine = internalTexture.getEngine();
+            var hostingScene = new Scene(engine);
+            var screenshotCanvas = document.createElement('canvas');
+
+            var info: EnvironmentTextureInfo = {
+                version: 1,
+                width: internalTexture.width,
+                irradiance: null,
+                specular: null
+            };
+
+            var specularTextures: { [key: number]: ArrayBuffer } = { };
+            var promises: Promise<void>[] = [];
+
+            // All mipmaps
+            var mipmapsCount = Scalar.Log2(internalTexture.width);
+            mipmapsCount = Math.round(mipmapsCount);
+            for (let i = 0; i <= mipmapsCount; i++) {
+                let faceWidth = Math.pow(2, mipmapsCount - i);
+
+                // All faces
+                for (let face = 0; face < 6; face++) {
+
+                    let data = texture.readPixels(face, i);
+
+                    let textureType = Engine.TEXTURETYPE_FLOAT;
+                    let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+
+                    let rtt = new RenderTargetTexture(
+                        'resized' + i + "_" + face,
+                        faceWidth,
+                        hostingScene,
+                        true,
+                        true,
+                        Engine.TEXTURETYPE_UNSIGNED_INT,
+                        false,
+                        Texture.NEAREST_SAMPLINGMODE,
+                        false
+                    );
+        
+                    let promise = new Promise<void>((resolve, reject) => {
+                        //let passPostProcess = new PassPostProcess("rgbmEncode", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                        let rgbmPostProcess = new PostProcess("rgbmEncode", "rgbmEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+                        rgbmPostProcess.getEffect().executeWhenCompiled(() => {
+                            rgbmPostProcess.onApply = function (effect) {
+                                effect._bindTexture("textureSampler", tempTexture);
+                            }
+            
+                            let internalTexture = rtt.getInternalTexture();
+            
+                            if (internalTexture) {
+                                hostingScene.postProcessManager.directRender([rgbmPostProcess], internalTexture);
+                            }
+
+                            //Reading datas from WebGL
+                            let data = engine.readPixels(0, 0, faceWidth, faceWidth);
+
+                            // //To flip image on Y axis.
+                            // for (var i = 0; i < halfHeight; i++) {
+                            //     for (var j = 0; j < numberOfChannelsByLine; j++) {
+                            //         var currentCell = j + i * numberOfChannelsByLine;
+                            //         var targetLine = height - i - 1;
+                            //         var targetCell = j + targetLine * numberOfChannelsByLine;
+
+                            //         var temp = data[currentCell];
+                            //         data[currentCell] = data[targetCell];
+                            //         data[targetCell] = temp;
+                            //     }
+                            // }
+
+                            screenshotCanvas.width = faceWidth;
+                            screenshotCanvas.height = faceWidth;
+                            let context = screenshotCanvas.getContext('2d');
+
+                            if (context) {
+                                // Copy the pixels to a 2D canvas
+                                let imageData = context.createImageData(faceWidth, faceWidth);
+                                let castData = <any>(imageData.data);
+                                castData.set(data);
+                                context.putImageData(imageData, 0, 0);
+
+                                screenshotCanvas.toBlob((blob) => {
+                                    var url = window.URL.createObjectURL(blob);
+
+                                    var a: any = document.createElement("a");
+                                        document.body.appendChild(a);
+                                        a.style = "display: none";
+
+                                    a.href = url;
+                                    a.download = "env_" + i + "_" + face + ".png";
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+
+                                    let fileReader = new FileReader();
+                                    fileReader.onload = function(event) {
+                                        let arrayBuffer = event.target!.result as ArrayBuffer;
+                                        specularTextures[i * 6 + face] = arrayBuffer;
+                                        resolve();
+                                    };
+                                    fileReader.readAsArrayBuffer(blob!);
+                                });
+                            }
+                        });
+                    });
+                    promises.push(promise);
+                }
+            }
+
+            return Promise.all(promises).then(() => {
+                hostingScene.dispose();
+
+                info.specular = {
+                    mipmaps: []
+                };
+
+                let position = 0;
+                for (let i = 0; i <= mipmapsCount; i++) {
+                    for (let face = 0; face < 6; face++) {
+                        let byteLength = specularTextures[i * 6 + face].byteLength;
+                        info.specular.mipmaps.push({
+                            length: byteLength,
+                            position: position
+                        });
+                        position += byteLength;
+                    }
+                }
+
+                function str2ab(str: string) {
+                    let buf = new ArrayBuffer(str.length + 1); 
+                    let bufView = new Uint8Array(buf); // Limited to ascii subset matching unicode.
+                    for (let i=0, strLen=str.length; i < strLen; i++) {
+                        bufView[i] = str.charCodeAt(i);
+                    }
+                    bufView[str.length] = 0x00;
+                    return buf;
+                }
+
+                let infoString = JSON.stringify(info);
+                let infoBuffer = str2ab(infoString);
+
+                let totalSize = EnvironmentTextureTools._MagicBytes.length + position + infoBuffer.byteLength;
+                let finalBuffer = new ArrayBuffer(totalSize);
+                let finalBufferView = new Uint8Array(finalBuffer);
+                let dataView = new DataView(finalBuffer);
+
+                let pos = 0;
+                for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
+                    dataView.setUint8(pos++, EnvironmentTextureTools._MagicBytes[i]);
+                }
+
+                finalBufferView.set(new Uint8Array(infoBuffer), pos);
+                pos += infoBuffer.byteLength;
+
+                for (let i = 0; i <= mipmapsCount; i++) {
+                    for (let face = 0; face < 6; face++) {
+                        var dataBuffer = specularTextures[i * 6 + face];
+                        finalBufferView.set(new Uint8Array(dataBuffer), pos);
+                        pos += dataBuffer.byteLength;
+                    }
+                }
+
+                return finalBuffer;
+            });
         }
 
         public static UploadLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void[]> {
@@ -97,6 +266,7 @@ module BABYLON {
             }
 
             var mipmapsCount = Scalar.Log2(info.width);
+            mipmapsCount = Math.round(mipmapsCount) + 1;
             if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
                 Tools.Warn('Unsupported specular mipmaps number "' + specularInfo.mipmaps.length + '"');
             }
@@ -113,6 +283,7 @@ module BABYLON {
             texture.format = Engine.TEXTUREFORMAT_RGBA;
             texture.invertY = false;
             texture._isRGBM = true;
+            texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
 
             var promises: Promise<void>[] = [];
             // All mipmaps
@@ -120,14 +291,14 @@ module BABYLON {
                 // All faces
                 for (let face = 0; face < 6; face++) {
                     const imageData = specularInfo.mipmaps[i * 6 + face];
-                    let bytes = new Uint8Array(arrayBuffer, imageData.position, imageData.length);
+                    let bytes = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageData.position, imageData.length);
                     //construct image element from bytes
                     let image = new Image();
                     let src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
                     image.src = src;
 
                     // Enqueue promise to upload to the texture.
-                    var promise = new Promise<void>((resolve, reject) => {;
+                    let promise = new Promise<void>((resolve, reject) => {;
                         image.onload = () => {
                             engine._uploadImageToTexture(texture, face, i, image);
                             resolve();

@@ -225,7 +225,7 @@ float finalAlpha = alpha;
 #ifdef REFLECTIONFRESNEL
     vec3 colorBase = diffuseColor;
 #else
-    vec3 colorBase = reflectionColor,rgb * diffuseColor;
+    vec3 colorBase = reflectionColor.rgb * diffuseColor;
 #endif
     colorBase = max(colorBase, 0.0);
 
