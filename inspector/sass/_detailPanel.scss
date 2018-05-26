@@ -38,8 +38,9 @@
                 background-color:$background-lighter2;
             }
             &:after {
-                font-family: 'FontAwesome', sans-serif;
-                content: "\00a0 \00a0 \00a0 \f054"; // 4 space before + chevron right
+                font-family: $font-family-icons;
+                content: "\00a0 \00a0 \00a0 \f105"; // 4 space before + angle-right
+                font-weight: 900; // To display solid font family
             }
         }   
     }
@@ -64,8 +65,9 @@
     }
     &.unfolded {          
         .prop-value.clickable:after {
-            font-family: 'FontAwesome', sans-serif;
-            content: "\00a0 \00a0 \00a0 \f078"; // 4 space before + chevron down
+            font-family: $font-family-icons;
+            content: "\00a0 \00a0 \00a0 \f107"; // 4 space before + angle-down
+            font-weight: 900; // To display solid font family
         }
     }
   }

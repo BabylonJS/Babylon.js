@@ -30,6 +30,11 @@ module BABYLON {
          *  Mesh with the position where the drag plane should be placed
          */
         public _dragPlaneParent:Nullable<Mesh>=null;
+
+        /**
+         *  If the drag behavior will react to drag events
+         */
+        public enabled = true;
         
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
@@ -91,6 +96,9 @@ module BABYLON {
             }
 
             this._pointerObserver = this.options.pointerObservableScene!.onPrePointerObservable.add((pointerInfoPre, eventState)=>{
+                if(!this.enabled){
+                    return;
+                }
                 // Check if attached mesh is picked
                 var pickInfo = pointerInfoPre.ray ? this._scene.pickWithRay(pointerInfoPre.ray, pickPredicate) : this._scene.pick(this._scene.pointerX, this._scene.pointerY, pickPredicate);
                 if(pickInfo){
@@ -98,8 +106,8 @@ module BABYLON {
                     if(!pickInfo.ray){
                         pickInfo.ray = this.options.pointerObservableScene!.createPickingRay(this._scene.pointerX, this._scene.pointerY, Matrix.Identity(), this._scene.activeCamera);
                     }
-                    if(pickInfo.hit){
-                        eventState.skipNextObservers = true;
+                    if(pickInfo.hit && pointerInfoPre.type == BABYLON.PointerEventTypes.POINTERDOWN){
+                        pointerInfoPre.skipOnPointerObservable = true;
                     }
                 }
                 

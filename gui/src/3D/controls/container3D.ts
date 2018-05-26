@@ -68,7 +68,7 @@ module BABYLON.GUI {
         }
 
         /**
-         * Removes the control from the children of this control
+         * Removes a control from the children of this control
          * @param control defines the control to remove
          * @returns the current container
          */
