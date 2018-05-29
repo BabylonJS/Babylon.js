@@ -6,7 +6,7 @@ module INSPECTOR {
     export class DisposeTool extends AbstractTool {
 
         constructor(parent:HTMLElement, inspector:Inspector) {
-            super('fa-times', parent, inspector, 'Close the inspector panel');
+            super('fa', 'fa-times', parent, inspector, 'Close the inspector panel');
         }
 
         // Action : refresh the whole panel
