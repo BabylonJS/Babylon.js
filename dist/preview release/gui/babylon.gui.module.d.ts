@@ -1027,7 +1027,7 @@ declare module BABYLON.GUI {
          * @param control defines the control to add
          * @returns the current container
          */
-        addControl(control: Control): Container;
+        addControl(control: Nullable<Control>): Container;
         /**
          * Removes a control from the current container
          * @param control defines the control to remove

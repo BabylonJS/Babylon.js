@@ -2925,6 +2925,9 @@ var BABYLON;
              * @returns the current container
              */
             Container.prototype.addControl = function (control) {
+                if (!control) {
+                    return this;
+                }
                 var index = this._children.indexOf(control);
                 if (index !== -1) {
                     return this;
