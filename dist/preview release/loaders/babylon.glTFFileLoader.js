@@ -389,8 +389,8 @@ var BABYLON;
                 }
             }
             var createLoaders = {
-                1: GLTFFileLoader.CreateGLTFLoaderV1,
-                2: GLTFFileLoader.CreateGLTFLoaderV2
+                1: GLTFFileLoader._CreateGLTFLoaderV1,
+                2: GLTFFileLoader._CreateGLTFLoaderV2
             };
             var createLoader = createLoaders[version.major];
             if (!createLoader) {
@@ -2208,7 +2208,7 @@ var BABYLON;
         }());
         GLTF1.GLTFLoader = GLTFLoader;
         ;
-        BABYLON.GLTFFileLoader.CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
+        BABYLON.GLTFFileLoader._CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));
 
@@ -2807,31 +2807,6 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFMaterialsCommonExtension.js.map
 
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
-var BABYLON;
-(function (BABYLON) {
-    var GLTF2;
-    (function (GLTF2) {
-        /** @hidden */
-        var _ArrayItem = /** @class */ (function () {
-            function _ArrayItem() {
-            }
-            /** @hidden */
-            _ArrayItem.Assign = function (values) {
-                if (values) {
-                    for (var index = 0; index < values.length; index++) {
-                        values[index]._index = index;
-                    }
-                }
-            };
-            return _ArrayItem;
-        }());
-        GLTF2._ArrayItem = _ArrayItem;
-    })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.glTFLoaderUtilities.js.map
-
-/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
 //# sourceMappingURL=babylon.glTFLoaderInterfaces.js.map
@@ -2844,6 +2819,18 @@ var BABYLON;
 (function (BABYLON) {
     var GLTF2;
     (function (GLTF2) {
+        var _ArrayItem = /** @class */ (function () {
+            function _ArrayItem() {
+            }
+            _ArrayItem.Assign = function (values) {
+                if (values) {
+                    for (var index = 0; index < values.length; index++) {
+                        values[index]._index = index;
+                    }
+                }
+            };
+            return _ArrayItem;
+        }());
         /**
          * Loader for loading a glTF 2.0 asset
          */
@@ -3089,19 +3076,19 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._setupData = function () {
-                GLTF2._ArrayItem.Assign(this._gltf.accessors);
-                GLTF2._ArrayItem.Assign(this._gltf.animations);
-                GLTF2._ArrayItem.Assign(this._gltf.buffers);
-                GLTF2._ArrayItem.Assign(this._gltf.bufferViews);
-                GLTF2._ArrayItem.Assign(this._gltf.cameras);
-                GLTF2._ArrayItem.Assign(this._gltf.images);
-                GLTF2._ArrayItem.Assign(this._gltf.materials);
-                GLTF2._ArrayItem.Assign(this._gltf.meshes);
-                GLTF2._ArrayItem.Assign(this._gltf.nodes);
-                GLTF2._ArrayItem.Assign(this._gltf.samplers);
-                GLTF2._ArrayItem.Assign(this._gltf.scenes);
-                GLTF2._ArrayItem.Assign(this._gltf.skins);
-                GLTF2._ArrayItem.Assign(this._gltf.textures);
+                _ArrayItem.Assign(this._gltf.accessors);
+                _ArrayItem.Assign(this._gltf.animations);
+                _ArrayItem.Assign(this._gltf.buffers);
+                _ArrayItem.Assign(this._gltf.bufferViews);
+                _ArrayItem.Assign(this._gltf.cameras);
+                _ArrayItem.Assign(this._gltf.images);
+                _ArrayItem.Assign(this._gltf.materials);
+                _ArrayItem.Assign(this._gltf.meshes);
+                _ArrayItem.Assign(this._gltf.nodes);
+                _ArrayItem.Assign(this._gltf.samplers);
+                _ArrayItem.Assign(this._gltf.scenes);
+                _ArrayItem.Assign(this._gltf.skins);
+                _ArrayItem.Assign(this._gltf.textures);
                 if (this._gltf.nodes) {
                     var nodeParents = {};
                     for (var _i = 0, _a = this._gltf.nodes; _i < _a.length; _i++) {
@@ -3284,7 +3271,7 @@ var BABYLON;
                     throw new Error(context + ": Invalid recursive node hierarchy");
                 }
                 var promises = new Array();
-                var babylonMesh = new BABYLON.Mesh(node.name || "node" + node._index, this._babylonScene, node._parent._babylonMesh);
+                var babylonMesh = new BABYLON.Mesh(node.name || "node" + node._index, this._babylonScene, node._parent ? node._parent._babylonMesh : null);
                 node._babylonMesh = babylonMesh;
                 GLTFLoader._LoadTransform(node, babylonMesh);
                 if (node.mesh != undefined) {
@@ -3312,7 +3299,7 @@ var BABYLON;
                 if (!primitives || primitives.length === 0) {
                     throw new Error(context + ": Primitives are missing");
                 }
-                GLTF2._ArrayItem.Assign(primitives);
+                _ArrayItem.Assign(primitives);
                 if (primitives.length === 1) {
                     var primitive = primitives[0];
                     promises.push(this._loadPrimitiveAsync(context + "/primitives/" + primitive._index, node, mesh, primitive, babylonMesh));
@@ -3352,7 +3339,7 @@ var BABYLON;
                 }
                 else {
                     var material = GLTFLoader._GetProperty(context + "/material}", this._gltf.materials, primitive.material);
-                    promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, babylonMesh, babylonDrawMode, function (babylonMaterial) {
+                    promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, mesh, babylonMesh, babylonDrawMode, function (babylonMaterial) {
                         babylonMesh.material = babylonMaterial;
                     }));
                 }
@@ -3543,7 +3530,7 @@ var BABYLON;
                     return babylonBone;
                 }
                 var babylonParentBone = null;
-                if (node._parent._babylonMesh !== this._rootBabylonMesh) {
+                if (node._parent && node._parent._babylonMesh !== this._rootBabylonMesh) {
                     babylonParentBone = this._loadBone(node._parent, skin, babylonBones);
                 }
                 var boneIndex = skin.joints.indexOf(node._index);
@@ -3633,8 +3620,8 @@ var BABYLON;
                 var babylonAnimationGroup = new BABYLON.AnimationGroup(animation.name || "animation" + animation._index, this._babylonScene);
                 animation._babylonAnimationGroup = babylonAnimationGroup;
                 var promises = new Array();
-                GLTF2._ArrayItem.Assign(animation.channels);
-                GLTF2._ArrayItem.Assign(animation.samplers);
+                _ArrayItem.Assign(animation.channels);
+                _ArrayItem.Assign(animation.samplers);
                 for (var _i = 0, _a = animation.channels; _i < _a.length; _i++) {
                     var channel = _a[_i];
                     promises.push(this._loadAnimationChannelAsync(context + "/channels/" + channel._index, context, animation, channel, babylonAnimationGroup));
@@ -3988,8 +3975,8 @@ var BABYLON;
                 return Promise.all(promises).then(function () { });
             };
             /** @hidden */
-            GLTFLoader.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
-                var promise = GLTF2.GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, babylonDrawMode, assign);
+            GLTFLoader.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
+                var promise = GLTF2.GLTFLoaderExtension._LoadMaterialAsync(this, context, material, mesh, babylonMesh, babylonDrawMode, assign);
                 if (promise) {
                     return promise;
                 }
@@ -3997,7 +3984,7 @@ var BABYLON;
                 var babylonData = material._babylonData[babylonDrawMode];
                 if (!babylonData) {
                     var promises = new Array();
-                    var name_3 = material.name || "materialSG_" + material._index;
+                    var name_3 = material.name || "material_" + material._index;
                     var babylonMaterial = this._createMaterial(name_3, babylonDrawMode);
                     promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
                     promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
@@ -4390,7 +4377,7 @@ var BABYLON;
             return GLTFLoader;
         }());
         GLTF2.GLTFLoader = GLTFLoader;
-        BABYLON.GLTFFileLoader.CreateGLTFLoaderV2 = function () { return new GLTFLoader(); };
+        BABYLON.GLTFFileLoader._CreateGLTFLoaderV2 = function () { return new GLTFLoader(); };
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
@@ -4410,11 +4397,15 @@ var BABYLON;
              * @param loader defines the GLTFLoader to use
              */
             function GLTFLoaderExtension(loader) {
-                /** Gets or sets a boolean indicating if the extension is enabled */
+                /**
+                 * Gets or sets a boolean indicating if the extension is enabled
+                 */
                 this.enabled = true;
                 this._loader = loader;
             }
-            /** Release all resources */
+            /**
+             * Release all resources
+             */
             GLTFLoaderExtension.prototype.dispose = function () {
                 delete this._loader;
             };
@@ -4429,12 +4420,16 @@ var BABYLON;
              * @hidden
              */
             GLTFLoaderExtension.prototype._loadNodeAsync = function (context, node) { return null; };
-            /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
-            GLTFLoaderExtension.prototype._loadVertexDataAsync = function (context, primitive, babylonMesh) { return null; };
-            /** Override this method to modify the default behavior for loading materials.
+            /**
+             * Override this method to modify the default behavior for loading mesh primitive vertex data.
              * @hidden
              */
-            GLTFLoaderExtension.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) { return null; };
+            GLTFLoaderExtension.prototype._loadVertexDataAsync = function (context, primitive, babylonMesh) { return null; };
+            /**
+             * Override this method to modify the default behavior for loading materials.
+             * @hidden
+             */
+            GLTFLoaderExtension.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) { return null; };
             /**
              * Override this method to modify the default behavior for loading textures.
              * @hidden
@@ -4459,7 +4454,7 @@ var BABYLON;
                 if (!extension) {
                     return null;
                 }
-                // Clear out the extension before executing the action to avoid recursing into the same property.
+                // Clear out the extension before executing the action to avoid infinite recursion.
                 delete extensions[this.name];
                 try {
                     return actionAsync(context + "/extensions/" + this.name, extension);
@@ -4467,6 +4462,29 @@ var BABYLON;
                 finally {
                     // Restore the extension after executing the action.
                     extensions[this.name] = extension;
+                }
+            };
+            /**
+             * Helper method called by the loader to allow extensions to override loading scenes.
+             * @hidden
+             */
+            GLTFLoaderExtension.prototype._loadExtrasValueAsync = function (context, property, actionAsync) {
+                if (!property.extras) {
+                    return null;
+                }
+                var extras = property.extras;
+                var value = extras[this.name];
+                if (value === undefined) {
+                    return null;
+                }
+                // Clear out the extras value before executing the action to avoid infinite recursion.
+                delete extras[this.name];
+                try {
+                    return actionAsync(context + "/extras/" + this.name, value);
+                }
+                finally {
+                    // Restore the extras value after executing the action.
+                    extras[this.name] = value;
                 }
             };
             /**
@@ -4494,8 +4512,8 @@ var BABYLON;
              * Helper method called by the loader to allow extensions to override loading materials.
              * @hidden
              */
-            GLTFLoaderExtension._LoadMaterialAsync = function (loader, context, material, babylonMesh, babylonDrawMode, assign) {
-                return loader._applyExtensions(function (extension) { return extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign); });
+            GLTFLoaderExtension._LoadMaterialAsync = function (loader, context, material, mesh, babylonMesh, babylonDrawMode, assign) {
+                return loader._applyExtensions(function (extension) { return extension._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, assign); });
             };
             /**
              * Helper method called by the loader to allow extensions to override loading textures.
@@ -4641,7 +4659,7 @@ var BABYLON;
                         return firstPromise;
                     });
                 };
-                MSFT_lod.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
+                MSFT_lod.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
                     var _this = this;
                     // Don't load material LODs if already loading a node LOD.
                     if (this._loadingNodeLOD) {
@@ -4658,7 +4676,7 @@ var BABYLON;
                                     _this._loadMaterialSignals[materialLOD._index] = new BABYLON.Deferred();
                                 }
                             }
-                            var promise = _this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : function () { }).then(function () {
+                            var promise = _this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, mesh, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : function () { }).then(function () {
                                 if (indexLOD !== 0) {
                                     var babylonDataLOD = materialLOD._babylonData;
                                     assign(babylonDataLOD[babylonDrawMode].material);
@@ -4757,29 +4775,28 @@ var BABYLON;
             /** @hidden */
             var MSFT_minecraftMesh = /** @class */ (function (_super) {
                 __extends(MSFT_minecraftMesh, _super);
-                function MSFT_minecraftMesh(loader) {
-                    var _this = _super.call(this, loader) || this;
+                function MSFT_minecraftMesh() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.name = NAME;
-                    _this._onMaterialLoaded = function (material) {
-                        if (material.needAlphaBlending()) {
-                            material.forceDepthWrite = true;
-                            material.separateCullingPass = true;
-                        }
-                        material.backFaceCulling = material.forceDepthWrite;
-                        material.twoSidedLighting = true;
-                    };
-                    var meshes = loader._gltf.meshes;
-                    if (meshes && meshes.length) {
-                        for (var _i = 0, meshes_1 = meshes; _i < meshes_1.length; _i++) {
-                            var mesh = meshes_1[_i];
-                            if (mesh && mesh.extras && mesh.extras.MSFT_minecraftMesh) {
-                                _this._loader.onMaterialLoadedObservable.add(_this._onMaterialLoaded);
-                                break;
-                            }
-                        }
-                    }
                     return _this;
                 }
+                MSFT_minecraftMesh.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
+                    var _this = this;
+                    return this._loadExtrasValueAsync(context, mesh, function (extensionContext, value) {
+                        if (value) {
+                            return _this._loader._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, function (babylonMaterial) {
+                                if (babylonMaterial.needAlphaBlending()) {
+                                    babylonMaterial.forceDepthWrite = true;
+                                    babylonMaterial.separateCullingPass = true;
+                                }
+                                babylonMaterial.backFaceCulling = babylonMaterial.forceDepthWrite;
+                                babylonMaterial.twoSidedLighting = true;
+                                assign(babylonMaterial);
+                            });
+                        }
+                        return null;
+                    });
+                };
                 return MSFT_minecraftMesh;
             }(GLTF2.GLTFLoaderExtension));
             Extensions.MSFT_minecraftMesh = MSFT_minecraftMesh;
@@ -4811,29 +4828,28 @@ var BABYLON;
             /** @hidden */
             var MSFT_sRGBFactors = /** @class */ (function (_super) {
                 __extends(MSFT_sRGBFactors, _super);
-                function MSFT_sRGBFactors(loader) {
-                    var _this = _super.call(this, loader) || this;
+                function MSFT_sRGBFactors() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.name = NAME;
-                    _this._onMaterialLoaded = function (material) {
-                        if (!material.albedoTexture) {
-                            material.albedoColor.toLinearSpaceToRef(material.albedoColor);
-                        }
-                        if (!material.reflectivityTexture) {
-                            material.reflectivityColor.toLinearSpaceToRef(material.reflectivityColor);
-                        }
-                    };
-                    var materials = loader._gltf.materials;
-                    if (materials && materials.length) {
-                        for (var _i = 0, materials_1 = materials; _i < materials_1.length; _i++) {
-                            var material = materials_1[_i];
-                            if (material && material.extras && material.extras.MSFT_sRGBFactors) {
-                                _this._loader.onMaterialLoadedObservable.add(_this._onMaterialLoaded);
-                                break;
-                            }
-                        }
-                    }
                     return _this;
                 }
+                MSFT_sRGBFactors.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
+                    var _this = this;
+                    return this._loadExtrasValueAsync(context, material, function (extensionContext, value) {
+                        if (value) {
+                            return _this._loader._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, function (babylonMaterial) {
+                                if (!babylonMaterial.albedoTexture) {
+                                    babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor);
+                                }
+                                if (!babylonMaterial.reflectivityTexture) {
+                                    babylonMaterial.reflectivityColor.toLinearSpaceToRef(babylonMaterial.reflectivityColor);
+                                }
+                                assign(babylonMaterial);
+                            });
+                        }
+                        return null;
+                    });
+                };
                 return MSFT_sRGBFactors;
             }(GLTF2.GLTFLoaderExtension));
             Extensions.MSFT_sRGBFactors = MSFT_sRGBFactors;
@@ -4973,7 +4989,7 @@ var BABYLON;
                     return _this;
                 }
                 /** @hidden */
-                KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
+                KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
                     var _this = this;
                     return this._loadExtensionAsync(context, material, function (extensionContext, extension) {
                         material._babylonData = material._babylonData || {};
@@ -5061,7 +5077,7 @@ var BABYLON;
                     _this.name = NAME;
                     return _this;
                 }
-                KHR_materials_unlit.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
+                KHR_materials_unlit.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
                     var _this = this;
                     return this._loadExtensionAsync(context, material, function () {
                         material._babylonData = material._babylonData || {};
@@ -5118,6 +5134,8 @@ var BABYLON;
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=KHR_materials_unlit.js.map
 
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
