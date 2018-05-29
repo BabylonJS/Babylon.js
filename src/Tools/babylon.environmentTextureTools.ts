@@ -243,10 +243,11 @@ module BABYLON {
             let rgbmPostProcess: Nullable<PostProcess> = null;
             let cubeRtt: Nullable<InternalTexture> = null;
 
-            if (engine.getCaps().textureHalfFloatRender) {
+            var canRenderToHalfFloat = engine.getCaps().textureHalfFloatRender;
+            if (canRenderToHalfFloat) {
                 textureType = Engine.TEXTURETYPE_HALF_FLOAT;
                 expandTexture = true;
-                rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, textureType, undefined, null, false);
+                rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, textureType, undefined, null, false);
                 texture._isRGBM = false;
                 texture.invertY = false;
                 cubeRtt = engine.createRenderTargetCubeTexture(texture.width, {
@@ -274,9 +275,19 @@ module BABYLON {
                     const imageData = specularInfo.mipmaps[i * 6 + face];
                     let bytes = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageData.position, imageData.length);
                     //construct image element from bytes
+                    var blob = new Blob([bytes], { type: 'image/png' });
+                    let url = URL.createObjectURL(blob);
+                    
+                    // let a: any = document.createElement("a");
+                    //     document.body.appendChild(a);
+                    //     a.style = "display: none";
+                    
+                    // a.href = url;
+                    // a.download = "env_" + i + "_" + face + ".png";
+                    // a.click();
+
                     let image = new Image();
-                    let src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
-                    image.src = src;
+                    image.src = url;
 
                     // Enqueue promise to upload to the texture.
                     let promise = new Promise<void>((resolve, reject) => {;
@@ -291,14 +302,12 @@ module BABYLON {
                                 rgbmPostProcess!.getEffect().executeWhenCompiled(() => {
                                     rgbmPostProcess!.onApply = (effect) => {
                                         effect._bindTexture("textureSampler", tempTexture);
-                                        // TODO
-                                        if (i) {
-                                            effect.setFloat2("scale", i + 1, i + 1);
-                                        }
+                                        effect.setFloat2("scale", 1, 1);
                                     }
                                     engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
                                     engine.restoreDefaultFramebuffer();
                                     tempTexture.dispose();
+                                    window.URL.revokeObjectURL(url);
                                     resolve();
                                 });
                             }

@@ -2446,13 +2446,13 @@
                 if (!requiredWidth) {
                     requiredWidth = texture.width;
                     if (lodLevel) {
-                        requiredWidth = requiredWidth / (2 * lodLevel);
+                        requiredWidth = requiredWidth / Math.pow(2, lodLevel);
                     }
                 }
                 if (!requiredHeight) {
                     requiredHeight = texture.height;
                     if (lodLevel) {
-                        requiredHeight = requiredHeight / (2 * lodLevel);
+                        requiredHeight = requiredHeight / Math.pow(2, lodLevel);
                     }
                 }
 
