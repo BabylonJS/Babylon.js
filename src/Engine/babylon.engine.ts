@@ -1129,6 +1129,11 @@
         }
 
         /**
+         * Defines whether the engine has been created with the premultipliedAlpha option on or not.
+         */
+        public readonly premultipliedAlpha: boolean = false;
+
+        /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering
          * @param antialias defines enable antialiasing (default: false)
@@ -1175,6 +1180,10 @@
 
                 if (options.stencil === undefined) {
                     options.stencil = true;
+                }
+
+                if (options.premultipliedAlpha) {
+                    this.premultipliedAlpha = true;
                 }
 
                 this._deterministicLockstep = options.deterministicLockstep;

@@ -24,6 +24,36 @@ module BABYLON {
         specular: any;
     }
 
+    /**
+     * Defines One Image in the file. It requires only the position in the file 
+     * as well as the length.
+     */
+    interface BufferImageData {
+        /**
+         * Length of the image data.
+         */
+        length: number;
+        /**
+         * Position of the data from the null terminator delimiting the end of the JSON.
+         */
+        position: number;
+    }
+
+    /**
+     * Defines the specular data enclosed in the file.
+     * This corresponds to the version 1 of the data.
+     */
+    interface EnvironmentTextureSpecularInfoV1 {
+        /**
+         * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
+         */
+        specularDataPosition?: number;
+        /**
+         * This contains all the images data needed to reconstruct the cubemap.
+         */
+        mipmaps: Array<BufferImageData>
+    }
+
     interface EnvironmentTextureIrradianceInfoV1 {
         l00: Array<number>;
 
@@ -38,27 +68,24 @@ module BABYLON {
         l22: Array<number>;
     }
 
-    interface BufferImageData {
-        length: number;
-        position: number;
-    }
-
-    interface EnvironmentTextureSpecularInfoV1 {
-        /**
-         * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
-         */
-        specularDataPosition?: number;
-        mipmaps: Array<BufferImageData>
-    }
-
+    /**
+     * Sets of helpers addressing the serialization and deserialization of environment texture
+     * stored in a BabylonJS env file.
+     * Those files are usually stored as .env files.
+     */
     export class EnvironmentTextureTools {
 
+        /**
+         * Magic number identifying the env file.
+         */
         private static _MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
 
+        /**
+         * Gets the environment info from an env file.
+         * @param data The array buffer containing the .env bytes.
+         * @returns the environment file info (the json header) if successfully parsed.
+         */
         public static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo> {
-            // Close to network
-            // let littleEndian = false;
-
             let dataView = new DataView(data);
             let pos = 0;
 
@@ -78,45 +105,64 @@ module BABYLON {
 
             let manifest: EnvironmentTextureInfo = JSON.parse(manifestString);
             if (manifest.specular) {
+                // Extend the header with the position of the payload.
                 manifest.specular.specularDataPosition = pos;
             }
 
             return manifest;
         }
 
-        public static CreateEnvTexture(texture: CubeTexture): Nullable<Promise<ArrayBuffer>> {
+        /**
+         * Creates an environment texture from a loaded cube texture.
+         * @param texture defines the cube texture to convert in env file
+         * @return a promise containing the environment data if succesfull.
+         */
+        public static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer> {
             let internalTexture = texture.getInternalTexture();
             if (!internalTexture) {
-                return null;
+                return Promise.reject("The cube texture is invalid.");
+            }
+
+            if (!texture._prefiltered) {
+                return Promise.reject("The cube texture is invalid (not prefiltered).");
             }
 
             let engine = internalTexture.getEngine();
+            if (engine && !engine.premultipliedAlpha) {
+                return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpa option.");
+            }
+
+            let canvas = engine.getRenderingCanvas();
+            if (!canvas) {
+                return Promise.reject("Env texture can only be created when the engine is associated to a canvas.");
+            }
+
+            let textureType = Engine.TEXTURETYPE_FLOAT;
+            if (!engine.getCaps().textureFloatRender) {
+                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                if (!engine.getCaps().textureHalfFloatRender) {
+                    return Promise.reject("Env texture can only be created when the browser supports half float or full float rendering.");
+                }
+            }
+
+            let cubeWidth = internalTexture.width;
             let hostingScene = new Scene(engine);
-
-            let info: EnvironmentTextureInfo = {
-                version: 1,
-                width: internalTexture.width,
-                irradiance: null,
-                specular: null
-            };
-
             let specularTextures: { [key: number]: ArrayBuffer } = { };
             let promises: Promise<void>[] = [];
 
-            // All mipmaps
+            // Read and collect all mipmaps data from the cube.
             let mipmapsCount = Scalar.Log2(internalTexture.width);
             mipmapsCount = Math.round(mipmapsCount);
             for (let i = 0; i <= mipmapsCount; i++) {
                 let faceWidth = Math.pow(2, mipmapsCount - i);
 
-                // All faces
+                // All faces of the cube.
                 for (let face = 0; face < 6; face++) {
-
                     let data = texture.readPixels(face, i);
 
-                    let textureType = Engine.TEXTURETYPE_FLOAT;
+                    // Creates a temp texture with the face data.
                     let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-
+                    // And rgbmEncode them. 
                     let promise = new Promise<void>((resolve, reject) => {
                         let rgbmPostProcess = new PostProcess("rgbmEncode", "rgbmEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
                         rgbmPostProcess.getEffect().executeWhenCompiled(() => {
@@ -124,39 +170,26 @@ module BABYLON {
                                 effect._bindTexture("textureSampler", tempTexture);
                             }
             
-                            //let internalTexture = rtt.getInternalTexture();
+                            // As the process needs to happen on the main canvas, keep track of the current size
                             let currentW = engine.getRenderWidth();
                             let currentH = engine.getRenderHeight();
+
+                            // Set the desired size for the texture
                             engine.setSize(faceWidth, faceWidth);
-            
-                            if (internalTexture) {
-                                hostingScene.postProcessManager.directRender([rgbmPostProcess], null);
-                            }
+                            hostingScene.postProcessManager.directRender([rgbmPostProcess], null);
 
-                            //Reading datas from WebGL
-                            let canvas = engine.getRenderingCanvas();
-                            if (canvas) {
-                                canvas.toBlob((blob) => {
-                                    // let url = window.URL.createObjectURL(blob);
+                            // Reading datas from WebGL
+                            canvas!.toBlob((blob) => {
+                                let fileReader = new FileReader();
+                                fileReader.onload = (event) => {
+                                    let arrayBuffer = event.target!.result as ArrayBuffer;
+                                    specularTextures[i * 6 + face] = arrayBuffer;
+                                    resolve();
+                                };
+                                fileReader.readAsArrayBuffer(blob!);
+                            });
 
-                                    // let a: any = document.createElement("a");
-                                    //     document.body.appendChild(a);
-                                    //     a.style = "display: none";
-
-                                    // a.href = url;
-                                    // a.download = "env_" + i + "_" + face + ".png";
-                                    // a.click();
-                                    // window.URL.revokeObjectURL(url);
-
-                                    let fileReader = new FileReader();
-                                    fileReader.onload = (event) => {
-                                        let arrayBuffer = event.target!.result as ArrayBuffer;
-                                        specularTextures[i * 6 + face] = arrayBuffer;
-                                        resolve();
-                                    };
-                                    fileReader.readAsArrayBuffer(blob!);
-                                });
-                            }
+                            // Reapply the previous canvas size
                             engine.setSize(currentW, currentH);
                         });
                     });
@@ -164,13 +197,22 @@ module BABYLON {
                 }
             }
 
+            // Once all the textures haves been collected as RGBM stored in PNGs
             return Promise.all(promises).then(() => {
+                // We can delete the hosting scene keeping track of all the creation objects
                 hostingScene.dispose();
 
-                info.specular = {
-                    mipmaps: []
+                // Creates the json header for the env texture
+                let info: EnvironmentTextureInfo = {
+                    version: 1,
+                    width: cubeWidth,
+                    irradiance: null,
+                    specular: {
+                        mipmaps: []
+                    }
                 };
 
+                // Sets the specular image data information
                 let position = 0;
                 for (let i = 0; i <= mipmapsCount; i++) {
                     for (let face = 0; face < 6; face++) {
@@ -183,32 +225,33 @@ module BABYLON {
                     }
                 }
 
-                function str2ab(str: string) {
-                    let buf = new ArrayBuffer(str.length + 1); 
-                    let bufView = new Uint8Array(buf); // Limited to ascii subset matching unicode.
-                    for (let i=0, strLen=str.length; i < strLen; i++) {
-                        bufView[i] = str.charCodeAt(i);
-                    }
-                    bufView[str.length] = 0x00;
-                    return buf;
-                }
-
+                // Encode the JSON as an array buffer
                 let infoString = JSON.stringify(info);
-                let infoBuffer = str2ab(infoString);
+                let infoBuffer = new ArrayBuffer(infoString.length + 1);
+                let infoView = new Uint8Array(infoBuffer); // Limited to ascii subset matching unicode.
+                for (let i= 0, strLen = infoString.length; i < strLen; i++) {
+                    infoView[i] = infoString.charCodeAt(i);
+                }
+                // Ends up with a null terminator for easier parsing
+                infoView[infoString.length] = 0x00;
 
+                // Computes the final required size and creates the storage
                 let totalSize = EnvironmentTextureTools._MagicBytes.length + position + infoBuffer.byteLength;
                 let finalBuffer = new ArrayBuffer(totalSize);
                 let finalBufferView = new Uint8Array(finalBuffer);
                 let dataView = new DataView(finalBuffer);
 
+                // Copy the magic bytes identifying the file in
                 let pos = 0;
                 for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
                     dataView.setUint8(pos++, EnvironmentTextureTools._MagicBytes[i]);
                 }
 
+                // Add the json info
                 finalBufferView.set(new Uint8Array(infoBuffer), pos);
                 pos += infoBuffer.byteLength;
 
+                // Finally inserts the texture data
                 for (let i = 0; i <= mipmapsCount; i++) {
                     for (let face = 0; face < 6; face++) {
                         let dataBuffer = specularTextures[i * 6 + face];
@@ -217,10 +260,14 @@ module BABYLON {
                     }
                 }
 
+                // Voila
                 return finalBuffer;
             });
         }
 
+        /**
+         * Uploads the 
+         */
         public static UploadLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
             if (info.version !== 1) {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
@@ -440,24 +487,4 @@ module BABYLON {
             outPolynomialCoefficents.xy.z = 0.858086 * harmonics.l2_2[2] * rPi;
         }
     }
-
-    export class EnvironmentTexture extends CubeTexture {
-        
-        constructor(url: string, scene: Scene) {
-           super(url, scene, null, false, null, null, null, undefined, true, ".env", false);
-
-
-        }
-
-        public clone(): EnvironmentTexture {
-            return SerializationHelper.Clone(() => {
-                let scene = this.getScene();
-
-                if (!scene) {
-                    return this;
-                }
-                return new EnvironmentTexture(this.url, scene);
-            }, this);
-        }
-    }
-} 
+}
