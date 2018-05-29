@@ -18,6 +18,7 @@ module BABYLON {
         public onlyCheckPointerDownEvents = true;
         private _afterRenderObserver:Nullable<Observer<Scene>>;
         private _sceneDisposeObserver:Nullable<Observer<Scene>>;
+        private _originalPointerObserver:Nullable<Observer<PointerInfoPre>>;
         /**
          * Instantiates a UtilityLayerRenderer
          * @param originalScene the original scene that will be rendered on top of
@@ -29,7 +30,7 @@ module BABYLON {
 
             // Detach controls on utility scene, events will be fired by logic below to handle picking priority
             this.utilityLayerScene.detachControl();
-            originalScene.onPrePointerObservable.add((prePointerInfo, eventState)=>{
+            this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState)=>{
                 var utilityScenePick = prePointerInfo.ray ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray) : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
                 if(!prePointerInfo.ray && utilityScenePick){
                     prePointerInfo.ray = utilityScenePick.ray;
@@ -104,6 +105,9 @@ module BABYLON {
             }
             if(this._sceneDisposeObserver){
                 this.originalScene.onDisposeObservable.remove(this._sceneDisposeObserver);
+            }
+            if(this._originalPointerObserver){
+                this.originalScene.onPrePointerObservable.remove(this._originalPointerObserver);
             }
             this.utilityLayerScene.dispose();
         }
