@@ -53,8 +53,10 @@
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _format: number;
-        private _prefiltered: boolean;
         private _createPolynomials: boolean;
+
+        /** @hidden */
+        public readonly _prefiltered: boolean = false;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
             let rootUrlKey = "";
@@ -143,11 +145,6 @@
             this._files = files;
 
             if (!this._texture) {
-                // Prefiltered are only available in DDS. 
-                if (!isDDS) {
-                    prefiltered = false;
-                }
-
                 if (!scene.useDelayedTextureLoading) {
                     if (prefiltered) {
                         this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, this.lodGenerationScale, this.lodGenerationOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);

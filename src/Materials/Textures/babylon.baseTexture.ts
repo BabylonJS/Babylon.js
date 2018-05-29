@@ -283,6 +283,14 @@
             return (this._texture.format !== undefined) ? this._texture.format : Engine.TEXTUREFORMAT_RGBA;
         }
 
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
+         * This will returns an RGBA array buffer containing either in values (0-255) or
+         * float values (0-1) depending of the underlying buffer type.
+         * @param faceIndex The face of the texture to read (in case of cube texture)
+         * @param level The LOD level of the texture to read (in case of Mip Maps)
+         * @returns The Array buffer containing the pixels data.
+         */
         public readPixels(faceIndex = 0, level = 0): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
@@ -299,15 +307,15 @@
 
             var engine = scene.getEngine();
 
+            if (level != 0) {
+                width = width / Math.pow(2, level);
+                height = height / Math.pow(2, level);
+
+                width = Math.round(width);
+                height = Math.round(height);
+            }
+
             if (this._texture.isCube) {
-                if (level != 0) {
-                    width = width / Math.pow(2, level);
-                    height = height / Math.pow(2, level);
-
-                    width = Math.round(width);
-                    height = Math.round(height);
-                }
-
                 return engine._readTexturePixels(this._texture, width, height, faceIndex, level);
             }
 
