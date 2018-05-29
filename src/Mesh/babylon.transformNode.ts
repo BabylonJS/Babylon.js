@@ -887,6 +887,8 @@ module BABYLON {
                 } else {
                     this._updateNonUniformScalingState(false);
                 }
+            }else {
+                this._updateNonUniformScalingState(false);
             }
 
             this._afterComputeWorldMatrix();

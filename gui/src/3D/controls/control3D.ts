@@ -9,7 +9,7 @@ module BABYLON.GUI {
         public _host: GUI3DManager;
         private _node: Nullable<TransformNode>;
         private _downCount = 0;
-        private _enterCount = 0;
+        private _enterCount = -1;
         private _downPointerIds:{[id:number] : boolean} = {};
         private _isVisible = true;
     
@@ -253,8 +253,12 @@ module BABYLON.GUI {
 
         /** @hidden */
         public _onPointerEnter(target: Control3D): boolean {
-            if (this._enterCount !== 0) {
+            if (this._enterCount > 0) {
                 return false;
+            }
+
+            if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                this._enterCount = 0;
             }
 
             this._enterCount++;
@@ -304,7 +308,7 @@ module BABYLON.GUI {
 
             delete this._downPointerIds[pointerId];
 
-			if (notifyClick && this._enterCount > 0) {
+			if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
 				this.onPointerClickObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
 			}
 			this.onPointerUpObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);            
