@@ -7852,8 +7852,9 @@ var BABYLON;
                     }
                     controlCount++;
                     child.mesh.computeWorldMatrix(true);
+                    child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
                     var boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSizeWorld, currentInverseWorld);
+                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
                     extendSizes.push(extendSize);
                     if (this._isVertical) {
                         height += extendSize.y;
