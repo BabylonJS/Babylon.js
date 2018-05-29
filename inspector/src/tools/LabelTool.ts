@@ -10,7 +10,7 @@ module INSPECTOR {
         private _guiLoaded: boolean = false;
 
         constructor(parent: HTMLElement, inspector: Inspector) {
-            super('fa-tags', parent, inspector, 'Display mesh names on the canvas');
+            super('fa', 'fa-tags', parent, inspector, 'Display mesh names on the canvas');
 
             this._scene = inspector.scene;
         }
