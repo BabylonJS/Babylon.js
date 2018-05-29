@@ -369,7 +369,7 @@ module BABYLON {
             }
         }
 
-        private _swapAndDie(target: InternalTexture): void {
+        public _swapAndDie(target: InternalTexture): void {
             target._webGLTexture = this._webGLTexture;
 
             if (this._framebuffer) {
