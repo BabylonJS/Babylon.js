@@ -95,6 +95,8 @@
             "physics",
             "textureFormats",
             "debug",
+            "utilityLayer",
+            "gizmos",
             "morphTargets",
             "octrees",
             "vr",
@@ -1020,8 +1022,27 @@
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Debug/babylon.physicsViewer.js",
-                "../../src/Rendering/babylon.boundingBoxRenderer.js",
-                "../../src/Rendering/babylon.utilityLayerRenderer.js",
+                "../../src/Rendering/babylon.boundingBoxRenderer.js"
+            ],
+            "dependUpon": [
+                "shaderMaterial",
+                "additionalMeshes",
+                "core",
+                "stringDictionary",
+                "actions"
+            ],
+            "shaders": []
+        },
+        "utilityLayer": {
+            "files": [
+                "../../src/Rendering/babylon.utilityLayerRenderer.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "gizmos": {
+            "files": [
                 "../../src/Gizmos/babylon.gizmo.js",
                 "../../src/Gizmos/babylon.axisDragGizmo.js",
                 "../../src/Gizmos/babylon.axisScaleGizmo.js",
@@ -1032,13 +1053,10 @@
                 "../../src/Gizmos/babylon.gizmoManager.js"
             ],
             "dependUpon": [
-                "shaderMaterial",
-                "additionalMeshes",
                 "core",
-                "stringDictionary",
-                "actions"
-            ],
-            "shaders": []
+                "utilityLayer",
+                "meshBehaviors"
+            ]
         },
         "morphTargets": {
             "files": [
