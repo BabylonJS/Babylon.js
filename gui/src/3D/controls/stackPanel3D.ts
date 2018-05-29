@@ -55,8 +55,10 @@ module BABYLON.GUI {
 
                 controlCount++;
                 child.mesh.computeWorldMatrix(true);
+                child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
+
                 let boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                let extendSize = Vector3.TransformNormal(boundingBox.extendSizeWorld, currentInverseWorld);
+                let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
                 extendSizes.push(extendSize);
 
                 if (this._isVertical) {

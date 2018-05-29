@@ -1271,7 +1271,7 @@
         }
 
         /**
-         * Gets the debug layer associated with the scene
+         * Gets the debug layer (aka Inspector) associated with the scene
          * @see http://doc.babylonjs.com/features/playground_debuglayer
          */
         public get debugLayer(): DebugLayer {
