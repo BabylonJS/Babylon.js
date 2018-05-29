@@ -68,7 +68,7 @@ module BABYLON.GUI {
         private _fontSet = false;
         private _dummyVector2 = Vector2.Zero();
         private _downCount = 0;
-        private _enterCount = 0;
+        private _enterCount = -1;
         private _doNotRender = false;
         private _downPointerIds:{[id:number] : boolean} = {};
 
@@ -1163,10 +1163,13 @@ module BABYLON.GUI {
 
         /** @hidden */
         public _onPointerEnter(target: Control): boolean {
-            if (this._enterCount !== 0) {
+            if (this._enterCount > 0) {
                 return false;
             }
 
+            if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                this._enterCount = 0;
+            }
             this._enterCount++;
 
             var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
@@ -1209,7 +1212,7 @@ module BABYLON.GUI {
             delete this._downPointerIds[pointerId];
 
             var canNotifyClick: boolean = notifyClick;
-			if (notifyClick && this._enterCount > 0) {
+			if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
 				canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 			}
 			var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
