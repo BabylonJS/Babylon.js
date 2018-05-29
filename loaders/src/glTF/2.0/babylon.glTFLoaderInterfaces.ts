@@ -3,6 +3,11 @@
 
 module BABYLON.GLTF2 {
     /** @hidden */
+    export interface _IArrayItem {
+        _index: number;
+    }
+
+    /** @hidden */
     export interface _ILoaderAccessor extends IAccessor, _IArrayItem {
         _data?: Promise<ArrayBufferView>;
         _babylonVertexBuffer?: Promise<VertexBuffer>;
@@ -21,7 +26,7 @@ module BABYLON.GLTF2 {
 
     /** @hidden */
     export interface _ILoaderAnimationSampler extends IAnimationSampler, _IArrayItem {
-        _data: Promise<_ILoaderAnimationSamplerData>;
+        _data?: Promise<_ILoaderAnimationSamplerData>;
     }
 
     /** @hidden */
@@ -74,7 +79,7 @@ module BABYLON.GLTF2 {
 
     /** @hidden */
     export interface _ILoaderNode extends INode, _IArrayItem {
-        _parent: _ILoaderNode;
+        _parent?: _ILoaderNode;
         _babylonMesh?: Mesh;
         _primitiveBabylonMeshes?: Mesh[];
         _babylonBones?: Bone[];

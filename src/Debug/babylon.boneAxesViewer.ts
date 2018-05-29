@@ -2,17 +2,35 @@ module BABYLON.Debug {
 
     /**
      * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
      */
     export class BoneAxesViewer extends AxesViewer {
 
+        /**
+         * Gets or sets the target mesh where to display the axes viewer
+         */
         public mesh: Nullable<Mesh>;
+        /**
+         * Gets or sets the target bone where to display the axes viewer
+         */
         public bone: Nullable<Bone>;
 
+        /** Gets current position */
         public pos = Vector3.Zero();
+        /** Gets direction of X axis */
         public xaxis = Vector3.Zero();
+        /** Gets direction of Y axis */
         public yaxis = Vector3.Zero();
+        /** Gets direction of Z axis */
         public zaxis = Vector3.Zero();
 
+        /**
+         * Creates a new BoneAxesViewer
+         * @param scene defines the hosting scene
+         * @param bone defines the target bone
+         * @param mesh defines the target mesh
+         * @param scaleLines defines a scaling factor for line length (1 by default)
+         */
         constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines = 1) {
 
             super(scene, scaleLines);
@@ -22,6 +40,9 @@ module BABYLON.Debug {
 
         }
 
+        /**
+         * Force the viewer to update 
+         */
         public update(): void {
 
             if (!this.mesh || !this.bone) {
@@ -38,6 +59,7 @@ module BABYLON.Debug {
 
         }
 
+        /** Releases resources */
         public dispose() {
 
             if (this.mesh) {

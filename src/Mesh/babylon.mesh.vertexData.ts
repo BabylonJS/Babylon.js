@@ -250,7 +250,10 @@
 
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices, null, updatable);
+            } else {
+                meshOrGeometry.setIndices([], null);
             }
+
             return this;
         }
 

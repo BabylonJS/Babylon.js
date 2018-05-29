@@ -1,6 +1,9 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Class used to create text block control
+     */
     export class TextBlock extends Control {
         private _text = "";
         private _textWrapping = false;

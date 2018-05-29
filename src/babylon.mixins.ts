@@ -57,8 +57,13 @@ interface WebGLRenderingContext {
     R32F: number;
     RG32F: number;
     RGB32F: number;
+    R16F: number;
+    RG16F: number;
+    RGB16F: number;
     RED: number;
     RG: number;
+    R8: number;
+    RG8: number;
 
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;

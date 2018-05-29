@@ -1,12 +1,16 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Class used to represent a 2D checkbox
+     */
     export class Checkbox extends Control {
         private _isChecked = false;
         private _background = "black";   
         private _checkSizeRatio = 0.8;
         private _thickness = 1;
         
+        /** Gets or sets border thickness  */
         public get thickness(): number {
             return this._thickness;
         }
@@ -20,8 +24,12 @@ module BABYLON.GUI {
             this._markAsDirty();
         }           
 
+        /**
+         * Observable raised when isChecked property changes
+         */
         public onIsCheckedChangedObservable = new Observable<boolean>();
 
+        /** Gets or sets a value indicating the ratio between overall size and check size */
         public get checkSizeRatio(): number {
             return this._checkSizeRatio;
         }
@@ -37,6 +45,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }             
 
+        /** Gets or sets background color */
         public get background(): string {
             return this._background;
         }
@@ -50,6 +59,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }     
 
+        /** Gets or sets a boolean indicating if the checkbox is checked or not */
         public get isChecked(): boolean {
             return this._isChecked;
         }
@@ -65,6 +75,10 @@ module BABYLON.GUI {
             this.onIsCheckedChangedObservable.notifyObservers(value);
         }                             
 
+        /**
+         * Creates a new CheckBox
+         * @param name defines the control name
+         */
         constructor(public name?: string) {
             super(name);
             this.isPointerBlocker = true;
@@ -74,6 +88,7 @@ module BABYLON.GUI {
             return "CheckBox";
         }
         
+        /** @hidden */
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
@@ -115,6 +130,8 @@ module BABYLON.GUI {
         }
 
         // Events
+
+        /** @hidden */
         public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
             if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
