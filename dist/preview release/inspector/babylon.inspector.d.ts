@@ -1037,6 +1037,7 @@ declare module INSPECTOR {
         private _actions;
         private _detailsPanel;
         private _split;
+        static readonly IsSupported: boolean;
         /** @hidden */
         static _Initialize(): void;
         constructor(tabbar: TabBar, inspector: Inspector);

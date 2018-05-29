@@ -43,6 +43,7 @@ var BABYLON;
             function Style(host) {
                 this._fontFamily = "Arial";
                 this._fontStyle = "";
+                this._fontWeight = "";
                 /** @hidden */
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 /**
@@ -103,6 +104,21 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Style.prototype, "fontWeight", {
+                /** Gets or sets font weight */
+                get: function () {
+                    return this._fontWeight;
+                },
+                set: function (value) {
+                    if (this._fontWeight === value) {
+                        return;
+                    }
+                    this._fontWeight = value;
+                    this.onChangedObservable.notifyObservers(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
             /** Dispose all associated resources */
             Style.prototype.dispose = function () {
                 this.onChangedObservable.clear();
@@ -120,17 +136,35 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to specific a value and its associated unit
+         */
         var ValueAndUnit = /** @class */ (function () {
-            function ValueAndUnit(value, unit, negativeValueAllowed) {
+            /**
+             * Creates a new ValueAndUnit
+             * @param value defines the value to store
+             * @param unit defines the unit to store
+             * @param negativeValueAllowed defines a boolean indicating if the value can be negative
+             */
+            function ValueAndUnit(value, 
+            /** defines the unit to store */
+            unit, 
+            /** defines a boolean indicating if the value can be negative */
+            negativeValueAllowed) {
                 if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
                 if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
                 this.unit = unit;
                 this.negativeValueAllowed = negativeValueAllowed;
                 this._value = 1;
+                /**
+                 * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
+                 * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+                 */
                 this.ignoreAdaptiveScaling = false;
                 this._value = value;
             }
             Object.defineProperty(ValueAndUnit.prototype, "isPercentage", {
+                /** Gets a boolean indicating if the value is a percentage */
                 get: function () {
                     return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
                 },
@@ -138,6 +172,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(ValueAndUnit.prototype, "isPixel", {
+                /** Gets a boolean indicating if the value is store as pixel */
                 get: function () {
                     return this.unit === ValueAndUnit.UNITMODE_PIXEL;
                 },
@@ -145,18 +180,30 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(ValueAndUnit.prototype, "internalValue", {
+                /** Gets direct internal value */
                 get: function () {
                     return this._value;
                 },
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Gets value as pixel
+             * @param host defines the root host
+             * @param refValue defines the reference value for percentages
+             * @returns the value as pixel
+             */
             ValueAndUnit.prototype.getValueInPixel = function (host, refValue) {
                 if (this.isPixel) {
                     return this.getValue(host);
                 }
                 return this.getValue(host) * refValue;
             };
+            /**
+             * Gets the value accordingly to its unit
+             * @param host  defines the root host
+             * @returns the value
+             */
             ValueAndUnit.prototype.getValue = function (host) {
                 if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
                     var width = 0;
@@ -179,6 +226,11 @@ var BABYLON;
                 }
                 return this._value;
             };
+            /**
+             * Gets a string representation of the value
+             * @param host defines the root host
+             * @returns a string
+             */
             ValueAndUnit.prototype.toString = function (host) {
                 switch (this.unit) {
                     case ValueAndUnit.UNITMODE_PERCENTAGE:
@@ -188,6 +240,11 @@ var BABYLON;
                 }
                 return this.unit.toString();
             };
+            /**
+             * Store a value parsed from a string
+             * @param source defines the source string
+             * @returns true if the value was successfully parsed
+             */
             ValueAndUnit.prototype.fromString = function (source) {
                 var match = ValueAndUnit._Regex.exec(source.toString());
                 if (!match || match.length === 0) {
@@ -219,6 +276,7 @@ var BABYLON;
                 return true;
             };
             Object.defineProperty(ValueAndUnit, "UNITMODE_PERCENTAGE", {
+                /** UNITMODE_PERCENTAGE */
                 get: function () {
                     return ValueAndUnit._UNITMODE_PERCENTAGE;
                 },
@@ -226,6 +284,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(ValueAndUnit, "UNITMODE_PIXEL", {
+                /** UNITMODE_PIXEL */
                 get: function () {
                     return ValueAndUnit._UNITMODE_PIXEL;
                 },
@@ -246,12 +305,29 @@ var BABYLON;
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+/**
+ * This module hosts all controls for 2D and 3D GUIs
+ * @see http://doc.babylonjs.com/how_to/gui
+ */
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create texture to support 2D GUI elements
+         * @see http://doc.babylonjs.com/how_to/gui
+         */
         var AdvancedDynamicTexture = /** @class */ (function (_super) {
             __extends(AdvancedDynamicTexture, _super);
+            /**
+             * Creates a new AdvancedDynamicTexture
+             * @param name defines the name of the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param scene defines the hosting scene
+             * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+             * @param samplingMode defines the texture sampling mode (BABYLON.Texture.NEAREST_SAMPLINGMODE by default)
+             */
             function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
                 if (width === void 0) { width = 0; }
                 if (height === void 0) { height = 0; }
@@ -259,10 +335,15 @@ var BABYLON;
                 if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
                 var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, BABYLON.Engine.TEXTUREFORMAT_RGBA) || this;
                 _this._isDirty = false;
+                /** @hidden */
                 _this._rootContainer = new GUI.Container("root");
+                /** @hidden */
                 _this._lastControlOver = {};
+                /** @hidden */
                 _this._lastControlDown = {};
+                /** @hidden */
                 _this._capturingControl = {};
+                /** @hidden */
                 _this._linkedControls = new Array();
                 _this._isFullscreen = false;
                 _this._fullscreenViewport = new BABYLON.Viewport(0, 0, 1, 1);
@@ -300,6 +381,10 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(AdvancedDynamicTexture.prototype, "renderScale", {
+                /**
+                 * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+                 * Useful when you want more antialiasing
+                 */
                 get: function () {
                     return this._renderScale;
                 },
@@ -314,6 +399,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "background", {
+                /** Gets or sets the background color */
                 get: function () {
                     return this._background;
                 },
@@ -328,6 +414,11 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "idealWidth", {
+                /**
+                 * Gets or sets the ideal width used to design controls.
+                 * The GUI will then rescale everything accordingly
+                 * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+                 */
                 get: function () {
                     return this._idealWidth;
                 },
@@ -343,6 +434,11 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "idealHeight", {
+                /**
+                 * Gets or sets the ideal height used to design controls.
+                 * The GUI will then rescale everything accordingly
+                 * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+                 */
                 get: function () {
                     return this._idealHeight;
                 },
@@ -358,6 +454,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "useSmallestIdeal", {
+                /**
+                 * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+                 * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+                 */
                 get: function () {
                     return this._useSmallestIdeal;
                 },
@@ -373,6 +473,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "renderAtIdealSize", {
+                /**
+                 * Gets or sets a boolean indicating if adaptive scaling must be used
+                 * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+                 */
                 get: function () {
                     return this._renderAtIdealSize;
                 },
@@ -387,6 +491,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "layer", {
+                /**
+                 * Gets the underlying layer used to render the texture when in fullscreen mode
+                 */
                 get: function () {
                     return this._layerToDispose;
                 },
@@ -394,6 +501,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "rootContainer", {
+                /**
+                 * Gets the root container control
+                 */
                 get: function () {
                     return this._rootContainer;
                 },
@@ -401,6 +511,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "focusedControl", {
+                /**
+                 * Gets or sets the current focused control
+                 */
                 get: function () {
                     return this._focusedControl;
                 },
@@ -420,6 +533,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "isForeground", {
+                /**
+                 * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+                 */
                 get: function () {
                     if (!this.layer) {
                         return true;
@@ -438,6 +554,11 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Function used to execute a function on all controls
+             * @param func defines the function to execute
+             * @param container defines the container where controls belong. If null the root container will be used
+             */
             AdvancedDynamicTexture.prototype.executeOnAllControls = function (func, container) {
                 if (!container) {
                     container = this._rootContainer;
@@ -451,6 +572,9 @@ var BABYLON;
                     func(child);
                 }
             };
+            /**
+             * Marks the texture as dirty forcing a complete update
+             */
             AdvancedDynamicTexture.prototype.markAsDirty = function () {
                 this._isDirty = true;
                 this.executeOnAllControls(function (control) {
@@ -461,18 +585,33 @@ var BABYLON;
             };
             /**
              * Helper function used to create a new style
+             * @returns a new style
+             * @see http://doc.babylonjs.com/how_to/gui#styles
              */
             AdvancedDynamicTexture.prototype.createStyle = function () {
                 return new GUI.Style(this);
             };
+            /**
+             * Adds a new control to the root container
+             * @param control defines the control to add
+             * @returns the current texture
+             */
             AdvancedDynamicTexture.prototype.addControl = function (control) {
                 this._rootContainer.addControl(control);
                 return this;
             };
+            /**
+             * Removes a control from the root container
+             * @param control defines the control to remove
+             * @returns the current texture
+             */
             AdvancedDynamicTexture.prototype.removeControl = function (control) {
                 this._rootContainer.removeControl(control);
                 return this;
             };
+            /**
+             * Release all resources
+             */
             AdvancedDynamicTexture.prototype.dispose = function () {
                 var scene = this.getScene();
                 if (!scene) {
@@ -530,10 +669,17 @@ var BABYLON;
                     }
                 }
             };
+            /** @hidden */
             AdvancedDynamicTexture.prototype._getGlobalViewport = function (scene) {
                 var engine = scene.getEngine();
                 return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             };
+            /**
+             * Get screen coordinates for a vector3
+             * @param position defines the position to project
+             * @param worldMatrix defines the world matrix to use
+             * @returns the projected position
+             */
             AdvancedDynamicTexture.prototype.getProjectedPosition = function (position, worldMatrix) {
                 var scene = this.getScene();
                 if (!scene) {
@@ -631,6 +777,7 @@ var BABYLON;
                 }
                 this._manageFocus();
             };
+            /** @hidden */
             AdvancedDynamicTexture.prototype._cleanControlAfterRemovalFromList = function (list, control) {
                 for (var pointerId in list) {
                     if (!list.hasOwnProperty(pointerId)) {
@@ -642,10 +789,12 @@ var BABYLON;
                     }
                 }
             };
+            /** @hidden */
             AdvancedDynamicTexture.prototype._cleanControlAfterRemoval = function (control) {
                 this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
                 this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
             };
+            /** Attach to all scene events required to support pointer events */
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
                 var scene = this.getScene();
@@ -678,6 +827,11 @@ var BABYLON;
                 });
                 this._attachToOnPointerOut(scene);
             };
+            /**
+             * Connect the texture to a hosting mesh to enable interactions
+             * @param mesh defines the mesh to attach to
+             * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+             */
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh, supportPointerMove) {
                 var _this = this;
                 if (supportPointerMove === void 0) { supportPointerMove = true; }
@@ -701,7 +855,7 @@ var BABYLON;
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                         if (_this._lastControlDown[pointerId]) {
-                            _this._lastControlDown[pointerId].forcePointerUp(pointerId);
+                            _this._lastControlDown[pointerId]._forcePointerUp(pointerId);
                         }
                         delete _this._lastControlDown[pointerId];
                         _this.focusedControl = null;
@@ -716,6 +870,10 @@ var BABYLON;
                 mesh.enablePointerMoveEvents = supportPointerMove;
                 this._attachToOnPointerOut(scene);
             };
+            /**
+             * Move the focus to a specific control
+             * @param control defines the control which will receive the focus
+             */
             AdvancedDynamicTexture.prototype.moveFocusToControl = function (control) {
                 this.focusedControl = control;
                 this._lastPickedControl = control;
@@ -745,12 +903,20 @@ var BABYLON;
                     }
                     delete _this._lastControlOver[pointerEvent.pointerId];
                     if (_this._lastControlDown[pointerEvent.pointerId]) {
-                        _this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
+                        _this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
                     }
                     delete _this._lastControlDown[pointerEvent.pointerId];
                 });
             };
             // Statics
+            /**
+             * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
+             * @param mesh defines the mesh which will receive the texture
+             * @param width defines the texture width (1024 by default)
+             * @param height defines the texture height (1024 by default)
+             * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+             * @returns a new AdvancedDynamicTexture
+             */
             AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove) {
                 if (width === void 0) { width = 1024; }
                 if (height === void 0) { height = 1024; }
@@ -767,15 +933,16 @@ var BABYLON;
                 return result;
             };
             /**
-             * FullScreenUI is created in a layer. This allows it to be treated like any other layer.
+             * Creates a new AdvancedDynamicTexture in fullscreen mode.
+             * In this mode the texture will rely on a layer for its rendering.
+             * This allows it to be treated like any other layer.
              * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
-             * When the GUI is not Created as FullscreenUI it does not respect the layerMask.
-             * layerMask is set through advancedTexture.layer.layerMask
-             * @param name name for the Texture
-             * @param foreground render in foreground (default is true)
-             * @param scene scene to be rendered in
-             * @param sampling method for scaling to fit screen
-             * @returns AdvancedDynamicTexture
+             * LayerMask is set through advancedTexture.layer.layerMask
+             * @param name defines name for the texture
+             * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
+             * @param scene defines the hsoting scene
+             * @param sampling defines the texture sampling mode (BABYLON.Texture.BILINEAR_SAMPLINGMODE by default)
+             * @returns a new AdvancedDynamicTexture
              */
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling) {
                 if (foreground === void 0) { foreground = true; }
@@ -804,19 +971,46 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to store 2D control sizes
+         */
         var Measure = /** @class */ (function () {
-            function Measure(left, top, width, height) {
+            /**
+             * Creates a new measure
+             * @param left defines left coordinate
+             * @param top defines top coordinate
+             * @param width defines width dimension
+             * @param height defines height dimension
+             */
+            function Measure(
+            /** defines left coordinate */
+            left, 
+            /** defines top coordinate  */
+            top, 
+            /** defines width dimension  */
+            width, 
+            /** defines height dimension */
+            height) {
                 this.left = left;
                 this.top = top;
                 this.width = width;
                 this.height = height;
             }
+            /**
+             * Copy from another measure
+             * @param other defines the other measure to copy from
+             */
             Measure.prototype.copyFrom = function (other) {
                 this.left = other.left;
                 this.top = other.top;
                 this.width = other.width;
                 this.height = other.height;
             };
+            /**
+             * Check equality between this measure and another one
+             * @param other defines the other measures
+             * @returns true if both measures are equals
+             */
             Measure.prototype.isEqualsTo = function (other) {
                 if (this.left !== other.left) {
                     return false;
@@ -832,6 +1026,10 @@ var BABYLON;
                 }
                 return true;
             };
+            /**
+             * Creates an empty measure
+             * @returns a new measure
+             */
             Measure.Empty = function () {
                 return new Measure(0, 0, 0, 0);
             };
@@ -849,9 +1047,19 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to transport Vector2 information for pointer events
+         */
         var Vector2WithInfo = /** @class */ (function (_super) {
             __extends(Vector2WithInfo, _super);
-            function Vector2WithInfo(source, buttonIndex) {
+            /**
+             * Creates a new Vector2WithInfo
+             * @param source defines the vector2 data to transport
+             * @param buttonIndex defines the current mouse button index
+             */
+            function Vector2WithInfo(source, 
+            /** defines the current mouse button index */
+            buttonIndex) {
                 if (buttonIndex === void 0) { buttonIndex = 0; }
                 var _this = _super.call(this, source.x, source.y) || this;
                 _this.buttonIndex = buttonIndex;
@@ -860,11 +1068,32 @@ var BABYLON;
             return Vector2WithInfo;
         }(BABYLON.Vector2));
         GUI.Vector2WithInfo = Vector2WithInfo;
+        /** Class used to provide 2D matrix features */
         var Matrix2D = /** @class */ (function () {
+            /**
+             * Creates a new matrix
+             * @param m00 defines value for (0, 0)
+             * @param m01 defines value for (0, 1)
+             * @param m10 defines value for (1, 0)
+             * @param m11 defines value for (1, 1)
+             * @param m20 defines value for (2, 0)
+             * @param m21 defines value for (2, 1)
+             */
             function Matrix2D(m00, m01, m10, m11, m20, m21) {
+                /** Gets the internal array of 6 floats used to store matrix data */
                 this.m = new Float32Array(6);
                 this.fromValues(m00, m01, m10, m11, m20, m21);
             }
+            /**
+             * Fills the matrix from direct values
+             * @param m00 defines value for (0, 0)
+             * @param m01 defines value for (0, 1)
+             * @param m10 defines value for (1, 0)
+             * @param m11 defines value for (1, 1)
+             * @param m20 defines value for (2, 0)
+             * @param m21 defines value for (2, 1)
+             * @returns the current modified matrix
+             */
             Matrix2D.prototype.fromValues = function (m00, m01, m10, m11, m20, m21) {
                 this.m[0] = m00;
                 this.m[1] = m01;
@@ -874,9 +1103,18 @@ var BABYLON;
                 this.m[5] = m21;
                 return this;
             };
+            /**
+             * Gets matrix determinant
+             * @returns the determinant
+             */
             Matrix2D.prototype.determinant = function () {
                 return this.m[0] * this.m[3] - this.m[1] * this.m[2];
             };
+            /**
+             * Inverses the matrix and stores it in a target matrix
+             * @param result defines the target matrix
+             * @returns the current matrix
+             */
             Matrix2D.prototype.invertToRef = function (result) {
                 var l0 = this.m[0];
                 var l1 = this.m[1];
@@ -905,6 +1143,12 @@ var BABYLON;
                 result.m[5] = det5 * detDiv;
                 return this;
             };
+            /**
+             * Multiplies the current matrix with another one
+             * @param other defines the second operand
+             * @param result defines the target matrix
+             * @returns the current matrix
+             */
             Matrix2D.prototype.multiplyToRef = function (other, result) {
                 var l0 = this.m[0];
                 var l1 = this.m[1];
@@ -926,26 +1170,64 @@ var BABYLON;
                 result.m[5] = l4 * r1 + l5 * r3 + r5;
                 return this;
             };
+            /**
+             * Applies the current matrix to a set of 2 floats and stores the result in a vector2
+             * @param x defines the x coordinate to transform
+             * @param y defines the x coordinate to transform
+             * @param result defines the target vector2
+             * @returns the current matrix
+             */
             Matrix2D.prototype.transformCoordinates = function (x, y, result) {
                 result.x = x * this.m[0] + y * this.m[2] + this.m[4];
                 result.y = x * this.m[1] + y * this.m[3] + this.m[5];
                 return this;
             };
             // Statics
+            /**
+             * Creates an identity matrix
+             * @returns a new matrix
+             */
             Matrix2D.Identity = function () {
                 return new Matrix2D(1, 0, 0, 1, 0, 0);
             };
+            /**
+             * Creates a translation matrix and stores it in a target matrix
+             * @param x defines the x coordinate of the translation
+             * @param y defines the y coordinate of the translation
+             * @param result defines the target matrix
+             */
             Matrix2D.TranslationToRef = function (x, y, result) {
                 result.fromValues(1, 0, 0, 1, x, y);
             };
+            /**
+             * Creates a scaling matrix and stores it in a target matrix
+             * @param x defines the x coordinate of the scaling
+             * @param y defines the y coordinate of the scaling
+             * @param result defines the target matrix
+             */
             Matrix2D.ScalingToRef = function (x, y, result) {
                 result.fromValues(x, 0, 0, y, 0, 0);
             };
+            /**
+             * Creates a rotation matrix and stores it in a target matrix
+             * @param angle defines the rotation angle
+             * @param result defines the target matrix
+             */
             Matrix2D.RotationToRef = function (angle, result) {
                 var s = Math.sin(angle);
                 var c = Math.cos(angle);
                 result.fromValues(c, s, -s, c, 0, 0);
             };
+            /**
+             * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+             * @param tx defines the x coordinate of the translation
+             * @param ty defines the y coordinate of the translation
+             * @param angle defines the rotation angle
+             * @param scaleX defines the x coordinate of the scaling
+             * @param scaleY defines the y coordinate of the scaling
+             * @param parentMatrix defines the parent matrix to multiply by (can be null)
+             * @param result defines the target matrix
+             */
             Matrix2D.ComposeToRef = function (tx, ty, angle, scaleX, scaleY, parentMatrix, result) {
                 Matrix2D.TranslationToRef(tx, ty, Matrix2D._TempPreTranslationMatrix);
                 Matrix2D.ScalingToRef(scaleX, scaleY, Matrix2D._TempScalingMatrix);
@@ -981,7 +1263,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to store a point for a MultiLine object.
+         * The point can be pure 2D coordinates, a mesh or a control
+         */
         var MultiLinePoint = /** @class */ (function () {
+            /**
+             * Creates a new MultiLinePoint
+             * @param multiLine defines the source MultiLine object
+             */
             function MultiLinePoint(multiLine) {
                 this._multiLine = multiLine;
                 this._x = new GUI.ValueAndUnit(0);
@@ -989,6 +1279,7 @@ var BABYLON;
                 this._point = new BABYLON.Vector2(0, 0);
             }
             Object.defineProperty(MultiLinePoint.prototype, "x", {
+                /** Gets or sets x coordinate */
                 get: function () {
                     return this._x.toString(this._multiLine._host);
                 },
@@ -1004,6 +1295,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(MultiLinePoint.prototype, "y", {
+                /** Gets or sets y coordinate */
                 get: function () {
                     return this._y.toString(this._multiLine._host);
                 },
@@ -1019,6 +1311,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(MultiLinePoint.prototype, "control", {
+                /** Gets or sets the control associated with this point */
                 get: function () {
                     return this._control;
                 },
@@ -1040,6 +1333,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(MultiLinePoint.prototype, "mesh", {
+                /** Gets or sets the mesh associated with this point */
                 get: function () {
                     return this._mesh;
                 },
@@ -1059,6 +1353,10 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Gets a translation vector
+             * @returns the translation vector
+             */
             MultiLinePoint.prototype.translate = function () {
                 this._point = this._translatePoint();
                 return this._point;
@@ -1077,6 +1375,7 @@ var BABYLON;
                     return new BABYLON.Vector2(xValue, yValue);
                 }
             };
+            /** Release associated resources */
             MultiLinePoint.prototype.dispose = function () {
                 this.control = null;
                 this.mesh = null;
@@ -1094,31 +1393,51 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Root class used for all 2D controls
+         * @see http://doc.babylonjs.com/how_to/gui#controls
+         */
         var Control = /** @class */ (function () {
             // Functions
-            function Control(name) {
+            /**
+             * Creates a new control
+             * @param name defines the name of the control
+             */
+            function Control(
+            /** defines the name of the control */
+            name) {
                 this.name = name;
                 this._alpha = 1;
                 this._alphaSet = false;
                 this._zIndex = 0;
+                /** @hidden */
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
                 this._fontStyle = "";
+                this._fontWeight = "";
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
+                /** @hidden */
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                /** @hidden */
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._color = "";
                 this._style = null;
+                /** @hidden */
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+                /** @hidden */
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 this._isDirty = true;
+                /** @hidden */
                 this._tempParentMeasure = GUI.Measure.Empty();
+                /** @hidden */
                 this._cachedParentMeasure = GUI.Measure.Empty();
                 this._paddingLeft = new GUI.ValueAndUnit(0);
                 this._paddingRight = new GUI.ValueAndUnit(0);
                 this._paddingTop = new GUI.ValueAndUnit(0);
                 this._paddingBottom = new GUI.ValueAndUnit(0);
+                /** @hidden */
                 this._left = new GUI.ValueAndUnit(0);
+                /** @hidden */
                 this._top = new GUI.ValueAndUnit(0);
                 this._scaleX = 1.0;
                 this._scaleY = 1.0;
@@ -1126,7 +1445,9 @@ var BABYLON;
                 this._transformCenterX = 0.5;
                 this._transformCenterY = 0.5;
                 this._transformMatrix = GUI.Matrix2D.Identity();
+                /** @hidden */
                 this._invertTransformMatrix = GUI.Matrix2D.Identity();
+                /** @hidden */
                 this._transformedPosition = BABYLON.Vector2.Zero();
                 this._onlyMeasureMode = false;
                 this._isMatrixDirty = true;
@@ -1134,17 +1455,26 @@ var BABYLON;
                 this._fontSet = false;
                 this._dummyVector2 = BABYLON.Vector2.Zero();
                 this._downCount = 0;
-                this._enterCount = 0;
+                this._enterCount = -1;
                 this._doNotRender = false;
                 this._downPointerIds = {};
+                /** Gets or sets a boolean indicating if the control can be hit with pointer events */
                 this.isHitTestVisible = true;
+                /** Gets or sets a boolean indicating if the control can block pointer events */
                 this.isPointerBlocker = false;
+                /** Gets or sets a boolean indicating if the control can be focusable */
                 this.isFocusInvisible = false;
+                /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
                 this.shadowOffsetX = 0;
+                /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
                 this.shadowOffsetY = 0;
+                /** Gets or sets a value indicating the amount of blur to use to render the shadow */
                 this.shadowBlur = 0;
+                /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
                 this.shadowColor = '#000';
+                /** @hidden */
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
+                /** @hidden */
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
                 /**
                 * An event triggered when the pointer move over the control.
@@ -1181,6 +1511,7 @@ var BABYLON;
             }
             Object.defineProperty(Control.prototype, "typeName", {
                 // Properties
+                /** Gets the control type name */
                 get: function () {
                     return this._getTypeName();
                 },
@@ -1199,6 +1530,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "alpha", {
+                /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
                 get: function () {
                     return this._alpha;
                 },
@@ -1214,6 +1546,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "scaleX", {
+                /** Gets or sets a value indicating the scale factor on X axis (1 by default)
+                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+                */
                 get: function () {
                     return this._scaleX;
                 },
@@ -1229,6 +1564,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "scaleY", {
+                /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
+                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+                */
                 get: function () {
                     return this._scaleY;
                 },
@@ -1244,6 +1582,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "rotation", {
+                /** Gets or sets the rotation angle (0 by default)
+                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+                */
                 get: function () {
                     return this._rotation;
                 },
@@ -1259,6 +1600,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "transformCenterY", {
+                /** Gets or sets the transformation center on Y axis (0 by default)
+                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+                */
                 get: function () {
                     return this._transformCenterY;
                 },
@@ -1274,6 +1618,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "transformCenterX", {
+                /** Gets or sets the transformation center on X axis (0 by default)
+                 * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+                */
                 get: function () {
                     return this._transformCenterX;
                 },
@@ -1289,6 +1636,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "horizontalAlignment", {
+                /**
+                 * Gets or sets the horizontal alignment
+                 * @see http://doc.babylonjs.com/how_to/gui#alignments
+                 */
                 get: function () {
                     return this._horizontalAlignment;
                 },
@@ -1303,6 +1654,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "verticalAlignment", {
+                /**
+                 * Gets or sets the vertical alignment
+                 * @see http://doc.babylonjs.com/how_to/gui#alignments
+                 */
                 get: function () {
                     return this._verticalAlignment;
                 },
@@ -1317,6 +1672,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "width", {
+                /**
+                 * Gets or sets control width
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._width.toString(this._host);
                 },
@@ -1332,6 +1691,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "widthInPixels", {
+                /**
+                 * Gets control width in pixel
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -1339,6 +1702,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "height", {
+                /**
+                 * Gets or sets control height
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._height.toString(this._host);
                 },
@@ -1354,6 +1721,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "heightInPixels", {
+                /**
+                 * Gets control height in pixel
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
@@ -1361,6 +1732,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "fontFamily", {
+                /** Gets or set font family */
                 get: function () {
                     return this._fontFamily;
                 },
@@ -1375,6 +1747,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "fontStyle", {
+                /** Gets or sets font style */
                 get: function () {
                     return this._fontStyle;
                 },
@@ -1388,7 +1761,26 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "fontWeight", {
+                /** Gets or sets font weight */
+                get: function () {
+                    return this._fontWeight;
+                },
+                set: function (value) {
+                    if (this._fontWeight === value) {
+                        return;
+                    }
+                    this._fontWeight = value;
+                    this._resetFontCache();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "style", {
+                /**
+                 * Gets or sets style
+                 * @see http://doc.babylonjs.com/how_to/gui#styles
+                 */
                 get: function () {
                     return this._style;
                 },
@@ -1420,6 +1812,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "fontSizeInPixels", {
+                /** Gets font size in pixels */
                 get: function () {
                     var fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
                     if (fontSizeToUse.isPixel) {
@@ -1431,6 +1824,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "fontSize", {
+                /** Gets or sets font size */
                 get: function () {
                     return this._fontSize.toString(this._host);
                 },
@@ -1447,6 +1841,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "color", {
+                /** Gets or sets foreground color */
                 get: function () {
                     return this._color;
                 },
@@ -1461,6 +1856,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "zIndex", {
+                /** Gets or sets z index which is used to reorder controls on the z axis */
                 get: function () {
                     return this._zIndex;
                 },
@@ -1477,6 +1873,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "notRenderable", {
+                /** Gets or sets a boolean indicating if the control can be rendered */
                 get: function () {
                     return this._doNotRender;
                 },
@@ -1491,6 +1888,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "isVisible", {
+                /** Gets or sets a boolean indicating if the control is visible */
                 get: function () {
                     return this._isVisible;
                 },
@@ -1505,6 +1903,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "isDirty", {
+                /** Gets a boolean indicating that the control needs to update its rendering */
                 get: function () {
                     return this._isDirty;
                 },
@@ -1512,6 +1911,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingLeft", {
+                /**
+                 * Gets or sets a value indicating the padding to use on the left of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingLeft.toString(this._host);
                 },
@@ -1524,6 +1927,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingLeftInPixels", {
+                /**
+                 * Gets a value indicating the padding in pixels to use on the left of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -1531,6 +1938,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingRight", {
+                /**
+                 * Gets or sets a value indicating the padding to use on the right of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingRight.toString(this._host);
                 },
@@ -1543,6 +1954,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingRightInPixels", {
+                /**
+                 * Gets a value indicating the padding in pixels to use on the right of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -1550,6 +1965,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingTop", {
+                /**
+                 * Gets or sets a value indicating the padding to use on the top of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingTop.toString(this._host);
                 },
@@ -1562,6 +1981,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingTopInPixels", {
+                /**
+                 * Gets a value indicating the padding in pixels to use on the top of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
@@ -1569,6 +1992,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingBottom", {
+                /**
+                 * Gets or sets a value indicating the padding to use on the bottom of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingBottom.toString(this._host);
                 },
@@ -1581,6 +2008,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "paddingBottomInPixels", {
+                /**
+                 * Gets a value indicating the padding in pixels to use on the bottom of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
@@ -1588,6 +2019,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "left", {
+                /**
+                 * Gets or sets a value indicating the left coordinate of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._left.toString(this._host);
                 },
@@ -1600,6 +2035,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "leftInPixels", {
+                /**
+                 * Gets a value indicating the left coordinate in pixels of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -1607,6 +2046,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "top", {
+                /**
+                 * Gets or sets a value indicating the top coordinate of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._top.toString(this._host);
                 },
@@ -1619,6 +2062,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "topInPixels", {
+                /**
+                 * Gets a value indicating the top coordinate in pixels of the control
+                 * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                 */
                 get: function () {
                     return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
@@ -1626,6 +2073,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "linkOffsetX", {
+                /**
+                 * Gets or sets a value indicating the offset on X axis to the linked mesh
+                 * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+                 */
                 get: function () {
                     return this._linkOffsetX.toString(this._host);
                 },
@@ -1638,6 +2089,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "linkOffsetXInPixels", {
+                /**
+                 * Gets a value indicating the offset in pixels on X axis to the linked mesh
+                 * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+                 */
                 get: function () {
                     return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -1645,6 +2100,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "linkOffsetY", {
+                /**
+                 * Gets or sets a value indicating the offset on Y axis to the linked mesh
+                 * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+                 */
                 get: function () {
                     return this._linkOffsetY.toString(this._host);
                 },
@@ -1657,6 +2116,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "linkOffsetYInPixels", {
+                /**
+                 * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+                 * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+                 */
                 get: function () {
                     return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
@@ -1664,6 +2127,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "centerX", {
+                /** Gets the center coordinate on X axis */
                 get: function () {
                     return this._currentMeasure.left + this._currentMeasure.width / 2;
                 },
@@ -1671,12 +2135,14 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control.prototype, "centerY", {
+                /** Gets the center coordinate on Y axis */
                 get: function () {
                     return this._currentMeasure.top + this._currentMeasure.height / 2;
                 },
                 enumerable: true,
                 configurable: true
             });
+            /** @hidden */
             Control.prototype._getTypeName = function () {
                 return "Control";
             };
@@ -1684,22 +2150,43 @@ var BABYLON;
             Control.prototype._resetFontCache = function () {
                 this._fontSet = true;
             };
+            /**
+             * Gets coordinates in local control space
+             * @param globalCoordinates defines the coordinates to transform
+             * @returns the new coordinates in local space
+             */
             Control.prototype.getLocalCoordinates = function (globalCoordinates) {
                 var result = BABYLON.Vector2.Zero();
                 this.getLocalCoordinatesToRef(globalCoordinates, result);
                 return result;
             };
+            /**
+             * Gets coordinates in local control space
+             * @param globalCoordinates defines the coordinates to transform
+             * @param result defines the target vector2 where to store the result
+             * @returns the current control
+             */
             Control.prototype.getLocalCoordinatesToRef = function (globalCoordinates, result) {
                 result.x = globalCoordinates.x - this._currentMeasure.left;
                 result.y = globalCoordinates.y - this._currentMeasure.top;
                 return this;
             };
+            /**
+             * Gets coordinates in parent local control space
+             * @param globalCoordinates defines the coordinates to transform
+             * @returns the new coordinates in parent local space
+             */
             Control.prototype.getParentLocalCoordinates = function (globalCoordinates) {
                 var result = BABYLON.Vector2.Zero();
                 result.x = globalCoordinates.x - this._cachedParentMeasure.left;
                 result.y = globalCoordinates.y - this._cachedParentMeasure.top;
                 return result;
             };
+            /**
+             * Move the current control to a vector3 position projected onto the screen.
+             * @param position defines the target position
+             * @param scene defines the hosting scene
+             */
             Control.prototype.moveToVector3 = function (position, scene) {
                 if (!this._host || this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
@@ -1716,6 +2203,11 @@ var BABYLON;
                 }
                 this.notRenderable = false;
             };
+            /**
+             * Link current control with a target mesh
+             * @param mesh defines the mesh to link with
+             * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+             */
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root && this._root !== this._host._rootContainer) {
                     if (mesh) {
@@ -1740,6 +2232,7 @@ var BABYLON;
                 this._onlyMeasureMode = true;
                 this._host._linkedControls.push(this);
             };
+            /** @hidden */
             Control.prototype._moveToProjectedPosition = function (projectedPosition) {
                 var oldLeft = this._left.getValue(this._host);
                 var oldTop = this._top.getValue(this._host);
@@ -1758,10 +2251,12 @@ var BABYLON;
                 this._left.ignoreAdaptiveScaling = true;
                 this._top.ignoreAdaptiveScaling = true;
             };
+            /** @hidden */
             Control.prototype._markMatrixAsDirty = function () {
                 this._isMatrixDirty = true;
                 this._markAsDirty();
             };
+            /** @hidden */
             Control.prototype._markAsDirty = function () {
                 this._isDirty = true;
                 if (!this._host) {
@@ -1769,16 +2264,19 @@ var BABYLON;
                 }
                 this._host.markAsDirty();
             };
+            /** @hidden */
             Control.prototype._markAllAsDirty = function () {
                 this._markAsDirty();
                 if (this._font) {
                     this._prepareFont();
                 }
             };
+            /** @hidden */
             Control.prototype._link = function (root, host) {
                 this._root = root;
                 this._host = host;
             };
+            /** @hidden */
             Control.prototype._transform = function (context) {
                 if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
                     return;
@@ -1802,6 +2300,7 @@ var BABYLON;
                     this._transformMatrix.invertToRef(this._invertTransformMatrix);
                 }
             };
+            /** @hidden */
             Control.prototype._applyStates = function (context) {
                 if (this._fontSet) {
                     this._prepareFont();
@@ -1817,6 +2316,7 @@ var BABYLON;
                     context.globalAlpha = this._alpha;
                 }
             };
+            /** @hidden */
             Control.prototype._processMeasures = function (parentMeasure, context) {
                 if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
                     this._isDirty = false;
@@ -1860,6 +2360,7 @@ var BABYLON;
                 context.clip();
                 return true;
             };
+            /** @hidden */
             Control.prototype._clip = function (context) {
                 context.beginPath();
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -1876,6 +2377,7 @@ var BABYLON;
                     context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                 }
             };
+            /** @hidden */
             Control.prototype._measure = function () {
                 // Width / Height
                 if (this._width.isPixel) {
@@ -1891,6 +2393,7 @@ var BABYLON;
                     this._currentMeasure.height *= this._height.getValue(this._host);
                 }
             };
+            /** @hidden */
             Control.prototype._computeAlignment = function (parentMeasure, context) {
                 var width = this._currentMeasure.width;
                 var height = this._currentMeasure.height;
@@ -1964,15 +2467,24 @@ var BABYLON;
                 this._currentMeasure.left += x;
                 this._currentMeasure.top += y;
             };
+            /** @hidden */
             Control.prototype._preMeasure = function (parentMeasure, context) {
                 // Do nothing
             };
+            /** @hidden */
             Control.prototype._additionalProcessing = function (parentMeasure, context) {
                 // Do nothing
             };
+            /** @hidden */
             Control.prototype._draw = function (parentMeasure, context) {
                 // Do nothing
             };
+            /**
+             * Tests if a given coordinates belong to the current control
+             * @param x defines x coordinate to test
+             * @param y defines y coordinate to test
+             * @returns true if the coordinates are inside the control
+             */
             Control.prototype.contains = function (x, y) {
                 // Invert transform
                 this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
@@ -1996,6 +2508,7 @@ var BABYLON;
                 }
                 return true;
             };
+            /** @hidden */
             Control.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                     return false;
@@ -2006,14 +2519,19 @@ var BABYLON;
                 this._processObservables(type, x, y, pointerId, buttonIndex);
                 return true;
             };
+            /** @hidden */
             Control.prototype._onPointerMove = function (target, coordinates) {
                 var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerMove(target, coordinates);
             };
+            /** @hidden */
             Control.prototype._onPointerEnter = function (target) {
-                if (this._enterCount !== 0) {
+                if (this._enterCount > 0) {
                     return false;
+                }
+                if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                    this._enterCount = 0;
                 }
                 this._enterCount++;
                 var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
@@ -2021,12 +2539,14 @@ var BABYLON;
                     this.parent._onPointerEnter(target);
                 return true;
             };
+            /** @hidden */
             Control.prototype._onPointerOut = function (target) {
                 this._enterCount = 0;
                 var canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerOut(target);
             };
+            /** @hidden */
             Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
                 if (this._downCount !== 0) {
                     return false;
@@ -2038,18 +2558,20 @@ var BABYLON;
                     this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
                 return true;
             };
+            /** @hidden */
             Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
                 this._downCount = 0;
                 delete this._downPointerIds[pointerId];
                 var canNotifyClick = notifyClick;
-                if (notifyClick && this._enterCount > 0) {
+                if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
                     canNotifyClick = this.onPointerClickObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
                 }
                 var canNotify = this.onPointerUpObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
                 if (canNotify && this.parent != null)
                     this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
             };
-            Control.prototype.forcePointerUp = function (pointerId) {
+            /** @hidden */
+            Control.prototype._forcePointerUp = function (pointerId) {
                 if (pointerId === void 0) { pointerId = null; }
                 if (pointerId !== null) {
                     this._onPointerUp(this, BABYLON.Vector2.Zero(), pointerId, 0, true);
@@ -2060,6 +2582,7 @@ var BABYLON;
                     }
                 }
             };
+            /** @hidden */
             Control.prototype._processObservables = function (type, x, y, pointerId, buttonIndex) {
                 this._dummyVector2.copyFromFloats(x, y);
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
@@ -2094,13 +2617,14 @@ var BABYLON;
                     return;
                 }
                 if (this._style) {
-                    this._font = this._style.fontStyle + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+                    this._font = (this._style.fontWeight ? this._style.fontWeight : this._style.fontStyle) + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
                 }
                 else {
-                    this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+                    this._font = (this._fontWeight ? this._fontWeight : this._fontStyle) + " " + this.fontSizeInPixels + "px " + this._fontFamily;
                 }
                 this._fontOffset = Control._GetFontOffset(this._font);
             };
+            /** Releases associated resources */
             Control.prototype.dispose = function () {
                 this.onDirtyObservable.clear();
                 this.onAfterDrawObservable.clear();
@@ -2124,6 +2648,7 @@ var BABYLON;
                 }
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
+                /** HORIZONTAL_ALIGNMENT_LEFT */
                 get: function () {
                     return Control._HORIZONTAL_ALIGNMENT_LEFT;
                 },
@@ -2131,6 +2656,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_RIGHT", {
+                /** HORIZONTAL_ALIGNMENT_RIGHT */
                 get: function () {
                     return Control._HORIZONTAL_ALIGNMENT_RIGHT;
                 },
@@ -2138,6 +2664,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_CENTER", {
+                /** HORIZONTAL_ALIGNMENT_CENTER */
                 get: function () {
                     return Control._HORIZONTAL_ALIGNMENT_CENTER;
                 },
@@ -2145,6 +2672,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control, "VERTICAL_ALIGNMENT_TOP", {
+                /** VERTICAL_ALIGNMENT_TOP */
                 get: function () {
                     return Control._VERTICAL_ALIGNMENT_TOP;
                 },
@@ -2152,6 +2680,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control, "VERTICAL_ALIGNMENT_BOTTOM", {
+                /** VERTICAL_ALIGNMENT_BOTTOM */
                 get: function () {
                     return Control._VERTICAL_ALIGNMENT_BOTTOM;
                 },
@@ -2159,12 +2688,14 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Control, "VERTICAL_ALIGNMENT_CENTER", {
+                /** VERTICAL_ALIGNMENT_CENTER */
                 get: function () {
                     return Control._VERTICAL_ALIGNMENT_CENTER;
                 },
                 enumerable: true,
                 configurable: true
             });
+            /** @hidden */
             Control._GetFontOffset = function (font) {
                 if (Control._FontHeightSizes[font]) {
                     return Control._FontHeightSizes[font];
@@ -2196,6 +2727,14 @@ var BABYLON;
                 return result;
             };
             ;
+            /**
+             * Creates a stack panel that can be used to render headers
+             * @param control defines the control to associate with the header
+             * @param text defines the text of the header
+             * @param size defines the size of the header
+             * @param options defines options used to configure the header
+             * @returns a new StackPanel
+             */
             Control.AddHeader = function (control, text, size, options) {
                 var panel = new BABYLON.GUI.StackPanel("panel");
                 var isHorizontal = options ? options.isHorizontal : true;
@@ -2226,6 +2765,7 @@ var BABYLON;
                 header.shadowOffsetY = control.shadowOffsetY;
                 return panel;
             };
+            /** @hidden */
             Control.drawEllipse = function (x, y, width, height, context) {
                 context.translate(x, y);
                 context.scale(width, height);
@@ -2257,18 +2797,31 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Root class for 2D containers
+         * @see http://doc.babylonjs.com/how_to/gui#containers
+         */
         var Container = /** @class */ (function (_super) {
             __extends(Container, _super);
+            /**
+             * Creates a new Container
+             * @param name defines the name of the container
+             */
             function Container(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
+                /** @hidden */
                 _this._children = new Array();
+                /** @hidden */
                 _this._measureForChildren = GUI.Measure.Empty();
+                /** @hidden */
                 _this._adaptWidthToChildren = false;
+                /** @hidden */
                 _this._adaptHeightToChildren = false;
                 return _this;
             }
             Object.defineProperty(Container.prototype, "adaptHeightToChildren", {
+                /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
                 get: function () {
                     return this._adaptHeightToChildren;
                 },
@@ -2286,6 +2839,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Container.prototype, "adaptWidthToChildren", {
+                /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
                 get: function () {
                     return this._adaptWidthToChildren;
                 },
@@ -2303,6 +2857,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Container.prototype, "background", {
+                /** Gets or sets background color */
                 get: function () {
                     return this._background;
                 },
@@ -2317,6 +2872,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Container.prototype, "children", {
+                /** Gets the list of children */
                 get: function () {
                     return this._children;
                 },
@@ -2326,6 +2882,11 @@ var BABYLON;
             Container.prototype._getTypeName = function () {
                 return "Container";
             };
+            /**
+             * Gets a child using its name
+             * @param name defines the child name to look for
+             * @returns the child control if found
+             */
             Container.prototype.getChildByName = function (name) {
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
@@ -2335,6 +2896,12 @@ var BABYLON;
                 }
                 return null;
             };
+            /**
+             * Gets a child using its type and its name
+             * @param name defines the child name to look for
+             * @param type defines the child type to look for
+             * @returns the child control if found
+             */
             Container.prototype.getChildByType = function (name, type) {
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
@@ -2344,10 +2911,23 @@ var BABYLON;
                 }
                 return null;
             };
+            /**
+             * Search for a specific control in children
+             * @param control defines the control to look for
+             * @returns true if the control is in child list
+             */
             Container.prototype.containsControl = function (control) {
                 return this._children.indexOf(control) !== -1;
             };
+            /**
+             * Adds a new control to the current container
+             * @param control defines the control to add
+             * @returns the current container
+             */
             Container.prototype.addControl = function (control) {
+                if (!control) {
+                    return this;
+                }
                 var index = this._children.indexOf(control);
                 if (index !== -1) {
                     return this;
@@ -2358,6 +2938,11 @@ var BABYLON;
                 this._markAsDirty();
                 return this;
             };
+            /**
+             * Removes a control from the current container
+             * @param control defines the control to remove
+             * @returns the current container
+             */
             Container.prototype.removeControl = function (control) {
                 var index = this._children.indexOf(control);
                 if (index !== -1) {
@@ -2371,6 +2956,7 @@ var BABYLON;
                 this._markAsDirty();
                 return this;
             };
+            /** @hidden */
             Container.prototype._reOrderControl = function (control) {
                 this.removeControl(control);
                 for (var index = 0; index < this._children.length; index++) {
@@ -2383,18 +2969,21 @@ var BABYLON;
                 control.parent = this;
                 this._markAsDirty();
             };
+            /** @hidden */
             Container.prototype._markMatrixAsDirty = function () {
                 _super.prototype._markMatrixAsDirty.call(this);
                 for (var index = 0; index < this._children.length; index++) {
                     this._children[index]._markMatrixAsDirty();
                 }
             };
+            /** @hidden */
             Container.prototype._markAllAsDirty = function () {
                 _super.prototype._markAllAsDirty.call(this);
                 for (var index = 0; index < this._children.length; index++) {
                     this._children[index]._markAllAsDirty();
                 }
             };
+            /** @hidden */
             Container.prototype._localDraw = function (context) {
                 if (this._background) {
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -2412,6 +3001,7 @@ var BABYLON;
                     }
                 }
             };
+            /** @hidden */
             Container.prototype._link = function (root, host) {
                 _super.prototype._link.call(this, root, host);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
@@ -2419,6 +3009,7 @@ var BABYLON;
                     child._link(root, host);
                 }
             };
+            /** @hidden */
             Container.prototype._draw = function (parentMeasure, context) {
                 if (!this.isVisible || this.notRenderable) {
                     return;
@@ -2458,6 +3049,7 @@ var BABYLON;
                     this.onAfterDrawObservable.notifyObservers(this);
                 }
             };
+            /** @hidden */
             Container.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
                 if (!this.isVisible || this.notRenderable) {
                     return false;
@@ -2477,13 +3069,16 @@ var BABYLON;
                 }
                 return this._processObservables(type, x, y, pointerId, buttonIndex);
             };
+            /** @hidden */
             Container.prototype._clipForChildren = function (context) {
                 // DO nothing
             };
+            /** @hidden */
             Container.prototype._additionalProcessing = function (parentMeasure, context) {
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
                 this._measureForChildren.copyFrom(this._currentMeasure);
             };
+            /** Releases associated resources */
             Container.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
@@ -2505,8 +3100,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create a 2D stack panel container
+         */
         var StackPanel = /** @class */ (function (_super) {
             __extends(StackPanel, _super);
+            /**
+             * Creates a new StackPanel
+             * @param name defines control name
+             */
             function StackPanel(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -2518,6 +3120,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(StackPanel.prototype, "isVertical", {
+                /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
                 get: function () {
                     return this._isVertical;
                 },
@@ -2535,6 +3138,7 @@ var BABYLON;
                 get: function () {
                     return this._width.toString(this._host);
                 },
+                /** Gets or sets panel width */
                 set: function (value) {
                     if (!this._doNotTrackManualChanges) {
                         this._manualWidth = true;
@@ -2553,6 +3157,7 @@ var BABYLON;
                 get: function () {
                     return this._height.toString(this._host);
                 },
+                /** Gets or sets panel height */
                 set: function (value) {
                     if (!this._doNotTrackManualChanges) {
                         this._manualHeight = true;
@@ -2647,8 +3252,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /** Class used to create rectangle container */
         var Rectangle = /** @class */ (function (_super) {
             __extends(Rectangle, _super);
+            /**
+             * Creates a new Rectangle
+             * @param name defines the control name
+             */
             function Rectangle(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -2657,6 +3267,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Rectangle.prototype, "thickness", {
+                /** Gets or sets border thickness */
                 get: function () {
                     return this._thickness;
                 },
@@ -2671,6 +3282,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Rectangle.prototype, "cornerRadius", {
+                /** Gets or sets the corner radius angle */
                 get: function () {
                     return this._cornerRadius;
                 },
@@ -2774,8 +3386,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /** Class used to create 2D ellipse containers */
         var Ellipse = /** @class */ (function (_super) {
             __extends(Ellipse, _super);
+            /**
+             * Creates a new Ellipse
+             * @param name defines the control name
+             */
             function Ellipse(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -2783,6 +3400,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Ellipse.prototype, "thickness", {
+                /** Gets or sets border thickness */
                 get: function () {
                     return this._thickness;
                 },
@@ -2851,8 +3469,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /** Class used to render 2D lines */
         var Line = /** @class */ (function (_super) {
             __extends(Line, _super);
+            /**
+             * Creates a new Line
+             * @param name defines the control name
+             */
             function Line(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -2868,6 +3491,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Line.prototype, "dash", {
+                /** Gets or sets the dash pattern */
                 get: function () {
                     return this._dash;
                 },
@@ -2882,6 +3506,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "connectedControl", {
+                /** Gets or sets the control connected with the line end */
                 get: function () {
                     return this._connectedControl;
                 },
@@ -2904,6 +3529,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "x1", {
+                /** Gets or sets start coordinates on X axis */
                 get: function () {
                     return this._x1.toString(this._host);
                 },
@@ -2919,6 +3545,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "y1", {
+                /** Gets or sets start coordinates on Y axis */
                 get: function () {
                     return this._y1.toString(this._host);
                 },
@@ -2934,6 +3561,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "x2", {
+                /** Gets or sets end coordinates on X axis */
                 get: function () {
                     return this._x2.toString(this._host);
                 },
@@ -2949,6 +3577,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "y2", {
+                /** Gets or sets end coordinates on Y axis */
                 get: function () {
                     return this._y2.toString(this._host);
                 },
@@ -2964,6 +3593,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "lineWidth", {
+                /** Gets or sets line width */
                 get: function () {
                     return this._lineWidth;
                 },
@@ -2978,6 +3608,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "horizontalAlignment", {
+                /** Gets or sets horizontal alignment */
                 set: function (value) {
                     return;
                 },
@@ -2985,6 +3616,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Line.prototype, "verticalAlignment", {
+                /** Gets or sets vertical alignment */
                 set: function (value) {
                     return;
                 },
@@ -3094,8 +3726,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create slider controls
+         */
         var Slider = /** @class */ (function (_super) {
             __extends(Slider, _super);
+            /**
+             * Creates a new Slider
+             * @param name defines the control name
+             */
             function Slider(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3108,6 +3747,7 @@ var BABYLON;
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 _this._isThumbCircle = false;
                 _this._isThumbClamped = false;
+                /** Observable raised when the sldier value changes */
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -3115,6 +3755,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Slider.prototype, "borderColor", {
+                /** Gets or sets border color */
                 get: function () {
                     return this._borderColor;
                 },
@@ -3129,6 +3770,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "background", {
+                /** Gets or sets background color */
                 get: function () {
                     return this._background;
                 },
@@ -3143,6 +3785,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "barOffset", {
+                /** Gets or sets main bar offset */
                 get: function () {
                     return this._barOffset.toString(this._host);
                 },
@@ -3158,6 +3801,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "barOffsetInPixels", {
+                /** Gets main bar offset in pixels*/
                 get: function () {
                     return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -3165,6 +3809,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "thumbWidth", {
+                /** Gets or sets thumb width */
                 get: function () {
                     return this._thumbWidth.toString(this._host);
                 },
@@ -3180,6 +3825,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "thumbWidthInPixels", {
+                /** Gets thumb width in pixels */
                 get: function () {
                     return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -3187,6 +3833,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "minimum", {
+                /** Gets or sets minimum value */
                 get: function () {
                     return this._minimum;
                 },
@@ -3202,6 +3849,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "maximum", {
+                /** Gets or sets maximum value */
                 get: function () {
                     return this._maximum;
                 },
@@ -3217,6 +3865,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "value", {
+                /** Gets or sets current value */
                 get: function () {
                     return this._value;
                 },
@@ -3233,6 +3882,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "isThumbCircle", {
+                /** Gets or sets a boolean indicating if the thumb should be round or square */
                 get: function () {
                     return this._isThumbCircle;
                 },
@@ -3247,6 +3897,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Slider.prototype, "isThumbClamped", {
+                /** Gets or sets a value indicating if the thumb can go over main bar extends */
                 get: function () {
                     return this._isThumbClamped;
                 },
@@ -3382,8 +4033,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to represent a 2D checkbox
+         */
         var Checkbox = /** @class */ (function (_super) {
             __extends(Checkbox, _super);
+            /**
+             * Creates a new CheckBox
+             * @param name defines the control name
+             */
             function Checkbox(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3391,11 +4049,15 @@ var BABYLON;
                 _this._background = "black";
                 _this._checkSizeRatio = 0.8;
                 _this._thickness = 1;
+                /**
+                 * Observable raised when isChecked property changes
+                 */
                 _this.onIsCheckedChangedObservable = new BABYLON.Observable();
                 _this.isPointerBlocker = true;
                 return _this;
             }
             Object.defineProperty(Checkbox.prototype, "thickness", {
+                /** Gets or sets border thickness  */
                 get: function () {
                     return this._thickness;
                 },
@@ -3410,6 +4072,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Checkbox.prototype, "checkSizeRatio", {
+                /** Gets or sets a value indicating the ratio between overall size and check size */
                 get: function () {
                     return this._checkSizeRatio;
                 },
@@ -3425,6 +4088,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Checkbox.prototype, "background", {
+                /** Gets or sets background color */
                 get: function () {
                     return this._background;
                 },
@@ -3439,6 +4103,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Checkbox.prototype, "isChecked", {
+                /** Gets or sets a boolean indicating if the checkbox is checked or not */
                 get: function () {
                     return this._isChecked;
                 },
@@ -3456,6 +4121,7 @@ var BABYLON;
             Checkbox.prototype._getTypeName = function () {
                 return "CheckBox";
             };
+            /** @hidden */
             Checkbox.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -3488,6 +4154,7 @@ var BABYLON;
                 context.restore();
             };
             // Events
+            /** @hidden */
             Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
                 if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
                     return false;
@@ -3509,8 +4176,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create radio button controls
+         */
         var RadioButton = /** @class */ (function (_super) {
             __extends(RadioButton, _super);
+            /**
+             * Creates a new RadioButton
+             * @param name defines the control name
+             */
             function RadioButton(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3518,12 +4192,15 @@ var BABYLON;
                 _this._background = "black";
                 _this._checkSizeRatio = 0.8;
                 _this._thickness = 1;
+                /** Gets or sets group name */
                 _this.group = "";
+                /** Observable raised when isChecked is changed */
                 _this.onIsCheckedChangedObservable = new BABYLON.Observable();
                 _this.isPointerBlocker = true;
                 return _this;
             }
             Object.defineProperty(RadioButton.prototype, "thickness", {
+                /** Gets or sets border thickness */
                 get: function () {
                     return this._thickness;
                 },
@@ -3538,6 +4215,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(RadioButton.prototype, "checkSizeRatio", {
+                /** Gets or sets a value indicating the ratio between overall size and check size */
                 get: function () {
                     return this._checkSizeRatio;
                 },
@@ -3553,6 +4231,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(RadioButton.prototype, "background", {
+                /** Gets or sets background color */
                 get: function () {
                     return this._background;
                 },
@@ -3567,6 +4246,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(RadioButton.prototype, "isChecked", {
+                /** Gets or sets a boolean indicating if the checkbox is checked or not */
                 get: function () {
                     return this._isChecked;
                 },
@@ -3659,6 +4339,9 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create text block control
+         */
         var TextBlock = /** @class */ (function (_super) {
             __extends(TextBlock, _super);
             /**
@@ -4007,8 +4690,16 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create 2D images
+         */
         var Image = /** @class */ (function (_super) {
             __extends(Image, _super);
+            /**
+             * Creates a new Image
+             * @param name defines the control name
+             * @param url defines the image url
+             */
             function Image(name, url) {
                 if (url === void 0) { url = null; }
                 var _this = _super.call(this, name) || this;
@@ -4027,6 +4718,9 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(Image.prototype, "sourceLeft", {
+                /**
+                 * Gets or sets the left coordinate in the source image
+                 */
                 get: function () {
                     return this._sourceLeft;
                 },
@@ -4041,6 +4735,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "sourceTop", {
+                /**
+                 * Gets or sets the top coordinate in the source image
+                 */
                 get: function () {
                     return this._sourceTop;
                 },
@@ -4055,6 +4752,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "sourceWidth", {
+                /**
+                 * Gets or sets the width to capture in the source image
+                 */
                 get: function () {
                     return this._sourceWidth;
                 },
@@ -4069,6 +4769,9 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "sourceHeight", {
+                /**
+                 * Gets or sets the height to capture in the source image
+                 */
                 get: function () {
                     return this._sourceHeight;
                 },
@@ -4083,6 +4786,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "autoScale", {
+                /**
+                 * Gets or sets a boolean indicating if the image can force its container to adapt its size
+                 * @see http://doc.babylonjs.com/how_to/gui#image
+                 */
                 get: function () {
                     return this._autoScale;
                 },
@@ -4099,6 +4806,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "stretch", {
+                /** Gets or sets the streching mode used by the image */
                 get: function () {
                     return this._stretch;
                 },
@@ -4116,6 +4824,9 @@ var BABYLON;
                 get: function () {
                     return this._domImage;
                 },
+                /**
+                 * Gets or sets the internal DOM image used to render the control
+                 */
                 set: function (value) {
                     var _this = this;
                     this._domImage = value;
@@ -4142,6 +4853,9 @@ var BABYLON;
                 this._markAsDirty();
             };
             Object.defineProperty(Image.prototype, "source", {
+                /**
+                 * Gets or sets image source url
+                 */
                 set: function (value) {
                     var _this = this;
                     if (this._source === value) {
@@ -4162,6 +4876,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "cellWidth", {
+                /**
+                 * Gets or sets the cell width to use when animation sheet is enabled
+                 * @see http://doc.babylonjs.com/how_to/gui#image
+                 */
                 get: function () {
                     return this._cellWidth;
                 },
@@ -4176,6 +4894,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "cellHeight", {
+                /**
+                 * Gets or sets the cell height to use when animation sheet is enabled
+                 * @see http://doc.babylonjs.com/how_to/gui#image
+                 */
                 get: function () {
                     return this._cellHeight;
                 },
@@ -4190,6 +4912,10 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image.prototype, "cellId", {
+                /**
+                 * Gets or sets the cell id to use (this will turn on the animation sheet mode)
+                 * @see http://doc.babylonjs.com/how_to/gui#image
+                 */
                 get: function () {
                     return this._cellId;
                 },
@@ -4206,6 +4932,7 @@ var BABYLON;
             Image.prototype._getTypeName = function () {
                 return "Image";
             };
+            /** Force the control to synchronize with its content */
             Image.prototype.synchronizeSizeWithContent = function () {
                 if (!this._loaded) {
                     return;
@@ -4271,6 +4998,7 @@ var BABYLON;
                 context.restore();
             };
             Object.defineProperty(Image, "STRETCH_NONE", {
+                /** STRETCH_NONE */
                 get: function () {
                     return Image._STRETCH_NONE;
                 },
@@ -4278,6 +5006,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image, "STRETCH_FILL", {
+                /** STRETCH_FILL */
                 get: function () {
                     return Image._STRETCH_FILL;
                 },
@@ -4285,6 +5014,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image, "STRETCH_UNIFORM", {
+                /** STRETCH_UNIFORM */
                 get: function () {
                     return Image._STRETCH_UNIFORM;
                 },
@@ -4292,6 +5022,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(Image, "STRETCH_EXTEND", {
+                /** STRETCH_EXTEND */
                 get: function () {
                     return Image._STRETCH_EXTEND;
                 },
@@ -4315,8 +5046,15 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create 2D buttons
+         */
         var Button = /** @class */ (function (_super) {
             __extends(Button, _super);
+            /**
+             * Creates a new Button
+             * @param name defines the name of the button
+             */
             function Button(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -4342,6 +5080,7 @@ var BABYLON;
                 return "Button";
             };
             // While being a container, the button behaves like a control.
+            /** @hidden */
             Button.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
@@ -4352,6 +5091,7 @@ var BABYLON;
                 this._processObservables(type, x, y, pointerId, buttonIndex);
                 return true;
             };
+            /** @hidden */
             Button.prototype._onPointerEnter = function (target) {
                 if (!_super.prototype._onPointerEnter.call(this, target)) {
                     return false;
@@ -4361,12 +5101,14 @@ var BABYLON;
                 }
                 return true;
             };
+            /** @hidden */
             Button.prototype._onPointerOut = function (target) {
                 if (this.pointerOutAnimation) {
                     this.pointerOutAnimation();
                 }
                 _super.prototype._onPointerOut.call(this, target);
             };
+            /** @hidden */
             Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
                 if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
                     return false;
@@ -4376,6 +5118,7 @@ var BABYLON;
                 }
                 return true;
             };
+            /** @hidden */
             Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
                 if (this.pointerUpAnimation) {
                     this.pointerUpAnimation();
@@ -4383,6 +5126,13 @@ var BABYLON;
                 _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
             };
             // Statics
+            /**
+             * Creates a new button made with an image and a text
+             * @param name defines the name of the button
+             * @param text defines the text of the button
+             * @param imageUrl defines the url of the image
+             * @returns a new Button
+             */
             Button.CreateImageButton = function (name, text, imageUrl) {
                 var result = new Button(name);
                 // Adding text
@@ -4399,6 +5149,12 @@ var BABYLON;
                 result.addControl(iconImage);
                 return result;
             };
+            /**
+             * Creates a new button made with an image
+             * @param name defines the name of the button
+             * @param imageUrl defines the url of the image
+             * @returns a new Button
+             */
             Button.CreateImageOnlyButton = function (name, imageUrl) {
                 var result = new Button(name);
                 // Adding image
@@ -4408,6 +5164,12 @@ var BABYLON;
                 result.addControl(iconImage);
                 return result;
             };
+            /**
+             * Creates a new button made with a text
+             * @param name defines the name of the button
+             * @param text defines the text of the button
+             * @returns a new Button
+             */
             Button.CreateSimpleButton = function (name, text) {
                 var result = new Button(name);
                 // Adding text
@@ -4417,6 +5179,13 @@ var BABYLON;
                 result.addControl(textBlock);
                 return result;
             };
+            /**
+             * Creates a new button made with an image and a centered text
+             * @param name defines the name of the button
+             * @param text defines the text of the button
+             * @param imageUrl defines the url of the image
+             * @returns a new Button
+             */
             Button.CreateImageWithCenterTextButton = function (name, text, imageUrl) {
                 var result = new Button(name);
                 // Adding image
@@ -4442,8 +5211,13 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /** Class used to create color pickers */
         var ColorPicker = /** @class */ (function (_super) {
             __extends(ColorPicker, _super);
+            /**
+             * Creates a new ColorPicker
+             * @param name defines the control name
+             */
             function ColorPicker(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -4457,6 +5231,9 @@ var BABYLON;
                 _this._h = 360;
                 _this._s = 1;
                 _this._v = 1;
+                /**
+                 * Observable raised when the value changes
+                 */
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -4466,6 +5243,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(ColorPicker.prototype, "value", {
+                /** Gets or sets the color of the color picker */
                 get: function () {
                     return this._value;
                 },
@@ -4485,6 +5263,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(ColorPicker.prototype, "width", {
+                /** Gets or sets control width */
                 set: function (value) {
                     if (this._width.toString(this._host) === value) {
                         return;
@@ -4498,6 +5277,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(ColorPicker.prototype, "height", {
+                /** Gets or sets control height */
                 set: function (value) {
                     if (this._height.toString(this._host) === value) {
                         return;
@@ -4511,6 +5291,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(ColorPicker.prototype, "size", {
+                /** Gets or sets control size */
                 get: function () {
                     return this.width;
                 },
@@ -4678,6 +5459,7 @@ var BABYLON;
                 var m = value - chroma;
                 result.set((r + m), (g + m), (b + m));
             };
+            /** @hidden */
             ColorPicker.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -4800,8 +5582,16 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create input text control
+         */
         var InputText = /** @class */ (function (_super) {
             __extends(InputText, _super);
+            /**
+             * Creates a new InputText
+             * @param name defines the control name
+             * @param text defines the text of the control
+             */
             function InputText(name, text) {
                 if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
@@ -4818,14 +5608,19 @@ var BABYLON;
                 _this._isFocused = false;
                 _this._blinkIsEven = false;
                 _this._cursorOffset = 0;
+                /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
                 _this.promptMessage = "Please enter text:";
+                /** Observable raised when the text changes */
                 _this.onTextChangedObservable = new BABYLON.Observable();
+                /** Observable raised when the control gets the focus */
                 _this.onFocusObservable = new BABYLON.Observable();
+                /** Observable raised when the control loses the focus */
                 _this.onBlurObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
             Object.defineProperty(InputText.prototype, "maxWidth", {
+                /** Gets or sets the maximum width allowed by the control */
                 get: function () {
                     return this._maxWidth.toString(this._host);
                 },
@@ -4841,6 +5636,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "maxWidthInPixels", {
+                /** Gets the maximum width allowed by the control in pixels */
                 get: function () {
                     return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -4848,6 +5644,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "margin", {
+                /** Gets or sets control margin */
                 get: function () {
                     return this._margin.toString(this._host);
                 },
@@ -4863,6 +5660,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "marginInPixels", {
+                /** Gets control margin in pixels */
                 get: function () {
                     return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
@@ -4870,6 +5668,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "autoStretchWidth", {
+                /** Gets or sets a boolean indicating if the control can auto stretch its width to adapt to the text */
                 get: function () {
                     return this._autoStretchWidth;
                 },
@@ -4884,6 +5683,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "thickness", {
+                /** Gets or sets border thickness */
                 get: function () {
                     return this._thickness;
                 },
@@ -4898,6 +5698,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "focusedBackground", {
+                /** Gets or sets the background color when focused */
                 get: function () {
                     return this._focusedBackground;
                 },
@@ -4912,6 +5713,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "background", {
+                /** Gets or sets the background color */
                 get: function () {
                     return this._background;
                 },
@@ -4926,6 +5728,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "placeholderColor", {
+                /** Gets or sets the placeholder color */
                 get: function () {
                     return this._placeholderColor;
                 },
@@ -4940,6 +5743,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "placeholderText", {
+                /** Gets or sets the text displayed when the control is empty */
                 get: function () {
                     return this._placeholderText;
                 },
@@ -4954,6 +5758,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "text", {
+                /** Gets or sets the text displayed in the control */
                 get: function () {
                     return this._text;
                 },
@@ -4969,6 +5774,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(InputText.prototype, "width", {
+                /** Gets or sets control width */
                 get: function () {
                     return this._width.toString(this._host);
                 },
@@ -4984,6 +5790,7 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            /** @hidden */
             InputText.prototype.onBlur = function () {
                 this._isFocused = false;
                 this._scrollLeft = null;
@@ -4992,6 +5799,7 @@ var BABYLON;
                 this._markAsDirty();
                 this.onBlurObservable.notifyObservers(this);
             };
+            /** @hidden */
             InputText.prototype.onFocus = function () {
                 this._scrollLeft = null;
                 this._isFocused = true;
@@ -5011,6 +5819,7 @@ var BABYLON;
             InputText.prototype._getTypeName = function () {
                 return "InputText";
             };
+            /** @hidden */
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
@@ -5084,6 +5893,7 @@ var BABYLON;
                     }
                 }
             };
+            /** @hidden */
             InputText.prototype.processKeyboard = function (evt) {
                 this.processKey(evt.keyCode, evt.key);
             };
@@ -5243,27 +6053,45 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to store key control properties
+         */
         var KeyPropertySet = /** @class */ (function () {
             function KeyPropertySet() {
             }
             return KeyPropertySet;
         }());
         GUI.KeyPropertySet = KeyPropertySet;
+        /**
+         * Class used to create virtual keyboard
+         */
         var VirtualKeyboard = /** @class */ (function (_super) {
             __extends(VirtualKeyboard, _super);
             function VirtualKeyboard() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
+                /** Observable raised when a key is pressed */
                 _this.onKeyPressObservable = new BABYLON.Observable();
+                /** Gets or sets default key button width */
                 _this.defaultButtonWidth = "40px";
+                /** Gets or sets default key button height */
                 _this.defaultButtonHeight = "40px";
+                /** Gets or sets default key button left padding */
                 _this.defaultButtonPaddingLeft = "2px";
+                /** Gets or sets default key button right padding */
                 _this.defaultButtonPaddingRight = "2px";
+                /** Gets or sets default key button top padding */
                 _this.defaultButtonPaddingTop = "2px";
+                /** Gets or sets default key button bottom padding */
                 _this.defaultButtonPaddingBottom = "2px";
+                /** Gets or sets default key button foreground color */
                 _this.defaultButtonColor = "#DDD";
+                /** Gets or sets default key button background color */
                 _this.defaultButtonBackground = "#070707";
+                /** Gets or sets shift button foreground color */
                 _this.shiftButtonColor = "#7799FF";
+                /** Gets or sets shift button thickness*/
                 _this.selectedShiftThickness = 1;
+                /** Gets shift key state */
                 _this.shiftState = 0;
                 return _this;
             }
@@ -5292,6 +6120,11 @@ var BABYLON;
                 });
                 return button;
             };
+            /**
+             * Adds a new row of keys
+             * @param keys defines the list of keys to add
+             * @param propertySets defines the associated property sets
+             */
             VirtualKeyboard.prototype.addKeysRow = function (keys, propertySets) {
                 var panel = new GUI.StackPanel();
                 panel.isVertical = false;
@@ -5305,6 +6138,10 @@ var BABYLON;
                 }
                 this.addControl(panel);
             };
+            /**
+             * Set the shift key to a specific state
+             * @param shiftState defines the new shift state
+             */
             VirtualKeyboard.prototype.applyShiftState = function (shiftState) {
                 if (!this.children) {
                     return;
@@ -5330,12 +6167,17 @@ var BABYLON;
                 }
             };
             Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
+                /** Gets the input text control attached with the keyboard */
                 get: function () {
                     return this._connectedInputText;
                 },
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Connects the keyboard with an input text control
+             * @param input defines the target control
+             */
             VirtualKeyboard.prototype.connect = function (input) {
                 var _this = this;
                 this.isVisible = false;
@@ -5373,6 +6215,9 @@ var BABYLON;
                     }
                 });
             };
+            /**
+             * Disconnects the keyboard from an input text control
+             */
             VirtualKeyboard.prototype.disconnect = function () {
                 if (!this._connectedInputText) {
                     return;
@@ -5383,6 +6228,10 @@ var BABYLON;
                 this._connectedInputText = null;
             };
             // Statics
+            /**
+             * Creates a new keyboard using a default layout
+             * @returns a new VirtualKeyboard
+             */
             VirtualKeyboard.CreateDefaultLayout = function () {
                 var returnValue = new VirtualKeyboard();
                 returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
@@ -5404,12 +6253,20 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to create multi line control
+         */
         var MultiLine = /** @class */ (function (_super) {
             __extends(MultiLine, _super);
+            /**
+             * Creates a new MultiLine
+             * @param name defines the control name
+             */
             function MultiLine(name) {
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._lineWidth = 1;
+                /** Function called when a point is updated */
                 _this.onPointUpdate = function () {
                     _this._markAsDirty();
                 };
@@ -5421,6 +6278,7 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(MultiLine.prototype, "dash", {
+                /** Gets or sets dash pattern */
                 get: function () {
                     return this._dash;
                 },
@@ -5434,12 +6292,22 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Gets point stored at specified index
+             * @param index defines the index to look for
+             * @returns the requested point if found
+             */
             MultiLine.prototype.getAt = function (index) {
                 if (!this._points[index]) {
                     this._points[index] = new GUI.MultiLinePoint(this);
                 }
                 return this._points[index];
             };
+            /**
+             * Adds new points to the point collection
+             * @param items defines the list of items (mesh, control or 2d coordiantes) to add
+             * @returns the list of created MultiLinePoint
+             */
             MultiLine.prototype.add = function () {
                 var _this = this;
                 var items = [];
@@ -5448,6 +6316,11 @@ var BABYLON;
                 }
                 return items.map(function (item) { return _this.push(item); });
             };
+            /**
+             * Adds a new point to the point collection
+             * @param item defines the item (mesh, control or 2d coordiantes) to add
+             * @returns the created MultiLinePoint
+             */
             MultiLine.prototype.push = function (item) {
                 var point = this.getAt(this._points.length);
                 if (item == null)
@@ -5464,6 +6337,10 @@ var BABYLON;
                 }
                 return point;
             };
+            /**
+             * Remove a specific value or point from the active point collection
+             * @param value defines the value or point to remove
+             */
             MultiLine.prototype.remove = function (value) {
                 var index;
                 if (value instanceof GUI.MultiLinePoint) {
@@ -5483,6 +6360,7 @@ var BABYLON;
                 this._points.splice(index, 1);
             };
             Object.defineProperty(MultiLine.prototype, "lineWidth", {
+                /** Gets or sets line width */
                 get: function () {
                     return this._lineWidth;
                 },
@@ -5606,6 +6484,7 @@ var BABYLON;
     (function (GUI) {
         /**
          * Class used to manage 3D user interface
+         * @see http://doc.babylonjs.com/how_to/gui3d
          */
         var GUI3DManager = /** @class */ (function () {
             /**
@@ -5623,7 +6502,8 @@ var BABYLON;
                  */
                 this.onPickedPointChangedObservable = new BABYLON.Observable();
                 // Shared resources
-                this.sharedMaterials = {};
+                /** @hidden */
+                this._sharedMaterials = {};
                 this._scene = scene || BABYLON.Engine.LastCreatedScene;
                 this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
                     _this._sceneDisposeObserver = null;
@@ -5636,6 +6516,9 @@ var BABYLON;
                 this._rootContainer._host = this;
                 // Events
                 this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
                     var pointerEvent = (pi.event);
                     if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
                         return;
@@ -5665,6 +6548,7 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(GUI3DManager.prototype, "utilityLayer", {
+                /** Gets associated utility layer */
                 get: function () {
                     return this._utilityLayer;
                 },
@@ -5742,7 +6626,7 @@ var BABYLON;
                 return this;
             };
             /**
-             * Removes the control from the root child list
+             * Removes a control from the root child list
              * @param control defines the control to remove
              * @returns the current container
              */
@@ -5755,7 +6639,13 @@ var BABYLON;
              */
             GUI3DManager.prototype.dispose = function () {
                 this._rootContainer.dispose();
-                this.sharedMaterials = {};
+                for (var materialName in this._sharedMaterials) {
+                    if (!this._sharedMaterials.hasOwnProperty(materialName)) {
+                        continue;
+                    }
+                    this._sharedMaterials[materialName].dispose();
+                }
+                this._sharedMaterials = {};
                 this.onPickedPointChangedObservable.clear();
                 if (this._scene) {
                     if (this._pointerObserver) {
@@ -5955,7 +6845,8 @@ var BABYLON;
                         this._activeEffect.setFloat("borderWidth", this.borderWidth);
                         this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                         this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
-                        this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                        mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, BABYLON.Tmp.Vector3[0]);
+                        this._activeEffect.setVector3("scaleFactor", BABYLON.Tmp.Vector3[0]);
                     }
                     if (defines.HOVERLIGHT) {
                         this._activeEffect.setDirectColor4("hoverColor", this.hoverColor);
@@ -6045,9 +6936,19 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
+        /**
+         * Class used to transport Vector3 information for pointer events
+         */
         var Vector3WithInfo = /** @class */ (function (_super) {
             __extends(Vector3WithInfo, _super);
-            function Vector3WithInfo(source, buttonIndex) {
+            /**
+             * Creates a new Vector3WithInfo
+             * @param source defines the vector3 data to transport
+             * @param buttonIndex defines the current mouse button index
+             */
+            function Vector3WithInfo(source, 
+            /** defines the current mouse button index */
+            buttonIndex) {
                 if (buttonIndex === void 0) { buttonIndex = 0; }
                 var _this = _super.call(this, source.x, source.y, source.z) || this;
                 _this.buttonIndex = buttonIndex;
@@ -6077,19 +6978,19 @@ var BABYLON;
             name) {
                 this.name = name;
                 this._downCount = 0;
-                this._enterCount = 0;
+                this._enterCount = -1;
                 this._downPointerIds = {};
                 this._isVisible = true;
-                /** Gets or sets the control position */
+                /** Gets or sets the control position  in world space */
                 this.position = new BABYLON.Vector3(0, 0, 0);
-                /** Gets or sets the control scaling */
+                /** Gets or sets the control scaling  in world space */
                 this.scaling = new BABYLON.Vector3(1, 1, 1);
                 /**
-                * An event triggered when the pointer move over the control.
+                * An event triggered when the pointer move over the control
                 */
                 this.onPointerMoveObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when the pointer move out of the control.
+                 * An event triggered when the pointer move out of the control
                  */
                 this.onPointerOutObservable = new BABYLON.Observable();
                 /**
@@ -6097,11 +6998,11 @@ var BABYLON;
                  */
                 this.onPointerDownObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when pointer up
+                 * An event triggered when pointer is up
                  */
                 this.onPointerUpObservable = new BABYLON.Observable();
                 /**
-                 * An event triggered when a control is clicked on
+                 * An event triggered when a control is clicked on (with a mouse)
                  */
                 this.onPointerClickObservable = new BABYLON.Observable();
                 /**
@@ -6211,7 +7112,7 @@ var BABYLON;
             };
             Object.defineProperty(Control3D.prototype, "node", {
                 /**
-                 * Gets the mesh used to render this control
+                 * Gets the transform node used by this control
                  */
                 get: function () {
                     return this._node;
@@ -6284,8 +7185,11 @@ var BABYLON;
             };
             /** @hidden */
             Control3D.prototype._onPointerEnter = function (target) {
-                if (this._enterCount !== 0) {
+                if (this._enterCount > 0) {
                     return false;
+                }
+                if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                    this._enterCount = 0;
                 }
                 this._enterCount++;
                 this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
@@ -6319,7 +7223,7 @@ var BABYLON;
             Control3D.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
                 this._downCount = 0;
                 delete this._downPointerIds[pointerId];
-                if (notifyClick && this._enterCount > 0) {
+                if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
                     this.onPointerClickObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
                 }
                 this.onPointerUpObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
@@ -6368,6 +7272,13 @@ var BABYLON;
                 }
                 return false;
             };
+            /** @hidden */
+            Control3D.prototype._disposeNode = function () {
+                if (this._node) {
+                    this._node.dispose();
+                    this._node = null;
+                }
+            };
             /**
              * Releases all associated resources
              */
@@ -6378,10 +7289,7 @@ var BABYLON;
                 this.onPointerOutObservable.clear();
                 this.onPointerUpObservable.clear();
                 this.onPointerClickObservable.clear();
-                if (this._node) {
-                    this._node.dispose();
-                    this._node = null;
-                }
+                this._disposeNode();
                 // Behaviors
                 for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
                     var behavior = _a[_i];
@@ -6456,7 +7364,7 @@ var BABYLON;
                 return new BABYLON.TransformNode("ContainerNode", scene);
             };
             /**
-             * Removes the control from the children of this control
+             * Removes a control from the children of this control
              * @param control defines the control to remove
              * @returns the current container
              */
@@ -6465,6 +7373,7 @@ var BABYLON;
                 if (index !== -1) {
                     this._children.splice(index, 1);
                     control.parent = null;
+                    control._disposeNode();
                 }
                 return this;
             };
@@ -6505,6 +7414,8 @@ var BABYLON;
              */
             function Button3D(name) {
                 var _this = _super.call(this, name) || this;
+                _this._contentResolution = 512;
+                _this._contentScaleRatio = 2;
                 // Default animations
                 _this.pointerEnterAnimation = function () {
                     if (!_this.mesh) {
@@ -6529,6 +7440,50 @@ var BABYLON;
                 };
                 return _this;
             }
+            Object.defineProperty(Button3D.prototype, "contentResolution", {
+                /**
+                 * Gets or sets the texture resolution used to render content (512 by default)
+                 */
+                get: function () {
+                    return this._contentResolution;
+                },
+                set: function (value) {
+                    if (this._contentResolution === value) {
+                        return;
+                    }
+                    this._contentResolution = value;
+                    this._resetContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Button3D.prototype, "contentScaleRatio", {
+                /**
+                 * Gets or sets the texture scale ratio used to render content (2 by default)
+                 */
+                get: function () {
+                    return this._contentScaleRatio;
+                },
+                set: function (value) {
+                    if (this._contentScaleRatio === value) {
+                        return;
+                    }
+                    this._contentScaleRatio = value;
+                    this._resetContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Button3D.prototype._disposeFacadeTexture = function () {
+                if (this._facadeTexture) {
+                    this._facadeTexture.dispose();
+                    this._facadeTexture = null;
+                }
+            };
+            Button3D.prototype._resetContent = function () {
+                this._disposeFacadeTexture();
+                this.content = this._content;
+            };
             Object.defineProperty(Button3D.prototype, "content", {
                 /**
                  * Gets or sets the GUI 2D content used to display the button's facade
@@ -6537,13 +7492,14 @@ var BABYLON;
                     return this._content;
                 },
                 set: function (value) {
+                    this._content = value;
                     if (!this._host || !this._host.utilityLayer) {
                         return;
                     }
                     if (!this._facadeTexture) {
-                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", 512, 512, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
-                        this._facadeTexture.rootContainer.scaleX = 2;
-                        this._facadeTexture.rootContainer.scaleY = 2;
+                        this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                        this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+                        this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
                         this._facadeTexture.premulAlpha = true;
                     }
                     this._facadeTexture.addControl(value);
@@ -6583,12 +7539,14 @@ var BABYLON;
                 material.specularColor = BABYLON.Color3.Black();
                 mesh.material = material;
                 this._currentMaterial = material;
+                this._resetContent();
             };
             /**
              * Releases all associated resources
              */
             Button3D.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
+                this._disposeFacadeTexture();
                 if (this._currentMaterial) {
                     this._currentMaterial.dispose();
                 }
@@ -6635,7 +7593,6 @@ var BABYLON;
                 return _this;
             }
             Object.defineProperty(HolographicButton.prototype, "text", {
-                // private _imageUrl: string;
                 /**
                  * Gets or sets text for the button
                  */
@@ -6647,6 +7604,23 @@ var BABYLON;
                         return;
                     }
                     this._text = value;
+                    this._rebuildContent();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(HolographicButton.prototype, "imageUrl", {
+                /**
+                 * Gets or sets the image url for the button
+                 */
+                get: function () {
+                    return this._imageUrl;
+                },
+                set: function (value) {
+                    if (this._imageUrl === value) {
+                        return;
+                    }
+                    this._imageUrl = value;
                     this._rebuildContent();
                 },
                 enumerable: true,
@@ -6696,8 +7670,18 @@ var BABYLON;
                 return "HolographicButton";
             };
             HolographicButton.prototype._rebuildContent = function () {
+                this._disposeFacadeTexture();
                 var panel = new GUI.StackPanel();
                 panel.isVertical = true;
+                if (this._imageUrl) {
+                    var image = new BABYLON.GUI.Image();
+                    image.source = this._imageUrl;
+                    image.paddingTop = "40px";
+                    image.height = "180px";
+                    image.width = "100px";
+                    image.paddingBottom = "40px";
+                    panel.addControl(image);
+                }
                 if (this._text) {
                     var text = new BABYLON.GUI.TextBlock();
                     text.text = this._text;
@@ -6763,35 +7747,27 @@ var BABYLON;
             HolographicButton.prototype._affectMaterial = function (mesh) {
                 // Back
                 if (this._shareMaterials) {
-                    if (!this._host.sharedMaterials["backFluentMaterial"]) {
+                    if (!this._host._sharedMaterials["backFluentMaterial"]) {
                         this._createBackMaterial(mesh);
-                        this._host.sharedMaterials["backFluentMaterial"] = this._backMaterial;
+                        this._host._sharedMaterials["backFluentMaterial"] = this._backMaterial;
                     }
                     else {
-                        this._backMaterial = this._host.sharedMaterials["backFluentMaterial"];
+                        this._backMaterial = this._host._sharedMaterials["backFluentMaterial"];
                     }
                     // Front
-                    if (!this._host.sharedMaterials["frontFluentMaterial"]) {
+                    if (!this._host._sharedMaterials["frontFluentMaterial"]) {
                         this._createFrontMaterial(mesh);
-                        this._host.sharedMaterials["frontFluentMaterial"] = this._frontMaterial;
+                        this._host._sharedMaterials["frontFluentMaterial"] = this._frontMaterial;
                     }
                     else {
-                        this._frontMaterial = this._host.sharedMaterials["frontFluentMaterial"];
-                    }
-                    // Plate
-                    if (!this._host.sharedMaterials["plateMaterial"]) {
-                        this._createPlateMaterial(mesh);
-                        this._host.sharedMaterials["plateMaterial"] = this._plateMaterial;
-                    }
-                    else {
-                        this._plateMaterial = this._host.sharedMaterials["plateMaterial"];
+                        this._frontMaterial = this._host._sharedMaterials["frontFluentMaterial"];
                     }
                 }
                 else {
                     this._createBackMaterial(mesh);
                     this._createFrontMaterial(mesh);
-                    this._createPlateMaterial(mesh);
                 }
+                this._createPlateMaterial(mesh);
                 this._backPlate.material = this._backMaterial;
                 this._frontPlate.material = this._frontMaterial;
                 this._textPlate.material = this._plateMaterial;
@@ -6876,8 +7852,9 @@ var BABYLON;
                     }
                     controlCount++;
                     child.mesh.computeWorldMatrix(true);
+                    child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
                     var boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSizeWorld, currentInverseWorld);
+                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
                     extendSizes.push(extendSize);
                     if (this._isVertical) {
                         height += extendSize.y;

@@ -61,7 +61,7 @@ module BABYLON.GUI {
          * Gets or sets a value indicating the smoothing value applied to border edges (0.02 by default)
          */
         @serialize()
-        public edgeSmoothingValue = 0.02;       
+        public edgeSmoothingValue = 0.02;
         
         /**
          * Gets or sets the minimum value that can be applied to border width (default is 0.1)
@@ -225,7 +225,8 @@ module BABYLON.GUI {
                     this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                     this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
 
-                    this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                    mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, Tmp.Vector3[0]);
+                    this._activeEffect.setVector3("scaleFactor", Tmp.Vector3[0]);
                 }
 
                 if (defines.HOVERLIGHT) {

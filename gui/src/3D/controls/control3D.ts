@@ -9,13 +9,13 @@ module BABYLON.GUI {
         public _host: GUI3DManager;
         private _node: Nullable<TransformNode>;
         private _downCount = 0;
-        private _enterCount = 0;
+        private _enterCount = -1;
         private _downPointerIds:{[id:number] : boolean} = {};
         private _isVisible = true;
     
-        /** Gets or sets the control position */
+        /** Gets or sets the control position  in world space */
         public position = new Vector3(0, 0, 0);
-        /** Gets or sets the control scaling */
+        /** Gets or sets the control scaling  in world space */
         public scaling = new Vector3(1, 1, 1);
 
         /** Callback used to start pointer enter animation */
@@ -28,12 +28,12 @@ module BABYLON.GUI {
         public pointerUpAnimation: () => void;
 
         /**
-        * An event triggered when the pointer move over the control.
+        * An event triggered when the pointer move over the control
         */
         public onPointerMoveObservable = new Observable<Vector3>();
 
         /**
-         * An event triggered when the pointer move out of the control.
+         * An event triggered when the pointer move out of the control
          */
         public onPointerOutObservable = new Observable<Control3D>();
 
@@ -43,12 +43,12 @@ module BABYLON.GUI {
         public onPointerDownObservable = new Observable<Vector3WithInfo>();
 
         /**
-         * An event triggered when pointer up
+         * An event triggered when pointer is up
          */
         public onPointerUpObservable = new Observable<Vector3WithInfo>();
 
         /**
-         * An event triggered when a control is clicked on
+         * An event triggered when a control is clicked on (with a mouse)
          */
         public onPointerClickObservable = new Observable<Vector3WithInfo>();
 
@@ -175,7 +175,7 @@ module BABYLON.GUI {
         }
 
         /**
-         * Gets the mesh used to render this control
+         * Gets the transform node used by this control
          */
         public get node(): Nullable<TransformNode> {
             return this._node;
@@ -253,8 +253,12 @@ module BABYLON.GUI {
 
         /** @hidden */
         public _onPointerEnter(target: Control3D): boolean {
-            if (this._enterCount !== 0) {
+            if (this._enterCount > 0) {
                 return false;
+            }
+
+            if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                this._enterCount = 0;
             }
 
             this._enterCount++;
@@ -304,7 +308,7 @@ module BABYLON.GUI {
 
             delete this._downPointerIds[pointerId];
 
-			if (notifyClick && this._enterCount > 0) {
+			if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
 				this.onPointerClickObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
 			}
 			this.onPointerUpObservable.notifyObservers(new Vector3WithInfo(coordinates, buttonIndex), -1, target, this);            
@@ -361,6 +365,14 @@ module BABYLON.GUI {
             return false;
         }        
 
+        /** @hidden */
+        public _disposeNode(): void {
+            if (this._node) {
+                this._node.dispose();
+                this._node = null;
+            }
+        }
+
         /**
          * Releases all associated resources
          */
@@ -372,10 +384,7 @@ module BABYLON.GUI {
             this.onPointerUpObservable.clear();
             this.onPointerClickObservable.clear();
 
-            if (this._node) {
-                this._node.dispose();
-                this._node = null;
-            }
+            this._disposeNode();
 
             // Behaviors
             for (var behavior of this._behaviors) {

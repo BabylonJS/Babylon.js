@@ -1,34 +1,52 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Root class used for all 2D controls
+     * @see http://doc.babylonjs.com/how_to/gui#controls
+     */
     export class Control {
         private _alpha = 1;
         private _alphaSet = false;
         private _zIndex = 0;
+        /** @hidden */
         public _root: Nullable<Container>;
+        /** @hidden */
         public _host: AdvancedDynamicTexture;
+        /** Gets or sets the control parent */
         public parent: Nullable<Container>;
+        /** @hidden */
         public _currentMeasure = Measure.Empty();
         private _fontFamily = "Arial";
         private _fontStyle = "";
+        private _fontWeight = "";
         private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
         private _font: string;
+        /** @hidden */
         public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
+        /** @hidden */
         public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
+        /** @hidden */
         protected _fontOffset: { ascent: number, height: number, descent: number };
         private _color = "";
         private _style: BABYLON.Nullable<Style> = null;
         private _styleObserver: BABYLON.Nullable<BABYLON.Observer<Style>>;
+        /** @hidden */
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        /** @hidden */
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
+        /** @hidden */
         public _tempParentMeasure = Measure.Empty();
+        /** @hidden */
         protected _cachedParentMeasure = Measure.Empty();
         private _paddingLeft = new ValueAndUnit(0);
         private _paddingRight = new ValueAndUnit(0);
         private _paddingTop = new ValueAndUnit(0);
         private _paddingBottom = new ValueAndUnit(0);
+        /** @hidden */
         public _left = new ValueAndUnit(0);
+        /** @hidden */
         public _top = new ValueAndUnit(0);
         private _scaleX = 1.0;
         private _scaleY = 1.0;
@@ -36,35 +54,48 @@ module BABYLON.GUI {
         private _transformCenterX = 0.5;
         private _transformCenterY = 0.5;
         private _transformMatrix = Matrix2D.Identity();
+        /** @hidden */
         protected _invertTransformMatrix = Matrix2D.Identity();
+        /** @hidden */
         protected _transformedPosition = Vector2.Zero();
         private _onlyMeasureMode = false;
         private _isMatrixDirty = true;
         private _cachedOffsetX: number;
         private _cachedOffsetY: number;
         private _isVisible = true;
+        /** @hidden */
         public _linkedMesh: Nullable<AbstractMesh>;
         private _fontSet = false;
         private _dummyVector2 = Vector2.Zero();
         private _downCount = 0;
-        private _enterCount = 0;
+        private _enterCount = -1;
         private _doNotRender = false;
         private _downPointerIds:{[id:number] : boolean} = {};
 
+        /** Gets or sets a boolean indicating if the control can be hit with pointer events */
         public isHitTestVisible = true;
+        /** Gets or sets a boolean indicating if the control can block pointer events */
         public isPointerBlocker = false;
+        /** Gets or sets a boolean indicating if the control can be focusable */
         public isFocusInvisible = false;
 
+        /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
         public shadowOffsetX = 0;
+        /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
         public shadowOffsetY = 0;
+        /** Gets or sets a value indicating the amount of blur to use to render the shadow */
         public shadowBlur = 0;
+        /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
         public shadowColor = '#000';
 
+         /** @hidden */
         protected _linkOffsetX = new ValueAndUnit(0);
+         /** @hidden */
         protected _linkOffsetY = new ValueAndUnit(0);
 
         // Properties
 
+        /** Gets the control type name */
         public get typeName(): string {
             return this._getTypeName();
         }
@@ -118,6 +149,7 @@ module BABYLON.GUI {
             this._fontOffset = offset;
         }
 
+        /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
         public get alpha(): number {
             return this._alpha;
         }
@@ -131,6 +163,9 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets a value indicating the scale factor on X axis (1 by default) 
+         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+        */
         public get scaleX(): number {
             return this._scaleX;
         }
@@ -145,6 +180,9 @@ module BABYLON.GUI {
             this._markMatrixAsDirty();
         }
 
+        /** Gets or sets a value indicating the scale factor on Y axis (1 by default) 
+         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+        */
         public get scaleY(): number {
             return this._scaleY;
         }
@@ -159,6 +197,9 @@ module BABYLON.GUI {
             this._markMatrixAsDirty();
         }
 
+        /** Gets or sets the rotation angle (0 by default) 
+         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+        */
         public get rotation(): number {
             return this._rotation;
         }
@@ -173,6 +214,9 @@ module BABYLON.GUI {
             this._markMatrixAsDirty();
         }
 
+        /** Gets or sets the transformation center on Y axis (0 by default)
+         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+        */
         public get transformCenterY(): number {
             return this._transformCenterY;
         }
@@ -187,6 +231,9 @@ module BABYLON.GUI {
             this._markMatrixAsDirty();
         }
 
+        /** Gets or sets the transformation center on X axis (0 by default)
+         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+        */
         public get transformCenterX(): number {
             return this._transformCenterX;
         }
@@ -201,6 +248,10 @@ module BABYLON.GUI {
             this._markMatrixAsDirty();
         }
 
+        /** 
+         * Gets or sets the horizontal alignment 
+         * @see http://doc.babylonjs.com/how_to/gui#alignments
+         */
         public get horizontalAlignment(): number {
             return this._horizontalAlignment;
         }
@@ -214,6 +265,10 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** 
+         * Gets or sets the vertical alignment 
+         * @see http://doc.babylonjs.com/how_to/gui#alignments
+         */        
         public get verticalAlignment(): number {
             return this._verticalAlignment;
         }
@@ -227,10 +282,18 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** 
+         * Gets or sets control width 
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */
         public get width(): string | number {
             return this._width.toString(this._host);
         }
 
+        /** 
+         * Gets control width in pixel
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */        
         public get widthInPixels(): number {
             return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -245,10 +308,18 @@ module BABYLON.GUI {
             }
         }
 
+        /** 
+         * Gets or sets control height 
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */        
         public get height(): string | number {
             return this._height.toString(this._host);
         }
 
+        /** 
+         * Gets control height in pixel
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */        
         public get heightInPixels(): number {
             return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
@@ -263,6 +334,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or set font family */
         public get fontFamily(): string {
             return this._fontFamily;
         }
@@ -276,6 +348,7 @@ module BABYLON.GUI {
             this._resetFontCache();
         }
 
+        /** Gets or sets font style */
         public get fontStyle(): string {
             return this._fontStyle;
         }
@@ -289,6 +362,24 @@ module BABYLON.GUI {
             this._resetFontCache();
         }
 
+        /** Gets or sets font weight */
+        public get fontWeight(): string {
+            return this._fontWeight;
+        }
+
+        public set fontWeight(value: string) {
+            if (this._fontWeight === value) {
+                return;
+            }
+
+            this._fontWeight = value;
+            this._resetFontCache();
+        }        
+
+        /**
+         * Gets or sets style
+         * @see http://doc.babylonjs.com/how_to/gui#styles
+         */
         public get style(): BABYLON.Nullable<Style> {
             return this._style;
         }
@@ -317,6 +408,7 @@ module BABYLON.GUI {
             return this._fontSize.isPercentage;
         }
 
+        /** Gets font size in pixels */
         public get fontSizeInPixels(): number {
             let fontSizeToUse =  this._style ? this._style._fontSize : this._fontSize;
 
@@ -327,6 +419,7 @@ module BABYLON.GUI {
             return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
         }
 
+        /** Gets or sets font size */
         public get fontSize(): string | number {
             return this._fontSize.toString(this._host);
         }
@@ -342,6 +435,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets foreground color */
         public get color(): string {
             return this._color;
         }
@@ -355,6 +449,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets z index which is used to reorder controls on the z axis */
         public get zIndex(): number {
             return this._zIndex;
         }
@@ -371,6 +466,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets a boolean indicating if the control can be rendered */
         public get notRenderable(): boolean {
             return this._doNotRender;
         }
@@ -384,6 +480,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets or sets a boolean indicating if the control is visible */
         public get isVisible(): boolean {
             return this._isVisible;
         }
@@ -397,14 +494,23 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /** Gets a boolean indicating that the control needs to update its rendering */
         public get isDirty(): boolean {
             return this._isDirty;
         }
 
+        /**
+         * Gets or sets a value indicating the padding to use on the left of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */
         public get paddingLeft(): string | number {
             return this._paddingLeft.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the padding in pixels to use on the left of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */        
         public get paddingLeftInPixels(): number {
             return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -415,10 +521,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the padding to use on the right of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */        
         public get paddingRight(): string | number {
             return this._paddingRight.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the padding in pixels to use on the right of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */        
         public get paddingRightInPixels(): number {
             return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -429,10 +543,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the padding to use on the top of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */                
         public get paddingTop(): string | number {
             return this._paddingTop.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the padding in pixels to use on the top of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */                
         public get paddingTopInPixels(): number {
             return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
@@ -443,10 +565,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the padding to use on the bottom of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */                
         public get paddingBottom(): string | number {
             return this._paddingBottom.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the padding in pixels to use on the bottom of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */  
         public get paddingBottomInPixels(): number {
             return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
@@ -457,10 +587,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the left coordinate of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */  
         public get left(): string | number {
             return this._left.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the left coordinate in pixels of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */         
         public get leftInPixels(): number {
             return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -471,10 +609,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the top coordinate of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */         
         public get top(): string | number {
             return this._top.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the top coordinate in pixels of the control
+         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         */           
         public get topInPixels(): number {
             return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
@@ -485,10 +631,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the offset on X axis to the linked mesh
+         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         */
         public get linkOffsetX(): string | number {
             return this._linkOffsetX.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the offset in pixels on X axis to the linked mesh
+         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         */        
         public get linkOffsetXInPixels(): number {
             return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
         }
@@ -499,10 +653,18 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a value indicating the offset on Y axis to the linked mesh
+         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         */        
         public get linkOffsetY(): string | number {
             return this._linkOffsetY.toString(this._host);
         }
 
+        /**
+         * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         */         
         public get linkOffsetYInPixels(): number {
             return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
         }
@@ -513,18 +675,28 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets the center coordinate on X axis */
         public get centerX(): number {
             return this._currentMeasure.left + this._currentMeasure.width / 2;
         }
 
+        /** Gets the center coordinate on Y axis */
         public get centerY(): number {
             return this._currentMeasure.top + this._currentMeasure.height / 2;
         }
 
         // Functions
-        constructor(public name?: string) {
+
+        /**
+         * Creates a new control
+         * @param name defines the name of the control
+         */
+        constructor(
+            /** defines the name of the control */
+            public name?: string) {
         }
 
+        /** @hidden */
         protected _getTypeName(): string {
             return "Control";
         }
@@ -534,6 +706,11 @@ module BABYLON.GUI {
             this._fontSet = true;
         }
 
+        /** 
+         * Gets coordinates in local control space 
+         * @param globalCoordinates defines the coordinates to transform
+         * @returns the new coordinates in local space
+         */
         public getLocalCoordinates(globalCoordinates: Vector2): Vector2 {
             var result = Vector2.Zero();
 
@@ -542,12 +719,23 @@ module BABYLON.GUI {
             return result;
         }
 
+        /** 
+         * Gets coordinates in local control space 
+         * @param globalCoordinates defines the coordinates to transform
+         * @param result defines the target vector2 where to store the result
+         * @returns the current control
+         */        
         public getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control {
             result.x = globalCoordinates.x - this._currentMeasure.left;
             result.y = globalCoordinates.y - this._currentMeasure.top;
             return this;
         }
 
+        /** 
+         * Gets coordinates in parent local control space 
+         * @param globalCoordinates defines the coordinates to transform
+         * @returns the new coordinates in parent local space
+         */
         public getParentLocalCoordinates(globalCoordinates: Vector2): Vector2 {
             var result = Vector2.Zero();
 
@@ -557,6 +745,11 @@ module BABYLON.GUI {
             return result;
         }
 
+        /**
+         * Move the current control to a vector3 position projected onto the screen.
+         * @param position defines the target position
+         * @param scene defines the hosting scene
+         */
         public moveToVector3(position: Vector3, scene: Scene): void {
             if (!this._host || this._root !== this._host._rootContainer) {
                 Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
@@ -578,6 +771,11 @@ module BABYLON.GUI {
             this.notRenderable = false;
         }
 
+        /**
+         * Link current control with a target mesh
+         * @param mesh defines the mesh to link with
+         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         */
         public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
             if (!this._host || this._root && this._root !== this._host._rootContainer) {
                 if (mesh) {
@@ -604,6 +802,7 @@ module BABYLON.GUI {
             this._host._linkedControls.push(this);
         }
 
+        /** @hidden */
         public _moveToProjectedPosition(projectedPosition: Vector3): void {
             let oldLeft = this._left.getValue(this._host);
             let oldTop = this._top.getValue(this._host);
@@ -628,11 +827,13 @@ module BABYLON.GUI {
             this._top.ignoreAdaptiveScaling = true;
         }
 
+        /** @hidden */
         public _markMatrixAsDirty(): void {
             this._isMatrixDirty = true;
             this._markAsDirty();
         }
 
+        /** @hidden */
         public _markAsDirty(): void {
             this._isDirty = true;
 
@@ -642,6 +843,7 @@ module BABYLON.GUI {
             this._host.markAsDirty();
         }
 
+        /** @hidden */
         public _markAllAsDirty(): void {
             this._markAsDirty();
 
@@ -650,11 +852,13 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
             this._root = root;
             this._host = host;
         }
 
+        /** @hidden */
         protected _transform(context: CanvasRenderingContext2D): void {
             if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
                 return;
@@ -686,6 +890,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         protected _applyStates(context: CanvasRenderingContext2D): void {
             if (this._fontSet) {
                 this._prepareFont();
@@ -705,6 +910,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
             if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
                 this._isDirty = false;
@@ -763,6 +969,7 @@ module BABYLON.GUI {
             return true;
         }
 
+        /** @hidden */
         protected _clip(context: CanvasRenderingContext2D) {
             context.beginPath();
 
@@ -785,6 +992,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         public _measure(): void {
             // Width / Height
             if (this._width.isPixel) {
@@ -800,6 +1008,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             var width = this._currentMeasure.width;
             var height = this._currentMeasure.height;
@@ -879,18 +1088,27 @@ module BABYLON.GUI {
             this._currentMeasure.top += y;
         }
 
+        /** @hidden */
         protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
         }
 
+        /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
         }
 
+        /** @hidden */
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             // Do nothing
         }
 
+        /**
+         * Tests if a given coordinates belong to the current control
+         * @param x defines x coordinate to test
+         * @param y defines y coordinate to test
+         * @returns true if the coordinates are inside the control
+         */
         public contains(x: number, y: number): boolean {
             // Invert transform
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
@@ -921,6 +1139,7 @@ module BABYLON.GUI {
             return true;
         }
 
+        /** @hidden */
         public _processPicking(x: number, y: number, type: number, pointerId:number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                 return false;
@@ -935,17 +1154,22 @@ module BABYLON.GUI {
             return true;
         }
 
+        /** @hidden */
         public _onPointerMove(target: Control, coordinates: Vector2): void {
             var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
 
             if (canNotify && this.parent != null) this.parent._onPointerMove(target, coordinates);
         }
 
+        /** @hidden */
         public _onPointerEnter(target: Control): boolean {
-            if (this._enterCount !== 0) {
+            if (this._enterCount > 0) {
                 return false;
             }
 
+            if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                this._enterCount = 0;
+            }
             this._enterCount++;
 
             var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
@@ -955,6 +1179,7 @@ module BABYLON.GUI {
             return true;
         }
 
+        /** @hidden */
         public _onPointerOut(target: Control): void {
             this._enterCount = 0;
 
@@ -963,6 +1188,7 @@ module BABYLON.GUI {
             if (canNotify && this.parent != null) this.parent._onPointerOut(target);
         }
 
+        /** @hidden */
         public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
             if (this._downCount !== 0) {
                 return false;
@@ -979,13 +1205,14 @@ module BABYLON.GUI {
             return true;
         }
 
+        /** @hidden */
         public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
             this._downCount = 0;
 
             delete this._downPointerIds[pointerId];
 
             var canNotifyClick: boolean = notifyClick;
-			if (notifyClick && this._enterCount > 0) {
+			if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
 				canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 			}
 			var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
@@ -993,7 +1220,8 @@ module BABYLON.GUI {
             if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
         }
 
-        public forcePointerUp(pointerId:Nullable<number> = null) {
+        /** @hidden */
+        public _forcePointerUp(pointerId:Nullable<number> = null) {
             if(pointerId !== null){
                 this._onPointerUp(this, Vector2.Zero(), pointerId, 0, true);
             }else{
@@ -1003,6 +1231,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** @hidden */
         public _processObservables(type: number, x: number, y: number, pointerId:number, buttonIndex: number): boolean {
             this._dummyVector2.copyFromFloats(x, y);
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
@@ -1039,21 +1268,21 @@ module BABYLON.GUI {
             return false;
         }
 
-
         private _prepareFont() {
             if (!this._font && !this._fontSet) {
                 return;
             }
 
             if (this._style) {
-                this._font = this._style.fontStyle + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+                this._font = (this._style.fontWeight ? this._style.fontWeight : this._style.fontStyle) + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
             } else {
-                this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+                this._font = (this._fontWeight ? this._fontWeight : this._fontStyle) + " " + this.fontSizeInPixels + "px " + this._fontFamily;
             }
 
             this._fontOffset = Control._GetFontOffset(this._font);
         }
 
+        /** Releases associated resources */
         public dispose() {
             this.onDirtyObservable.clear();
             this.onAfterDrawObservable.clear();
@@ -1089,32 +1318,39 @@ module BABYLON.GUI {
         private static _VERTICAL_ALIGNMENT_BOTTOM = 1;
         private static _VERTICAL_ALIGNMENT_CENTER = 2;
 
+        /** HORIZONTAL_ALIGNMENT_LEFT */
         public static get HORIZONTAL_ALIGNMENT_LEFT(): number {
             return Control._HORIZONTAL_ALIGNMENT_LEFT;
         }
 
+        /** HORIZONTAL_ALIGNMENT_RIGHT */
         public static get HORIZONTAL_ALIGNMENT_RIGHT(): number {
             return Control._HORIZONTAL_ALIGNMENT_RIGHT;
         }
 
+        /** HORIZONTAL_ALIGNMENT_CENTER */
         public static get HORIZONTAL_ALIGNMENT_CENTER(): number {
             return Control._HORIZONTAL_ALIGNMENT_CENTER;
         }
 
+        /** VERTICAL_ALIGNMENT_TOP */
         public static get VERTICAL_ALIGNMENT_TOP(): number {
             return Control._VERTICAL_ALIGNMENT_TOP;
         }
 
+        /** VERTICAL_ALIGNMENT_BOTTOM */
         public static get VERTICAL_ALIGNMENT_BOTTOM(): number {
             return Control._VERTICAL_ALIGNMENT_BOTTOM;
         }
 
+        /** VERTICAL_ALIGNMENT_CENTER */
         public static get VERTICAL_ALIGNMENT_CENTER(): number {
             return Control._VERTICAL_ALIGNMENT_CENTER;
         }
 
         private static _FontHeightSizes: { [key: string]: { ascent: number, height: number, descent: number } } = {};
 
+        /** @hidden */
         public static _GetFontOffset(font: string): { ascent: number, height: number, descent: number } {
 
             if (Control._FontHeightSizes[font]) {
@@ -1152,6 +1388,14 @@ module BABYLON.GUI {
             return result;
         };
 
+        /**
+         * Creates a stack panel that can be used to render headers
+         * @param control defines the control to associate with the header
+         * @param text defines the text of the header
+         * @param size defines the size of the header
+         * @param options defines options used to configure the header
+         * @returns a new StackPanel
+         */
         public static AddHeader(control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
             let panel = new BABYLON.GUI.StackPanel("panel");
             let isHorizontal = options ? options.isHorizontal : true;
@@ -1186,6 +1430,7 @@ module BABYLON.GUI {
             return panel;
         }
 
+        /** @hidden */
         protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void {
             context.translate(x, y);
             context.scale(width, height);

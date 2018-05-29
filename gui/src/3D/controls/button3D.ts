@@ -7,8 +7,54 @@ module BABYLON.GUI {
     export class Button3D extends Control3D {
         /** @hidden */
         protected _currentMaterial: Material;
-        private _facadeTexture: AdvancedDynamicTexture;
+        private _facadeTexture: Nullable<AdvancedDynamicTexture>;
         private _content: Control;
+        private _contentResolution = 512;
+        private _contentScaleRatio = 2;
+
+        /**
+         * Gets or sets the texture resolution used to render content (512 by default)
+         */
+        public get contentResolution(): int {
+            return this._contentResolution;
+        }
+
+        public set contentResolution(value: int) {
+            if (this._contentResolution === value) {
+                return;
+            }
+
+            this._contentResolution = value;
+            this._resetContent();
+        }
+
+        /**
+         * Gets or sets the texture scale ratio used to render content (2 by default)
+         */
+        public get contentScaleRatio(): number {
+            return this._contentScaleRatio;
+        }
+
+        public set contentScaleRatio(value: number) {
+            if (this._contentScaleRatio === value) {
+                return;
+            }
+
+            this._contentScaleRatio = value;
+            this._resetContent();
+        }   
+        
+        protected _disposeFacadeTexture() {
+            if (this._facadeTexture) {
+                this._facadeTexture.dispose();
+                this._facadeTexture = null;
+            }
+        }
+
+        protected _resetContent() {
+            this._disposeFacadeTexture();
+            this.content = this._content;
+        }
 
         /**
          * Creates a new button
@@ -55,14 +101,16 @@ module BABYLON.GUI {
         }
 
         public set content(value: Control) {
+            this._content = value;
+
             if (!this._host || !this._host.utilityLayer) {
                 return;
             }
 
             if (!this._facadeTexture) {
-                this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", 512, 512, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
-                this._facadeTexture.rootContainer.scaleX = 2;
-                this._facadeTexture.rootContainer.scaleY = 2;
+                this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
+                this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+                this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
                 this._facadeTexture.premulAlpha = true;
             }
             
@@ -109,6 +157,8 @@ module BABYLON.GUI {
 
             mesh.material = material;
             this._currentMaterial = material;
+
+            this._resetContent();
         }
 
         /**
@@ -116,6 +166,8 @@ module BABYLON.GUI {
          */
         public dispose() {
             super.dispose();
+
+            this._disposeFacadeTexture();
 
             if (this._currentMaterial) {
                 this._currentMaterial.dispose();

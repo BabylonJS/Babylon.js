@@ -16,9 +16,20 @@ module BABYLON.Debug {
         private _ymesh: Nullable<LinesMesh>;
         private _zmesh: Nullable<LinesMesh>;
 
+        /**
+         * Gets the hosting scene
+         */
         public scene: Nullable<Scene>;
+        /**
+         * Gets or sets a number used to scale line length
+         */
         public scaleLines = 1;
 
+        /**
+         * Creates a new AxesViewer
+         * @param scene defines the hosting scene
+         * @param scaleLines defines a number used to scale line length (1 by default)
+         */
         constructor(scene: Scene, scaleLines = 1) {
 
             this.scaleLines = scaleLines;
@@ -42,6 +53,13 @@ module BABYLON.Debug {
 
         }
 
+        /**
+         * Force the viewer to update 
+         * @param position defines the position of the viewer
+         * @param xaxis defines the x axis of the viewer
+         * @param yaxis defines the y axis of the viewer
+         * @param zaxis defines the z axis of the viewer
+         */        
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
 
             var scaleLines = this.scaleLines;
@@ -76,6 +94,7 @@ module BABYLON.Debug {
 
         }
 
+        /** Releases resources */
         public dispose() {
 
             if (this._xmesh) {
