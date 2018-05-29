@@ -365,6 +365,14 @@ module BABYLON.GUI {
             return false;
         }        
 
+        /** @hidden */
+        public _disposeNode(): void {
+            if (this._node) {
+                this._node.dispose();
+                this._node = null;
+            }
+        }
+
         /**
          * Releases all associated resources
          */
@@ -376,10 +384,7 @@ module BABYLON.GUI {
             this.onPointerUpObservable.clear();
             this.onPointerClickObservable.clear();
 
-            if (this._node) {
-                this._node.dispose();
-                this._node = null;
-            }
+            this._disposeNode();
 
             // Behaviors
             for (var behavior of this._behaviors) {

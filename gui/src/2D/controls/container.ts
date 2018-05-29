@@ -131,7 +131,11 @@ module BABYLON.GUI {
          * @param control defines the control to add
          * @returns the current container
          */
-        public addControl(control: Control): Container {
+        public addControl(control: Nullable<Control>): Container {
+            if (!control) {
+                return this;
+            }
+
            var index = this._children.indexOf(control);
 
             if (index !== -1) {

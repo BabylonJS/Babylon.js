@@ -79,6 +79,7 @@ module BABYLON.GUI {
                 this._children.splice(index, 1);
 
                 control.parent = null;
+                control._disposeNode();
             }
 
             return this;

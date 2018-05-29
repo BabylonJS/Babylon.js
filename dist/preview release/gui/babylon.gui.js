@@ -2925,6 +2925,9 @@ var BABYLON;
              * @returns the current container
              */
             Container.prototype.addControl = function (control) {
+                if (!control) {
+                    return this;
+                }
                 var index = this._children.indexOf(control);
                 if (index !== -1) {
                     return this;
@@ -6842,7 +6845,8 @@ var BABYLON;
                         this._activeEffect.setFloat("borderWidth", this.borderWidth);
                         this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                         this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
-                        this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                        mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, BABYLON.Tmp.Vector3[0]);
+                        this._activeEffect.setVector3("scaleFactor", BABYLON.Tmp.Vector3[0]);
                     }
                     if (defines.HOVERLIGHT) {
                         this._activeEffect.setDirectColor4("hoverColor", this.hoverColor);
@@ -7268,6 +7272,13 @@ var BABYLON;
                 }
                 return false;
             };
+            /** @hidden */
+            Control3D.prototype._disposeNode = function () {
+                if (this._node) {
+                    this._node.dispose();
+                    this._node = null;
+                }
+            };
             /**
              * Releases all associated resources
              */
@@ -7278,10 +7289,7 @@ var BABYLON;
                 this.onPointerOutObservable.clear();
                 this.onPointerUpObservable.clear();
                 this.onPointerClickObservable.clear();
-                if (this._node) {
-                    this._node.dispose();
-                    this._node = null;
-                }
+                this._disposeNode();
                 // Behaviors
                 for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
                     var behavior = _a[_i];
@@ -7365,6 +7373,7 @@ var BABYLON;
                 if (index !== -1) {
                     this._children.splice(index, 1);
                     control.parent = null;
+                    control._disposeNode();
                 }
                 return this;
             };
@@ -7483,10 +7492,10 @@ var BABYLON;
                     return this._content;
                 },
                 set: function (value) {
+                    this._content = value;
                     if (!this._host || !this._host.utilityLayer) {
                         return;
                     }
-                    this._content = value;
                     if (!this._facadeTexture) {
                         this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
                         this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
@@ -7530,13 +7539,14 @@ var BABYLON;
                 material.specularColor = BABYLON.Color3.Black();
                 mesh.material = material;
                 this._currentMaterial = material;
+                this._resetContent();
             };
             /**
              * Releases all associated resources
              */
             Button3D.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
-                this._disposeFaceTexture();
+                this._disposeFacadeTexture();
                 if (this._currentMaterial) {
                     this._currentMaterial.dispose();
                 }
@@ -7842,8 +7852,9 @@ var BABYLON;
                     }
                     controlCount++;
                     child.mesh.computeWorldMatrix(true);
+                    child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
                     var boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSizeWorld, currentInverseWorld);
+                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
                     extendSizes.push(extendSize);
                     if (this._isVertical) {
                         height += extendSize.y;
