@@ -3432,12 +3432,12 @@
             // Subdivide
             if (subdivideWithSubMeshes) {
 
-                //-- Suppresions du submesh global
+                //-- removal of global submesh
                 meshSubclass.releaseSubMeshes();
                 index = 0;
                 var offset = 0;
 
-                //-- aplique la subdivision en fonction du tableau d'indices
+                //-- apply subdivision according to index table
                 while (index < indiceArray.length) {
                     SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
                     offset += indiceArray[index];
