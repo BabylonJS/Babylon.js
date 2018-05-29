@@ -68,6 +68,34 @@ module BABYLON {
         l22: Array<number>;
     }
 
+    interface EnvironmentTextureIrradianceInfoV1 {
+        polynomials: boolean;
+
+        l00: Array<number>;
+
+        l1_1: Array<number>;
+        l10: Array<number>;
+        l11: Array<number>;
+
+        l2_2: Array<number>;
+        l2_1: Array<number>;
+        l20: Array<number>;
+        l21: Array<number>;
+        l22: Array<number>;
+
+        x: Array<number>;
+        y: Array<number>;
+        z: Array<number>;
+
+        xx: Array<number>;
+        yy: Array<number>;
+        zz: Array<number>;
+
+        yz: Array<number>;
+        zx: Array<number>;
+        xy: Array<number>;
+    }
+
     /**
      * Sets of helpers addressing the serialization and deserialization of environment texture
      * stored in a BabylonJS env file.
@@ -128,7 +156,7 @@ module BABYLON {
             }
 
             let engine = internalTexture.getEngine();
-            if (engine && !engine.premultipliedAlpha) {
+            if (engine && engine.premultipliedAlpha) {
                 return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpa option.");
             }
 
@@ -206,7 +234,7 @@ module BABYLON {
                 let info: EnvironmentTextureInfo = {
                     version: 1,
                     width: cubeWidth,
-                    irradiance: null,
+                    irradiance: this._CreateEnvTextureIrradiance(texture),
                     specular: {
                         mipmaps: []
                     }
@@ -263,6 +291,34 @@ module BABYLON {
                 // Voila
                 return finalBuffer;
             });
+        }
+
+        /**
+         * Creates a JSON representation of the spherical data.
+         * @param texture defines the texture containing the polynomials
+         * @return the JSON representation of the spherical info
+         */
+        private static _CreateEnvTextureIrradiance(texture: CubeTexture) : Nullable<EnvironmentTextureIrradianceInfoV1> {
+            var polynmials = texture.sphericalPolynomial;
+            if (polynmials == null) {
+                return null;
+            }
+
+            return {
+                polynomials: true,
+
+                x: [polynmials.x.x, polynmials.x.y, polynmials.x.z],
+                y: [polynmials.y.x, polynmials.y.y, polynmials.y.z],
+                z: [polynmials.z.x, polynmials.z.y, polynmials.z.z],
+
+                xx: [polynmials.xx.x, polynmials.xx.y, polynmials.xx.z],
+                yy: [polynmials.yy.x, polynmials.yy.y, polynmials.yy.z],
+                zz: [polynmials.zz.x, polynmials.zz.y, polynmials.zz.z],
+
+                yz: [polynmials.yz.x, polynmials.yz.y, polynmials.yz.z],
+                zx: [polynmials.zx.x, polynmials.zx.y, polynmials.zx.z],
+                xy: [polynmials.xy.x, polynmials.xy.y, polynmials.xy.z]
+            } as any;
         }
 
         /**
@@ -387,16 +443,24 @@ module BABYLON {
 
             // Once all done, finishes the cleanup and return
             return Promise.all(promises).then(() => {
+                // Relase temp Cube Texture resources.
                 if (cubeRtt) {
-                    texture._webGLTexture = cubeRtt._webGLTexture;
+                    engine._releaseFramebufferObjects(cubeRtt);
+                    cubeRtt._swapAndDie(texture);
                 }
+                // Relase temp Post Process.
                 if (rgbmPostProcess) {
                     rgbmPostProcess.dispose();
                 }
             });
         }
 
-        // TODO.TODO.TODO.
+        /**
+         * Uploads spherical polynomials information to the texture.
+         * @param texture defines the texture we are trying to upload the information to
+         * @param arrayBuffer defines the array buffer holding the data
+         * @param info defines the environment texture info retrieved through the GetEnvInfo method
+         */
         public static UploadPolynomials(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): void {
             if (info.version !== 1) {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
@@ -407,12 +471,62 @@ module BABYLON {
                 return;
             }
             
-            //irradiance
-            EnvironmentTextureTools._ConvertSHIrradianceToLambertianRadiance(irradianceInfo);
-
             //harmonics now represent radiance
             texture._sphericalPolynomial = new SphericalPolynomial();
-            EnvironmentTextureTools._ConvertSHToSP(irradianceInfo, texture._sphericalPolynomial);
+
+            if (irradianceInfo.polynomials) {
+                EnvironmentTextureTools._UploadSP(irradianceInfo, texture._sphericalPolynomial);
+            }
+            else {
+                // convert From SH to SP.
+                EnvironmentTextureTools._ConvertSHIrradianceToLambertianRadiance(irradianceInfo);
+                EnvironmentTextureTools._ConvertSHToSP(irradianceInfo, texture._sphericalPolynomial);
+            }
+        }
+
+        /**
+         * Upload spherical polynomial coefficients to the texture
+         * @param polynmials Spherical polynmial coefficients (9)
+         * @param outPolynomialCoefficents Polynomial coefficients (9) object to store result
+         */
+        private static _UploadSP(polynmials: EnvironmentTextureIrradianceInfoV1, outPolynomialCoefficents: SphericalPolynomial) {
+            outPolynomialCoefficents.x.x = polynmials.x[0];
+            outPolynomialCoefficents.x.y = polynmials.x[1];
+            outPolynomialCoefficents.x.z = polynmials.x[2];
+
+            outPolynomialCoefficents.y.x = polynmials.y[0];
+            outPolynomialCoefficents.y.y = polynmials.y[1];
+            outPolynomialCoefficents.y.z = polynmials.y[2];
+
+            outPolynomialCoefficents.z.x = polynmials.z[0];
+            outPolynomialCoefficents.z.y = polynmials.z[1];
+            outPolynomialCoefficents.z.z = polynmials.z[2];
+
+            //xx
+            outPolynomialCoefficents.xx.x = polynmials.xx[0];
+            outPolynomialCoefficents.xx.y = polynmials.xx[1];
+            outPolynomialCoefficents.xx.z = polynmials.xx[2];
+
+            outPolynomialCoefficents.yy.x = polynmials.yy[0];
+            outPolynomialCoefficents.yy.y = polynmials.yy[1];
+            outPolynomialCoefficents.yy.z = polynmials.yy[2];
+
+            outPolynomialCoefficents.zz.x = polynmials.zz[0];
+            outPolynomialCoefficents.zz.y = polynmials.zz[1];
+            outPolynomialCoefficents.zz.z = polynmials.zz[2];
+
+            //yz
+            outPolynomialCoefficents.yz.x = polynmials.yz[0];
+            outPolynomialCoefficents.yz.y = polynmials.yz[1];
+            outPolynomialCoefficents.yz.z = polynmials.yz[2];
+
+            outPolynomialCoefficents.zx.x = polynmials.zx[0];
+            outPolynomialCoefficents.zx.y = polynmials.zx[1];
+            outPolynomialCoefficents.zx.z = polynmials.zx[2];
+
+            outPolynomialCoefficents.xy.x = polynmials.xy[0];
+            outPolynomialCoefficents.xy.y = polynmials.xy[1];
+            outPolynomialCoefficents.xy.z = polynmials.xy[2];
         }
 
         /**
