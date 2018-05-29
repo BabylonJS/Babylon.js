@@ -225,7 +225,8 @@ module BABYLON.GUI {
                     this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                     this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
 
-                    this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                    mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, Tmp.Vector3[0]);
+                    this._activeEffect.setVector3("scaleFactor", Tmp.Vector3[0]);
                 }
 
                 if (defines.HOVERLIGHT) {

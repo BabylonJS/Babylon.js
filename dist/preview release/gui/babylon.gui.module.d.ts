@@ -2177,6 +2177,8 @@ declare module BABYLON.GUI {
         forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
         _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean;
+        /** @hidden */
+        _disposeNode(): void;
         /**
          * Releases all associated resources
          */
@@ -2251,7 +2253,7 @@ declare module BABYLON.GUI {
          */
         contentScaleRatio: number;
         protected _disposeFacadeTexture(): void;
-        private _resetContent();
+        protected _resetContent(): void;
         /**
          * Creates a new button
          * @param name defines the control name
