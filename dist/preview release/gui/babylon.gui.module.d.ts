@@ -2250,7 +2250,7 @@ declare module BABYLON.GUI {
          * Gets or sets the texture scale ratio used to render content (2 by default)
          */
         contentScaleRatio: number;
-        protected _disposeFaceTexture(): void;
+        protected _disposeFacadeTexture(): void;
         private _resetContent();
         /**
          * Creates a new button

@@ -389,8 +389,8 @@ var BABYLON;
                 }
             }
             var createLoaders = {
-                1: GLTFFileLoader.CreateGLTFLoaderV1,
-                2: GLTFFileLoader.CreateGLTFLoaderV2
+                1: GLTFFileLoader._CreateGLTFLoaderV1,
+                2: GLTFFileLoader._CreateGLTFLoaderV2
             };
             var createLoader = createLoaders[version.major];
             if (!createLoader) {
@@ -2208,7 +2208,7 @@ var BABYLON;
         }());
         GLTF1.GLTFLoader = GLTFLoader;
         ;
-        BABYLON.GLTFFileLoader.CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
+        BABYLON.GLTFFileLoader._CreateGLTFLoaderV1 = function () { return new GLTFLoader(); };
     })(GLTF1 = BABYLON.GLTF1 || (BABYLON.GLTF1 = {}));
 })(BABYLON || (BABYLON = {}));
 

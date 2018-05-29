@@ -164,12 +164,14 @@ declare module BABYLON {
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         /**
          * Factory function that creates a glTF 1.0 loader
+         * @hidden
          */
-        static CreateGLTFLoaderV1: () => IGLTFLoader;
+        static _CreateGLTFLoaderV1: () => IGLTFLoader;
         /**
          * Factory function that creates a glTF 2.0 loader
+         * @hidden
          */
-        static CreateGLTFLoaderV2: () => IGLTFLoader;
+        static _CreateGLTFLoaderV2: () => IGLTFLoader;
         /**
          * Raised when the asset has been parsed
          */
