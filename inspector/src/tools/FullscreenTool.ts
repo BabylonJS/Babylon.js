@@ -3,7 +3,7 @@ module INSPECTOR {
     export class FullscreenTool extends AbstractTool {
 
         constructor(parent:HTMLElement, inspector:Inspector) {
-            super('fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit');
+            super('fa', 'fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit');
         }
 
         // Action : refresh the whole panel
