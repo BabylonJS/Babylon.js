@@ -266,7 +266,11 @@ module BABYLON {
         }
 
         /**
-         * Uploads the 
+         * Uploads the texture info contained in the env file to te GPU.
+         * @param texture defines the internal texture to upload to
+         * @param arrayBuffer defines the buffer cotaining the data to load
+         * @param info defines the texture info retrieved through the GetEnvInfo method
+         * @returns a promise
          */
         public static UploadLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
             if (info.version !== 1) {
@@ -275,26 +279,43 @@ module BABYLON {
 
             let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
             if (!specularInfo) {
+                // Nothing else parsed so far
                 return Promise.resolve();
             }
 
+            // Double checks the enclosed info
             let mipmapsCount = Scalar.Log2(info.width);
             mipmapsCount = Math.round(mipmapsCount) + 1;
             if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
                 Tools.Warn('Unsupported specular mipmaps number "' + specularInfo.mipmaps.length + '"');
             }
 
+            // Gets everything ready.
             let engine = texture.getEngine();
             let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
             let expandTexture = false;
             let rgbmPostProcess: Nullable<PostProcess> = null;
             let cubeRtt: Nullable<InternalTexture> = null;
+            var caps = engine.getCaps();
 
-            var canRenderToHalfFloat = engine.getCaps().textureHalfFloatRender;
-            if (canRenderToHalfFloat) {
-                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            // If hal or full float available we can uncompress the texture 
+            if (caps.textureHalfFloatRender) {
                 expandTexture = true;
+                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            }
+            else if (caps.textureFloatRender) {
+                expandTexture = true;
+                textureType = Engine.TEXTURETYPE_FLOAT;
+            }
+            texture.type = textureType;
+            texture.format = Engine.TEXTUREFORMAT_RGBA;
+            texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+
+            // Expand the texture if possible
+            if (expandTexture) {
+                // Simply run through the decode PP
                 rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, textureType, undefined, null, false);
+                
                 texture._isRGBM = false;
                 texture.invertY = false;
                 cubeRtt = engine.createRenderTargetCubeTexture(texture.width, {
@@ -307,32 +328,22 @@ module BABYLON {
                 })
             }
             else {
-                texture.invertY = true;
                 texture._isRGBM = true;
+                texture.invertY = true;
             }
-            texture.type = textureType;
-            texture.format = Engine.TEXTUREFORMAT_RGBA;
-            texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
 
             let promises: Promise<void>[] = [];
             // All mipmaps
             for (let i = 0; i < mipmapsCount; i++) {
                 // All faces
                 for (let face = 0; face < 6; face++) {
+                    // Retrieves the face data
                     const imageData = specularInfo.mipmaps[i * 6 + face];
                     let bytes = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageData.position, imageData.length);
-                    //construct image element from bytes
+
+                    // Constructs an image element from bytes
                     var blob = new Blob([bytes], { type: 'image/png' });
                     let url = URL.createObjectURL(blob);
-                    
-                    // let a: any = document.createElement("a");
-                    //     document.body.appendChild(a);
-                    //     a.style = "display: none";
-                    
-                    // a.href = url;
-                    // a.download = "env_" + i + "_" + face + ".png";
-                    // a.click();
-
                     let image = new Image();
                     image.src = url;
 
@@ -347,11 +358,14 @@ module BABYLON {
                                 image);
 
                                 rgbmPostProcess!.getEffect().executeWhenCompiled(() => {
+                                    // Uncompress the data to a RTT
                                     rgbmPostProcess!.onApply = (effect) => {
                                         effect._bindTexture("textureSampler", tempTexture);
                                         effect.setFloat2("scale", 1, 1);
                                     }
                                     engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
+
+                                    // Cleanup
                                     engine.restoreDefaultFramebuffer();
                                     tempTexture.dispose();
                                     window.URL.revokeObjectURL(url);
@@ -371,6 +385,7 @@ module BABYLON {
                 }
             }
 
+            // Once all done, finishes the cleanup and return
             return Promise.all(promises).then(() => {
                 if (cubeRtt) {
                     texture._webGLTexture = cubeRtt._webGLTexture;
@@ -381,6 +396,7 @@ module BABYLON {
             });
         }
 
+        // TODO.TODO.TODO.
         public static UploadPolynomials(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): void {
             if (info.version !== 1) {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
