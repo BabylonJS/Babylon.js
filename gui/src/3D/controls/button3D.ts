@@ -51,7 +51,7 @@ module BABYLON.GUI {
             }
         }
 
-        private _resetContent() {
+        protected _resetContent() {
             this._disposeFacadeTexture();
             this.content = this._content;
         }
@@ -101,11 +101,11 @@ module BABYLON.GUI {
         }
 
         public set content(value: Control) {
+            this._content = value;
+
             if (!this._host || !this._host.utilityLayer) {
                 return;
             }
-
-            this._content = value;
 
             if (!this._facadeTexture) {
                 this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
@@ -157,6 +157,8 @@ module BABYLON.GUI {
 
             mesh.material = material;
             this._currentMaterial = material;
+
+            this._resetContent();
         }
 
         /**
@@ -165,7 +167,7 @@ module BABYLON.GUI {
         public dispose() {
             super.dispose();
 
-            this._disposeFaceTexture();
+            this._disposeFacadeTexture();
 
             if (this._currentMaterial) {
                 this._currentMaterial.dispose();
