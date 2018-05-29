@@ -4075,10 +4075,21 @@ var INSPECTOR;
             _this._actions.addEventListener('click', function (event) {
                 _this._closeDetailsPanel();
             });
-            _this._addImport();
-            _this._addExport();
+            if (BABYLON.SceneLoader && BABYLON.GLTFFileLoader && BABYLON.GLTF2.GLTFLoader) {
+                _this._addImport();
+            }
+            if (BABYLON.GLTF2Export) {
+                _this._addExport();
+            }
             return _this;
         }
+        Object.defineProperty(GLTFTab, "IsSupported", {
+            get: function () {
+                return !!(BABYLON.SceneLoader && BABYLON.GLTFFileLoader && BABYLON.GLTF2.GLTFLoader) || !!BABYLON.GLTF2Export;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** @hidden */
         GLTFTab._Initialize = function () {
             // Must register with OnPluginActivatedObservable as early as possible to
@@ -4265,7 +4276,7 @@ var INSPECTOR;
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
-            if (BABYLON.GLTF2Export) {
+            if (INSPECTOR.GLTFTab.IsSupported) {
                 _this._tabs.push(new INSPECTOR.GLTFTab(_this, _this._inspector));
             }
             if (BABYLON.GUI) {

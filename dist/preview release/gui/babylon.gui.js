@@ -1455,7 +1455,7 @@ var BABYLON;
                 this._fontSet = false;
                 this._dummyVector2 = BABYLON.Vector2.Zero();
                 this._downCount = 0;
-                this._enterCount = 0;
+                this._enterCount = -1;
                 this._doNotRender = false;
                 this._downPointerIds = {};
                 /** Gets or sets a boolean indicating if the control can be hit with pointer events */
@@ -2527,8 +2527,11 @@ var BABYLON;
             };
             /** @hidden */
             Control.prototype._onPointerEnter = function (target) {
-                if (this._enterCount !== 0) {
+                if (this._enterCount > 0) {
                     return false;
+                }
+                if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                    this._enterCount = 0;
                 }
                 this._enterCount++;
                 var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
@@ -2560,7 +2563,7 @@ var BABYLON;
                 this._downCount = 0;
                 delete this._downPointerIds[pointerId];
                 var canNotifyClick = notifyClick;
-                if (notifyClick && this._enterCount > 0) {
+                if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
                     canNotifyClick = this.onPointerClickObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
                 }
                 var canNotify = this.onPointerUpObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
@@ -6839,7 +6842,8 @@ var BABYLON;
                         this._activeEffect.setFloat("borderWidth", this.borderWidth);
                         this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                         this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
-                        this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                        mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, BABYLON.Tmp.Vector3[0]);
+                        this._activeEffect.setVector3("scaleFactor", BABYLON.Tmp.Vector3[0]);
                     }
                     if (defines.HOVERLIGHT) {
                         this._activeEffect.setDirectColor4("hoverColor", this.hoverColor);
@@ -6971,7 +6975,7 @@ var BABYLON;
             name) {
                 this.name = name;
                 this._downCount = 0;
-                this._enterCount = 0;
+                this._enterCount = -1;
                 this._downPointerIds = {};
                 this._isVisible = true;
                 /** Gets or sets the control position  in world space */
@@ -7178,8 +7182,11 @@ var BABYLON;
             };
             /** @hidden */
             Control3D.prototype._onPointerEnter = function (target) {
-                if (this._enterCount !== 0) {
+                if (this._enterCount > 0) {
                     return false;
+                }
+                if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+                    this._enterCount = 0;
                 }
                 this._enterCount++;
                 this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
@@ -7213,7 +7220,7 @@ var BABYLON;
             Control3D.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
                 this._downCount = 0;
                 delete this._downPointerIds[pointerId];
-                if (notifyClick && this._enterCount > 0) {
+                if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
                     this.onPointerClickObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
                 }
                 this.onPointerUpObservable.notifyObservers(new GUI.Vector3WithInfo(coordinates, buttonIndex), -1, target, this);
@@ -7262,6 +7269,13 @@ var BABYLON;
                 }
                 return false;
             };
+            /** @hidden */
+            Control3D.prototype._disposeNode = function () {
+                if (this._node) {
+                    this._node.dispose();
+                    this._node = null;
+                }
+            };
             /**
              * Releases all associated resources
              */
@@ -7272,10 +7286,7 @@ var BABYLON;
                 this.onPointerOutObservable.clear();
                 this.onPointerUpObservable.clear();
                 this.onPointerClickObservable.clear();
-                if (this._node) {
-                    this._node.dispose();
-                    this._node = null;
-                }
+                this._disposeNode();
                 // Behaviors
                 for (var _i = 0, _a = this._behaviors; _i < _a.length; _i++) {
                     var behavior = _a[_i];
@@ -7359,6 +7370,7 @@ var BABYLON;
                 if (index !== -1) {
                     this._children.splice(index, 1);
                     control.parent = null;
+                    control._disposeNode();
                 }
                 return this;
             };
@@ -7459,14 +7471,14 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Button3D.prototype._disposeFaceTexture = function () {
+            Button3D.prototype._disposeFacadeTexture = function () {
                 if (this._facadeTexture) {
                     this._facadeTexture.dispose();
                     this._facadeTexture = null;
                 }
             };
             Button3D.prototype._resetContent = function () {
-                this._disposeFaceTexture();
+                this._disposeFacadeTexture();
                 this.content = this._content;
             };
             Object.defineProperty(Button3D.prototype, "content", {
@@ -7477,10 +7489,10 @@ var BABYLON;
                     return this._content;
                 },
                 set: function (value) {
+                    this._content = value;
                     if (!this._host || !this._host.utilityLayer) {
                         return;
                     }
-                    this._content = value;
                     if (!this._facadeTexture) {
                         this._facadeTexture = new BABYLON.GUI.AdvancedDynamicTexture("Facade", this._contentResolution, this._contentResolution, this._host.utilityLayer.utilityLayerScene, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
                         this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
@@ -7524,13 +7536,14 @@ var BABYLON;
                 material.specularColor = BABYLON.Color3.Black();
                 mesh.material = material;
                 this._currentMaterial = material;
+                this._resetContent();
             };
             /**
              * Releases all associated resources
              */
             Button3D.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
-                this._disposeFaceTexture();
+                this._disposeFacadeTexture();
                 if (this._currentMaterial) {
                     this._currentMaterial.dispose();
                 }
@@ -7654,7 +7667,7 @@ var BABYLON;
                 return "HolographicButton";
             };
             HolographicButton.prototype._rebuildContent = function () {
-                this._disposeFaceTexture();
+                this._disposeFacadeTexture();
                 var panel = new GUI.StackPanel();
                 panel.isVertical = true;
                 if (this._imageUrl) {

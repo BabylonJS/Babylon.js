@@ -2172,6 +2172,8 @@ declare module BABYLON.GUI {
         forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
         _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean;
+        /** @hidden */
+        _disposeNode(): void;
         /**
          * Releases all associated resources
          */
@@ -2245,8 +2247,8 @@ declare module BABYLON.GUI {
          * Gets or sets the texture scale ratio used to render content (2 by default)
          */
         contentScaleRatio: number;
-        protected _disposeFaceTexture(): void;
-        private _resetContent();
+        protected _disposeFacadeTexture(): void;
+        protected _resetContent(): void;
         /**
          * Creates a new button
          * @param name defines the control name
