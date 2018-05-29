@@ -301,10 +301,11 @@
 
             if (this._texture.isCube) {
                 if (level != 0) {
-                    for (var u = 0; u < level; u++) {
-                        width = Math.round(width / 2);
-                        height = Math.round(height / 2);
-                    }
+                    width = width / Math.pow(2, level);
+                    height = height / Math.pow(2, level);
+
+                    width = Math.round(width);
+                    height = Math.round(height);
                 }
 
                 return engine._readTexturePixels(this._texture, width, height, faceIndex, level);
