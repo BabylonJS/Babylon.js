@@ -123,8 +123,9 @@ export class SceneManager {
         //});
 
         this.onSceneInitObservable.add((scene) => {
+            this.scene.animationPropertiesOverride = this.scene.animationPropertiesOverride || new AnimationPropertiesOverride();
 
-            this.labs = new ViewerLabs(this.scene);
+            this.labs = new ViewerLabs(scene);
 
             let updateShadows = () => {
                 for (let light of this.scene.lights) {
@@ -155,20 +156,30 @@ export class SceneManager {
             });
             return this._observablesManager && this._observablesManager.onSceneInitObservable.notifyObserversWithPromise(this.scene);
         });
-
-        this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
-            for (let light of this.scene.lights) {
-                let generator = light.getShadowGenerator();
-                if (generator) {
-                    // Processing shadows if animates
-                    let shadowMap = generator.getShadowMap();
-                    if (shadowMap) {
-                        shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+        if (this._observablesManager) {
+            this._observablesManager.onModelLoadedObservable.add((model) => {
+                for (let light of this.scene.lights) {
+                    let generator = light.getShadowGenerator();
+                    if (generator) {
+                        // Processing shadows if animates
+                        let shadowMap = generator.getShadowMap();
+                        if (shadowMap) {
+                            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                        }
                     }
                 }
-            }
-            this._focusOnModel(model);
-        });
+                this._focusOnModel(model);
+            });
+
+            this._observablesManager.onModelAddedObservable.add(model => {
+                this.models.push(model);
+            });
+            this._observablesManager.onModelRemovedObservable.add(model => {
+                this.models.splice(this.models.indexOf(model), 1);
+            })
+
+        }
+
     }
 
     /**
@@ -190,13 +201,15 @@ export class SceneManager {
     }
 
     public get animationBlendingEnabled() {
-        return this._animationBlendingEnabled;
+        return this.scene && this.scene.animationPropertiesOverride!.enableBlending;
     }
 
     public set animationBlendingEnabled(value: boolean) {
-        this.scene.animationPropertiesOverride = this.scene.animationPropertiesOverride || new AnimationPropertiesOverride();
-        this.scene.animationPropertiesOverride.enableBlending = value;
-        this._animationBlendingEnabled = value;
+        this.scene.animationPropertiesOverride!.enableBlending = value;
+    }
+
+    public get observablesManager() {
+        return this._observablesManager;
     }
 
     private _processShadows: boolean = true;

@@ -347,8 +347,8 @@ export class DefaultViewer extends AbstractViewer {
         this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 20;
-        if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
-            hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
+        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
             this.sceneManager.scene.executeWhenReady(() => {
@@ -493,7 +493,7 @@ export class DefaultViewer extends AbstractViewer {
         super._onConfigurationLoaded(configuration);
 
         // initialize the templates
-        let templateConfiguration = this._configuration.templates || {};
+        let templateConfiguration = this.configuration.templates || {};
         this.templateManager = new TemplateManager(this.containerElement);
         this.templateManager.initTemplate(templateConfiguration);
         // when done, execute onTemplatesLoaded()
@@ -513,28 +513,28 @@ export class DefaultViewer extends AbstractViewer {
      */
     private _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}, model?: ViewerModel) {
         // labs feature - flashlight
-        if (this._configuration.lab && this._configuration.lab.flashlight) {
+        if (this.configuration.lab && this.configuration.lab.flashlight) {
             let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
-            if (typeof this._configuration.lab.flashlight === "object") {
-                exponent = this._configuration.lab.flashlight.exponent || exponent;
-                angle = this._configuration.lab.flashlight.angle || angle;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                exponent = this.configuration.lab.flashlight.exponent || exponent;
+                angle = this.configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
                 Vector3.Zero(), exponent, angle, this.sceneManager.scene);
-            if (typeof this._configuration.lab.flashlight === "object") {
-                flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
-                if (this._configuration.lab.flashlight.diffuse) {
-                    flashlight.diffuse.r = this._configuration.lab.flashlight.diffuse.r;
-                    flashlight.diffuse.g = this._configuration.lab.flashlight.diffuse.g;
-                    flashlight.diffuse.b = this._configuration.lab.flashlight.diffuse.b;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this.configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
                 }
-                if (this._configuration.lab.flashlight.specular) {
-                    flashlight.specular.r = this._configuration.lab.flashlight.specular.r;
-                    flashlight.specular.g = this._configuration.lab.flashlight.specular.g;
-                    flashlight.specular.b = this._configuration.lab.flashlight.specular.b;
+                if (this.configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
                 }
 
             }
