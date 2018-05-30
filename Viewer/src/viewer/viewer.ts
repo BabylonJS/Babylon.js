@@ -15,12 +15,18 @@ import { Version } from '..';
 import { deepmerge } from '../helper/';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { TemplateManager } from '../templating/templateManager';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
  * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
  */
 export abstract class AbstractViewer {
+
+    /**
+     * The corresponsing template manager of this viewer.
+     */
+    public templateManager: TemplateManager;
 
     /**
      * Babylon Engine corresponding with this viewer
@@ -273,6 +279,8 @@ export abstract class AbstractViewer {
                 }
             }))
         }
+
+        this.templateManager = new TemplateManager(this.containerElement);
     }
 
     /**

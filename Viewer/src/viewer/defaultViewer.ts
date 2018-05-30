@@ -15,10 +15,7 @@ import { IModelAnimation, AnimationState } from '../model/modelAnimation';
  */
 export class DefaultViewer extends AbstractViewer {
 
-    /**
-     * The corresponsing template manager of this viewer.
-     */
-    public templateManager: TemplateManager;
+
 
     /**
      * Create a new default viewer
@@ -494,7 +491,7 @@ export class DefaultViewer extends AbstractViewer {
 
         // initialize the templates
         let templateConfiguration = this.configuration.templates || {};
-        this.templateManager = new TemplateManager(this.containerElement);
+
         this.templateManager.initTemplate(templateConfiguration);
         // when done, execute onTemplatesLoaded()
         this.templateManager.onAllLoaded.add(() => {
