@@ -2358,7 +2358,33 @@ declare module BABYLON.GUI {
          * Creates new StackPanel
          * @param isVertical
          */
+        constructor(isVertical?: boolean);
+        protected _arrangeChildren(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a conainter panel deployed on the surface of a sphere
+     */
+    class SpherePanel extends Container3D {
+        private _radius;
+        private _columns;
+        /**
+         * Gets or sets a the radius of the sphere where to project controls (5 by default)
+         */
+        radius: float;
+        /**
+         * Gets or sets a the number of columns requested (10 by default).
+         * The panel will automatically compute the number of rows based on number of child controls
+         */
+        columns: int;
+        /**
+         * Creates new SpherePanel
+         */
         constructor();
         protected _arrangeChildren(): void;
+        private _sphericalMapping(source);
     }
 }

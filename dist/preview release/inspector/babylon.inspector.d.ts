@@ -1105,7 +1105,7 @@ declare module INSPECTOR {
     abstract class AbstractTool {
         private _elem;
         protected _inspector: Inspector;
-        constructor(icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string);
+        constructor(iconSet: string, icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string);
         toHtml(): HTMLElement;
         /**
          * Returns the total width in pixel of this tool, 0 by default

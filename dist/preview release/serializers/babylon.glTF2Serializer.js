@@ -47,10 +47,6 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
 /// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
-/**
- * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally
- * @hidden
- */
 var BABYLON;
 (function (BABYLON) {
     var GLTF2;

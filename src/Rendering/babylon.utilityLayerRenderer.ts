@@ -3,6 +3,8 @@ module BABYLON {
      * Renders a layer on top of an existing scene
      */
     export class UtilityLayerRenderer implements IDisposable {
+        private _pointerCaptures: {[pointerId:number]: boolean} = {};
+
         /** 
          * The scene that is rendered on top of the original scene
          */ 
@@ -58,15 +60,24 @@ module BABYLON {
                     }
                 }else{
                     var originalScenePick = prePointerInfo.ray ? originalScene.pickWithRay(prePointerInfo.ray) : originalScene.pick(originalScene.pointerX, originalScene.pointerY);
+                    let pointerEvent = <PointerEvent>(prePointerInfo.event);
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
                     if(originalScenePick && utilityScenePick){
-                        if(utilityScenePick.distance < originalScenePick.distance){
+                        if (utilityScenePick.distance === 0) {
+                            if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                                this._pointerCaptures[pointerEvent.pointerId] = true;
+                            } else if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
+                                this._pointerCaptures[pointerEvent.pointerId] = false;
+                            }
+                        }
+
+                        if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){
                             if(!prePointerInfo.skipOnPointerObservable){
                                 this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
                             }
-                            prePointerInfo.skipOnPointerObservable = true;
-                        }
+                            prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
+                        } 
                     }
                 }
                 
