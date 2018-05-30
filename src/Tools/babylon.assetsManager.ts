@@ -111,6 +111,14 @@ module BABYLON {
             throw new Error("runTask is not implemented");
         }
 
+        /**
+         * Reset will set the task state back to INIT, so the next load call of the assets manager will execute this task again.
+         * This can be used with failed tasks that have the reason for failure fixed.
+         */
+        public reset() {
+            this._taskState = AssetTaskState.INIT;
+        }
+
         private onErrorCallback(onError: (message?: string, exception?: any) => void, message?: string, exception?: any) {
             this._taskState = AssetTaskState.ERROR;
 
@@ -832,6 +840,18 @@ module BABYLON {
             return task;
         }
 
+        /**
+         * Remove a task from the assets manager.
+         * @param task the task to remove
+         */
+        public removeTask(task: AbstractAssetTask) {
+            let index = this._tasks.indexOf(task);
+
+            if (index > -1) {
+                this._tasks.splice(index, 1);
+            }
+        }
+
         private _decreaseWaitingTasksCount(task: AbstractAssetTask): void {
             this._waitingTasksCount--;
 
@@ -865,7 +885,7 @@ module BABYLON {
                     // Let's remove successfull tasks
                     var currentTasks = this._tasks.slice();
                     for (var task of currentTasks) {
-                        if (task.taskState === AssetTaskState.DONE) {                  
+                        if (task.taskState === AssetTaskState.DONE) {
                             let index = this._tasks.indexOf(task);
 
                             if (index > -1) {
@@ -949,7 +969,9 @@ module BABYLON {
 
             for (var index = 0; index < this._tasks.length; index++) {
                 var task = this._tasks[index];
-                this._runTask(task);
+                if (task.taskState === AssetTaskState.INIT) {
+                    this._runTask(task);
+                }
             }
 
             return this;
