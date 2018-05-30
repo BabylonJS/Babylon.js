@@ -188,9 +188,9 @@ module BABYLON {
         /** @hidden */
         public _sphericalPolynomial: Nullable<SphericalPolynomial>;
         /** @hidden */
-        public _lodGenerationScale: number;
+        public _lodGenerationScale: number = 0.8;
         /** @hidden */
-        public _lodGenerationOffset: number;
+        public _lodGenerationOffset: number= 0;
 
         // The following three fields helps sharing generated fixed LODs for texture filtering
         // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -369,7 +369,7 @@ module BABYLON {
             }
         }
 
-        private _swapAndDie(target: InternalTexture): void {
+        public _swapAndDie(target: InternalTexture): void {
             target._webGLTexture = this._webGLTexture;
 
             if (this._framebuffer) {

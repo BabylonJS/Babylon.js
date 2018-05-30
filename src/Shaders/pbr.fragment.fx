@@ -573,7 +573,7 @@ void main(void) {
             float lodReflectionNormalized = clamp(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
-            vec3 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords).rgb;
+            vec4 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
             if(lodReflectionNormalizedDoubled < 1.0){
                 environmentRadiance = mix(
                     sampleReflection(reflectionSamplerHigh, reflectionCoords),

@@ -117,10 +117,24 @@
         public lodLevelInAlpha = false;
 
         @serialize()
-        public lodGenerationOffset = 0.0;
+        public get lodGenerationOffset(): number {
+            if (this._texture) return this._texture._lodGenerationOffset;
+
+            return 0.0;
+        }
+        public set lodGenerationOffset(value: number) {
+            if (this._texture) this._texture._lodGenerationOffset = value;
+        }
 
         @serialize()
-        public lodGenerationScale = 0.8;
+        public get lodGenerationScale(): number {
+            if (this._texture) return this._texture._lodGenerationScale;
+
+            return 0.0;
+        }
+        public set lodGenerationScale(value: number) {
+            if (this._texture) this._texture._lodGenerationScale = value;
+        }
 
         @serialize()
         public isRenderTarget = false;

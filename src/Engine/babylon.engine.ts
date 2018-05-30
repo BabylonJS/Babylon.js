@@ -5523,7 +5523,7 @@
                 isKTX = true;
             } else {
                 isDDS = (extension === ".dds");
-                isEnv = (extension.indexOf(".env") === 0);
+                isEnv = (extension === ".env");
             }
 
             let onerror = (request?: XMLHttpRequest, exception?: any) => {
