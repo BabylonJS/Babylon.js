@@ -1,7 +1,7 @@
 import { BABYLON, AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPlayMode, AnimationState } from "../../src";
 import { ViewerConfiguration } from "../../src/configuration/configuration";
 import { IModelAnimation } from "../../src/model/modelAnimation";
-import { SceneManager } from "../../src/viewer/sceneManager";
+import { SceneManager } from "../../src/managers/sceneManager";
 
 export const useNullEngine = true;
 
