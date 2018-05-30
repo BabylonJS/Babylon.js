@@ -95,6 +95,8 @@
             "physics",
             "textureFormats",
             "debug",
+            "utilityLayer",
+            "gizmos",
             "morphTargets",
             "octrees",
             "vr",
@@ -1020,11 +1022,7 @@
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Debug/babylon.physicsViewer.js",
-                "../../src/Rendering/babylon.boundingBoxRenderer.js",
-                "../../src/Rendering/babylon.utilityLayerRenderer.js",
-                "../../src/Gizmos/babylon.gizmo.js",
-                "../../src/Gizmos/babylon.axisDragGizmo.js",
-                "../../src/Gizmos/babylon.positionGizmo.js"
+                "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],
             "dependUpon": [
                 "shaderMaterial",
@@ -1034,6 +1032,31 @@
                 "actions"
             ],
             "shaders": []
+        },
+        "utilityLayer": {
+            "files": [
+                "../../src/Rendering/babylon.utilityLayerRenderer.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "gizmos": {
+            "files": [
+                "../../src/Gizmos/babylon.gizmo.js",
+                "../../src/Gizmos/babylon.axisDragGizmo.js",
+                "../../src/Gizmos/babylon.axisScaleGizmo.js",
+                "../../src/Gizmos/babylon.planeRotationGizmo.js",
+                "../../src/Gizmos/babylon.positionGizmo.js",
+                "../../src/Gizmos/babylon.rotationGizmo.js",
+                "../../src/Gizmos/babylon.scaleGizmo.js",
+                "../../src/Gizmos/babylon.gizmoManager.js"
+            ],
+            "dependUpon": [
+                "core",
+                "utilityLayer",
+                "meshBehaviors"
+            ]
         },
         "morphTargets": {
             "files": [
@@ -1560,7 +1583,6 @@
             {
                 "files": [
                     "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtilities.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
@@ -1585,7 +1607,6 @@
                     "../../loaders/src/glTF/1.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFBinaryExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFMaterialsCommonExtension.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtilities.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",

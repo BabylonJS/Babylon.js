@@ -1,7 +1,7 @@
-@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
+@import url(https://use.fontawesome.com/releases/v5.0.13/css/all.css);
 @import url(https://fonts.googleapis.com/css?family=Inconsolata);
 
-@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
+@import url(https://use.fontawesome.com/releases/v5.0.13/css/all.css);
 @import url(https://fonts.googleapis.com/css?family=Inconsolata);
 .insp-wrapper {
   user-select: none;
@@ -44,11 +44,11 @@
       font-size: 1em; }
       .insp-wrapper .insp-right-panel .top-panel .tab-panel-content {
         width: 100%;
-        height: calc(100% - 40px); }
+        height: calc(100% - 50px); }
       .insp-wrapper .insp-right-panel .top-panel .more-tabs-panel {
         position: absolute;
         z-index: 10;
-        top: 40px;
+        top: 50px;
         right: 0;
         width: 100px;
         display: none;
@@ -70,7 +70,7 @@
             background-color: #454545; }
   .insp-wrapper .tooltip {
     position: absolute;
-    top: 40px;
+    top: 50px;
     right: 0;
     color: #f29766;
     display: none;
@@ -115,15 +115,15 @@
         height: 1em;
         line-height: 1em;
         display: inline-block;
-        font-family: 'FontAwesome', sans-serif;
-        content: "\f10c";
+        font-family: "Font Awesome 5 Free", sans-serif;
+        content: "\f111";
         margin-right: 10px; }
       .insp-wrapper .tab-panel .scene-actions .action-radio.active:before {
         width: 1em;
         height: 1em;
         line-height: 1em;
         display: inline-block;
-        font-family: 'FontAwesome', sans-serif;
+        font-family: "Font Awesome 5 Free", sans-serif;
         content: "\f192";
         color: #5db0d7;
         margin-right: 10px; }
@@ -132,15 +132,15 @@
         height: 1em;
         line-height: 1em;
         display: inline-block;
-        font-family: 'FontAwesome', sans-serif;
-        content: "\f096";
+        font-family: "Font Awesome 5 Free", sans-serif;
+        content: "\f0c8";
         margin-right: 10px; }
       .insp-wrapper .tab-panel .scene-actions .action.active:before {
         width: 1em;
         height: 1em;
         line-height: 1em;
         display: inline-block;
-        font-family: 'FontAwesome', sans-serif;
+        font-family: "Font Awesome 5 Free", sans-serif;
         content: "\f14a";
         color: #5db0d7;
         margin-right: 10px; }
@@ -263,15 +263,15 @@
       height: 1em;
       line-height: 1em;
       display: inline-block;
-      font-family: 'FontAwesome', sans-serif;
-      content: "\f096";
+      font-family: "Font Awesome 5 Free", sans-serif;
+      content: "\f0c8";
       margin-right: 10px; }
     .insp-wrapper .tab-panel .gltf-actions .gltf-checkbox.active:before {
       width: 1em;
       height: 1em;
       line-height: 1em;
       display: inline-block;
-      font-family: 'FontAwesome', sans-serif;
+      font-family: "Font Awesome 5 Free", sans-serif;
       content: "\f14a";
       color: #5db0d7;
       margin-right: 10px; }
@@ -304,7 +304,7 @@
   .insp-wrapper .insp-tree {
     overflow-y: auto;
     overflow-x: hidden;
-    height: calc(50% - 40px - 30px); }
+    height: calc(50% - 50px - 30px); }
     .insp-wrapper .insp-tree .line {
       padding: 3px;
       cursor: pointer; }
@@ -319,15 +319,17 @@
         height: 1em;
         line-height: 1em;
         display: inline-block;
-        font-family: 'FontAwesome', sans-serif;
-        content: "\f078"; }
+        font-family: "Font Awesome 5 Free", sans-serif;
+        content: "\f107";
+        font-weight: 900; }
       .insp-wrapper .insp-tree .line.folded:before {
         width: 1em;
         height: 1em;
         line-height: 1em;
         display: inline-block;
-        font-family: 'FontAwesome', sans-serif;
-        content: "\f054"; }
+        font-family: "Font Awesome 5 Free", sans-serif;
+        content: "\f105";
+        font-weight: 900; }
       .insp-wrapper .insp-tree .line.unfolded.transformNode > span:first-of-type {
         color: #f29766; }
       .insp-wrapper .insp-tree .line.folded.transformNode > span:first-of-type {
@@ -366,13 +368,15 @@
           .insp-wrapper .insp-details .base-row .prop-value.clickable:hover, .insp-wrapper .insp-details .row .prop-value.clickable:hover, .insp-wrapper .insp-details .header-row .prop-value.clickable:hover {
             background-color: #383838; }
           .insp-wrapper .insp-details .base-row .prop-value.clickable:after, .insp-wrapper .insp-details .row .prop-value.clickable:after, .insp-wrapper .insp-details .header-row .prop-value.clickable:after {
-            font-family: 'FontAwesome', sans-serif;
-            content: "\00a0 \00a0 \00a0 \f054"; }
+            font-family: "Font Awesome 5 Free", sans-serif;
+            content: "\00a0 \00a0 \00a0 \f105";
+            font-weight: 900; }
     .insp-wrapper .insp-details .row:nth-child(even) {
       background-color: #2c2c2c; }
     .insp-wrapper .insp-details .row.unfolded .prop-value.clickable:after {
-      font-family: 'FontAwesome', sans-serif;
-      content: "\00a0 \00a0 \00a0 \f078"; }
+      font-family: "Font Awesome 5 Free", sans-serif;
+      content: "\00a0 \00a0 \00a0 \f107";
+      font-weight: 900; }
     .insp-wrapper .insp-details .header-row {
       background-color: #2c2c2c;
       color: #ccc;
@@ -423,7 +427,7 @@
           max-width: 110px;
           max-height: 110px; }
   .insp-wrapper .tabbar {
-    height: 40px;
+    height: 50px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #383838;
@@ -432,11 +436,11 @@
     overflow-y: hidden;
     box-sizing: border-box; }
     .insp-wrapper .tabbar .tab {
-      height: calc(40px - 2px);
+      height: calc(50px - 2px);
       width: auto;
       padding: 0 10px 0 10px;
       color: #ccc;
-      line-height: 40px;
+      line-height: 50px;
       text-align: center;
       cursor: pointer;
       margin: 0 5px 0 5px;
@@ -449,8 +453,8 @@
       .insp-wrapper .tabbar .tab.active {
         border-bottom: 1px solid #f29766; }
     .insp-wrapper .tabbar .more-tabs {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -467,8 +471,8 @@
   .insp-wrapper .toolbar {
     display: flex; }
     .insp-wrapper .toolbar .tool {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       display: flex;
       justify-content: center;
       align-items: center;

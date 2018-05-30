@@ -34,6 +34,13 @@ module BABYLON {
         @serialize()
         public infiniteDistance = false;
 
+        /**
+         * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
+         * By default the system will update normals to compensate
+         */
+        @serialize()
+        public ignoreNonUniformScaling = false;        
+
         @serializeAsVector3()
         public position = Vector3.Zero();
 
@@ -585,7 +592,7 @@ module BABYLON {
                 return false;
             }
 
-            this._nonUniformScaling = true;
+            this._nonUniformScaling = value;
             return true;
         }
 
@@ -872,11 +879,15 @@ module BABYLON {
             }
 
             // Normal matrix
-            if (this.scaling.isNonUniform) {
-                this._updateNonUniformScalingState(true);
-            } else if (this.parent && (<TransformNode>this.parent)._nonUniformScaling) {
-                this._updateNonUniformScalingState((<TransformNode>this.parent)._nonUniformScaling);
-            } else {
+            if (!this.ignoreNonUniformScaling) {
+                if (this.scaling.isNonUniform) {
+                    this._updateNonUniformScalingState(true);
+                } else if (this.parent && (<TransformNode>this.parent)._nonUniformScaling) {
+                    this._updateNonUniformScalingState((<TransformNode>this.parent)._nonUniformScaling);
+                } else {
+                    this._updateNonUniformScalingState(false);
+                }
+            }else {
                 this._updateNonUniformScalingState(false);
             }
 

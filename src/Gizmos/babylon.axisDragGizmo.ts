@@ -35,14 +35,20 @@ module BABYLON {
             this._rootMesh.lookAt(this._rootMesh.position.subtract(dragAxis));
 
             // Add drag behavior to handle events when the gizmo is dragged
-            this._dragBehavior = new PointerDragBehavior({dragAxis: dragAxis, pointerObservableScene: gizmoLayer.originalScene});
+            this._dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
             this._dragBehavior.onDragObservable.add((event)=>{
+                if(!this.interactionsEnabled){
+                    return;
+                }
                 if(this.attachedMesh){
                     this.attachedMesh.position.addInPlace(event.delta);
                 }
             })
+        }
+        protected _onInteractionsEnabledChanged(value:boolean){
+            this._dragBehavior.enabled = value;
         }
         /**
          * Disposes of the gizmo

@@ -89,17 +89,17 @@ module BABYLON.GLTF2 {
          * @param imageData mapping of texture names to base64 textures
          * @param hasTextureCoords specifies if texture coordinates are present on the material
          */
-        public static _ConvertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean) {
+        public static _ConvertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: { [materialID: number]: number }, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean) {
             let promises: Promise<void>[] = [];
             for (let babylonMaterial of babylonMaterials) {
                 if (babylonMaterial instanceof StandardMaterial) {
-                    promises.push(_GLTFMaterial._ConvertStandardMaterialAsync(babylonMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords));
+                    promises.push(_GLTFMaterial._ConvertStandardMaterialAsync(babylonMaterial, mimeType, images, textures, samplers, materials, materialMap, imageData, hasTextureCoords));
                 }
                 else if (babylonMaterial instanceof PBRMetallicRoughnessMaterial) {
-                    promises.push(_GLTFMaterial._ConvertPBRMetallicRoughnessMaterialAsync(babylonMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords));
+                    promises.push(_GLTFMaterial._ConvertPBRMetallicRoughnessMaterialAsync(babylonMaterial, mimeType, images, textures, samplers, materials, materialMap, imageData, hasTextureCoords));
                 }
                 else if (babylonMaterial instanceof PBRMaterial) {
-                    promises.push(_GLTFMaterial._ConvertPBRMaterialAsync(babylonMaterial, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords));
+                    promises.push(_GLTFMaterial._ConvertPBRMaterialAsync(babylonMaterial, mimeType, images, textures, samplers, materials, materialMap, imageData, hasTextureCoords));
                 }
                 else {
                     Tools.Warn(`Unsupported material type: ${babylonMaterial.name}`);
@@ -312,7 +312,7 @@ module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        public static _ConvertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
+        public static _ConvertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: { [materialID: number]: number }, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
             const alphaMode = this._GetAlphaMode(babylonStandardMaterial);
             let useAlpha = alphaMode !== MaterialAlphaMode.OPAQUE ? true : false;
             let promises = [];
@@ -381,8 +381,25 @@ module BABYLON.GLTF2 {
             }
 
             glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
+            if (alphaMode !== MaterialAlphaMode.OPAQUE) {
+                switch(alphaMode) {
+                    case MaterialAlphaMode.BLEND: {
+                        glTFMaterial.alphaMode = GLTF2.MaterialAlphaMode.BLEND;
+                        break;
+                    }
+                    case MaterialAlphaMode.MASK: {
+                        glTFMaterial.alphaMode = GLTF2.MaterialAlphaMode.MASK;
+                        glTFMaterial.alphaCutoff = babylonStandardMaterial.alphaCutOff;
+                        break;
+                    }
+                    default: {
+                        Tools.Warn(`Unsupported alpha mode ${alphaMode}`);
+                    }
+                }
+            }
 
             materials.push(glTFMaterial);
+            materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
 
             return Promise.all(promises).then(() => { /* do nothing */ });
         }
@@ -430,7 +447,7 @@ module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        public static _ConvertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
+        public static _ConvertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: { [materialID: number]: number }, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
             let promises: Promise<void>[] = [];
             const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
 
@@ -521,6 +538,7 @@ module BABYLON.GLTF2 {
             glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
 
             materials.push(glTFMaterial);
+            materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length -1 ;
 
             return Promise.all(promises).then(() => { /* do nothing */ });
         }
@@ -1012,9 +1030,8 @@ module BABYLON.GLTF2 {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        public static _ConvertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
+        public static _ConvertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: { [materialID: number]: number }, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
             const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
-            //  let metallicRoughness: Nullable<_IPBRMetallicRoughness>;
             const glTFMaterial: IMaterial = {
                 name: babylonPBRMaterial.name
             };
@@ -1030,16 +1047,16 @@ module BABYLON.GLTF2 {
                     ]
                 }
                 return this._ConvertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords).then(metallicRoughness => {
-                    return _GLTFMaterial.SetMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords);
+                    return _GLTFMaterial.SetMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, images, textures, samplers, materials, materialMap, imageData, hasTextureCoords);
                 });
             }
             else {
                 const metallicRoughness = this._ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
-                return _GLTFMaterial.SetMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, images, textures, samplers, materials, imageData, hasTextureCoords);
+                return _GLTFMaterial.SetMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, images, textures, samplers, materials, materialMap, imageData, hasTextureCoords);
             }
         }
 
-        private static SetMetallicRoughnessPbrMaterial(metallicRoughness: Nullable<_IPBRMetallicRoughness>, babylonPBRMaterial: PBRMaterial, glTFMaterial: IMaterial, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
+        private static SetMetallicRoughnessPbrMaterial(metallicRoughness: Nullable<_IPBRMetallicRoughness>, babylonPBRMaterial: PBRMaterial, glTFMaterial: IMaterial, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], samplers: ISampler[], materials: IMaterial[], materialMap: { [materialID: number]: number }, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }, hasTextureCoords: boolean): Promise<void> {
             let promises = [];
             if (metallicRoughness) {
                 let alphaMode: Nullable<MaterialAlphaMode> = null;
@@ -1126,6 +1143,7 @@ module BABYLON.GLTF2 {
 
                 glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
                 materials.push(glTFMaterial);
+                materialMap[babylonPBRMaterial.uniqueId] = materials.length - 1;
             }
             return Promise.all(promises).then(result => { /* do nothing */ });
         }
@@ -1167,7 +1185,7 @@ module BABYLON.GLTF2 {
                 samplerIndex = foundSamplerIndex;
             }
 
-            let textureName = "texture_" + (textures.length - 1).toString();
+            let textureName = Tools.RandomId();
             let textureData = babylonTexture.getInternalTexture();
 
             if (textureData != null) {

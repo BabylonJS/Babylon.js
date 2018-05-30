@@ -19,6 +19,10 @@ module INSPECTOR {
         private _detailsPanel: DetailPanel | null = null;
         private _split: any;
 
+        public static get IsSupported(): boolean {
+            return !!(BABYLON.SceneLoader && BABYLON.GLTFFileLoader && BABYLON.GLTF2.GLTFLoader) || !!BABYLON.GLTF2Export;
+        }
+
         /** @hidden */
         public static _Initialize(): void {
             // Must register with OnPluginActivatedObservable as early as possible to
@@ -45,8 +49,13 @@ module INSPECTOR {
                 this._closeDetailsPanel();
             });
 
-            this._addImport();
-            this._addExport();
+            if (BABYLON.SceneLoader && BABYLON.GLTFFileLoader && BABYLON.GLTF2.GLTFLoader) {
+                this._addImport();
+            }
+
+            if (BABYLON.GLTF2Export) {
+                this._addExport();
+            }
         }
 
         public dispose() {

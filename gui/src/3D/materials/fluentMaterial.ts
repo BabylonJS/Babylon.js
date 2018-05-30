@@ -6,6 +6,7 @@ module BABYLON.GUI {
     export class FluentMaterialDefines extends MaterialDefines {
         public INNERGLOW = false;
         public BORDER = false;
+        public HOVERLIGHT = false;
     
         constructor() {
             super();
@@ -60,13 +61,38 @@ module BABYLON.GUI {
          * Gets or sets a value indicating the smoothing value applied to border edges (0.02 by default)
          */
         @serialize()
-        public edgeSmoothingValue = 0.02;       
+        public edgeSmoothingValue = 0.02;
         
         /**
          * Gets or sets the minimum value that can be applied to border width (default is 0.1)
          */
         @serialize()
-        public borderMinValue = 0.1;        
+        public borderMinValue = 0.1;      
+        
+        /**
+         * Gets or sets a boolean indicating if hover light must be rendered (default is false)
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public renderHoverLight = false;         
+        
+        /**
+         * Gets or sets the radius used to render the hover light (default is 0.15)
+         */
+        @serialize()
+        public hoverRadius = 1.0;            
+        
+        /**
+         * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
+         */
+        @serializeAsColor4()
+        public hoverColor = new Color4(0.3, 0.3, 0.3, 1.0);           
+        
+        /**
+         * Gets or sets the hover light position in world space (default is Vector3.Zero())
+         */
+        @serializeAsVector3()
+        public hoverPosition = Vector3.Zero();             
         
         /**
          * Creates a new Fluent material
@@ -111,6 +137,7 @@ module BABYLON.GUI {
             if (defines._areTexturesDirty) {
                 defines.INNERGLOW = this.innerGlowColorIntensity > 0;
                 defines.BORDER = this.renderBorders;
+                defines.HOVERLIGHT = this.renderHoverLight;
             }
 
             var engine = scene.getEngine();
@@ -126,7 +153,9 @@ module BABYLON.GUI {
 
                 var shaderName = "fluent";
 
-                var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue"];
+                var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue",
+                                "hoverColor", "hoverPosition", "hoverRadius"
+                ];
 
                 var samplers = new Array<String>();
                 var uniformBuffers = new Array<string>();
@@ -196,7 +225,14 @@ module BABYLON.GUI {
                     this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                     this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
 
-                    this._activeEffect.setVector3("scaleFactor", mesh.getBoundingInfo().boundingBox.extendSizeWorld);
+                    mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, Tmp.Vector3[0]);
+                    this._activeEffect.setVector3("scaleFactor", Tmp.Vector3[0]);
+                }
+
+                if (defines.HOVERLIGHT) {
+                    this._activeEffect.setDirectColor4("hoverColor", this.hoverColor);
+                    this._activeEffect.setFloat("hoverRadius", this.hoverRadius);
+                    this._activeEffect.setVector3("hoverPosition", this.hoverPosition);
                 }
             }
 

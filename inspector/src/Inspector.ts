@@ -200,10 +200,14 @@ module INSPECTOR {
                 this._tabbar.updateWidth();
             }
 
-            // Refresh the inspector if the browser is not edge
-            if (!Helpers.IsBrowserEdge()) {
+            /*
+            * Refresh the inspector if the browser is not edge
+            *   Why not ?! Condition commented on 180525
+            *   To be tested
+            */
+            // if (!Helpers.IsBrowserEdge()) {
                 this.refresh();
-            }
+            // }
 
             // Check custom css colors
             if (newColors) {
@@ -365,52 +369,49 @@ module INSPECTOR {
          */
         public openPopup(firstTime?: boolean) {
 
-            if (Helpers.IsBrowserEdge()) {
-                console.warn('Inspector - Popup mode is disabled in Edge, as the popup DOM cannot be updated from the main window for security reasons');
-            } else {
-                // Create popup
-                let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
-                if (!popup) {
-                    return;
-                }
-                popup.document.title = 'Babylon.js INSPECTOR';
-                // Get the inspector style      
-                let styles = Inspector.DOCUMENT.querySelectorAll('style');
-                for (let s = 0; s < styles.length; s++) {
-                    popup.document.body.appendChild(styles[s].cloneNode(true));
-                }
-                let links = document.querySelectorAll('link');
-                for (let l = 0; l < links.length; l++) {
-                    let link = popup.document.createElement("link");
-                    link.rel = "stylesheet";
-                    link.href = (links[l] as HTMLLinkElement).href;
-                    popup.document.head.appendChild(link);
-                }
-                // Dispose the right panel if existing
-                if (!firstTime) {
-                    this.dispose();
-                }
-                // set the mode as popup
-                this._popupMode = true;
-                // Save the HTML document
-                Inspector.DOCUMENT = popup.document;
-                Inspector.WINDOW = popup;
-                // Build the inspector wrapper
-                this._c2diwrapper = Helpers.CreateDiv('insp-wrapper', popup.document.body);
-                // add inspector     
-                let inspector = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-                inspector.classList.add('popupmode');
-                // and build it in the popup  
-                this._buildInspector(inspector);
-                // Rebuild it
-                this.refresh();
-
-                popup.addEventListener('resize', () => {
-                    if (this._tabbar) {
-                        this._tabbar.updateWidth()
-                    }
-                });
+            // Create popup
+            let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
+            if (!popup) {
+                return;
             }
+            popup.document.title = "Babylon.js INSPECTOR";
+            popup.document.body.innerHTML = "Coucou!";
+            // Get the inspector style      
+            let styles = Inspector.DOCUMENT.querySelectorAll('style');
+            for (let s = 0; s < styles.length; s++) {
+                popup.document.body.appendChild(styles[s].cloneNode(true));
+            }
+            let links = document.querySelectorAll('link');
+            for (let l = 0; l < links.length; l++) {
+                let link = popup.document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = (links[l] as HTMLLinkElement).href;
+                popup.document.head.appendChild(link);
+            }
+            // Dispose the right panel if existing
+            if (!firstTime) {
+                this.dispose();
+            }
+            // set the mode as popup
+            this._popupMode = true;
+            // Save the HTML document
+            Inspector.DOCUMENT = popup.document;
+            Inspector.WINDOW = popup;
+            // Build the inspector wrapper
+            this._c2diwrapper = Helpers.CreateDiv('insp-wrapper', popup.document.body);
+            // add inspector     
+            let inspector = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+            inspector.classList.add('popupmode');
+            // and build it in the popup  
+            this._buildInspector(inspector);
+            // Rebuild it
+            this.refresh();
+
+            popup.addEventListener('resize', () => {
+                if (this._tabbar) {
+                    this._tabbar.updateWidth()
+                }
+            });
         }
 
         public getActiveTabIndex(): number {
