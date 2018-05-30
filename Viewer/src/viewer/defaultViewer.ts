@@ -153,6 +153,7 @@ export class DefaultViewer extends AbstractViewer {
                 break;
             case "fullscreen-button":
                 this.toggleFullscreen();
+                break;
             default:
                 return;
         }
