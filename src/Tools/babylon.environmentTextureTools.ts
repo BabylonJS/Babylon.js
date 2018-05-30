@@ -54,20 +54,9 @@ module BABYLON {
         mipmaps: Array<BufferImageData>
     }
 
-    interface EnvironmentTextureIrradianceInfoV1 {
-        l00: Array<number>;
-
-        l1_1: Array<number>;
-        l10: Array<number>;
-        l11: Array<number>;
-
-        l2_2: Array<number>;
-        l2_1: Array<number>;
-        l20: Array<number>;
-        l21: Array<number>;
-        l22: Array<number>;
-    }
-
+    /**
+     * Defines the required storage to save the environment irradiance information.
+     */
     interface EnvironmentTextureIrradianceInfoV1 {
         polynomials: boolean;
 
@@ -293,50 +282,6 @@ module BABYLON {
             });
         }
 
-        // private static _FloatView: Float32Array;
-        // private static _Int32View: Int32Array;
-        // private static _ToHalfFloat(value: number): number {
-        //     if (!this._FloatView) {
-        //         this._FloatView = new Float32Array(1);
-        //         this._Int32View = new Int32Array(this._FloatView.buffer);
-        //     }
-
-        //     this._FloatView[0] = value;
-        //     var x = this._Int32View[0];
-
-        //     var bits = (x >> 16) & 0x8000; /* Get the sign */
-        //     var m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
-        //     var e = (x >> 23) & 0xff; /* Using int is faster here */
-
-        //     /* If zero, or denormal, or exponent underflows too much for a denormal
-        //     * half, return signed zero. */
-        //     if (e < 103) {
-        //         return bits;
-        //     }
-
-        //     /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
-        //     if (e > 142) {
-        //         bits |= 0x7c00;
-        //         /* If exponent was 0xff and one mantissa bit was set, it means NaN,
-        //         * not Inf, so make sure we set one mantissa bit too. */
-        //         bits |= ((e == 255) ? 0 : 1) && (x & 0x007fffff);
-        //         return bits;
-        //     }
-
-        //     /* If exponent underflows but not too much, return a denormal */
-        //     if (e < 113) {
-        //         m |= 0x0800;
-        //         /* Extra rounding may overflow and set mantissa to 0 and exponent
-        //         * to 1, which is OK. */
-        //         bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
-        //         return bits;
-        //     }
-
-        //     bits |= ((e - 112) << 10) | (m >> 1);
-        //     bits += m & 1;
-        //     return bits;
-        // }
-
         /**
          * Creates a JSON representation of the spherical data.
          * @param texture defines the texture containing the polynomials
@@ -396,7 +341,6 @@ module BABYLON {
             let generateNonLODTextures = false;
             let rgbmPostProcess: Nullable<PostProcess> = null;
             let cubeRtt: Nullable<InternalTexture> = null;
-            // let wegl1DestinationTexture: Nullable<InternalTexture> = null;
             let lodTextures: Nullable<{ [lod: number]: BaseTexture}> = null;
             let caps = engine.getCaps();
 
@@ -406,8 +350,9 @@ module BABYLON {
 
             // Add extra process if texture lod is not supported
             if (!caps.textureLOD) {
-                lodTextures = { };
+                expandTexture = false;
                 generateNonLODTextures = true;
+                lodTextures = { };
             }
             // in webgl 1 there are no ways to either render or copy lod level information for float textures.
             else if (engine.webGLVersion < 2) {
@@ -439,16 +384,6 @@ module BABYLON {
                     type: texture.type,
                     format: Engine.TEXTUREFORMAT_RGBA
                 });
-
-                // if (engine.webGLVersion < 2) {
-                //     wegl1DestinationTexture = engine.createRawCubeTexture(null, 
-                //         texture.width, 
-                //         Engine.TEXTUREFORMAT_RGBA,
-                //         texture.type,
-                //         true,
-                //         false,
-                //         Texture.TRILINEAR_SAMPLINGMODE);
-                // }
             }
             else {
                 texture._isRGBM = true;
@@ -501,7 +436,6 @@ module BABYLON {
             let promises: Promise<void>[] = [];
             // All mipmaps
             for (let i = 0; i < mipmapsCount; i++) {
-                // let faceWidth = info.width / (Math.pow(2, i));
                 // All faces
                 for (let face = 0; face < 6; face++) {
                     // Retrieves the face data
@@ -513,14 +447,6 @@ module BABYLON {
                     let url = URL.createObjectURL(blob);
                     let image = new Image();
                     image.src = url;
-
-                    // let a: any = document.createElement("a");
-                    // document.body.appendChild(a);
-                    // a.style = "display: none";
-                    // a.href = url;
-                    // a.download = "env_" + i + "_" + face + ".png";
-                    // a.click();
-                    // window.URL.revokeObjectURL(url);
 
                     // Enqueue promise to upload to the texture.
                     let promise = new Promise<void>((resolve, reject) => {;
@@ -538,23 +464,8 @@ module BABYLON {
                                         effect._bindTexture("textureSampler", tempTexture);
                                         effect.setFloat2("scale", 1, 1);
                                     }
-
-                                    // if (wegl1DestinationTexture) {
-                                    //     engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
-                                        
-                                    //     //var data = engine._readTexturePixels(cubeRtt!, faceWidth, faceWidth, face, 0);
-                                    //     // var floatData = data as Float32Array;
-                                    //     // var halfFloatData = new Uint16Array(floatData.length);
-                                    //     // for (let i = 0; i < floatData.length; i++) {
-                                    //     //     halfFloatData[i] = this._ToHalfFloat(floatData[i]);
-                                    //     // }
-                                    //     // engine._uploadArrayBufferToTexture(wegl1DestinationTexture, face, i, halfFloatData, faceWidth, faceWidth);
-
-                                    //     engine._copyCurrentFrameBufferToTexture(wegl1DestinationTexture, 0, 0, faceWidth, faceWidth, face, i);
-                                    // }
-                                    // else {
-                                        engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
-                                    // }
+                                    
+                                    engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
 
                                     // Cleanup
                                     engine.restoreDefaultFramebuffer();
@@ -586,14 +497,7 @@ module BABYLON {
 
             // Once all done, finishes the cleanup and return
             return Promise.all(promises).then(() => {
-                // if (wegl1DestinationTexture) {
-                //     wegl1DestinationTexture._swapAndDie(texture);
-                //     if (cubeRtt) {
-                //         cubeRtt.dispose();
-                //     }
-                // }
-                // // Relase temp Cube Texture resources.
-                // else 
+                // Relase temp RTT.
                 if (cubeRtt) {
                     engine._releaseFramebufferObjects(cubeRtt);
                     cubeRtt._swapAndDie(texture);
