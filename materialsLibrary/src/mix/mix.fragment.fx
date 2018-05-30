@@ -127,12 +127,10 @@ void main(void) {
 	vec4 diffuse7Color = texture2D(diffuse7Sampler, vTextureUV * diffuse7Infos);
 	vec4 diffuse8Color = texture2D(diffuse8Sampler, vTextureUV * diffuse8Infos);
 
-	diffuse5Color.rgb *= mixColor.r;
+	diffuse5Color.rgb = mix(finalMixColor.rgb, diffuse5Color.rgb, mixColor.r);
    	diffuse6Color.rgb = mix(diffuse5Color.rgb, diffuse6Color.rgb, mixColor.g);
    	diffuse7Color.rgb = mix(diffuse6Color.rgb, diffuse7Color.rgb, mixColor.b);
-	mixColor.rgb = mix(diffuse7Color.rgb, diffuse8Color.rgb, 1.0 - mixColor.a);
-
-	finalMixColor.rgb = mix(finalMixColor.rgb, mixColor.rgb, 0.5);
+	finalMixColor.rgb = mix(diffuse7Color.rgb, diffuse8Color.rgb, 1.0 - mixColor.a);
 #endif
 	
 #endif
