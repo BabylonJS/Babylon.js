@@ -4,8 +4,8 @@ import { IModelConfiguration, IModelAnimationConfiguration } from "../configurat
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
 
 import { deepmerge, extendClassWithConfig } from '../helper/';
-import { ObservablesManager } from "managers/observablesManager";
-import { ConfigurationContainer } from "configuration/configurationContainer";
+import { ObservablesManager } from "../managers/observablesManager";
+import { ConfigurationContainer } from "../configuration/configurationContainer";
 
 
 /**
