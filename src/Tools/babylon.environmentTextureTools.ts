@@ -299,7 +299,7 @@ module BABYLON {
          * @return the JSON representation of the spherical info
          */
         private static _CreateEnvTextureIrradiance(texture: CubeTexture) : Nullable<EnvironmentTextureIrradianceInfoV1> {
-            var polynmials = texture.sphericalPolynomial;
+            let polynmials = texture.sphericalPolynomial;
             if (polynmials == null) {
                 return null;
             }
@@ -348,29 +348,37 @@ module BABYLON {
 
             // Gets everything ready.
             let engine = texture.getEngine();
-            let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
             let expandTexture = false;
+            let generateNonLODTextures = false;
             let rgbmPostProcess: Nullable<PostProcess> = null;
             let cubeRtt: Nullable<InternalTexture> = null;
-            var caps = engine.getCaps();
+            let lodTextures: Nullable<{ [lod: number]: BaseTexture}> = null;
+            let caps = engine.getCaps();
 
-            // If hal or full float available we can uncompress the texture 
-            if (caps.textureHalfFloatRender) {
-                expandTexture = true;
-                textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            texture.format = Engine.TEXTUREFORMAT_RGBA;
+            texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+
+            // Add extra process if texture lod is not supported
+            if (!caps.textureLOD) {
+                lodTextures = { };
+                generateNonLODTextures = true;
             }
+            // If half float available we can uncompress the texture
+            else if (caps.textureHalfFloatRender) {
+                expandTexture = true;
+                texture.type = Engine.TEXTURETYPE_HALF_FLOAT;
+            }
+            // If full float available we can uncompress the texture
             else if (caps.textureFloatRender) {
                 expandTexture = true;
-                textureType = Engine.TEXTURETYPE_FLOAT;
+                texture.type = Engine.TEXTURETYPE_FLOAT;
             }
-            texture.type = textureType;
-            texture.format = Engine.TEXTUREFORMAT_RGBA;
-            texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
 
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP
-                rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, textureType, undefined, null, false);
+                rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
                 
                 texture._isRGBM = false;
                 texture.invertY = false;
@@ -379,13 +387,56 @@ module BABYLON {
                     generateMipMaps: true,
                     generateStencilBuffer: false,
                     samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
-                    type: textureType,
+                    type: texture.type,
                     format: Engine.TEXTUREFORMAT_RGBA
                 })
             }
             else {
                 texture._isRGBM = true;
                 texture.invertY = true;
+
+                // In case of missing support, applies the same patch than DDS files.
+                if (generateNonLODTextures) {
+                    let mipSlices = 3;
+                    let scale = texture._lodGenerationScale;
+                    let offset = texture._lodGenerationOffset;
+    
+                    for (let i = 0; i < mipSlices; i++) {
+                        //compute LOD from even spacing in smoothness (matching shader calculation)
+                        let smoothness = i / (mipSlices - 1);
+                        let roughness = 1 - smoothness;
+    
+                        let minLODIndex = offset; // roughness = 0
+                        let maxLODIndex = Scalar.Log2(info.width) * scale + offset; // roughness = 1
+    
+                        let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
+                        let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
+    
+                        let glTextureFromLod = new InternalTexture(engine, InternalTexture.DATASOURCE_TEMP);
+                        glTextureFromLod.isCube = true;
+                        glTextureFromLod.invertY = true;
+                        glTextureFromLod.generateMipMaps = false;
+                        engine.updateTextureSamplingMode(Texture.LINEAR_LINEAR, glTextureFromLod);
+    
+                        // Wrap in a base texture for easy binding.
+                        let lodTexture = new BaseTexture(null);
+                        lodTexture.isCube = true;
+                        lodTexture._texture = glTextureFromLod;
+                        lodTextures![mipmapIndex] = lodTexture;
+
+                        switch (i) {
+                            case 0:
+                            texture._lodTextureLow = lodTexture;
+                            break;
+                            case 1:
+                            texture._lodTextureMid = lodTexture;
+                            break;
+                            case 2:
+                            texture._lodTextureHigh = lodTexture;
+                            break;
+                        }
+                    }
+                }
             }
 
             let promises: Promise<void>[] = [];
@@ -394,11 +445,11 @@ module BABYLON {
                 // All faces
                 for (let face = 0; face < 6; face++) {
                     // Retrieves the face data
-                    const imageData = specularInfo.mipmaps[i * 6 + face];
+                    let imageData = specularInfo.mipmaps[i * 6 + face];
                     let bytes = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageData.position, imageData.length);
 
                     // Constructs an image element from bytes
-                    var blob = new Blob([bytes], { type: 'image/png' });
+                    let blob = new Blob([bytes], { type: 'image/png' });
                     let url = URL.createObjectURL(blob);
                     let image = new Image();
                     image.src = url;
@@ -430,6 +481,14 @@ module BABYLON {
                             }
                             else {
                                 engine._uploadImageToTexture(texture, face, i, image);
+
+                                // Upload the face to the none lod texture support
+                                if (generateNonLODTextures) {
+                                    let lodTexture = lodTextures![i];
+                                    if (lodTexture) {
+                                        engine._uploadImageToTexture(lodTexture._texture!, face, 0, image);
+                                    }
+                                }
                                 resolve();
                             }
                         };
@@ -451,6 +510,18 @@ module BABYLON {
                 // Relase temp Post Process.
                 if (rgbmPostProcess) {
                     rgbmPostProcess.dispose();
+                }
+                // Flag internal texture as ready in case they are in use.
+                if (generateNonLODTextures) {
+                    if (texture._lodTextureHigh && texture._lodTextureHigh._texture) {
+                        texture._lodTextureHigh._texture.isReady = true;
+                    }
+                    if (texture._lodTextureMid && texture._lodTextureMid._texture) {
+                        texture._lodTextureMid._texture.isReady = true;
+                    }
+                    if (texture._lodTextureLow && texture._lodTextureLow._texture) {
+                        texture._lodTextureLow._texture.isReady = true;
+                    }
                 }
             });
         }
@@ -537,7 +608,7 @@ module BABYLON {
          * @param harmonics Spherical harmonic coefficients (9)
          */
         private static _ConvertSHIrradianceToLambertianRadiance(harmonics: any): void {
-            const scaleFactor = 1 / Math.PI;
+            let scaleFactor = 1 / Math.PI;
             // The resultant SH now represents outgoing radiance, so includes the Lambert 1/pi normalisation factor but without albedo (rho) applied
             // (The pixel shader must apply albedo after texture fetches, etc).
             harmonics.l00[0] *= scaleFactor;
@@ -575,7 +646,7 @@ module BABYLON {
          * @param outPolynomialCoefficents Polynomial coefficients (9) object to store result
          */
         private static _ConvertSHToSP(harmonics: any, outPolynomialCoefficents: SphericalPolynomial) {
-            const rPi = 1 / Math.PI;
+            let rPi = 1 / Math.PI;
 
             //x
             outPolynomialCoefficents.x.x = 1.02333 * harmonics.l11[0] * rPi;
