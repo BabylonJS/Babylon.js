@@ -898,7 +898,9 @@ gulp.task("modules", ["prepare-dependency-tree"], function () {
  */
 gulp.task("typedoc-generate", function () {
     return gulp
-        .src(["../../dist/preview release/babylon.d.ts",
+        .src([
+            "../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
             "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
             "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"])
@@ -955,7 +957,7 @@ gulp.task("typedoc-all", function (cb) {
  * Validate compile the code and check the comments and style case convention through typedoc
  */
 gulp.task("typedoc-check", function (cb) {
-    runSequence("typescript-compile", "typedoc-generate", "typedoc-validate", cb);
+    runSequence("typescript-compile", "gui", "loaders", "serializers", "typedoc-generate", "typedoc-validate", cb);
 });
 
 /**

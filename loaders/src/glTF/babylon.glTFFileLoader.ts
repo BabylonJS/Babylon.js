@@ -188,15 +188,11 @@ module BABYLON {
      * File loader for loading glTF files into a scene.
      */
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-        /**
-         * Factory function that creates a glTF 1.0 loader
-         */
-        public static CreateGLTFLoaderV1: () => IGLTFLoader;
+        /** @hidden */
+        public static _CreateGLTFLoaderV1: () => IGLTFLoader;
 
-        /**
-         * Factory function that creates a glTF 2.0 loader
-         */
-        public static CreateGLTFLoaderV2: () => IGLTFLoader;
+        /** @hidden */
+        public static _CreateGLTFLoaderV2: () => IGLTFLoader;
 
         // #region Common options
 
@@ -225,12 +221,14 @@ module BABYLON {
          * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
          * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
          * Defaults to true.
+         * @hidden
          */
         public static IncrementalLoading = true;
 
         /**
          * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
          * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
+         * @hidden
          */
         public static HomogeneousCoordinates = false;
 
@@ -577,8 +575,8 @@ module BABYLON {
             }
 
             const createLoaders: { [key: number]: () => IGLTFLoader } = {
-                1: GLTFFileLoader.CreateGLTFLoaderV1,
-                2: GLTFFileLoader.CreateGLTFLoaderV2
+                1: GLTFFileLoader._CreateGLTFLoaderV1,
+                2: GLTFFileLoader._CreateGLTFLoaderV2
             };
 
             const createLoader = createLoaders[version.major];

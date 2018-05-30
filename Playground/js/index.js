@@ -458,6 +458,8 @@
 
             } catch (e) {
                 showError(e.message, e);
+                // Also log error in console to help debug playgrounds
+                console.error(e);
             }
         };
         window.addEventListener("resize",
@@ -754,11 +756,11 @@
 
             if (debugButton.classList.contains('uncheck')) {
                 setToMultipleID("debugButton", "removeClass", 'uncheck');
-                setToMultipleID("debugButton", "innerHTML", 'Debug layer<i class="fa fa-check-square" aria-hidden="true"></i>');
+                setToMultipleID("debugButton", "innerHTML", 'Inspector<i class="fa fa-check-square" aria-hidden="true"></i>');
                 scene.debugLayer.show();
             } else {
                 setToMultipleID("debugButton", "addClass", 'uncheck');
-                setToMultipleID("debugButton", "innerHTML", 'Debug layer<i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("debugButton", "innerHTML", 'Inspector<i class="fa fa-square-o" aria-hidden="true"></i>');
                 scene.debugLayer.hide();
             }
         }

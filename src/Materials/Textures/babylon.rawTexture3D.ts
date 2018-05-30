@@ -16,11 +16,15 @@
          * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
          * @param invertY defines if texture must be stored with Y axis inverted
          * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
          */
         constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-                    /** Gets or sets the texture format to use*/
+                    /** Gets or sets the texture format to use */
                     public format: number, scene: Scene, 
-                    generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+                    generateMipMaps: boolean = true, 
+                    invertY: boolean = false, 
+                    samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+                    textureType = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(null, scene, !generateMipMaps, invertY);
             this._engine = scene.getEngine();
 
@@ -32,7 +36,9 @@
                 format,
                 generateMipMaps,
                 invertY,
-                samplingMode
+                samplingMode,
+                undefined,
+                textureType
             )
     
             this.is3D = true;
@@ -46,7 +52,7 @@
             if (!this._texture) {
                 return;
             }
-            this._engine.updateRawTexture3D(this._texture, data, this._texture.format, this._texture!.invertY);
+            this._engine.updateRawTexture3D(this._texture, data, this._texture.format, this._texture!.invertY, undefined, this._texture.type);
         }
     }
 }

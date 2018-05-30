@@ -6,7 +6,7 @@ module BABYLON {
         private _attachedNode: Node; 
         private _dragPlane: Mesh;
         private _scene:Scene;
-        private _pointerObserver:Nullable<Observer<PointerInfoPre>>;
+        private _pointerObserver:Nullable<Observer<PointerInfo>>;
         private static _planeScene:Scene;
         private _draggingID = -1;
         
@@ -30,12 +30,17 @@ module BABYLON {
          *  Mesh with the position where the drag plane should be placed
          */
         public _dragPlaneParent:Nullable<Mesh>=null;
+
+        /**
+         *  If the drag behavior will react to drag events
+         */
+        public enabled = true;
         
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
-         * @param options The drag axis or normal of the plane that will be dragged across. pointerObservableScene can be used to listen to drag events from another scene(eg. if the attached mesh is in an overlay scene).
+         * @param options The drag axis or normal of the plane that will be dragged across.
          */
-        constructor(private options:{dragAxis?:Vector3, dragPlaneNormal?:Vector3, pointerObservableScene?:Scene}){
+        constructor(private options:{dragAxis?:Vector3, dragPlaneNormal?:Vector3}){
             var optionCount = 0;
             if(options.dragAxis){
                 optionCount++;
@@ -69,9 +74,6 @@ module BABYLON {
          */
         public attach(ownerNode: Mesh): void {
             this._scene = ownerNode.getScene();
-            if(!this.options.pointerObservableScene){
-                this.options.pointerObservableScene = this._scene;
-            }
             this._attachedNode = ownerNode;
 
             // Initialize drag plane to not interfere with existing scene
@@ -90,40 +92,32 @@ module BABYLON {
                 return this._attachedNode == m || m.isDescendantOf(this._attachedNode)
             }
 
-            this._pointerObserver = this.options.pointerObservableScene!.onPrePointerObservable.add((pointerInfoPre, eventState)=>{
-                // Check if attached mesh is picked
-                var pickInfo = pointerInfoPre.ray ? this._scene.pickWithRay(pointerInfoPre.ray, pickPredicate) : this._scene.pick(this._scene.pointerX, this._scene.pointerY, pickPredicate);
-                if(pickInfo){
-                    pickInfo.ray = pointerInfoPre.ray;
-                    if(!pickInfo.ray){
-                        pickInfo.ray = this.options.pointerObservableScene!.createPickingRay(this._scene.pointerX, this._scene.pointerY, Matrix.Identity(), this._scene.activeCamera);
-                    }
-                    if(pickInfo.hit){
-                        eventState.skipNextObservers = true;
-                    }
+            this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState)=>{
+                if(!this.enabled){
+                    return;
                 }
                 
-                if (pointerInfoPre.type == BABYLON.PointerEventTypes.POINTERDOWN) {
-                    if(!dragging && pickInfo && pickInfo.hit && pickInfo.pickedMesh && pickInfo.ray){
-                        this._updateDragPlanePosition(pickInfo.ray);
-                        var pickedPoint = this._pickWithRayOnDragPlane(pickInfo.ray);
+                if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                    if(!dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
+                        this._updateDragPlanePosition(pointerInfo.pickInfo.ray);
+                        var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         if(pickedPoint){
                             dragging = true;
-                            this._draggingID = (<PointerEvent>pointerInfoPre.event).pointerId;
+                            this._draggingID = (<PointerEvent>pointerInfo.event).pointerId;
                             lastPosition.copyFrom(pickedPoint);
                             this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint});
                         }
                     }
-                }else if(pointerInfoPre.type == BABYLON.PointerEventTypes.POINTERUP){
-                    if(this._draggingID == (<PointerEvent>pointerInfoPre.event).pointerId){
+                }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
+                    if(this._draggingID == (<PointerEvent>pointerInfo.event).pointerId){
                         dragging = false;
                         this._draggingID = -1;
                         this.onDragEndObservable.notifyObservers({dragPlanePoint: lastPosition});
                     }
-                }else if(pointerInfoPre.type == BABYLON.PointerEventTypes.POINTERMOVE){
-                    if(this._draggingID == (<PointerEvent>pointerInfoPre.event).pointerId && dragging && pickInfo && pickInfo.ray){
-                        var pickedPoint = this._pickWithRayOnDragPlane(pickInfo.ray);
-                        this._updateDragPlanePosition(pickInfo.ray);
+                }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
+                    if(this._draggingID == (<PointerEvent>pointerInfo.event).pointerId && dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray){
+                        var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
+                        this._updateDragPlanePosition(pointerInfo.pickInfo.ray);
                         if (pickedPoint) {
                             // depending on the drag mode option drag accordingly
                             if(this.options.dragAxis){
@@ -187,7 +181,7 @@ module BABYLON {
          */
         public detach(): void {
             if(this._pointerObserver){
-                this._scene.onPrePointerObservable.remove(this._pointerObserver);
+                this._scene.onPointerObservable.remove(this._pointerObserver);
             }
         }
     }

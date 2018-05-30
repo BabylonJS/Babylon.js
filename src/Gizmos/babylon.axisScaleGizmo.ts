@@ -1,13 +1,13 @@
 module BABYLON {
     /**
-     * Single axis drag gizmo
+     * Single axis scale gizmo
      */
-    export class AxisDragGizmo extends Gizmo {
+    export class AxisScaleGizmo extends Gizmo {
         private _dragBehavior:PointerDragBehavior;
         /**
-         * Creates an AxisDragGizmo
+         * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to drag on
+         * @param dragAxis The axis which the gizmo will be able to scale on
          * @param color The color of the gizmo
          */
         constructor(gizmoLayer:UtilityLayerRenderer, dragAxis:Vector3, color:Color3){
@@ -19,7 +19,7 @@ module BABYLON {
             coloredMaterial.emissiveColor = color;
 
             // Build mesh on root node
-            var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop:0, height: 2, tessellation: 96}, gizmoLayer.utilityLayerScene);
+            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 1}, gizmoLayer.utilityLayerScene);
             var arrowTail = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameter:0.03, height: 0.2, tessellation: 96}, gizmoLayer.utilityLayerScene);
             this._rootMesh.addChild(arrowMesh);
             this._rootMesh.addChild(arrowTail);
@@ -38,18 +38,21 @@ module BABYLON {
             this._dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
+
             this._dragBehavior.onDragObservable.add((event)=>{
                 if(!this.interactionsEnabled){
                     return;
                 }
                 if(this.attachedMesh){
-                    this.attachedMesh.position.addInPlace(event.delta);
+                    this.attachedMesh.scaling.addInPlace(event.delta);
                 }
             })
         }
+        
         protected _onInteractionsEnabledChanged(value:boolean){
             this._dragBehavior.enabled = value;
         }
+        
         /**
          * Disposes of the gizmo
          */

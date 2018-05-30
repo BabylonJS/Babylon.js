@@ -1,14 +1,19 @@
 module BABYLON.Debug {
 
     /**
-     * Used to show the physics impostor around the specific mesh.
+     * Used to show the physics impostor around the specific mesh
      */
     export class PhysicsViewer {
 
+        /** @hidden */
         protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
+        /** @hidden */
         protected _meshes: Array<Nullable<AbstractMesh>> = [];
+        /** @hidden */
         protected _scene: Nullable<Scene>;
+        /** @hidden */
         protected _numMeshes = 0;
+        /** @hidden */
         protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
         private _renderFunction: () => void;
 
@@ -16,6 +21,10 @@ module BABYLON.Debug {
         private _debugSphereMesh: Mesh;
         private _debugMaterial: StandardMaterial;
 
+        /**
+         * Creates a new PhysicsViewer
+         * @param scene defines the hosting scene
+         */
         constructor(scene: Scene) {
             this._scene = scene || Engine.LastCreatedScene;
             let physicEngine = this._scene.getPhysicsEngine();
@@ -25,6 +34,7 @@ module BABYLON.Debug {
             }
         }
 
+        /** @hidden */
         protected _updateDebugMeshes(): void {
 
             var plugin = this._physicsEnginePlugin;
@@ -49,6 +59,10 @@ module BABYLON.Debug {
 
         }
 
+        /**
+         * Renders a specified physic impostor
+         * @param impostor defines the impostor to render
+         */
         public showImpostor(impostor: PhysicsImpostor): void {
 
             if (!this._scene) {
@@ -77,6 +91,10 @@ module BABYLON.Debug {
 
         }
 
+        /**
+         * Hides a specified physic impostor
+         * @param impostor defines the impostor to hide
+         */        
         public hideImpostor(impostor: Nullable<PhysicsImpostor>) {
 
             if (!impostor || !this._scene) {
@@ -166,8 +184,8 @@ module BABYLON.Debug {
             return mesh;
         }
 
+        /** Releases all resources */
         public dispose() {
-
             for (var i = 0; i < this._numMeshes; i++) {
                 this.hideImpostor(this._impostors[i]);
             }
@@ -185,8 +203,6 @@ module BABYLON.Debug {
             this._impostors.length = 0;
             this._scene = null;
             this._physicsEnginePlugin = null;
-
         }
-
     }
 }

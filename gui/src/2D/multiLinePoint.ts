@@ -2,6 +2,10 @@
 
 module BABYLON.GUI {
 
+    /**
+     * Class used to store a point for a MultiLine object.
+     * The point can be pure 2D coordinates, a mesh or a control
+     */
     export class MultiLinePoint {
 
         private _multiLine: MultiLine;
@@ -14,8 +18,13 @@ module BABYLON.GUI {
         private _controlObserver: Nullable< Observer<Control> >;
         private _meshObserver: Nullable< Observer<Camera> >;
 
+        /** @hidden */
         public _point: Vector2;
 
+        /**
+         * Creates a new MultiLinePoint
+         * @param multiLine defines the source MultiLine object
+         */
         constructor(multiLine: MultiLine) {
             this._multiLine = multiLine;
 
@@ -25,6 +34,7 @@ module BABYLON.GUI {
             this._point = new Vector2(0, 0);
         }
 
+        /** Gets or sets x coordinate */
         public get x(): string | number {
             return this._x.toString(this._multiLine._host);
         }
@@ -39,6 +49,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets y coordinate */
         public get y(): string | number {
             return this._y.toString(this._multiLine._host);
         }
@@ -53,6 +64,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Gets or sets the control associated with this point */
         public get control(): Nullable<Control> {
             return this._control;
         }
@@ -77,6 +89,7 @@ module BABYLON.GUI {
             this._multiLine._markAsDirty();
         }
 
+        /** Gets or sets the mesh associated with this point */
         public get mesh(): Nullable<AbstractMesh> {
             return this._mesh;
         }
@@ -99,6 +112,10 @@ module BABYLON.GUI {
             this._multiLine._markAsDirty();
         }
 
+        /** 
+         * Gets a translation vector
+         * @returns the translation vector
+         */
         public translate(): Vector2 {
             this._point = this._translatePoint();
 
@@ -122,6 +139,7 @@ module BABYLON.GUI {
             }
         }
 
+        /** Release associated resources */
         public dispose(): void {
             this.control = null;
             this.mesh = null;
