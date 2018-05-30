@@ -3392,7 +3392,7 @@
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
                     meshes[index].computeWorldMatrix(true);
-                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true);
+                    otherVertexData = VertexData.ExtractFromMesh(meshes[index], true, true);
                     otherVertexData.transform(meshes[index].getWorldMatrix());
 
                     if (vertexData) {
@@ -3432,12 +3432,12 @@
             // Subdivide
             if (subdivideWithSubMeshes) {
 
-                //-- Suppresions du submesh global
+                //-- removal of global submesh
                 meshSubclass.releaseSubMeshes();
                 index = 0;
                 var offset = 0;
 
-                //-- aplique la subdivision en fonction du tableau d'indices
+                //-- apply subdivision according to index table
                 while (index < indiceArray.length) {
                     SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
                     offset += indiceArray[index];
