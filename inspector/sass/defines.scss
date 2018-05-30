@@ -1,4 +1,5 @@
-@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
+// @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css);
+@import url(https://use.fontawesome.com/releases/v5.0.13/css/all.css);
 @import url(https://fonts.googleapis.com/css?family=Inconsolata);
 
 $font               : 'Inconsolata', sans-serif;
@@ -20,5 +21,7 @@ $background-lighter2: lighten($color: $background-lighter, $amount : 5%);
 $background-lighter3: lighten($color: $background-lighter2, $amount: 5%);
 
 $resizebar-width    : 10px;
-$tabbar-height      : 40px;
+$tabbar-height      : 50px;
 $searchbar-height   : 30px;
+
+$font-family-icons  : 'Font Awesome 5 Free', sans-serif;

@@ -43,8 +43,8 @@
                 height     : 1em;
                 line-height: 1em;
                 display    : inline-block;
-                font-family: 'FontAwesome', sans-serif;
-                content    : "\f10c";
+                font-family: $font-family-icons;
+                content    : "\f111";
                 margin-right:10px;
             }
             // radio button active
@@ -54,7 +54,7 @@
                     height     : 1em;
                     line-height: 1em;
                     display    : inline-block;
-                    font-family: 'FontAwesome', sans-serif;
+                    font-family: $font-family-icons;
                     content    : "\f192";
                     color      : $color-bot;
                     margin-right:10px;
@@ -70,8 +70,8 @@
                 height     : 1em;
                 line-height: 1em;
                 display    : inline-block;
-                font-family: 'FontAwesome', sans-serif;
-                content    : "\f096";
+                font-family: $font-family-icons;
+                content    : "\f0c8";
                 margin-right:10px;
             }
                 
@@ -81,7 +81,7 @@
                     height     : 1em;
                     line-height: 1em;
                     display    : inline-block;
-                    font-family: 'FontAwesome', sans-serif;
+                    font-family: $font-family-icons;
                     content    : "\f14a";
                     color      : $color-bot;
                     margin-right:10px;

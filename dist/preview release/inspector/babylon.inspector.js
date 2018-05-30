@@ -146,10 +146,14 @@ var INSPECTOR;
                 INSPECTOR.Helpers.SEND_EVENT('resize');
                 this._tabbar.updateWidth();
             }
-            // Refresh the inspector if the browser is not edge
-            if (!INSPECTOR.Helpers.IsBrowserEdge()) {
-                this.refresh();
-            }
+            /*
+            * Refresh the inspector if the browser is not edge
+            *   Why not ?! Condition commented on 180525
+            *   To be tested
+            */
+            // if (!Helpers.IsBrowserEdge()) {
+            this.refresh();
+            // }
             // Check custom css colors
             if (newColors) {
                 var bColor = newColors.backgroundColor || '#242424';
@@ -297,52 +301,48 @@ var INSPECTOR;
          */
         Inspector.prototype.openPopup = function (firstTime) {
             var _this = this;
-            if (INSPECTOR.Helpers.IsBrowserEdge()) {
-                console.warn('Inspector - Popup mode is disabled in Edge, as the popup DOM cannot be updated from the main window for security reasons');
+            // Create popup
+            var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
+            if (!popup) {
+                return;
             }
-            else {
-                // Create popup
-                var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
-                if (!popup) {
-                    return;
-                }
-                popup.document.title = 'Babylon.js INSPECTOR';
-                // Get the inspector style      
-                var styles = Inspector.DOCUMENT.querySelectorAll('style');
-                for (var s = 0; s < styles.length; s++) {
-                    popup.document.body.appendChild(styles[s].cloneNode(true));
-                }
-                var links = document.querySelectorAll('link');
-                for (var l = 0; l < links.length; l++) {
-                    var link = popup.document.createElement("link");
-                    link.rel = "stylesheet";
-                    link.href = links[l].href;
-                    popup.document.head.appendChild(link);
-                }
-                // Dispose the right panel if existing
-                if (!firstTime) {
-                    this.dispose();
-                }
-                // set the mode as popup
-                this._popupMode = true;
-                // Save the HTML document
-                Inspector.DOCUMENT = popup.document;
-                Inspector.WINDOW = popup;
-                // Build the inspector wrapper
-                this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
-                // add inspector     
-                var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-                inspector.classList.add('popupmode');
-                // and build it in the popup  
-                this._buildInspector(inspector);
-                // Rebuild it
-                this.refresh();
-                popup.addEventListener('resize', function () {
-                    if (_this._tabbar) {
-                        _this._tabbar.updateWidth();
-                    }
-                });
+            popup.document.title = "Babylon.js INSPECTOR";
+            popup.document.body.innerHTML = "Coucou!";
+            // Get the inspector style      
+            var styles = Inspector.DOCUMENT.querySelectorAll('style');
+            for (var s = 0; s < styles.length; s++) {
+                popup.document.body.appendChild(styles[s].cloneNode(true));
             }
+            var links = document.querySelectorAll('link');
+            for (var l = 0; l < links.length; l++) {
+                var link = popup.document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = links[l].href;
+                popup.document.head.appendChild(link);
+            }
+            // Dispose the right panel if existing
+            if (!firstTime) {
+                this.dispose();
+            }
+            // set the mode as popup
+            this._popupMode = true;
+            // Save the HTML document
+            Inspector.DOCUMENT = popup.document;
+            Inspector.WINDOW = popup;
+            // Build the inspector wrapper
+            this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
+            // add inspector     
+            var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+            inspector.classList.add('popupmode');
+            // and build it in the popup  
+            this._buildInspector(inspector);
+            // Rebuild it
+            this.refresh();
+            popup.addEventListener('resize', function () {
+                if (_this._tabbar) {
+                    _this._tabbar.updateWidth();
+                }
+            });
         };
         Inspector.prototype.getActiveTabIndex = function () {
             return this._tabbar.getActiveTabIndex();
@@ -4075,10 +4075,21 @@ var INSPECTOR;
             _this._actions.addEventListener('click', function (event) {
                 _this._closeDetailsPanel();
             });
-            _this._addImport();
-            _this._addExport();
+            if (BABYLON.SceneLoader && BABYLON.GLTFFileLoader && BABYLON.GLTF2.GLTFLoader) {
+                _this._addImport();
+            }
+            if (BABYLON.GLTF2Export) {
+                _this._addExport();
+            }
             return _this;
         }
+        Object.defineProperty(GLTFTab, "IsSupported", {
+            get: function () {
+                return !!(BABYLON.SceneLoader && BABYLON.GLTFFileLoader && BABYLON.GLTF2.GLTFLoader) || !!BABYLON.GLTF2Export;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** @hidden */
         GLTFTab._Initialize = function () {
             // Must register with OnPluginActivatedObservable as early as possible to
@@ -4265,7 +4276,7 @@ var INSPECTOR;
             _this._tabs.push(_this._meshTab);
             _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
-            if (BABYLON.GLTF2Export) {
+            if (INSPECTOR.GLTFTab.IsSupported) {
                 _this._tabs.push(new INSPECTOR.GLTFTab(_this, _this._inspector));
             }
             if (BABYLON.GUI) {
@@ -4608,7 +4619,7 @@ var INSPECTOR;
     var PopupTool = /** @class */ (function (_super) {
         __extends(PopupTool, _super);
         function PopupTool(parent, inspector) {
-            return _super.call(this, 'fa-external-link', parent, inspector, 'Open the inspector in a popup') || this;
+            return _super.call(this, 'fa-external-link-alt', parent, inspector, 'Open the inspector in a popup') || this;
         }
         // Action : refresh the whole panel
         PopupTool.prototype.action = function () {
@@ -4634,7 +4645,7 @@ var INSPECTOR;
     var RefreshTool = /** @class */ (function (_super) {
         __extends(RefreshTool, _super);
         function RefreshTool(parent, inspector) {
-            return _super.call(this, 'fa-refresh', parent, inspector, 'Refresh the current tab') || this;
+            return _super.call(this, 'fa-sync', parent, inspector, 'Refresh the current tab') || this;
         }
         // Action : refresh the whole panel
         RefreshTool.prototype.action = function () {
