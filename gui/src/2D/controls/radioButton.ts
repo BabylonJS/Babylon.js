@@ -1,12 +1,16 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GUI {
+    /**
+     * Class used to create radio button controls
+     */
     export class RadioButton extends Control {
         private _isChecked = false;
         private _background = "black";   
         private _checkSizeRatio = 0.8;
         private _thickness = 1;
         
+        /** Gets or sets border thickness */
         public get thickness(): number {
             return this._thickness;
         }
@@ -20,10 +24,13 @@ module BABYLON.GUI {
             this._markAsDirty();
         }           
 
+        /** Gets or sets group name */
         public group = "";        
 
+        /** Observable raised when isChecked is changed */
         public onIsCheckedChangedObservable = new Observable<boolean>();
 
+        /** Gets or sets a value indicating the ratio between overall size and check size */
         public get checkSizeRatio(): number {
             return this._checkSizeRatio;
         }
@@ -39,6 +46,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }             
 
+        /** Gets or sets background color */
         public get background(): string {
             return this._background;
         }
@@ -52,6 +60,7 @@ module BABYLON.GUI {
             this._markAsDirty();
         }     
 
+        /** Gets or sets a boolean indicating if the checkbox is checked or not */
         public get isChecked(): boolean {
             return this._isChecked;
         }
@@ -84,6 +93,10 @@ module BABYLON.GUI {
             }
         }                             
 
+        /**
+         * Creates a new RadioButton
+         * @param name defines the control name
+         */        
         constructor(public name?: string) {
             super(name);
 

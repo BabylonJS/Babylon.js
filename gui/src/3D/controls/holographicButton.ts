@@ -9,13 +9,12 @@ module BABYLON.GUI {
         private _textPlate: Mesh;
         private _frontPlate: Mesh;
         private _text: string;
+        private _imageUrl: string;
         private _shareMaterials = true;
         private _frontMaterial: FluentMaterial;
         private _backMaterial: FluentMaterial;
         private _plateMaterial: StandardMaterial;
         private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
-
-        // private _imageUrl: string;
 
         /**
          * Gets or sets text for the button
@@ -32,6 +31,22 @@ module BABYLON.GUI {
             this._text = value;
             this._rebuildContent();
         }
+
+        /**
+         * Gets or sets the image url for the button
+         */
+        public get imageUrl(): string {
+            return this._imageUrl;
+        }
+
+        public set imageUrl(value: string) {
+            if (this._imageUrl === value) {
+                return;
+            }
+
+            this._imageUrl = value;
+            this._rebuildContent();
+        }        
 
         /**
          * Gets the back material used by this button
@@ -91,8 +106,20 @@ module BABYLON.GUI {
         }        
 
         private _rebuildContent(): void {
+            this._disposeFacadeTexture();
+
             let panel = new StackPanel();
             panel.isVertical = true;
+
+            if (this._imageUrl) {
+                let image = new BABYLON.GUI.Image();
+                image.source = this._imageUrl;
+                image.paddingTop = "40px";
+                image.height = "180px";
+                image.width = "100px";
+                image.paddingBottom = "40px";
+                panel.addControl(image);                
+            }
 
             if (this._text) {
                 let text = new BABYLON.GUI.TextBlock();
@@ -168,34 +195,26 @@ module BABYLON.GUI {
         protected _affectMaterial(mesh: Mesh) {
             // Back
             if (this._shareMaterials) {
-                if (!this._host.sharedMaterials["backFluentMaterial"]) {
+                if (!this._host._sharedMaterials["backFluentMaterial"]) {
                     this._createBackMaterial(mesh);
-                    this._host.sharedMaterials["backFluentMaterial"] =  this._backMaterial;
+                    this._host._sharedMaterials["backFluentMaterial"] =  this._backMaterial;
                 } else {
-                    this._backMaterial = this._host.sharedMaterials["backFluentMaterial"] as FluentMaterial;
+                    this._backMaterial = this._host._sharedMaterials["backFluentMaterial"] as FluentMaterial;
                 }
 
                 // Front
-                if (!this._host.sharedMaterials["frontFluentMaterial"]) {
+                if (!this._host._sharedMaterials["frontFluentMaterial"]) {
                     this._createFrontMaterial(mesh);
-                    this._host.sharedMaterials["frontFluentMaterial"] = this._frontMaterial;                
+                    this._host._sharedMaterials["frontFluentMaterial"] = this._frontMaterial;                
                 } else {
-                    this._frontMaterial = this._host.sharedMaterials["frontFluentMaterial"] as FluentMaterial;
+                    this._frontMaterial = this._host._sharedMaterials["frontFluentMaterial"] as FluentMaterial;
                 }  
-
-                // Plate
-                if (!this._host.sharedMaterials["plateMaterial"]) {
-                    this._createPlateMaterial(mesh);
-                    this._host.sharedMaterials["plateMaterial"] = this._plateMaterial;
-                } else {
-                    this._plateMaterial = this._host.sharedMaterials["plateMaterial"] as StandardMaterial;
-                }            
             } else {
                 this._createBackMaterial(mesh);
                 this._createFrontMaterial(mesh);
-                this._createPlateMaterial(mesh);
             }
 
+            this._createPlateMaterial(mesh);
             this._backPlate.material =  this._backMaterial;
             this._frontPlate.material = this._frontMaterial;
             this._textPlate.material = this._plateMaterial;

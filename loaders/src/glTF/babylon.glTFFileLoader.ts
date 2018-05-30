@@ -190,13 +190,15 @@ module BABYLON {
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         /**
          * Factory function that creates a glTF 1.0 loader
+         * @hidden
          */
-        public static CreateGLTFLoaderV1: () => IGLTFLoader;
+        public static _CreateGLTFLoaderV1: () => IGLTFLoader;
 
         /**
          * Factory function that creates a glTF 2.0 loader
+         * @hidden
          */
-        public static CreateGLTFLoaderV2: () => IGLTFLoader;
+        public static _CreateGLTFLoaderV2: () => IGLTFLoader;
 
         // #region Common options
 
@@ -577,8 +579,8 @@ module BABYLON {
             }
 
             const createLoaders: { [key: number]: () => IGLTFLoader } = {
-                1: GLTFFileLoader.CreateGLTFLoaderV1,
-                2: GLTFFileLoader.CreateGLTFLoaderV2
+                1: GLTFFileLoader._CreateGLTFLoaderV1,
+                2: GLTFFileLoader._CreateGLTFLoaderV2
             };
 
             const createLoader = createLoaders[version.major];

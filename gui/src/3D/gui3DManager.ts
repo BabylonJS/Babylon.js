@@ -3,6 +3,7 @@
 module BABYLON.GUI {
     /**
      * Class used to manage 3D user interface
+     * @see http://doc.babylonjs.com/how_to/gui3d
      */
     export class GUI3DManager implements BABYLON.IDisposable {
         private _scene: Scene;
@@ -10,6 +11,7 @@ module BABYLON.GUI {
         private _utilityLayer: Nullable<UtilityLayerRenderer>;
         private _rootContainer: Container3D;
         private _pointerObserver: Nullable<Observer<PointerInfoPre>>;
+        /** @hidden */
         public _lastPickedControl: Control3D;
         /** @hidden */
         public _lastControlOver: {[pointerId:number]: Control3D} = {};
@@ -22,13 +24,15 @@ module BABYLON.GUI {
         public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
 
         // Shared resources
-        public sharedMaterials: {[key:string]: Material} = {};     
+        /** @hidden */
+        public _sharedMaterials: {[key:string]: Material} = {};     
 
         /** Gets the hosting scene */
         public get scene(): Scene {
             return this._scene;
         }
 
+        /** Gets associated utility layer */
         public get utilityLayer(): Nullable<UtilityLayerRenderer> {
             return this._utilityLayer;
         }
@@ -53,6 +57,11 @@ module BABYLON.GUI {
             
             // Events
             this._pointerObserver = this._scene.onPrePointerObservable.add((pi, state) => {
+
+                if (pi.skipOnPointerObservable) {
+                    return;
+                }
+
                 let pointerEvent = <PointerEvent>(pi.event);
                 if (this._scene.isPointerCaptured(pointerEvent.pointerId)) {
                     return;
@@ -160,7 +169,7 @@ module BABYLON.GUI {
         }
 
         /**
-         * Removes the control from the root child list
+         * Removes a control from the root child list
          * @param control defines the control to remove
          * @returns the current container
          */
@@ -175,7 +184,15 @@ module BABYLON.GUI {
         public dispose() {
             this._rootContainer.dispose();
 
-            this.sharedMaterials = {};
+            for (var materialName in this._sharedMaterials) {
+                if (!this._sharedMaterials.hasOwnProperty(materialName)) {
+                    continue;
+                }
+
+                this._sharedMaterials[materialName].dispose();
+            }
+
+            this._sharedMaterials = {};
 
             this.onPickedPointChangedObservable.clear();
 
