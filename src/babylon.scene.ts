@@ -1271,7 +1271,7 @@
         }
 
         /**
-         * Gets the debug layer associated with the scene
+         * Gets the debug layer (aka Inspector) associated with the scene
          * @see http://doc.babylonjs.com/features/playground_debuglayer
          */
         public get debugLayer(): DebugLayer {
@@ -5716,11 +5716,14 @@
             if (!PickingInfo) {
                 return null;
             }
-
-            return this._internalPick(world => {
+            var result = this._internalPick(world => {
                 this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
                 return this._tempPickingRay!;
             }, predicate, fastCheck);
+            if(result){
+                result.ray = this.createPickingRay(x, y, Matrix.Identity(), camera || null);
+            }
+            return result;
         }
 
         /** Launch a ray to try to pick a sprite in the scene

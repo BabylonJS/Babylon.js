@@ -3,11 +3,11 @@ module INSPECTOR {
         private _elem: HTMLElement;
         protected _inspector: Inspector;
 
-        constructor(icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string) {
+        constructor(iconSet: string, icon: string, parent: HTMLElement, inspector: Inspector, tooltip: string) {
             this._inspector = inspector;
 
             this._elem = Inspector.DOCUMENT.createElement('i');
-            this._elem.className = `tool fa ${icon}`;
+            this._elem.className = `tool ${iconSet} ${icon}`;
             parent.appendChild(this._elem);
 
             this._elem.addEventListener('click', (e) => {

@@ -1022,7 +1022,7 @@ declare module BABYLON.GUI {
          * @param control defines the control to add
          * @returns the current container
          */
-        addControl(control: Control): Container;
+        addControl(control: Nullable<Control>): Container;
         /**
          * Removes a control from the current container
          * @param control defines the control to remove
@@ -2172,6 +2172,8 @@ declare module BABYLON.GUI {
         forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
         _processObservables(type: number, pickedPoint: Vector3, pointerId: number, buttonIndex: number): boolean;
+        /** @hidden */
+        _disposeNode(): void;
         /**
          * Releases all associated resources
          */
@@ -2246,7 +2248,7 @@ declare module BABYLON.GUI {
          */
         contentScaleRatio: number;
         protected _disposeFacadeTexture(): void;
-        private _resetContent();
+        protected _resetContent(): void;
         /**
          * Creates a new button
          * @param name defines the control name
