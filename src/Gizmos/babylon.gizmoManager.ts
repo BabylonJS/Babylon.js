@@ -71,9 +71,11 @@ module BABYLON {
 
         private _clearGizmos(){
             for(var key in this._gizmoSet){
-                this._gizmoSet[key].positionGizmo.dispose();
-                this._gizmoSet[key].rotationGizmo.dispose();
-                delete this._gizmoSet[key];
+                if(this._gizmoSet.hasOwnProperty(key)){
+                    this._gizmoSet[key].positionGizmo.dispose();
+                    this._gizmoSet[key].rotationGizmo.dispose();
+                    delete this._gizmoSet[key];
+                }
             }
         }
     }
