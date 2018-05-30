@@ -24,6 +24,7 @@
 - Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo and gizmoManager class used to manipulate meshes in a scene, position, rotation, scale gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
+- AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
 
 ### glTF Loader
 
