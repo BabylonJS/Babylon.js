@@ -1,9 +1,5 @@
 /// <reference path="../../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
 
-/**
- * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally
- * @hidden 
- */
 module BABYLON.GLTF2 {
     /** 
      * Utility interface for storing vertex attribute data
