@@ -5282,6 +5282,28 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
+        // /** @hidden */
+        // public _uploadArrayBufferToTexture(texture: InternalTexture, faceIndex: number, lod: number, data: ArrayBufferView, width = 0, height = 0) {
+        //     var gl = this._gl;
+
+        //     var textureType = this._getWebGLTextureType(texture.type);
+        //     var format = this._getInternalFormat(texture.format);
+        //     var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+
+        //     var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+        //     this._bindTextureDirectly(bindTarget, texture, true);
+        //     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.invertY ? 1 : 0);
+
+        //     var target = gl.TEXTURE_2D;
+        //     if (texture.isCube) {
+        //         var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+        //     }
+
+        //     gl.texImage2D(target, lod, internalFormat, width || texture.width, height || texture.height, 0, format, textureType, data);
+        //     this._bindTextureDirectly(bindTarget, null, true);
+        // }
+
         /** @hidden */
         public _uploadImageToTexture(texture: InternalTexture, faceIndex: number, lod: number, image: HTMLImageElement) {
             var gl = this._gl;
@@ -5290,14 +5312,39 @@
             var format = this._getInternalFormat(texture.format);
             var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
 
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
+            var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+            this._bindTextureDirectly(bindTarget, texture, true);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.invertY ? 1 : 0);
 
-            var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
-            gl.texImage2D(target, lod, internalFormat, format, textureType, image);
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
 
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null, true);
+            gl.texImage2D(target, lod, internalFormat, format, textureType, image);
+            this._bindTextureDirectly(bindTarget, null, true);
         }
+
+        // /** @hidden */
+        // public _copyCurrentFrameBufferToTexture(texture: InternalTexture, x: number, y: number, width: number, height: number, faceIndex: number = 0, level: number = 0) {
+        //     var gl = this._gl;
+
+        //     var format = this._getInternalFormat(texture.format);
+
+        //     var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+        //     this._bindTextureDirectly(bindTarget, texture, true);
+
+        //     var target = gl.TEXTURE_2D;
+        //     if (texture.isCube) {
+        //         var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+        //     }
+
+        //     gl.copyTexImage2D(target, level, format, x, y, width, height, 0);
+
+        //     this._bindTextureDirectly(bindTarget, null, true);
+        // }
 
         /**
          * Creates a new render target cube texture
