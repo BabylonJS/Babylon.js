@@ -1,4 +1,3 @@
-/// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
 import { mapperManager } from './configuration/mappers';
 import { viewerGlobals } from './configuration/globals';
 import { viewerManager } from './viewer/viewerManager';
@@ -40,7 +39,7 @@ function disposeAll() {
     telemetryManager.dispose();
 }
 
-const Version = BABYLON.Engine.Version;
+const Version = viewerGlobals.version;
 
 console.log("Babylon.js viewer (v" + Version + ")");
 

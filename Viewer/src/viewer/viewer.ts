@@ -11,7 +11,6 @@ import { CameraBehavior } from '../interfaces';
 import { viewerGlobals } from '../configuration/globals';
 import { extendClassWithConfig } from '../helper';
 import { telemetryManager } from '../telemetryManager';
-import { Version } from '..';
 import { deepmerge } from '../helper/';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
