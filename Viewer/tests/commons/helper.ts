@@ -117,7 +117,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
     }
 
     protected _initEngine() {
-        let config: any = this._configuration.engine || {};
+        let config: any = this.configuration.engine || {};
 
         // TDO enable further configuration
         config.engineOptions = config.engineOptions || {};
@@ -145,7 +145,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             window.addEventListener('resize', this._resize);
         }
 
-        if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
+        if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
@@ -161,7 +161,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
 export class NullEngineDefaultViewer extends DefaultViewer {
 
     protected _initEngine() {
-        let config: any = this._configuration.engine || {};
+        let config: any = this.configuration.engine || {};
         // TDO enable further configuration
         config.engineOptions = config.engineOptions || {};
 
@@ -187,7 +187,7 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             window.addEventListener('resize', this._resize);
         }
 
-        if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
+        if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
