@@ -27,6 +27,7 @@ export abstract class AbstractViewer {
      * The corresponsing template manager of this viewer.
      */
     public templateManager: TemplateManager;
+    // TODO get the template manager to the default viewer, if no one is extending the abstract viewer
 
     /**
      * Babylon Engine corresponding with this viewer
