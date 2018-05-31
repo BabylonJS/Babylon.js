@@ -1,4 +1,5 @@
-import { IImageProcessingConfiguration, IColorGradingConfiguration } from "./";
+import { IImageProcessingConfiguration } from "./imageProcessingConfiguration";
+import { IColorGradingConfiguration } from "./colorGradingConfiguration";
 import { IGlowLayerOptions } from "babylonjs";
 
 export interface ISceneConfiguration {

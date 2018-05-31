@@ -1,4 +1,3 @@
-import { ConfigurationContainer } from "./configurationContainer";
 import { Engine } from "babylonjs";
 
 export class ViewerGlobals {
