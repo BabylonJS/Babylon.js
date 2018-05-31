@@ -6,7 +6,7 @@ import { CameraBehavior } from '../interfaces';
 import { ViewerLabs } from '../labs/viewerLabs';
 import { getCustomOptimizerByName } from '../optimizer/custom/';
 import { ObservablesManager } from '../managers/observablesManager';
-import { ConfigurationContainer } from 'configuration/configurationContainer';
+import { ConfigurationContainer } from '../configuration/configurationContainer';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
