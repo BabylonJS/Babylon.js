@@ -19,7 +19,7 @@ import * as BABYLON from 'babylonjs';
 
 // load needed modules.
 import 'babylonjs-loaders';
-import 'pep';
+import 'pepjs';
 
 import { initListeners, InitTags } from './initializer';
 

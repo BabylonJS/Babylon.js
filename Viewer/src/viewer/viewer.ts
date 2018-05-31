@@ -160,6 +160,10 @@ export abstract class AbstractViewer {
 
     protected _configurationContainer: ConfigurationContainer;
 
+    public get configurationContainer() {
+        return this._configurationContainer;
+    }
+
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
@@ -347,7 +351,7 @@ export abstract class AbstractViewer {
         // update this.configuration with the new data
         this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
 
-        this.sceneManager.updateConfiguration(newConfiguration, this.configuration);
+        this.sceneManager.updateConfiguration(newConfiguration);
 
         // observers in configuration
         if (newConfiguration.observers) {
@@ -508,9 +512,8 @@ export abstract class AbstractViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-
         // create a new template manager for this viewer
-        this.sceneManager = new SceneManager(this.engine, this.observablesManager);
+        this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
 
         return Promise.resolve(this.engine);
     }
