@@ -1131,7 +1131,7 @@
         /**
          * Defines whether the engine has been created with the premultipliedAlpha option on or not.
          */
-        public readonly premultipliedAlpha: boolean = false;
+        public readonly premultipliedAlpha: boolean = true;
 
         /**
          * Creates a new engine
@@ -1184,6 +1184,9 @@
 
                 if (options.premultipliedAlpha) {
                     this.premultipliedAlpha = true;
+                }
+                else {
+                    this.premultipliedAlpha = false;
                 }
 
                 this._deterministicLockstep = options.deterministicLockstep;
