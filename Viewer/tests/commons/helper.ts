@@ -136,7 +136,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             return this.canvas;
         }
 
-        this.sceneManager = new SceneManager(this.engine, this.observablesManager);
+        this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
 
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;
@@ -178,7 +178,7 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             return this.canvas;
         }
 
-        this.sceneManager = new SceneManager(this.engine, this.observablesManager);
+        this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
 
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;

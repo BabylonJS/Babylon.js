@@ -2,7 +2,7 @@
 import { Observable, IFileRequest, Tools } from 'babylonjs';
 import { isUrl, camelToKebab, kebabToCamel } from '../helper';
 
-import * as Handlebars from 'handlebars';
+import * as Handlebars from 'handlebars/runtime';
 import { EventManager } from './eventManager';
 import { ITemplateConfiguration } from '../configuration/interfaces';
 import { deepmerge } from '../helper/';

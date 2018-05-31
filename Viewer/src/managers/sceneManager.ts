@@ -6,6 +6,7 @@ import { CameraBehavior } from '../interfaces';
 import { ViewerLabs } from '../labs/viewerLabs';
 import { getCustomOptimizerByName } from '../optimizer/custom/';
 import { ObservablesManager } from '../managers/observablesManager';
+import { ConfigurationContainer } from 'configuration/configurationContainer';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -89,8 +90,6 @@ export class SceneManager {
      */
     private _hdrSupport: boolean;
 
-    private _mainColor: Color3 = Color3.White();
-    private _reflectionColor = Color3.White();
     private readonly _white = Color3.White();
 
     private _forceShadowUpdate: boolean = false;
@@ -107,7 +106,7 @@ export class SceneManager {
         return this._defaultRenderingPipeline;
     }
 
-    constructor(private _engine: Engine, private _observablesManager?: ObservablesManager) {
+    constructor(private _engine: Engine, private _configurationContainer: ConfigurationContainer, private _observablesManager?: ObservablesManager) {
         this.models = [];
 
         this.onCameraConfiguredObservable = new Observable();
@@ -193,11 +192,11 @@ export class SceneManager {
      * Return the main color defined in the configuration.
      */
     public get mainColor(): Color3 {
-        return this._mainColor;
+        return this._configurationContainer.mainColor;
     }
 
     public get reflectionColor(): Color3 {
-        return this._reflectionColor;
+        return this._configurationContainer.reflectionColor;
     }
 
     public get animationBlendingEnabled() {
@@ -356,8 +355,6 @@ export class SceneManager {
 
         Animation.AllowMatricesInterpolation = true;
 
-        this._mainColor = Color3.White();
-
         /*if (sceneConfiguration.glow) {
             let options: Partial<IGlowLayerOptions> = {
                 mainTextureFixedSize: 512
@@ -388,9 +385,13 @@ export class SceneManager {
      * @param newConfiguration the delta that should be configured. This includes only the changes
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>) {
 
-        this._globalConfiguration = globalConfiguration;
+        if (this._configurationContainer) {
+            this._globalConfiguration = this._configurationContainer.configuration;
+        } else {
+            this._globalConfiguration = newConfiguration;
+        }
 
         if (newConfiguration.lab) {
             if (newConfiguration.lab.assetsRootURL) {
@@ -632,28 +633,28 @@ export class SceneManager {
 
         // process mainColor changes:
         if (sceneConfig.mainColor) {
-            this._mainColor = this._mainColor || Color3.White();
+            this._configurationContainer.mainColor = this.mainColor || Color3.White();
             let mc = sceneConfig.mainColor;
             if (mc.r !== undefined) {
-                this._mainColor.r = mc.r;
+                this.mainColor.r = mc.r;
             }
             if (mc.g !== undefined) {
-                this._mainColor.g = mc.g
+                this.mainColor.g = mc.g
             }
             if (mc.b !== undefined) {
-                this._mainColor.b = mc.b
+                this.mainColor.b = mc.b
             }
 
-            this._reflectionColor.copyFrom(this.mainColor);
+            this.reflectionColor.copyFrom(this.mainColor);
 
 
             let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._globalConfiguration) || 0;
 
             // reflection color
-            this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
-            this._reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this._reflectionColor);
-            let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
-            this._reflectionColor.copyFrom(tmpColor3);
+            this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
+            this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
+            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
+            this.reflectionColor.copyFrom(tmpColor3);
 
             //update the environment, if exists
             if (this.environmentHelper) {
