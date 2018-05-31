@@ -1,4 +1,4 @@
-import { IImageProcessingConfiguration } from "./";
+import { IImageProcessingConfiguration } from "./imageProcessingConfiguration";
 
 export interface ISkyboxConfiguration {
     cubeTexture?: {

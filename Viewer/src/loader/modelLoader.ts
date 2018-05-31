@@ -1,6 +1,7 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags } from "babylonjs";
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders";
-import { IModelConfiguration, ViewerConfiguration } from "../configuration";
+import { ViewerConfiguration } from "../configuration/configuration";
+import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { ViewerModel, ModelState } from "../model/viewerModel";
 import { getLoaderPluginByName, TelemetryLoaderPlugin, ILoaderPlugin } from './plugins/';
 import { ObservablesManager } from "../managers/observablesManager";
