@@ -1,4 +1,4 @@
-import * as deepmerge from '../../assets/deepmerge.min.js';
+import * as deepmerge from 'deepmerge';
 
 export { deepmerge };
 
