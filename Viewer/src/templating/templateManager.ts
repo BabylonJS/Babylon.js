@@ -2,7 +2,7 @@
 import { Observable, IFileRequest, Tools } from 'babylonjs';
 import { isUrl, camelToKebab, kebabToCamel } from '../helper';
 
-import * as Handlebars from '../../assets/handlebars.min.js';
+import * as Handlebars from 'handlebars';
 import { EventManager } from './eventManager';
 import { ITemplateConfiguration } from '../configuration/interfaces';
 import { deepmerge } from '../helper/';
@@ -321,7 +321,7 @@ export class Template {
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
-                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && this._configuration.params.noEscape) });
+                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && !!this._configuration.params.noEscape) });
                 let config = this._configuration.params || {};
                 this._rawHtml = compiledTemplate(config);
                 try {
