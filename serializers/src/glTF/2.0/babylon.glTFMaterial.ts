@@ -241,7 +241,7 @@ module BABYLON.GLTF2 {
         public static _GetAlphaMode(babylonMaterial: Material): Nullable<MaterialAlphaMode> {
             if (babylonMaterial instanceof StandardMaterial) {
                 const babylonStandardMaterial = babylonMaterial as StandardMaterial;
-                if ((babylonStandardMaterial.alpha !== 1.0) ||
+                if ((babylonStandardMaterial.alpha != 1.0) ||
                     (babylonStandardMaterial.diffuseTexture != null && babylonStandardMaterial.diffuseTexture.hasAlpha) ||
                     (babylonStandardMaterial.opacityTexture != null)) {
                     return MaterialAlphaMode.BLEND;
@@ -1043,7 +1043,7 @@ module BABYLON.GLTF2 {
                         babylonPBRMaterial.albedoColor.r,
                         babylonPBRMaterial.albedoColor.g,
                         babylonPBRMaterial.albedoColor.b,
-                        babylonPBRMaterial.alpha
+                        Number(babylonPBRMaterial.alpha)
                     ]
                 }
                 return this._ConvertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, images, textures, samplers, glTFPbrMetallicRoughness, imageData, hasTextureCoords).then(metallicRoughness => {
@@ -1078,7 +1078,7 @@ module BABYLON.GLTF2 {
                         metallicRoughness.baseColor.r,
                         metallicRoughness.baseColor.g,
                         metallicRoughness.baseColor.b,
-                        babylonPBRMaterial.alpha
+                        Number(babylonPBRMaterial.alpha)
                     ];
                 }
 
