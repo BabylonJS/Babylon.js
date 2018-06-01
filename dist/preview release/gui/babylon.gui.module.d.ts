@@ -2241,10 +2241,15 @@ declare module BABYLON.GUI {
          * Releases all associated resources
          */
         dispose(): void;
+        /** Control rotation will remain unchanged  */
         static readonly UNSET_ORIENTATION: number;
+        /** Control will rotate to make it look at sphere central axis */
         static readonly FACEORIGIN_ORIENTATION: number;
+        /** Control will rotate to make it look back at sphere central axis */
         static readonly FACEORIGINREVERSED_ORIENTATION: number;
+        /** Control will rotate to look at z axis (0, 0, 1) */
         static readonly FACEFORWARD_ORIENTATION: number;
+        /** Control will rotate to look at negative z axis (0, 0, -1) */
         static readonly FACEFORWARDREVERSED_ORIENTATION: number;
     }
 }
