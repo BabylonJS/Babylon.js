@@ -280,9 +280,10 @@ export class ViewerModel implements IDisposable {
      */
     private _enterScene(completeCallback?: () => void): void {
         const scene = this.rootMesh.getScene();
+        let previousValue = scene.animationPropertiesOverride!.enableBlending;
         let callback = () => {
             this.state = ModelState.ENTRYDONE;
-            scene.animationPropertiesOverride!.enableBlending = true;
+            scene.animationPropertiesOverride!.enableBlending = previousValue;
             this._checkCompleteState();
             if (completeCallback) completeCallback();
         }
