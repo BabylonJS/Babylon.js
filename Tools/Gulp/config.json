@@ -1249,7 +1249,8 @@
         "serializers",
         "inspector",
         "gui",
-        "viewer"
+        "viewer",
+        "viewer-assets"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1835,6 +1836,7 @@
                 "name": "babylonjs-viewer",
                 "main": "../../Viewer/dist/build/src/index.d.ts",
                 "out": "../../../../dist/preview release/viewer/babylon.viewer.module.d.ts",
+                "legacyDeclaration": true,
                 "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "outputs": [
@@ -1865,6 +1867,50 @@
                         {
                             "filename": "babylon.viewer.max.js",
                             "outputDirectory": "/viewer/"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "viewer-assets": {
+        "libraries": [
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.viewer.assets.js",
+                "webpack": "../../Viewer/webpack.assets.config.js",
+                "bundle": "true",
+                "moduleDeclaration": {
+                    "name": "BabylonViewerAssets",
+                    "module": "babylonjs-viewer-assets"
+                },
+                "babylonIncluded": true
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../Viewer/",
+            "dtsBundle": {
+                "name": "babylonjs-viewer-assets",
+                "baseDir": "../../Viewer/dist/build/src/assets/",
+                "main": "../../Viewer/dist/build/src/assets/index.d.ts",
+                "out": "../../../babylon.viewer.assets.module.d.ts"
+            },
+            "outputs": [
+                {
+                    "destination": [
+                        {
+                            "filename": "babylon.viewer.assets.js",
+                            "outputDirectory": "/../../Viewer/dist/"
+                        }
+                    ],
+                    "minified": true
+                },
+                {
+                    "destination": [
+                        {
+                            "filename": "babylon.viewer.assets.max.js",
+                            "outputDirectory": "/../../Viewer/dist/"
                         }
                     ]
                 }
