@@ -36,13 +36,8 @@ module BABYLON {
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOrVideo
-         * @param options An object containing optional or exposed sub element properties:
-         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
-         * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
-         * @param options **autoPlay=true** Automatically attempt to being playing the video.
-         * @param options **loop=true** Automatically loop video on end.
-         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
+         * @param urlsOrVideo defines the url(s) or the video element to use
+         * @param options An object containing optional or exposed sub element properties
          */
         constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
             resolution?: number,
