@@ -1,5 +1,4 @@
 import { Engine, Observable } from "babylonjs";
-import { AbstractViewer } from "./viewer/viewer";
 
 /**
  * The data structure of a telemetry event.
@@ -9,7 +8,7 @@ export interface TelemetryData {
     session: string;
     date: Date;
     now: number;
-    viewer?: AbstractViewer
+    viewerId?: string;
     detail: any;
 }
 
@@ -22,7 +21,7 @@ export class TelemetryManager {
 
     private _currentSessionId: string;
 
-    private _event: (event: string, viewer: AbstractViewer, details?: any) => void = this._eventEnabled;
+    private _event: (event: string, viewerId?: string, details?: any) => void = this._eventEnabled;
 
     /**
      * Receives a telemetry event
@@ -37,8 +36,7 @@ export class TelemetryManager {
      * Log a Telemetry event for errors raised on the WebGL context.
      * @param engine The Babylon engine with the WebGL context.
      */
-    public flushWebGLErrors(viewer: AbstractViewer) {
-        const engine = viewer.engine;
+    public flushWebGLErrors(engine: Engine, viewerId?: string) {
         if (!engine) {
             return;
         }
@@ -51,7 +49,7 @@ export class TelemetryManager {
                 if (error === gl.NO_ERROR) {
                     logErrors = false;
                 } else {
-                    this.broadcast("WebGL Error", viewer, { error: error });
+                    this.broadcast("WebGL Error", viewerId, { error: error });
                 }
             } else {
                 logErrors = false;
@@ -83,9 +81,9 @@ export class TelemetryManager {
      * @param event - The name of the Telemetry event
      * @param details An additional value, or an object containing a list of property/value pairs
      */
-    private _eventEnabled(event: string, viewer?: AbstractViewer, details?: any): void {
+    private _eventEnabled(event: string, viewerId?: string, details?: any): void {
         let telemetryData: TelemetryData = {
-            viewer,
+            viewerId,
             event: event,
             session: this.session,
             date: new Date(),
