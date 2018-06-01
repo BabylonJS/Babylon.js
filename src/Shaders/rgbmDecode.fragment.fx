@@ -6,5 +6,5 @@ uniform sampler2D textureSampler;
 
 void main(void) 
 {
-	gl_FragColor = vec4(fromRGBM(texture2D(textureSampler, vUV)), 1.0);
+	gl_FragColor = vec4(fromRGBD(texture2D(textureSampler, vUV)), 1.0);
 }
