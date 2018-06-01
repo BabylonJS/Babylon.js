@@ -1,0 +1,9 @@
+export const defaultTemplate = require('../../assets/templates/default/defaultTemplate.html');
+export const defaultViewer = require('../../assets/templates/default/defaultViewer.html');
+export const error = require('../../assets/templates/default/error.html');
+export const fillContainer = require('../../assets/templates/default/fillContainer.html');
+export const help = require('../../assets/templates/default/help.html');
+export const loadingScreen = require('../../assets/templates/default/loadingScreen.html');
+export const navbar = require('../../assets/templates/default/navbar.html');
+export const overlay = require('../../assets/templates/default/overlay.html');
+export const share = require('../../assets/templates/default/share.html');
