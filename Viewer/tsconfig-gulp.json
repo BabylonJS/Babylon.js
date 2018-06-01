@@ -36,6 +36,9 @@
             ],
             "handlebars": [
                 "./templates/handlebars.d.ts"
+            ],
+            "babylonjs-viewer-assets": [
+                "./assets/"
             ]
         },
         "outDir": "./dist/build"
