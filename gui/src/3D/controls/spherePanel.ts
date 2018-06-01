@@ -15,7 +15,7 @@ module BABYLON.GUI {
         /**
          * Gets or sets the distance between elements
          */
-        public margin = 0.1;        
+        public margin = 0;        
 
         /**
          * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
@@ -137,8 +137,8 @@ module BABYLON.GUI {
                 cellHeight = Math.max(cellHeight, extendSize.y * 2);
             }
 
-       //     cellWidth += this.margin * 2;
-         //   cellHeight += this.margin * 2;
+            cellWidth += this.margin * 2;
+            cellHeight += this.margin * 2;
 
             // Arrange
             if (this._rowThenColum) {
@@ -191,10 +191,10 @@ module BABYLON.GUI {
 
                 switch (this._orientation) {
                     case Container3D.FACEORIGIN_ORIENTATION:
-                        child.mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
+                        child.mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                         break;
                     case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        child.mesh.lookAt(new BABYLON.Vector3(newPos.x, 0, newPos.z));
+                        child.mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
                         break;
                     case Container3D.FACEFORWARD_ORIENTATION:
                         child.mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
