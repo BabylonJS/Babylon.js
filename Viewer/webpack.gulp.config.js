@@ -1,5 +1,5 @@
 module.exports = {
-    // context: __dirname,
+    //context: __dirname,
     entry: [
         __dirname + '/src/index.ts'
     ]
@@ -19,7 +19,8 @@ module.exports = {
         alias: {
             "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
             "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
-            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js'
+            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
+            "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
         }
     },
     module: {

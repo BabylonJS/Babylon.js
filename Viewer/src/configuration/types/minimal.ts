@@ -1,4 +1,6 @@
 import { ViewerConfiguration } from './../configuration';
+import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, error } from 'babylonjs-viewer-assets';
+import { loading, close } from 'babylonjs-viewer-assets';
 
 /**
  * The minimal configuration needed to make the viewer work.
@@ -8,33 +10,33 @@ export let minimalConfiguration: ViewerConfiguration = {
     version: "0.1",
     templates: {
         main: {
-            html: require("../../../assets/templates/default/defaultTemplate.html")
+            html: defaultTemplate
         },
         fillContainer: {
-            html: require("../../../assets/templates/default/fillContainer.html"),
+            html: fillContainer,
             params: {
                 disable: false
             }
         },
         loadingScreen: {
-            html: require("../../../assets/templates/default/loadingScreen.html"),
+            html: loadingScreen,
             params: {
                 backgroundColor: "#000000",
-                loadingImage: require('../../../assets/img/loading.png')
+                loadingImage: loading
             }
         },
         viewer: {
-            html: require("../../../assets/templates/default/defaultViewer.html"),
+            html: defaultViewer,
         },
         overlay: {
-            html: require("../../../assets/templates/default/overlay.html"),
+            html: overlay,
             params: {
-                closeImage: require('../../../assets/img/close.png'),
+                closeImage: close,
                 closeText: 'Close'
             }
         },
         error: {
-            html: require("../../../assets/templates/default/error.html")
+            html: error
         }
 
     },
