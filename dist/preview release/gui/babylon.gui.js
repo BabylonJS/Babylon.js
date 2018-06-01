@@ -7455,10 +7455,15 @@ var BABYLON;
                 this._children = [];
                 _super.prototype.dispose.call(this);
             };
+            /** Control rotation will remain unchanged  */
             Container3D.UNSET_ORIENTATION = 0;
+            /** Control will rotate to make it look at sphere central axis */
             Container3D.FACEORIGIN_ORIENTATION = 1;
+            /** Control will rotate to make it look back at sphere central axis */
             Container3D.FACEORIGINREVERSED_ORIENTATION = 2;
+            /** Control will rotate to look at z axis (0, 0, 1) */
             Container3D.FACEFORWARD_ORIENTATION = 3;
+            /** Control will rotate to look at negative z axis (0, 0, -1) */
             Container3D.FACEFORWARDREVERSED_ORIENTATION = 4;
             return Container3D;
         }(GUI.Control3D));
@@ -7999,7 +8004,7 @@ var BABYLON;
                 /**
                  * Gets or sets the distance between elements
                  */
-                _this.margin = 0.1;
+                _this.margin = 0;
                 return _this;
             }
             Object.defineProperty(SpherePanel.prototype, "orientation", {
@@ -8114,8 +8119,8 @@ var BABYLON;
                     cellWidth = Math.max(cellWidth, extendSize.x * 2);
                     cellHeight = Math.max(cellHeight, extendSize.y * 2);
                 }
-                //     cellWidth += this.margin * 2;
-                //   cellHeight += this.margin * 2;
+                cellWidth += this.margin * 2;
+                cellHeight += this.margin * 2;
                 // Arrange
                 if (this._rowThenColum) {
                     columns = this._columns;
@@ -8160,10 +8165,10 @@ var BABYLON;
                     var newPos = this._sphericalMapping(nodeGrid[cellCounter]);
                     switch (this._orientation) {
                         case GUI.Container3D.FACEORIGIN_ORIENTATION:
-                            child.mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
+                            child.mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                             break;
                         case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                            child.mesh.lookAt(new BABYLON.Vector3(newPos.x, 0, newPos.z));
+                            child.mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
                             break;
                         case GUI.Container3D.FACEFORWARD_ORIENTATION:
                             child.mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
