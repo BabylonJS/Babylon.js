@@ -1,6 +1,7 @@
 import { BABYLON, AbstractViewer, DefaultViewer, ViewerModel, viewerGlobals, AnimationPlayMode, AnimationState } from "../../src";
 import { ViewerConfiguration } from "../../src/configuration/configuration";
 import { IModelAnimation } from "../../src/model/modelAnimation";
+import { SceneManager } from "../../src/managers/sceneManager";
 
 export const useNullEngine = true;
 
@@ -116,7 +117,8 @@ export class NullEngineAbstractViewer extends AbstractViewer {
     }
 
     protected _initEngine() {
-        let config: any = this._configuration.engine || {};
+        let config: any = this.configuration.engine || {};
+
         // TDO enable further configuration
         config.engineOptions = config.engineOptions || {};
 
@@ -134,6 +136,8 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             return this.canvas;
         }
 
+        this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
+
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;
 
@@ -141,7 +145,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             window.addEventListener('resize', this._resize);
         }
 
-        if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
+        if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
@@ -157,7 +161,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
 export class NullEngineDefaultViewer extends DefaultViewer {
 
     protected _initEngine() {
-        let config: any = this._configuration.engine || {};
+        let config: any = this.configuration.engine || {};
         // TDO enable further configuration
         config.engineOptions = config.engineOptions || {};
 
@@ -174,6 +178,8 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             return this.canvas;
         }
 
+        this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
+
         // Disable manifest checking
         BABYLON.Database.IDBStorageEnabled = false;
 
@@ -181,7 +187,7 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             window.addEventListener('resize', this._resize);
         }
 
-        if (this._configuration.engine && this._configuration.engine.adaptiveQuality) {
+        if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }

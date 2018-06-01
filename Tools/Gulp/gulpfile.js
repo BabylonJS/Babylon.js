@@ -466,12 +466,13 @@ var buildExternalLibrary = function (library, settings, watch) {
                         // create the file
                         dtsBundle.bundle(settings.build.dtsBundle);
                         // prepend the needed reference
-                        fs.readFile(settings.build.dtsBundle.out, function (err, data) {
+                        let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
+                        fs.readFile(fileLocation, function (err, data) {
                             if (err) throw err;
                             data = settings.build.dtsBundle.prependText + '\n' + data.toString();
-                            fs.writeFile(settings.build.dtsBundle.out, data);
+                            fs.writeFile(fileLocation, data);
                             var newData = processViewerDeclaration(data);
-                            fs.writeFile(settings.build.dtsBundle.out.replace('.module', ''), newData);
+                            fs.writeFile(fileLocation.replace('.module', ''), newData);
                         });
                     });
                 }
@@ -957,7 +958,7 @@ gulp.task("typedoc-all", function (cb) {
  * Validate compile the code and check the comments and style case convention through typedoc
  */
 gulp.task("typedoc-check", function (cb) {
-    runSequence("typescript-compile", "typedoc-generate", "typedoc-validate", cb);
+    runSequence("typescript-compile", "gui", "loaders", "serializers", "typedoc-generate", "typedoc-validate", cb);
 });
 
 /**

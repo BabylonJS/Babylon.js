@@ -95,6 +95,8 @@
             "physics",
             "textureFormats",
             "debug",
+            "utilityLayer",
+            "gizmos",
             "morphTargets",
             "octrees",
             "vr",
@@ -113,7 +115,8 @@
             "backgroundMaterial",
             "environmentHelper",
             "particleHelper",
-            "videoDome"
+            "videoDome",
+            "photoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -1020,15 +1023,7 @@
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
                 "../../src/Debug/babylon.physicsViewer.js",
-                "../../src/Rendering/babylon.boundingBoxRenderer.js",
-                "../../src/Rendering/babylon.utilityLayerRenderer.js",
-                "../../src/Gizmos/babylon.gizmo.js",
-                "../../src/Gizmos/babylon.axisDragGizmo.js",
-                "../../src/Gizmos/babylon.axisScaleGizmo.js",
-                "../../src/Gizmos/babylon.planeRotationGizmo.js",
-                "../../src/Gizmos/babylon.positionGizmo.js",
-                "../../src/Gizmos/babylon.rotationGizmo.js",
-                "../../src/Gizmos/babylon.scaleGizmo.js"
+                "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],
             "dependUpon": [
                 "shaderMaterial",
@@ -1038,6 +1033,31 @@
                 "actions"
             ],
             "shaders": []
+        },
+        "utilityLayer": {
+            "files": [
+                "../../src/Rendering/babylon.utilityLayerRenderer.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "gizmos": {
+            "files": [
+                "../../src/Gizmos/babylon.gizmo.js",
+                "../../src/Gizmos/babylon.axisDragGizmo.js",
+                "../../src/Gizmos/babylon.axisScaleGizmo.js",
+                "../../src/Gizmos/babylon.planeRotationGizmo.js",
+                "../../src/Gizmos/babylon.positionGizmo.js",
+                "../../src/Gizmos/babylon.rotationGizmo.js",
+                "../../src/Gizmos/babylon.scaleGizmo.js",
+                "../../src/Gizmos/babylon.gizmoManager.js"
+            ],
+            "dependUpon": [
+                "core",
+                "utilityLayer",
+                "meshBehaviors"
+            ]
         },
         "morphTargets": {
             "files": [
@@ -1199,6 +1219,16 @@
         "videoDome": {
             "files": [
                 "../../src/Helpers/babylon.videoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
+                "additionalTextures"
+            ]
+        },
+        "photoDome": {
+            "files": [
+                "../../src/Helpers/babylon.photoDome.js"
             ],
             "dependUpon": [
                 "core",
@@ -1693,7 +1723,8 @@
                     "../../gui/src/3D/controls/container3D.ts",
                     "../../gui/src/3D/controls/button3D.ts",
                     "../../gui/src/3D/controls/holographicButton.ts",
-                    "../../gui/src/3D/controls/stackPanel3D.ts"
+                    "../../gui/src/3D/controls/stackPanel3D.ts",
+                    "../../gui/src/3D/controls/spherePanel.ts"
                 ],
                 "shaderFiles": [
                     "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
@@ -1814,8 +1845,8 @@
             "srcOutputDirectory": "../../Viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer",
-                "main": "../../Viewer/src/index.d.ts",
-                "out": "../../dist/preview release/viewer/babylon.viewer.module.d.ts",
+                "main": "../../Viewer/dist/build/src/index.d.ts",
+                "out": "../../../../dist/preview release/viewer/babylon.viewer.module.d.ts",
                 "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "outputs": [
