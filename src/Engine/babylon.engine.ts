@@ -5391,8 +5391,8 @@
          * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
          * @param rootUrl defines the url where the file to load is located
          * @param scene defines the current scene
-         * @param scale defines scale to apply to the mip map selection
-         * @param offset defines offset to apply to the mip map selection
+         * @param lodScale defines scale to apply to the mip map selection
+         * @param lodOffset defines offset to apply to the mip map selection
          * @param onLoad defines an optional callback raised when the texture is loaded
          * @param onError defines an optional callback raised if there is an issue to load the texture
          * @param format defines the format of the data
@@ -5400,7 +5400,7 @@
          * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
          * @returns the cube texture as an InternalTexture
          */
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number,
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
             onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
             onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null,
             createPolynomials: boolean = true): InternalTexture {
@@ -5420,8 +5420,6 @@
                     texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
                 }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
-                texture._lodGenerationScale = scale;
-                texture._lodGenerationOffset = offset;
 
                 if (this._caps.textureLOD) {
                     // Do not add extra process if texture lod is supported.
@@ -5445,8 +5443,8 @@
                     let smoothness = i / (mipSlices - 1);
                     let roughness = 1 - smoothness;
 
-                    let minLODIndex = offset; // roughness = 0
-                    let maxLODIndex = Scalar.Log2(width) * scale + offset; // roughness = 1
+                    let minLODIndex = lodOffset; // roughness = 0
+                    let maxLODIndex = Scalar.Log2(width) * lodScale + lodOffset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
@@ -5491,7 +5489,7 @@
                 }
             };
 
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
         }
 
         /**
@@ -5505,15 +5503,19 @@
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param createPolynomials if a polynomial sphere should be created for the cube texture
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0): InternalTexture {
             var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
+            texture._lodGenerationScale = lodScale;
+            texture._lodGenerationOffset = lodOffset;
 
             if (!this._doNotHandleContextLost) {
                 texture._extension = forcedExtension;
