@@ -509,7 +509,7 @@ void main(void) {
         #endif
 
         #ifdef GAMMAREFRACTION
-            environmentRefraction.rgb = fromRGBM(environmentRefraction);
+            environmentRefraction.rgb = fromRGBD(environmentRefraction);
         #endif
 
         #ifdef RGBMREFRACTION
@@ -590,7 +590,7 @@ void main(void) {
         #endif
 
         #ifdef RGBMREFLECTION
-            environmentRadiance.rgb = fromRGBM(environmentRadiance);
+            environmentRadiance.rgb = fromRGBD(environmentRadiance);
         #endif
 
         #ifdef GAMMAREFLECTION
