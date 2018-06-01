@@ -39,7 +39,7 @@
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 - Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
 - New lab feature - global light rotation [#4347](https://github.com/BabylonJS/Babylon.js/issues/4347) ([RaananW](https://github.com/RaananW))
-- New package - babylonjs-viewer-assets, to seperate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
+- New package - babylonjs-viewer-assets, to separate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
