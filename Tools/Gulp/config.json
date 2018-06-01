@@ -115,7 +115,8 @@
             "backgroundMaterial",
             "environmentHelper",
             "particleHelper",
-            "videoDome"
+            "videoDome",
+            "photoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -1218,6 +1219,16 @@
         "videoDome": {
             "files": [
                 "../../src/Helpers/babylon.videoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
+                "additionalTextures"
+            ]
+        },
+        "photoDome": {
+            "files": [
+                "../../src/Helpers/babylon.photoDome.js"
             ],
             "dependUpon": [
                 "core",
