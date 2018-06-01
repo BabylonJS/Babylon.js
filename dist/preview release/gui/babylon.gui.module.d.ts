@@ -1908,7 +1908,7 @@ declare module BABYLON.GUI {
          * @param scene
          */
         constructor(scene?: Scene);
-        private _doPicking(type, pointerEvent, ray?);
+        private _doPicking(pi);
         /**
          * Gets the root container
          */
@@ -2192,10 +2192,16 @@ declare module BABYLON.GUI {
      * Class used to create containers for controls
      */
     class Container3D extends Control3D {
+        private _blockLayout;
         /**
          * Gets the list of child controls
          */
         protected _children: Control3D[];
+        /**
+         * Gets or sets a boolean indicating if the layout must be blocked (default is false).
+         * This is helpful to optimize layout operation when adding multiple children in a row
+         */
+        blockLayout: boolean;
         /**
          * Creates a new container
          * @param name defines the container name
@@ -2371,6 +2377,11 @@ declare module BABYLON.GUI {
     class SpherePanel extends Container3D {
         private _radius;
         private _columns;
+        private _rowThenColum;
+        /**
+         * Gets or sets a boolean indicating if the layout must first fill rows then columns or the opposite (true by default)
+         */
+        rowThenColum: boolean;
         /**
          * Gets or sets a the radius of the sphere where to project controls (5 by default)
          */

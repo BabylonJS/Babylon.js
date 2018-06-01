@@ -7,6 +7,26 @@ module BABYLON.GUI {
     export class SpherePanel extends Container3D {
         private _radius = 5.0;
         private _columns = 10;
+        private _rowThenColum = true;
+
+        /**
+         * Gets or sets a boolean indicating if the layout must first fill rows then columns or the opposite (true by default)
+         */
+        public get rowThenColum(): boolean {
+            return this._rowThenColum;
+        }
+
+        public set rowThenColum(value: boolean) {
+            if (this._rowThenColum === value) {
+                return;
+            }
+
+            this._rowThenColum = value;
+
+            Tools.SetImmediate(() => {
+                this._arrangeChildren();               
+            });
+        }              
 
         /**
          * Gets or sets a the radius of the sphere where to project controls (5 by default)
@@ -79,6 +99,7 @@ module BABYLON.GUI {
                 cellHeight = Math.max(cellHeight, extendSize.y * 2);
             }
 
+            console.log(cellWidth + "x" + cellHeight)
             // Arrange
             rows = Math.ceil(controlCount / this._columns);
 
@@ -87,15 +108,30 @@ module BABYLON.GUI {
             let nodeGrid = [];
             let cellCounter = 0;
 
-            for (var c = 0; c < this._columns; c++)
-            {
+            if (this._rowThenColum) {
                 for (var r = 0; r < rows; r++)
                 {
-                    nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) + startOffsetY - cellHeight / 2, 0));
-                    cellCounter++;
-                    if (cellCounter > controlCount)
+                    for (var c = 0; c < this._columns; c++)
                     {
-                        break;
+                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) - startOffsetY - cellHeight / 2, 0));
+                        cellCounter++;
+                        if (cellCounter > controlCount)
+                        {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (var c = 0; c < this._columns; c++)
+                {
+                    for (var r = 0; r < rows; r++)
+                    {
+                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) - startOffsetY - cellHeight / 2, 0));
+                        cellCounter++;
+                        if (cellCounter > controlCount)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -117,12 +153,12 @@ module BABYLON.GUI {
         {
             let newPos = new Vector3(0, 0, this._radius);
 
-            let xAngle = (source.x / this._radius) ;
-            let yAngle = -(source.y / this._radius);
+            let xAngle = (source.y / this._radius);
+            let yAngle = -(source.x / this._radius);
 
             Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, Tmp.Matrix[0]);
 
-            return Vector3WithInfo.TransformCoordinates(newPos, Tmp.Matrix[0]);
+            return Vector3.TransformCoordinates(newPos, Tmp.Matrix[0]);
         }
     }
 }

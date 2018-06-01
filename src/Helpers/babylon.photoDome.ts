@@ -36,10 +36,8 @@ module BABYLON {
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOfPhoto
-         * @param options An object containing optional or exposed sub element properties:
-         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
-         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
+         * @param urlsOfPhoto define the url of the photo to display
+         * @param options An object containing optional or exposed sub element properties
          */
         constructor(name: string, urlOfPhoto: string, options: {
             resolution?: number,
