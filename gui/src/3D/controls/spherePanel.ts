@@ -7,29 +7,44 @@ module BABYLON.GUI {
     export class SpherePanel extends Container3D {
         private _radius = 5.0;
         private _columns = 10;
+        private _rows = 0;
         private _rowThenColum = true;
+        
+        private _orientation = Container3D.FACEORIGIN_ORIENTATION;
 
         /**
-         * Gets or sets a boolean indicating if the layout must first fill rows then columns or the opposite (true by default)
+         * Gets or sets the distance between elements
          */
-        public get rowThenColum(): boolean {
-            return this._rowThenColum;
+        public margin = 0.1;        
+
+        /**
+         * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
+        * | Value | Type                                | Description |
+        * | ----- | ----------------------------------- | ----------- |
+        * | 0     | UNSET_ORIENTATION                   |  Control rotation will remain unchanged |
+        * | 1     | FACEORIGIN_ORIENTATION              |  Control will rotate to make it look at sphere central axis |
+        * | 2     | FACEORIGINREVERSED_ORIENTATION      |  Control will rotate to make it look back at sphere central axis |
+        * | 3     | FACEFORWARD_ORIENTATION             |  Control will rotate to look at z axis (0, 0, 1) |
+        * | 4     | FACEFORWARDREVERSED_ORIENTATION     |  Control will rotate to look at negative z axis (0, 0, -1) |
+         */
+        public get orientation(): number {
+            return this._orientation;
         }
 
-        public set rowThenColum(value: boolean) {
-            if (this._rowThenColum === value) {
+        public set orientation(value: number) {
+            if (this._orientation === value) {
                 return;
             }
 
-            this._rowThenColum = value;
+            this._orientation = value;
 
             Tools.SetImmediate(() => {
                 this._arrangeChildren();               
             });
-        }              
-
+        }   
+         
         /**
-         * Gets or sets a the radius of the sphere where to project controls (5 by default)
+         * Gets or sets the radius of the sphere where to project controls (5 by default)
          */
         public get radius(): float {
             return this._radius;
@@ -48,8 +63,8 @@ module BABYLON.GUI {
         }        
 
         /**
-         * Gets or sets a the number of columns requested (10 by default). 
-         * The panel will automatically compute the number of rows based on number of child controls 
+         * Gets or sets the number of columns requested (10 by default). 
+         * The panel will automatically compute the number of rows based on number of child controls. 
          */
         public get columns(): int {
             return this._columns;
@@ -61,11 +76,33 @@ module BABYLON.GUI {
             }
 
             this._columns = value;
+            this._rowThenColum = true;
 
             Tools.SetImmediate(() => {
                 this._arrangeChildren();               
             });
-        }         
+        }     
+        
+        /**
+         * Gets or sets a the number of rows requested. 
+         * The panel will automatically compute the number of columns based on number of child controls. 
+         */
+        public get rows(): int {
+            return this._rows;
+        }
+
+        public set rows(value: int) {
+            if (this._rows === value) {
+                return;
+            }
+
+            this._rows = value;
+            this._rowThenColum = false;
+
+            Tools.SetImmediate(() => {
+                this._arrangeChildren();               
+            });
+        }           
 
         /**
          * Creates new SpherePanel
@@ -78,6 +115,7 @@ module BABYLON.GUI {
             let cellWidth = 0;
             let cellHeight = 0;
             let rows = 0;
+            let columns = 0;
             let controlCount = 0;
 
             let currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
@@ -99,11 +137,19 @@ module BABYLON.GUI {
                 cellHeight = Math.max(cellHeight, extendSize.y * 2);
             }
 
-            console.log(cellWidth + "x" + cellHeight)
-            // Arrange
-            rows = Math.ceil(controlCount / this._columns);
+       //     cellWidth += this.margin * 2;
+         //   cellHeight += this.margin * 2;
 
-            let startOffsetX = (this._columns * 0.5) * cellWidth;
+            // Arrange
+            if (this._rowThenColum) {
+                columns = this._columns;
+                rows = Math.ceil(controlCount / this._columns);
+            } else {
+                rows = this._rows;
+                columns = Math.ceil(controlCount / this._rows);
+            }
+
+            let startOffsetX = (columns * 0.5) * cellWidth;
             let startOffsetY = (rows * 0.5) * cellHeight;
             let nodeGrid = [];
             let cellCounter = 0;
@@ -111,9 +157,9 @@ module BABYLON.GUI {
             if (this._rowThenColum) {
                 for (var r = 0; r < rows; r++)
                 {
-                    for (var c = 0; c < this._columns; c++)
+                    for (var c = 0; c < columns; c++)
                     {
-                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) - startOffsetY - cellHeight / 2, 0));
+                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, (r * cellHeight) - startOffsetY + cellHeight / 2, 0));
                         cellCounter++;
                         if (cellCounter > controlCount)
                         {
@@ -122,11 +168,11 @@ module BABYLON.GUI {
                     }
                 }
             } else {
-                for (var c = 0; c < this._columns; c++)
+                for (var c = 0; c < columns; c++)
                 {
                     for (var r = 0; r < rows; r++)
                     {
-                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) - startOffsetY - cellHeight / 2, 0));
+                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, (r * cellHeight) - startOffsetY + cellHeight / 2, 0));
                         cellCounter++;
                         if (cellCounter > controlCount)
                         {
@@ -143,6 +189,20 @@ module BABYLON.GUI {
                 }                
                 let newPos = this._sphericalMapping(nodeGrid[cellCounter]);
 
+                switch (this._orientation) {
+                    case Container3D.FACEORIGIN_ORIENTATION:
+                        child.mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
+                        break;
+                    case Container3D.FACEORIGINREVERSED_ORIENTATION:
+                        child.mesh.lookAt(new BABYLON.Vector3(newPos.x, 0, newPos.z));
+                        break;
+                    case Container3D.FACEFORWARD_ORIENTATION:
+                        child.mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        break;
+                    case Container3D.FACEFORWARDREVERSED_ORIENTATION:
+                        child.mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        break;
+                }
                 child.position = newPos;
 
                 cellCounter++;
@@ -158,7 +218,7 @@ module BABYLON.GUI {
 
             Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, Tmp.Matrix[0]);
 
-            return Vector3.TransformCoordinates(newPos, Tmp.Matrix[0]);
+            return Vector3.TransformNormal(newPos, Tmp.Matrix[0]);
         }
     }
 }

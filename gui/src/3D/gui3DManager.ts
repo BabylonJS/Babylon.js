@@ -12,6 +12,7 @@ module BABYLON.GUI {
         private _utilityLayer: Nullable<UtilityLayerRenderer>;
         private _rootContainer: Container3D;
         private _pointerObserver: Nullable<Observer<PointerInfo>>;
+        private _pointerOutObserver: Nullable<Observer<number>>;
         /** @hidden */
         public _lastPickedControl: Control3D;
         /** @hidden */
@@ -59,14 +60,11 @@ module BABYLON.GUI {
             let utilityLayerScene = this._utilityLayer.utilityLayerScene;
             
             // Events
+            this._pointerOutObserver = this._utilityLayer.onPointerOutObservable.add((pointerId) => {
+                this._handlePointerOut(pointerId, true);
+            });
+
             this._pointerObserver = utilityLayerScene.onPointerObservable.add((pi, state) => {
-
-                if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
-                    && pi.type !== BABYLON.PointerEventTypes.POINTERUP
-                    && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
-                    return;
-                }
-
                 this._doPicking(pi)
             });
 
@@ -74,6 +72,23 @@ module BABYLON.GUI {
             this._utilityLayer.utilityLayerScene.autoClear = false;
             this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
             new BABYLON.HemisphericLight("hemi", Vector3.Up(), this._utilityLayer.utilityLayerScene);
+        }
+
+        private _handlePointerOut(pointerId: number, isPointerUp: boolean) {
+            var previousControlOver = this._lastControlOver[pointerId];
+            if (previousControlOver) {
+                previousControlOver._onPointerOut(previousControlOver);
+                delete this._lastControlOver[pointerId];
+            }               
+            
+            if (isPointerUp) {
+                if (this._lastControlDown[pointerId]) {
+                    this._lastControlDown[pointerId].forcePointerUp();
+                    delete this._lastControlDown[pointerId];
+                }
+            }        
+            
+            this.onPickedPointChangedObservable.notifyObservers(null);
         }
 
         private _doPicking(pi: PointerInfo): boolean {
@@ -88,20 +103,7 @@ module BABYLON.GUI {
             
             let pickingInfo = pi.pickInfo;
             if (!pickingInfo || !pickingInfo.hit) {
-                var previousControlOver = this._lastControlOver[pointerId];
-                if (previousControlOver) {
-                    previousControlOver._onPointerOut(previousControlOver);
-                    delete this._lastControlOver[pointerId];
-                }               
-                
-                if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
-                    if (this._lastControlDown[pointerEvent.pointerId]) {
-                        this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
-                        delete this._lastControlDown[pointerEvent.pointerId];
-                    }
-                }        
-                
-                this.onPickedPointChangedObservable.notifyObservers(null);
+                this._handlePointerOut(pointerId, pi.type === BABYLON.PointerEventTypes.POINTERUP);
                 return false;
             }
 
@@ -182,6 +184,11 @@ module BABYLON.GUI {
             }
 
             this._sharedMaterials = {};
+
+            if (this._pointerOutObserver && this._utilityLayer) {
+                this._utilityLayer.onPointerOutObservable.remove(this._pointerOutObserver);
+                this._pointerOutObserver = null;
+            }
 
             this.onPickedPointChangedObservable.clear();
 
