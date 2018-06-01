@@ -258,15 +258,9 @@ declare module BABYLON {
      * File loader for loading glTF files into a scene.
      */
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-        /**
-         * Factory function that creates a glTF 1.0 loader
-         * @hidden
-         */
+        /** @hidden */
         static _CreateGLTFLoaderV1: () => IGLTFLoader;
-        /**
-         * Factory function that creates a glTF 2.0 loader
-         * @hidden
-         */
+        /** @hidden */
         static _CreateGLTFLoaderV2: () => IGLTFLoader;
         /**
          * Raised when the asset has been parsed
@@ -281,11 +275,13 @@ declare module BABYLON {
          * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
          * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
          * Defaults to true.
+         * @hidden
          */
         static IncrementalLoading: boolean;
         /**
          * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
          * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
+         * @hidden
          */
         static HomogeneousCoordinates: boolean;
         /**
@@ -1538,7 +1534,6 @@ declare module BABYLON.GLTF2.Extensions {
      */
     class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
         readonly name: string;
-        /** @hidden */
         protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
         private _loadSpecularGlossinessPropertiesAsync(context, material, properties, babylonMaterial);
     }

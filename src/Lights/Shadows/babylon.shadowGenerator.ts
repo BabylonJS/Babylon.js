@@ -1374,6 +1374,7 @@
             serializationObject.blurScale = this.blurScale;
             serializationObject.useKernelBlur = this.useKernelBlur;
             serializationObject.transparencyShadow = this._transparencyShadow;
+            serializationObject.frustumEdgeFalloff = this.frustumEdgeFalloff;
 
             serializationObject.bias = this.bias;
             serializationObject.normalBias = this.normalBias;
@@ -1484,6 +1485,10 @@
 
             if (parsedShadowGenerator.normalBias !== undefined) {
                 shadowGenerator.normalBias = parsedShadowGenerator.normalBias;
+            }
+
+            if (parsedShadowGenerator.frustumEdgeFalloff !== undefined) {
+                shadowGenerator.frustumEdgeFalloff = parsedShadowGenerator.frustumEdgeFalloff;
             }
 
             if (parsedShadowGenerator.darkness) {

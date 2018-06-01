@@ -1903,7 +1903,7 @@ declare module BABYLON.GUI {
          * @param scene
          */
         constructor(scene?: Scene);
-        private _doPicking(type, pointerEvent, ray?);
+        private _doPicking(pi);
         /**
          * Gets the root container
          */
@@ -2187,10 +2187,16 @@ declare module BABYLON.GUI {
      * Class used to create containers for controls
      */
     class Container3D extends Control3D {
+        private _blockLayout;
         /**
          * Gets the list of child controls
          */
         protected _children: Control3D[];
+        /**
+         * Gets or sets a boolean indicating if the layout must be blocked (default is false).
+         * This is helpful to optimize layout operation when adding multiple children in a row
+         */
+        blockLayout: boolean;
         /**
          * Creates a new container
          * @param name defines the container name
@@ -2353,7 +2359,38 @@ declare module BABYLON.GUI {
          * Creates new StackPanel
          * @param isVertical
          */
+        constructor(isVertical?: boolean);
+        protected _arrangeChildren(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a conainter panel deployed on the surface of a sphere
+     */
+    class SpherePanel extends Container3D {
+        private _radius;
+        private _columns;
+        private _rowThenColum;
+        /**
+         * Gets or sets a boolean indicating if the layout must first fill rows then columns or the opposite (true by default)
+         */
+        rowThenColum: boolean;
+        /**
+         * Gets or sets a the radius of the sphere where to project controls (5 by default)
+         */
+        radius: float;
+        /**
+         * Gets or sets a the number of columns requested (10 by default).
+         * The panel will automatically compute the number of rows based on number of child controls
+         */
+        columns: int;
+        /**
+         * Creates new SpherePanel
+         */
         constructor();
         protected _arrangeChildren(): void;
+        private _sphericalMapping(source);
     }
 }

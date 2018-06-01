@@ -546,11 +546,13 @@ var BABYLON;
          * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
          * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
          * Defaults to true.
+         * @hidden
          */
         GLTFFileLoader.IncrementalLoading = true;
         /**
          * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
          * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
+         * @hidden
          */
         GLTFFileLoader.HomogeneousCoordinates = false;
         return GLTFFileLoader;
@@ -4988,7 +4990,6 @@ var BABYLON;
                     _this.name = NAME;
                     return _this;
                 }
-                /** @hidden */
                 KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
                     var _this = this;
                     return this._loadExtensionAsync(context, material, function (extensionContext, extension) {

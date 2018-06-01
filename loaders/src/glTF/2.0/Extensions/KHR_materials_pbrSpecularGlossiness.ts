@@ -17,7 +17,6 @@ module BABYLON.GLTF2.Extensions {
     export class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        /** @hidden */
         protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (extensionContext, extension) => {
                 material._babylonData = material._babylonData || {};

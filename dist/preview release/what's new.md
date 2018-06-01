@@ -4,6 +4,7 @@
 
 - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
 - Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
+- Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
 
 ## Updates
 
@@ -22,8 +23,9 @@
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
 - AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
 - Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
-- Gizmo class used to manipulate meshes in a scene, position, rotation, scale gizmos ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo and gizmoManager class used to manipulate meshes in a scene, position, rotation, scale gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
+- AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
 
 ### glTF Loader
 
@@ -39,12 +41,14 @@
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 - Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
 - New lab feature - global light rotation [#4347](https://github.com/BabylonJS/Babylon.js/issues/4347) ([RaananW](https://github.com/RaananW))
+- New package - babylonjs-viewer-assets, to separate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
 - Added all code comments for GUI
 
 ## Bug fixes
+
 - VR experience helper will now fire pointer events even when no mesh is currently hit ([TrevorDev](https://github.com/TrevorDev))
 - RawTexture.CreateAlphaTexture no longer fails to create a usable texture ([TrevorDev](https://github.com/TrevorDev))
 
@@ -66,6 +70,8 @@
 - Ground material didn't take the default main color is no material definition was provided ([RaananW](https://github.com/RaananW))
 - Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
 - It wasn't possible to disable camera behavior(s) using configuration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
+- Animation blending was always set to true, ignoring configuration [#4412](https://github.com/BabylonJS/Babylon.js/issues/4412) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
+
 - Fixing support for R and RG texture formats made us remove TextureFormat_R32F and TextureFormat_RG32F as they were mixing formats and types. Please, use the respective TextureFormat_R and TextureFormat_RG with the Float types ([sebavan](http://www.github.com/sebavan))

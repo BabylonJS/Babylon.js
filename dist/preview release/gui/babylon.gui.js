@@ -6511,28 +6511,19 @@ var BABYLON;
                     _this.dispose();
                 });
                 this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
+                this._utilityLayer.onlyCheckPointerDownEvents = false;
                 // Root
                 this._rootContainer = new GUI.Container3D("RootContainer");
                 this._rootContainer._host = this;
+                var utilityLayerScene = this._utilityLayer.utilityLayerScene;
                 // Events
-                this._pointerObserver = this._scene.onPrePointerObservable.add(function (pi, state) {
-                    if (pi.skipOnPointerObservable) {
-                        return;
-                    }
-                    var pointerEvent = (pi.event);
-                    if (_this._scene.isPointerCaptured(pointerEvent.pointerId)) {
-                        return;
-                    }
+                this._pointerObserver = utilityLayerScene.onPointerObservable.add(function (pi, state) {
                     if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                         && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                         && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                         return;
                     }
-                    var camera = _this._scene.cameraToUseForPointers || _this._scene.activeCamera;
-                    if (!camera) {
-                        return;
-                    }
-                    pi.skipOnPointerObservable = _this._doPicking(pi.type, pointerEvent, pi.ray);
+                    _this._doPicking(pi);
                 });
                 // Scene
                 this._utilityLayer.utilityLayerScene.autoClear = false;
@@ -6555,21 +6546,21 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            GUI3DManager.prototype._doPicking = function (type, pointerEvent, ray) {
+            GUI3DManager.prototype._doPicking = function (pi) {
                 if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
                     return false;
                 }
+                var pointerEvent = (pi.event);
                 var pointerId = pointerEvent.pointerId || 0;
                 var buttonIndex = pointerEvent.button;
-                var utilityScene = this._utilityLayer.utilityLayerScene;
-                var pickingInfo = ray ? utilityScene.pickWithRay(ray) : utilityScene.pick(this._scene.pointerX, this._scene.pointerY);
+                var pickingInfo = pi.pickInfo;
                 if (!pickingInfo || !pickingInfo.hit) {
                     var previousControlOver = this._lastControlOver[pointerId];
                     if (previousControlOver) {
                         previousControlOver._onPointerOut(previousControlOver);
                         delete this._lastControlOver[pointerId];
                     }
-                    if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                    if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                         if (this._lastControlDown[pointerEvent.pointerId]) {
                             this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                             delete this._lastControlDown[pointerEvent.pointerId];
@@ -6582,15 +6573,15 @@ var BABYLON;
                 if (pickingInfo.pickedPoint) {
                     this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
                 }
-                if (!control._processObservables(type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
-                    if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                if (!control._processObservables(pi.type, pickingInfo.pickedPoint, pointerId, buttonIndex)) {
+                    if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (this._lastControlOver[pointerId]) {
                             this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
                         }
                         delete this._lastControlOver[pointerId];
                     }
                 }
-                if (type === BABYLON.PointerEventTypes.POINTERUP) {
+                if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._lastControlDown[pointerEvent.pointerId]) {
                         this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                         delete this._lastControlDown[pointerEvent.pointerId];
@@ -6647,11 +6638,14 @@ var BABYLON;
                 }
                 this._sharedMaterials = {};
                 this.onPickedPointChangedObservable.clear();
-                if (this._scene) {
+                var utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
+                if (utilityLayerScene) {
                     if (this._pointerObserver) {
-                        this._scene.onPrePointerObservable.remove(this._pointerObserver);
+                        utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
                         this._pointerObserver = null;
                     }
+                }
+                if (this._scene) {
                     if (this._sceneDisposeObserver) {
                         this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
                         this._sceneDisposeObserver = null;
@@ -6981,10 +6975,6 @@ var BABYLON;
                 this._enterCount = -1;
                 this._downPointerIds = {};
                 this._isVisible = true;
-                /** Gets or sets the control position  in world space */
-                this.position = new BABYLON.Vector3(0, 0, 0);
-                /** Gets or sets the control scaling  in world space */
-                this.scaling = new BABYLON.Vector3(1, 1, 1);
                 /**
                 * An event triggered when the pointer move over the control
                 */
@@ -7012,6 +7002,42 @@ var BABYLON;
                 // Behaviors
                 this._behaviors = new Array();
             }
+            Object.defineProperty(Control3D.prototype, "position", {
+                /** Gets or sets the control position  in world space */
+                get: function () {
+                    if (!this._node) {
+                        return BABYLON.Vector3.Zero();
+                    }
+                    return this._node.position;
+                },
+                set: function (value) {
+                    if (!this._node) {
+                        return;
+                    }
+                    this._node.position = value;
+                    ;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control3D.prototype, "scaling", {
+                /** Gets or sets the control scaling  in world space */
+                get: function () {
+                    if (!this._node) {
+                        return new BABYLON.Vector3(1, 1, 1);
+                    }
+                    return this._node.scaling;
+                },
+                set: function (value) {
+                    if (!this._node) {
+                        return;
+                    }
+                    this._node.scaling = value;
+                    ;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control3D.prototype, "behaviors", {
                 /**
                  * Gets the list of attached behaviors
@@ -7319,12 +7345,33 @@ var BABYLON;
              */
             function Container3D(name) {
                 var _this = _super.call(this, name) || this;
+                _this._blockLayout = false;
                 /**
                  * Gets the list of child controls
                  */
                 _this._children = new Array();
                 return _this;
             }
+            Object.defineProperty(Container3D.prototype, "blockLayout", {
+                /**
+                 * Gets or sets a boolean indicating if the layout must be blocked (default is false).
+                 * This is helpful to optimize layout operation when adding multiple children in a row
+                 */
+                get: function () {
+                    return this._blockLayout;
+                },
+                set: function (value) {
+                    if (this._blockLayout === value) {
+                        return;
+                    }
+                    this._blockLayout = value;
+                    if (!this._blockLayout) {
+                        this._arrangeChildren();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Gets a boolean indicating if the given control is in the children of this control
              * @param control defines the control to check
@@ -7351,7 +7398,9 @@ var BABYLON;
                     if (control.node) {
                         control.node.parent = this.node;
                     }
-                    this._arrangeChildren();
+                    if (!this.blockLayout) {
+                        this._arrangeChildren();
+                    }
                 }
                 return this;
             };
@@ -7809,13 +7858,15 @@ var BABYLON;
              * Creates new StackPanel
              * @param isVertical
              */
-            function StackPanel3D() {
+            function StackPanel3D(isVertical) {
+                if (isVertical === void 0) { isVertical = false; }
                 var _this = _super.call(this) || this;
                 _this._isVertical = false;
                 /**
                  * Gets or sets the distance between elements
                  */
                 _this.margin = 0.1;
+                _this._isVertical = isVertical;
                 return _this;
             }
             Object.defineProperty(StackPanel3D.prototype, "isVertical", {
@@ -7901,6 +7952,161 @@ var BABYLON;
             return StackPanel3D;
         }(GUI.Container3D));
         GUI.StackPanel3D = StackPanel3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a conainter panel deployed on the surface of a sphere
+         */
+        var SpherePanel = /** @class */ (function (_super) {
+            __extends(SpherePanel, _super);
+            /**
+             * Creates new SpherePanel
+             */
+            function SpherePanel() {
+                var _this = _super.call(this) || this;
+                _this._radius = 5.0;
+                _this._columns = 10;
+                _this._rowThenColum = true;
+                return _this;
+            }
+            Object.defineProperty(SpherePanel.prototype, "rowThenColum", {
+                /**
+                 * Gets or sets a boolean indicating if the layout must first fill rows then columns or the opposite (true by default)
+                 */
+                get: function () {
+                    return this._rowThenColum;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._rowThenColum === value) {
+                        return;
+                    }
+                    this._rowThenColum = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SpherePanel.prototype, "radius", {
+                /**
+                 * Gets or sets a the radius of the sphere where to project controls (5 by default)
+                 */
+                get: function () {
+                    return this._radius;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._radius === value) {
+                        return;
+                    }
+                    this._radius = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SpherePanel.prototype, "columns", {
+                /**
+                 * Gets or sets a the number of columns requested (10 by default).
+                 * The panel will automatically compute the number of rows based on number of child controls
+                 */
+                get: function () {
+                    return this._columns;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._columns === value) {
+                        return;
+                    }
+                    this._columns = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            SpherePanel.prototype._arrangeChildren = function () {
+                var cellWidth = 0;
+                var cellHeight = 0;
+                var rows = 0;
+                var controlCount = 0;
+                var currentInverseWorld = BABYLON.Matrix.Invert(this.node.computeWorldMatrix(true));
+                // Measure
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    controlCount++;
+                    child.mesh.computeWorldMatrix(true);
+                    child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
+                    var boundingBox = child.mesh.getBoundingInfo().boundingBox;
+                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
+                    cellWidth = Math.max(cellWidth, extendSize.x * 2);
+                    cellHeight = Math.max(cellHeight, extendSize.y * 2);
+                }
+                console.log(cellWidth + "x" + cellHeight);
+                // Arrange
+                rows = Math.ceil(controlCount / this._columns);
+                var startOffsetX = (this._columns * 0.5) * cellWidth;
+                var startOffsetY = (rows * 0.5) * cellHeight;
+                var nodeGrid = [];
+                var cellCounter = 0;
+                if (this._rowThenColum) {
+                    for (var r = 0; r < rows; r++) {
+                        for (var c = 0; c < this._columns; c++) {
+                            nodeGrid.push(new BABYLON.Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) - startOffsetY - cellHeight / 2, 0));
+                            cellCounter++;
+                            if (cellCounter > controlCount) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                else {
+                    for (var c = 0; c < this._columns; c++) {
+                        for (var r = 0; r < rows; r++) {
+                            nodeGrid.push(new BABYLON.Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) - startOffsetY - cellHeight / 2, 0));
+                            cellCounter++;
+                            if (cellCounter > controlCount) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                cellCounter = 0;
+                for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                    var child = _c[_b];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    var newPos = this._sphericalMapping(nodeGrid[cellCounter]);
+                    child.position = newPos;
+                    cellCounter++;
+                }
+            };
+            SpherePanel.prototype._sphericalMapping = function (source) {
+                var newPos = new BABYLON.Vector3(0, 0, this._radius);
+                var xAngle = (source.y / this._radius);
+                var yAngle = -(source.x / this._radius);
+                BABYLON.Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, BABYLON.Tmp.Matrix[0]);
+                return BABYLON.Vector3.TransformCoordinates(newPos, BABYLON.Tmp.Matrix[0]);
+            };
+            return SpherePanel;
+        }(GUI.Container3D));
+        GUI.SpherePanel = SpherePanel;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

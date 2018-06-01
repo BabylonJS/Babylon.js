@@ -1,3 +1,5 @@
+import { Scene, CubeTexture, InternalTexture, Scalar, BaseTexture, Texture } from "babylonjs";
+
 /**
  * WebGL Pixel Formats
  */
@@ -181,7 +183,7 @@ export class TextureUtils {
      * @param singleLod Specifies that the texture will be a singleLod (for environment)
      * @return Babylon cube texture
      */
-    public static GetBabylonCubeTexture(scene: BABYLON.Scene, textureCube: TextureCube, automaticMipmaps: boolean, environment = false, singleLod = false): BABYLON.CubeTexture {
+    public static GetBabylonCubeTexture(scene: Scene, textureCube: TextureCube, automaticMipmaps: boolean, environment = false, singleLod = false): CubeTexture {
         if (!textureCube) throw new Error("no texture cube provided");
 
         var parameters: SamplingParameters;
@@ -199,12 +201,12 @@ export class TextureUtils {
 
         let key = TextureUtils.BabylonTextureKeyPrefix + parameters.magFilter + '' + parameters.minFilter + '' + parameters.wrapS + '' + parameters.wrapT;
 
-        let babylonTexture: BABYLON.CubeTexture = (<any>textureCube)[key];
+        let babylonTexture: CubeTexture = (<any>textureCube)[key];
 
         if (!babylonTexture) {
 
             //initialize babylon texture
-            babylonTexture = new BABYLON.CubeTexture('', scene);
+            babylonTexture = new CubeTexture('', scene);
             if (environment) {
                 babylonTexture.lodGenerationOffset = TextureUtils.EnvironmentLODOffset;
                 babylonTexture.lodGenerationScale = TextureUtils.EnvironmentLODScale;
@@ -212,7 +214,7 @@ export class TextureUtils {
 
             babylonTexture.gammaSpace = false;
 
-            let internalTexture = new BABYLON.InternalTexture(scene.getEngine(), BABYLON.InternalTexture.DATASOURCE_CUBERAW);
+            let internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_CUBERAW);
             let glTexture = internalTexture._webGLTexture;
             //babylon properties
             internalTexture.isCube = true;
@@ -265,7 +267,7 @@ export class TextureUtils {
                         const mipSlices = 3;
                         for (let i = 0; i < mipSlices; i++) {
                             let lodKey = TextureUtils.BabylonTextureKeyPrefix + 'lod' + i;
-                            let lod: BABYLON.CubeTexture = (<any>textureCube)[lodKey];
+                            let lod: CubeTexture = (<any>textureCube)[lodKey];
 
                             //initialize lod texture if it doesn't already exist
                             if (lod == null && textureCube.Width) {
@@ -276,7 +278,7 @@ export class TextureUtils {
                                 let alphaG = roughness * roughness + kMinimumVariance;
                                 let microsurfaceAverageSlopeTexels = alphaG * textureCube.Width;
 
-                                let environmentSpecularLOD = TextureUtils.EnvironmentLODScale * (BABYLON.Scalar.Log2(microsurfaceAverageSlopeTexels)) + TextureUtils.EnvironmentLODOffset;
+                                let environmentSpecularLOD = TextureUtils.EnvironmentLODScale * (Scalar.Log2(microsurfaceAverageSlopeTexels)) + TextureUtils.EnvironmentLODOffset;
 
                                 let maxLODIndex = textureCube.source.length - 1;
                                 let mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
@@ -336,7 +338,7 @@ export class TextureUtils {
      * @param babylonTexture Babylon texture to apply texture to (requires the Babylon texture has an initialize _texture field)
      * @param parameters Spectre SamplingParameters to apply
      */
-    public static ApplySamplingParameters(babylonTexture: BABYLON.BaseTexture, parameters: SamplingParameters) {
+    public static ApplySamplingParameters(babylonTexture: BaseTexture, parameters: SamplingParameters) {
         let scene = babylonTexture.getScene();
         if (!scene) return;
         let gl = (<any>(scene.getEngine()))._gl;
@@ -355,17 +357,17 @@ export class TextureUtils {
 
         //set babylon wrap modes from sampling parameter
         switch (parameters.wrapS) {
-            case TextureWrapMode.REPEAT: babylonTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE; break;
-            case TextureWrapMode.CLAMP_TO_EDGE: babylonTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE; break;
-            case TextureWrapMode.MIRRORED_REPEAT: babylonTexture.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE; break;
-            default: babylonTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            case TextureWrapMode.REPEAT: babylonTexture.wrapU = Texture.WRAP_ADDRESSMODE; break;
+            case TextureWrapMode.CLAMP_TO_EDGE: babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE; break;
+            case TextureWrapMode.MIRRORED_REPEAT: babylonTexture.wrapU = Texture.MIRROR_ADDRESSMODE; break;
+            default: babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         }
 
         switch (parameters.wrapT) {
-            case TextureWrapMode.REPEAT: babylonTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE; break;
-            case TextureWrapMode.CLAMP_TO_EDGE: babylonTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE; break;
-            case TextureWrapMode.MIRRORED_REPEAT: babylonTexture.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE; break;
-            default: babylonTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            case TextureWrapMode.REPEAT: babylonTexture.wrapV = Texture.WRAP_ADDRESSMODE; break;
+            case TextureWrapMode.CLAMP_TO_EDGE: babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE; break;
+            case TextureWrapMode.MIRRORED_REPEAT: babylonTexture.wrapV = Texture.MIRROR_ADDRESSMODE; break;
+            default: babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
         }
 
         if (parameters.maxAnisotropy != null && parameters.maxAnisotropy > 1) {
