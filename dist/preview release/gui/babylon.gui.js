@@ -7809,13 +7809,15 @@ var BABYLON;
              * Creates new StackPanel
              * @param isVertical
              */
-            function StackPanel3D() {
+            function StackPanel3D(isVertical) {
+                if (isVertical === void 0) { isVertical = false; }
                 var _this = _super.call(this) || this;
                 _this._isVertical = false;
                 /**
                  * Gets or sets the distance between elements
                  */
                 _this.margin = 0.1;
+                _this._isVertical = isVertical;
                 return _this;
             }
             Object.defineProperty(StackPanel3D.prototype, "isVertical", {
@@ -7901,6 +7903,126 @@ var BABYLON;
             return StackPanel3D;
         }(GUI.Container3D));
         GUI.StackPanel3D = StackPanel3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a conainter panel deployed on the surface of a sphere
+         */
+        var SpherePanel = /** @class */ (function (_super) {
+            __extends(SpherePanel, _super);
+            /**
+             * Creates new SpherePanel
+             */
+            function SpherePanel() {
+                var _this = _super.call(this) || this;
+                _this._radius = 5.0;
+                _this._columns = 10;
+                return _this;
+            }
+            Object.defineProperty(SpherePanel.prototype, "radius", {
+                /**
+                 * Gets or sets a the radius of the sphere where to project controls (5 by default)
+                 */
+                get: function () {
+                    return this._radius;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._radius === value) {
+                        return;
+                    }
+                    this._radius = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SpherePanel.prototype, "columns", {
+                /**
+                 * Gets or sets a the number of columns requested (10 by default).
+                 * The panel will automatically compute the number of rows based on number of child controls
+                 */
+                get: function () {
+                    return this._columns;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._columns === value) {
+                        return;
+                    }
+                    this._columns = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            SpherePanel.prototype._arrangeChildren = function () {
+                var cellWidth = 0;
+                var cellHeight = 0;
+                var rows = 0;
+                var controlCount = 0;
+                var currentInverseWorld = BABYLON.Matrix.Invert(this.node.computeWorldMatrix(true));
+                // Measure
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    controlCount++;
+                    child.mesh.computeWorldMatrix(true);
+                    child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
+                    var boundingBox = child.mesh.getBoundingInfo().boundingBox;
+                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
+                    cellWidth = Math.max(cellWidth, extendSize.x * 2);
+                    cellHeight = Math.max(cellHeight, extendSize.y * 2);
+                }
+                // Arrange
+                rows = Math.ceil(controlCount / this._columns);
+                var startOffsetX = (this._columns * 0.5) * cellWidth;
+                var startOffsetY = (rows * 0.5) * cellHeight;
+                var nodeGrid = [];
+                var cellCounter = 0;
+                for (var c = 0; c < this._columns; c++) {
+                    for (var r = 0; r < rows; r++) {
+                        nodeGrid.push(new BABYLON.Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, -(r * cellHeight) + startOffsetY - cellHeight / 2, 0));
+                        cellCounter++;
+                        if (cellCounter > controlCount) {
+                            break;
+                        }
+                    }
+                }
+                cellCounter = 0;
+                for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                    var child = _c[_b];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    var newPos = this._sphericalMapping(nodeGrid[cellCounter]);
+                    child.position = newPos;
+                    cellCounter++;
+                }
+            };
+            SpherePanel.prototype._sphericalMapping = function (source) {
+                var newPos = new BABYLON.Vector3(0, 0, this._radius);
+                var xAngle = (source.x / this._radius);
+                var yAngle = -(source.y / this._radius);
+                BABYLON.Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, BABYLON.Tmp.Matrix[0]);
+                return GUI.Vector3WithInfo.TransformCoordinates(newPos, BABYLON.Tmp.Matrix[0]);
+            };
+            return SpherePanel;
+        }(GUI.Container3D));
+        GUI.SpherePanel = SpherePanel;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

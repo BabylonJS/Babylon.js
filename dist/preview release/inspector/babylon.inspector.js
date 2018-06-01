@@ -4468,11 +4468,11 @@ var INSPECTOR;
 var INSPECTOR;
 (function (INSPECTOR) {
     var AbstractTool = /** @class */ (function () {
-        function AbstractTool(icon, parent, inspector, tooltip) {
+        function AbstractTool(iconSet, icon, parent, inspector, tooltip) {
             var _this = this;
             this._inspector = inspector;
             this._elem = INSPECTOR.Inspector.DOCUMENT.createElement('i');
-            this._elem.className = "tool fa " + icon;
+            this._elem.className = "tool " + iconSet + " " + icon;
             parent.appendChild(this._elem);
             this._elem.addEventListener('click', function (e) {
                 _this.action();
@@ -4520,7 +4520,7 @@ var INSPECTOR;
     var PauseScheduleTool = /** @class */ (function (_super) {
         __extends(PauseScheduleTool, _super);
         function PauseScheduleTool(parent, inspector) {
-            var _this = _super.call(this, 'fa-pause', parent, inspector, 'Pause the automatic update of properties') || this;
+            var _this = _super.call(this, 'fa', 'fa-pause', parent, inspector, 'Pause the automatic update of properties') || this;
             _this._isPause = false;
             return _this;
         }
@@ -4556,7 +4556,7 @@ var INSPECTOR;
     var PickTool = /** @class */ (function (_super) {
         __extends(PickTool, _super);
         function PickTool(parent, inspector) {
-            var _this = _super.call(this, 'fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene') || this;
+            var _this = _super.call(this, 'fa', 'fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene') || this;
             _this._isActive = false;
             // Create handler
             _this._pickHandler = _this._pickMesh.bind(_this);
@@ -4619,7 +4619,7 @@ var INSPECTOR;
     var PopupTool = /** @class */ (function (_super) {
         __extends(PopupTool, _super);
         function PopupTool(parent, inspector) {
-            return _super.call(this, 'fa-external-link-alt', parent, inspector, 'Open the inspector in a popup') || this;
+            return _super.call(this, 'fas', 'fa-external-link-alt', parent, inspector, 'Open the inspector in a popup') || this;
         }
         // Action : refresh the whole panel
         PopupTool.prototype.action = function () {
@@ -4645,7 +4645,7 @@ var INSPECTOR;
     var RefreshTool = /** @class */ (function (_super) {
         __extends(RefreshTool, _super);
         function RefreshTool(parent, inspector) {
-            return _super.call(this, 'fa-sync', parent, inspector, 'Refresh the current tab') || this;
+            return _super.call(this, 'fa', 'fa-sync', parent, inspector, 'Refresh the current tab') || this;
         }
         // Action : refresh the whole panel
         RefreshTool.prototype.action = function () {
@@ -4671,7 +4671,7 @@ var INSPECTOR;
     var LabelTool = /** @class */ (function (_super) {
         __extends(LabelTool, _super);
         function LabelTool(parent, inspector) {
-            var _this = _super.call(this, 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
+            var _this = _super.call(this, 'fa', 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
             /** True if label are displayed, false otherwise */
             _this._isDisplayed = false;
             _this._advancedTexture = null;
@@ -4860,7 +4860,7 @@ var INSPECTOR;
     var DisposeTool = /** @class */ (function (_super) {
         __extends(DisposeTool, _super);
         function DisposeTool(parent, inspector) {
-            return _super.call(this, 'fa-times', parent, inspector, 'Close the inspector panel') || this;
+            return _super.call(this, 'fa', 'fa-times', parent, inspector, 'Close the inspector panel') || this;
         }
         // Action : refresh the whole panel
         DisposeTool.prototype.action = function () {
@@ -4886,7 +4886,7 @@ var INSPECTOR;
     var FullscreenTool = /** @class */ (function (_super) {
         __extends(FullscreenTool, _super);
         function FullscreenTool(parent, inspector) {
-            return _super.call(this, 'fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit') || this;
+            return _super.call(this, 'fa', 'fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit') || this;
         }
         // Action : refresh the whole panel
         FullscreenTool.prototype.action = function () {
