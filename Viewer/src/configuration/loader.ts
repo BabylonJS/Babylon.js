@@ -3,7 +3,7 @@ import { ViewerConfiguration } from './configuration';
 import { getConfigurationType } from './types';
 import { processConfigurationCompatibility } from './configurationCompatibility';
 
-import * as deepmerge from '../../assets/deepmerge.min.js';
+import { deepmerge } from '../helper/';
 import { Tools, IFileRequest } from 'babylonjs';
 
 /**

@@ -1,52 +1,52 @@
-import { AbstractViewer } from '../../viewer/viewer';
-import { Scalar, DefaultRenderingPipeline } from 'babylonjs';
+import { Scalar, DefaultRenderingPipeline, Scene } from 'babylonjs';
+import { SceneManager } from '../../managers/sceneManager';
 
 /**
  * A custom upgrade-oriented function configuration for the scene optimizer.
  * 
  * @param viewer the viewer to optimize
  */
-export function extendedUpgrade(viewer: AbstractViewer): boolean {
-    let defaultPipeline = <DefaultRenderingPipeline>viewer.sceneManager.defaultRenderingPipeline;
+export function extendedUpgrade(sceneManager: SceneManager): boolean {
+    let defaultPipeline = <DefaultRenderingPipeline>sceneManager.defaultRenderingPipeline;
     // if (!this.Scene.BackgroundHelper) {
     // 	this.Scene.EngineScene.autoClear = false;
     // this.Scene.BackgroundHelper = true;
     // Would require a dedicated clear color;
     // return false;
     // }
-    if (viewer.engine.getHardwareScalingLevel() > 1) {
-        let scaling = Scalar.Clamp(viewer.engine.getHardwareScalingLevel() - 0.25, 0, 1);
-        viewer.engine.setHardwareScalingLevel(scaling);
+    if (sceneManager.scene.getEngine().getHardwareScalingLevel() > 1) {
+        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, 1);
+        sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
-    if (!viewer.sceneManager.scene.postProcessesEnabled) {
-        viewer.sceneManager.scene.postProcessesEnabled = true;
+    if (!sceneManager.scene.postProcessesEnabled) {
+        sceneManager.scene.postProcessesEnabled = true;
         return false;
     }
-    if (!viewer.sceneManager.groundEnabled) {
-        viewer.sceneManager.groundEnabled = true;
+    if (!sceneManager.groundEnabled) {
+        sceneManager.groundEnabled = true;
         return false;
     }
-    if (defaultPipeline && !viewer.sceneManager.fxaaEnabled) {
-        viewer.sceneManager.fxaaEnabled = true
+    if (defaultPipeline && !sceneManager.fxaaEnabled) {
+        sceneManager.fxaaEnabled = true
         return false;
     }
     var hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
-    if (viewer.engine.getHardwareScalingLevel() > hardwareScalingLevel) {
-        let scaling = Scalar.Clamp(viewer.engine.getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
-        viewer.engine.setHardwareScalingLevel(scaling);
+    if (sceneManager.scene.getEngine().getHardwareScalingLevel() > hardwareScalingLevel) {
+        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
+        sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
-    if (!viewer.sceneManager.processShadows) {
-        viewer.sceneManager.processShadows = true;
+    if (!sceneManager.processShadows) {
+        sceneManager.processShadows = true;
         return false;
     }
-    if (defaultPipeline && !viewer.sceneManager.bloomEnabled) {
-        viewer.sceneManager.bloomEnabled = true
+    if (defaultPipeline && !sceneManager.bloomEnabled) {
+        sceneManager.bloomEnabled = true
         return false;
     }
-    if (!viewer.sceneManager.groundMirrorEnabled) {
-        viewer.sceneManager.groundMirrorEnabled = true;
+    if (!sceneManager.groundMirrorEnabled) {
+        sceneManager.groundMirrorEnabled = true;
         return false;
     }
     return true;
@@ -57,41 +57,41 @@ export function extendedUpgrade(viewer: AbstractViewer): boolean {
  * 
  * @param viewer the viewer to optimize
  */
-export function extendedDegrade(viewer: AbstractViewer): boolean {
-    let defaultPipeline = <DefaultRenderingPipeline>viewer.sceneManager.defaultRenderingPipeline;
+export function extendedDegrade(sceneManager: SceneManager): boolean {
+    let defaultPipeline = <DefaultRenderingPipeline>sceneManager.defaultRenderingPipeline;
 
-    if (viewer.sceneManager.groundMirrorEnabled) {
-        viewer.sceneManager.groundMirrorEnabled = false;
+    if (sceneManager.groundMirrorEnabled) {
+        sceneManager.groundMirrorEnabled = false;
         return false;
     }
-    if (defaultPipeline && viewer.sceneManager.bloomEnabled) {
-        viewer.sceneManager.bloomEnabled = false;
+    if (defaultPipeline && sceneManager.bloomEnabled) {
+        sceneManager.bloomEnabled = false;
         return false;
     }
-    if (viewer.sceneManager.processShadows) {
-        viewer.sceneManager.processShadows = false;
+    if (sceneManager.processShadows) {
+        sceneManager.processShadows = false;
         return false;
     }
-    if (viewer.engine.getHardwareScalingLevel() < 1) {
-        let scaling = Scalar.Clamp(viewer.engine.getHardwareScalingLevel() + 0.25, 0, 1);
-        viewer.engine.setHardwareScalingLevel(scaling);
+    if (sceneManager.scene.getEngine().getHardwareScalingLevel() < 1) {
+        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1);
+        sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
-    if (defaultPipeline && viewer.sceneManager.fxaaEnabled) {
-        viewer.sceneManager.fxaaEnabled = false;
+    if (defaultPipeline && sceneManager.fxaaEnabled) {
+        sceneManager.fxaaEnabled = false;
         return false;
     }
-    if (viewer.sceneManager.groundEnabled) {
-        viewer.sceneManager.groundEnabled = false;
+    if (sceneManager.groundEnabled) {
+        sceneManager.groundEnabled = false;
         return false;
     }
-    if (viewer.sceneManager.scene.postProcessesEnabled) {
-        viewer.sceneManager.scene.postProcessesEnabled = false;
+    if (sceneManager.scene.postProcessesEnabled) {
+        sceneManager.scene.postProcessesEnabled = false;
         return false;
     }
-    if (viewer.engine.getHardwareScalingLevel() < 1.25) {
-        let scaling = Scalar.Clamp(viewer.engine.getHardwareScalingLevel() + 0.25, 0, 1.25);
-        viewer.engine.setHardwareScalingLevel(scaling);
+    if (sceneManager.scene.getEngine().getHardwareScalingLevel() < 1.25) {
+        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1.25);
+        sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
     // if (this.Scene.BackgroundHelper) {

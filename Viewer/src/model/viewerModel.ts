@@ -1,11 +1,12 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
-import { IModelConfiguration, IModelAnimationConfiguration } from "../configuration/configuration";
+import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
 
-import * as deepmerge from '../../assets/deepmerge.min.js';
-import { AbstractViewer } from "..";
-import { extendClassWithConfig } from "../helper";
+import { deepmerge, extendClassWithConfig } from '../helper/';
+import { ObservablesManager } from "../managers/observablesManager";
+import { ConfigurationContainer } from "../configuration/configurationContainer";
 
 
 /**
@@ -104,7 +105,7 @@ export class ViewerModel implements IDisposable {
 
     private _shadowsRenderedAfterLoad: boolean = false;
 
-    constructor(protected _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
+    constructor(private _observablesManager: ObservablesManager, modelConfiguration: IModelConfiguration, private _configurationContainer?: ConfigurationContainer) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();
@@ -113,8 +114,8 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
-        this.rootMesh = new AbstractMesh("modelRootMesh", this._viewer.sceneManager.scene);
-        this._pivotMesh = new AbstractMesh("pivotMesh", this._viewer.sceneManager.scene);
+        this.rootMesh = new AbstractMesh("modelRootMesh");
+        this._pivotMesh = new AbstractMesh("pivotMesh");
         this._pivotMesh.parent = this.rootMesh;
         // rotate 180, gltf fun
         this._pivotMesh.rotation.y += Math.PI;
@@ -123,10 +124,9 @@ export class ViewerModel implements IDisposable {
 
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
-        this._modelConfiguration = deepmerge(this._viewer.configuration.model || {}, modelConfiguration);
+        this._modelConfiguration = deepmerge((this._configurationContainer && this._configurationContainer.configuration.model) || {}, modelConfiguration);
 
-        this._viewer.sceneManager.models.push(this);
-        this._viewer.onModelAddedObservable.notifyObservers(this);
+        if (this._observablesManager) { this._observablesManager.onModelAddedObservable.notifyObservers(this); }
 
         if (this._modelConfiguration.entryAnimation) {
             this.rootMesh.setEnabled(false);
@@ -134,7 +134,7 @@ export class ViewerModel implements IDisposable {
 
         this.onLoadedObservable.add(() => {
             this.updateConfiguration(this._modelConfiguration);
-            this._viewer.onModelLoadedObservable.notifyObservers(this);
+            if (this._observablesManager) { this._observablesManager.onModelLoadedObservable.notifyObservers(this); }
             this._initAnimations();
         });
 
@@ -153,6 +153,10 @@ export class ViewerModel implements IDisposable {
         } else {
             this._shadowsRenderedAfterLoad = rendered;
         }
+    }
+
+    public getViewerId() {
+        return this._configurationContainer && this._configurationContainer.viewerId;
     }
 
     /**
@@ -178,13 +182,6 @@ export class ViewerModel implements IDisposable {
         if (this._loaderDone && (this.state === ModelState.ENTRYDONE)) {
             this._modelComplete();
         }
-    }
-
-    /**
-     * Get the viewer showing this model
-     */
-    public getViewer() {
-        return this._viewer;
     }
 
     /**
@@ -244,7 +241,7 @@ export class ViewerModel implements IDisposable {
         // check if this is not a gltf loader and init the animations
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx, this._viewer.sceneManager.scene);
+                let ag = new AnimationGroup("animation-" + idx);
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
@@ -282,9 +279,10 @@ export class ViewerModel implements IDisposable {
      * @param completeCallback A function to call when the animation has completed
      */
     private _enterScene(completeCallback?: () => void): void {
+        const scene = this.rootMesh.getScene();
         let callback = () => {
             this.state = ModelState.ENTRYDONE;
-            this._viewer.sceneManager.animationBlendingEnabled = true;
+            scene.animationPropertiesOverride!.enableBlending = true;
             this._checkCompleteState();
             if (completeCallback) completeCallback();
         }
@@ -294,7 +292,7 @@ export class ViewerModel implements IDisposable {
         }
         this.rootMesh.setEnabled(true);
         // disable blending for the sake of the entry animation;
-        this._viewer.sceneManager.animationBlendingEnabled = false;
+        scene.animationPropertiesOverride!.enableBlending = false;
         this._applyAnimation(this._entryAnimation, true, callback);
     }
 
@@ -553,8 +551,8 @@ export class ViewerModel implements IDisposable {
             if (this._modelConfiguration.material.directEnabled !== undefined) {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
-            if (this._viewer.sceneManager.reflectionColor) {
-                material.reflectionColor = this._viewer.sceneManager.reflectionColor;
+            if (this._configurationContainer && this._configurationContainer.reflectionColor) {
+                material.reflectionColor = this._configurationContainer.reflectionColor;
             }
         }
         else if (material instanceof MultiMaterial) {
@@ -631,8 +629,8 @@ export class ViewerModel implements IDisposable {
 
         this.rootMesh.animations = animations;
 
-        if (this._viewer.sceneManager.scene.beginAnimation) {
-            let animatable: Animatable = this._viewer.sceneManager.scene.beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
+        if (this.rootMesh.getScene().beginAnimation) {
+            let animatable: Animatable = this.rootMesh.getScene().beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
                 if (onAnimationEnd) {
                     onAnimationEnd();
                 }
@@ -733,10 +731,10 @@ export class ViewerModel implements IDisposable {
      */
     public remove() {
         this.stopAllAnimations();
-        this._viewer.sceneManager.models.splice(this._viewer.sceneManager.models.indexOf(this), 1);
+
         // hide it
         this.rootMesh.isVisible = false;
-        this._viewer.onModelRemovedObservable.notifyObservers(this);
+        if (this._observablesManager) { this._observablesManager.onModelRemovedObservable.notifyObservers(this); }
     }
 
     /**

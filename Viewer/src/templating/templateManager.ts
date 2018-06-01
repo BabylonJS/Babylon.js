@@ -1,54 +1,11 @@
 
 import { Observable, IFileRequest, Tools } from 'babylonjs';
-import { isUrl, camelToKebab, kebabToCamel } from './helper';
-import * as deepmerge from '../assets/deepmerge.min.js';
+import { isUrl, camelToKebab, kebabToCamel } from '../helper';
 
-/**
- * A single template configuration object
- */
-export interface ITemplateConfiguration {
-    /**
-     * can be either the id of the template's html element or a URL.
-     * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
-     */
-    location?: string; // #template-id OR http://example.com/loading.html
-    /**
-     * If no location is provided you can provide here the raw html of this template.
-     * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
-     */
-    html?: string; // raw html string
-    id?: string;
-    /**
-     * Parameters that will be delivered to the template and will render it accordingly.
-     */
-    params?: { [key: string]: string | number | boolean | object };
-    /**
-     * Events to attach to this template.
-     * event name is the key. the value can either be a boolean (attach to the parent element)
-     * or a map of html id elements.
-     * 
-     * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
-     */
-    events?: {
-        // pointer events
-        pointerdown?: boolean | { [id: string]: boolean; };
-        pointerup?: boolean | { [id: string]: boolean; };
-        pointermove?: boolean | { [id: string]: boolean; };
-        pointerover?: boolean | { [id: string]: boolean; };
-        pointerout?: boolean | { [id: string]: boolean; };
-        pointerenter?: boolean | { [id: string]: boolean; };
-        pointerleave?: boolean | { [id: string]: boolean; };
-        pointercancel?: boolean | { [id: string]: boolean; };
-        //click, just in case
-        click?: boolean | { [id: string]: boolean; };
-        // drag and drop
-        dragstart?: boolean | { [id: string]: boolean; };
-        drop?: boolean | { [id: string]: boolean; };
-
-
-        [key: string]: boolean | { [id: string]: boolean; } | undefined;
-    }
-}
+import * as Handlebars from 'handlebars/dist/handlebars';
+import { EventManager } from './eventManager';
+import { ITemplateConfiguration } from '../configuration/interfaces';
+import { deepmerge } from '../helper/';
 
 /**
  * The object sent when an event is triggered
@@ -242,9 +199,6 @@ export class TemplateManager {
 
 }
 
-
-import * as Handlebars from '../assets/handlebars.min.js';
-import { EventManager } from './eventManager';
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper('eachInMap', function (map, block) {
     var out = '';
@@ -367,7 +321,7 @@ export class Template {
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
-                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && this._configuration.params.noEscape) });
+                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && !!this._configuration.params.noEscape) });
                 let config = this._configuration.params || {};
                 this._rawHtml = compiledTemplate(config);
                 try {

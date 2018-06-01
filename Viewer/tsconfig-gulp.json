@@ -2,32 +2,43 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
-        "noResolve": false,
-        "noImplicitAny": false,
-        "strictNullChecks": true,
-        "removeComments": false,
-        "preserveConstEnums": true,
-        "sourceMap": false,
-        "experimentalDecorators": true,
-        "isolatedModules": false,
         "declaration": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "moduleResolution": "node",
+        "strictNullChecks": true,
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": true,
+        "inlineSourceMap": true,
         "lib": [
+            "es5",
             "dom",
             "es2015.promise",
-            "es5"
+            "es2015.collection",
+            "es2015.iterable"
         ],
-        "types": [
-            "node"
-        ],
-        "baseUrl": "./",
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true,
+        "baseUrl": "./src/",
+        "rootDir": "./",
         "paths": {
             "babylonjs": [
-                "../dist/preview release/babylon.d.ts"
+                "../../dist/preview release/babylon.d.ts"
             ],
             "babylonjs-loaders": [
                 "externalModules.d.ts"
+            ],
+            "babylonjs-gltf2interface": [
+                "../../dist/babylon.glTF2Interface.d.ts"
+            ],
+            "deepmerge": [
+                "./helper/deepmerge.d.ts"
+            ],
+            "handlebars": [
+                "./templates/handlebars.d.ts"
             ]
-        }
+        },
+        "outDir": "./dist/build"
     },
     "exclude": [
         "node_modules",

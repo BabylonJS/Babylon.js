@@ -1,6 +1,6 @@
 import { ILoaderPlugin } from "./loaderPlugin";
 import { telemetryManager } from "../../telemetryManager";
-import { ViewerModel } from "../..";
+import { ViewerModel } from "../../model/viewerModel";
 import { Color3, Texture, BaseTexture, Tools, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material, PBRMaterial, Engine } from "babylonjs";
 
 /**
