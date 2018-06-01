@@ -188,9 +188,9 @@ module BABYLON {
         /** @hidden */
         public _sphericalPolynomial: Nullable<SphericalPolynomial>;
         /** @hidden */
-        public _lodGenerationScale: number = 0.8;
+        public _lodGenerationScale: number;
         /** @hidden */
-        public _lodGenerationOffset: number= 0;
+        public _lodGenerationOffset: number;
 
         // The following three fields helps sharing generated fixed LODs for texture filtering
         // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
