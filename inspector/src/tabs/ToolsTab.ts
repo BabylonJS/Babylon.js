@@ -26,62 +26,94 @@ module INSPECTOR {
             title = Helpers.CreateDiv('tool-title2', this._panel);
             title.textContent = "Environment";
             {
-                this._createToolLabel("Load Environment Texture (.dds, .env)", this._panel);
+                let elemLabel = this._createToolLabel("Load Environment Texture (.dds, .env) ", this._panel);
+                elemLabel.className = "tool-label-line";
 
-                let file: BABYLON.Nullable<File> = null;
+                let errorElemm = Inspector.DOCUMENT.createElement('div');
+                errorElemm.className = "tool-label-error";
+                errorElemm.style.display = "none";
 
-                let elemValue = Helpers.CreateDiv('tool-value', this._panel);
-                let inputUploadElement = Inspector.DOCUMENT.createElement('input');
-                inputUploadElement.type = "file";
-                inputUploadElement.onchange = (event: any) => {
+                let inputElement = Inspector.DOCUMENT.createElement('input');
+                inputElement.className = "tool-label-line";
+                inputElement.type = "file";
+                inputElement.onchange = (event: any) => {
                     var files: File[] = event.target.files;
+                    let file: BABYLON.Nullable<File> = null;
                     if (files && files.length) {
                         file = files[0];
-                        
                     }
-                };
-                elemValue.appendChild(inputUploadElement);
-                
-                let inputElement = Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Load";
-                inputElement.type = "button";
-                inputElement.onclick = () => {
+
                     if (!file) {
+                        errorElemm.style.display = "block";
+                        errorElemm.textContent = "Please, select a file first."
                         return;
                     }
 
                     let isFileDDS = file.name.toLowerCase().indexOf(".dds") > 0;
+                    let isFileEnv = file.name.toLowerCase().indexOf(".env") > 0;
+                    if (!isFileDDS && ! isFileEnv) {
+                        errorElemm.style.display = "block";
+                        errorElemm.textContent = "Please, select a dds or env file."
+                        return;
+                    }
+
                     BABYLON.Tools.ReadFile(file, data => {
                         var blob = new Blob([data], {type: "octet/stream"});
                         var url = URL.createObjectURL(blob);
                         if (isFileDDS) {
                             this._scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(url, this._scene, ".dds");
+                            errorElemm.style.display = "none";
                         }
                         else {
                             this._scene.environmentTexture = new BABYLON.CubeTexture(url, this._scene, 
-                                undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+                                undefined, undefined, undefined, 
+                                () => {
+                                    errorElemm.style.display = "none";
+                                }, 
+                                (message) => {
+                                    if (message) {
+                                        errorElemm.style.display = "block";
+                                        errorElemm.textContent = message;
+                                    }
+                                }, 
+                                undefined, undefined,
                                 ".env");
                         }
-                    }, null, true);
+                    }, undefined, true);
                 };
-                elemValue.appendChild(inputElement);
+                elemLabel.appendChild(inputElement);
 
                 this._createToolLabel("Compress to .env", this._panel);
-                elemValue = Helpers.CreateDiv('tool-value', this._panel);
+                let elemValue = Helpers.CreateDiv('tool-value', this._panel);
                 inputElement = Inspector.DOCUMENT.createElement('input');
                 inputElement.value = "Save";
                 inputElement.type = "button";
                 inputElement.onclick = () => {
+                    if (!this._scene.environmentTexture) {
+                        errorElemm.style.display = "block";
+                        errorElemm.textContent = "You must load an environment texture first.";
+                        return;
+                    }
                     if (this._scene.activeCamera) {
-                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(this._scene.environmentTexture).then((buffer) => {
+                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(this._scene.environmentTexture)
+                        .then((buffer: ArrayBuffer) => {
                             var blob = new Blob([buffer], {type: "octet/stream"});
                             BABYLON.Tools.Download(blob, "environment.env");
-                        }).catch((error) => {
-                            // TODO. display errors. error.message
+                            errorElemm.style.display = "none";
+                        })
+                        .catch((error: any) => {
+                            errorElemm.style.display = "block";
+                            errorElemm.textContent = error;
                         });
+                    }
+                    else {
+                        errorElemm.style.display = "block";
+                        errorElemm.textContent = "An active camera is required.";
                     }
                 };
                 elemValue.appendChild(inputElement);
+                
+                this._panel.appendChild(errorElemm);
             }
 
             title = Helpers.CreateDiv('tool-title2', this._panel);
