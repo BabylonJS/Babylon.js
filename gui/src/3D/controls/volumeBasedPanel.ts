@@ -5,7 +5,6 @@ module BABYLON.GUI {
      * Abstract class used to create a container panel deployed on the surface of a volume
      */
     export abstract class VolumeBasedPanel extends Container3D {
-        private _radius = 5.0;
         private _columns = 10;
         private _rows = 0;
         private _rowThenColum = true;
@@ -41,26 +40,7 @@ module BABYLON.GUI {
             Tools.SetImmediate(() => {
                 this._arrangeChildren();               
             });
-        }   
-         
-        /**
-         * Gets or sets the radius of the sphere where to project controls (5 by default)
-         */
-        public get radius(): float {
-            return this._radius;
-        }
-
-        public set radius(value: float) {
-            if (this._radius === value) {
-                return;
-            }
-
-            this._radius = value;
-
-            Tools.SetImmediate(() => {
-                this._arrangeChildren();               
-            });
-        }        
+        }             
 
         /**
          * Gets or sets the number of columns requested (10 by default). 
