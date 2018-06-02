@@ -88,6 +88,7 @@ vec4 toRGBD(vec3 color) {
     
     // Helps with png quantization.
     rgb = toGammaSpace(rgb);
+
     return vec4(rgb, D * 0.8 + 0.2); 
 }
 

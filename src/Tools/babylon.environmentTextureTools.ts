@@ -179,11 +179,11 @@ module BABYLON {
 
                     // Creates a temp texture with the face data.
                     let tempTexture = engine.createRawTexture(data, faceWidth, faceWidth, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-                    // And rgbmEncode them. 
+                    // And rgbdEncode them. 
                     let promise = new Promise<void>((resolve, reject) => {
-                        let rgbmPostProcess = new PostProcess("rgbmEncode", "rgbmEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
-                        rgbmPostProcess.getEffect().executeWhenCompiled(() => {
-                            rgbmPostProcess.onApply = (effect) => {
+                        let rgbdPostProcess = new PostProcess("rgbdEncode", "rgbdEncode", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+                        rgbdPostProcess.getEffect().executeWhenCompiled(() => {
+                            rgbdPostProcess.onApply = (effect) => {
                                 effect._bindTexture("textureSampler", tempTexture);
                             }
             
@@ -193,7 +193,7 @@ module BABYLON {
 
                             // Set the desired size for the texture
                             engine.setSize(faceWidth, faceWidth);
-                            hostingScene.postProcessManager.directRender([rgbmPostProcess], null);
+                            hostingScene.postProcessManager.directRender([rgbdPostProcess], null);
 
                             // Reading datas from WebGL
                             canvas!.toBlob((blob) => {
@@ -214,7 +214,7 @@ module BABYLON {
                 }
             }
 
-            // Once all the textures haves been collected as RGBM stored in PNGs
+            // Once all the textures haves been collected as RGBD stored in PNGs
             return Promise.all(promises).then(() => {
                 // We can delete the hosting scene keeping track of all the creation objects
                 hostingScene.dispose();
@@ -339,7 +339,7 @@ module BABYLON {
             let engine = texture.getEngine();
             let expandTexture = false;
             let generateNonLODTextures = false;
-            let rgbmPostProcess: Nullable<PostProcess> = null;
+            let rgbdPostProcess: Nullable<PostProcess> = null;
             let cubeRtt: Nullable<InternalTexture> = null;
             let lodTextures: Nullable<{ [lod: number]: BaseTexture}> = null;
             let caps = engine.getCaps();
@@ -372,9 +372,9 @@ module BABYLON {
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP
-                rgbmPostProcess = new PostProcess("rgbmDecode", "rgbmDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
+                rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
                 
-                texture._isRGBM = false;
+                texture._isRGBD = false;
                 texture.invertY = false;
                 cubeRtt = engine.createRenderTargetCubeTexture(texture.width, {
                     generateDepthBuffer: false,
@@ -386,7 +386,7 @@ module BABYLON {
                 });
             }
             else {
-                texture._isRGBM = true;
+                texture._isRGBD = true;
                 texture.invertY = true;
 
                 // In case of missing support, applies the same patch than DDS files.
@@ -458,14 +458,14 @@ module BABYLON {
                                 },
                                 image);
 
-                                rgbmPostProcess!.getEffect().executeWhenCompiled(() => {
+                                rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
                                     // Uncompress the data to a RTT
-                                    rgbmPostProcess!.onApply = (effect) => {
+                                    rgbdPostProcess!.onApply = (effect) => {
                                         effect._bindTexture("textureSampler", tempTexture);
                                         effect.setFloat2("scale", 1, 1);
                                     }
                                     
-                                    engine.scenes[0].postProcessManager.directRender([rgbmPostProcess!], cubeRtt, true, face, i);
+                                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
 
                                     // Cleanup
                                     engine.restoreDefaultFramebuffer();
@@ -503,8 +503,8 @@ module BABYLON {
                     cubeRtt._swapAndDie(texture);
                 }
                 // Relase temp Post Process.
-                if (rgbmPostProcess) {
-                    rgbmPostProcess.dispose();
+                if (rgbdPostProcess) {
+                    rgbdPostProcess.dispose();
                 }
                 // Flag internal texture as ready in case they are in use.
                 if (generateNonLODTextures) {

@@ -86,7 +86,7 @@
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
-        public RGBMREFLECTION = false;
+        public RGBDREFLECTION = false;
         public RADIANCEOCCLUSION = false;
         public HORIZONOCCLUSION = false;
 
@@ -95,7 +95,7 @@
         public REFRACTIONMAP_OPPOSITEZ = false;
         public LODINREFRACTIONALPHA = false;
         public GAMMAREFRACTION = false;
-        public RGBMREFRACTION = false;
+        public RGBDREFRACTION = false;
         public LINKREFRACTIONTOTRANSPARENCY = false;
 
         public INSTANCES = false;
@@ -1049,7 +1049,7 @@
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
-                        defines.RGBMREFLECTION = reflectionTexture.isRGBM;
+                        defines.RGBDREFLECTION = reflectionTexture.isRGBD;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
 
@@ -1122,7 +1122,7 @@
                         defines.REFLECTIONMAP_OPPOSITEZ = false;
                         defines.LODINREFLECTIONALPHA = false;
                         defines.GAMMAREFLECTION = false;
-                        defines.RGBMREFLECTION = false;
+                        defines.RGBDREFLECTION = false;
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
@@ -1186,7 +1186,7 @@
                         defines.REFRACTION = true;
                         defines.REFRACTIONMAP_3D = refractionTexture.isCube;
                         defines.GAMMAREFRACTION = refractionTexture.gammaSpace;
-                        defines.RGBMREFRACTION = refractionTexture.isRGBM;
+                        defines.RGBDREFRACTION = refractionTexture.isRGBD;
                         defines.REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
                         defines.LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
 

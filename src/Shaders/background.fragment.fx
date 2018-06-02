@@ -186,7 +186,7 @@ vec4 reflectionColor = vec4(1., 1., 1., 1.);
         reflectionColor = reflectionSample;
     #endif
 
-    #ifdef RGBMREFLECTION
+    #ifdef RGBDREFLECTION
         reflectionColor.rgb = fromRGBD(reflectionColor);
     #endif
 
