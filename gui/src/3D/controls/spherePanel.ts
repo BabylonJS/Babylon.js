@@ -5,6 +5,26 @@ module BABYLON.GUI {
      * Class used to create a container panel deployed on the surface of a sphere
      */
     export class SpherePanel extends VolumeBasedPanel {
+        private _radius = 4.0;
+
+        /**
+         * Gets or sets the radius of the sphere where to project controls (5 by default)
+         */
+        public get radius(): float {
+            return this._radius;
+        }
+
+        public set radius(value: float) {
+            if (this._radius === value) {
+                return;
+            }
+
+            this._radius = value;
+
+            Tools.SetImmediate(() => {
+                this._arrangeChildren();               
+            });
+        }              
 
         protected _mapGridNode(control: Control3D, nodePosition: Vector3) {            
             let newPos = this._sphericalMapping(nodePosition);
@@ -34,10 +54,10 @@ module BABYLON.GUI {
 
         private _sphericalMapping(source: Vector3)
         {
-            let newPos = new Vector3(0, 0, this.radius);
+            let newPos = new Vector3(0, 0, this._radius);
 
-            let xAngle = (source.y / this.radius);
-            let yAngle = -(source.x / this.radius);
+            let xAngle = (source.y / this._radius);
+            let yAngle = -(source.x / this._radius);
 
             Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, Tmp.Matrix[0]);
 
