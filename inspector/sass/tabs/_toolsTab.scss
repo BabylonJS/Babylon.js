@@ -18,7 +18,7 @@
 
     .tool-label {
         display         : inline-block;
-        width           : 80%;
+        width           : 75%;
         padding         : 2px;
         background-color: $background-lighter;
         border-bottom   : 1px solid $background;
@@ -26,11 +26,23 @@
         height          : 30px;
         line-height     : 30px;
         box-sizing      : border-box;
-        
     }
+
+    .tool-label-line {
+        @extend .tool-label;
+        width           : 100%;
+    }
+
+    .tool-label-error {
+        @extend .tool-label;
+        color           : $color-error;
+        width           : 100%;
+        background-color: none;
+    }
+
     .tool-value {
         display         : inline-block;
-        width           : 20%;
+        width           : 25%;
         padding         : 2px;
         background-color: $background-lighter;
         border-top      : 1px solid $background;
