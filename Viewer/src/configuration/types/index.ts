@@ -4,7 +4,7 @@ import { extendedConfiguration } from './extended';
 import { ViewerConfiguration } from '../configuration';
 import { shadowDirectionalLightConfiguration, shadowSpotlLightConfiguration } from './shadowLight';
 import { environmentMapConfiguration } from './environmentMap';
-import * as deepmerge from '../../../assets/deepmerge.min.js';
+import { deepmerge } from '../../helper/';
 
 /**
  * Get the configuration type you need to use as the base for your viewer.

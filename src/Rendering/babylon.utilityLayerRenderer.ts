@@ -4,6 +4,7 @@ module BABYLON {
      */
     export class UtilityLayerRenderer implements IDisposable {
         private _pointerCaptures: {[pointerId:number]: boolean} = {};
+        private _lastPointerEvents: {[pointerId:number]: number} = {};
 
         /** 
          * The scene that is rendered on top of the original scene
@@ -18,6 +19,17 @@ module BABYLON {
          * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
          */
         public onlyCheckPointerDownEvents = true;
+
+        /**
+         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
+         */
+        public processAllEvents = false;
+
+        /**
+         * Observable raised when the pointer move from the utility layer scene to the main scene
+         */
+        public onPointerOutObservable = new Observable<number>();
+
         private _afterRenderObserver:Nullable<Observer<Scene>>;
         private _sceneDisposeObserver:Nullable<Observer<Scene>>;
         private _originalPointerObserver:Nullable<Observer<PointerInfoPre>>;
@@ -32,7 +44,16 @@ module BABYLON {
 
             // Detach controls on utility scene, events will be fired by logic below to handle picking priority
             this.utilityLayerScene.detachControl();
-            this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState)=>{
+            this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState) => {
+
+                if (!this.processAllEvents) {
+                    if (prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE
+                        && prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERUP
+                        && prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
+                        return;
+                    }
+                }
+
                 var utilityScenePick = prePointerInfo.ray ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray) : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
                 if(!prePointerInfo.ray && utilityScenePick){
                     prePointerInfo.ray = utilityScenePick.ray;
@@ -67,17 +88,26 @@ module BABYLON {
                         if (utilityScenePick.distance === 0) {
                             if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
-                            } else if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
-                                this._pointerCaptures[pointerEvent.pointerId] = false;
-                            }
+                            } 
                         }
 
                         if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){
                             if(!prePointerInfo.skipOnPointerObservable){
                                 this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
+                                this._lastPointerEvents[pointerEvent.pointerId] = pointerEvent.pointerType;
                             }
                             prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
-                        } 
+                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance > originalScenePick.distance)) {
+                            // We need to send a last pointup to the utilityLayerScene to make sure animations can complete
+                            if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
+                                delete this._lastPointerEvents[pointerEvent.pointerId];
+                            }
+                        }
+
+                        if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
+                            this._pointerCaptures[pointerEvent.pointerId] = false;
+                        }
                     }
                 }
                 

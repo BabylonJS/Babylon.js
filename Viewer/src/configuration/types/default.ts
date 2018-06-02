@@ -1,4 +1,7 @@
-import { ViewerConfiguration } from './../configuration';
+import { ViewerConfiguration } from '../configuration';
+import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
+import { babylonFont } from 'babylonjs-viewer-assets';
+import * as images from 'babylonjs-viewer-assets';
 
 /**
  * The default configuration of the viewer, including templates (canvas, overly, loading screen)
@@ -8,33 +11,33 @@ export let defaultConfiguration: ViewerConfiguration = {
     version: "3.2.0-alpha4",
     templates: {
         main: {
-            html: require("../../../assets/templates/default/defaultTemplate.html"),
+            html: defaultTemplate,
             params: {
-                babylonFont: require('../../../assets/babylon.woff'),
+                babylonFont: babylonFont,
                 noEscape: true
             }
         },
         fillContainer: {
-            html: require("../../../assets/templates/default/fillContainer.html"),
+            html: fillContainer,
             params: {
                 disable: false
             }
         },
         loadingScreen: {
-            html: require("../../../assets/templates/default/loadingScreen.html"),
+            html: loadingScreen,
             params: {
                 backgroundColor: "#000000",
-                loadingImage: require('../../../assets/img/loading.png')
+                loadingImage: images.loading
             }
         },
         viewer: {
-            html: require("../../../assets/templates/default/defaultViewer.html"),
+            html: defaultViewer,
             params: {
                 enableDragAndDrop: false
             }
         },
         navBar: {
-            html: require("../../../assets/templates/default/navbar.html"),
+            html: navbar,
             params: {
                 speedList: {
                     "0.5x": "0.5",
@@ -42,7 +45,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                     "1.5x": "1.5",
                     "2.0x": "2.0",
                 },
-                logoImage: require('../../../assets/img/BabylonJS_Logo_Small.png'),
+                logoImage: images.babylonLogo,
                 logoText: 'BabylonJS',
                 logoLink: 'https://babylonjs.com',
                 hideHelp: true,
@@ -62,20 +65,20 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         },
         overlay: {
-            html: require("../../../assets/templates/default/overlay.html"),
+            html: overlay,
             params: {
-                closeImage: require('../../../assets/img/close.png'),
+                closeImage: images.close,
                 closeText: 'Close'
             }
         },
         help: {
-            html: require("../../../assets/templates/default/help.html")
+            html: help
         },
         share: {
-            html: require("../../../assets/templates/default/share.html")
+            html: share
         },
         error: {
-            html: require("../../../assets/templates/default/error.html")
+            html: error
         }
 
     },

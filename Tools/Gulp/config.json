@@ -115,7 +115,8 @@
             "backgroundMaterial",
             "environmentHelper",
             "particleHelper",
-            "videoDome"
+            "videoDome",
+            "photoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -1225,6 +1226,16 @@
                 "meshBuilder",
                 "additionalTextures"
             ]
+        },
+        "photoDome": {
+            "files": [
+                "../../src/Helpers/babylon.photoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
+                "additionalTextures"
+            ]
         }
     },
     "typescript": [
@@ -1714,6 +1725,7 @@
                     "../../gui/src/3D/controls/button3D.ts",
                     "../../gui/src/3D/controls/holographicButton.ts",
                     "../../gui/src/3D/controls/stackPanel3D.ts",
+                    "../../gui/src/3D/controls/volumeBasedPanel.ts",
                     "../../gui/src/3D/controls/spherePanel.ts"
                 ],
                 "shaderFiles": [
@@ -1835,8 +1847,8 @@
             "srcOutputDirectory": "../../Viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer",
-                "main": "../../Viewer/src/index.d.ts",
-                "out": "../../dist/preview release/viewer/babylon.viewer.module.d.ts",
+                "main": "../../Viewer/dist/build/src/index.d.ts",
+                "out": "../../../../dist/preview release/viewer/babylon.viewer.module.d.ts",
                 "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "outputs": [

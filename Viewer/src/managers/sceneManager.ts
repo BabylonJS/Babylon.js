@@ -1,11 +1,12 @@
 import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh } from 'babylonjs';
-import { AbstractViewer } from './viewer';
-import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration } from '../configuration/configuration';
+import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
 import { ViewerLabs } from '../labs/viewerLabs';
 import { getCustomOptimizerByName } from '../optimizer/custom/';
+import { ObservablesManager } from '../managers/observablesManager';
+import { ConfigurationContainer } from '../configuration/configurationContainer';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -89,8 +90,6 @@ export class SceneManager {
      */
     private _hdrSupport: boolean;
 
-    private _mainColor: Color3 = Color3.White();
-    private _reflectionColor = Color3.White();
     private readonly _white = Color3.White();
 
     private _forceShadowUpdate: boolean = false;
@@ -107,7 +106,7 @@ export class SceneManager {
         return this._defaultRenderingPipeline;
     }
 
-    constructor(private _viewer: AbstractViewer) {
+    constructor(private _engine: Engine, private _configurationContainer: ConfigurationContainer, private _observablesManager?: ObservablesManager) {
         this.models = [];
 
         this.onCameraConfiguredObservable = new Observable();
@@ -118,13 +117,14 @@ export class SceneManager {
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
 
-        this._viewer.onEngineInitObservable.add(() => {
-            this._handleHardwareLimitations();
-        });
-
-        this.labs = new ViewerLabs(this);
+        //this._viewer.onEngineInitObservable.add(() => {
+        this._handleHardwareLimitations();
+        //});
 
         this.onSceneInitObservable.add((scene) => {
+            this.scene.animationPropertiesOverride = this.scene.animationPropertiesOverride || new AnimationPropertiesOverride();
+
+            this.labs = new ViewerLabs(scene);
 
             let updateShadows = () => {
                 for (let light of this.scene.lights) {
@@ -153,22 +153,32 @@ export class SceneManager {
                     updateShadows();
                 }
             });
-            return this._viewer.onSceneInitObservable.notifyObserversWithPromise(this.scene);
+            return this._observablesManager && this._observablesManager.onSceneInitObservable.notifyObserversWithPromise(this.scene);
         });
-
-        this._viewer.onModelLoadedObservable.add((model) => {
-            for (let light of this.scene.lights) {
-                let generator = light.getShadowGenerator();
-                if (generator) {
-                    // Processing shadows if animates
-                    let shadowMap = generator.getShadowMap();
-                    if (shadowMap) {
-                        shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+        if (this._observablesManager) {
+            this._observablesManager.onModelLoadedObservable.add((model) => {
+                for (let light of this.scene.lights) {
+                    let generator = light.getShadowGenerator();
+                    if (generator) {
+                        // Processing shadows if animates
+                        let shadowMap = generator.getShadowMap();
+                        if (shadowMap) {
+                            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                        }
                     }
                 }
-            }
-            this._focusOnModel(model);
-        });
+                this._focusOnModel(model);
+            });
+
+            this._observablesManager.onModelAddedObservable.add(model => {
+                this.models.push(model);
+            });
+            this._observablesManager.onModelRemovedObservable.add(model => {
+                this.models.splice(this.models.indexOf(model), 1);
+            })
+
+        }
+
     }
 
     /**
@@ -182,21 +192,23 @@ export class SceneManager {
      * Return the main color defined in the configuration.
      */
     public get mainColor(): Color3 {
-        return this._mainColor;
+        return this._configurationContainer.mainColor;
     }
 
     public get reflectionColor(): Color3 {
-        return this._reflectionColor;
+        return this._configurationContainer.reflectionColor;
     }
 
     public get animationBlendingEnabled() {
-        return this._animationBlendingEnabled;
+        return this.scene && this.scene.animationPropertiesOverride!.enableBlending;
     }
 
     public set animationBlendingEnabled(value: boolean) {
-        this.scene.animationPropertiesOverride = this.scene.animationPropertiesOverride || new AnimationPropertiesOverride();
-        this.scene.animationPropertiesOverride.enableBlending = value;
-        this._animationBlendingEnabled = value;
+        this.scene.animationPropertiesOverride!.enableBlending = value;
+    }
+
+    public get observablesManager() {
+        return this._observablesManager;
     }
 
     private _processShadows: boolean = true;
@@ -324,7 +336,7 @@ export class SceneManager {
         }
 
         // create a new scene
-        this.scene = new Scene(this._viewer.engine);
+        this.scene = new Scene(this._engine);
 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
@@ -342,8 +354,6 @@ export class SceneManager {
         this.scene.animationPropertiesOverride = new AnimationPropertiesOverride();
 
         Animation.AllowMatricesInterpolation = true;
-
-        this._mainColor = Color3.White();
 
         /*if (sceneConfiguration.glow) {
             let options: Partial<IGlowLayerOptions> = {
@@ -368,13 +378,20 @@ export class SceneManager {
         }
     }
 
+    private _globalConfiguration: ViewerConfiguration = {};
+
     /**
      * This will update the scene's configuration, including camera, lights, environment.
      * @param newConfiguration the delta that should be configured. This includes only the changes
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>, globalConfiguration: ViewerConfiguration) {
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>) {
 
+        if (this._configurationContainer) {
+            this._globalConfiguration = this._configurationContainer.configuration;
+        } else {
+            this._globalConfiguration = newConfiguration;
+        }
 
         if (newConfiguration.lab) {
             if (newConfiguration.lab.assetsRootURL) {
@@ -458,7 +475,7 @@ export class SceneManager {
     private _defaultRenderingPipelineShouldBuild: boolean = true;
 
     private _rebuildPostprocesses(configuration?: IDefaultRenderingPipelineConfiguration): void {
-        if (!this._defaultRenderingPipelineEnabled || !getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", this._viewer.configuration)) {
+        if (!this._defaultRenderingPipelineEnabled || !getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", this._globalConfiguration)) {
             if (this._defaultRenderingPipeline) {
                 this._defaultRenderingPipeline.dispose();
                 this._defaultRenderingPipeline = null;
@@ -470,7 +487,7 @@ export class SceneManager {
             return;
         }
 
-        let pipelineConfig = configuration || (this._viewer.configuration.lab && this._viewer.configuration.lab.defaultRenderingPipelines);
+        let pipelineConfig = configuration || (this._globalConfiguration.lab && this._globalConfiguration.lab.defaultRenderingPipelines);
         if (pipelineConfig) {
 
             if (!this._defaultRenderingPipeline) {
@@ -601,39 +618,43 @@ export class SceneManager {
         }
 
         if (sceneConfig.renderInBackground !== undefined) {
-            this._viewer.renderInBackground = !!sceneConfig.renderInBackground;
+            this._engine.renderEvenInBackground = !!sceneConfig.renderInBackground;
         }
 
-        if (this.camera && sceneConfig.disableCameraControl) {
-            this.camera.detachControl(this._viewer.canvas);
-        } else if (this.camera && sceneConfig.disableCameraControl === false) {
-            this.camera.attachControl(this._viewer.canvas);
+        let canvas = this._engine.getRenderingCanvas();
+
+        if (canvas) {
+            if (this.camera && sceneConfig.disableCameraControl) {
+                this.camera.detachControl(canvas);
+            } else if (this.camera && sceneConfig.disableCameraControl === false) {
+                this.camera.attachControl(canvas);
+            }
         }
 
         // process mainColor changes:
         if (sceneConfig.mainColor) {
-            this._mainColor = this._mainColor || Color3.White();
+            this._configurationContainer.mainColor = this.mainColor || Color3.White();
             let mc = sceneConfig.mainColor;
             if (mc.r !== undefined) {
-                this._mainColor.r = mc.r;
+                this.mainColor.r = mc.r;
             }
             if (mc.g !== undefined) {
-                this._mainColor.g = mc.g
+                this.mainColor.g = mc.g
             }
             if (mc.b !== undefined) {
-                this._mainColor.b = mc.b
+                this.mainColor.b = mc.b
             }
 
-            this._reflectionColor.copyFrom(this.mainColor);
+            this.reflectionColor.copyFrom(this.mainColor);
 
 
-            let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._viewer.configuration) || 0;
+            let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._globalConfiguration) || 0;
 
             // reflection color
-            this._reflectionColor.toLinearSpaceToRef(this._reflectionColor);
-            this._reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this._reflectionColor);
-            let tmpColor3 = Color3.Lerp(this._white, this._reflectionColor, environmentTint);
-            this._reflectionColor.copyFrom(tmpColor3);
+            this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
+            this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
+            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
+            this.reflectionColor.copyFrom(tmpColor3);
 
             //update the environment, if exists
             if (this.environmentHelper) {
@@ -712,7 +733,7 @@ export class SceneManager {
                 let customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
                 if (customOptimizer) {
                     optimizerOptions.addCustomOptimization(() => {
-                        return customOptimizer(this._viewer);
+                        return customOptimizer(this);
                     }, () => {
                         return `Babylon Viewer ${optimizerConfig.custom} custom optimization`;
                     });
@@ -753,7 +774,7 @@ export class SceneManager {
     protected _configureCamera(cameraConfig: ICameraConfiguration = {}) {
         if (!this.scene.activeCamera) {
             let attachControl = true;
-            if (this._viewer.configuration.scene && this._viewer.configuration.scene.disableCameraControl) {
+            if (this._globalConfiguration.scene && this._globalConfiguration.scene.disableCameraControl) {
                 attachControl = false;
             }
             this.scene.createDefaultCamera(true, true, attachControl);
@@ -801,7 +822,7 @@ export class SceneManager {
         if (this.scene.imageProcessingConfiguration) {
             this.scene.imageProcessingConfiguration.colorCurvesEnabled = true;
             this.scene.imageProcessingConfiguration.vignetteEnabled = true;
-            this.scene.imageProcessingConfiguration.toneMappingEnabled = !!getConfigurationKey("camera.toneMappingEnabled", this._viewer.configuration);
+            this.scene.imageProcessingConfiguration.toneMappingEnabled = !!getConfigurationKey("camera.toneMappingEnabled", this._globalConfiguration);
         }
 
         extendClassWithConfig(this.camera, cameraConfig);
@@ -819,9 +840,9 @@ export class SceneManager {
         const halfSizeVec = sizeVec.scale(0.5);
         const center = boundingInfo.min.add(halfSizeVec);
         this.camera.setTarget(center);
-        this.camera.alpha = (this._viewer.configuration.camera && this._viewer.configuration.camera.alpha) || this.camera.alpha;
-        this.camera.beta = (this._viewer.configuration.camera && this._viewer.configuration.camera.beta) || this.camera.beta;
-        this.camera.radius = (this._viewer.configuration.camera && this._viewer.configuration.camera.radius) || this.camera.radius;
+        this.camera.alpha = (this._globalConfiguration.camera && this._globalConfiguration.camera.alpha) || this.camera.alpha;
+        this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
+        this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
         /*this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
             // casting ais safe, due to the constraints tested before
@@ -943,8 +964,8 @@ export class SceneManager {
                 }
             }
 
-            if (this.environmentHelper.rootMesh && this._viewer.configuration.scene && this._viewer.configuration.scene.environmentRotationY !== undefined) {
-                this.environmentHelper.rootMesh.rotation.y = this._viewer.configuration.scene.environmentRotationY;
+            if (this.environmentHelper.rootMesh && this._globalConfiguration.scene && this._globalConfiguration.scene.environmentRotationY !== undefined) {
+                this.environmentHelper.rootMesh.rotation.y = this._globalConfiguration.scene.environmentRotationY;
             }
 
             let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
@@ -985,7 +1006,7 @@ export class SceneManager {
 
         }
 
-        this._viewer.onModelLoadedObservable.add((model) => {
+        this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
             this._updateGroundMirrorRenderList(model);
         });
 
@@ -1018,7 +1039,7 @@ export class SceneManager {
 
             let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
             // compare to the global (!) configuration object and dispose unneeded:
-            let lightsToConfigure = Object.keys(this._viewer.configuration.lights || []);
+            let lightsToConfigure = Object.keys(this._globalConfiguration.lights || []);
             if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
                 lightsAvailable.forEach(lName => {
                     if (lightsToConfigure.indexOf(lName) === -1) {
@@ -1127,7 +1148,7 @@ export class SceneManager {
                         extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
 
                         // add the focues meshes to the shadow list
-                        this._viewer.onModelLoadedObservable.add((model) => {
+                        this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
                             this._updateShadowRenderList(shadowGenerator, model);
                         });
 
@@ -1141,7 +1162,7 @@ export class SceneManager {
             });
 
             // render priority
-            let globalLightsConfiguration = this._viewer.configuration.lights || {};
+            let globalLightsConfiguration = this._globalConfiguration.lights || {};
             Object.keys(globalLightsConfiguration).sort().forEach((name, idx) => {
                 let configuration = globalLightsConfiguration[name];
                 let light = this.scene.getLightByName(name);
@@ -1247,8 +1268,8 @@ export class SceneManager {
      */
     protected _handleHardwareLimitations(enableHDR = true) {
         //flip rendering settings switches based on hardware support
-        let maxVaryingRows = this._viewer.engine.getCaps().maxVaryingVectors;
-        let maxFragmentSamplers = this._viewer.engine.getCaps().maxTexturesImageUnits;
+        let maxVaryingRows = this._engine.getCaps().maxVaryingVectors;
+        let maxFragmentSamplers = this._engine.getCaps().maxTexturesImageUnits;
 
         //shadows are disabled if there's not enough varyings for a single shadow
         if ((maxVaryingRows < 8) || (maxFragmentSamplers < 8)) {
@@ -1258,7 +1279,7 @@ export class SceneManager {
         }
 
         //can we render to any >= 16-bit targets (required for HDR)
-        let caps = this._viewer.engine.getCaps();
+        let caps = this._engine.getCaps();
         let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
         let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
 
@@ -1375,7 +1396,7 @@ export class SceneManager {
             case CameraBehavior.BOUNCING:
                 break;
             case CameraBehavior.FRAMING:
-                this._viewer.onModelLoadedObservable.add((model) => {
+                this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
                     if (config.zoomOnBoundingInfo) {
                         (<FramingBehavior>behavior).zoomOnMeshHierarchy(model.rootMesh);
                     }

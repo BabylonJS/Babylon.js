@@ -1,7 +1,7 @@
-import { AbstractViewer } from "../../viewer/viewer";
 import { extendedUpgrade, extendedDegrade } from "./extended";
+import { SceneManager } from "../../managers/sceneManager";
 
-const cache: { [key: string]: (viewer: AbstractViewer) => boolean } = {};
+const cache: { [key: string]: (sceneManager: SceneManager) => boolean } = {};
 
 /**
  * 

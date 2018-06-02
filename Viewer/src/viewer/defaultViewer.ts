@@ -1,7 +1,7 @@
 
 
-import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration/configuration';
-import { Template, EventCallback } from './../templateManager';
+import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration';
+import { Template, EventCallback, TemplateManager } from '../templating/templateManager';
 import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight, FilesInput } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
@@ -15,6 +15,8 @@ import { IModelAnimation, AnimationState } from '../model/modelAnimation';
  */
 export class DefaultViewer extends AbstractViewer {
 
+
+
     /**
      * Create a new default viewer
      * @param containerElement the element in which the templates will be rendered
@@ -22,11 +24,14 @@ export class DefaultViewer extends AbstractViewer {
      */
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
+
         this.onModelLoadedObservable.add(this._onModelLoaded);
 
-        this.sceneManager.onLightsConfiguredObservable.add((data) => {
-            this._configureLights(data.newConfiguration, data.model!);
-        })
+        this.onEngineInitObservable.add(() => {
+            this.sceneManager.onLightsConfiguredObservable.add((data) => {
+                this._configureLights(data.newConfiguration, data.model!);
+            })
+        });
     }
 
     /**
@@ -148,6 +153,7 @@ export class DefaultViewer extends AbstractViewer {
                 break;
             case "fullscreen-button":
                 this.toggleFullscreen();
+                break;
             default:
                 return;
         }
@@ -339,8 +345,8 @@ export class DefaultViewer extends AbstractViewer {
         this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 20;
-        if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
-            hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
+        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
             this.sceneManager.scene.executeWhenReady(() => {
@@ -476,6 +482,28 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    public dispose() {
+        this.templateManager.dispose();
+        super.dispose();
+    }
+
+    protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
+        super._onConfigurationLoaded(configuration);
+
+        // initialize the templates
+        let templateConfiguration = this.configuration.templates || {};
+
+        this.templateManager.initTemplate(templateConfiguration);
+        // when done, execute onTemplatesLoaded()
+        this.templateManager.onAllLoaded.add(() => {
+            let canvas = this.templateManager.getCanvas();
+            if (canvas) {
+                this._canvas = canvas;
+            }
+            this._onTemplateLoaded();
+        });
+    }
+
     /**
      * An extension of the light configuration of the abstract viewer.
      * @param lightsConfiguration the light configuration to use
@@ -483,28 +511,28 @@ export class DefaultViewer extends AbstractViewer {
      */
     private _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}, model?: ViewerModel) {
         // labs feature - flashlight
-        if (this._configuration.lab && this._configuration.lab.flashlight) {
+        if (this.configuration.lab && this.configuration.lab.flashlight) {
             let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
-            if (typeof this._configuration.lab.flashlight === "object") {
-                exponent = this._configuration.lab.flashlight.exponent || exponent;
-                angle = this._configuration.lab.flashlight.angle || angle;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                exponent = this.configuration.lab.flashlight.exponent || exponent;
+                angle = this.configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
                 Vector3.Zero(), exponent, angle, this.sceneManager.scene);
-            if (typeof this._configuration.lab.flashlight === "object") {
-                flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
-                if (this._configuration.lab.flashlight.diffuse) {
-                    flashlight.diffuse.r = this._configuration.lab.flashlight.diffuse.r;
-                    flashlight.diffuse.g = this._configuration.lab.flashlight.diffuse.g;
-                    flashlight.diffuse.b = this._configuration.lab.flashlight.diffuse.b;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this.configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
                 }
-                if (this._configuration.lab.flashlight.specular) {
-                    flashlight.specular.r = this._configuration.lab.flashlight.specular.r;
-                    flashlight.specular.g = this._configuration.lab.flashlight.specular.g;
-                    flashlight.specular.b = this._configuration.lab.flashlight.specular.b;
+                if (this.configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
                 }
 
             }

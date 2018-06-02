@@ -12,11 +12,10 @@ describe('Viewer', function () {
     it('should initialize a new viewer and its internal variables', (done) => {
         let viewer = Helper.getNewViewerInstance();
         assert.isDefined(viewer.baseId, "base id should be defined");
-        assert.isDefined(viewer.templateManager, "template manager should be defined");
-        assert.isDefined(viewer.sceneManager, "scene manager should be defined");
         assert.isDefined(viewer.modelLoader, "model loader should be defined");
         viewer.onInitDoneObservable.add(() => {
             assert.isDefined(viewer, "Viewer can not be instantiated.");
+            assert.isDefined(viewer.sceneManager, "scene manager should be defined");
             viewer.dispose();
             done();
         });
