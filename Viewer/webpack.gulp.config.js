@@ -1,5 +1,5 @@
 module.exports = {
-    // context: __dirname,
+    //context: __dirname,
     entry: [
         __dirname + '/src/index.ts'
     ]
@@ -12,8 +12,6 @@ module.exports = {
     externals: {
         cannon: 'CANNON',
         oimo: 'OIMO',
-        vertx: true,
-        "./Oimo": "OIMO",
         "earcut": true
     },
     resolve: {
@@ -22,8 +20,7 @@ module.exports = {
             "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
             "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
             "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
-            // "es6-promise": __dirname + '/assets/es6-promise.min.js',
-            "pep": __dirname + '/assets/pep.min.js',
+            "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
         }
     },
     module: {

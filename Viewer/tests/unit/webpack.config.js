@@ -15,14 +15,13 @@ module.exports = {
             "babylonjs": __dirname + '/../../../dist/preview release/babylon.max.js',
             "babylonjs-materials": __dirname + '/../../../dist/preview release/materialsLibrary/babylonjs.materials.js',
             "babylonjs-loaders": __dirname + '/../../../dist/preview release/loaders/babylonjs.loaders.js',
-            "pep": __dirname + '/../../assets/pep.min.js'
+            "babylonjs-viewer-assets": __dirname + '/../../src/assets/index.ts'
         }
     },
     externals: {
         // until physics will be integrated in the viewer, ignore cannon
         cannon: 'CANNON',
         oimo: 'OIMO',
-        './Oimo': 'OIMO',
         "earcut": true
     },
     devtool: 'source-map',

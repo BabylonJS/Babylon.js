@@ -5,10 +5,39 @@ module BABYLON.GUI {
      * Class used to create containers for controls
      */
     export class Container3D extends Control3D {
+        private _blockLayout = false;
+
         /**
          * Gets the list of child controls
          */
         protected _children = new Array<Control3D>();
+
+        /**
+         * Gets the list of child controls
+         */
+        public get children(): Array<Control3D> {
+            return this._children;
+        }
+
+        /**
+         * Gets or sets a boolean indicating if the layout must be blocked (default is false).
+         * This is helpful to optimize layout operation when adding multiple children in a row
+         */
+        public get blockLayout(): boolean {
+            return this._blockLayout;
+        }
+
+        public set blockLayout(value: boolean) {
+            if (this._blockLayout === value) {
+                return;
+            }
+
+            this._blockLayout = value;
+
+            if (!this._blockLayout) {
+                this._arrangeChildren();
+            }
+        }
 
         /**
          * Creates a new container
@@ -50,7 +79,9 @@ module BABYLON.GUI {
                     control.node.parent = this.node;
                 }
 
-                this._arrangeChildren();
+                if (!this.blockLayout) {
+                    this._arrangeChildren();
+                }
             }
 
             return this;
@@ -101,5 +132,21 @@ module BABYLON.GUI {
 
             super.dispose();
         }
+
+        /** Control rotation will remain unchanged  */
+        public static readonly UNSET_ORIENTATION = 0;
+
+        /** Control will rotate to make it look at sphere central axis */
+        public static readonly FACEORIGIN_ORIENTATION = 1;
+
+        /** Control will rotate to make it look back at sphere central axis */
+        public static readonly FACEORIGINREVERSED_ORIENTATION = 2;
+
+        /** Control will rotate to look at z axis (0, 0, 1) */
+        public static readonly FACEFORWARD_ORIENTATION = 3;
+
+        /** Control will rotate to look at negative z axis (0, 0, -1) */
+        public static readonly FACEFORWARDREVERSED_ORIENTATION = 4;
+
     }
 }

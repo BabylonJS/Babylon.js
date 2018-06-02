@@ -1,3 +1,8 @@
+import * as deepmerge from 'deepmerge';
+
+let expDm = deepmerge['default'];
+export { expDm as deepmerge };
+
 /**
  * Is the provided string a URL?
  * 
