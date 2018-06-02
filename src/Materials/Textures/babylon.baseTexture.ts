@@ -104,10 +104,10 @@
         public gammaSpace = true;
 
         /**
-         * Gets whether or not the texture contains RGBM data.
+         * Gets whether or not the texture contains RGBD data.
          */
-        public get isRGBM(): boolean {
-            return this._texture != null && this._texture._isRGBM;
+        public get isRGBD(): boolean {
+            return this._texture != null && this._texture._isRGBD;
         }
 
         @serialize()

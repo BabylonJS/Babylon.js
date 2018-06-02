@@ -512,7 +512,7 @@ void main(void) {
             environmentRefraction.rgb = fromRGBD(environmentRefraction);
         #endif
 
-        #ifdef RGBMREFRACTION
+        #ifdef RGBDREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
 
@@ -589,7 +589,7 @@ void main(void) {
             }
         #endif
 
-        #ifdef RGBMREFLECTION
+        #ifdef RGBDREFLECTION
             environmentRadiance.rgb = fromRGBD(environmentRadiance);
         #endif
 

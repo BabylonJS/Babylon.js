@@ -202,7 +202,7 @@ module BABYLON {
         /** @hidden */
         public _lodTextureLow: BaseTexture;
         /** @hidden */
-        public _isRGBM: boolean = false;
+        public _isRGBD: boolean = false;
 
         /** @hidden */
         public _webGLTexture: Nullable<WebGLTexture>;
