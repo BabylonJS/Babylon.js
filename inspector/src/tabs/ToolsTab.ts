@@ -81,7 +81,7 @@ module INSPECTOR {
                         }
                     }, undefined, true);
                 };
-                elemLabel.appendChild(inputElement);
+                this._panel.appendChild(inputElement);
 
                 this._createToolLabel("Compress to .env", this._panel);
                 let elemValue = Helpers.CreateDiv('tool-value', this._panel);
