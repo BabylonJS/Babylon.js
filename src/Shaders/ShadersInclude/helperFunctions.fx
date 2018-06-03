@@ -78,23 +78,26 @@ float dither(vec2 seed, float varianceAmount) {
 }
 
 // Check if configurable value is needed.
-const float rgbdMaxRange = 100.0;
+const float rgbdMaxRange = 255.0;
 
 vec4 toRGBD(vec3 color) {
     float maxRGB = max(0.0000001, max(color.r, max(color.g, color.b)));
     float D      = max(rgbdMaxRange / maxRGB, 1.);
-    D            = clamp(floor(D) / 255.0, 0.02, 1.);
-    vec3 rgb = color.rgb * (D * (255.0 / rgbdMaxRange));
+    D            = clamp(floor(D) / 255.0, 0., 1.);
+    // vec3 rgb = color.rgb * (D * (255.0 / rgbdMaxRange));
+    vec3 rgb = color.rgb * D;
     
     // Helps with png quantization.
     rgb = toGammaSpace(rgb);
 
-    return vec4(rgb, D * 0.8 + 0.2); 
+    return vec4(rgb, D); 
 }
 
 vec3 fromRGBD(vec4 rgbd) {
     // Helps with png quantization.
     rgbd.rgb = toLinearSpace(rgbd.rgb);
 
-    return rgbd.rgb * ((rgbdMaxRange / 255.0) / ((rgbd.a - 0.2) / 0.8));
+    // return rgbd.rgb * ((rgbdMaxRange / 255.0) / rgbd.a);
+
+    return rgbd.rgb * rgbd.a;
 }
