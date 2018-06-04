@@ -153,10 +153,24 @@ module BABYLON {
         public static CreateSystem(data: IParticleSystemData, scene: Scene, emitter: AbstractMesh): ParticleSystem {
             // Create a particle system
             const system = new ParticleSystem(data.type, data.capacity, scene);
+
+            // Where the particles come from
+            system.emitter = emitter; // the starting object, the emitter            
+
+            ParticleHelper.UpdateSystem(system, data, scene);
+
+            return system;
+        }
+
+        /**
+         * Static function used to update a particle system from a IParticleSystemData
+         * @param system defines the particle system to update
+         * @param data defines the source data
+         * @param scene defines the hosting scene
+         */
+        public static UpdateSystem(system: ParticleSystem, data: IParticleSystemData, scene: Scene): void {
             // Texture of each particle
             system.particleTexture = new Texture(`${ParticleHelper._baseAssetsUrl}/textures/${data.textureFile}`, scene);
-            // Where the particles come from
-            system.emitter = emitter; // the starting object, the emitter
 
             // Colors of all particles
             system.color1 = new Color4(data.color1.r, data.color1.g, data.color1.b, data.color1.a);
@@ -228,8 +242,6 @@ module BABYLON {
                 default:
                     break;
             }
-
-            return system;
         }
     }
 
