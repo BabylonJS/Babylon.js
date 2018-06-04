@@ -1907,25 +1907,17 @@
                 "name": "babylonjs-viewer-assets",
                 "baseDir": "../../Viewer/dist/build/src/assets/",
                 "main": "../../Viewer/dist/build/src/assets/index.d.ts",
-                "out": "../../../babylon.viewer.assets.module.d.ts"
+                "out": "../../../build/assets/babylon.viewer.assets.module.d.ts"
             },
             "outputs": [
                 {
                     "destination": [
                         {
                             "filename": "babylon.viewer.assets.js",
-                            "outputDirectory": "/../../Viewer/dist/"
+                            "outputDirectory": "/../../Viewer/dist/build/assets/"
                         }
                     ],
                     "minified": true
-                },
-                {
-                    "destination": [
-                        {
-                            "filename": "babylon.viewer.assets.max.js",
-                            "outputDirectory": "/../../Viewer/dist/"
-                        }
-                    ]
                 }
             ]
         }
