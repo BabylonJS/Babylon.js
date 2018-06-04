@@ -65,17 +65,17 @@
         if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
             //serialize material
             if (mesh.material) {
-                if (mesh.material instanceof StandardMaterial) {
-                    serializationObject.materials = serializationObject.materials || [];
-                    if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
-                        serializationObject.materials.push(mesh.material.serialize());
-                    }
-                } else if (mesh.material instanceof MultiMaterial) {
+                if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
                     if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.multiMaterials.push(mesh.material.serialize());
                     }
 
+                } else {
+                    serializationObject.materials = serializationObject.materials || [];
+                    if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
+                        serializationObject.materials.push(mesh.material.serialize());
+                    }
                 }
             }
             //serialize geometry
