@@ -1,6 +1,6 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts" />
 /// <reference path="../../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts" />
-/// <reference path="../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 /// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts" />
 
 /// <reference path="../node_modules/@types/chai/index.d.ts" />
