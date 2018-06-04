@@ -996,28 +996,18 @@
                     }
                 }
                 screenshotCanvas.toBlob(function (blob) {
-                    var url = URL.createObjectURL(blob);
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
-                        var a = window.document.createElement("a");
-                        a.href = url;
-                        if (fileName) {
-                            a.setAttribute("download", fileName);
-                        }
-                        else {
+                        if (!fileName) {
                             var date = new Date();
-                            var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
-                            a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                            var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                            fileName = "screenshot_" + stringDate + ".png";
                         }
-                        window.document.body.appendChild(a);
-                        a.addEventListener("click", () => {
-                            if (a.parentElement) {
-                                a.parentElement.removeChild(a);
-                            }
-                        });
-                        a.click();
+                        Tools.Download(blob!, fileName);
                     }
                     else {
+                        var url = URL.createObjectURL(blob);
+                    
                         var newWindow = window.open("");
                         if (!newWindow) return;
                         var img = newWindow.document.createElement("img");
@@ -1031,6 +1021,27 @@
 
                 });
             }
+        }
+
+        /**
+         * Downloads a blob in the browser
+         * @param blob defines the blob to download
+         * @param fileName defines the name of the downloaded file
+         */
+        public static Download(blob: Blob, fileName: string): void {
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style.display = "none";
+            a.href = url;
+            a.download = fileName;
+            a.addEventListener("click", () => {
+                if (a.parentElement) {
+                    a.parentElement.removeChild(a);
+                }
+            });
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {

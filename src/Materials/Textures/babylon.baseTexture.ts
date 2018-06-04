@@ -103,6 +103,13 @@
         @serialize()
         public gammaSpace = true;
 
+        /**
+         * Gets whether or not the texture contains RGBD data.
+         */
+        public get isRGBD(): boolean {
+            return this._texture != null && this._texture._isRGBD;
+        }
+
         @serialize()
         public invertZ = false;
 
@@ -110,10 +117,24 @@
         public lodLevelInAlpha = false;
 
         @serialize()
-        public lodGenerationOffset = 0.0;
+        public get lodGenerationOffset(): number {
+            if (this._texture) return this._texture._lodGenerationOffset;
+
+            return 0.0;
+        }
+        public set lodGenerationOffset(value: number) {
+            if (this._texture) this._texture._lodGenerationOffset = value;
+        }
 
         @serialize()
-        public lodGenerationScale = 0.8;
+        public get lodGenerationScale(): number {
+            if (this._texture) return this._texture._lodGenerationScale;
+
+            return 0.0;
+        }
+        public set lodGenerationScale(value: number) {
+            if (this._texture) this._texture._lodGenerationScale = value;
+        }
 
         @serialize()
         public isRenderTarget = false;
@@ -276,12 +297,22 @@
             return (this._texture.format !== undefined) ? this._texture.format : Engine.TEXTUREFORMAT_RGBA;
         }
 
-        public readPixels(faceIndex = 0): Nullable<ArrayBufferView> {
+        /**
+         * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
+         * This will returns an RGBA array buffer containing either in values (0-255) or
+         * float values (0-1) depending of the underlying buffer type.
+         * @param faceIndex The face of the texture to read (in case of cube texture)
+         * @param level The LOD level of the texture to read (in case of Mip Maps)
+         * @returns The Array buffer containing the pixels data.
+         */
+        public readPixels(faceIndex = 0, level = 0): Nullable<ArrayBufferView> {
             if (!this._texture) {
                 return null;
             }
 
             var size = this.getSize();
+            var width = size.width;
+            var height = size.height;
             let scene = this.getScene();
 
             if (!scene) {
@@ -290,11 +321,19 @@
 
             var engine = scene.getEngine();
 
-            if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, size.width, size.height, faceIndex);
+            if (level != 0) {
+                width = width / Math.pow(2, level);
+                height = height / Math.pow(2, level);
+
+                width = Math.round(width);
+                height = Math.round(height);
             }
 
-            return engine._readTexturePixels(this._texture, size.width, size.height, -1);
+            if (this._texture.isCube) {
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level);
+            }
+
+            return engine._readTexturePixels(this._texture, width, height, -1, level);
         }
 
         public releaseInternalTexture(): void {
