@@ -60,12 +60,12 @@
         return serializationObject;
     };
 
-    var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
+    var finalizeSingleMesh = (mesh: Mesh, serializationObject: any, withMaterial: boolean = false) => {
         //only works if the mesh is already loaded
         if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
             //serialize material
             if (mesh.material) {
-                if (mesh.material instanceof StandardMaterial) {
+                if (withMaterial || mesh.material instanceof StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.materials.push(mesh.material.serialize());
@@ -318,7 +318,7 @@
             return serializationObject;
         }
 
-        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false, withChildren: boolean = false): any {
+        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false, withChildren: boolean = false, withMaterial: boolean = false): any {
             var serializationObject: any = {};
 
             SceneSerializer.ClearCache();
@@ -343,7 +343,7 @@
             }
 
             toSerialize.forEach((mesh: Mesh) => {
-                finalizeSingleMesh(mesh, serializationObject);
+                finalizeSingleMesh(mesh, serializationObject, withMaterial);
             });
 
             return serializationObject;
