@@ -4,6 +4,8 @@
 
 - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
 - Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
+- Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
+- New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
@@ -24,6 +26,7 @@
 - Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo and gizmoManager class used to manipulate meshes in a scene, position, rotation, scale gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
+- AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
 
 ### glTF Loader
 
@@ -68,6 +71,7 @@
 - Ground material didn't take the default main color is no material definition was provided ([RaananW](https://github.com/RaananW))
 - Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
 - It wasn't possible to disable camera behavior(s) using configuration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
+- Animation blending was always set to true, ignoring configuration [#4412](https://github.com/BabylonJS/Babylon.js/issues/4412) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

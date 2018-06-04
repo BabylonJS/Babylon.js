@@ -35,8 +35,10 @@ module BABYLON.GUI {
          * Creates new StackPanel
          * @param isVertical 
          */
-        public constructor() {
+        public constructor(isVertical = false) {
             super();
+
+            this._isVertical = isVertical;
         }
 
         protected _arrangeChildren() {

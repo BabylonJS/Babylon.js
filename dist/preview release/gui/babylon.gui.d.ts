@@ -1876,6 +1876,7 @@ declare module BABYLON.GUI {
         private _utilityLayer;
         private _rootContainer;
         private _pointerObserver;
+        private _pointerOutObserver;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -1903,7 +1904,8 @@ declare module BABYLON.GUI {
          * @param scene
          */
         constructor(scene?: Scene);
-        private _doPicking(type, pointerEvent, ray?);
+        private _handlePointerOut(pointerId, isPointerUp);
+        private _doPicking(pi);
         /**
          * Gets the root container
          */
@@ -2187,10 +2189,20 @@ declare module BABYLON.GUI {
      * Class used to create containers for controls
      */
     class Container3D extends Control3D {
+        private _blockLayout;
         /**
          * Gets the list of child controls
          */
         protected _children: Control3D[];
+        /**
+         * Gets the list of child controls
+         */
+        readonly children: Array<Control3D>;
+        /**
+         * Gets or sets a boolean indicating if the layout must be blocked (default is false).
+         * This is helpful to optimize layout operation when adding multiple children in a row
+         */
+        blockLayout: boolean;
         /**
          * Creates a new container
          * @param name defines the container name
@@ -2224,6 +2236,16 @@ declare module BABYLON.GUI {
          * Releases all associated resources
          */
         dispose(): void;
+        /** Control rotation will remain unchanged  */
+        static readonly UNSET_ORIENTATION: number;
+        /** Control will rotate to make it look at sphere central axis */
+        static readonly FACEORIGIN_ORIENTATION: number;
+        /** Control will rotate to make it look back at sphere central axis */
+        static readonly FACEORIGINREVERSED_ORIENTATION: number;
+        /** Control will rotate to look at z axis (0, 0, 1) */
+        static readonly FACEFORWARD_ORIENTATION: number;
+        /** Control will rotate to look at negative z axis (0, 0, -1) */
+        static readonly FACEFORWARDREVERSED_ORIENTATION: number;
     }
 }
 
@@ -2353,7 +2375,56 @@ declare module BABYLON.GUI {
          * Creates new StackPanel
          * @param isVertical
          */
+        constructor(isVertical?: boolean);
+        protected _arrangeChildren(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a conainter panel deployed on the surface of a sphere
+     */
+    class SpherePanel extends Container3D {
+        private _radius;
+        private _columns;
+        private _rows;
+        private _rowThenColum;
+        private _orientation;
+        /**
+         * Gets or sets the distance between elements
+         */
+        margin: number;
+        /**
+         * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
+        * | Value | Type                                | Description |
+        * | ----- | ----------------------------------- | ----------- |
+        * | 0     | UNSET_ORIENTATION                   |  Control rotation will remain unchanged |
+        * | 1     | FACEORIGIN_ORIENTATION              |  Control will rotate to make it look at sphere central axis |
+        * | 2     | FACEORIGINREVERSED_ORIENTATION      |  Control will rotate to make it look back at sphere central axis |
+        * | 3     | FACEFORWARD_ORIENTATION             |  Control will rotate to look at z axis (0, 0, 1) |
+        * | 4     | FACEFORWARDREVERSED_ORIENTATION     |  Control will rotate to look at negative z axis (0, 0, -1) |
+         */
+        orientation: number;
+        /**
+         * Gets or sets the radius of the sphere where to project controls (5 by default)
+         */
+        radius: float;
+        /**
+         * Gets or sets the number of columns requested (10 by default).
+         * The panel will automatically compute the number of rows based on number of child controls.
+         */
+        columns: int;
+        /**
+         * Gets or sets a the number of rows requested.
+         * The panel will automatically compute the number of columns based on number of child controls.
+         */
+        rows: int;
+        /**
+         * Creates new SpherePanel
+         */
         constructor();
         protected _arrangeChildren(): void;
+        private _sphericalMapping(source);
     }
 }

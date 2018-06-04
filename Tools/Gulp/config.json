@@ -115,7 +115,8 @@
             "backgroundMaterial",
             "environmentHelper",
             "particleHelper",
-            "videoDome"
+            "videoDome",
+            "photoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -1224,6 +1225,16 @@
                 "meshBuilder",
                 "additionalTextures"
             ]
+        },
+        "photoDome": {
+            "files": [
+                "../../src/Helpers/babylon.photoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
+                "additionalTextures"
+            ]
         }
     },
     "typescript": [
@@ -1713,7 +1724,9 @@
                     "../../gui/src/3D/controls/container3D.ts",
                     "../../gui/src/3D/controls/button3D.ts",
                     "../../gui/src/3D/controls/holographicButton.ts",
-                    "../../gui/src/3D/controls/stackPanel3D.ts"
+                    "../../gui/src/3D/controls/stackPanel3D.ts",
+                    "../../gui/src/3D/controls/volumeBasedPanel.ts",
+                    "../../gui/src/3D/controls/spherePanel.ts"
                 ],
                 "shaderFiles": [
                     "../../gui/src/3D/materials/shaders/fluent.vertex.fx",

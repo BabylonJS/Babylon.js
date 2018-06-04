@@ -14,9 +14,38 @@ module BABYLON.GUI {
         private _isVisible = true;
     
         /** Gets or sets the control position  in world space */
-        public position = new Vector3(0, 0, 0);
+        public get position(): Vector3 {
+            if (!this._node) {
+                return Vector3.Zero();
+            }
+
+            return this._node.position;
+        }
+
+        public set position(value: Vector3) {
+            if (!this._node) {
+                return;
+            }
+
+            this._node.position = value;;
+        }
+
         /** Gets or sets the control scaling  in world space */
-        public scaling = new Vector3(1, 1, 1);
+        public get scaling(): Vector3 {
+            if (!this._node) {
+                return new Vector3(1, 1, 1);
+            }
+
+            return this._node.scaling;
+        }
+
+        public set scaling(value: Vector3) {
+            if (!this._node) {
+                return;
+            }
+
+            this._node.scaling = value;;
+        }
 
         /** Callback used to start pointer enter animation */
         public pointerEnterAnimation: () => void;
