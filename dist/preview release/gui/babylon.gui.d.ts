@@ -2252,9 +2252,25 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
+     * Class used as a root to all buttons
+     */
+    class AbstractButton3D extends Control3D {
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
      * Class used to create a button in 3D
      */
-    class Button3D extends Control3D {
+    class Button3D extends AbstractButton3D {
         /** @hidden */
         protected _currentMaterial: Material;
         private _facadeTexture;
