@@ -7,143 +7,28 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>BabylonJS Viewer - Basic usage</title>
         <style>
+            babylon {
+                max-width: 800px;
+                max-height: 500px;
+                width: 100%;
+                height: 600px;
+            }
         </style>
     </head>
 
     <body>
-        <!-- <babylon>
-            <model normalize.unit-size="true" title="Modèle 3D" subtitle="DS STEEL" thumbnail="http://strains.fr/wp-content/uploads/2018/01/icon_3D-DESIGN.png"
-                url="/assets/ycone2.babylon">
-            </model>
-            <camera behaviors.auto-rotate="0">
-            </camera>
-            <templates nav-bar="false" overlay="false" loading-screen="false"></templates>
-        </babylon> -->
-
-        <babylon id="viewer" templates.main.params.fill-screen="true" templates.loading-screen="false" extends="extended" model.loader=".gltf"></babylon>
-        <div id="viewport" touch-action="none"></div>
+        <babylon id="babylon-viewer" configuration="config.json" model.title="Damaged Helmet" model.subtitle="BabylonJS" model.thumbnail="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png"
+            model.url="https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf" camera.behaviors.auto-rotate="0"
+            templates.nav-bar.params.disable-on-fullscreen="true"></babylon>
         <script src="viewer.js"></script>
         <script>
             // The following lines are redundant. 
             // They are only here to show how you could achive the tag initialization on your own.
 
             // a simple way of disabling auto init 
-            // BabylonViewer.viewerGlobals.disableInit = true;
+            BabylonViewer.disableInit = true;
             // Initializing the viewer on specific HTML tags.
-            //BabylonViewer.InitTags('babylon');
-
-            // this model - https://ugcorigin.s-microsoft.com/18/g009sv831rsm/953/003/004/08586805844133072215834575026/1521022566175.gltf
-            // has a problem with its materials / texures. should be rendered only after onComplete
-
-
-            // https://babylonjs.com/Assets/FlightHelmet/glTF/FlightHelmet_Materials.gltf
-            /*var config = {
-                extends: 'extended',
-                model: {
-                    url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf",
-                },
-                templates: {
-                    loadingScreen: false
-                },
-                camera: {
-                    behaviors: {
-                        autoRotate: false,
-                        framing: false,
-                        bouncing: false
-                    }
-                },
-                engine: {
-                    disableResize: true
-                }
-            }*/
-
-            var config = {
-                extends: 'extended',
-                // configuration: "./assets/environment/config.json",
-                model: {
-                    url: "https://babylonjs.com/Assets/FlightHelmet/glTF/FlightHelmet_Materials.gltf",
-                },
-                templates: {
-                    main: {
-                        params: {
-                            fillScreen: true
-                        }
-                    }
-                },
-                lab: {
-                    assetsRootURL: "./assets/environment/"
-                }
-            }
-            // create viewer
-            var viewerElement = document.getElementById("viewport");
-            // var viewer = new BabylonViewer.DefaultViewer(viewerElement, config);
-            /*viewer.onModelLoadedObservable.add(() => {
-                //viewer.engine.setHardwareScalingLevel(0.5);
-                var canvas = viewer.engine.getRenderingCanvas();
-                var filesInput = new BABYLON.FilesInput(viewer.engine, null, canvas, null);
-                filesInput._onReloadCallback = function (modelFile) {
-                    viewer.loadModel(modelFile, true);
-                };
-                filesInput.monitorElementForDragNDrop(canvas);
-            });*/
-
-            /*viewer.onInitDoneObservable.add(() => {
-
-            });*/
-
-            BabylonViewer.viewerManager.getViewerPromiseById("viewer").then((viewer) => {
-                viewer.onInitDoneObservable.add(() => {
-
-                })
-
-                document.addEventListener("keyup", (evt) => {
-                    if (evt.key === 'l')
-                        viewer.initModel("https://api.remix3d.com/v3/creations/0000000900000000801e172a00000000/gltf/streams/manifest?parameters=eyJmb3JtYXQiOiJHTFRGIiwiY2xpZW50Ijoid2ViIiwidXNhZ2UiOiJWaWV3In01");
-                    if (evt.key === 'a') {
-                        viewer.updateConfiguration({
-                            camera: {
-                                behaviors: {
-                                    autoRotate: false
-                                }
-                            }
-                        })
-                    }
-                    if (evt.key === 'p') {
-                        viewer.updateConfiguration({
-                            camera: {
-                                panningSensibility: 0
-                            }
-                        })
-                    }
-                    if (evt.key === 't') {
-                        viewer.updateConfiguration()
-                    }
-                    if (evt.key === 'r') {
-                        //viewer.sceneManager.scene.registerBeforeRender(() => {
-                        viewer.updateConfiguration({
-                            lab: {
-                                globalLightRotation: 0.01
-                            }
-                        })
-                        //});
-                    }
-                    if (evt.key === 'd') {
-                        viewer.sceneManager.scene.debugLayer.show();
-                    }
-                });
-            })
-
-            // create viewer
-            //var viewerElement = document.getElementById("viewport");
-
-            /*let config = {
-                // any other configuration you already have
-                model: {
-                    loader: '.gltf'
-                }
-            }
-            let viewer = new BabylonViewer.DefaultViewer(viewerElement, config);*/
-
+            BabylonViewer.InitTags('babylon');
         </script>
     </body>
 
