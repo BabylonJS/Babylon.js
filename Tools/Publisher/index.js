@@ -1,6 +1,7 @@
 let prompt = require('prompt');
 let shelljs = require('shelljs');
 let fs = require('fs-extra');
+let path = require('path');
 
 let basePath = '../../dist/preview release';
 
@@ -46,7 +47,19 @@ let packages = [
     },
     {
         name: 'viewer',
-        path: basePath + '/viewer/'
+        path: basePath + '/../../Viewer/',
+        required: [
+            basePath + '/viewer/readme.md',
+            basePath + '/viewer/package.json',
+        ]
+    },
+    {
+        name: 'viewer-assets',
+        path: basePath + '/../../Viewer/dist/build/assets/',
+        required: [
+            basePath + '/../../Viewer/assets/readme.md',
+            basePath + '/../../Viewer/assets/package.json',
+        ]
     }
 ];
 
@@ -71,7 +84,16 @@ function processPackages(version) {
     packages.forEach((package) => {
         if (package.name === "core") {
             processCore(package, version);
+        } else if (package.name === "viewer") {
+            processViewer(package, version);
         } else {
+
+            if (package.required) {
+                package.required.forEach(file => {
+                    fs.copySync(file, package.path + '/' + path.basename(file));
+                });
+            }
+
             let packageJson = require(package.path + 'package.json');
             packageJson.version = version;
             if (packageJson.dependencies) {
@@ -83,14 +105,8 @@ function processPackages(version) {
             }
             if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
             fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
-            console.log('Publishing ' + package.name + " from " + package.path);
-            let tagDef = "";
-            // check for alpha or beta
-            if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1) {
-                tagDef = '--tag preview';
-            }
-            //publish the respected package
-            shelljs.exec('npm publish \"' + package.path + "\"" + ' ' + tagDef);
+
+            publish(version, package.name, package.path);
         }
 
     });
@@ -153,18 +169,6 @@ function processCore(package, version) {
         }
     ];
 
-    // remove the modules for now
-    /*fs.readdirSync(basePath + '/modules/').forEach(object => {
-        console.log(object);
-        if (fs.statSync(basePath + '/modules/' + object).isDirectory) {
-            files.push({
-                path: basePath + '/modules/' + object,
-                objectName: object,
-                isDir: true
-            });
-        }
-    })*/
-
     //copy them to the package path
     files.forEach(file => {
         fs.copySync(file.path, basePath + '/package/' + file.objectName);
@@ -189,16 +193,7 @@ function processCore(package, version) {
 
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
 
-    console.log('Publishing ' + package.name + " from " + basePath + '/package/');
-
-    let tagDef = "";
-    // check for alpha or beta
-    if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1) {
-        tagDef = '--tag preview';
-    }
-
-    //publish the respected package
-    shelljs.exec('npm publish \"' + basePath + '/package/' + "\"" + ' ' + tagDef);
+    publish(version, package.name, basePath + '/package/');
 
     // remove package directory
     fs.removeSync(basePath + '/package/');
@@ -217,3 +212,60 @@ function processCore(package, version) {
     fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
 }
 
+function processViewer(package, version) {
+
+    let buildPath = package.path + "dist/build/src";
+
+    if (package.required) {
+        package.required.forEach(file => {
+
+            fs.copySync(file, buildPath + '/' + path.basename(file));
+        });
+    }
+    // the viewer needs to be built using tsc on the viewer's main repository
+
+    // build the viewer
+    shelljs.exec('tsc -p ' + buildPath);
+
+    let packageJson = require(buildPath + '/package.json');
+
+    let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
+
+    packageJson.files = files;
+    packageJson.version = version;
+    packageJson.main = "index.js";
+    packageJson.typings = "index.d.ts";
+
+    fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
+
+    publish(version, package.name, buildPath);
+
+}
+
+function publish(version, packageName, basePath) {
+    console.log('Publishing ' + packageName + " from " + basePath);
+
+    let tagDef = "";
+    // check for alpha or beta
+    if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1) {
+        tagDef = '--tag preview';
+    }
+
+    //publish the respected package
+    console.log("executing " + 'npm publish \"' + basePath + "\"" + ' ' + tagDef);
+    shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tagDef);
+}
+
+function getFiles(dir, files_) {
+    files_ = files_ || [];
+    var files = fs.readdirSync(dir);
+    for (var i in files) {
+        var name = dir + '/' + files[i];
+        if (fs.statSync(name).isDirectory()) {
+            getFiles(name, files_);
+        } else {
+            files_.push(name);
+        }
+    }
+    return files_;
+}

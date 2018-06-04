@@ -463,13 +463,10 @@ var buildExternalLibrary = function (library, settings, watch) {
                     // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
                     // until I fix it
                     event.on("end", function () {
-
-                        console.log(settings.build.dtsBundle);
                         // create the file
                         dtsBundle.bundle(settings.build.dtsBundle);
                         // prepend the needed reference
                         let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
-                        console.log(fileLocation);
                         fs.readFile(fileLocation, function (err, data) {
                             if (err) throw err;
                             data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
