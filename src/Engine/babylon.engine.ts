@@ -1182,10 +1182,7 @@
                     options.stencil = true;
                 }
 
-                if (options.premultipliedAlpha) {
-                    this.premultipliedAlpha = true;
-                }
-                else {
+                if (options.premultipliedAlpha === false) {
                     this.premultipliedAlpha = false;
                 }
 
