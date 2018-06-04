@@ -53,8 +53,10 @@
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _format: number;
-        private _prefiltered: boolean;
         private _createPolynomials: boolean;
+
+        /** @hidden */
+        public readonly _prefiltered: boolean = false;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
             let rootUrlKey = "";
@@ -90,11 +92,14 @@
          * @param prefiltered defines whether or not the texture is created from prefiltered data
          * @param forcedExtension defines the extensions to use (force a special type of file to load) in case it is different from the file name
          * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @return the cube texture
          */
         constructor(rootUrl: string, scene: Scene, extensions: Nullable<string[]> = null, noMipmap: boolean = false, files: Nullable<string[]> = null,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA, prefiltered = false, 
-            forcedExtension: any = null, createPolynomials: boolean = false) {
+            forcedExtension: any = null, createPolynomials: boolean = false,
+            lodScale: number = 0.8, lodOffset: number = 0) {
             super(scene);
 
             this.name = rootUrl;
@@ -119,9 +124,14 @@
             const lastDot = rootUrl.lastIndexOf(".");
             const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
             const isDDS = (extension === ".dds");
+            const isEnv = (extension === ".env");
+
+            if (isEnv) {
+                this.gammaSpace = false;
+            }
 
             if (!files) {
-                if (!isDDS && !extensions) {
+                if (!isEnv && !isDDS && !extensions) {
                     extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
                 }
 
@@ -140,10 +150,10 @@
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
                     if (prefiltered) {
-                        this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, this.lodGenerationScale, this.lodGenerationOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
+                        this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
                     }
                     else {
-                        this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension);
+                        this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                     }
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;

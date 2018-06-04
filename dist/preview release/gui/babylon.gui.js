@@ -7987,16 +7987,15 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
-         * Class used to create a conainter panel deployed on the surface of a sphere
+         * Abstract class used to create a container panel deployed on the surface of a volume
          */
-        var SpherePanel = /** @class */ (function (_super) {
-            __extends(SpherePanel, _super);
+        var VolumeBasedPanel = /** @class */ (function (_super) {
+            __extends(VolumeBasedPanel, _super);
             /**
              * Creates new SpherePanel
              */
-            function SpherePanel() {
+            function VolumeBasedPanel() {
                 var _this = _super.call(this) || this;
-                _this._radius = 5.0;
                 _this._columns = 10;
                 _this._rows = 0;
                 _this._rowThenColum = true;
@@ -8007,7 +8006,7 @@ var BABYLON;
                 _this.margin = 0;
                 return _this;
             }
-            Object.defineProperty(SpherePanel.prototype, "orientation", {
+            Object.defineProperty(VolumeBasedPanel.prototype, "orientation", {
                 /**
                  * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
                 * | Value | Type                                | Description |
@@ -8034,27 +8033,7 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(SpherePanel.prototype, "radius", {
-                /**
-                 * Gets or sets the radius of the sphere where to project controls (5 by default)
-                 */
-                get: function () {
-                    return this._radius;
-                },
-                set: function (value) {
-                    var _this = this;
-                    if (this._radius === value) {
-                        return;
-                    }
-                    this._radius = value;
-                    BABYLON.Tools.SetImmediate(function () {
-                        _this._arrangeChildren();
-                    });
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(SpherePanel.prototype, "columns", {
+            Object.defineProperty(VolumeBasedPanel.prototype, "columns", {
                 /**
                  * Gets or sets the number of columns requested (10 by default).
                  * The panel will automatically compute the number of rows based on number of child controls.
@@ -8076,7 +8055,7 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(SpherePanel.prototype, "rows", {
+            Object.defineProperty(VolumeBasedPanel.prototype, "rows", {
                 /**
                  * Gets or sets a the number of rows requested.
                  * The panel will automatically compute the number of columns based on number of child controls.
@@ -8098,7 +8077,7 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            SpherePanel.prototype._arrangeChildren = function () {
+            VolumeBasedPanel.prototype._arrangeChildren = function () {
                 var cellWidth = 0;
                 var cellHeight = 0;
                 var rows = 0;
@@ -8162,24 +8141,73 @@ var BABYLON;
                     if (!child.mesh) {
                         continue;
                     }
-                    var newPos = this._sphericalMapping(nodeGrid[cellCounter]);
-                    switch (this._orientation) {
-                        case GUI.Container3D.FACEORIGIN_ORIENTATION:
-                            child.mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
-                            break;
-                        case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                            child.mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
-                            break;
-                        case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                            child.mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
-                            break;
-                        case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                            child.mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
-                            break;
-                    }
-                    child.position = newPos;
+                    this._mapGridNode(child, nodeGrid[cellCounter]);
                     cellCounter++;
                 }
+            };
+            return VolumeBasedPanel;
+        }(GUI.Container3D));
+        GUI.VolumeBasedPanel = VolumeBasedPanel;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a container panel deployed on the surface of a sphere
+         */
+        var SpherePanel = /** @class */ (function (_super) {
+            __extends(SpherePanel, _super);
+            function SpherePanel() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this._radius = 4.0;
+                return _this;
+            }
+            Object.defineProperty(SpherePanel.prototype, "radius", {
+                /**
+                 * Gets or sets the radius of the sphere where to project controls (5 by default)
+                 */
+                get: function () {
+                    return this._radius;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._radius === value) {
+                        return;
+                    }
+                    this._radius = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            SpherePanel.prototype._mapGridNode = function (control, nodePosition) {
+                var newPos = this._sphericalMapping(nodePosition);
+                var mesh = control.mesh;
+                if (!mesh) {
+                    return;
+                }
+                switch (this.orientation) {
+                    case GUI.Container3D.FACEORIGIN_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
+                        break;
+                    case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
+                        break;
+                    case GUI.Container3D.FACEFORWARD_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        break;
+                    case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        break;
+                }
+                control.position = newPos;
             };
             SpherePanel.prototype._sphericalMapping = function (source) {
                 var newPos = new BABYLON.Vector3(0, 0, this._radius);
@@ -8189,7 +8217,7 @@ var BABYLON;
                 return BABYLON.Vector3.TransformNormal(newPos, BABYLON.Tmp.Matrix[0]);
             };
             return SpherePanel;
-        }(GUI.Container3D));
+        }(GUI.VolumeBasedPanel));
         GUI.SpherePanel = SpherePanel;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
