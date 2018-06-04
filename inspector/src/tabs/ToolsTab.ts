@@ -95,7 +95,7 @@ module INSPECTOR {
                         return;
                     }
                     if (this._scene.activeCamera) {
-                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(this._scene.environmentTexture)
+                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(<BABYLON.CubeTexture>this._scene.environmentTexture)
                         .then((buffer: ArrayBuffer) => {
                             var blob = new Blob([buffer], {type: "octet/stream"});
                             BABYLON.Tools.Download(blob, "environment.env");

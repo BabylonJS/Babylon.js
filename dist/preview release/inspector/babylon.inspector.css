@@ -297,6 +297,45 @@
         background-color: #383838; }
       .insp-wrapper .tab-panel .gltf-actions .gltf-button:active {
         background-color: #454545; }
+  .insp-wrapper .tab-panel.tools-panel {
+    overflow-y: auto; }
+  .insp-wrapper .tab-panel .tool-title1 {
+    font-size: 1.1em;
+    padding: 10px; }
+  .insp-wrapper .tab-panel .tool-title2 {
+    margin: 10px 0 10px 0;
+    font-size: 1.05em;
+    border-bottom: 1px solid #5db0d7;
+    box-sizing: border-box; }
+  .insp-wrapper .tab-panel .tool-label, .insp-wrapper .tab-panel .tool-label-line, .insp-wrapper .tab-panel .tool-label-error {
+    display: inline-block;
+    width: 75%;
+    padding: 2px;
+    background-color: #2c2c2c;
+    border-bottom: 1px solid #242424;
+    border-top: 1px solid #242424;
+    height: 30px;
+    line-height: 30px;
+    box-sizing: border-box; }
+  .insp-wrapper .tab-panel .tool-label-line {
+    width: 100%; }
+  .insp-wrapper .tab-panel .tool-label-error {
+    color: #fa371d;
+    width: 100%;
+    background-color: none; }
+  .insp-wrapper .tab-panel .tool-value {
+    display: inline-block;
+    width: 25%;
+    padding: 2px;
+    background-color: #2c2c2c;
+    border-top: 1px solid #242424;
+    border-bottom: 1px solid #242424;
+    height: 30px;
+    line-height: 30px;
+    box-sizing: border-box; }
+  .insp-wrapper .tab-panel .tool-infos {
+    width: 100%;
+    padding: 4px; }
   .insp-wrapper .property-type {
     color: #5db0d7; }
   .insp-wrapper .property-name, .insp-wrapper .insp-details .base-row .prop-name, .insp-wrapper .insp-details .row .prop-name, .insp-wrapper .insp-details .header-row .prop-name {

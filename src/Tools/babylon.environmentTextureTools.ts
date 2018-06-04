@@ -198,7 +198,7 @@ module BABYLON {
                             // Reading datas from WebGL
                             canvas!.toBlob((blob) => {
                                 let fileReader = new FileReader();
-                                fileReader.onload = (event) => {
+                                fileReader.onload = (event: any) => {
                                     let arrayBuffer = event.target!.result as ArrayBuffer;
                                     specularTextures[i * 6 + face] = arrayBuffer;
                                     resolve();
