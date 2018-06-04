@@ -107,19 +107,13 @@
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
             this._format = format;
-            this._prefiltered = prefiltered;
             this.isCube = true;
             this._textureMatrix = Matrix.Identity();
             this._createPolynomials = createPolynomials;
-            if (prefiltered) {
-                this.gammaSpace = false;
-            }
 
             if (!rootUrl && !files) {
                 return;
             }
-
-            this._texture = this._getFromCache(rootUrl, noMipmap);
 
             const lastDot = rootUrl.lastIndexOf(".");
             const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
@@ -128,7 +122,17 @@
 
             if (isEnv) {
                 this.gammaSpace = false;
+                this._prefiltered = false;
             }
+            else {
+                this._prefiltered = prefiltered;
+                
+                if (prefiltered) {
+                    this.gammaSpace = false;
+                }
+            }
+
+            this._texture = this._getFromCache(rootUrl, noMipmap);
 
             if (!files) {
                 if (!isEnv && !isDDS && !extensions) {
