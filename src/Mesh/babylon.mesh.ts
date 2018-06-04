@@ -98,7 +98,7 @@
         public delayLoadingFile: string;
         public _binaryInfo: any;
         private _LODLevels = new Array<MeshLODLevel>();
-        public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
+        public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
         // Morph
         private _morphTargetManager: Nullable<MorphTargetManager>;
@@ -331,11 +331,11 @@
         /**
          * Add a mesh as LOD level triggered at the given distance.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
-         * @param {number} distance The distance from the center of the object to show this level
-         * @param {Mesh} mesh The mesh to be added as LOD level
-         * @return {Mesh} This mesh (for chaining)
+         * @param distance The distance from the center of the object to show this level
+         * @param mesh The mesh to be added as LOD level (can be null)
+         * @return This mesh (for chaining)
          */
-        public addLODLevel(distance: number, mesh: Mesh): Mesh {
+        public addLODLevel(distance: number, mesh: Nullable<Mesh>): Mesh {
             if (mesh && mesh._masterMesh) {
                 Tools.Warn("You cannot use a mesh as LOD level twice");
                 return this;
@@ -392,9 +392,9 @@
 
         /**
          * Returns the registered LOD mesh distant from the parameter `camera` position if any, else returns the current mesh.
-         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
+         * tuto : http://doc.babylonjs.com/how_to/how_to_use_lod
          */
-        public getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh {
+        public getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
             }
@@ -430,7 +430,8 @@
                     if (this.onLODLevelSelection) {
                         this.onLODLevelSelection(distanceToCamera, this, level.mesh);
                     }
-                    return level.mesh;
+
+                    return level.mesh;                   
                 }
             }
 

@@ -88,8 +88,10 @@
          * @param postProcesses An array of post processes to be run.
          * @param targetTexture The target texture to render to.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
+         * @param faceIndex defines the face to render to if a cubemap is defined as the target
+         * @param lodLevel defines which lod of the texture to render to
          */
-        public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false): void {
+        public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0): void {
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcesses.length; index++) {
@@ -97,7 +99,7 @@
                     postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture, 0, undefined, undefined, forceFullscreenViewport);
+                        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, undefined, lodLevel);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }

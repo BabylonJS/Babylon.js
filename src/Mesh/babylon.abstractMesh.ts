@@ -811,7 +811,7 @@
          * @param camera defines the camera to use to pick the right LOD level
          * @returns the currentAbstractMesh 
          */
-        public getLOD(camera: Camera): AbstractMesh {
+        public getLOD(camera: Camera): Nullable<AbstractMesh> {
             return this;
         }
 
