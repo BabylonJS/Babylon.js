@@ -43,7 +43,7 @@ if (indexOf !== -1) {
 
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
-    var engine = new BABYLON.Engine(canvas, true);
+    var engine = new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
     var htmlInput = document.getElementById("files");
     var footer = document.getElementById("footer");
     var btnFullScreen = document.getElementById("btnFullscreen");
@@ -235,10 +235,12 @@ if (BABYLON.Engine.isSupported()) {
     else {
         filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
         filesInput.onProcessFileCallback = (function (file, name, extension) {
-            if (filesInput._filesToLoad && filesInput._filesToLoad.length === 1 && extension && extension.toLowerCase() === "dds") {
-                BABYLON.FilesInput.FilesToLoad[name] = file;
-                skyboxPath = "file:" + file.correctName;
-                return false;
+            if (filesInput._filesToLoad && filesInput._filesToLoad.length === 1 && extension) {
+                if (extension.toLowerCase() === "dds" || extension.toLowerCase() === "env") {
+                    BABYLON.FilesInput.FilesToLoad[name] = file;
+                    skyboxPath = "file:" + file.correctName;
+                    return false;
+                }
             }
             return true;
         }).bind(this);
