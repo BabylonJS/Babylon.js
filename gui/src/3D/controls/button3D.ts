@@ -4,7 +4,7 @@ module BABYLON.GUI {
     /**
      * Class used to create a button in 3D
      */
-    export class Button3D extends Control3D {
+    export class Button3D extends AbstractButton3D {
         /** @hidden */
         protected _currentMaterial: Material;
         private _facadeTexture: Nullable<AdvancedDynamicTexture>;
