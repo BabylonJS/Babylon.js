@@ -13,8 +13,9 @@ $font               : 'Inconsolata', sans-serif;
 $color              : #ccc;
 $background         : #242424;
 $background-active  : #2c2c2c;
-$color-top         : #f29766;
-$color-bot         : #5db0d7;
+$color-top          : #f29766;
+$color-bot          : #5db0d7;
+$color-error        : #fa371d;
 
 $background-lighter : lighten($color: $background, $amount         : 3%);
 $background-lighter2: lighten($color: $background-lighter, $amount : 5%);

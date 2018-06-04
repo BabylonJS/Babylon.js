@@ -1129,6 +1129,11 @@
         }
 
         /**
+         * Defines whether the engine has been created with the premultipliedAlpha option on or not.
+         */
+        public readonly premultipliedAlpha: boolean = true;
+
+        /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering
          * @param antialias defines enable antialiasing (default: false)
@@ -1175,6 +1180,13 @@
 
                 if (options.stencil === undefined) {
                     options.stencil = true;
+                }
+
+                if (options.premultipliedAlpha) {
+                    this.premultipliedAlpha = true;
+                }
+                else {
+                    this.premultipliedAlpha = false;
                 }
 
                 this._deterministicLockstep = options.deterministicLockstep;
@@ -2415,8 +2427,9 @@
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
          * @param depthStencilTexture The depth stencil texture to use to render
+         * @param lodLevel defines le lod level to bind to the frame buffer
          */
-        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture): void {
+        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel = 0): void {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
             }
@@ -2427,14 +2440,14 @@
                 if (faceIndex === undefined) {
                     faceIndex = 0;
                 }
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, lodLevel);
 
                 if (depthStencilTexture) {
                     if (depthStencilTexture._generateStencilBuffer) {
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, 0);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
                     }
                     else {
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, 0);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
                     }
                 }
             }
@@ -2442,7 +2455,20 @@
             if (this._cachedViewport && !forceFullscreenViewport) {
                 this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
             } else {
-                gl.viewport(0, 0, requiredWidth || texture.width, requiredHeight || texture.height);
+                if (!requiredWidth) {
+                    requiredWidth = texture.width;
+                    if (lodLevel) {
+                        requiredWidth = requiredWidth / Math.pow(2, lodLevel);
+                    }
+                }
+                if (!requiredHeight) {
+                    requiredHeight = texture.height;
+                    if (lodLevel) {
+                        requiredHeight = requiredHeight / Math.pow(2, lodLevel);
+                    }
+                }
+
+                gl.viewport(0, 0, requiredWidth, requiredHeight);
             }
 
             this.wipeCaches();
@@ -5259,6 +5285,28 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, faceIndex: number, lod: number, image: HTMLImageElement) {
+            var gl = this._gl;
+
+            var textureType = this._getWebGLTextureType(texture.type);
+            var format = this._getInternalFormat(texture.format);
+            var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+
+            var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+            this._bindTextureDirectly(bindTarget, texture, true);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.invertY ? 1 : 0);
+
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
+            gl.texImage2D(target, lod, internalFormat, format, textureType, image);
+            this._bindTextureDirectly(bindTarget, null, true);
+        }
+
         /**
          * Creates a new render target cube texture
          * @param size defines the size of the texture
@@ -5343,8 +5391,8 @@
          * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
          * @param rootUrl defines the url where the file to load is located
          * @param scene defines the current scene
-         * @param scale defines scale to apply to the mip map selection
-         * @param offset defines offset to apply to the mip map selection
+         * @param lodScale defines scale to apply to the mip map selection
+         * @param lodOffset defines offset to apply to the mip map selection
          * @param onLoad defines an optional callback raised when the texture is loaded
          * @param onError defines an optional callback raised if there is an issue to load the texture
          * @param format defines the format of the data
@@ -5352,7 +5400,7 @@
          * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
          * @returns the cube texture as an InternalTexture
          */
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number,
+        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
             onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
             onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null,
             createPolynomials: boolean = true): InternalTexture {
@@ -5372,8 +5420,6 @@
                     texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
                 }
                 texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
-                texture._lodGenerationScale = scale;
-                texture._lodGenerationOffset = offset;
 
                 if (this._caps.textureLOD) {
                     // Do not add extra process if texture lod is supported.
@@ -5397,8 +5443,8 @@
                     let smoothness = i / (mipSlices - 1);
                     let roughness = 1 - smoothness;
 
-                    let minLODIndex = offset; // roughness = 0
-                    let maxLODIndex = Scalar.Log2(width) * scale + offset; // roughness = 1
+                    let minLODIndex = lodOffset; // roughness = 0
+                    let maxLODIndex = Scalar.Log2(width) * lodScale + lodOffset; // roughness = 1
 
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
@@ -5443,7 +5489,7 @@
                 }
             };
 
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials);
+            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
         }
 
         /**
@@ -5457,15 +5503,19 @@
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param createPolynomials if a polynomial sphere should be created for the cube texture
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0): InternalTexture {
             var gl = this._gl;
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
+            texture._lodGenerationScale = lodScale;
+            texture._lodGenerationOffset = lodOffset;
 
             if (!this._doNotHandleContextLost) {
                 texture._extension = forcedExtension;
@@ -5474,6 +5524,7 @@
 
             var isKTX = false;
             var isDDS = false;
+            var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
             if (this._textureFormatInUse) {
@@ -5482,6 +5533,7 @@
                 isKTX = true;
             } else {
                 isDDS = (extension === ".dds");
+                isEnv = (extension === ".env");
             }
 
             let onerror = (request?: XMLHttpRequest, exception?: any) => {
@@ -5507,7 +5559,29 @@
                     texture.height = ktx.pixelHeight;
                     texture.isReady = true;
                 }, undefined, undefined, true, onerror);
-            } else if (isDDS) {
+            }
+            else if (isEnv) {
+                this._loadFile(rootUrl, (data) => {
+                    data = data as ArrayBuffer;
+                    var info = EnvironmentTextureTools.GetEnvInfo(data);
+                    if (info) {
+                        texture.width = info.width;
+                        texture.height = info.width;
+
+                        EnvironmentTextureTools.UploadPolynomials(texture, data, info!);
+                        EnvironmentTextureTools.UploadLevelsAsync(texture, data, info!).then(() => {
+                            texture.isReady = true;
+                            if (onLoad) {
+                                onLoad();
+                            }
+                        });
+                    }
+                    else if (onError) {
+                        onError("Can not parse the environment file", null);
+                    }
+                }, undefined, undefined, true, onerror);
+            }
+            else if (isDDS) {
                 if (files && files.length === 6) {
                     this._cascadeLoadFiles(
                         scene,
@@ -6939,7 +7013,7 @@
         }
 
         /** @hidden */
-        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1): ArrayBufferView {
+        public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0): ArrayBufferView {
             let gl = this._gl;
             if (!this._dummyFramebuffer) {
                 let dummy = gl.createFramebuffer();
@@ -6953,9 +7027,9 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
 
             if (faceIndex > -1) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, level);
             } else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, level);
             }
 
             let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;

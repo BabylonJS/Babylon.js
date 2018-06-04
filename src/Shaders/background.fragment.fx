@@ -137,7 +137,7 @@ void main(void) {
 #endif
 
 // _____________________________ REFLECTION ______________________________________
-vec3 reflectionColor = vec3(1., 1., 1.);
+vec4 reflectionColor = vec4(1., 1., 1., 1.);
 #ifdef REFLECTION
     vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
     #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -161,41 +161,45 @@ vec3 reflectionColor = vec3(1., 1., 1.);
         #ifdef TEXTURELODSUPPORT
             // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
             reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-            reflectionColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD).rgb;
+            reflectionColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
         #else
             float lodReflectionNormalized = clamp(reflectionLOD, 0., 1.);
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
-            vec3 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords).rgb;
+            vec4 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
             if(lodReflectionNormalizedDoubled < 1.0){
                 reflectionColor = mix(
-                    sampleReflection(reflectionSamplerHigh, reflectionCoords).rgb,
+                    sampleReflection(reflectionSamplerHigh, reflectionCoords),
                     reflectionSpecularMid,
                     lodReflectionNormalizedDoubled
                 );
             } else {
                 reflectionColor = mix(
                     reflectionSpecularMid,
-                    sampleReflection(reflectionSamplerLow, reflectionCoords).rgb,
+                    sampleReflection(reflectionSamplerLow, reflectionCoords),
                     lodReflectionNormalizedDoubled - 1.0
                 );
             }
         #endif
     #else
         vec4 reflectionSample = sampleReflection(reflectionSampler, reflectionCoords);
-        reflectionColor = reflectionSample.rgb;
+        reflectionColor = reflectionSample;
+    #endif
+
+    #ifdef RGBDREFLECTION
+        reflectionColor.rgb = fromRGBD(reflectionColor);
     #endif
 
     #ifdef GAMMAREFLECTION
-        reflectionColor = toLinearSpace(reflectionColor.rgb);
+        reflectionColor.rgb = toLinearSpace(reflectionColor.rgb);
     #endif
 
     #ifdef REFLECTIONBGR
-        reflectionColor = reflectionColor.bgr;
+        reflectionColor.rgb = reflectionColor.bgr;
     #endif
 
     // _____________________________ Levels _____________________________________
-    reflectionColor *= vReflectionInfos.x;
+    reflectionColor.rgb *= vReflectionInfos.x;
 #endif
 
 // _____________________________ Diffuse Information _______________________________
@@ -221,7 +225,7 @@ float finalAlpha = alpha;
 #ifdef REFLECTIONFRESNEL
     vec3 colorBase = diffuseColor;
 #else
-    vec3 colorBase = reflectionColor * diffuseColor;
+    vec3 colorBase = reflectionColor.rgb * diffuseColor;
 #endif
     colorBase = max(colorBase, 0.0);
 
@@ -254,7 +258,7 @@ float finalAlpha = alpha;
         reflectionAmount *= reflectionDistanceFalloff;
     #endif
 
-    finalColor = mix(finalColor, reflectionColor, clamp(reflectionAmount, 0., 1.));
+    finalColor = mix(finalColor, reflectionColor.rgb, clamp(reflectionAmount, 0., 1.));
 #endif
 
 #ifdef OPACITYFRESNEL
