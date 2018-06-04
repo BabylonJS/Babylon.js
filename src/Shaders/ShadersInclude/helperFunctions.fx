@@ -99,5 +99,5 @@ vec3 fromRGBD(vec4 rgbd) {
 
     // return rgbd.rgb * ((rgbdMaxRange / 255.0) / rgbd.a);
 
-    return rgbd.rgb * rgbd.a;
+    return rgbd.rgb / rgbd.a;
 }

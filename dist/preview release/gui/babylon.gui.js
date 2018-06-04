@@ -6587,6 +6587,9 @@ var BABYLON;
                         this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                         delete this._lastControlDown[pointerEvent.pointerId];
                     }
+                    if (pointerEvent.pointerType === "touch") {
+                        this._handlePointerOut(pointerId, false);
+                    }
                 }
                 return true;
             };
@@ -7478,6 +7481,37 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
+         * Class used as a root to all buttons
+         */
+        var AbstractButton3D = /** @class */ (function (_super) {
+            __extends(AbstractButton3D, _super);
+            /**
+             * Creates a new button
+             * @param name defines the control name
+             */
+            function AbstractButton3D(name) {
+                return _super.call(this, name) || this;
+            }
+            AbstractButton3D.prototype._getTypeName = function () {
+                return "AbstractButton3D";
+            };
+            // Mesh association
+            AbstractButton3D.prototype._createNode = function (scene) {
+                return new BABYLON.TransformNode("button" + this.name);
+            };
+            return AbstractButton3D;
+        }(GUI.Control3D));
+        GUI.AbstractButton3D = AbstractButton3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
          * Class used to create a button in 3D
          */
         var Button3D = /** @class */ (function (_super) {
@@ -7626,7 +7660,7 @@ var BABYLON;
                 }
             };
             return Button3D;
-        }(GUI.Control3D));
+        }(GUI.AbstractButton3D));
         GUI.Button3D = Button3D;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
