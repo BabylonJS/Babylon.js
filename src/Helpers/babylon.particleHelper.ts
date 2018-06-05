@@ -48,6 +48,22 @@ module BABYLON {
          */
         maxSize: number;
         /**
+         * Minimum scale of each particle on X axis
+         */
+        minScaleX: number;
+        /**
+         * Maximum scale of each particle on X axis
+         */
+        maxScaleX: number;       
+        /**
+         * Minimum scale of each particle on Y axis
+         */
+        minScaleY: number;
+        /**
+         * Maximum scale of each particle on Y axis
+         */
+        maxScaleY: number;           
+        /**
          * Minimum lifetime for each particle
          */
         minLifeTime: number;
@@ -183,6 +199,12 @@ module BABYLON {
             system.minSize = data.minSize;
             system.maxSize = data.maxSize;
 
+            system.minScaleX = data.minScaleX;
+            system.maxScaleX = data.maxScaleX;    
+            
+            system.minScaleY = data.minScaleY;
+            system.maxScaleY = data.maxScaleY;              
+
             // Life time of each particle (random between...
             system.minLifeTime = data.minLifeTime;
             system.maxLifeTime = data.maxLifeTime;
@@ -262,6 +284,12 @@ module BABYLON {
             // Size of each particle (random between...
             outData.minSize = system.minSize;
             outData.maxSize = system.maxSize;
+
+            outData.minScaleX = system.minScaleX;
+            outData.maxScaleX = system.maxScaleX;     
+            
+            outData.minScaleY = system.minScaleY;
+            outData.maxScaleY = system.maxScaleY;             
 
             // Life time of each particle (random between...
             outData.minLifeTime = system.minLifeTime;
