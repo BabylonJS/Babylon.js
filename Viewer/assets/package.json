@@ -9,7 +9,7 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "bbabylon.viewer.assets.js",
+    "main": "babylon.viewer.assets.js",
     "files": [
         "babylon.viewer.assets.js",
         "babylon.viewer.assets.module.d.ts",
