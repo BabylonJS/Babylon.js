@@ -65,7 +65,7 @@ module BABYLON.GUI {
             });
 
             this._pointerObserver = utilityLayerScene.onPointerObservable.add((pi, state) => {
-                this._doPicking(pi)
+                this._doPicking(pi);
             });
 
             // Scene
@@ -127,6 +127,10 @@ module BABYLON.GUI {
                 if (this._lastControlDown[pointerEvent.pointerId]) {
                     this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                     delete this._lastControlDown[pointerEvent.pointerId];
+                }
+
+                if (pointerEvent.pointerType === "touch") {
+                    this._handlePointerOut(pointerId, false);
                 }
             }
 

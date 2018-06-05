@@ -2257,9 +2257,25 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
+     * Class used as a root to all buttons
+     */
+    class AbstractButton3D extends Control3D {
+        /**
+         * Creates a new button
+         * @param name defines the control name
+         */
+        constructor(name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
      * Class used to create a button in 3D
      */
-    class Button3D extends Control3D {
+    class Button3D extends AbstractButton3D {
         /** @hidden */
         protected _currentMaterial: Material;
         private _facadeTexture;
@@ -2388,10 +2404,9 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
-     * Class used to create a conainter panel deployed on the surface of a sphere
+     * Abstract class used to create a container panel deployed on the surface of a volume
      */
-    class SpherePanel extends Container3D {
-        private _radius;
+    abstract class VolumeBasedPanel extends Container3D {
         private _columns;
         private _rows;
         private _rowThenColum;
@@ -2412,10 +2427,6 @@ declare module BABYLON.GUI {
          */
         orientation: number;
         /**
-         * Gets or sets the radius of the sphere where to project controls (5 by default)
-         */
-        radius: float;
-        /**
          * Gets or sets the number of columns requested (10 by default).
          * The panel will automatically compute the number of rows based on number of child controls.
          */
@@ -2430,6 +2441,23 @@ declare module BABYLON.GUI {
          */
         constructor();
         protected _arrangeChildren(): void;
+        /** Child classes must implement this function to provide correct control positioning */
+        protected abstract _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a sphere
+     */
+    class SpherePanel extends VolumeBasedPanel {
+        private _radius;
+        /**
+         * Gets or sets the radius of the sphere where to project controls (5 by default)
+         */
+        radius: float;
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         private _sphericalMapping(source);
     }
 }

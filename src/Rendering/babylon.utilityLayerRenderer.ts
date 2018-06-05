@@ -141,6 +141,8 @@ module BABYLON {
          * Disposes of the renderer
          */
         public dispose(){
+            this.onPointerOutObservable.clear();
+
             if(this._afterRenderObserver){
                 this.originalScene.onAfterRenderObservable.remove(this._afterRenderObserver);
             }

@@ -442,7 +442,7 @@ void main(void) {
 
     // _____________________________ Refraction Info _______________________________________
     #ifdef REFRACTION
-        vec3 environmentRefraction = vec3(0., 0., 0.);
+        vec4 environmentRefraction = vec4(0., 0., 0., 0.);
 
         vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
         #ifdef REFRACTIONMAP_OPPOSITEZ
@@ -487,38 +487,42 @@ void main(void) {
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD).rgb;
+            environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
         #else
             float lodRefractionNormalized = clamp(refractionLOD / log2(vRefractionMicrosurfaceInfos.x), 0., 1.);
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
 
-            vec3 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords).rgb;
+            vec4 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords);
             if(lodRefractionNormalizedDoubled < 1.0){
                 environmentRefraction = mix(
-                    sampleRefraction(refractionSamplerHigh, refractionCoords).rgb,
+                    sampleRefraction(refractionSamplerHigh, refractionCoords),
                     environmentRefractionMid,
                     lodRefractionNormalizedDoubled
                 );
             }else{
                 environmentRefraction = mix(
                     environmentRefractionMid,
-                    sampleRefraction(refractionSamplerLow, refractionCoords).rgb,
+                    sampleRefraction(refractionSamplerLow, refractionCoords),
                     lodRefractionNormalizedDoubled - 1.0
                 );
             }
         #endif
 
         #ifdef GAMMAREFRACTION
-            environmentRefraction = toLinearSpace(environmentRefraction.rgb);
+            environmentRefraction.rgb = fromRGBD(environmentRefraction);
+        #endif
+
+        #ifdef RGBDREFRACTION
+            environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
 
         // _____________________________ Levels _____________________________________
-        environmentRefraction *= vRefractionInfos.x;
+        environmentRefraction.rgb *= vRefractionInfos.x;
     #endif
 
     // _____________________________ Reflection Info _______________________________________
     #ifdef REFLECTION
-        vec3 environmentRadiance = vec3(0., 0., 0.);
+        vec4 environmentRadiance = vec4(0., 0., 0., 0.);
         vec3 environmentIrradiance = vec3(0., 0., 0.);
 
         vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
@@ -564,29 +568,33 @@ void main(void) {
                 float requestedReflectionLOD = reflectionLOD;
             #endif
 
-            environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, requestedReflectionLOD).rgb;
+            environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, requestedReflectionLOD);
         #else
             float lodReflectionNormalized = clamp(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
-            vec3 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords).rgb;
+            vec4 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
             if(lodReflectionNormalizedDoubled < 1.0){
                 environmentRadiance = mix(
-                    sampleReflection(reflectionSamplerHigh, reflectionCoords).rgb,
+                    sampleReflection(reflectionSamplerHigh, reflectionCoords),
                     environmentSpecularMid,
                     lodReflectionNormalizedDoubled
                 );
             }else{
                 environmentRadiance = mix(
                     environmentSpecularMid,
-                    sampleReflection(reflectionSamplerLow, reflectionCoords).rgb,
+                    sampleReflection(reflectionSamplerLow, reflectionCoords),
                     lodReflectionNormalizedDoubled - 1.0
                 );
             }
         #endif
 
+        #ifdef RGBDREFLECTION
+            environmentRadiance.rgb = fromRGBD(environmentRadiance);
+        #endif
+
         #ifdef GAMMAREFLECTION
-            environmentRadiance = toLinearSpace(environmentRadiance.rgb);
+            environmentRadiance.rgb = toLinearSpace(environmentRadiance.rgb);
         #endif
 
         // _____________________________ Irradiance ________________________________
@@ -603,8 +611,8 @@ void main(void) {
         #endif
 
         // _____________________________ Levels _____________________________________
-        environmentRadiance *= vReflectionInfos.x;
-        environmentRadiance *= vReflectionColor.rgb;
+        environmentRadiance.rgb *= vReflectionInfos.x;
+        environmentRadiance.rgb *= vReflectionColor.rgb;
         environmentIrradiance *= vReflectionColor.rgb;
     #endif
 
@@ -691,7 +699,7 @@ void main(void) {
             environmentIrradiance *= alpha;
 
             // Tint reflectance
-            environmentRefraction *= tint;
+            environmentRefraction.rgb *= tint;
 
             // Put alpha back to 1;
             alpha = 1.0;
@@ -731,7 +739,7 @@ void main(void) {
 
     // _____________________________ Radiance ________________________________________
     #ifdef REFLECTION
-        vec3 finalRadiance = environmentRadiance;
+        vec3 finalRadiance = environmentRadiance.rgb;
         finalRadiance *= specularEnvironmentReflectance;
 
         // Full value needed for alpha. 
@@ -740,7 +748,7 @@ void main(void) {
 
     // _____________________________ Refraction ______________________________________
     #ifdef REFRACTION
-        vec3 finalRefraction = environmentRefraction;
+        vec3 finalRefraction = environmentRefraction.rgb;
         finalRefraction *= refractance;
     #endif
 

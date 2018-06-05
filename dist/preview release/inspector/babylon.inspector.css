@@ -297,6 +297,60 @@
         background-color: #383838; }
       .insp-wrapper .tab-panel .gltf-actions .gltf-button:active {
         background-color: #454545; }
+  .insp-wrapper .tab-panel.tools-panel {
+    overflow-y: auto; }
+  .insp-wrapper .tab-panel .tool-title1 {
+    font-size: 1.1em;
+    padding: 10px; }
+  .insp-wrapper .tab-panel .tool-title2 {
+    margin: 10px 0 10px 0;
+    font-size: 1.05em;
+    border-bottom: 1px solid #5db0d7;
+    box-sizing: border-box; }
+  .insp-wrapper .tab-panel .tool-label, .insp-wrapper .tab-panel .tool-label-line, .insp-wrapper .tab-panel .tool-label-error {
+    background-color: #2c2c2c;
+    border: none;
+    outline: none;
+    font-family: "Inconsolata", sans-serif;
+    color: #b3b3b3;
+    padding: 5px;
+    margin: 0px 6px 0px 0; }
+  .insp-wrapper .tab-panel .tool-label-line {
+    width: 100%; }
+  .insp-wrapper .tab-panel .tool-label-error {
+    color: #fa371d;
+    width: 100%;
+    background-color: none; }
+  .insp-wrapper .tab-panel .tool-value {
+    display: inline-block;
+    width: 25%;
+    padding: 2px;
+    background-color: #2c2c2c;
+    border-top: 1px solid #242424;
+    border-bottom: 1px solid #242424;
+    height: 30px;
+    line-height: 30px;
+    box-sizing: border-box; }
+  .insp-wrapper .tab-panel .tool-infos {
+    width: 100%;
+    padding: 4px; }
+  .insp-wrapper .tab-panel .tool-input {
+    background-color: #2c2c2c;
+    border: none;
+    outline: none;
+    font-family: "Inconsolata", sans-serif;
+    color: #ccc;
+    padding: 5px 10px;
+    margin: 0px 6px 0px 0;
+    width: 100%;
+    border-top: 1px solid #242424;
+    border-bottom: 1px solid #242424;
+    text-align: left; }
+    .insp-wrapper .tab-panel .tool-input:hover {
+      background-color: #383838;
+      cursor: pointer; }
+    .insp-wrapper .tab-panel .tool-input:active {
+      background-color: #454545; }
   .insp-wrapper .property-type {
     color: #5db0d7; }
   .insp-wrapper .property-name, .insp-wrapper .insp-details .base-row .prop-name, .insp-wrapper .insp-details .row .prop-name, .insp-wrapper .insp-details .header-row .prop-name {

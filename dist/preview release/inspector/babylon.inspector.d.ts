@@ -1052,6 +1052,15 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class ToolsTab extends Tab {
+        private _inspector;
+        private _scene;
+        constructor(tabbar: TabBar, insp: Inspector);
+        dispose(): void;
+    }
+}
+
+declare module INSPECTOR {
     /**
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
      * The default active tab is the first one of the list.
