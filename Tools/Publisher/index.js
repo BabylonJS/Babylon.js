@@ -51,6 +51,7 @@ let packages = [
         required: [
             basePath + '/viewer/readme.md',
             basePath + '/viewer/package.json',
+            basePath + '/viewer/babylon.viewer.js'
         ]
     },
     {
@@ -234,6 +235,7 @@ function processViewer(package, version) {
     packageJson.files = files;
     packageJson.version = version;
     packageJson.main = "index.js";
+    packageJson.main = "babylon.viewer.js";
     packageJson.typings = "index.d.ts";
 
     fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
