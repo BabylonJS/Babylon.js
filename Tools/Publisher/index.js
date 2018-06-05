@@ -215,7 +215,8 @@ function processCore(package, version) {
 
 function processViewer(package, version) {
 
-    let buildPath = package.path + "dist/build/src";
+    let buildPath = package.path + "dist/build/src/";
+    let projectPath = '../../Viewer';
 
     if (package.required) {
         package.required.forEach(file => {
@@ -226,7 +227,8 @@ function processViewer(package, version) {
     // the viewer needs to be built using tsc on the viewer's main repository
 
     // build the viewer
-    shelljs.exec('tsc -p ' + buildPath);
+    console.log("executing " + 'tsc -p ' + projectPath);
+    shelljs.exec('tsc -p ' + projectPath);
 
     let packageJson = require(buildPath + '/package.json');
 
@@ -234,7 +236,7 @@ function processViewer(package, version) {
 
     packageJson.files = files;
     packageJson.version = version;
-    packageJson.main = "index.js";
+    packageJson.module = "index.js";
     packageJson.main = "babylon.viewer.js";
     packageJson.typings = "index.d.ts";
 
