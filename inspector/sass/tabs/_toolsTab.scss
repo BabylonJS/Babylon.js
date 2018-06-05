@@ -17,15 +17,13 @@
     }
 
     .tool-label {
-        display         : inline-block;
-        width           : 75%;
-        padding         : 2px;
         background-color: $background-lighter;
-        border-bottom   : 1px solid $background;
-        border-top      : 1px solid $background;
-        height          : 30px;
-        line-height     : 30px;
-        box-sizing      : border-box;
+        border          : none;
+        outline         : none;
+        font-family     : $font;
+        color           : darken($color, 10%);
+        padding         : 5px;
+        margin          : 0px 6px 0px 0;
     }
 
     .tool-label-line {
@@ -55,5 +53,28 @@
     .tool-infos {
         width           : 100%;
         padding         : 4px;
+    }
+
+    .tool-input {
+        background-color: $background-lighter;
+        border          : none;
+        outline         : none;
+        font-family     : $font;
+        color           : $color;
+        padding         : 5px 10px;
+        margin          : 0px 6px 0px 0;
+        width           : 100%;
+        border-top      : 1px solid $background;
+        border-bottom   : 1px solid $background;
+        text-align: left;
+
+        &:hover {
+            background-color:$background-lighter2;
+            cursor: pointer;
+        }
+
+        &:active {
+            background-color:$background-lighter3;
+        }
     }
 }
