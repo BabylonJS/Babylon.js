@@ -170,7 +170,9 @@ module BABYLON {
          */
         public static UpdateSystem(system: ParticleSystem, data: IParticleSystemData, scene: Scene): void {
             // Texture of each particle
-            system.particleTexture = new Texture(`${ParticleHelper._baseAssetsUrl}/textures/${data.textureFile}`, scene);
+            if (data.textureFile) {
+                system.particleTexture = new Texture(`${ParticleHelper._baseAssetsUrl}/textures/${data.textureFile}`, scene);
+            }
 
             // Colors of all particles
             system.color1 = new Color4(data.color1.r, data.color1.g, data.color1.b, data.color1.a);
@@ -242,6 +244,77 @@ module BABYLON {
                 default:
                     break;
             }
+        }
+
+        /**
+         * Static function used to export a particle system to a IParticleSystemData variable.
+         * Please note that texture file name is not exported and must be added manually
+         * @param system defines the particle system to export
+         */
+        public static ExportSystem(system: ParticleSystem): IParticleSystemData {
+            var outData: any = {};
+
+            // Colors of all particles
+            outData.color1 = { r: system.color1.r, g: system.color1.g, b: system.color1.b, a: system.color1.a };
+            outData.color2 = { r: system.color2.r, g: system.color2.g, b: system.color2.b, a: system.color2.a };
+            outData.colorDead = { r: system.colorDead.r, g: system.colorDead.g, b: system.colorDead.b, a: system.colorDead.a };
+
+            // Size of each particle (random between...
+            outData.minSize = system.minSize;
+            outData.maxSize = system.maxSize;
+
+            // Life time of each particle (random between...
+            outData.minLifeTime = system.minLifeTime;
+            outData.maxLifeTime = system.maxLifeTime;
+
+            // Emission rate
+            outData.emitRate = system.emitRate;
+
+            // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+            outData.blendMode = system.blendMode;
+
+            // Set the gravity of all particles
+            outData.gravity = {x: system.gravity.x, y: system.gravity.y, z: system.gravity.z};
+
+            // Angular speed, in radians
+            outData.minAngularSpeed = system.minAngularSpeed;
+            outData.maxAngularSpeed = system.maxAngularSpeed;
+
+            // Speed
+            outData.minEmitPower = system.minEmitPower;
+            outData.maxEmitPower = system.maxEmitPower;
+            outData.updateSpeed = system.updateSpeed;
+
+            
+            switch (system.particleEmitterType.getClassName()) {
+                case "BoxEmitter":
+                    outData.emitterType = "box";
+                    outData.direction1 = {x: system.direction1.x, y: system.direction1.y, z: system.direction1.z };
+                    outData.direction2 = {x: system.direction2.x, y: system.direction2.y, z: system.direction2.z };
+                    outData.minEmitBox = {x: system.minEmitBox.x, y: system.minEmitBox.y, z: system.minEmitBox.z };
+                    outData.maxEmitBox = {x: system.maxEmitBox.x, y: system.maxEmitBox.y, z: system.maxEmitBox.z };
+                    break;
+                case "SphereParticleEmitter":
+                    outData.emitterType = "sphere";
+                    outData.radius = (system.particleEmitterType as SphereParticleEmitter).radius;
+                    break;
+                case "SphereDirectedParticleEmitter":
+                    outData.emitterType = "directed_sphere";
+                    var sphereDirectedParticleEmitter = system.particleEmitterType as SphereDirectedParticleEmitter;
+                    outData.radius = sphereDirectedParticleEmitter.radius;
+                    outData.direction1 = {x: sphereDirectedParticleEmitter.direction1.x, y: sphereDirectedParticleEmitter.direction1.y, z: sphereDirectedParticleEmitter.direction1.z };
+                    outData.direction2 = {x: sphereDirectedParticleEmitter.direction2.x, y: sphereDirectedParticleEmitter.direction2.y, z: sphereDirectedParticleEmitter.direction2.z };                
+                    break;
+                case "ConeEmitter":
+                    outData.emitterType = "cone";
+                    outData.radius = (system.particleEmitterType as ConeParticleEmitter).radius;
+                    outData.angle = (system.particleEmitterType as ConeParticleEmitter).angle;
+                    break;
+                default:
+                    break;
+            }
+
+            return outData;
         }
     }
 
