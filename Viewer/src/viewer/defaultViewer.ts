@@ -298,13 +298,13 @@ export class DefaultViewer extends AbstractViewer {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
-        let newParams: any = {};
+        let newParams: any = navbar.configuration.params || {};
 
         let animationNames = model.getAnimationNames();
-        if (animationNames.length >= 1) {
+        newParams.animations = animationNames;
+        if (animationNames.length) {
             this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
             this._animationList = animationNames;
-            newParams.animations = this._animationList;
             newParams.paused = this._isAnimationPaused;
             let animationIndex = 0;
             if (model.configuration.animation && typeof model.configuration.animation.autoStart === 'string') {
@@ -314,12 +314,14 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
             this._updateAnimationType(animationNames[animationIndex], newParams);
+        } else {
+            newParams.animations = null;
         }
 
         if (model.configuration.thumbnail) {
             newParams.logoImage = model.configuration.thumbnail
         }
-        navbar.updateParams(newParams);
+        navbar.updateParams(newParams, false);
     }
 
     /**
