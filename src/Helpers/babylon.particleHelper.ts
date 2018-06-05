@@ -113,10 +113,6 @@ module BABYLON {
          */
         private static _baseAssetsUrl = "https://assets.babylonjs.com/particles";
 
-        private static _scene: Scene;
-
-        private static _emitter: AbstractMesh;
-
         /**
          * This is the main static method (one-liner) of this helper to create different particle systems.
          * @param type This string represents the type to the particle system to create
@@ -129,21 +125,17 @@ module BABYLON {
                                    scene: Nullable<Scene> = Engine.LastCreatedScene, gpu: boolean = false): Promise<ParticleSystem> {
             
             return new Promise((resolve, reject) => {
-                if (scene) {
-                    this._scene = scene;
-                } else {
-                    return reject("A particle system need a scene.");
+                if (!scene) {
+                    scene = Engine.LastCreatedScene;;
                 }
 
                 if (gpu && !GPUParticleSystem.IsSupported) {
                     return reject("Particle system with GPU is not supported.");
                 }
 
-                this._emitter = emitter;
-
-                Tools.LoadFile(`${this._baseAssetsUrl}/systems/${type}.json`, (data, response) => {
+                Tools.LoadFile(`${ParticleHelper._baseAssetsUrl}/systems/${type}.json`, (data, response) => {
                     const newData = JSON.parse(data.toString()) as IParticleSystemData;
-                    return resolve(this._createSystem(newData));
+                    return resolve(ParticleHelper.CreateSystem(newData, scene!, emitter));
                 }, undefined, undefined, undefined, (req, exception) => {
                     return reject(`An error occured while the creation of your particle system. Check if your type '${type}' exists.`);
                 });
@@ -151,13 +143,34 @@ module BABYLON {
             });
         }
 
-        private static _createSystem(data: IParticleSystemData): ParticleSystem {
+        /**
+         * Static function used to create a new particle system from a IParticleSystemData
+         * @param data defines the source data
+         * @param scene defines the hosting scene
+         * @param emitter defines the particle emitter
+         * @returns a new ParticleSystem based on referenced data
+         */
+        public static CreateSystem(data: IParticleSystemData, scene: Scene, emitter: AbstractMesh): ParticleSystem {
             // Create a particle system
-            const system = new ParticleSystem(data.type, data.capacity, this._scene);
-            // Texture of each particle
-            system.particleTexture = new Texture(`${this._baseAssetsUrl}/textures/${data.textureFile}`, this._scene);
+            const system = new ParticleSystem(data.type, data.capacity, scene);
+
             // Where the particles come from
-            system.emitter = this._emitter; // the starting object, the emitter
+            system.emitter = emitter; // the starting object, the emitter            
+
+            ParticleHelper.UpdateSystem(system, data, scene);
+
+            return system;
+        }
+
+        /**
+         * Static function used to update a particle system from a IParticleSystemData
+         * @param system defines the particle system to update
+         * @param data defines the source data
+         * @param scene defines the hosting scene
+         */
+        public static UpdateSystem(system: ParticleSystem, data: IParticleSystemData, scene: Scene): void {
+            // Texture of each particle
+            system.particleTexture = new Texture(`${ParticleHelper._baseAssetsUrl}/textures/${data.textureFile}`, scene);
 
             // Colors of all particles
             system.color1 = new Color4(data.color1.r, data.color1.g, data.color1.b, data.color1.a);
@@ -229,8 +242,6 @@ module BABYLON {
                 default:
                     break;
             }
-
-            return system;
         }
     }
 
