@@ -44,7 +44,7 @@
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 - Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
 - New lab feature - global light rotation [#4347](https://github.com/BabylonJS/Babylon.js/issues/4347) ([RaananW](https://github.com/RaananW))
-- New package - babylonjs-viewer-assets, to separate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
+- New NPM package - babylonjs-viewer-assets, to separate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
@@ -76,6 +76,7 @@
 - Model configuration was not extended correctly if loaded more than one model ([RaananW](https://github.com/RaananW))
 - It wasn't possible to disable camera behavior(s) using configuration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
 - Animation blending was always set to true, ignoring configuration [#4412](https://github.com/BabylonJS/Babylon.js/issues/4412) ([RaananW](https://github.com/RaananW))
+- Animation navbar now updates correctly when a new model is loaded [#4441](https://github.com/BabylonJS/Babylon.js/issues/4441) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

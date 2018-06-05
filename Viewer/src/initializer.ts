@@ -1,6 +1,6 @@
 import { DefaultViewer } from './viewer/defaultViewer';
 import { mapperManager } from './configuration/mappers';
-import { viewerGlobals, disableInit } from './';
+import { viewerGlobals } from './configuration/globals';
 
 
 /**
@@ -11,7 +11,7 @@ export function initListeners() {
     document.addEventListener("DOMContentLoaded", init);
     function init(event) {
         document.removeEventListener("DOMContentLoaded", init);
-        if (viewerGlobals.disableInit || disableInit) return;
+        if (viewerGlobals.disableInit) return;
         InitTags();
     }
 }

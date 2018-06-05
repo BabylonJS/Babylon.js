@@ -83,36 +83,38 @@ module INSPECTOR {
                 };
                 elemValue.appendChild(inputElement);
 
-                elemValue = Helpers.CreateDiv(null, this._panel);
+                if (!this._scene.getEngine().premultipliedAlpha) {
+                    elemValue = Helpers.CreateDiv(null, this._panel);
 
-                inputElement = Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Compress current texture to .env";
-                inputElement.className = "tool-input";
-                inputElement.type = "button";
-                inputElement.onclick = () => {
-                    if (!this._scene.environmentTexture) {
-                        errorElemm.style.display = "block";
-                        errorElemm.textContent = "You must load an environment texture first.";
-                        return;
-                    }
-                    if (this._scene.activeCamera) {
-                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(<BABYLON.CubeTexture>this._scene.environmentTexture)
-                        .then((buffer: ArrayBuffer) => {
-                            var blob = new Blob([buffer], {type: "octet/stream"});
-                            BABYLON.Tools.Download(blob, "environment.env");
-                            errorElemm.style.display = "none";
-                        })
-                        .catch((error: any) => {
+                    inputElement = Inspector.DOCUMENT.createElement('input');
+                    inputElement.value = "Compress current texture to .env";
+                    inputElement.className = "tool-input";
+                    inputElement.type = "button";
+                    inputElement.onclick = () => {
+                        if (!this._scene.environmentTexture) {
                             errorElemm.style.display = "block";
-                            errorElemm.textContent = error;
-                        });
-                    }
-                    else {
-                        errorElemm.style.display = "block";
-                        errorElemm.textContent = "An active camera is required.";
-                    }
-                };
-                elemValue.appendChild(inputElement);
+                            errorElemm.textContent = "You must load an environment texture first.";
+                            return;
+                        }
+                        if (this._scene.activeCamera) {
+                            BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(<BABYLON.CubeTexture>this._scene.environmentTexture)
+                            .then((buffer: ArrayBuffer) => {
+                                var blob = new Blob([buffer], {type: "octet/stream"});
+                                BABYLON.Tools.Download(blob, "environment.env");
+                                errorElemm.style.display = "none";
+                            })
+                            .catch((error: any) => {
+                                errorElemm.style.display = "block";
+                                errorElemm.textContent = error;
+                            });
+                        }
+                        else {
+                            errorElemm.style.display = "block";
+                            errorElemm.textContent = "An active camera is required.";
+                        }
+                    };
+                    elemValue.appendChild(inputElement);
+                }
                 
                 this._panel.appendChild(errorElemm);
             }

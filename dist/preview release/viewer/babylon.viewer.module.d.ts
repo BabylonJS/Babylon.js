@@ -14,7 +14,7 @@ declare module 'babylonjs-viewer' {
     import { viewerManager } from 'babylonjs-viewer/viewer/viewerManager';
     import { DefaultViewer } from 'babylonjs-viewer/viewer/defaultViewer';
     import { AbstractViewer } from 'babylonjs-viewer/viewer/viewer';
-    import { telemetryManager } from 'babylonjs-viewer/telemetryManager';
+    import { telemetryManager } from 'babylonjs-viewer/managers/telemetryManager';
     import { ModelLoader } from 'babylonjs-viewer/loader/modelLoader';
     import { ViewerModel, ModelState } from 'babylonjs-viewer/model/viewerModel';
     import { AnimationPlayMode, AnimationState } from 'babylonjs-viewer/model/modelAnimation';
@@ -181,7 +181,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * It is mainly responsible to changing the title and subtitle etc'.
                 * @param model the model to be used to configure the templates by
                 */
-            protected _configureTemplate(model: ViewerModel): void;
+            protected _configureTemplate(model?: ViewerModel): void;
             /**
                 * This will load a new model to the default viewer
                 * overriding the AbstractViewer's loadModel.
@@ -458,7 +458,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
     }
 }
 
-declare module 'babylonjs-viewer/telemetryManager' {
+declare module 'babylonjs-viewer/managers/telemetryManager' {
     import { Engine, Observable } from "babylonjs";
     /**
         * The data structure of a telemetry event.

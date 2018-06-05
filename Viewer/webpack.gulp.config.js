@@ -2,8 +2,7 @@ module.exports = {
     //context: __dirname,
     entry: [
         __dirname + '/src/index.ts'
-    ]
-    ,
+    ],
     output: {
         libraryTarget: 'var',
         library: 'BabylonViewer',
