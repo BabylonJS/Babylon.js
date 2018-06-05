@@ -896,10 +896,10 @@ module BABYLON.GLTF2 {
             let minMax: { min: Nullable<number[]>, max: Nullable<number[]> };
 
             if (babylonTransformNode instanceof Mesh) {
-                bufferMesh = (babylonTransformNode as Mesh);
+                bufferMesh = babylonTransformNode;
             }
             else if (babylonTransformNode instanceof InstancedMesh) {
-                bufferMesh = (babylonTransformNode as InstancedMesh).sourceMesh;
+                bufferMesh = babylonTransformNode.sourceMesh;
             }
             const attributeData: _IVertexAttributeData[] = [
                 { kind: VertexBuffer.PositionKind, accessorType: AccessorType.VEC3, byteStride: 12 },
@@ -933,14 +933,25 @@ module BABYLON.GLTF2 {
 
                 if (bufferMesh.getTotalIndices()) {
                     const indices = bufferMesh.getIndices();
-                    if (indices) {
-                        const byteLength = indices.length * 4;
-                        bufferView = _GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
-                        this.bufferViews.push(bufferView);
-                        indexBufferViewIndex = this.bufferViews.length - 1;
 
-                        for (let k = 0, length = indices.length; k < length; ++k) {
-                            binaryWriter.setUInt32(indices[k]);
+                    if (indices) {
+                        let shouldExportIndices = true;
+                        if (bufferMesh.subMeshes) {
+                            for (let submesh of bufferMesh.subMeshes) {
+                                if (submesh.indexCount > indices.length) {
+                                    shouldExportIndices = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (shouldExportIndices) {
+                            const byteLength = indices.length * 4;
+                            bufferView = _GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
+                            this.bufferViews.push(bufferView);
+                            indexBufferViewIndex = this.bufferViews.length - 1;
+                            for (let k in indices) {
+                                binaryWriter.setUInt32(indices[k]);
+                            }
                         }
                     }
                 }
@@ -995,7 +1006,7 @@ module BABYLON.GLTF2 {
                                 if (vertexBuffer) {
                                     const stride = vertexBuffer.getSize();
                                     const bufferViewIndex = attribute.bufferViewIndex;
-                                    if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
+                                    if (bufferViewIndex != null) { // check to see if bufferviewindex has a numeric value assigned.
                                         minMax = { min: null, max: null };
                                         if (attributeKind == VertexBuffer.PositionKind) {
                                             minMax = _GLTFUtilities.CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this.convertToRightHandedSystem);
@@ -1015,6 +1026,7 @@ module BABYLON.GLTF2 {
                             const accessor = _GLTFUtilities.CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, AccessorType.SCALAR, AccessorComponentType.UNSIGNED_INT, submesh.indexCount, submesh.indexStart * 4, null, null);
                             this.accessors.push(accessor);
                             meshPrimitive.indices = this.accessors.length - 1;
+
                         }
                         if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                             let sideOrientation = this.babylonScene.materials[materialIndex].sideOrientation;
@@ -1139,7 +1151,6 @@ module BABYLON.GLTF2 {
             for (let babylonTransformNode of nodes) {
                 if (shouldExportTransformNode(babylonTransformNode)) {
                     node = this.createNode(babylonTransformNode, binaryWriter);
-
                     this.nodes.push(node);
                     nodeIndex = this.nodes.length - 1;
                     nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
@@ -1182,7 +1193,7 @@ module BABYLON.GLTF2 {
             const mesh: IMesh = { primitives: [] };
 
             if (babylonTransformNode.name) {
-                node.name = babylonTransformNode.name;
+                node.name =  encodeURI(babylonTransformNode.name);
             }
 
             // Set transformation
