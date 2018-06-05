@@ -26,6 +26,9 @@ export class DefaultViewer extends AbstractViewer {
         super(containerElement, initialConfiguration);
 
         this.onModelLoadedObservable.add(this._onModelLoaded);
+        this.onModelRemovedObservable.add(() => {
+            this._configureTemplate();
+        })
 
         this.onEngineInitObservable.add(() => {
             this.sceneManager.onLightsConfiguredObservable.add((data) => {
@@ -294,32 +297,37 @@ export class DefaultViewer extends AbstractViewer {
      * It is mainly responsible to changing the title and subtitle etc'.
      * @param model the model to be used to configure the templates by
      */
-    protected _configureTemplate(model: ViewerModel) {
+    protected _configureTemplate(model?: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
         let newParams: any = navbar.configuration.params || {};
 
-        let animationNames = model.getAnimationNames();
-        newParams.animations = animationNames;
-        if (animationNames.length) {
-            this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
-            this._animationList = animationNames;
-            newParams.paused = this._isAnimationPaused;
-            let animationIndex = 0;
-            if (model.configuration.animation && typeof model.configuration.animation.autoStart === 'string') {
-                animationIndex = animationNames.indexOf(model.configuration.animation.autoStart);
-                if (animationIndex === -1) {
-                    animationIndex = 0;
-                }
-            }
-            this._updateAnimationType(animationNames[animationIndex], newParams);
-        } else {
+        if (!model) {
             newParams.animations = null;
-        }
+        } else {
 
-        if (model.configuration.thumbnail) {
-            newParams.logoImage = model.configuration.thumbnail
+            let animationNames = model.getAnimationNames();
+            newParams.animations = animationNames;
+            if (animationNames.length) {
+                this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
+                this._animationList = animationNames;
+                newParams.paused = this._isAnimationPaused;
+                let animationIndex = 0;
+                if (model.configuration.animation && typeof model.configuration.animation.autoStart === 'string') {
+                    animationIndex = animationNames.indexOf(model.configuration.animation.autoStart);
+                    if (animationIndex === -1) {
+                        animationIndex = 0;
+                    }
+                }
+                this._updateAnimationType(animationNames[animationIndex], newParams);
+            } else {
+                newParams.animations = null;
+            }
+
+            if (model.configuration.thumbnail) {
+                newParams.logoImage = model.configuration.thumbnail
+            }
         }
         navbar.updateParams(newParams, false);
     }
