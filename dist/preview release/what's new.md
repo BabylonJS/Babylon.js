@@ -6,11 +6,12 @@
 - Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
-- Added Environmnent Texture Tools to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
+- Added Environmnent Texture Tools to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan)). [How to](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture)
 
 ## Updates
 
 - All NPM packages have `latest`and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
+- Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
 
 ### Core Engine
 
