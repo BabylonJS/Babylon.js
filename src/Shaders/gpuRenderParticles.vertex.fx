@@ -8,7 +8,7 @@ uniform mat4 projection;
 in vec3 position;
 in float age;
 in float life;
-in float size;
+in vec3 size;
 in vec4 color;
 in vec2 offset;
 in vec2 uv;
@@ -29,7 +29,7 @@ void main() {
   float ratio = age / life;
   vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 
-  vec2 cornerPos = offset * size;
+  vec2 cornerPos = offset * size.yz * size.x;
 
   // Rotate
 	vec4 rotatedCorner;
