@@ -1,26 +1,14 @@
 module.exports = {
-    //context: __dirname,
     entry: [
-        __dirname + '/src/index.ts'
+        __dirname + '/src/assets/index.ts'
     ],
     output: {
         libraryTarget: 'var',
-        library: 'BabylonViewer',
+        library: 'BabylonViewerAssets',
         umdNamedDefine: true
     },
-    externals: {
-        cannon: 'CANNON',
-        oimo: 'OIMO',
-        "earcut": true
-    },
     resolve: {
-        extensions: ['.ts', '.js'],
-        alias: {
-            "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
-            "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
-            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
-            "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
-        }
+        extensions: ['.ts']
     },
     module: {
         loaders: [{
