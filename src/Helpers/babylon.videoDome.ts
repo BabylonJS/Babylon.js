@@ -13,6 +13,13 @@ module BABYLON {
         protected _videoTexture: VideoTexture;
 
         /**
+         * Gets the video texture being displayed on the sphere
+         */
+        public get videoTexture(): VideoTexture {
+            return this._videoTexture;
+        }
+
+        /**
          * The skybox material
          */
         protected _material: BackgroundMaterial;
