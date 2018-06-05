@@ -189,17 +189,21 @@ module BABYLON {
             return this.onTrackpadValuesChangedObservable;
         }
 
+        private _updateTrackpad(){
+            if (this.browserGamepad.axes && (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y)) {
+                this.trackpad.x = this.browserGamepad["axes"][2];
+                this.trackpad.y = this.browserGamepad["axes"][3];
+                this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
+            }
+        }
+
         /**
          * Called once per frame by the engine.
          */
         public update() {
             super.update();
             if (this.browserGamepad.axes) {
-                if (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y) {
-                    this.trackpad.x = this.browserGamepad["axes"][2];
-                    this.trackpad.y = this.browserGamepad["axes"][3];
-                    this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
-                }
+                this._updateTrackpad();
                 // Only need to animate axes if there is a loaded mesh
                 if (this._loadedMeshInfo) {
                     for (let axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
@@ -220,6 +224,9 @@ module BABYLON {
             if (!buttonName) {
                 return;
             }
+
+            // Update the trackpad to ensure trackpad.x/y are accurate during button events between frames
+            this._updateTrackpad();
 
             // Only emit events for buttons that we know how to map from index to name
             let observable = (<any>this)[(<any>(this._mapping.buttonObservableNames))[buttonName]];
