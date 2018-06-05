@@ -186,7 +186,7 @@ module BABYLON {
         /**
          * Default environment texture URL.
          */
-        private static _environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.dds";
+        private static _environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.env";
 
         /**
          * Creates the default options for the helper.
