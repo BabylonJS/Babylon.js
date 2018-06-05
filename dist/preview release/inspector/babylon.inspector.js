@@ -4316,35 +4316,37 @@ var INSPECTOR;
                     }, undefined, true);
                 };
                 elemValue.appendChild(inputElement);
-                elemValue = INSPECTOR.Helpers.CreateDiv(null, _this._panel);
-                inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Compress current texture to .env";
-                inputElement.className = "tool-input";
-                inputElement.type = "button";
-                inputElement.onclick = function () {
-                    if (!_this._scene.environmentTexture) {
-                        errorElemm_1.style.display = "block";
-                        errorElemm_1.textContent = "You must load an environment texture first.";
-                        return;
-                    }
-                    if (_this._scene.activeCamera) {
-                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(_this._scene.environmentTexture)
-                            .then(function (buffer) {
-                            var blob = new Blob([buffer], { type: "octet/stream" });
-                            BABYLON.Tools.Download(blob, "environment.env");
-                            errorElemm_1.style.display = "none";
-                        })
-                            .catch(function (error) {
+                if (!_this._scene.getEngine().premultipliedAlpha) {
+                    elemValue = INSPECTOR.Helpers.CreateDiv(null, _this._panel);
+                    inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+                    inputElement.value = "Compress current texture to .env";
+                    inputElement.className = "tool-input";
+                    inputElement.type = "button";
+                    inputElement.onclick = function () {
+                        if (!_this._scene.environmentTexture) {
                             errorElemm_1.style.display = "block";
-                            errorElemm_1.textContent = error;
-                        });
-                    }
-                    else {
-                        errorElemm_1.style.display = "block";
-                        errorElemm_1.textContent = "An active camera is required.";
-                    }
-                };
-                elemValue.appendChild(inputElement);
+                            errorElemm_1.textContent = "You must load an environment texture first.";
+                            return;
+                        }
+                        if (_this._scene.activeCamera) {
+                            BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(_this._scene.environmentTexture)
+                                .then(function (buffer) {
+                                var blob = new Blob([buffer], { type: "octet/stream" });
+                                BABYLON.Tools.Download(blob, "environment.env");
+                                errorElemm_1.style.display = "none";
+                            })
+                                .catch(function (error) {
+                                errorElemm_1.style.display = "block";
+                                errorElemm_1.textContent = error;
+                            });
+                        }
+                        else {
+                            errorElemm_1.style.display = "block";
+                            errorElemm_1.textContent = "An active camera is required.";
+                        }
+                    };
+                    elemValue.appendChild(inputElement);
+                }
                 _this._panel.appendChild(errorElemm_1);
             }
             title = INSPECTOR.Helpers.CreateDiv('tool-title2', _this._panel);

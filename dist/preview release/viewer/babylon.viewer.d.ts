@@ -181,7 +181,7 @@ declare module BabylonViewer {
                 * It is mainly responsible to changing the title and subtitle etc'.
                 * @param model the model to be used to configure the templates by
                 */
-            protected _configureTemplate(model: ViewerModel): void;
+            protected _configureTemplate(model?: ViewerModel): void;
             /**
                 * This will load a new model to the default viewer
                 * overriding the AbstractViewer's loadModel.
