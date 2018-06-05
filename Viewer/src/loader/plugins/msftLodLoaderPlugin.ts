@@ -1,5 +1,4 @@
 import { ILoaderPlugin } from "./loaderPlugin";
-import { telemetryManager } from "../../telemetryManager";
 import { ViewerModel } from "../../model/viewerModel";
 import { Tools, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
 import { IGLTFLoaderExtension, GLTF2 } from "babylonjs-loaders";
