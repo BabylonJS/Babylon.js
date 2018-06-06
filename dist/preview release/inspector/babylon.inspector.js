@@ -304,6 +304,7 @@ var INSPECTOR;
             // Create popup
             var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
             if (!popup) {
+                alert("Please update your browser to open the Babylon.js inspector in an external view.");
                 return;
             }
             popup.document.title = "Babylon.js INSPECTOR";
@@ -4268,16 +4269,16 @@ var INSPECTOR;
             title.appendChild(versionSpan);
             // Environment block
             title = INSPECTOR.Helpers.CreateDiv('tool-title2', _this._panel);
-            title.textContent = "Environment";
+            title.textContent = "Environment Texture (.dds, .env)";
             {
-                var elemLabel = _this._createToolLabel("Load Environment Texture (.dds, .env) ", _this._panel);
-                elemLabel.className = "tool-label-line";
                 var errorElemm_1 = INSPECTOR.Inspector.DOCUMENT.createElement('div');
                 errorElemm_1.className = "tool-label-error";
                 errorElemm_1.style.display = "none";
+                var elemValue = INSPECTOR.Helpers.CreateDiv(null, _this._panel);
                 var inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
-                inputElement.className = "tool-label-line";
+                inputElement.className = "tool-input";
                 inputElement.type = "file";
+                inputElement.accept = ".dds, .env";
                 inputElement.onchange = function (event) {
                     var files = event.target.files;
                     var file = null;
@@ -4315,46 +4316,48 @@ var INSPECTOR;
                         }
                     }, undefined, true);
                 };
-                _this._panel.appendChild(inputElement);
-                _this._createToolLabel("Compress to .env", _this._panel);
-                var elemValue = INSPECTOR.Helpers.CreateDiv('tool-value', _this._panel);
-                inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Save";
-                inputElement.type = "button";
-                inputElement.onclick = function () {
-                    if (!_this._scene.environmentTexture) {
-                        errorElemm_1.style.display = "block";
-                        errorElemm_1.textContent = "You must load an environment texture first.";
-                        return;
-                    }
-                    if (_this._scene.activeCamera) {
-                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(_this._scene.environmentTexture)
-                            .then(function (buffer) {
-                            var blob = new Blob([buffer], { type: "octet/stream" });
-                            BABYLON.Tools.Download(blob, "environment.env");
-                            errorElemm_1.style.display = "none";
-                        })
-                            .catch(function (error) {
-                            errorElemm_1.style.display = "block";
-                            errorElemm_1.textContent = error;
-                        });
-                    }
-                    else {
-                        errorElemm_1.style.display = "block";
-                        errorElemm_1.textContent = "An active camera is required.";
-                    }
-                };
                 elemValue.appendChild(inputElement);
+                if (!_this._scene.getEngine().premultipliedAlpha) {
+                    elemValue = INSPECTOR.Helpers.CreateDiv(null, _this._panel);
+                    inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+                    inputElement.value = "Compress current texture to .env";
+                    inputElement.className = "tool-input";
+                    inputElement.type = "button";
+                    inputElement.onclick = function () {
+                        if (!_this._scene.environmentTexture) {
+                            errorElemm_1.style.display = "block";
+                            errorElemm_1.textContent = "You must load an environment texture first.";
+                            return;
+                        }
+                        if (_this._scene.activeCamera) {
+                            BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(_this._scene.environmentTexture)
+                                .then(function (buffer) {
+                                var blob = new Blob([buffer], { type: "octet/stream" });
+                                BABYLON.Tools.Download(blob, "environment.env");
+                                errorElemm_1.style.display = "none";
+                            })
+                                .catch(function (error) {
+                                errorElemm_1.style.display = "block";
+                                errorElemm_1.textContent = error;
+                            });
+                        }
+                        else {
+                            errorElemm_1.style.display = "block";
+                            errorElemm_1.textContent = "An active camera is required.";
+                        }
+                    };
+                    elemValue.appendChild(inputElement);
+                }
                 _this._panel.appendChild(errorElemm_1);
             }
             title = INSPECTOR.Helpers.CreateDiv('tool-title2', _this._panel);
             title.textContent = "Capture";
             {
-                _this._createToolLabel("Screenshot", _this._panel);
-                var elemValue = INSPECTOR.Helpers.CreateDiv('tool-value', _this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv(null, _this._panel);
                 var inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Capture";
+                inputElement.value = "Take Screenshot";
                 inputElement.type = "button";
+                inputElement.className = "tool-input";
                 inputElement.onclick = function () {
                     if (_this._scene.activeCamera) {
                         BABYLON.Tools.CreateScreenshot(_this._scene.getEngine(), _this._scene.activeCamera, { precision: 0.5 });
@@ -4364,11 +4367,6 @@ var INSPECTOR;
             }
             return _this;
         }
-        ToolsTab.prototype._createToolLabel = function (content, parent) {
-            var elem = INSPECTOR.Helpers.CreateDiv('tool-label', parent);
-            elem.textContent = content;
-            return elem;
-        };
         ToolsTab.prototype.dispose = function () {
             // Nothing to dispose
         };

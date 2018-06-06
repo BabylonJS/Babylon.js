@@ -1,7 +1,8 @@
 ﻿// Attributes
 attribute vec3 position;
 attribute vec4 color;
-attribute vec4 options;
+attribute vec3 options;
+attribute vec2 size;
 attribute float cellIndex;
 
 // Uniforms
@@ -22,9 +23,8 @@ varying float fClipDistance;
 void main(void) {	
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz; 
 	vec2 cornerPos;
-	float size = options.y;
 	float angle = options.x;
-	vec2 offset = options.zw;
+	vec2 offset = options.yz;
 	
 	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
 

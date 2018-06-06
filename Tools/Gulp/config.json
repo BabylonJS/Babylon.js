@@ -1264,7 +1264,8 @@
         "serializers",
         "inspector",
         "gui",
-        "viewer"
+        "viewer",
+        "viewer-assets"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1720,6 +1721,7 @@
                     "../../gui/src/2D/controls/inputText.ts",
                     "../../gui/src/2D/controls/virtualKeyboard.ts",
                     "../../gui/src/2D/controls/multiLine.ts",
+                    "../../gui/src/2D/controls/grid.ts",                    
                     "../../gui/src/3D/gui3DManager.ts",
                     "../../gui/src/3D/materials/fluentMaterial.ts",
                     "../../gui/src/3D/vector3WithInfo.ts",
@@ -1730,7 +1732,8 @@
                     "../../gui/src/3D/controls/holographicButton.ts",
                     "../../gui/src/3D/controls/stackPanel3D.ts",
                     "../../gui/src/3D/controls/volumeBasedPanel.ts",
-                    "../../gui/src/3D/controls/spherePanel.ts"
+                    "../../gui/src/3D/controls/spherePanel.ts",
+                    "../../gui/src/3D/controls/cylinderPanel.ts"
                 ],
                 "shaderFiles": [
                     "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
@@ -1854,6 +1857,7 @@
                 "name": "babylonjs-viewer",
                 "main": "../../Viewer/dist/build/src/index.d.ts",
                 "out": "../../../../dist/preview release/viewer/babylon.viewer.module.d.ts",
+                "legacyDeclaration": true,
                 "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "outputs": [
@@ -1886,6 +1890,42 @@
                             "outputDirectory": "/viewer/"
                         }
                     ]
+                }
+            ]
+        }
+    },
+    "viewer-assets": {
+        "libraries": [
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.viewer.assets.js",
+                "webpack": "../../Viewer/webpack.assets.config.js",
+                "bundle": "true",
+                "moduleDeclaration": {
+                    "name": "BabylonViewerAssets",
+                    "module": "babylonjs-viewer-assets"
+                },
+                "babylonIncluded": true
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../Viewer/",
+            "dtsBundle": {
+                "name": "babylonjs-viewer-assets",
+                "baseDir": "../../Viewer/dist/build/src/assets/",
+                "main": "../../Viewer/dist/build/src/assets/index.d.ts",
+                "out": "../../../build/assets/babylon.viewer.assets.module.d.ts"
+            },
+            "outputs": [
+                {
+                    "destination": [
+                        {
+                            "filename": "babylon.viewer.assets.js",
+                            "outputDirectory": "/../../Viewer/dist/build/assets/"
+                        }
+                    ],
+                    "minified": true
                 }
             ]
         }
