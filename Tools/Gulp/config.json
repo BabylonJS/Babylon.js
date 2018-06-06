@@ -1720,6 +1720,7 @@
                     "../../gui/src/2D/controls/inputText.ts",
                     "../../gui/src/2D/controls/virtualKeyboard.ts",
                     "../../gui/src/2D/controls/multiLine.ts",
+                    "../../gui/src/2D/controls/grid.ts",                    
                     "../../gui/src/3D/gui3DManager.ts",
                     "../../gui/src/3D/materials/fluentMaterial.ts",
                     "../../gui/src/3D/vector3WithInfo.ts",
