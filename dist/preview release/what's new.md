@@ -68,6 +68,7 @@
 - Fixed a bug with setting `unlit` on `PBRMaterial` after the material is ready (Wrong dirty flags) ([bghgary](http://www.github.com/bghgary))
 - Fixed `HighlightLayer` support on browsers not supporting HalfFloat ([sebavan](http://www.github.com/sebavan))
 - Fixed support for R and RG texture formats ([sebavan](http://www.github.com/sebavan))
+- Fixed `updatable` parameter setting in the SPS ([jerome](https://github.com/jbousquie))
 
 ### Viewer
 
