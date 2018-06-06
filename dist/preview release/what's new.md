@@ -69,6 +69,7 @@
 - Fixed `HighlightLayer` support on browsers not supporting HalfFloat ([sebavan](http://www.github.com/sebavan))
 - Fixed support for R and RG texture formats ([sebavan](http://www.github.com/sebavan))
 - Fixed `updatable` parameter setting in the SPS ([jerome](https://github.com/jbousquie))
+- Angular and linear velocity were using the wrong method to copy values to the physics engine ([RaananW](https://github.com/RaananW))
 
 ### Viewer
 

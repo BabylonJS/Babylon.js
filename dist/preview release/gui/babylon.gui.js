@@ -7432,7 +7432,7 @@ var BABYLON;
                     this._isVisible = value;
                     var mesh = this.mesh;
                     if (mesh) {
-                        mesh.isVisible = value;
+                        mesh.setEnabled(value);
                     }
                 },
                 enumerable: true,
