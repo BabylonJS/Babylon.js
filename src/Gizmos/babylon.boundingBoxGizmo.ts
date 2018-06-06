@@ -103,12 +103,25 @@ module BABYLON {
                         box.material = coloredMaterial;
 
                         // Dragging logic
-                        var _dragBehavior = new PointerDragBehavior({dragAxis: new BABYLON.Vector3(i==0?-1:1,j==0?-1:1,k==0?-1:1)});
+                        let dragAxis = new BABYLON.Vector3(i==0?-1:1,j==0?-1:1,k==0?-1:1);
+                        var _dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
                         _dragBehavior.moveAttached = false;
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event)=>{
                             if(this.attachedMesh){
-                                this.attachedMesh.scaling.addInPlace(new Vector3(event.dragDistance,event.dragDistance,event.dragDistance));
+                                // current boudning box dimensions
+                                var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
+                                var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
+                                
+                                // get the change in bounding box size/2 and add this to the mesh's position to offset from scaling with center pivot point
+                                var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
+                                var scaleRatio = deltaScale.divide(this.attachedMesh.scaling).scaleInPlace(0.5);
+                                var moveDirection = boundBoxDimensions.multiply(scaleRatio).multiplyInPlace(dragAxis);
+                                var worldMoveDirection = Vector3.TransformCoordinates(moveDirection, this.attachedMesh.getWorldMatrix().getRotationMatrix());
+                                
+                                // update scale and position
+                                this.attachedMesh.scaling.addInPlace(deltaScale);
+                                this.attachedMesh.position.addInPlace(worldMoveDirection);
                             }
                         })
 
