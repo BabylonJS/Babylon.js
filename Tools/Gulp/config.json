@@ -1078,6 +1078,7 @@
                 "../../src/Gizmos/babylon.positionGizmo.js",
                 "../../src/Gizmos/babylon.rotationGizmo.js",
                 "../../src/Gizmos/babylon.scaleGizmo.js",
+                "../../src/Gizmos/babylon.boundingBoxGizmo.js",
                 "../../src/Gizmos/babylon.gizmoManager.js"
             ],
             "dependUpon": [
