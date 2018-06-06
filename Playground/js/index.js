@@ -61,7 +61,7 @@
         var examplesButton = document.getElementsByClassName("examplesButton");
         var isExamplesDisplayed = false;
         for(var i = 0; i < examplesButton.length; i++) {
-           examplesButton[i].onclick = function () {
+           examplesButton[i].parentElement.onclick = function () {
             isExamplesDisplayed = !isExamplesDisplayed;
             if (isExamplesDisplayed) {
                 document.getElementById("exampleList").style.display = "block";
@@ -223,10 +223,12 @@
                                 example.id = ii;
 
                                 var exampleImg = document.createElement("img");
-                                exampleImg.src = "examples/" + scripts[i].samples[ii].icon;
+                                exampleImg.src = scripts[i].samples[ii].icon.replace("icons", "http://doc.babylonjs.com/examples/icons");
+                                exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + scripts[i].samples[ii].PGID + "').click();");
 
                                 var exampleContent = document.createElement("div");
                                 exampleContent.classList.add("itemContent");
+                                exampleContent.setAttribute("onClick", "document.getElementById('PGLink_" + scripts[i].samples[ii].PGID + "').click();");
 
                                 var exampleContentLink = document.createElement("div");
                                 exampleContentLink.classList.add("itemContentLink");
@@ -245,6 +247,7 @@
                                 exampleDocLink.target = "_blank";
 
                                 var examplePGLink = document.createElement("a");
+                                examplePGLink.id = "PGLink_" + scripts[i].samples[ii].PGID;
                                 examplePGLink.classList.add("itemLinePGLink");
                                 examplePGLink.innerText = "Display";
                                 examplePGLink.href = scripts[i].samples[ii].PGID;
