@@ -15,10 +15,10 @@ module BABYLON {
         
         /**
          *  Fires each time the attached mesh is dragged with the pointer
-         *  delta between last drag position and current drag position in world space
-         *  dragDistance along the drag axis
-         *  dragPlaneNormal normal of the current drag plane used during the drag
-         *  dragPlanePoint in world space where the drag intersects the drag plane
+         *  * delta between last drag position and current drag position in world space
+         *  * dragDistance along the drag axis
+         *  * dragPlaneNormal normal of the current drag plane used during the drag
+         *  * dragPlanePoint in world space where the drag intersects the drag plane
          */
         public onDragObservable = new Observable<{delta:Vector3, dragPlanePoint:Vector3, dragPlaneNormal:Vector3, dragDistance:number}>()
         /**

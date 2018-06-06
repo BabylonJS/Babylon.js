@@ -6,7 +6,7 @@
 - Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
-- Added Environmnent Texture Tools to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
+- Added Environment Texture Tools to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 
 ## Updates
 
@@ -25,7 +25,7 @@
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
 - AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
 - Pointer drag behavior to enable drag and drop with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
-- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Position, rotation, scale, and boudning box gizmos ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Position, rotation, scale, and bounding box gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
 - AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
 
@@ -38,7 +38,7 @@
 ### Viewer
 
 - No fullscreen button on small devices ([RaananW](https://github.com/RaananW))
-- Nav-Bar is now disaplayed on fullscreen per default ([RaananW](https://github.com/RaananW))
+- Nav-Bar is now displayed on fullscreen per default ([RaananW](https://github.com/RaananW))
 - Viewer configuration supports deprecated values using the new configurationCompatibility processor  ([RaananW](https://github.com/RaananW))
 - Shadows will only render while models are entering the scene or animating ([RaananW](https://github.com/RaananW))
 - Support for model drag and drop onto the canvas ([RaananW](https://github.com/RaananW))
@@ -58,7 +58,7 @@
 
 ### Core Engine
 
-- Fixed ```shadowEnabled``` property on lights. Shadows are not visble anymore when disabled ([sebavan](http://www.github.com/sebavan))
+- Fixed ```shadowEnabled``` property on lights. Shadows are not visible anymore when disabled ([sebavan](http://www.github.com/sebavan))
 - Physics `unregisterOnPhysicsCollide` didn't remove callback correctly [#4291](https://github.com/BabylonJS/Babylon.js/issues/4291) ([RaananW](https://github.com/RaananW))
 - Added missing getter and setter for global exposure in ColorCurves ([RaananW](https://github.com/RaananW))
 - Fixed an issue with view matrix when `ArcRotateCamera` was used with collisions ([Deltakosh](https://github.com/deltakosh))
