@@ -72,6 +72,9 @@ module BABYLON.GUI {
         private _doNotRender = false;
         private _downPointerIds:{[id:number] : boolean} = {};
 
+        /** @hidden */
+        public _tag: any;
+
         /** Gets or sets a boolean indicating if the control can be hit with pointer events */
         public isHitTestVisible = true;
         /** Gets or sets a boolean indicating if the control can block pointer events */
