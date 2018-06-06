@@ -351,11 +351,11 @@ module BABYLON {
         }*/
 
         public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-            impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+            impostor.physicsBody.linearVelocity.copy(velocity);
         }
 
         public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-            impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
+            impostor.physicsBody.angularVelocity.copy(velocity);
         }
 
         public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {

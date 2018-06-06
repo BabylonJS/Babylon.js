@@ -65,9 +65,11 @@
             }
 
             // Attaches observer.
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
-                this._updateParameters();
-            });
+            if (this._imageProcessingConfiguration) {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                    this._updateParameters();
+                });
+            }
 
             // Ensure the effect will be rebuilt.
             if (!doNotBuild) {
@@ -350,10 +352,12 @@
             }
 
             var samplers = ["textureSampler"];
-            ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);
-
             var uniforms = ["scale"];
-            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._defines);
+
+            if (ImageProcessingConfiguration) {
+                ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, this._defines);
+            }
 
             this.updateEffect(defines, uniforms, samplers);
         }
@@ -365,7 +369,9 @@
                 this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             }
 
-            this.imageProcessingConfiguration.applyByPostProcess = false;
+            if (this._imageProcessingConfiguration) {
+                this.imageProcessingConfiguration.applyByPostProcess = false;
+            }
         }
     }
 }

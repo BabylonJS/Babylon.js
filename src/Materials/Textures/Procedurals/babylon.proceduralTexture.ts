@@ -1,7 +1,12 @@
 ﻿module BABYLON {
     export class ProceduralTexture extends Texture {
+        @serialize()
         private _size: number;
+
+        @serialize()
         public _generateMipMaps: boolean;
+
+        @serialize()
         public isEnabled = true;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
@@ -154,6 +159,7 @@
             this._fragment = fragment;
         }
 
+        @serialize()
         public get refreshRate(): number {
             return this._refreshRate;
         }
@@ -198,6 +204,10 @@
 
             this.releaseInternalTexture();
             this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
+
+            // Update properties
+            this._size = size;
+            this._generateMipMaps = generateMipMaps;
         }
 
         private _checkUniform(uniformName: string): void {

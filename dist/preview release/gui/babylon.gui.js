@@ -6778,6 +6778,14 @@ var BABYLON;
                 }
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
             };
+            /** Releases associated resources */
+            Grid.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                for (var _i = 0, _a = this._childControls; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control.dispose();
+                }
+            };
             return Grid;
         }(GUI.Container));
         GUI.Grid = Grid;
@@ -7432,7 +7440,7 @@ var BABYLON;
                     this._isVisible = value;
                     var mesh = this.mesh;
                     if (mesh) {
-                        mesh.isVisible = value;
+                        mesh.setEnabled(value);
                     }
                 },
                 enumerable: true,
@@ -8505,7 +8513,7 @@ var BABYLON;
             __extends(SpherePanel, _super);
             function SpherePanel() {
                 var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this._radius = 4.0;
+                _this._radius = 5.0;
                 return _this;
             }
             Object.defineProperty(SpherePanel.prototype, "radius", {
@@ -8560,6 +8568,76 @@ var BABYLON;
             return SpherePanel;
         }(GUI.VolumeBasedPanel));
         GUI.SpherePanel = SpherePanel;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a container panel deployed on the surface of a cylinder
+         */
+        var CylinderPanel = /** @class */ (function (_super) {
+            __extends(CylinderPanel, _super);
+            function CylinderPanel() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this._radius = 5.0;
+                return _this;
+            }
+            Object.defineProperty(CylinderPanel.prototype, "radius", {
+                /**
+                 * Gets or sets the radius of the cylinder where to project controls (5 by default)
+                 */
+                get: function () {
+                    return this._radius;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._radius === value) {
+                        return;
+                    }
+                    this._radius = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            CylinderPanel.prototype._mapGridNode = function (control, nodePosition) {
+                var newPos = this._cylindricalMapping(nodePosition);
+                var mesh = control.mesh;
+                if (!mesh) {
+                    return;
+                }
+                switch (this.orientation) {
+                    case GUI.Container3D.FACEORIGIN_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
+                        break;
+                    case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(newPos.x, 0, newPos.z));
+                        break;
+                    case GUI.Container3D.FACEFORWARD_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        break;
+                    case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        break;
+                }
+                control.position = newPos;
+            };
+            CylinderPanel.prototype._cylindricalMapping = function (source) {
+                var newPos = new BABYLON.Vector3(0, source.y, this._radius);
+                var yAngle = (source.x / this._radius);
+                BABYLON.Matrix.RotationYawPitchRollToRef(yAngle, 0, 0, BABYLON.Tmp.Matrix[0]);
+                return BABYLON.Vector3.TransformNormal(newPos, BABYLON.Tmp.Matrix[0]);
+            };
+            return CylinderPanel;
+        }(GUI.VolumeBasedPanel));
+        GUI.CylinderPanel = CylinderPanel;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
