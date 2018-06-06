@@ -31,5 +31,16 @@
     "license": "Apache-2.0",
     "engines": {
         "node": "*"
+    },
+    "dependencies": {
+        "deepmerge": "~2.1.1",
+        "handlebars": "~4.0.11",
+        "pepjs": "~0.4.3"
+    },
+    "peerDependencies": {
+        "babylonjs": ">3.3.0-alpha",
+        "babylonjs-loaders": ">3.3.0-alpha",
+        "babylonjs-gltf2interface": ">3.3.0-alpha",
+        "babylonjs-viewer-assets": ">3.3.0-alpha"
     }
 }

@@ -93,6 +93,24 @@
         public maxSize = 1;
 
         /**
+         * Minimum scale of emitting particles on X axis.
+         */
+        public minScaleX = 1;
+        /**
+         * Maximum scale of emitting particles on X axis.
+         */
+        public maxScaleX = 1;        
+
+        /**
+         * Minimum scale of emitting particles on Y axis.
+         */
+        public minScaleY = 1;
+        /**
+         * Maximum scale of emitting particles on Y axis.
+         */
+        public maxScaleY = 1;           
+
+        /**
          * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
          */
         public minAngularSpeed = 0;
@@ -330,7 +348,7 @@
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
-        private _vertexBufferSize = 11;
+        private _vertexBufferSize = 12;
         private _isAnimationSheetEnabled: boolean;
 
         // end of sheet animation
@@ -382,7 +400,7 @@
             this._epsilon = epsilon;
             this._isAnimationSheetEnabled = isAnimationSheetEnabled;
             if (isAnimationSheetEnabled) {
-                this._vertexBufferSize = 12;
+                this._vertexBufferSize = 13;
             }
 
             this._scene = scene || Engine.LastCreatedScene;
@@ -393,22 +411,24 @@
 
             this._createIndexBuffer();
 
-            // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
+            // 13 floats per particle (x, y, z, r, g, b, a, angle, scaleX, scaleY, offsetX, offsetY) + 1 filler
             this._vertexData = new Float32Array(capacity * this._vertexBufferSize * 4);
             this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, this._vertexBufferSize);
 
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
-            var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
+            var options = this._vertexBuffer.createVertexBuffer("options", 7, 3);
+            var size = this._vertexBuffer.createVertexBuffer("size", 10, 2);
 
             if (this._isAnimationSheetEnabled) {
-                var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
+                var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 12, 1);
                 this._vertexBuffers["cellIndex"] = cellIndexBuffer;
             }
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
+            this._vertexBuffers["size"] = size;
 
             // Default emitter type
             this.particleEmitterType = new BoxParticleEmitter();
@@ -534,9 +554,10 @@
             this._vertexData[offset + 5] = particle.color.b;
             this._vertexData[offset + 6] = particle.color.a;
             this._vertexData[offset + 7] = particle.angle;
-            this._vertexData[offset + 8] = particle.size;
-            this._vertexData[offset + 9] = offsetX;
-            this._vertexData[offset + 10] = offsetY;
+            this._vertexData[offset + 8] = offsetX;
+            this._vertexData[offset + 9] = offsetY;   
+            this._vertexData[offset + 10] = particle.scale.x * particle.size;
+            this._vertexData[offset + 11] = particle.scale.y * particle.size;      
         }
 
         /**
@@ -562,10 +583,11 @@
             this._vertexData[offset + 5] = particle.color.b;
             this._vertexData[offset + 6] = particle.color.a;
             this._vertexData[offset + 7] = particle.angle;
-            this._vertexData[offset + 8] = particle.size;
-            this._vertexData[offset + 9] = offsetX;
-            this._vertexData[offset + 10] = offsetY;
-            this._vertexData[offset + 11] = particle.cellIndex;
+            this._vertexData[offset + 8] = offsetX;
+            this._vertexData[offset + 9] = offsetY;   
+            this._vertexData[offset + 10] = particle.scale.x * particle.size;
+            this._vertexData[offset + 11] = particle.scale.y * particle.size;
+            this._vertexData[offset + 12] = particle.cellIndex;
         }
 
         // start of sub system methods
@@ -677,6 +699,7 @@
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
                 var step = Scalar.RandomRange(0, 1.0);
@@ -712,11 +735,11 @@
                 var effectCreationOption: any;
 
                 if (this._isAnimationSheetEnabled) {
-                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellIndex"];
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "size", "cellIndex"];
                     effectCreationOption = ["invView", "view", "projection", "particlesInfos", "vClipPlane", "textureMask"];
                 }
                 else {
-                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"];
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "size", ];
                     effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"]
                 }
 
@@ -1074,6 +1097,10 @@
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
             serializationObject.maxSize = this.maxSize;
+            serializationObject.minScaleX = this.minScaleX;
+            serializationObject.maxScaleX = this.maxScaleX;
+            serializationObject.minScaleY = this.minScaleY;
+            serializationObject.maxScaleY = this.maxScaleY;            
             serializationObject.minEmitPower = this.minEmitPower;
             serializationObject.maxEmitPower = this.maxEmitPower;
             serializationObject.minLifeTime = this.minLifeTime;
@@ -1169,6 +1196,14 @@
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
             particleSystem.maxSize = parsedParticleSystem.maxSize;
+
+            if (parsedParticleSystem.minScaleX) {
+                particleSystem.minScaleX = parsedParticleSystem.minScaleX;
+                particleSystem.maxScaleX = parsedParticleSystem.maxScaleX;                
+                particleSystem.minScaleY = parsedParticleSystem.minScaleY;
+                particleSystem.maxScaleY = parsedParticleSystem.maxScaleY;                
+            }
+
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
             particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;

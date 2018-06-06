@@ -1056,7 +1056,6 @@ declare module INSPECTOR {
         private _inspector;
         private _scene;
         constructor(tabbar: TabBar, insp: Inspector);
-        private _createToolLabel(content, parent);
         dispose(): void;
     }
 }

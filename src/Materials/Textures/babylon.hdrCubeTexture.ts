@@ -137,6 +137,10 @@ module BABYLON {
          */
         private loadTexture() {
             var callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
+
+                this.lodGenerationOffset = 0.0;
+                this.lodGenerationScale = 0.8;
+
                 let scene = this.getScene();
 
                 if (!scene) {
