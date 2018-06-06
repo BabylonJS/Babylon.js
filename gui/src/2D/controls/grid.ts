@@ -337,5 +337,14 @@ module BABYLON.GUI {
 
             super._additionalProcessing(parentMeasure, context);
         }
+
+        /** Releases associated resources */
+        public dispose() {
+            super.dispose();
+
+            for (var control of this._childControls) {
+                control.dispose();
+            }
+        }
     }
 }

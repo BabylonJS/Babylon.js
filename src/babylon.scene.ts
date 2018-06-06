@@ -1245,7 +1245,9 @@
 
             this._renderingManager = new RenderingManager(this);
 
-            this.postProcessManager = new PostProcessManager(this);
+            if (PostProcessManager) {
+                this.postProcessManager = new PostProcessManager(this);
+            }
 
             if (OutlineRenderer) {
                 this._outlineRenderer = new OutlineRenderer(this);
@@ -1266,8 +1268,10 @@
             // Uniform Buffer
             this._createUbo();
 
-            // Default Image processing definition.
-            this._imageProcessingConfiguration = new ImageProcessingConfiguration();
+            // Default Image processing definition
+            if (ImageProcessingConfiguration) {
+                this._imageProcessingConfiguration = new ImageProcessingConfiguration();
+            }
         }
 
         /**
@@ -4568,7 +4572,9 @@
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
             // Prepare Frame
-            this.postProcessManager._prepareFrame();
+            if (this.postProcessManager) {
+                this.postProcessManager._prepareFrame();
+            }
 
             // Backgrounds
             var layerIndex;
@@ -4641,7 +4647,9 @@
             }
             
             // Finalize frame
-            this.postProcessManager._finalizeFrame(camera.isIntermediate);
+            if (this.postProcessManager) {
+                this.postProcessManager._finalizeFrame(camera.isIntermediate);
+            }
 
             // Reset some special arrays
             this._renderTargets.reset();
