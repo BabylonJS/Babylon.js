@@ -67,6 +67,10 @@ module BABYLON {
                     if(!prePointerInfo.skipOnPointerObservable){
                         this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
                     }
+                    let pointerEvent = <PointerEvent>(prePointerInfo.event);
+                    if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
+                        this._pointerCaptures[pointerEvent.pointerId] = false;
+                    }
                     return;
                 }
 
@@ -104,7 +108,7 @@ module BABYLON {
                                 delete this._lastPointerEvents[pointerEvent.pointerId];
                             }
                         }
-
+                        
                         if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                             this._pointerCaptures[pointerEvent.pointerId] = false;
                         }

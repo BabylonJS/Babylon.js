@@ -11,6 +11,10 @@ module BABYLON {
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          */
         public attachedMesh:Nullable<AbstractMesh>;
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
+         */
+        protected _updateScale = true;
         protected _interactionsEnabled = true;
         protected _onInteractionsEnabledChanged(value:boolean){
         }
@@ -35,7 +39,7 @@ module BABYLON {
         constructor(/** The utility layer the gizmo will be added to */ public gizmoLayer:UtilityLayerRenderer){
             this._rootMesh = new BABYLON.Mesh("gizmoRootNode",gizmoLayer.utilityLayerScene);
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(()=>{
-                if(this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
+                if(this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
                     var dist = this.attachedMesh.position.subtract(this.gizmoLayer.utilityLayerScene.activeCamera.position).length()/3;
                     this._rootMesh.scaling.set(dist, dist, dist);
                 }
