@@ -64,7 +64,7 @@ body {
 }
 .wrapper {
     height: calc(100% - 40px - 30px); /* nvabar top and bottom*/
-    width: 100%;
+    width: calc(100%);
     display: -ms-flexbox;
     display: flex;
     -ms-flex-direction: row;
@@ -117,6 +117,116 @@ body {
     background-color: #CDC8F9;
     width:5px;
 }      
+
+#exampleList {
+    padding-top: 5px;
+
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 400px;
+    height: calc(100% - 75px);
+    overflow-y: auto;
+
+    border-right: 1px solid #efefef;
+}
+#exampleList #exampleBanner {
+    background-image: url("../css/pattern_ban_1.png");
+    background-repeat: repeat;
+    text-align: center;
+    padding: 10px 0;
+    margin-left: 2px;
+}
+#exampleList #exampleBanner h1 {
+    text-align: center;
+    font-weight: 700;
+    color: #00aeef;
+    font-size: 2em;
+    margin: .67em 0;
+}
+#exampleList .horizontalSeparator {
+    width: 80%;
+    height: 0;
+    display: block;
+    border-top: 1px solid #00aeef;
+    margin: 0 auto 20px auto;
+}
+#exampleList #filterBar {
+    width: 80%;
+    margin-left: 10%;
+}
+#exampleList #filterBarClear {
+    display: none;
+    height: 10px;
+    margin-left: -19px;
+    cursor: pointer;
+}
+#exampleList #noResultsContainer p {
+    width: 100%;
+    text-align: center;
+    font-weight: 300;
+}
+#exampleList .categoryContainer p {
+    margin-left: 5px;
+    font-size: 20px;
+    font-weight: 200;
+    word-wrap: break-word;
+}
+#exampleList .categoryContainer .itemLine {
+    cursor: pointer;
+    background-color: #ebebeb;
+    height: 120px;
+    overflow: hidden;
+    clear: both;
+    margin: 5px;
+    margin-bottom: 10px;
+}
+#exampleList .categoryContainer .itemLine img {
+    display: inline-block;
+    max-height: 100%;
+    max-width: 120px;
+    border: 0;
+}
+#exampleList .categoryContainer .itemLine .itemContent {
+    display: inline-block;
+    width: calc(100% - 125px);
+    height: 100%;
+    vertical-align: top;
+    padding: 5px;
+    box-sizing: border-box;
+}
+#exampleList .categoryContainer .itemLine .itemContent .itemContentLink {
+    height: 100%;
+}
+#exampleList .categoryContainer .itemLine .itemContent .itemContentLink h3 {
+    margin: 0;
+    font-size: 18px;
+    margin-bottom: 5px;
+    text-decoration: none;
+}
+#exampleList .categoryContainer .itemLine .itemContent .itemContentLink p {
+    margin: 0;
+    font-size: 15px;
+    margin-bottom: 3px;
+}
+#exampleList .categoryContainer .itemLine .itemContent .itemLineDocLink {
+    position: relative;
+    bottom: 20px;
+    font-size: 15px;
+    text-decoration: underline;
+    color: #00aeef;
+}
+#exampleList .categoryContainer .itemLine .itemContent .itemLinePGLink {
+    display: none;
+    position: relative;
+    float: right;
+    bottom: 20px;
+    text-align: right;
+    font-size: 15px;
+    text-decoration: underline;
+    color: #00aeef;
+}
 
 .wrapper #jsEditor {
     padding-top:5px;
