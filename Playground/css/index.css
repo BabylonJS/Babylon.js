@@ -218,6 +218,7 @@ body {
     color: #00aeef;
 }
 #exampleList .categoryContainer .itemLine .itemContent .itemLinePGLink {
+    display: none;
     position: relative;
     float: right;
     bottom: 20px;
