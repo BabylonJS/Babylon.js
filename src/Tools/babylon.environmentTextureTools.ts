@@ -146,7 +146,7 @@ module BABYLON {
 
             let engine = internalTexture.getEngine();
             if (engine && engine.premultipliedAlpha) {
-                return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option.");
+                return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
             }
 
             let canvas = engine.getRenderingCanvas();
