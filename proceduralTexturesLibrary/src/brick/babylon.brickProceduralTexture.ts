@@ -19,6 +19,7 @@ module BABYLON {
             this.setColor3("jointColor", this._jointColor);
         }
 
+        @serialize()
         public get numberOfBricksHeight(): number {
             return this._numberOfBricksHeight;
         }
@@ -28,6 +29,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get numberOfBricksWidth(): number {
             return this._numberOfBricksWidth;
         }
@@ -37,6 +39,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsColor3()
         public get jointColor(): Color3 {
             return this._jointColor;
         }
@@ -46,6 +49,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsColor3()
         public get brickColor(): Color3 {
             return this._brickColor;
         }
@@ -53,6 +57,30 @@ module BABYLON {
         public set brickColor(value: Color3) {
             this._brickColor = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this brick procedural texture
+         * @returns a serialized brick procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.BrickProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Brick Procedural Texture from parsed brick procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing brick procedural texture information
+         * @returns a parsed Brick Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BrickProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }	
 }
