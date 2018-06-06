@@ -116,7 +116,9 @@
             "environmentHelper",
             "particleHelper",
             "videoDome",
-            "photoDome"
+            "photoDome",
+            "behaviors",
+            "imageProcessing"            
         ],
         "minimal": [
             "freeCamera",
@@ -126,7 +128,13 @@
             "meshBuilder",
             "freeCamera",
             "hemisphericLight"
-        ]
+        ],
+        "360Viewer": [
+            "freeCamera",
+            "hemisphericLight",
+            "meshBuilder",
+            "picking"
+        ]      
     },
     "workloads": {
         "core": {
@@ -174,12 +182,7 @@
                 "../../src/Materials/babylon.uniformBuffer.js",
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
-                "../../src/PostProcess/babylon.postProcessManager.js",
                 "../../src/Tools/babylon.performanceMonitor.js",
-                "../../src/Materials/babylon.imageProcessingConfiguration.js",
-                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js",
-                "../../src/Behaviors/babylon.behavior.js",
                 "../../src/Materials/babylon.materialHelper.js",
                 "../../src/Materials/babylon.pushMaterial.js",
                 "../../src/Materials/babylon.standardMaterial.js"
@@ -219,7 +222,7 @@
                 "fresnelFunction",
                 "reflectionFunction",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",
+                "imageProcessingFunctions",                
                 "bumpFragmentFunctions",
                 "clipPlaneFragmentDeclaration",
                 "fogFragmentDeclaration",
@@ -230,6 +233,24 @@
                 "fogFragment"
             ]
         },
+        "behaviors": {
+            "files": [
+                "../../src/Behaviors/babylon.behavior.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },   
+        "imageProcessing": {
+            "files": [
+                "../../src/Materials/babylon.imageProcessingConfiguration.js",
+                "../../src/Materials/Textures/babylon.colorGradingTexture.js",
+                "../../src/Materials/babylon.colorCurves.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },        
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
@@ -290,7 +311,7 @@
                 "../../src/Behaviors/Cameras/babylon.autoRotationBehavior.js"
             ],
             "dependUpon": [
-                "core"
+                "behaviors"
             ]
         },
         "meshBehaviors": {
@@ -298,7 +319,7 @@
                 "../../src/Behaviors/Mesh/babylon.pointerDragBehavior.js"
             ],
             "dependUpon": [
-                "core"
+                "behaviors"
             ]
         },
         "textureTools": {
@@ -680,6 +701,7 @@
         },
         "postProcesses": {
             "files": [
+                "../../src/PostProcess/babylon.postProcessManager.js",
                 "../../src/PostProcess/babylon.postProcess.js",
                 "../../src/PostProcess/babylon.passPostProcess.js"
             ],
@@ -853,7 +875,8 @@
                 "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
             ],
             "dependUpon": [
-                "postProcesses"
+                "postProcesses",
+                "imageProcessing"
             ],
             "shaders": [
                 "imageProcessing.fragment"
@@ -879,7 +902,8 @@
                 "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
             ],
             "dependUpon": [
-                "postProcesses"
+                "postProcesses",
+                "imageProcessing"
             ],
             "shaders": [
                 "refraction.fragment",
