@@ -179,7 +179,7 @@ module BABYLON.GUI {
 
             let mesh = this.mesh;
             if (mesh) {
-                mesh.isVisible = value;
+                mesh.setEnabled(value);
             }
         }
 
