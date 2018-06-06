@@ -143,19 +143,7 @@ module BABYLON {
 
             // Update bounding box positions
             this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(()=>{
-                if(this.attachedMesh){
-                    var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
-                    var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
-                    this._boundingDimensions.copyFrom(boundBoxDimensions);
-                    this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
-                    if(!this.attachedMesh.rotationQuaternion){
-                        this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
-                    }
-                    this._lineBoundingBox.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                    this._rotateSpheresParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                    this._scaleBoxesParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                    this._updateBoundingBox();
-                }
+                this._updateBoundingBox();
             })
             this._updateBoundingBox();
         }
@@ -167,7 +155,22 @@ module BABYLON {
             })
         }
 
-        private _updateBoundingBox(){            
+        private _updateBoundingBox(){   
+            if(this.attachedMesh){
+                // Update bounding dimensions/positions
+                var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
+                var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
+                this._boundingDimensions.copyFrom(boundBoxDimensions);
+                this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
+                if(!this.attachedMesh.rotationQuaternion){
+                    this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
+                }
+                this._lineBoundingBox.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
+                this._rotateSpheresParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
+                this._scaleBoxesParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
+            }
+
+            // Update rotation sphere locations
             var rotateSpheres = this._rotateSpheresParent.getChildMeshes();
             for(var i=0;i<3;i++){
                 for(var j=0;j<2;j++){
@@ -192,6 +195,7 @@ module BABYLON {
                 }
             }
 
+            // Update scale box locations
             var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
             for(var i=0;i<2;i++){
                 for(var j=0;j<2;j++){
