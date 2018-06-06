@@ -2888,7 +2888,7 @@ var BABYLON;
              * @returns the child control if found
              */
             Container.prototype.getChildByName = function (name) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     if (child.name === name) {
                         return child;
@@ -2903,7 +2903,7 @@ var BABYLON;
              * @returns the child control if found
              */
             Container.prototype.getChildByType = function (name, type) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     if (child.typeName === type) {
                         return child;
@@ -2917,7 +2917,7 @@ var BABYLON;
              * @returns true if the control is in child list
              */
             Container.prototype.containsControl = function (control) {
-                return this._children.indexOf(control) !== -1;
+                return this.children.indexOf(control) !== -1;
             };
             /**
              * Adds a new control to the current container
@@ -6498,28 +6498,146 @@ var BABYLON;
                 _this._rowDefinitions = new Array();
                 _this._columnDefinitions = new Array();
                 _this._cells = {};
+                _this._childControls = new Array();
                 return _this;
             }
+            Object.defineProperty(Grid.prototype, "children", {
+                /** Gets the list of children */
+                get: function () {
+                    return this._childControls;
+                },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Adds a new row to the grid
              * @param height defines the height of the row (either in pixel or a value between 0 and 1)
-             * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+             * @param isPixel defines if the height is expressed in pixel (or in percentage)
              * @returns the current grid
              */
             Grid.prototype.addRowDefinition = function (height, isPixel) {
                 if (isPixel === void 0) { isPixel = false; }
                 this._rowDefinitions.push(new GUI.ValueAndUnit(height, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE));
+                this._markAsDirty();
                 return this;
             };
             /**
-             * Adds a new row to the grid
-             * @param weight defines the weight of the column (either in pixel or a value between 0 and 1)
+             * Adds a new column to the grid
+             * @param width defines the width of the column (either in pixel or a value between 0 and 1)
+             * @param isPixel defines if the width is expressed in pixel (or in percentage)
+             * @returns the current grid
+             */
+            Grid.prototype.addColumnDefinition = function (width, isPixel) {
+                if (isPixel === void 0) { isPixel = false; }
+                this._columnDefinitions.push(new GUI.ValueAndUnit(width, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE));
+                this._markAsDirty();
+                return this;
+            };
+            /**
+             * Update a row definition
+             * @param index defines the index of the row to update
+             * @param height defines the height of the row (either in pixel or a value between 0 and 1)
              * @param isPixel defines if the weight is expressed in pixel (or in percentage)
              * @returns the current grid
              */
-            Grid.prototype.addColumnDefinition = function (weight, isPixel) {
+            Grid.prototype.setRowDefinition = function (index, height, isPixel) {
                 if (isPixel === void 0) { isPixel = false; }
-                this._columnDefinitions.push(new GUI.ValueAndUnit(weight, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE));
+                if (index < 0 || index >= this._rowDefinitions.length) {
+                    return this;
+                }
+                this._rowDefinitions[index] = new GUI.ValueAndUnit(height, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE);
+                this._markAsDirty();
+                return this;
+            };
+            /**
+             * Update a column definition
+             * @param index defines the index of the column to update
+             * @param width defines the width of the column (either in pixel or a value between 0 and 1)
+             * @param isPixel defines if the width is expressed in pixel (or in percentage)
+             * @returns the current grid
+             */
+            Grid.prototype.setColumnDefinition = function (index, width, isPixel) {
+                if (isPixel === void 0) { isPixel = false; }
+                if (index < 0 || index >= this._columnDefinitions.length) {
+                    return this;
+                }
+                this._columnDefinitions[index] = new GUI.ValueAndUnit(width, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE);
+                this._markAsDirty();
+                return this;
+            };
+            Grid.prototype._removeCell = function (cell, key) {
+                if (!cell) {
+                    return;
+                }
+                _super.prototype.removeControl.call(this, cell);
+                for (var _i = 0, _a = cell.children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    var childIndex = this._childControls.indexOf(control);
+                    if (childIndex !== -1) {
+                        this._childControls.splice(childIndex, 1);
+                    }
+                }
+                delete this._cells[key];
+            };
+            Grid.prototype._offsetCell = function (previousKey, key) {
+                if (!this._cells[key]) {
+                    return;
+                }
+                this._cells[previousKey] = this._cells[key];
+                for (var _i = 0, _a = this._cells[previousKey].children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control._tag = previousKey;
+                }
+                delete this._cells[key];
+            };
+            /**
+             * Remove a column definition at specified index
+             * @param index defines the index of the column to remove
+             * @returns the current grid
+             */
+            Grid.prototype.removeColumnDefinition = function (index) {
+                if (index < 0 || index >= this._columnDefinitions.length) {
+                    return this;
+                }
+                for (var x = 0; x < this._rowDefinitions.length; x++) {
+                    var key = x + ":" + index;
+                    var cell = this._cells[key];
+                    this._removeCell(cell, key);
+                }
+                for (var x = 0; x < this._rowDefinitions.length; x++) {
+                    for (var y = index + 1; y < this._columnDefinitions.length; y++) {
+                        var previousKey = x + ":" + (y - 1);
+                        var key = x + ":" + y;
+                        this._offsetCell(previousKey, key);
+                    }
+                }
+                this._columnDefinitions.splice(index, 1);
+                this._markAsDirty();
+                return this;
+            };
+            /**
+             * Remove a row definition at specified index
+             * @param index defines the index of the row to remove
+             * @returns the current grid
+             */
+            Grid.prototype.removeRowDefinition = function (index) {
+                if (index < 0 || index >= this._rowDefinitions.length) {
+                    return this;
+                }
+                for (var y = 0; y < this._columnDefinitions.length; y++) {
+                    var key = index + ":" + y;
+                    var cell = this._cells[key];
+                    this._removeCell(cell, key);
+                }
+                for (var y = 0; y < this._columnDefinitions.length; y++) {
+                    for (var x = index + 1; x < this._rowDefinitions.length; x++) {
+                        var previousKey = x - 1 + ":" + y;
+                        var key = x + ":" + y;
+                        this._offsetCell(previousKey, key);
+                    }
+                }
+                this._rowDefinitions.splice(index, 1);
+                this._markAsDirty();
                 return this;
             };
             /**
@@ -6552,6 +6670,26 @@ var BABYLON;
                     _super.prototype.addControl.call(this, goodContainer);
                 }
                 goodContainer.addControl(control);
+                this._childControls.push(control);
+                control._tag = key;
+                this._markAsDirty();
+                return this;
+            };
+            /**
+             * Removes a control from the current container
+             * @param control defines the control to remove
+             * @returns the current container
+             */
+            Grid.prototype.removeControl = function (control) {
+                var index = this._childControls.indexOf(control);
+                if (index !== -1) {
+                    this._childControls.splice(index, 1);
+                }
+                var cell = this._cells[control._tag];
+                if (cell) {
+                    cell.removeControl(control);
+                }
+                this._markAsDirty();
                 return this;
             };
             Grid.prototype._getTypeName = function () {

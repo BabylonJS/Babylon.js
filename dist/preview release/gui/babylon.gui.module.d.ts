@@ -612,6 +612,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        /** @hidden */
+        _tag: any;
         /** Gets or sets a boolean indicating if the control can be hit with pointer events */
         isHitTestVisible: boolean;
         /** Gets or sets a boolean indicating if the control can block pointer events */
@@ -1879,20 +1881,53 @@ declare module BABYLON.GUI {
         private _rowDefinitions;
         private _columnDefinitions;
         private _cells;
+        private _childControls;
+        /** Gets the list of children */
+        readonly children: Control[];
         /**
          * Adds a new row to the grid
          * @param height defines the height of the row (either in pixel or a value between 0 and 1)
-         * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+         * @param isPixel defines if the height is expressed in pixel (or in percentage)
          * @returns the current grid
          */
         addRowDefinition(height: number, isPixel?: boolean): Grid;
         /**
-         * Adds a new row to the grid
-         * @param weight defines the weight of the column (either in pixel or a value between 0 and 1)
+         * Adds a new column to the grid
+         * @param width defines the width of the column (either in pixel or a value between 0 and 1)
+         * @param isPixel defines if the width is expressed in pixel (or in percentage)
+         * @returns the current grid
+         */
+        addColumnDefinition(width: number, isPixel?: boolean): Grid;
+        /**
+         * Update a row definition
+         * @param index defines the index of the row to update
+         * @param height defines the height of the row (either in pixel or a value between 0 and 1)
          * @param isPixel defines if the weight is expressed in pixel (or in percentage)
          * @returns the current grid
          */
-        addColumnDefinition(weight: number, isPixel?: boolean): Grid;
+        setRowDefinition(index: number, height: number, isPixel?: boolean): Grid;
+        /**
+         * Update a column definition
+         * @param index defines the index of the column to update
+         * @param width defines the width of the column (either in pixel or a value between 0 and 1)
+         * @param isPixel defines if the width is expressed in pixel (or in percentage)
+         * @returns the current grid
+         */
+        setColumnDefinition(index: number, width: number, isPixel?: boolean): Grid;
+        private _removeCell(cell, key);
+        private _offsetCell(previousKey, key);
+        /**
+         * Remove a column definition at specified index
+         * @param index defines the index of the column to remove
+         * @returns the current grid
+         */
+        removeColumnDefinition(index: number): Grid;
+        /**
+         * Remove a row definition at specified index
+         * @param index defines the index of the row to remove
+         * @returns the current grid
+         */
+        removeRowDefinition(index: number): Grid;
         /**
          * Adds a new control to the current grid
          * @param control defines the control to add
@@ -1900,7 +1935,13 @@ declare module BABYLON.GUI {
          * @param column defines the column where to add the control (0 by default)
          * @returns the current grid
          */
-        addControl(control: Nullable<Control>, row?: number, column?: number): Grid;
+        addControl(control: Control, row?: number, column?: number): Grid;
+        /**
+         * Removes a control from the current container
+         * @param control defines the control to remove
+         * @returns the current container
+         */
+        removeControl(control: Control): Container;
         /**
          * Creates a new Grid
          * @param name defines control name
