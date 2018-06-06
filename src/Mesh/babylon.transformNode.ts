@@ -25,6 +25,18 @@ module BABYLON {
         protected _isDirty = false;
         private _transformToBoneReferal: Nullable<TransformNode>;
 
+        /**
+        * Set the billboard mode. Default is 0.
+        *
+        * | Value | Type | Description |
+        * | --- | --- | --- |
+        * | 0 | BILLBOARDMODE_NONE |  |
+        * | 1 | BILLBOARDMODE_X |  |
+        * | 2 | BILLBOARDMODE_Y |  |
+        * | 4 | BILLBOARDMODE_Z |  |
+        * | 7 | BILLBOARDMODE_ALL |  |
+        *
+        */
         @serialize()
         public billboardMode = TransformNode.BILLBOARDMODE_NONE;
 
