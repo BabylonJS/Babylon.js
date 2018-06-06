@@ -304,6 +304,7 @@ var INSPECTOR;
             // Create popup
             var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
             if (!popup) {
+                alert("Please update your browser to open the Babylon.js inspector in an external view.");
                 return;
             }
             popup.document.title = "Babylon.js INSPECTOR";

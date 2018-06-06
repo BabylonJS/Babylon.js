@@ -92,7 +92,7 @@ module BABYLON.GUI {
          * @returns the child control if found
          */
         public getChildByName(name: string): Nullable<Control> {
-            for (var child of this._children) {
+            for (var child of this.children) {
                 if (child.name === name) {
                     return child;
                 }
@@ -108,7 +108,7 @@ module BABYLON.GUI {
          * @returns the child control if found
          */        
         public getChildByType(name: string, type: string): Nullable<Control> {
-            for (var child of this._children) {
+            for (var child of this.children) {
                 if (child.typeName === type) {
                     return child;
                 }
@@ -123,7 +123,7 @@ module BABYLON.GUI {
          * @returns true if the control is in child list
          */
         public containsControl(control: Control): boolean {
-            return this._children.indexOf(control) !== -1;
+            return this.children.indexOf(control) !== -1;
         }
 
         /**
