@@ -1867,6 +1867,48 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
+     * Class used to create a 2D grid container
+     */
+    class Grid extends Container {
+        name: string | undefined;
+        private _rowDefinitions;
+        private _columnDefinitions;
+        private _cells;
+        /**
+         * Adds a new row to the grid
+         * @param height defines the height of the row (either in pixel or a value between 0 and 1)
+         * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+         * @returns the current grid
+         */
+        addRowDefinition(height: number, isPixel?: boolean): Grid;
+        /**
+         * Adds a new row to the grid
+         * @param weight defines the weight of the column (either in pixel or a value between 0 and 1)
+         * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+         * @returns the current grid
+         */
+        addColumnDefinition(weight: number, isPixel?: boolean): Grid;
+        /**
+         * Adds a new control to the current grid
+         * @param control defines the control to add
+         * @param row defines the row where to add the control (0 by default)
+         * @param column defines the column where to add the control (0 by default)
+         * @returns the current grid
+         */
+        addControl(control: Nullable<Control>, row?: number, column?: number): Grid;
+        /**
+         * Creates a new Grid
+         * @param name defines control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
      * Class used to manage 3D user interface
      * @see http://doc.babylonjs.com/how_to/gui3d
      */

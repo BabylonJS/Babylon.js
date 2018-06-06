@@ -6477,6 +6477,175 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a 2D grid container
+         */
+        var Grid = /** @class */ (function (_super) {
+            __extends(Grid, _super);
+            /**
+             * Creates a new Grid
+             * @param name defines control name
+             */
+            function Grid(name) {
+                var _this = _super.call(this, name) || this;
+                _this.name = name;
+                _this._rowDefinitions = new Array();
+                _this._columnDefinitions = new Array();
+                _this._cells = {};
+                return _this;
+            }
+            /**
+             * Adds a new row to the grid
+             * @param height defines the height of the row (either in pixel or a value between 0 and 1)
+             * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+             * @returns the current grid
+             */
+            Grid.prototype.addRowDefinition = function (height, isPixel) {
+                if (isPixel === void 0) { isPixel = false; }
+                this._rowDefinitions.push(new GUI.ValueAndUnit(height, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE));
+                return this;
+            };
+            /**
+             * Adds a new row to the grid
+             * @param weight defines the weight of the column (either in pixel or a value between 0 and 1)
+             * @param isPixel defines if the weight is expressed in pixel (or in percentage)
+             * @returns the current grid
+             */
+            Grid.prototype.addColumnDefinition = function (weight, isPixel) {
+                if (isPixel === void 0) { isPixel = false; }
+                this._columnDefinitions.push(new GUI.ValueAndUnit(weight, isPixel ? GUI.ValueAndUnit.UNITMODE_PIXEL : GUI.ValueAndUnit.UNITMODE_PERCENTAGE));
+                return this;
+            };
+            /**
+             * Adds a new control to the current grid
+             * @param control defines the control to add
+             * @param row defines the row where to add the control (0 by default)
+             * @param column defines the column where to add the control (0 by default)
+             * @returns the current grid
+             */
+            Grid.prototype.addControl = function (control, row, column) {
+                if (row === void 0) { row = 0; }
+                if (column === void 0) { column = 0; }
+                if (this._rowDefinitions.length === 0) {
+                    // Add default row definition
+                    this.addRowDefinition(1, false);
+                }
+                if (this._columnDefinitions.length === 0) {
+                    // Add default column definition
+                    this.addColumnDefinition(1, false);
+                }
+                var x = Math.min(row, this._rowDefinitions.length - 1);
+                var y = Math.min(column, this._columnDefinitions.length - 1);
+                var key = x + ":" + y;
+                var goodContainer = this._cells[key];
+                if (!goodContainer) {
+                    goodContainer = new GUI.Container(key);
+                    this._cells[key] = goodContainer;
+                    goodContainer.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                    goodContainer.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                    _super.prototype.addControl.call(this, goodContainer);
+                }
+                goodContainer.addControl(control);
+                return this;
+            };
+            Grid.prototype._getTypeName = function () {
+                return "Grid";
+            };
+            Grid.prototype._additionalProcessing = function (parentMeasure, context) {
+                var widths = [];
+                var heights = [];
+                var lefts = [];
+                var tops = [];
+                var availableWidth = this._currentMeasure.width;
+                var globalWidthPercentage = 0;
+                var availableHeight = this._currentMeasure.height;
+                var globalHeightPercentage = 0;
+                // Heights
+                var index = 0;
+                for (var _i = 0, _a = this._rowDefinitions; _i < _a.length; _i++) {
+                    var value = _a[_i];
+                    if (value.isPixel) {
+                        var height = value.getValue(this._host);
+                        availableHeight -= height;
+                        heights[index] = height;
+                    }
+                    else {
+                        globalHeightPercentage += value.internalValue;
+                    }
+                    index++;
+                }
+                var top = 0;
+                index = 0;
+                for (var _b = 0, _c = this._rowDefinitions; _b < _c.length; _b++) {
+                    var value = _c[_b];
+                    tops.push(top);
+                    if (!value.isPixel) {
+                        var height = (value.internalValue / globalHeightPercentage) * availableHeight;
+                        top += height;
+                        heights[index] = height;
+                    }
+                    else {
+                        top += value.getValue(this._host);
+                    }
+                    index++;
+                }
+                // Widths
+                index = 0;
+                for (var _d = 0, _e = this._columnDefinitions; _d < _e.length; _d++) {
+                    var value = _e[_d];
+                    if (value.isPixel) {
+                        var width = value.getValue(this._host);
+                        availableWidth -= width;
+                        widths[index] = width;
+                    }
+                    else {
+                        globalWidthPercentage += value.internalValue;
+                    }
+                    index++;
+                }
+                var left = 0;
+                index = 0;
+                for (var _f = 0, _g = this._columnDefinitions; _f < _g.length; _f++) {
+                    var value = _g[_f];
+                    lefts.push(left);
+                    if (!value.isPixel) {
+                        var width = (value.internalValue / globalWidthPercentage) * availableWidth;
+                        left += width;
+                        widths[index] = width;
+                    }
+                    else {
+                        left += value.getValue(this._host);
+                    }
+                    index++;
+                }
+                // Setting child sizes
+                for (var key in this._cells) {
+                    if (!this._cells.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    var split = key.split(":");
+                    var x = parseInt(split[0]);
+                    var y = parseInt(split[1]);
+                    var cell = this._cells[key];
+                    cell.left = lefts[y] + "px";
+                    cell.top = tops[x] + "px";
+                    cell.width = widths[y] + "px";
+                    cell.height = heights[x] + "px";
+                }
+                _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+            };
+            return Grid;
+        }(GUI.Container));
+        GUI.Grid = Grid;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
