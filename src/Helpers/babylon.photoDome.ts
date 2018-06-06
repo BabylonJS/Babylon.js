@@ -13,6 +13,13 @@ module BABYLON {
         protected _photoTexture: Texture;
 
         /**
+         * Gets the texture being displayed on the sphere
+         */
+        public get photoTexture(): Texture {
+            return this._photoTexture;
+        }        
+
+        /**
          * The skybox material
          */
         protected _material: BackgroundMaterial;
