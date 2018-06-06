@@ -7,18 +7,18 @@ module BABYLON {
         private _rotateSpheresParent:AbstractMesh;
         private _scaleBoxesParent:AbstractMesh;
         private _boundingDimensions = new BABYLON.Vector3(1,1,1);
+        private _renderObserver:Nullable<Observer<Scene>> = null;
 
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to drag on
          * @param color The color of the gizmo
          */
-        constructor(gizmoLayer:UtilityLayerRenderer, dragAxis:Vector3, color:Color3){
+        constructor(gizmoLayer:UtilityLayerRenderer, color:Color3){
             super(gizmoLayer);
 
             // Do not update the gizmo's scale so it has a fixed size to the object its attached to
-            this._updateScale = false
+            this._updateScale = false;
 
             // Create Material
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
@@ -55,39 +55,41 @@ module BABYLON {
             for(let i=0;i<12;i++){
                 let sphere = BABYLON.MeshBuilder.CreateSphere("", {diameter: 0.1}, gizmoLayer.utilityLayerScene);
                 sphere.rotationQuaternion = new Quaternion();
-                    sphere.material = coloredMaterial;
-                    var _dragBehavior = new PointerDragBehavior({});
-                    _dragBehavior.moveAttached = false;
-                    sphere.addBehavior(_dragBehavior);
-                    _dragBehavior.onDragObservable.add((event)=>{
-                        if(this.attachedMesh){
-                            var worldDragDirection = sphere.forward;
+                sphere.material = coloredMaterial;
 
-                            // project the world right on to the drag plane
-                            var toSub = event.dragPlaneNormal.scale(Vector3.Dot(event.dragPlaneNormal, worldDragDirection));
-                            var dragAxis = worldDragDirection.subtract(toSub).normalizeToNew();
+                // Drag behavior
+                var _dragBehavior = new PointerDragBehavior({});
+                _dragBehavior.moveAttached = false;
+                sphere.addBehavior(_dragBehavior);
+                _dragBehavior.onDragObservable.add((event)=>{
+                    if(this.attachedMesh){
+                        var worldDragDirection = sphere.forward;
 
-                            // project drag delta on to the resulting drag axis and rotate based on that
-                            var projectDist = Vector3.Dot(dragAxis, event.delta);
+                        // Project the world right on to the drag plane
+                        var toSub = event.dragPlaneNormal.scale(Vector3.Dot(event.dragPlaneNormal, worldDragDirection));
+                        var dragAxis = worldDragDirection.subtract(toSub).normalizeToNew();
 
-                            // Rotate based on axis
-                            if(i>=8){
-                                this.attachedMesh.rotation.z -= projectDist;
-                            }else if(i>=4){
-                                this.attachedMesh.rotation.y -= projectDist;
-                            }else{
-                                this.attachedMesh.rotation.x -= projectDist;
-                            }
+                        // project drag delta on to the resulting drag axis and rotate based on that
+                        var projectDist = Vector3.Dot(dragAxis, event.delta);
+
+                        // Rotate based on axis
+                        if(i>=8){
+                            this.attachedMesh.rotation.z -= projectDist;
+                        }else if(i>=4){
+                            this.attachedMesh.rotation.y -= projectDist;
+                        }else{
+                            this.attachedMesh.rotation.x -= projectDist;
                         }
-                    });
+                    }
+                });
 
-                    // Selection/deselection
-                    _dragBehavior.onDragStartObservable.add(()=>{
-                        this._selectNode(sphere)
-                    })
-                    _dragBehavior.onDragEndObservable.add(()=>{
-                        this._selectNode(null)
-                    })
+                // Selection/deselection
+                _dragBehavior.onDragStartObservable.add(()=>{
+                    this._selectNode(sphere)
+                })
+                _dragBehavior.onDragEndObservable.add(()=>{
+                    this._selectNode(null)
+                })
 
                 this._rotateSpheresParent.addChild(sphere);
             }
@@ -109,17 +111,17 @@ module BABYLON {
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event)=>{
                             if(this.attachedMesh){
-                                // current boudning box dimensions
+                                // Current boudning box dimensions
                                 var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
                                 var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
                                 
-                                // get the change in bounding box size/2 and add this to the mesh's position to offset from scaling with center pivot point
+                                // Get the change in bounding box size/2 and add this to the mesh's position to offset from scaling with center pivot point
                                 var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
                                 var scaleRatio = deltaScale.divide(this.attachedMesh.scaling).scaleInPlace(0.5);
                                 var moveDirection = boundBoxDimensions.multiply(scaleRatio).multiplyInPlace(dragAxis);
                                 var worldMoveDirection = Vector3.TransformCoordinates(moveDirection, this.attachedMesh.getWorldMatrix().getRotationMatrix());
                                 
-                                // update scale and position
+                                // Update scale and position
                                 this.attachedMesh.scaling.addInPlace(deltaScale);
                                 this.attachedMesh.position.addInPlace(worldMoveDirection);
                             }
@@ -140,7 +142,7 @@ module BABYLON {
             this._rootMesh.addChild(this._scaleBoxesParent);
 
             // Update bounding box positions
-            this.gizmoLayer.originalScene.onBeforeRenderObservable.add(()=>{
+            this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(()=>{
                 if(this.attachedMesh){
                     var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
                     var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
@@ -208,6 +210,10 @@ module BABYLON {
          * Disposes of the gizmo
          */
         public dispose(){
+            this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
+            this._lineBoundingBox.dispose();
+            this._rotateSpheresParent.dispose();
+            this._scaleBoxesParent.dispose();
             super.dispose();
         } 
     }
