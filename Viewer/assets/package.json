@@ -1,0 +1,31 @@
+{
+    "author": {
+        "name": "Raanan Weber"
+    },
+    "name": "babylonjs-viewer-assets",
+    "description": "Compiled resources for the Babylon viewer.",
+    "version": "3.3.0-alpha.3",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "babylon.viewer.assets.js",
+    "files": [
+        "babylon.viewer.assets.js",
+        "babylon.viewer.assets.module.d.ts",
+        "readme.md",
+        "package.json"
+    ],
+    "typings": "babylon.viewer.assets.module.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "viewer"
+    ],
+    "license": "Apache-2.0",
+    "engines": {
+        "node": "*"
+    }
+}
