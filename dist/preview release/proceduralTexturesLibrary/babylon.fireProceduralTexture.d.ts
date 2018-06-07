@@ -17,5 +17,18 @@ declare module BABYLON {
         time: number;
         speed: Vector2;
         alphaThreshold: number;
+        /**
+         * Serializes this fire procedural texture
+         * @returns a serialized fire procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Fire Procedural Texture from parsed fire procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing fire procedural texture information
+         * @returns a parsed Fire Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture;
     }
 }

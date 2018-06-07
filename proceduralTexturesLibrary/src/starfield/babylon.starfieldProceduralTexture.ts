@@ -33,6 +33,7 @@ module BABYLON {
             this.setFloat("saturation", this._saturation); 
         }
 
+        @serialize()
         public get time(): number {
             return this._time;
         }
@@ -42,6 +43,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }      
         
+        @serialize()
         public get alpha(): number {
             return this._alpha;
         }
@@ -51,6 +53,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }    
 
+        @serialize()
         public get beta(): number {
             return this._beta;
         }
@@ -60,6 +63,7 @@ module BABYLON {
             this.updateShaderUniforms();
         } 
 
+        @serialize()
         public get formuparam(): number {
             return this._formuparam;
         }
@@ -69,6 +73,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get stepsize(): number {
             return this._stepsize;
         }
@@ -78,6 +83,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get zoom(): number {
             return this._zoom;
         }
@@ -87,6 +93,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get tile(): number {
             return this._tile;
         }
@@ -96,6 +103,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get brightness(): number {
             return this._brightness;
         }
@@ -105,6 +113,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get darkmatter(): number {
             return this._darkmatter;
         }
@@ -114,6 +123,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get distfading(): number {
             return this._distfading;
         }
@@ -123,6 +133,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get saturation(): number {
             return this._saturation;
         }
@@ -130,6 +141,30 @@ module BABYLON {
         public set saturation(value: number) {
             this._saturation = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this starfield procedural texture
+         * @returns a serialized starfield procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.StarfieldProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Starfield Procedural Texture from parsed startfield procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing startfield procedural texture information
+         * @returns a parsed Starfield Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): StarfieldProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new StarfieldProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }
 }

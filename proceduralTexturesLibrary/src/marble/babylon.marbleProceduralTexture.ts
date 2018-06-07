@@ -19,6 +19,7 @@ module BABYLON {
             this.setColor3("jointColor", this._jointColor);
         }
 
+        @serialize()
         public get numberOfTilesHeight(): number {
             return this._numberOfTilesHeight;
         }
@@ -28,6 +29,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        @serialize()
         public get amplitude(): number {
             return this._amplitude;
         }
@@ -37,6 +39,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get numberOfTilesWidth(): number {
             return this._numberOfTilesWidth;
         }
@@ -46,6 +49,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get jointColor(): Color3 {
             return this._jointColor;
         }
@@ -53,6 +57,30 @@ module BABYLON {
         public set jointColor(value: Color3) {
             this._jointColor = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this marble procedural texture
+         * @returns a serialized marble procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.MarbleProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Marble Procedural Texture from parsed marble procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing marble procedural texture information
+         * @returns a parsed Marble Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): MarbleProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new MarbleProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }
 }

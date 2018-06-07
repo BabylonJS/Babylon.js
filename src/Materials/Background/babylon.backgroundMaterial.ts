@@ -1076,7 +1076,9 @@
                 MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
                 // image processing
-                this._imageProcessingConfiguration.bind(this._activeEffect);
+                if (this._imageProcessingConfiguration) {
+                    this._imageProcessingConfiguration.bind(this._activeEffect);
+                }
             }
 
             this._uniformBuffer.update();
