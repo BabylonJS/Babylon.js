@@ -83,6 +83,8 @@ if (BABYLON.Engine.isSupported()) {
     });
 
     var sceneLoaded = function (sceneFile, babylonScene) {
+        engine.clearInternalTexturesCache();
+
         // Clear dropdown that contains animation names
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
