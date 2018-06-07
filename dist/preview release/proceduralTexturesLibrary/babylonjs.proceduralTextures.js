@@ -354,6 +354,7 @@ BABYLON.Effect.ShadersStore['roadProceduralTexturePixelShader'] = "precision hig
 
 
 
+
 var BABYLON;
 (function (BABYLON) {
     var BrickProceduralTexture = /** @class */ (function (_super) {
@@ -417,6 +418,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this brick procedural texture
+         * @returns a serialized brick procedural texture object
+         */
+        BrickProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.BrickProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Brick Procedural Texture from parsed brick procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing brick procedural texture information
+         * @returns a parsed Brick Procedural Texture
+         */
+        BrickProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], BrickProceduralTexture.prototype, "numberOfBricksHeight", null);
+        __decorate([
+            BABYLON.serialize()
+        ], BrickProceduralTexture.prototype, "numberOfBricksWidth", null);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], BrickProceduralTexture.prototype, "jointColor", null);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], BrickProceduralTexture.prototype, "brickColor", null);
         return BrickProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.BrickProceduralTexture = BrickProceduralTexture;

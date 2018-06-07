@@ -1949,6 +1949,8 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /** Releases associated resources */
+        dispose(): void;
     }
 }
 
@@ -2542,5 +2544,21 @@ declare module BABYLON.GUI {
         radius: float;
         protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         private _sphericalMapping(source);
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a cylinder
+     */
+    class CylinderPanel extends VolumeBasedPanel {
+        private _radius;
+        /**
+         * Gets or sets the radius of the cylinder where to project controls (5 by default)
+         */
+        radius: float;
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+        private _cylindricalMapping(source);
     }
 }

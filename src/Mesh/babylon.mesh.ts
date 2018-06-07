@@ -2621,7 +2621,11 @@
                             instance.animations.push(Animation.Parse(parsedAnimation));
                         }
                         Node.ParseAnimationRanges(instance, parsedMesh, scene);
-                    }
+
+                        if (parsedMesh.autoAnimate) {
+                            scene.beginAnimation(instance, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
+                        }                            
+                }
                 }
             }
 
