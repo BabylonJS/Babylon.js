@@ -25,6 +25,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsTexture()
         public get baseTexture(): Texture {
             return this._baseTexture;
         }
@@ -32,6 +33,30 @@ module BABYLON {
         public set baseTexture(texture: Texture) {
             this._baseTexture = texture;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this normal map procedural texture
+         * @returns a serialized normal map procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.NormalMapProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Normal Map Procedural Texture from parsed normal map procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing normal map procedural texture information
+         * @returns a parsed Normal Map Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): NormalMapProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }
 }

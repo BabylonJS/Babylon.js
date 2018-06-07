@@ -79,6 +79,7 @@ module BABYLON {
             ];
         }
 
+        @serializeAsColor3()
         public get fireColors(): Color3[] {
             return this._fireColors;
         }
@@ -88,6 +89,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get time(): number {
             return this._time;
         }
@@ -97,6 +99,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsVector2()
         public get speed(): Vector2 {
             return this._speed;
         }
@@ -106,6 +109,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get alphaThreshold(): number {
             return this._alphaThreshold;
         }
@@ -113,6 +117,30 @@ module BABYLON {
         public set alphaThreshold(value: number) {
             this._alphaThreshold = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this fire procedural texture
+         * @returns a serialized fire procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.FireProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Fire Procedural Texture from parsed fire procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing fire procedural texture information
+         * @returns a parsed Fire Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }
 }
