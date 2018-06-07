@@ -12,13 +12,11 @@ module BABYLON {
 
         private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-        public onGlobalPropertyChange: Array<Function>;
+        public onPropertyChangedObservable = new Observable<{ object: any, property: string, value: any, initialValue: any }>();
 
         constructor(scene: Scene) {
             this._scene = scene;
             // load inspector using require, if it doesn't exist on the global namespace.
-
-            this.onGlobalPropertyChange = new Array<Function>();
         }
 
         /** Creates the inspector window. */
@@ -115,12 +113,6 @@ module BABYLON {
          */
         public getActiveTab(): number {
             return this._inspector ? this._inspector.getActiveTabIndex() : -1;
-        }
-
-        public onGlobalPropertyChangeCallback(result: {}) {
-            this.onGlobalPropertyChange.forEach((callback) => {
-                callback(result);
-            });
         }
     }
 }
