@@ -24,6 +24,7 @@ module BABYLON {
             this.setColor3("groundColor", this._groundColor);
         }
 
+        @serializeAsColor3()
         public get grassColors(): Color3[] {
             return this._grassColors;
         }
@@ -33,6 +34,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsColor3()
         public get groundColor(): Color3 {
             return this._groundColor;
         }
@@ -40,6 +42,30 @@ module BABYLON {
         public set groundColor(value: Color3) {
             this._groundColor = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this grass procedural texture
+         * @returns a serialized grass procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.GrassProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Grass Procedural Texture from parsed grass procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing grass procedural texture information
+         * @returns a parsed Grass Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): GrassProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }
 }
