@@ -15,6 +15,7 @@ module BABYLON {
             this.setColor3("woodColor", this._woodColor);
         }
 
+        @serialize()
         public get ampScale(): number {
             return this._ampScale;
         }
@@ -24,6 +25,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsColor3()
         public get woodColor(): Color3 {
             return this._woodColor;
         }
@@ -31,6 +33,30 @@ module BABYLON {
         public set woodColor(value: Color3) {
             this._woodColor = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this wood procedural texture
+         * @returns a serialized wood procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.WoodProceduralTexture";
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Wood Procedural Texture from parsed wood procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing wood procedural texture information
+         * @returns a parsed Wood Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): WoodProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new WoodProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            return texture;
         }
     }
 }
