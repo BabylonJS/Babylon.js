@@ -47,7 +47,6 @@ module INSPECTOR {
          * Returns true if the user browser is edge.
          */
         public static IsBrowserEdge(): boolean {
-            //Detect if we are running on a faulty buggy OS.
             var regexp = /Edge/
             return regexp.test(navigator.userAgent);
         }
@@ -55,7 +54,6 @@ module INSPECTOR {
          * Returns true if the user browser is IE.
          */
         public static IsBrowserIE(): boolean {
-            //Detect if we are running on a faulty buggy OS.
             var regexp = /Trident.*rv\:11\./
             return regexp.test(navigator.userAgent);
         }
