@@ -2095,6 +2095,13 @@
             return new Vector3(0.0, 1.0, 0.0);
         }
         /**
+         * Returns a new Vector3 set to (0.0, -1.0, 0.0)
+         * @returns a new down Vector3
+         */
+        public static Down(): Vector3 {
+            return new Vector3(0.0, -1.0, 0.0);
+        }
+        /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
          * @returns a new forward Vector3
          */
