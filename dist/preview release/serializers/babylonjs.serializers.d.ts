@@ -623,14 +623,14 @@ declare module BABYLON.GLTF2 {
         /**
          * Builds a texture from base64 string
          * @param base64Texture base64 texture string
-         * @param textureName Name to use for the texture
+         * @param baseTextureName Name to use for the texture
          * @param mimeType image mime type for the texture
          * @param images array of images
          * @param textures array of textures
          * @param imageData map of image data
          * @returns glTF texture info, or null if the texture format is not supported
          */
-        private static _GetTextureInfoFromBase64(base64Texture, textureName, mimeType, images, textures, texCoordIndex, samplerIndex, imageData);
+        private static _GetTextureInfoFromBase64(base64Texture, baseTextureName, mimeType, images, textures, texCoordIndex, samplerIndex, imageData);
     }
 }
 

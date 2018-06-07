@@ -308,7 +308,6 @@ var INSPECTOR;
                 return;
             }
             popup.document.title = "Babylon.js INSPECTOR";
-            popup.document.body.innerHTML = "Coucou!";
             // Get the inspector style      
             var styles = Inspector.DOCUMENT.querySelectorAll('style');
             for (var s = 0; s < styles.length; s++) {
@@ -1363,9 +1362,10 @@ var INSPECTOR;
      * A property is a link between a data (string) and an object.
      */
     var Property = /** @class */ (function () {
-        function Property(prop, obj) {
+        function Property(prop, obj, parentObj) {
             this._property = prop;
             this._obj = obj;
+            this._parentObj = parentObj || null;
         }
         Object.defineProperty(Property.prototype, "name", {
             get: function () {
@@ -1379,6 +1379,45 @@ var INSPECTOR;
                 return this._obj[this._property];
             },
             set: function (newValue) {
+                if (newValue != undefined && this._obj[this._property] != undefined) {
+                    if (this._obj instanceof BABYLON.Scene) {
+                        this._obj.debugLayer.onGlobalPropertyChangeCallback({
+                            object: this._obj,
+                            property: this._property,
+                            value: newValue,
+                            initialValue: this._obj[this._property]
+                        });
+                    }
+                    else {
+                        if (this._parentObj != null) {
+                            // Object that have "children" properties : Color, Vector, imageProcessingConfiguration
+                            if (this._parentObj instanceof BABYLON.Scene) {
+                                this._parentObj.debugLayer.onGlobalPropertyChangeCallback({
+                                    object: this._parentObj,
+                                    property: this._property,
+                                    value: newValue,
+                                    initialValue: this._obj[this._property]
+                                });
+                            }
+                            else {
+                                this._parentObj.getScene().debugLayer.onGlobalPropertyChangeCallback({
+                                    object: this._parentObj,
+                                    property: this._property,
+                                    value: newValue,
+                                    initialValue: this._obj[this._property]
+                                });
+                            }
+                        }
+                        else {
+                            this._obj.getScene().debugLayer.onGlobalPropertyChangeCallback({
+                                object: this._obj,
+                                property: this._property,
+                                value: newValue,
+                                initialValue: this._obj[this._property]
+                            });
+                        }
+                    }
+                }
                 this._obj[this._property] = newValue;
             },
             enumerable: true,
@@ -1516,8 +1555,7 @@ var INSPECTOR;
                 e.preventDefault();
                 this.validateInput(this._input.value);
             }
-            else if (e.keyCode == 27) {
-                // Esc : remove input
+            else if (e.keyCode == 27) { // Esc : remove input
                 this.update();
             }
         };
@@ -1826,20 +1864,20 @@ var INSPECTOR;
                     }
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
-                        var infos = new INSPECTOR.Property(prop, this._property.value);
+                        var infos = new INSPECTOR.Property(prop, this._property.value, this._property.obj);
                         var child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.push(child);
                     }
                     //Add the Hexa converter
                     if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0) {
                         var hexLineInfos = [];
-                        var hexLinePropCheck = new INSPECTOR.Property("hexEnable", this._property.value);
+                        var hexLinePropCheck = new INSPECTOR.Property("hexEnable", this._property.value, this._property.obj);
                         hexLinePropCheck.value = false;
                         var hexLineCheck = new PropertyLine(hexLinePropCheck, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.unshift(hexLineCheck);
                         for (var _c = 0, propToDisplay_2 = propToDisplay; _c < propToDisplay_2.length; _c++) {
                             var prop = propToDisplay_2[_c];
-                            var infos = new INSPECTOR.Property(prop, this._property.value);
+                            var infos = new INSPECTOR.Property(prop, this._property.value, this._property.obj);
                             var valHex = ((infos.value * 255) | 0).toString(16);
                             hexLineInfos.push(valHex);
                             if (valHex == "0") {
@@ -1849,7 +1887,7 @@ var INSPECTOR;
                         hexLineInfos.push("#");
                         hexLineInfos.reverse();
                         var hexLineString = hexLineInfos.join("");
-                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value);
+                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value, this._property.obj);
                         hexLineProp.value = hexLineString;
                         var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.unshift(hexLine);
@@ -2425,7 +2463,6 @@ var INSPECTOR;
          * Returns true if the user browser is edge.
          */
         Helpers.IsBrowserEdge = function () {
-            //Detect if we are running on a faulty buggy OS.
             var regexp = /Edge/;
             return regexp.test(navigator.userAgent);
         };
@@ -2433,7 +2470,6 @@ var INSPECTOR;
          * Returns true if the user browser is IE.
          */
         Helpers.IsBrowserIE = function () {
-            //Detect if we are running on a faulty buggy OS.
             var regexp = /Trident.*rv\:11\./;
             return regexp.test(navigator.userAgent);
         };
