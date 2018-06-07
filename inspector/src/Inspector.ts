@@ -376,7 +376,6 @@ module INSPECTOR {
                 return;
             }
             popup.document.title = "Babylon.js INSPECTOR";
-            popup.document.body.innerHTML = "Coucou!";
             // Get the inspector style      
             let styles = Inspector.DOCUMENT.querySelectorAll('style');
             for (let s = 0; s < styles.length; s++) {
