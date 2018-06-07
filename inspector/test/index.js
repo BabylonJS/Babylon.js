@@ -85,6 +85,12 @@ var Test = (function () {
         scene.createDefaultCameraOrLight(true);
         scene.activeCamera.attachControl(canvas);
         scene.debugLayer.show();
+        scene.debugLayer.onGlobalPropertyChange.push((result) => {
+            console.log(result.object);
+            console.log("Property : " + result.property);
+            console.log("New value : " + result.value);
+            console.log("Old value : " + result.initialValue);
+        });
 
         this.scene = scene;
     };

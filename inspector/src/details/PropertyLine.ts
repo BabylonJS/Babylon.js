@@ -144,8 +144,7 @@ module INSPECTOR {
             } else if (e.keyCode == 9) { // Tab
                 e.preventDefault();
                 this.validateInput(this._input.value);
-            } else if (e.keyCode == 27) {
-                // Esc : remove input
+            } else if (e.keyCode == 27) { // Esc : remove input
                 this.update();
             }
         }
@@ -454,19 +453,19 @@ module INSPECTOR {
                         propToDisplay.sort().reverse();
                     }
                     for (let prop of propToDisplay) {
-                        let infos = new Property(prop, this._property.value);
+                        let infos = new Property(prop, this._property.value, this._property.obj);
                         let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);                   
                         this._children.push(child);
                     }
                     //Add the Hexa converter
                     if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0){
                         let hexLineInfos = [];
-                        let hexLinePropCheck = new Property("hexEnable", this._property.value);
+                        let hexLinePropCheck = new Property("hexEnable", this._property.value, this._property.obj);
                         hexLinePropCheck.value = false;
                         let hexLineCheck = new PropertyLine(hexLinePropCheck, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.unshift(hexLineCheck);
                         for (let prop of propToDisplay) {
-                                let infos = new Property(prop, this._property.value);
+                                let infos = new Property(prop, this._property.value, this._property.obj);
                                 let  valHex = ((infos.value * 255)|0).toString(16);
                                 hexLineInfos.push(valHex);
                                 if(valHex == "0"){
@@ -477,7 +476,7 @@ module INSPECTOR {
                         hexLineInfos.reverse();
                         let hexLineString = hexLineInfos.join("");
                         
-                        let hexLineProp = new Property("hex", this._property.value);
+                        let hexLineProp = new Property("hex", this._property.value, this._property.obj);
                         hexLineProp.value = hexLineString;
                         let hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
                    
