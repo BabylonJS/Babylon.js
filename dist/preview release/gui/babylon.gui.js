@@ -8427,8 +8427,8 @@ var BABYLON;
                 configurable: true
             });
             VolumeBasedPanel.prototype._arrangeChildren = function () {
-                var cellWidth = 0;
-                var cellHeight = 0;
+                this._cellWidth = 0;
+                this._cellHeight = 0;
                 var rows = 0;
                 var columns = 0;
                 var controlCount = 0;
@@ -8444,11 +8444,11 @@ var BABYLON;
                     child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
                     var boundingBox = child.mesh.getBoundingInfo().boundingBox;
                     var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
-                    cellWidth = Math.max(cellWidth, extendSize.x * 2);
-                    cellHeight = Math.max(cellHeight, extendSize.y * 2);
+                    this._cellWidth = Math.max(this._cellWidth, extendSize.x * 2);
+                    this._cellHeight = Math.max(this._cellHeight, extendSize.y * 2);
                 }
-                cellWidth += this.margin * 2;
-                cellHeight += this.margin * 2;
+                this._cellWidth += this.margin * 2;
+                this._cellHeight += this.margin * 2;
                 // Arrange
                 if (this._rowThenColum) {
                     columns = this._columns;
@@ -8458,14 +8458,14 @@ var BABYLON;
                     rows = this._rows;
                     columns = Math.ceil(controlCount / this._rows);
                 }
-                var startOffsetX = (columns * 0.5) * cellWidth;
-                var startOffsetY = (rows * 0.5) * cellHeight;
+                var startOffsetX = (columns * 0.5) * this._cellWidth;
+                var startOffsetY = (rows * 0.5) * this._cellHeight;
                 var nodeGrid = [];
                 var cellCounter = 0;
                 if (this._rowThenColum) {
                     for (var r = 0; r < rows; r++) {
                         for (var c = 0; c < columns; c++) {
-                            nodeGrid.push(new BABYLON.Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, (r * cellHeight) - startOffsetY + cellHeight / 2, 0));
+                            nodeGrid.push(new BABYLON.Vector3((c * this._cellWidth) - startOffsetX + this._cellWidth / 2, (r * this._cellHeight) - startOffsetY + this._cellHeight / 2, 0));
                             cellCounter++;
                             if (cellCounter > controlCount) {
                                 break;
@@ -8476,7 +8476,7 @@ var BABYLON;
                 else {
                     for (var c = 0; c < columns; c++) {
                         for (var r = 0; r < rows; r++) {
-                            nodeGrid.push(new BABYLON.Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, (r * cellHeight) - startOffsetY + cellHeight / 2, 0));
+                            nodeGrid.push(new BABYLON.Vector3((c * this._cellWidth) - startOffsetX + this._cellWidth / 2, (r * this._cellHeight) - startOffsetY + this._cellHeight / 2, 0));
                             cellCounter++;
                             if (cellCounter > controlCount) {
                                 break;
@@ -8493,6 +8493,10 @@ var BABYLON;
                     this._mapGridNode(child, nodeGrid[cellCounter]);
                     cellCounter++;
                 }
+                this._finalProcessing();
+            };
+            /** Child classes can implement this function to provide additional processing */
+            VolumeBasedPanel.prototype._finalProcessing = function () {
             };
             return VolumeBasedPanel;
         }(GUI.Container3D));
@@ -8605,6 +8609,118 @@ var BABYLON;
             return PlanePanel;
         }(GUI.VolumeBasedPanel));
         GUI.PlanePanel = PlanePanel;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a container panel where items get randomized planar mapping
+         */
+        var ScatterPanel = /** @class */ (function (_super) {
+            __extends(ScatterPanel, _super);
+            function ScatterPanel() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this._iteration = 100.0;
+                return _this;
+            }
+            Object.defineProperty(ScatterPanel.prototype, "iteration", {
+                /**
+                 * Gets or sets the number of iteration to use to scatter the controls (100 by default)
+                 */
+                get: function () {
+                    return this._iteration;
+                },
+                set: function (value) {
+                    var _this = this;
+                    if (this._iteration === value) {
+                        return;
+                    }
+                    this._iteration = value;
+                    BABYLON.Tools.SetImmediate(function () {
+                        _this._arrangeChildren();
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ScatterPanel.prototype._mapGridNode = function (control, nodePosition) {
+                var mesh = control.mesh;
+                var newPos = this._scatterMapping(nodePosition);
+                if (!mesh) {
+                    return;
+                }
+                switch (this.orientation) {
+                    case GUI.Container3D.FACEORIGIN_ORIENTATION:
+                    case GUI.Container3D.FACEFORWARD_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        break;
+                    case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
+                    case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        break;
+                }
+                control.position = newPos;
+            };
+            ScatterPanel.prototype._scatterMapping = function (source) {
+                source.x = (1.0 - Math.random() * 2.0) * this._cellWidth;
+                source.y = (1.0 - Math.random() * 2.0) * this._cellHeight;
+                return source;
+            };
+            ScatterPanel.prototype._finalProcessing = function () {
+                var meshes = [];
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (!child.mesh) {
+                        continue;
+                    }
+                    meshes.push(child.mesh);
+                }
+                for (var count = 0; count < this._iteration; count++) {
+                    meshes.sort(function (a, b) {
+                        var distance1 = a.position.lengthSquared();
+                        var distance2 = b.position.lengthSquared();
+                        if (distance1 < distance2) {
+                            return 1;
+                        }
+                        else if (distance1 > distance2) {
+                            return -1;
+                        }
+                        return 0;
+                    });
+                    var radiusPaddingSquared = Math.pow(this.margin, 2.0);
+                    var cellSize = Math.max(this._cellWidth, this._cellHeight);
+                    var difference2D = BABYLON.Tmp.Vector2[0];
+                    var difference = BABYLON.Tmp.Vector3[0];
+                    for (var i = 0; i < meshes.length - 1; i++) {
+                        for (var j = i + 1; j < meshes.length; j++) {
+                            if (i != j) {
+                                meshes[j].position.subtractToRef(meshes[i].position, difference);
+                                // Ignore Z axis
+                                difference2D.x = difference.x;
+                                difference2D.y = difference.y;
+                                var combinedRadius = cellSize;
+                                var distance = difference2D.lengthSquared() - radiusPaddingSquared;
+                                var minSeparation = Math.min(distance, radiusPaddingSquared);
+                                distance -= minSeparation;
+                                if (distance < (Math.pow(combinedRadius, 2.0))) {
+                                    difference2D.normalize();
+                                    difference.scaleInPlace((combinedRadius - Math.sqrt(distance)) * 0.5);
+                                    meshes[j].position.addInPlace(difference);
+                                    meshes[i].position.subtractInPlace(difference);
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            return ScatterPanel;
+        }(GUI.VolumeBasedPanel));
+        GUI.ScatterPanel = ScatterPanel;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 

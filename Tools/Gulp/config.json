@@ -1755,6 +1755,7 @@
                     "../../gui/src/3D/controls/volumeBasedPanel.ts",
                     "../../gui/src/3D/controls/spherePanel.ts",
                     "../../gui/src/3D/controls/planePanel.ts",
+                    "../../gui/src/3D/controls/scatterPanel.ts",
                     "../../gui/src/3D/controls/cylinderPanel.ts"
                 ],
                 "shaderFiles": [
