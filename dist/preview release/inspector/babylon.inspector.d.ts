@@ -473,7 +473,7 @@ declare module INSPECTOR {
         private _obj;
         /** The obj parent  */
         private _parentObj;
-        constructor(prop: string, obj: any, parentObj?: PropertyLine);
+        constructor(prop: string, obj: any, parentObj?: any);
         readonly name: string;
         value: any;
         readonly type: string;
@@ -1034,7 +1034,7 @@ declare module INSPECTOR {
 declare function Split(elements: HTMLElement[], options: any): any;
 declare module INSPECTOR {
     class GLTFTab extends Tab {
-        private static _LoaderExtensionSettings;
+        private static _LoaderDefaults;
         private _inspector;
         private _actions;
         private _detailsPanel;
@@ -1045,9 +1045,12 @@ declare module INSPECTOR {
         constructor(tabbar: TabBar, inspector: Inspector);
         dispose(): void;
         private _addImport();
-        private _getLoaderExtensionOverridesAsync();
-        private _updateLoaderExtensionDetails(settings);
+        private static _EnumeratePublic(obj, callback);
+        private _getLoaderDefaultsAsync();
+        private _openDetailsPanel();
         private _closeDetailsPanel();
+        private _showLoaderDefaults(defaults);
+        private _showLoaderExtensionDefaults(defaults);
         private _addExport();
         private static _IsSkyBox(transformNode);
     }

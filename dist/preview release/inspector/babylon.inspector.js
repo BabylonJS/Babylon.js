@@ -4083,7 +4083,7 @@ var INSPECTOR;
     INSPECTOR.StatsTab = StatsTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
-/// <reference path="../../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
 /// <reference path="../../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts"/>
 /// <reference path="../../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
@@ -4098,7 +4098,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var INSPECTOR;
 (function (INSPECTOR) {
-    ;
     var GLTFTab = /** @class */ (function (_super) {
         __extends(GLTFTab, _super);
         function GLTFTab(tabbar, inspector) {
@@ -4127,14 +4126,19 @@ var INSPECTOR;
         });
         /** @hidden */
         GLTFTab._Initialize = function () {
-            // Must register with OnPluginActivatedObservable as early as possible to
-            // override the default settings for each extension.
+            // Must register with OnPluginActivatedObservable as early as possible to override the loader defaults.
             BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (loader) {
-                if (loader.name === "gltf" && GLTFTab._LoaderExtensionSettings) {
+                if (loader.name === "gltf" && GLTFTab._LoaderDefaults) {
+                    var defaults_1 = GLTFTab._LoaderDefaults;
+                    for (var key in defaults_1) {
+                        if (key !== "extensions") {
+                            loader[key] = GLTFTab._LoaderDefaults[key];
+                        }
+                    }
                     loader.onExtensionLoadedObservable.add(function (extension) {
-                        var settings = GLTFTab._LoaderExtensionSettings[extension.name];
-                        for (var settingName in settings) {
-                            extension[settingName] = settings[settingName];
+                        var extensionDefaults = defaults_1.extensions[extension.name];
+                        for (var key in extensionDefaults) {
+                            extension[key] = extensionDefaults[key];
                         }
                     });
                 }
@@ -4147,69 +4151,83 @@ var INSPECTOR;
         };
         GLTFTab.prototype._addImport = function () {
             var _this = this;
-            var importActions = INSPECTOR.Helpers.CreateDiv(null, this._actions);
-            this._getLoaderExtensionOverridesAsync().then(function (loaderExtensionSettings) {
-                var title = INSPECTOR.Helpers.CreateDiv('gltf-title', importActions);
-                title.textContent = 'Import';
-                var extensionActions = INSPECTOR.Helpers.CreateDiv('gltf-actions', importActions);
-                var extensionsTitle = INSPECTOR.Helpers.CreateDiv('gltf-title', extensionActions);
+            var importTitle = INSPECTOR.Helpers.CreateDiv('gltf-title', this._actions);
+            importTitle.textContent = 'Import';
+            var importActions = INSPECTOR.Helpers.CreateDiv('gltf-actions', this._actions);
+            this._getLoaderDefaultsAsync().then(function (defaults) {
+                importTitle.addEventListener('click', function (event) {
+                    _this._showLoaderDefaults(defaults);
+                    event.stopPropagation();
+                });
+                importActions.addEventListener('click', function (event) {
+                    _this._showLoaderDefaults(defaults);
+                    event.stopPropagation();
+                });
+                var extensionsTitle = INSPECTOR.Helpers.CreateDiv('gltf-title', importActions);
                 extensionsTitle.textContent = "Extensions";
                 var _loop_1 = function (extensionName) {
-                    var settings = loaderExtensionSettings[extensionName];
-                    var extensionAction = INSPECTOR.Helpers.CreateDiv('gltf-action', extensionActions);
+                    var extensionDefaults = defaults.extensions[extensionName];
+                    var extensionAction = INSPECTOR.Helpers.CreateDiv('gltf-action', importActions);
                     extensionAction.addEventListener('click', function (event) {
-                        if (_this._updateLoaderExtensionDetails(settings)) {
+                        if (_this._showLoaderExtensionDefaults(extensionDefaults)) {
                             event.stopPropagation();
                         }
                     });
                     var checkbox = INSPECTOR.Helpers.CreateElement('span', 'gltf-checkbox', extensionAction);
-                    if (settings.enabled) {
+                    if (extensionDefaults.enabled) {
                         checkbox.classList.add('action', 'active');
                     }
                     checkbox.addEventListener('click', function () {
                         checkbox.classList.toggle('active');
-                        settings.enabled = checkbox.classList.contains('active');
+                        extensionDefaults.enabled = checkbox.classList.contains('active');
                     });
                     var label = INSPECTOR.Helpers.CreateElement('span', null, extensionAction);
                     label.textContent = extensionName;
                 };
-                for (var extensionName in loaderExtensionSettings) {
+                for (var extensionName in defaults.extensions) {
                     _loop_1(extensionName);
                 }
             });
         };
-        GLTFTab.prototype._getLoaderExtensionOverridesAsync = function () {
-            if (GLTFTab._LoaderExtensionSettings) {
-                return Promise.resolve(GLTFTab._LoaderExtensionSettings);
-            }
-            var loaderExtensionSettings = {};
-            var engine = new BABYLON.NullEngine();
-            var scene = new BABYLON.Scene(engine);
-            var loader = new BABYLON.GLTF2.GLTFLoader();
-            loader.onExtensionLoadedObservable.add(function (extension) {
-                loaderExtensionSettings[extension.name] = {};
-                var settings = loaderExtensionSettings[extension.name];
-                for (var _i = 0, _a = Object.keys(extension); _i < _a.length; _i++) {
-                    var key = _a[_i];
-                    if (key !== "name" && key[0] !== '_') {
-                        var value = extension[key];
-                        if (typeof value !== "object") {
-                            settings[key] = value;
-                        }
+        GLTFTab._EnumeratePublic = function (obj, callback) {
+            for (var key in obj) {
+                if (key !== "name" && key[0] !== '_') {
+                    var value = obj[key];
+                    var type = typeof value;
+                    if (type !== "object" && type !== "function" && type !== "undefined") {
+                        callback(key, value);
                     }
                 }
+            }
+        };
+        GLTFTab.prototype._getLoaderDefaultsAsync = function () {
+            if (GLTFTab._LoaderDefaults) {
+                return Promise.resolve(GLTFTab._LoaderDefaults);
+            }
+            var defaults = {
+                extensions: {}
+            };
+            var engine = new BABYLON.NullEngine();
+            var scene = new BABYLON.Scene(engine);
+            var loader = new BABYLON.GLTFFileLoader();
+            GLTFTab._EnumeratePublic(loader, function (key, value) {
+                defaults[key] = value;
             });
-            var data = { json: {}, bin: null };
-            return loader.importMeshAsync([], scene, data, "").then(function () {
+            loader.onExtensionLoadedObservable.add(function (extension) {
+                var extensionDefaults = {};
+                GLTFTab._EnumeratePublic(extension, function (key, value) {
+                    extensionDefaults[key] = value;
+                });
+                defaults.extensions[extension.name] = extensionDefaults;
+            });
+            var data = '{ "asset": { "version": "2.0" }, "scenes": [ { } ] }';
+            return loader.loadAsync(scene, data, "").then(function () {
                 scene.dispose();
                 engine.dispose();
-                return (GLTFTab._LoaderExtensionSettings = loaderExtensionSettings);
+                return (GLTFTab._LoaderDefaults = defaults);
             });
         };
-        GLTFTab.prototype._updateLoaderExtensionDetails = function (settings) {
-            if (Object.keys(settings).length === 1) {
-                return false;
-            }
+        GLTFTab.prototype._openDetailsPanel = function () {
             if (!this._detailsPanel) {
                 this._detailsPanel = new INSPECTOR.DetailPanel();
                 this._panel.appendChild(this._detailsPanel.toHtml());
@@ -4220,14 +4238,7 @@ var INSPECTOR;
                 });
             }
             this._detailsPanel.clean();
-            var details = new Array();
-            for (var key in settings) {
-                if (key !== "enabled") {
-                    details.push(new INSPECTOR.PropertyLine(new INSPECTOR.Property(key, settings)));
-                }
-            }
-            this._detailsPanel.details = details;
-            return true;
+            return this._detailsPanel;
         };
         GLTFTab.prototype._closeDetailsPanel = function () {
             if (this._detailsPanel) {
@@ -4240,11 +4251,35 @@ var INSPECTOR;
                 delete this._split;
             }
         };
+        GLTFTab.prototype._showLoaderDefaults = function (defaults) {
+            var detailsPanel = this._openDetailsPanel();
+            var details = new Array();
+            for (var key in defaults) {
+                if (key !== "extensions") {
+                    details.push(new INSPECTOR.PropertyLine(new INSPECTOR.Property(key, defaults, this._inspector.scene)));
+                }
+            }
+            detailsPanel.details = details;
+        };
+        GLTFTab.prototype._showLoaderExtensionDefaults = function (defaults) {
+            if (Object.keys(defaults).length === 1) {
+                return false;
+            }
+            var detailsPanel = this._openDetailsPanel();
+            var details = new Array();
+            for (var key in defaults) {
+                if (key !== "enabled") {
+                    details.push(new INSPECTOR.PropertyLine(new INSPECTOR.Property(key, defaults, this._inspector.scene)));
+                }
+            }
+            detailsPanel.details = details;
+            return true;
+        };
         GLTFTab.prototype._addExport = function () {
             var _this = this;
-            var exportActions = INSPECTOR.Helpers.CreateDiv(null, this._actions);
-            var title = INSPECTOR.Helpers.CreateDiv('gltf-title', exportActions);
-            title.textContent = 'Export';
+            var exportTitle = INSPECTOR.Helpers.CreateDiv('gltf-title', this._actions);
+            exportTitle.textContent = 'Export';
+            var exportActions = INSPECTOR.Helpers.CreateDiv('gltf-actions', this._actions);
             var name = INSPECTOR.Helpers.CreateInput('gltf-input', exportActions);
             name.placeholder = "File name...";
             var button = INSPECTOR.Helpers.CreateElement('button', 'gltf-button', exportActions);
@@ -4269,7 +4304,7 @@ var INSPECTOR;
             }
             return false;
         };
-        GLTFTab._LoaderExtensionSettings = null;
+        GLTFTab._LoaderDefaults = null;
         return GLTFTab;
     }(INSPECTOR.Tab));
     INSPECTOR.GLTFTab = GLTFTab;
