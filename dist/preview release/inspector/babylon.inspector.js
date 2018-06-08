@@ -17,7 +17,7 @@ var INSPECTOR;
                     //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
                     INSPECTOR.loadGUIProperties();
                 }, function () {
-                    console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file");
+                    console.warn('Error : loading "babylon.gui.js". Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file.');
                 });
             }
             else {
@@ -1381,7 +1381,7 @@ var INSPECTOR;
             set: function (newValue) {
                 if (newValue != undefined && this._obj[this._property] != undefined) {
                     if (this._obj instanceof BABYLON.Scene) {
-                        this._obj.debugLayer.onGlobalPropertyChangeCallback({
+                        this._obj.debugLayer.onPropertyChangedObservable.notifyObservers({
                             object: this._obj,
                             property: this._property,
                             value: newValue,
@@ -1392,7 +1392,7 @@ var INSPECTOR;
                         if (this._parentObj != null) {
                             // Object that have "children" properties : Color, Vector, imageProcessingConfiguration
                             if (this._parentObj instanceof BABYLON.Scene) {
-                                this._parentObj.debugLayer.onGlobalPropertyChangeCallback({
+                                this._parentObj.debugLayer.onPropertyChangedObservable.notifyObservers({
                                     object: this._parentObj,
                                     property: this._property,
                                     value: newValue,
@@ -1400,7 +1400,7 @@ var INSPECTOR;
                                 });
                             }
                             else {
-                                this._parentObj.getScene().debugLayer.onGlobalPropertyChangeCallback({
+                                this._parentObj.getScene().debugLayer.onPropertyChangedObservable.notifyObservers({
                                     object: this._parentObj,
                                     property: this._property,
                                     value: newValue,
@@ -1409,7 +1409,7 @@ var INSPECTOR;
                             }
                         }
                         else {
-                            this._obj.getScene().debugLayer.onGlobalPropertyChangeCallback({
+                            this._obj.getScene().debugLayer.onPropertyChangedObservable.notifyObservers({
                                 object: this._obj,
                                 property: this._property,
                                 value: newValue,
@@ -1703,11 +1703,9 @@ var INSPECTOR;
          * Dispose all viewer element (color, texture...)
          */
         PropertyLine.prototype.dispose = function () {
-            // console.log('delete properties', this.name);
             INSPECTOR.Scheduler.getInstance().remove(this);
             for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                 var child = _a[_i];
-                // console.log('delete properties', child.name);
                 INSPECTOR.Scheduler.getInstance().remove(child);
             }
             for (var _b = 0, _c = this._elements; _b < _c.length; _b++) {
@@ -2580,10 +2578,10 @@ var INSPECTOR;
                         style.textContent = elem;
                     });
                 }, undefined, undefined, undefined, function () {
-                    console.log("erreur");
+                    console.log('Error : LoadFile "glsl.min.js"');
                 });
             }, undefined, undefined, undefined, function () {
-                console.log("erreur");
+                console.log('Error : LoadFile "highlight.min.js"');
             });
         };
         Helpers.IsSystemName = function (name) {
@@ -3659,9 +3657,9 @@ var INSPECTOR;
         };
         ConsoleTab.prototype._message = function (type, message, caller) {
             var callerLine = INSPECTOR.Helpers.CreateDiv('caller', this._consolePanelContent);
-            callerLine.textContent = caller;
+            callerLine.textContent = caller.replace(' ', '\u00A0');
             var line = INSPECTOR.Helpers.CreateDiv(type, this._consolePanelContent);
-            line.textContent += message;
+            line.textContent = message.replace(' ', '\u00A0');
             this._consolePanelContent.scrollTop = this._consolePanelContent.scrollHeight;
         };
         ConsoleTab.prototype._addConsoleLog = function () {
