@@ -191,7 +191,7 @@
         var loadScriptsList = function () {
             var xhr = new XMLHttpRequest();
 
-            xhr.open('GET', 'examples/list.json', true);
+            xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
@@ -223,7 +223,7 @@
                                 example.id = ii;
 
                                 var exampleImg = document.createElement("img");
-                                exampleImg.src = scripts[i].samples[ii].icon.replace("icons", "http://doc.babylonjs.com/examples/icons");
+                                exampleImg.src = scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons");
                                 exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + scripts[i].samples[ii].PGID + "').click();");
 
                                 var exampleContent = document.createElement("div");
