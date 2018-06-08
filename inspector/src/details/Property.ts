@@ -28,7 +28,7 @@ module INSPECTOR {
         public set value(newValue: any) {
             if (newValue != undefined && this._obj[this._property] != undefined) {
                 if (this._obj instanceof BABYLON.Scene) {
-                    (<BABYLON.Scene>this._obj).debugLayer.onGlobalPropertyChangeCallback({
+                    (<BABYLON.Scene>this._obj).debugLayer.onPropertyChangedObservable.notifyObservers({
                         object: this._obj,
                         property: this._property,
                         value: newValue,
@@ -40,7 +40,7 @@ module INSPECTOR {
                         // Object that have "children" properties : Color, Vector, imageProcessingConfiguration
 
                         if (this._parentObj instanceof BABYLON.Scene) {
-                            (<BABYLON.Scene>this._parentObj).debugLayer.onGlobalPropertyChangeCallback({
+                            (<BABYLON.Scene>this._parentObj).debugLayer.onPropertyChangedObservable.notifyObservers({
                                 object: this._parentObj,
                                 property: this._property,
                                 value: newValue,
@@ -48,7 +48,7 @@ module INSPECTOR {
                             });
                         }
                         else {
-                            this._parentObj.getScene().debugLayer.onGlobalPropertyChangeCallback({
+                            this._parentObj.getScene().debugLayer.onPropertyChangedObservable.notifyObservers({
                                 object: this._parentObj,
                                 property: this._property,
                                 value: newValue,
@@ -57,7 +57,7 @@ module INSPECTOR {
                         }
                     }
                     else {
-                        this._obj.getScene().debugLayer.onGlobalPropertyChangeCallback({
+                        this._obj.getScene().debugLayer.onPropertyChangedObservable.notifyObservers({
                             object: this._obj,
                             property: this._property,
                             value: newValue,
