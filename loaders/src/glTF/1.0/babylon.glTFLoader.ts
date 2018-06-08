@@ -1562,28 +1562,11 @@ module BABYLON.GLTF1 {
             GLTFLoader.Extensions[extension.name] = extension;
         }
 
-        // #region Stubs for IGLTFLoader interface
-        public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
-        public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
-        public compileMaterials = false;
-        public useClipPlane = false;
-        public compileShadowGenerators = false;
-        public transparencyAsCoverage = false;
-        public _normalizeAnimationGroupsToBeginAtZero = true;
-        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
-
-        public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
-        public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
-        public readonly onMaterialLoadedObservable = new Observable<Material>();
-        public readonly onCameraLoadedObservable = new Observable<Camera>();
-        public readonly onCompleteObservable = new Observable<IGLTFLoader>();
-        public readonly onDisposeObservable = new Observable<IGLTFLoader>();
-        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
-
         public state: Nullable<GLTFLoaderState> = null;
 
-        public dispose(): void {}
-        // #endregion
+        public dispose(): void {
+            // do nothing
+        }
 
         private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
