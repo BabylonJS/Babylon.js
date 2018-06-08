@@ -46,12 +46,14 @@ module BABYLON.GLTF2.Extensions {
             this._loader._onReadyObservable.addOnce(() => {
                 for (let indexLOD = 0; indexLOD < this._loadNodePromises.length; indexLOD++) {
                     Promise.all(this._loadNodePromises[indexLOD]).then(() => {
+                        this._loader._parent._log(`Loaded node LOD ${indexLOD}`);
                         this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
                     });
                 }
 
                 for (let indexLOD = 0; indexLOD < this._loadMaterialPromises.length; indexLOD++) {
                     Promise.all(this._loadMaterialPromises[indexLOD]).then(() => {
+                        this._loader._parent._log(`Loaded material LOD ${indexLOD}`);
                         this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
                     });
                 }
@@ -75,6 +77,8 @@ module BABYLON.GLTF2.Extensions {
                 let firstPromise: Promise<void>;
 
                 const nodeLODs = this._getLODs(extensionContext, node, this._loader._gltf.nodes, extension.ids);
+                this._loader._parent._logOpen(`${extensionContext}`);
+
                 for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                     const nodeLOD = nodeLODs[indexLOD];
 
@@ -117,6 +121,7 @@ module BABYLON.GLTF2.Extensions {
                     this._loadNodePromises[indexLOD].push(promise);
                 }
 
+                this._loader._parent._logClose();
                 return firstPromise!;
             });
         }
@@ -131,6 +136,8 @@ module BABYLON.GLTF2.Extensions {
                 let firstPromise: Promise<void>;
 
                 const materialLODs = this._getLODs(extensionContext, material, this._loader._gltf.materials, extension.ids);
+                this._loader._parent._logOpen(`${extensionContext}`);
+
                 for (let indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
                     const materialLOD = materialLODs[indexLOD];
 
@@ -175,11 +182,18 @@ module BABYLON.GLTF2.Extensions {
                     this._loadMaterialPromises[indexLOD].push(promise);
                 }
 
+                this._loader._parent._logClose();
                 return firstPromise!;
             });
         }
 
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
+            if (this._loadingMaterialLOD || this._loadingNodeLOD) {
+                if (this._loader._parent.loggingEnabled) {
+                    this._loader._parent._log(`deferred`);
+                }
+            }
+
             // Defer the loading of uris if loading a material or node LOD.
             if (this._loadingMaterialLOD) {
                 const index = this._loadingMaterialLOD._index;
