@@ -30,7 +30,7 @@ module BABYLON.GLTF2.Extensions {
                     promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
                     promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
 
-                    this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+                    this._loader._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
                     babylonData = {
                         material: babylonMaterial,
