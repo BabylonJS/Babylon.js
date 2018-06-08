@@ -238,68 +238,12 @@ module BABYLON.GLTF2 {
          * @param babylonMaterial Babylon Material
          * @returns The Babylon alpha mode value
          */
-        public static _GetAlphaMode(babylonMaterial: Material): Nullable<MaterialAlphaMode> {
-            if (babylonMaterial instanceof StandardMaterial) {
-                const babylonStandardMaterial = babylonMaterial as StandardMaterial;
-                if ((babylonStandardMaterial.alpha !== 1.0) ||
-                    (babylonStandardMaterial.diffuseTexture != null && babylonStandardMaterial.diffuseTexture.hasAlpha) ||
-                    (babylonStandardMaterial.opacityTexture != null)) {
-                    return MaterialAlphaMode.BLEND;
-                }
-                else {
-                    return MaterialAlphaMode.OPAQUE;
-                }
+        public static _GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode {
+            if (babylonMaterial.needAlphaBlending()) {
+                return babylonMaterial.needAlphaTesting() ? MaterialAlphaMode.MASK : MaterialAlphaMode.BLEND;
             }
-            else if (babylonMaterial instanceof PBRMetallicRoughnessMaterial) {
-                const babylonPBRMetallicRoughness = babylonMaterial as PBRMetallicRoughnessMaterial;
 
-                switch (babylonPBRMetallicRoughness.transparencyMode) {
-                    case PBRMaterial.PBRMATERIAL_OPAQUE: {
-                        return MaterialAlphaMode.OPAQUE;
-                    }
-                    case PBRMaterial.PBRMATERIAL_ALPHABLEND: {
-                        return MaterialAlphaMode.BLEND;
-                    }
-                    case PBRMaterial.PBRMATERIAL_ALPHATEST: {
-                        return MaterialAlphaMode.MASK;
-                    }
-                    case PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND: {
-                        Tools.Warn(babylonMaterial.name + ": GLTF Exporter | Alpha test and blend mode not supported in glTF.  Alpha blend used instead.");
-                        return MaterialAlphaMode.BLEND;
-                    }
-                    default: {
-                        Tools.Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
-                        return null;
-                    }
-                }
-            }
-            else if (babylonMaterial instanceof PBRMaterial) {
-                const babylonPBRMaterial = babylonMaterial as PBRMaterial;
-
-                switch (babylonPBRMaterial.transparencyMode) {
-                    case PBRMaterial.PBRMATERIAL_OPAQUE: {
-                        return MaterialAlphaMode.OPAQUE;
-                    }
-                    case PBRMaterial.PBRMATERIAL_ALPHABLEND: {
-                        return MaterialAlphaMode.BLEND;
-                    }
-                    case PBRMaterial.PBRMATERIAL_ALPHATEST: {
-                        return MaterialAlphaMode.MASK;
-                    }
-                    case PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND: {
-                        Tools.Warn(babylonMaterial.name + ": GLTF Exporter | Alpha test and blend mode not supported in glTF.  Alpha blend used instead.");
-                        return MaterialAlphaMode.BLEND;
-                    }
-                    default: {
-                        Tools.Error("Unsupported alpha mode " + babylonPBRMaterial.transparencyMode);
-                        return null;
-                    }
-                }
-            }
-            else {
-                Tools.Error("Unsupported Babylon material type");
-                return null;
-            }
+            return MaterialAlphaMode.OPAQUE;
         }
 
         /**
@@ -382,7 +326,7 @@ module BABYLON.GLTF2 {
 
             glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
             if (alphaMode !== MaterialAlphaMode.OPAQUE) {
-                switch(alphaMode) {
+                switch (alphaMode) {
                     case MaterialAlphaMode.BLEND: {
                         glTFMaterial.alphaMode = GLTF2.MaterialAlphaMode.BLEND;
                         break;
@@ -419,22 +363,18 @@ module BABYLON.GLTF2 {
                     const scene = texture.getScene();
                     if (scene) {
                         const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
-                        
-                        if (proceduralTexture) {
-                            proceduralTexture.setTexture('textureSampler', texture as Texture);
-                            proceduralTexture.onLoadObservable.add(() => { resolve(proceduralTexture) });
-                        }
-                        else {
-                            reject(`Cannot create procedural texture for ${texture.name}!`);
-                        }
+
+                        proceduralTexture.setTexture('textureSampler', texture as Texture);
+                        proceduralTexture.onGenerated = () => {    
+                            resolve(proceduralTexture) 
+                        };
+
                     }
                     else {
                         reject(`Scene not available for texture ${texture.name}`);
                     }
                 }
-
-            })
-
+            });
         }
 
         /**
@@ -538,7 +478,7 @@ module BABYLON.GLTF2 {
             glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
 
             materials.push(glTFMaterial);
-            materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length -1 ;
+            materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length - 1;
 
             return Promise.all(promises).then(() => { /* do nothing */ });
         }
@@ -1184,7 +1124,7 @@ module BABYLON.GLTF2 {
             else {
                 samplerIndex = foundSamplerIndex;
             }
-            
+
             return this._SetAlphaToOneAsync(babylonTexture, useAlpha).then((texture) => {
                 const pixels = _GLTFMaterial.GetPixelsFromTexture(texture);
                 const size = babylonTexture.getSize();
