@@ -12,7 +12,7 @@ module INSPECTOR {
         /** The obj parent  */
         private _parentObj: any;
 
-        constructor(prop: string, obj: any, parentObj?: PropertyLine) {
+        constructor(prop: string, obj: any, parentObj?: any) {
             this._property = prop;
             this._obj = obj;
             this._parentObj = parentObj || null;
