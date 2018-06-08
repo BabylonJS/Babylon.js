@@ -293,10 +293,8 @@ module INSPECTOR {
          * Dispose all viewer element (color, texture...)
          */
         public dispose() {
-            // console.log('delete properties', this.name);
             Scheduler.getInstance().remove(this);
             for (let child of this._children) {
-                // console.log('delete properties', child.name);
                 Scheduler.getInstance().remove(child);
             }
             for (let elem of this._elements) {

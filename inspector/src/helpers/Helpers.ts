@@ -172,11 +172,11 @@ module INSPECTOR {
                         style.textContent = elem as string;
                     });
                 }, undefined, undefined, undefined, () => {
-                    console.log("erreur");
+                    console.log('Error : LoadFile "glsl.min.js"');
                 });
 
             }, undefined, undefined, undefined, () => {
-                console.log("erreur");
+                console.log('Error : LoadFile "highlight.min.js"')
             });
 
         }
