@@ -471,7 +471,9 @@ declare module INSPECTOR {
         private _property;
         /** The obj this property refers to */
         private _obj;
-        constructor(prop: string, obj: any);
+        /** The obj parent  */
+        private _parentObj;
+        constructor(prop: string, obj: any, parentObj?: PropertyLine);
         readonly name: string;
         value: any;
         readonly type: string;

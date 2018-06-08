@@ -4055,6 +4055,14 @@
         // Textures
 
         /**
+         * Clears the list of texture accessible through engine.
+         * This can help preventing texture load conflict due to name collision.
+         */
+        public clearInternalTexturesCache() {
+            this._internalTexturesCache = [];
+        }
+
+        /**
          * Force the entire cache to be cleared
          * You should not have to use this function unless your engine needs to share the webGL context with another engine
          * @param bruteForce defines a boolean to force clearing ALL caches (including stencil, detoh and alpha states)

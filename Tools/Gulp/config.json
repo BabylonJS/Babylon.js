@@ -121,19 +121,16 @@
             "imageProcessing"            
         ],
         "minimal": [
-            "freeCamera",
-            "hemisphericLight"
-        ],
-        "minimalWithBuilder": [
             "meshBuilder",
             "freeCamera",
             "hemisphericLight"
         ],
         "360Viewer": [
-            "freeCamera",
-            "hemisphericLight",
+            "arcRotateCamera",
             "meshBuilder",
-            "picking"
+            "picking",
+            "backgroundMaterial",
+            "videoDome"
         ]      
     },
     "workloads": {
