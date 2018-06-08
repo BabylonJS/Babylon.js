@@ -92,10 +92,10 @@ module INSPECTOR {
 
         private _message(type:string, message:any, caller:string) {
             let callerLine = Helpers.CreateDiv('caller', this._consolePanelContent);
-            callerLine.textContent = caller;
+            callerLine.textContent = caller.replace(' ', '\u00A0');
 
             let line = Helpers.CreateDiv(type, this._consolePanelContent); 
-            line.textContent += message ; 
+            line.textContent = message.replace(' ', '\u00A0');
 
             this._consolePanelContent.scrollTop = this._consolePanelContent.scrollHeight; 
         }
