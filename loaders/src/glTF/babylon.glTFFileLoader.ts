@@ -191,15 +191,12 @@ module BABYLON {
         public readonly onLogObservable = new Observable<string>();
 
         private _logIndentLevel = 0;
+        private static readonly _logSpaces = "                                ";
 
         /** @hidden */
         public _log(message: string): void {
             if (this.loggingEnabled) {
-                let spaces = "";
-                for (let i = 0; i < this._logIndentLevel; i++) {
-                    spaces += "  ";
-                }
-
+                const spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
                 this.onLogObservable.notifyObservers(`${spaces}${message}`);
                 Tools.Log(`${spaces}${message}`);
             }
