@@ -44,7 +44,7 @@ module INSPECTOR {
                     //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
                     loadGUIProperties();
                 }, () => {
-                    console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file")
+                    console.warn('Error : loading "babylon.gui.js". Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file.');
                 });
             }
             else {
