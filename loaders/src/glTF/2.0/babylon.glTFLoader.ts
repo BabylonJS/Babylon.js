@@ -1402,14 +1402,16 @@ module BABYLON.GLTF2 {
                 return promise;
             }
 
+            this._parent._logOpen(`${context}`);
+
             const texture = GLTFLoader._GetProperty(`${context}/index`, this._gltf.textures, textureInfo.index);
-            const textureContext = `#/textures/${textureInfo.index}`;
+            context = `#/textures/${textureInfo.index}`;
 
             const promises = new Array<Promise<void>>();
 
-            this._parent._logOpen(`${context} ${textureContext} ${texture.name || ""}`);
+            this._parent._logOpen(`${context} ${texture.name || ""}`);
 
-            const sampler = (texture.sampler == undefined ? this._defaultSampler : GLTFLoader._GetProperty(`${textureContext}/sampler`, this._gltf.samplers, texture.sampler));
+            const sampler = (texture.sampler == undefined ? this._defaultSampler : GLTFLoader._GetProperty(`${context}/sampler`, this._gltf.samplers, texture.sampler));
             const samplerData = this._loadSampler(`#/samplers/${sampler._index}`, sampler);
 
             const deferred = new Deferred<void>();
@@ -1419,7 +1421,7 @@ module BABYLON.GLTF2 {
                 }
             }, (message, exception) => {
                 if (!this._disposed) {
-                    deferred.reject(new Error(`${textureContext}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
+                    deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
                 }
             });
             promises.push(deferred.promise);
@@ -1429,7 +1431,7 @@ module BABYLON.GLTF2 {
             babylonTexture.wrapV = samplerData.wrapV;
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
 
-            const image = GLTFLoader._GetProperty(`${textureContext}/source`, this._gltf.images, texture.source);
+            const image = GLTFLoader._GetProperty(`${context}/source`, this._gltf.images, texture.source);
             promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(blob => {
                 const dataUrl = `data:${this._rootUrl}${image.uri || `image${image._index}`}`;
                 babylonTexture.updateURL(dataUrl, blob);
@@ -1438,6 +1440,7 @@ module BABYLON.GLTF2 {
             assign(babylonTexture);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
 
+            this._parent._logClose();
             this._parent._logClose();
 
             return Promise.all(promises).then(() => {});

@@ -202,7 +202,7 @@ module INSPECTOR {
             const details = new Array<PropertyLine>();
             for (const key in defaults) {
                 if (key !== "extensions") {
-                    details.push(new PropertyLine(new Property(key, defaults)));
+                    details.push(new PropertyLine(new Property(key, defaults, this._inspector.scene)));
                 }
             }
             detailsPanel.details = details;
@@ -217,7 +217,7 @@ module INSPECTOR {
             const details = new Array<PropertyLine>();
             for (const key in defaults) {
                 if (key !== "enabled") {
-                    details.push(new PropertyLine(new Property(key, defaults)));
+                    details.push(new PropertyLine(new Property(key, defaults, this._inspector.scene)));
                 }
             }
             detailsPanel.details = details;
