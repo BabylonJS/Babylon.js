@@ -12,7 +12,7 @@ module BABYLON {
 
         private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-        public onPropertyChangedObservable = new Observable<{ object: any, property: string, value: any, initialValue: any }>();
+        public onPropertyChangedObservable: BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>;
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -58,6 +58,7 @@ module BABYLON {
                 } catch (e) {
                     // If the inspector has been removed directly from the inspector tool
                 }
+                this.onPropertyChangedObservable.clear();
                 this._inspector = null;
             }
         }
@@ -104,6 +105,7 @@ module BABYLON {
             } else {
                 // Otherwise creates the inspector
                 this._createInspector(config);
+                this.onPropertyChangedObservable = new BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>();
             }
         }
 
