@@ -9,6 +9,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
@@ -41,6 +47,35 @@ var BABYLON;
         PerlinNoiseProceduralTexture.prototype.resize = function (size, generateMipMaps) {
             _super.prototype.resize.call(this, size, generateMipMaps);
         };
+        /**
+         * Serializes this perlin noise procedural texture
+         * @returns a serialized perlin noise procedural texture object
+         */
+        PerlinNoiseProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.PerlinNoiseProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Perlin Noise Procedural Texture from parsed perlin noise procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing perlin noise procedural texture information
+         * @returns a parsed Perlin Noise Procedural Texture
+         */
+        PerlinNoiseProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PerlinNoiseProceduralTexture.prototype, "speed", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
         return PerlinNoiseProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.PerlinNoiseProceduralTexture = PerlinNoiseProceduralTexture;

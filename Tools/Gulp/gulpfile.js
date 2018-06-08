@@ -469,10 +469,12 @@ var buildExternalLibrary = function (library, settings, watch) {
                         let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
                         fs.readFile(fileLocation, function (err, data) {
                             if (err) throw err;
-                            data = settings.build.dtsBundle.prependText + '\n' + data.toString();
+                            data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
                             fs.writeFile(fileLocation, data);
-                            var newData = processViewerDeclaration(data);
-                            fs.writeFile(fileLocation.replace('.module', ''), newData);
+                            if (settings.build.dtsBundle.legacyDeclaration) {
+                                var newData = processViewerDeclaration(data);
+                                fs.writeFile(fileLocation.replace('.module', ''), newData);
+                            }
                         });
                     });
                 }

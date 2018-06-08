@@ -1001,13 +1001,13 @@ module BABYLON.GLTF2 {
             if (metallicRoughnessFactors) {
                 if (hasTextureCoords) {
                     if (metallicRoughnessFactors.baseColorTextureBase64) {
-                        const glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, images, textures, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex, imageData);
+                        const glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture", mimeType, images, textures, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex, imageData);
                         if (glTFBaseColorTexture != null) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
                         }
                     }
                     if (metallicRoughnessFactors.metallicRoughnessTextureBase64) {
-                        const glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, images, textures, babylonPBRMaterial.reflectivityTexture ? babylonPBRMaterial.reflectivityTexture.coordinatesIndex : null, samplerIndex, imageData);
+                        const glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture", mimeType, images, textures, babylonPBRMaterial.reflectivityTexture ? babylonPBRMaterial.reflectivityTexture.coordinatesIndex : null, samplerIndex, imageData);
                         if (glTFMRColorTexture != null) {
                             glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
                         }
@@ -1184,35 +1184,12 @@ module BABYLON.GLTF2 {
             else {
                 samplerIndex = foundSamplerIndex;
             }
-
-            let textureName = Tools.RandomId();
-            let textureData = babylonTexture.getInternalTexture();
-
-            if (textureData != null) {
-                textureName = textureData.url || textureName;
-            }
-
-            textureName = Tools.GetFilename(textureName);
-            const baseFile = textureName.split('.')[0];
-            let extension = "";
-
-
-            if (mimeType === ImageMimeType.JPEG) {
-                extension = ".jpg";
-            }
-            else if (mimeType === ImageMimeType.PNG) {
-                extension = ".png";
-            }
-            else {
-                return Promise.reject("Unsupported mime type " + mimeType);
-            }
-            textureName = baseFile + extension;
-
+            
             return this._SetAlphaToOneAsync(babylonTexture, useAlpha).then((texture) => {
                 const pixels = _GLTFMaterial.GetPixelsFromTexture(texture);
                 const size = babylonTexture.getSize();
                 const base64Data = this._CreateBase64FromCanvas(pixels, size.width, size.height, mimeType);
-                const textureInfo = this._GetTextureInfoFromBase64(base64Data, textureName, mimeType, images, textures, babylonTexture.coordinatesIndex, samplerIndex, imageData);
+                const textureInfo = this._GetTextureInfoFromBase64(base64Data, babylonTexture.name, mimeType, images, textures, babylonTexture.coordinatesIndex, samplerIndex, imageData);
                 return textureInfo;
             });
         }
@@ -1220,19 +1197,19 @@ module BABYLON.GLTF2 {
         /**
          * Builds a texture from base64 string
          * @param base64Texture base64 texture string
-         * @param textureName Name to use for the texture
+         * @param baseTextureName Name to use for the texture
          * @param mimeType image mime type for the texture
          * @param images array of images
          * @param textures array of textures
          * @param imageData map of image data
          * @returns glTF texture info, or null if the texture format is not supported
          */
-        private static _GetTextureInfoFromBase64(base64Texture: string, textureName: string, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], texCoordIndex: Nullable<number>, samplerIndex: Nullable<number>, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }): Nullable<ITextureInfo> {
+        private static _GetTextureInfoFromBase64(base64Texture: string, baseTextureName: string, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], texCoordIndex: Nullable<number>, samplerIndex: Nullable<number>, imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } }): Nullable<ITextureInfo> {
             let textureInfo: Nullable<ITextureInfo> = null;
 
             const glTFTexture: ITexture = {
                 source: images.length,
-                name: textureName
+                name: baseTextureName
             };
             if (samplerIndex != null) {
                 glTFTexture.sampler = samplerIndex;
@@ -1246,9 +1223,16 @@ module BABYLON.GLTF2 {
             }
             const imageValues = { data: arr, mimeType: mimeType };
 
+            let extension = mimeType === ImageMimeType.JPEG ? '.jpeg' : '.png';
+            let textureName = baseTextureName + extension;
+            if (textureName in imageData) {
+                textureName = `${baseTextureName}_${Tools.RandomId()}${extension}`;
+            }
+
             imageData[textureName] = imageValues;
             if (mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG) {
                 const glTFImage: IImage = {
+                    name: baseTextureName,
                     uri: textureName
                 }
                 let foundIndex: Nullable<number> = null;
@@ -1261,8 +1245,6 @@ module BABYLON.GLTF2 {
                 if (foundIndex == null) {
                     images.push(glTFImage);
                     glTFTexture.source = images.length - 1;
-
-
                 }
                 else {
                     glTFTexture.source = foundIndex;
@@ -1275,6 +1257,9 @@ module BABYLON.GLTF2 {
                 if (texCoordIndex != null) {
                     textureInfo.texCoord = texCoordIndex;
                 }
+            }
+            else {
+                Tools.Error(`Unsupported texture mime type ${mimeType}`);
             }
 
             return textureInfo;

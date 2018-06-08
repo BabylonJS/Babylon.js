@@ -710,7 +710,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.3";
+            return "3.3.0-alpha.6";
         }
 
         // Updatable statics so stick with vars here
@@ -4053,6 +4053,14 @@
         }
 
         // Textures
+
+        /**
+         * Clears the list of texture accessible through engine.
+         * This can help preventing texture load conflict due to name collision.
+         */
+        public clearInternalTexturesCache() {
+            this._internalTexturesCache = [];
+        }
 
         /**
          * Force the entire cache to be cleared

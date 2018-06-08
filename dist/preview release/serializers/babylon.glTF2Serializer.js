@@ -2153,13 +2153,13 @@ var BABYLON;
                 if (metallicRoughnessFactors) {
                     if (hasTextureCoords) {
                         if (metallicRoughnessFactors.baseColorTextureBase64) {
-                            var glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, images, textures, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex, imageData);
+                            var glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture", mimeType, images, textures, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex, imageData);
                             if (glTFBaseColorTexture != null) {
                                 glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
                             }
                         }
                         if (metallicRoughnessFactors.metallicRoughnessTextureBase64) {
-                            var glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, images, textures, babylonPBRMaterial.reflectivityTexture ? babylonPBRMaterial.reflectivityTexture.coordinatesIndex : null, samplerIndex, imageData);
+                            var glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture", mimeType, images, textures, babylonPBRMaterial.reflectivityTexture ? babylonPBRMaterial.reflectivityTexture.coordinatesIndex : null, samplerIndex, imageData);
                             if (glTFMRColorTexture != null) {
                                 glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
                             }
@@ -2318,47 +2318,29 @@ var BABYLON;
                 else {
                     samplerIndex = foundSamplerIndex;
                 }
-                var textureName = BABYLON.Tools.RandomId();
-                var textureData = babylonTexture.getInternalTexture();
-                if (textureData != null) {
-                    textureName = textureData.url || textureName;
-                }
-                textureName = BABYLON.Tools.GetFilename(textureName);
-                var baseFile = textureName.split('.')[0];
-                var extension = "";
-                if (mimeType === "image/jpeg" /* JPEG */) {
-                    extension = ".jpg";
-                }
-                else if (mimeType === "image/png" /* PNG */) {
-                    extension = ".png";
-                }
-                else {
-                    return Promise.reject("Unsupported mime type " + mimeType);
-                }
-                textureName = baseFile + extension;
                 return this._SetAlphaToOneAsync(babylonTexture, useAlpha).then(function (texture) {
                     var pixels = _GLTFMaterial.GetPixelsFromTexture(texture);
                     var size = babylonTexture.getSize();
                     var base64Data = _this._CreateBase64FromCanvas(pixels, size.width, size.height, mimeType);
-                    var textureInfo = _this._GetTextureInfoFromBase64(base64Data, textureName, mimeType, images, textures, babylonTexture.coordinatesIndex, samplerIndex, imageData);
+                    var textureInfo = _this._GetTextureInfoFromBase64(base64Data, babylonTexture.name, mimeType, images, textures, babylonTexture.coordinatesIndex, samplerIndex, imageData);
                     return textureInfo;
                 });
             };
             /**
              * Builds a texture from base64 string
              * @param base64Texture base64 texture string
-             * @param textureName Name to use for the texture
+             * @param baseTextureName Name to use for the texture
              * @param mimeType image mime type for the texture
              * @param images array of images
              * @param textures array of textures
              * @param imageData map of image data
              * @returns glTF texture info, or null if the texture format is not supported
              */
-            _GLTFMaterial._GetTextureInfoFromBase64 = function (base64Texture, textureName, mimeType, images, textures, texCoordIndex, samplerIndex, imageData) {
+            _GLTFMaterial._GetTextureInfoFromBase64 = function (base64Texture, baseTextureName, mimeType, images, textures, texCoordIndex, samplerIndex, imageData) {
                 var textureInfo = null;
                 var glTFTexture = {
                     source: images.length,
-                    name: textureName
+                    name: baseTextureName
                 };
                 if (samplerIndex != null) {
                     glTFTexture.sampler = samplerIndex;
@@ -2370,9 +2352,15 @@ var BABYLON;
                     arr[i] = binStr.charCodeAt(i);
                 }
                 var imageValues = { data: arr, mimeType: mimeType };
+                var extension = mimeType === "image/jpeg" /* JPEG */ ? '.jpeg' : '.png';
+                var textureName = baseTextureName + extension;
+                if (textureName in imageData) {
+                    textureName = baseTextureName + "_" + BABYLON.Tools.RandomId() + extension;
+                }
                 imageData[textureName] = imageValues;
                 if (mimeType === "image/jpeg" /* JPEG */ || mimeType === "image/png" /* PNG */) {
                     var glTFImage = {
+                        name: baseTextureName,
                         uri: textureName
                     };
                     var foundIndex = null;
@@ -2396,6 +2384,9 @@ var BABYLON;
                     if (texCoordIndex != null) {
                         textureInfo.texCoord = texCoordIndex;
                     }
+                }
+                else {
+                    BABYLON.Tools.Error("Unsupported texture mime type " + mimeType);
                 }
                 return textureInfo;
             };

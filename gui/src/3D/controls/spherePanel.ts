@@ -5,7 +5,7 @@ module BABYLON.GUI {
      * Class used to create a container panel deployed on the surface of a sphere
      */
     export class SpherePanel extends VolumeBasedPanel {
-        private _radius = 4.0;
+        private _radius = 5.0;
 
         /**
          * Gets or sets the radius of the sphere where to project controls (5 by default)
