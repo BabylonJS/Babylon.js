@@ -372,10 +372,10 @@ module INSPECTOR {
             // Create popup
             let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
             if (!popup) {
+                alert("Please update your browser to open the Babylon.js inspector in an external view.");
                 return;
             }
             popup.document.title = "Babylon.js INSPECTOR";
-            popup.document.body.innerHTML = "Coucou!";
             // Get the inspector style      
             let styles = Inspector.DOCUMENT.querySelectorAll('style');
             for (let s = 0; s < styles.length; s++) {

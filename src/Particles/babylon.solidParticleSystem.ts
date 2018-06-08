@@ -159,7 +159,7 @@
                 this._particlesIntersect = options ? <boolean>options.particleIntersection : false;
                 this._bSphereOnly= options ? <boolean>options.boundingSphereOnly : false;
                 this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
-                if (options && options.updatable) {
+                if (options && options.updatable !== undefined) {
                     this._updatable = options.updatable;
                 } else {
                     this._updatable = true;

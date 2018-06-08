@@ -57,7 +57,7 @@
 
         private _randomTexture: RawTexture;
 
-        private readonly _attributesStrideSize = 16;
+        private readonly _attributesStrideSize = 18;
         private _updateEffectOptions: EffectCreationOptions;
 
         private _randomTextureSize: number;
@@ -119,7 +119,25 @@
         /**
          * Maximum Size of emitting particles.
          */
-        public maxSize = 1;        
+        public maxSize = 1;  
+        
+        /**
+         * Minimum scale of emitting particles on X axis.
+         */
+        public minScaleX = 1;
+        /**
+         * Maximum scale of emitting particles on X axis.
+         */
+        public maxScaleX = 1;        
+
+        /**
+         * Minimum scale of emitting particles on Y axis.
+         */
+        public minScaleY = 1;
+        /**
+         * Maximum scale of emitting particles on Y axis.
+         */
+        public maxScaleY = 1;           
         
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
@@ -356,7 +374,7 @@
 
             this._updateEffectOptions = {
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction", "angle"],
-                uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity", "emitPower",
+                uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
                                 "angleRange"],
                 uniformBuffersNames: [],
@@ -393,10 +411,10 @@
             updateVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1);
             updateVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1);
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 1);
-            updateVertexBuffers["size"] = source.createVertexBuffer("size", 6, 1);
-            updateVertexBuffers["color"] = source.createVertexBuffer("color", 7, 4);
-            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 11, 3);
-            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", 14, 2);
+            updateVertexBuffers["size"] = source.createVertexBuffer("size", 6, 3);
+            updateVertexBuffers["color"] = source.createVertexBuffer("color", 9, 4);
+            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 3);
+            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", 16, 2);
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -409,9 +427,9 @@
             renderVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3, this._attributesStrideSize, true);
             renderVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1, this._attributesStrideSize, true);
             renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
-            renderVertexBuffers["size"] = source.createVertexBuffer("size", 6, 1, this._attributesStrideSize, true);           
-            renderVertexBuffers["color"] = source.createVertexBuffer("color", 7, 4, this._attributesStrideSize, true);
-            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", 14, 2, this._attributesStrideSize, true);
+            renderVertexBuffers["size"] = source.createVertexBuffer("size", 6, 3, this._attributesStrideSize, true);           
+            renderVertexBuffers["color"] = source.createVertexBuffer("color", 9, 4, this._attributesStrideSize, true);
+            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", 16, 2, this._attributesStrideSize, true);
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -443,6 +461,8 @@
               data.push(Math.random());
 
               // Size
+              data.push(0.0);
+              data.push(0.0);
               data.push(0.0);
 
               // color
@@ -571,6 +591,7 @@
             this._updateEffect.setDirectColor4("color1", this.color1);
             this._updateEffect.setDirectColor4("color2", this.color2);
             this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
+            this._updateEffect.setFloat4("scaleRange", this.minScaleX, this.maxScaleX, this.minScaleY, this.maxScaleY);
             this._updateEffect.setFloat2("angleRange", this.minAngularSpeed, this.maxAngularSpeed);
             this._updateEffect.setVector3("gravity", this.gravity);
 

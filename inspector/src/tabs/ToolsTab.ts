@@ -24,18 +24,18 @@ module INSPECTOR {
 
             // Environment block
             title = Helpers.CreateDiv('tool-title2', this._panel);
-            title.textContent = "Environment";
+            title.textContent = "Environment Texture (.dds, .env)";
             {
-                let elemLabel = this._createToolLabel("Load Environment Texture (.dds, .env) ", this._panel);
-                elemLabel.className = "tool-label-line";
-
                 let errorElemm = Inspector.DOCUMENT.createElement('div');
                 errorElemm.className = "tool-label-error";
                 errorElemm.style.display = "none";
 
+                let elemValue = Helpers.CreateDiv(null, this._panel);
+
                 let inputElement = Inspector.DOCUMENT.createElement('input');
-                inputElement.className = "tool-label-line";
+                inputElement.className = "tool-input";
                 inputElement.type = "file";
+                inputElement.accept =".dds, .env";
                 inputElement.onchange = (event: any) => {
                     var files: File[] = event.target.files;
                     let file: BABYLON.Nullable<File> = null;
@@ -81,37 +81,40 @@ module INSPECTOR {
                         }
                     }, undefined, true);
                 };
-                this._panel.appendChild(inputElement);
-
-                this._createToolLabel("Compress to .env", this._panel);
-                let elemValue = Helpers.CreateDiv('tool-value', this._panel);
-                inputElement = Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Save";
-                inputElement.type = "button";
-                inputElement.onclick = () => {
-                    if (!this._scene.environmentTexture) {
-                        errorElemm.style.display = "block";
-                        errorElemm.textContent = "You must load an environment texture first.";
-                        return;
-                    }
-                    if (this._scene.activeCamera) {
-                        BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(<BABYLON.CubeTexture>this._scene.environmentTexture)
-                        .then((buffer: ArrayBuffer) => {
-                            var blob = new Blob([buffer], {type: "octet/stream"});
-                            BABYLON.Tools.Download(blob, "environment.env");
-                            errorElemm.style.display = "none";
-                        })
-                        .catch((error: any) => {
-                            errorElemm.style.display = "block";
-                            errorElemm.textContent = error;
-                        });
-                    }
-                    else {
-                        errorElemm.style.display = "block";
-                        errorElemm.textContent = "An active camera is required.";
-                    }
-                };
                 elemValue.appendChild(inputElement);
+
+                if (!this._scene.getEngine().premultipliedAlpha) {
+                    elemValue = Helpers.CreateDiv(null, this._panel);
+
+                    inputElement = Inspector.DOCUMENT.createElement('input');
+                    inputElement.value = "Compress current texture to .env";
+                    inputElement.className = "tool-input";
+                    inputElement.type = "button";
+                    inputElement.onclick = () => {
+                        if (!this._scene.environmentTexture) {
+                            errorElemm.style.display = "block";
+                            errorElemm.textContent = "You must load an environment texture first.";
+                            return;
+                        }
+                        if (this._scene.activeCamera) {
+                            BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(<BABYLON.CubeTexture>this._scene.environmentTexture)
+                            .then((buffer: ArrayBuffer) => {
+                                var blob = new Blob([buffer], {type: "octet/stream"});
+                                BABYLON.Tools.Download(blob, "environment.env");
+                                errorElemm.style.display = "none";
+                            })
+                            .catch((error: any) => {
+                                errorElemm.style.display = "block";
+                                errorElemm.textContent = error;
+                            });
+                        }
+                        else {
+                            errorElemm.style.display = "block";
+                            errorElemm.textContent = "An active camera is required.";
+                        }
+                    };
+                    elemValue.appendChild(inputElement);
+                }
                 
                 this._panel.appendChild(errorElemm);
             }
@@ -119,11 +122,12 @@ module INSPECTOR {
             title = Helpers.CreateDiv('tool-title2', this._panel);
             title.textContent = "Capture";
             {
-                this._createToolLabel("Screenshot", this._panel);
-                let elemValue = Helpers.CreateDiv('tool-value', this._panel);
+                let elemValue = Helpers.CreateDiv(null, this._panel);
+
                 let inputElement = Inspector.DOCUMENT.createElement('input');
-                inputElement.value = "Capture";
+                inputElement.value = "Take Screenshot";
                 inputElement.type = "button";
+                inputElement.className = "tool-input";
                 inputElement.onclick = () => {
                     if (this._scene.activeCamera) {
                         BABYLON.Tools.CreateScreenshot(this._scene.getEngine(), this._scene.activeCamera, {precision: 0.5});
@@ -131,12 +135,6 @@ module INSPECTOR {
                 };
                 elemValue.appendChild(inputElement);
             }
-        }
-
-        private _createToolLabel(content: string, parent: HTMLElement): HTMLElement {
-            let elem = Helpers.CreateDiv('tool-label', parent);
-            elem.textContent = content;
-            return elem;
         }
 
         public dispose() {

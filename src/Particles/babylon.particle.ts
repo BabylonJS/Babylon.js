@@ -41,6 +41,11 @@
         public size = 0;
 
         /**
+         * The current scale of the particle.
+         */
+        public scale = new Vector2(1, 1);        
+
+        /**
          * The current angle of the particle.
          */
         public angle = 0;
@@ -134,6 +139,7 @@
             other.lifeTime = this.lifeTime;
             other.age = this.age;
             other.size = this.size;
+            other.scale.copyFrom(this.scale);
             other.angle = this.angle;
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;

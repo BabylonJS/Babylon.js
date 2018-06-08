@@ -10,6 +10,7 @@ uniform mat4 emitterWM;
 uniform vec2 lifeTime;
 uniform vec2 emitPower;
 uniform vec2 sizeRange;
+uniform vec4 scaleRange;
 uniform vec4 color1;
 uniform vec4 color2;
 uniform vec3 gravity;
@@ -45,7 +46,7 @@ in vec3 position;
 in float age;
 in float life;
 in float seed;
-in float size;
+in vec3 size;
 in vec4 color;
 in vec3 direction;
 in vec2 angle;
@@ -55,7 +56,7 @@ out vec3 outPosition;
 out float outAge;
 out float outLife;
 out float outSeed;
-out float outSize;
+out vec3 outSize;
 out vec4 outColor;
 out vec3 outDirection;
 out vec2 outAngle;
@@ -77,7 +78,7 @@ void main() {
       outLife = life;
       outSeed = seed;
       outColor = vec4(0.,0.,0.,0.);
-      outSize = 0.;
+      outSize = vec3(0., 0., 0.);
       outDirection = direction;
       outAngle = angle;
       return;
@@ -96,7 +97,9 @@ void main() {
     outSeed = seed;
 
     // Size
-    outSize = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+    outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+    outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
+    outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a;
 
     // Color
     outColor = color1 + (color2 - color1) * randoms.b;

@@ -525,9 +525,11 @@
             }
 
             // Attaches observer.
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
-                this._markAllSubMeshesAsImageProcessingDirty();
-            });
+            if (this._imageProcessingConfiguration) {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                    this._markAllSubMeshesAsImageProcessingDirty();
+                });
+            }
         }
 
         /**
@@ -807,7 +809,7 @@
                 }
             }
 
-            if (defines._areImageProcessingDirty) {
+            if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
                 if (!this._imageProcessingConfiguration.isReady()) {
                     return false;
                 }
@@ -983,8 +985,10 @@
                 "microSurfaceSampler", "environmentBrdfSampler"];
             var uniformBuffers = ["Material", "Scene"];
 
-            ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
-            ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+            if (ImageProcessingConfiguration) {
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+            }
 
             MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -1231,7 +1235,7 @@
                 defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
             }
 
-            if (defines._areImageProcessingDirty) {
+            if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
                 this._imageProcessingConfiguration.prepareDefines(defines);
             }
 

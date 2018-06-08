@@ -62,7 +62,25 @@ module BABYLON {
         /**
          * Maximum Size of emitting particles.
          */
-        maxSize: number;        
+        maxSize: number;     
+        
+        /**
+         * Minimum scale of emitting particles on X axis.
+         */
+        minScaleX: number;
+        /**
+         * Maximum scale of emitting particles on X axis.
+         */
+        maxScaleX: number;        
+
+        /**
+         * Minimum scale of emitting particles on Y axis.
+         */
+        minScaleY: number;
+        /**
+         * Maximum scale of emitting particles on Y axis.
+         */
+        maxScaleY: number;             
         
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
