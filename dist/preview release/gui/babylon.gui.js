@@ -8578,6 +8578,43 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
+         * Class used to create a container panel deployed on the surface of a plane
+         */
+        var PlanePanel = /** @class */ (function (_super) {
+            __extends(PlanePanel, _super);
+            function PlanePanel() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            PlanePanel.prototype._mapGridNode = function (control, nodePosition) {
+                var mesh = control.mesh;
+                if (!mesh) {
+                    return;
+                }
+                switch (this.orientation) {
+                    case GUI.Container3D.FACEORIGIN_ORIENTATION:
+                    case GUI.Container3D.FACEFORWARD_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        break;
+                    case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
+                    case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
+                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        break;
+                }
+                control.position = nodePosition.clone();
+            };
+            return PlanePanel;
+        }(GUI.VolumeBasedPanel));
+        GUI.PlanePanel = PlanePanel;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
          * Class used to create a container panel deployed on the surface of a cylinder
          */
         var CylinderPanel = /** @class */ (function (_super) {

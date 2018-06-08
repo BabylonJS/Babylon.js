@@ -2550,6 +2550,16 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
+     * Class used to create a container panel deployed on the surface of a plane
+     */
+    class PlanePanel extends VolumeBasedPanel {
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
      * Class used to create a container panel deployed on the surface of a cylinder
      */
     class CylinderPanel extends VolumeBasedPanel {
