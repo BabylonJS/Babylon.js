@@ -86,101 +86,10 @@ module BABYLON {
         COMPLETE
     }
 
-    /**
-     * Loader interface.
-     */
+    /** @hidden */
     export interface IGLTFLoader extends IDisposable {
-        /**
-         * Mode that determines the coordinate system to use.
-         */
-        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
-
-        /**
-         * Mode that determines what animations will start.
-         */
-        animationStartMode: GLTFLoaderAnimationStartMode;
-
-        /**
-         * Defines if the loader should compile materials.
-         */
-        compileMaterials: boolean;
-
-        /**
-         * Defines if the loader should also compile materials with clip planes.
-         */
-        useClipPlane: boolean;
-
-        /**
-         * Defines if the loader should compile shadow generators.
-         */
-        compileShadowGenerators: boolean;
-
-        /**
-         * Defines if the Alpha blended materials are only applied as coverage. 
-         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
-         * If true, no extra effects are applied to transparent pixels.
-         */
-        transparencyAsCoverage: boolean;
-
-        /** @hidden */
-        _normalizeAnimationGroupsToBeginAtZero: boolean;
-
-        /**
-         * Function called before loading a url referenced by the asset.
-         */
-        preprocessUrlAsync: (url: string) => Promise<string>;
-
-        /**
-         * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
-         */
-        onMeshLoadedObservable: Observable<AbstractMesh>;
-
-        /**
-         * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
-         */
-        onTextureLoadedObservable: Observable<BaseTexture>;
-
-        /**
-         * Observable raised when the loader creates a material after parsing the glTF properties of the material.
-         */
-        onMaterialLoadedObservable: Observable<Material>;
-
-        /**
-         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
-         */
-        onCameraLoadedObservable: Observable<Camera>;
-
-        /**
-         * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
-         * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
-         */
-        onCompleteObservable: Observable<IGLTFLoader>;
-
-        /**
-         * Observable raised after the loader is disposed.
-         */
-        onDisposeObservable: Observable<IGLTFLoader>;
-
-        /**
-         * Observable raised after a loader extension is created.
-         * Set additional options for a loader extension in this event.
-         */
-        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
-
-        /**
-         * Loader state or null if the loader is not active.
-         */
-        state: Nullable<GLTFLoaderState>;
-
-        /**
-         * Imports meshes from the given data and adds them to the scene.
-         */
+        readonly state: Nullable<GLTFLoaderState>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
-
-        /**
-         * Loads all objects from the given data and adds them to the scene.
-         */
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
 
@@ -189,10 +98,10 @@ module BABYLON {
      */
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         /** @hidden */
-        public static _CreateGLTFLoaderV1: () => IGLTFLoader;
+        public static _CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
 
         /** @hidden */
-        public static _CreateGLTFLoaderV2: () => IGLTFLoader;
+        public static _CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
         // #region Common options
 
@@ -272,6 +181,39 @@ module BABYLON {
         public _normalizeAnimationGroupsToBeginAtZero = true;
 
         /**
+         * Defines if the loader logging is enabled.
+         */
+        public loggingEnabled = false;
+
+        /**
+         * Observable raised when the loader logs a message.
+         */
+        public readonly onLogObservable = new Observable<string>();
+
+        private _logIndentLevel = 0;
+        private static readonly _logSpaces = "                                ";
+
+        /** @hidden */
+        public _log(message: string): void {
+            if (this.loggingEnabled) {
+                const spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
+                this.onLogObservable.notifyObservers(`${spaces}${message}`);
+                Tools.Log(`${spaces}${message}`);
+            }
+        }
+
+        /** @hidden */
+        public _logOpen(message: string): void {
+            this._log(message);
+            this._logIndentLevel++;
+        }
+
+        /** @hidden */
+        public _logClose(): void {
+            --this._logIndentLevel;
+        }
+
+        /**
          * Function called before loading a url referenced by the asset.
          */
         public preprocessUrlAsync = (url: string) => Promise.resolve(url);
@@ -349,9 +291,9 @@ module BABYLON {
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
-        public readonly onCompleteObservable = new Observable<GLTFFileLoader>();
+        public readonly onCompleteObservable = new Observable<void>();
 
-        private _onCompleteObserver: Nullable<Observer<GLTFFileLoader>>;
+        private _onCompleteObserver: Nullable<Observer<void>>;
 
         /**
          * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
@@ -366,9 +308,9 @@ module BABYLON {
         /**
          * Observable raised after the loader is disposed.
          */
-        public readonly onDisposeObservable = new Observable<GLTFFileLoader>();
+        public readonly onDisposeObservable = new Observable<void>();
 
-        private _onDisposeObserver: Nullable<Observer<GLTFFileLoader>>;
+        private _onDisposeObserver: Nullable<Observer<void>>;
 
         /**
          * Callback raised after the loader is disposed.
@@ -443,6 +385,14 @@ module BABYLON {
                 this._loader = null;
             }
 
+            this._clear();
+
+            this.onDisposeObservable.notifyObservers(undefined);
+            this.onDisposeObservable.clear();
+        }
+
+        /** @hidden */
+        public _clear(): void {
             this.preprocessUrlAsync = url => Promise.resolve(url);
 
             this.onMeshLoadedObservable.clear();
@@ -451,9 +401,6 @@ module BABYLON {
             this.onCameraLoadedObservable.clear();
             this.onCompleteObservable.clear();
             this.onExtensionLoadedObservable.clear();
-
-            this.onDisposeObservable.notifyObservers(this);
-            this.onDisposeObservable.clear();
         }
 
         /**
@@ -538,9 +485,18 @@ module BABYLON {
         private _parse(data: string | ArrayBuffer): IGLTFLoaderData {
             let parsedData: IGLTFLoaderData;
             if (data instanceof ArrayBuffer) {
-                parsedData = GLTFFileLoader._parseBinary(data);
+                if (this.loggingEnabled) {
+                    this._log(`Parsing binary`);
+                }
+
+                parsedData = this._parseBinary(data);
             }
             else {
+                if (this.loggingEnabled) {
+                    this._log(`Parsing JSON`);
+                    this._log(`JSON length: ${data.length}`);
+                }
+
                 parsedData = {
                     json: JSON.parse(data),
                     bin: null
@@ -554,9 +510,19 @@ module BABYLON {
         }
 
         private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
-            const loaderVersion = { major: 2, minor: 0 };
-
             const asset = (<any>loaderData.json).asset || {};
+
+            if (this.loggingEnabled) {
+                this._log(`Asset version: ${asset.version}`);
+
+                if (asset.minVersion) {
+                    this._log(`Asset minimum version: ${asset.minVersion}`);
+                }
+
+                if (asset.generator) {
+                    this._log(`Asset generator: ${asset.generator}`);
+                }
+            }
 
             const version = GLTFFileLoader._parseVersion(asset.version);
             if (!version) {
@@ -569,12 +535,12 @@ module BABYLON {
                     throw new Error("Invalid minimum version: " + asset.minVersion);
                 }
 
-                if (GLTFFileLoader._compareVersion(minVersion, loaderVersion) > 0) {
+                if (GLTFFileLoader._compareVersion(minVersion, { major: 2, minor: 0 }) > 0) {
                     throw new Error("Incompatible minimum version: " + asset.minVersion);
                 }
             }
 
-            const createLoaders: { [key: number]: () => IGLTFLoader } = {
+            const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
                 1: GLTFFileLoader._CreateGLTFLoaderV1,
                 2: GLTFFileLoader._CreateGLTFLoaderV2
             };
@@ -584,39 +550,17 @@ module BABYLON {
                 throw new Error("Unsupported version: " + asset.version);
             }
 
-            const loader = createLoader();
-            loader.coordinateSystemMode = this.coordinateSystemMode;
-            loader.animationStartMode = this.animationStartMode;
-            loader.compileMaterials = this.compileMaterials;
-            loader.useClipPlane = this.useClipPlane;
-            loader.compileShadowGenerators = this.compileShadowGenerators;
-            loader.transparencyAsCoverage = this.transparencyAsCoverage;
-            loader._normalizeAnimationGroupsToBeginAtZero = this._normalizeAnimationGroupsToBeginAtZero;
-            loader.preprocessUrlAsync = this.preprocessUrlAsync;
-            loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
-            loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
-            loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
-            loader.onCameraLoadedObservable.add(camera => this.onCameraLoadedObservable.notifyObservers(camera));
-            loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
-
-            loader.onCompleteObservable.add(() => {
-                this.onMeshLoadedObservable.clear();
-                this.onTextureLoadedObservable.clear();
-                this.onMaterialLoadedObservable.clear();
-                this.onCameraLoadedObservable.clear();
-                this.onExtensionLoadedObservable.clear();
-
-                this.onCompleteObservable.notifyObservers(this);
-                this.onCompleteObservable.clear();
-            });
-
-            return loader;
+            return createLoader(this);
         }
 
-        private static _parseBinary(data: ArrayBuffer): IGLTFLoaderData {
+        private _parseBinary(data: ArrayBuffer): IGLTFLoaderData {
             const Binary = {
                 Magic: 0x46546C67
             };
+
+            if (this.loggingEnabled) {
+                this._log(`Binary length: ${data.byteLength}`);
+            }
 
             const binaryReader = new BinaryReader(data);
 
@@ -626,15 +570,20 @@ module BABYLON {
             }
 
             const version = binaryReader.readUint32();
+
+            if (this.loggingEnabled) {
+                this._log(`Binary version: ${version}`);
+            }
+
             switch (version) {
-                case 1: return GLTFFileLoader._parseV1(binaryReader);
-                case 2: return GLTFFileLoader._parseV2(binaryReader);
+                case 1: return this._parseV1(binaryReader);
+                case 2: return this._parseV2(binaryReader);
             }
 
             throw new Error("Unsupported version: " + version);
         }
 
-        private static _parseV1(binaryReader: BinaryReader): IGLTFLoaderData {
+        private _parseV1(binaryReader: BinaryReader): IGLTFLoaderData {
             const ContentFormat = {
                 JSON: 0
             };
@@ -667,7 +616,7 @@ module BABYLON {
             };
         }
 
-        private static _parseV2(binaryReader: BinaryReader): IGLTFLoaderData {
+        private _parseV2(binaryReader: BinaryReader): IGLTFLoaderData {
             const ChunkFormat = {
                 JSON: 0x4E4F534A,
                 BIN: 0x004E4942

@@ -20,7 +20,7 @@ module BABYLON.GLTF2.Extensions {
 
                     const promise = this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
 
-                    this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+                    this._loader._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
                     babylonData = {
                         material: babylonMaterial,
