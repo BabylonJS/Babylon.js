@@ -147,8 +147,11 @@ module BABYLON.GLTF2 {
 
         private _loadAsync(nodes: Nullable<Array<number>>): Promise<void> {
             return Promise.resolve().then(() => {
+                this._parent._startPerformanceCounter("Loading => Ready");
+                this._parent._startPerformanceCounter("Loading => Complete");
+
                 this._state = GLTFLoaderState.LOADING;
-                this._parent._log(`Loading`);
+                this._parent._log("Loading");
 
                 const readyDeferred = new Deferred<void>();
                 this._readyPromise = readyDeferred.promise;
@@ -176,7 +179,7 @@ module BABYLON.GLTF2 {
 
                 const resultPromise = Promise.all(promises).then(() => {
                     this._state = GLTFLoaderState.READY;
-                    this._parent._log(`Ready`);
+                    this._parent._log("Ready");
 
                     readyDeferred.resolve();
 
@@ -184,6 +187,8 @@ module BABYLON.GLTF2 {
                 });
 
                 resultPromise.then(() => {
+                    this._parent._endPerformanceCounter("Loading => Ready");
+
                     if (this._rootBabylonMesh) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
@@ -191,8 +196,10 @@ module BABYLON.GLTF2 {
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
                             Promise.all(this._completePromises).then(() => {
+                                this._parent._endPerformanceCounter("Loading => Complete");
+
                                 this._state = GLTFLoaderState.COMPLETE;
-                                this._parent._log(`Complete`);
+                                this._parent._log("Complete");
 
                                 this._parent.onCompleteObservable.notifyObservers(undefined);
                                 this._parent.onCompleteObservable.clear();
@@ -1667,6 +1674,8 @@ module BABYLON.GLTF2 {
         }
 
         private _compileMaterialsAsync(): Promise<void> {
+            this._parent._startPerformanceCounter("Compile materials");
+
             const promises = new Array<Promise<void>>();
 
             if (this._gltf.materials) {
@@ -1689,10 +1698,14 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => {
+                this._parent._endPerformanceCounter("Compile materials");
+            });
         }
 
         private _compileShadowGeneratorsAsync(): Promise<void> {
+            this._parent._startPerformanceCounter("Compile shadow generators");
+
             const promises = new Array<Promise<void>>();
 
             const lights = this._babylonScene.lights;
@@ -1703,7 +1716,9 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => {
+                this._parent._endPerformanceCounter("Compile shadow generators");
+            });
         }
 
         public _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>): Nullable<Promise<T>> {

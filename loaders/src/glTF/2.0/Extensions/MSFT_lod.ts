@@ -45,23 +45,39 @@ module BABYLON.GLTF2.Extensions {
 
             this._loader._readyPromise.then(() => {
                 for (let indexLOD = 0; indexLOD < this._nodePromiseLODs.length; indexLOD++) {
-                    Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
+                    const promise = Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
+                        if (indexLOD !== 0) {
+                            this._loader._parent._endPerformanceCounter(`Node LOD ${indexLOD}`);
+                        }
+
                         this._loader._parent._log(`Loaded node LOD ${indexLOD}`);
                         this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
+
                         if (indexLOD !== this._nodePromiseLODs.length - 1) {
+                            this._loader._parent._startPerformanceCounter(`Node LOD ${indexLOD + 1}`);
                             this._nodeSignalLODs[indexLOD].resolve();
                         }
                     });
+
+                    this._loader._completePromises.push(promise);
                 }
 
                 for (let indexLOD = 0; indexLOD < this._materialPromiseLODs.length; indexLOD++) {
-                    Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
+                    const promise = Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
+                        if (indexLOD !== 0) {
+                            this._loader._parent._endPerformanceCounter(`Material LOD ${indexLOD}`);
+                        }
+
                         this._loader._parent._log(`Loaded material LOD ${indexLOD}`);
                         this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
-                        if (indexLOD !==  this._materialPromiseLODs.length - 1) {
+
+                        if (indexLOD !== this._materialPromiseLODs.length - 1) {
+                            this._loader._parent._startPerformanceCounter(`Material LOD ${indexLOD + 1}`);
                             this._materialSignalLODs[indexLOD].resolve();
                         }
                     });
+
+                    this._loader._completePromises.push(promise);
                 }
             });
         }
@@ -110,7 +126,6 @@ module BABYLON.GLTF2.Extensions {
                         firstPromise = promise;
                     }
                     else {
-                        this._loader._completePromises.push(promise);
                         this._nodeIndexLOD = null;
                     }
 
@@ -159,7 +174,6 @@ module BABYLON.GLTF2.Extensions {
                         firstPromise = promise;
                     }
                     else {
-                        this._loader._completePromises.push(promise);
                         this._materialIndexLOD = null;
                     }
 

@@ -181,39 +181,6 @@ module BABYLON {
         public _normalizeAnimationGroupsToBeginAtZero = true;
 
         /**
-         * Defines if the loader logging is enabled.
-         */
-        public loggingEnabled = false;
-
-        /**
-         * Observable raised when the loader logs a message.
-         */
-        public readonly onLogObservable = new Observable<string>();
-
-        private _logIndentLevel = 0;
-        private static readonly _logSpaces = "                                ";
-
-        /** @hidden */
-        public _log(message: string): void {
-            if (this.loggingEnabled) {
-                const spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
-                this.onLogObservable.notifyObservers(`${spaces}${message}`);
-                Tools.Log(`${spaces}${message}`);
-            }
-        }
-
-        /** @hidden */
-        public _logOpen(message: string): void {
-            this._log(message);
-            this._logIndentLevel++;
-        }
-
-        /** @hidden */
-        public _logClose(): void {
-            --this._logIndentLevel;
-        }
-
-        /**
          * Function called before loading a url referenced by the asset.
          */
         public preprocessUrlAsync = (url: string) => Promise.resolve(url);
@@ -359,6 +326,52 @@ module BABYLON {
             return this._loader ? this._loader.state : null;
         }
 
+        /**
+         * Defines if the loader logging is enabled.
+         */
+        public get loggingEnabled(): boolean {
+            return this._loggingEnabled;
+        }
+
+        public set loggingEnabled(value: boolean) {
+            if (this._loggingEnabled === value) {
+                return;
+            }
+
+            this._loggingEnabled = value;
+
+            if (this._loggingEnabled) {
+                this._log = this._logEnabled;
+            }
+            else {
+                this._log = this._logDisabled;
+            }
+        }
+
+        /**
+         * Defines if the loader should capture performance counters.
+         */
+        public get capturePerformanceCounters(): boolean {
+            return this._capturePerformanceCounters;
+        }
+
+        public set capturePerformanceCounters(value: boolean) {
+            if (this._capturePerformanceCounters === value) {
+                return;
+            }
+
+            this._capturePerformanceCounters = value;
+
+            if (this._capturePerformanceCounters) {
+                this._startPerformanceCounter = this._startPerformanceCounterEnabled;
+                this._endPerformanceCounter = this._endPerformanceCounterEnabled;
+            }
+            else {
+                this._startPerformanceCounter = this._startPerformanceCounterDisabled;
+                this._endPerformanceCounter = this._endPerformanceCounterDisabled;
+            }
+        }
+
         // #endregion
 
         private _loader: Nullable<IGLTFLoader> = null;
@@ -483,19 +496,16 @@ module BABYLON {
         }
 
         private _parse(data: string | ArrayBuffer): IGLTFLoaderData {
+            this._startPerformanceCounter("Parse");
+
             let parsedData: IGLTFLoaderData;
             if (data instanceof ArrayBuffer) {
-                if (this.loggingEnabled) {
-                    this._log(`Parsing binary`);
-                }
-
+                this._log(`Parsing binary`);
                 parsedData = this._parseBinary(data);
             }
             else {
-                if (this.loggingEnabled) {
-                    this._log(`Parsing JSON`);
-                    this._log(`JSON length: ${data.length}`);
-                }
+                this._log(`Parsing JSON`);
+                this._log(`JSON length: ${data.length}`);
 
                 parsedData = {
                     json: JSON.parse(data),
@@ -506,23 +516,16 @@ module BABYLON {
             this.onParsedObservable.notifyObservers(parsedData);
             this.onParsedObservable.clear();
 
+            this._endPerformanceCounter("Parse");
             return parsedData;
         }
 
         private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
             const asset = (<any>loaderData.json).asset || {};
 
-            if (this.loggingEnabled) {
-                this._log(`Asset version: ${asset.version}`);
-
-                if (asset.minVersion) {
-                    this._log(`Asset minimum version: ${asset.minVersion}`);
-                }
-
-                if (asset.generator) {
-                    this._log(`Asset generator: ${asset.generator}`);
-                }
-            }
+            this._log(`Asset version: ${asset.version}`);
+            asset.minVersion && this._log(`Asset minimum version: ${asset.minVersion}`);
+            asset.generator && this._log(`Asset generator: ${asset.generator}`);
 
             const version = GLTFFileLoader._parseVersion(asset.version);
             if (!version) {
@@ -558,9 +561,7 @@ module BABYLON {
                 Magic: 0x46546C67
             };
 
-            if (this.loggingEnabled) {
-                this._log(`Binary length: ${data.byteLength}`);
-            }
+            this._log(`Binary length: ${data.byteLength}`);
 
             const binaryReader = new BinaryReader(data);
 
@@ -698,6 +699,54 @@ module BABYLON {
             }
 
             return result;
+        }
+
+        private static readonly _logSpaces = "                                ";
+        private _logIndentLevel = 0;
+        private _loggingEnabled = false;
+
+        /** @hidden */
+        public _log = this._logDisabled;
+
+        /** @hidden */
+        public _logOpen(message: string): void {
+            this._log(message);
+            this._logIndentLevel++;
+        }
+
+        /** @hidden */
+        public _logClose(): void {
+            --this._logIndentLevel;
+        }
+
+        private _logEnabled(message: string): void {
+            const spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
+            Tools.Log(`${spaces}${message}`);
+        }
+
+        private _logDisabled(message: string): void {
+        }
+
+        private _capturePerformanceCounters = false;
+
+        /** @hidden */
+        public _startPerformanceCounter = this._startPerformanceCounterDisabled;
+
+        /** @hidden */
+        public _endPerformanceCounter = this._endPerformanceCounterDisabled;
+
+        private _startPerformanceCounterEnabled(counterName: string): void {
+            Tools.StartPerformanceCounter(counterName);
+        }
+
+        private _startPerformanceCounterDisabled(counterName: string): void {
+        }
+
+        private _endPerformanceCounterEnabled(counterName: string): void {
+            Tools.EndPerformanceCounter(counterName);
+        }
+
+        private _endPerformanceCounterDisabled(counterName: string): void {
         }
     }
 
