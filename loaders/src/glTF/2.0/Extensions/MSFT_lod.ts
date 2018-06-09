@@ -32,29 +32,35 @@ module BABYLON.GLTF2.Extensions {
          */
         public onMaterialLODsLoadedObservable = new Observable<number>();
 
-        private _loadingNodeLOD: Nullable<_ILoaderNode> = null;
-        private _loadNodeSignals: { [nodeIndex: number]: Deferred<void> } = {};
-        private _loadNodePromises = new Array<Array<Promise<void>>>();
+        private _nodeIndexLOD: Nullable<number> = null;
+        private _nodeSignalLODs = new Array<Deferred<void>>();
+        private _nodePromiseLODs = new Array<Array<Promise<void>>>();
 
-        private _loadingMaterialLOD: Nullable<_ILoaderMaterial> = null;
-        private _loadMaterialSignals: { [materialIndex: number]: Deferred<void> } = {};
-        private _loadMaterialPromises = new Array<Array<Promise<void>>>();
+        private _materialIndexLOD: Nullable<number> = null;
+        private _materialSignalLODs = new Array<Deferred<void>>();
+        private _materialPromiseLODs = new Array<Array<Promise<void>>>();
 
         constructor(loader: GLTFLoader) {
             super(loader);
 
-            this._loader._onReadyObservable.addOnce(() => {
-                for (let indexLOD = 0; indexLOD < this._loadNodePromises.length; indexLOD++) {
-                    Promise.all(this._loadNodePromises[indexLOD]).then(() => {
+            this._loader._readyPromise.then(() => {
+                for (let indexLOD = 0; indexLOD < this._nodePromiseLODs.length; indexLOD++) {
+                    Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
                         this._loader._parent._log(`Loaded node LOD ${indexLOD}`);
                         this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
+                        if (indexLOD !== this._nodePromiseLODs.length - 1) {
+                            this._nodeSignalLODs[indexLOD].resolve();
+                        }
                     });
                 }
 
-                for (let indexLOD = 0; indexLOD < this._loadMaterialPromises.length; indexLOD++) {
-                    Promise.all(this._loadMaterialPromises[indexLOD]).then(() => {
+                for (let indexLOD = 0; indexLOD < this._materialPromiseLODs.length; indexLOD++) {
+                    Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
                         this._loader._parent._log(`Loaded material LOD ${indexLOD}`);
                         this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
+                        if (indexLOD !==  this._materialPromiseLODs.length - 1) {
+                            this._materialSignalLODs[indexLOD].resolve();
+                        }
                     });
                 }
             });
@@ -63,10 +69,13 @@ module BABYLON.GLTF2.Extensions {
         public dispose() {
             super.dispose();
 
-            this._loadingNodeLOD = null;
-            this._loadNodeSignals = {};
-            this._loadingMaterialLOD = null;
-            this._loadMaterialSignals = {};
+            this._nodeIndexLOD = null;
+            this._nodeSignalLODs.length = 0;
+            this._nodePromiseLODs.length = 0;
+
+            this._materialIndexLOD = null;
+            this._materialSignalLODs.length = 0;
+            this._materialPromiseLODs.length = 0;
 
             this.onMaterialLODsLoadedObservable.clear();
             this.onNodeLODsLoadedObservable.clear();
@@ -83,11 +92,8 @@ module BABYLON.GLTF2.Extensions {
                     const nodeLOD = nodeLODs[indexLOD];
 
                     if (indexLOD !== 0) {
-                        this._loadingNodeLOD = nodeLOD;
-
-                        if (!this._loadNodeSignals[nodeLOD._index]) {
-                            this._loadNodeSignals[nodeLOD._index] = new Deferred<void>();
-                        }
+                        this._nodeIndexLOD = indexLOD;
+                        this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                     }
 
                     const promise = this._loader._loadNodeAsync(`#/nodes/${nodeLOD._index}`, nodeLOD).then(() => {
@@ -98,15 +104,6 @@ module BABYLON.GLTF2.Extensions {
                                 delete previousNodeLOD._babylonMesh;
                             }
                         }
-
-                        if (indexLOD !== nodeLODs.length - 1) {
-                            const nodeIndex = nodeLODs[indexLOD + 1]._index;
-
-                            if (this._loadNodeSignals[nodeIndex]) {
-                                this._loadNodeSignals[nodeIndex].resolve();
-                                delete this._loadNodeSignals[nodeIndex];
-                            }
-                        }
                     });
 
                     if (indexLOD === 0) {
@@ -114,11 +111,11 @@ module BABYLON.GLTF2.Extensions {
                     }
                     else {
                         this._loader._completePromises.push(promise);
-                        this._loadingNodeLOD = null;
+                        this._nodeIndexLOD = null;
                     }
 
-                    this._loadNodePromises[indexLOD] = this._loadNodePromises[indexLOD] || [];
-                    this._loadNodePromises[indexLOD].push(promise);
+                    this._nodePromiseLODs[indexLOD] = this._nodePromiseLODs[indexLOD] || [];
+                    this._nodePromiseLODs[indexLOD].push(promise);
                 }
 
                 this._loader._parent._logClose();
@@ -128,7 +125,7 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             // Don't load material LODs if already loading a node LOD.
-            if (this._loadingNodeLOD) {
+            if (this._nodeIndexLOD) {
                 return null;
             }
 
@@ -142,11 +139,7 @@ module BABYLON.GLTF2.Extensions {
                     const materialLOD = materialLODs[indexLOD];
 
                     if (indexLOD !== 0) {
-                        this._loadingMaterialLOD = materialLOD;
-
-                        if (!this._loadMaterialSignals[materialLOD._index]) {
-                            this._loadMaterialSignals[materialLOD._index] = new Deferred<void>();
-                        }
+                        this._materialIndexLOD = indexLOD;
                     }
 
                     const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, mesh, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : () => {}).then(() => {
@@ -160,14 +153,6 @@ module BABYLON.GLTF2.Extensions {
                                 delete previousBabylonDataLOD[babylonDrawMode];
                             }
                         }
-
-                        if (indexLOD !== materialLODs.length - 1) {
-                            const materialIndex = materialLODs[indexLOD + 1]._index;
-                            if (this._loadMaterialSignals[materialIndex]) {
-                                this._loadMaterialSignals[materialIndex].resolve();
-                                delete this._loadMaterialSignals[materialIndex];
-                            }
-                        }
                     });
 
                     if (indexLOD === 0) {
@@ -175,11 +160,11 @@ module BABYLON.GLTF2.Extensions {
                     }
                     else {
                         this._loader._completePromises.push(promise);
-                        this._loadingMaterialLOD = null;
+                        this._materialIndexLOD = null;
                     }
 
-                    this._loadMaterialPromises[indexLOD] = this._loadMaterialPromises[indexLOD] || [];
-                    this._loadMaterialPromises[indexLOD].push(promise);
+                    this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
+                    this._materialPromiseLODs[indexLOD].push(promise);
                 }
 
                 this._loader._parent._logClose();
@@ -188,22 +173,20 @@ module BABYLON.GLTF2.Extensions {
         }
 
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
-            if (this._loadingMaterialLOD || this._loadingNodeLOD) {
-                if (this._loader._parent.loggingEnabled) {
-                    this._loader._parent._log(`deferred`);
-                }
-            }
-
             // Defer the loading of uris if loading a material or node LOD.
-            if (this._loadingMaterialLOD) {
-                const index = this._loadingMaterialLOD._index;
-                return this._loadMaterialSignals[index].promise.then(() => {
+            if (this._materialIndexLOD !== null) {
+                this._loader._parent._log(`deferred`);
+                const previousIndexLOD = this._materialIndexLOD - 1;
+                this._materialSignalLODs[previousIndexLOD] = this._materialSignalLODs[previousIndexLOD] || new Deferred<void>();
+                return this._materialSignalLODs[previousIndexLOD].promise.then(() => {
                     return this._loader._loadUriAsync(context, uri);
                 });
             }
-            else if (this._loadingNodeLOD) {
-                const index = this._loadingNodeLOD._index;
-                return this._loadNodeSignals[index].promise.then(() => {
+            else if (this._nodeIndexLOD !== null) {
+                this._loader._parent._log(`deferred`);
+                const previousIndexLOD = this._nodeIndexLOD - 1;
+                this._nodeSignalLODs[previousIndexLOD] = this._nodeSignalLODs[previousIndexLOD] || new Deferred<void>();
+                return this._nodeSignalLODs[this._nodeIndexLOD - 1].promise.then(() => {
                     return this._loader._loadUriAsync(context, uri);
                 });
             }
