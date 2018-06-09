@@ -159,8 +159,8 @@ module INSPECTOR {
                 defaults.extensions[extension.name] = extensionDefaults;
             });
 
-            const data = '{ "asset": { "version": "2.0" }, "scenes": [ { } ] }';
-            return loader.loadAsync(scene, data, "").then(() => {
+            const data = '{ "asset": { "version": "2.0" } }';
+            return loader.importMeshAsync([], scene, data, "").then(() => {
                 scene.dispose();
                 engine.dispose();
 

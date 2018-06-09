@@ -264,8 +264,9 @@ if (BABYLON.Engine.isSupported()) {
 
     window.addEventListener("keydown", function (event) {
         // Press R to reload
-        if (event.keyCode === 82 && event.target.nodeName !== "INPUT") {
+        if (event.keyCode === 82 && event.target.nodeName !== "INPUT" && currentScene) {
             debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
+
             if (assetUrl) {
                 loadFromAssetUrl();
             }
