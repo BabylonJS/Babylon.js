@@ -79,7 +79,15 @@ module BABYLON {
             ];
         }
 
-        @serializeAsColor3()
+        @serialize()
+        public get autoGenerateTime(): boolean {
+            return this._autoGenerateTime;
+        }
+
+        public set autoGenerateTime(value: boolean) {
+            this._autoGenerateTime = value;
+        }
+        
         public get fireColors(): Color3[] {
             return this._fireColors;
         }
@@ -127,6 +135,11 @@ module BABYLON {
             var serializationObject = SerializationHelper.Serialize(this, super.serialize());
             serializationObject.customType = "BABYLON.FireProceduralTexture";
 
+            serializationObject.fireColors = [];
+            for (var i = 0; i < this._fireColors.length; i++) {
+                serializationObject.fireColors.push(this._fireColors[i].asArray());
+            }
+
             return serializationObject;
         }
 
@@ -139,6 +152,13 @@ module BABYLON {
          */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
             var texture = SerializationHelper.Parse(() => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            var colors: Color3[] = [];
+            for (var i = 0; i < parsedTexture.fireColors.length; i++) {
+                colors.push(Color3.FromArray(parsedTexture.fireColors[i]));
+            }
+
+            texture.fireColors = colors;
 
             return texture;
         }

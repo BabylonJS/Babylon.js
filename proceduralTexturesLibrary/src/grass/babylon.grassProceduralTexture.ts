@@ -24,7 +24,6 @@ module BABYLON {
             this.setColor3("groundColor", this._groundColor);
         }
 
-        @serializeAsColor3()
         public get grassColors(): Color3[] {
             return this._grassColors;
         }
@@ -52,6 +51,11 @@ module BABYLON {
             var serializationObject = SerializationHelper.Serialize(this, super.serialize());
             serializationObject.customType = "BABYLON.GrassProceduralTexture";
 
+            serializationObject.grassColors = [];
+            for (var i = 0; i < this._grassColors.length; i++) {
+                serializationObject.grassColors.push(this._grassColors[i].asArray());
+            }
+
             return serializationObject;
         }
 
@@ -64,6 +68,13 @@ module BABYLON {
          */
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): GrassProceduralTexture {
             var texture = SerializationHelper.Parse(() => new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            var colors: Color3[] = [];
+            for (var i = 0; i < parsedTexture.grassColors.length; i++) {
+                colors.push(Color3.FromArray(parsedTexture.grassColors[i]));
+            }
+
+            texture.grassColors = colors;
 
             return texture;
         }
