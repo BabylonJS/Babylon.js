@@ -370,7 +370,7 @@ module BABYLON.GLTF2 {
 
                         proceduralTexture.setTexture('textureSampler', texture);
                         proceduralTexture.onGenerated = () => {    
-                            resolve(proceduralTexture) 
+                            resolve(proceduralTexture);
                         };
 
                     }
