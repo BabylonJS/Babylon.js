@@ -4477,8 +4477,6 @@
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
 
-            Tools.StartPerformanceCounter("Rendering camera " + this.activeCamera.name);
-
             // Viewport
             engine.setViewport(this.activeCamera.viewport);
 
@@ -4657,8 +4655,6 @@
             this._alternateRendering = false;
 
             this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
-
-            Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         }
 
         private _processSubCameras(camera: Camera): void {
