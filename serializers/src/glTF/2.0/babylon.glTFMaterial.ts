@@ -247,7 +247,7 @@ module BABYLON.GLTF2 {
             }
             else {
                 return MaterialAlphaMode.OPAQUE;
-            } 
+            }
         }
 
         /**
@@ -358,24 +358,29 @@ module BABYLON.GLTF2 {
          * @param useAlpha Specifies if alpha should be preserved or not
          * @returns Promise with texture
          */
-        public static _SetAlphaToOneAsync(texture: Texture, useAlpha: boolean): Promise<Texture> {
+        public static _SetAlphaToOneAsync(texture: BaseTexture, useAlpha: boolean): Promise<BaseTexture> {
             return new Promise((resolve, reject) => {
                 if (useAlpha) {
                     resolve(texture);
                 }
                 else {
-                    const scene = texture.getScene();
-                    if (scene) {
-                        const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
+                    if (texture instanceof Texture) {
+                        const scene = texture.getScene();
+                        if (scene) {
+                            const proceduralTexture = new ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
 
-                        proceduralTexture.setTexture('textureSampler', texture);
-                        proceduralTexture.onGenerated = () => {    
-                            resolve(proceduralTexture);
-                        };
-
+                            proceduralTexture.setTexture('textureSampler', texture);
+                            proceduralTexture.onGenerated = () => {
+                                resolve(proceduralTexture);
+                            };
+                        }
+                        else {
+                            reject(`Scene not available for texture ${texture.name}`);
+                        }
                     }
                     else {
-                        reject(`Scene not available for texture ${texture.name}`);
+                        Tools.Warn(`Removing alpha for ${texture.textureType} not supported`);
+                        resolve(texture);
                     }
                 }
             });
@@ -537,14 +542,14 @@ module BABYLON.GLTF2 {
          * @param scene babylonjs scene
          * @returns resized textures or null
          */
-        private static _ResizeTexturesToSameDimensions(texture1: Texture, texture2: Texture, scene: Scene): { "texture1": BaseTexture, "texture2": BaseTexture } {
+        private static _ResizeTexturesToSameDimensions(texture1: BaseTexture, texture2: BaseTexture, scene: Scene): { "texture1": BaseTexture, "texture2": BaseTexture } {
             let texture1Size = texture1 ? texture1.getSize() : { width: 0, height: 0 };
             let texture2Size = texture2 ? texture2.getSize() : { width: 0, height: 0 };
             let resizedTexture1;
             let resizedTexture2;
 
             if (texture1Size.width < texture2Size.width) {
-                if (texture1) {
+                if (texture1 && texture1 instanceof Texture) {
                     resizedTexture1 = TextureTools.CreateResizedCopy(texture1, texture2Size.width, texture2Size.height, true);
                 }
                 else {
@@ -553,7 +558,7 @@ module BABYLON.GLTF2 {
                 resizedTexture2 = texture2;
             }
             else if (texture1Size.width > texture2Size.width) {
-                if (texture2) {
+                if (texture2 && texture2 instanceof Texture) {
                     resizedTexture2 = TextureTools.CreateResizedCopy(texture2, texture1Size.width, texture1Size.height, true);
                 }
                 else {
@@ -582,7 +587,7 @@ module BABYLON.GLTF2 {
          * @param mimeType the mime type to use for the texture
          * @returns pbr metallic roughness interface or null
          */
-        private static _ConvertSpecularGlossinessTexturesToMetallicRoughness(diffuseTexture: Texture, specularGlossinessTexture: Texture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Nullable<_IPBRMetallicRoughness> {
+        private static _ConvertSpecularGlossinessTexturesToMetallicRoughness(diffuseTexture: BaseTexture, specularGlossinessTexture: BaseTexture, factors: _IPBRSpecularGlossiness, mimeType: ImageMimeType): Nullable<_IPBRMetallicRoughness> {
             if (!(diffuseTexture || specularGlossinessTexture)) {
                 Tools.Warn('_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!');
                 return null;
@@ -941,7 +946,7 @@ module BABYLON.GLTF2 {
                 return null;
             }
 
-            const metallicRoughnessFactors = this._ConvertSpecularGlossinessTexturesToMetallicRoughness(babylonPBRMaterial.albedoTexture as Texture, babylonPBRMaterial.reflectivityTexture as Texture, specGloss, mimeType);
+            const metallicRoughnessFactors = this._ConvertSpecularGlossinessTexturesToMetallicRoughness(babylonPBRMaterial.albedoTexture, babylonPBRMaterial.reflectivityTexture, specGloss, mimeType);
             if (metallicRoughnessFactors) {
                 if (hasTextureCoords) {
                     if (metallicRoughnessFactors.baseColorTextureBase64) {
@@ -1092,7 +1097,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(result => { /* do nothing */ });
         }
 
-        private static GetPixelsFromTexture(babylonTexture: Texture): Uint8Array | Float32Array {
+        private static GetPixelsFromTexture(babylonTexture: BaseTexture): Uint8Array | Float32Array {
             const pixels = babylonTexture.textureType === Engine.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
             return pixels;
         }
@@ -1128,8 +1133,7 @@ module BABYLON.GLTF2 {
             else {
                 samplerIndex = foundSamplerIndex;
             }
-
-            return this._SetAlphaToOneAsync(babylonTexture as Texture, useAlpha).then((texture) => {
+            return this._SetAlphaToOneAsync(babylonTexture, useAlpha).then((texture) => {
                 const pixels = _GLTFMaterial.GetPixelsFromTexture(texture);
                 const size = babylonTexture.getSize();
                 const base64Data = this._CreateBase64FromCanvas(pixels, size.width, size.height, mimeType);
