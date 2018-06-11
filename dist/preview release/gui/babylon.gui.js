@@ -6827,6 +6827,9 @@ var BABYLON;
                 });
                 this._utilityLayer = new BABYLON.UtilityLayerRenderer(this._scene);
                 this._utilityLayer.onlyCheckPointerDownEvents = false;
+                this._utilityLayer.mainSceneTrackerPredicate = function (mesh) {
+                    return mesh && mesh.metadata && mesh.metadata._node;
+                };
                 // Root
                 this._rootContainer = new GUI.Container3D("RootContainer");
                 this._rootContainer._host = this;
