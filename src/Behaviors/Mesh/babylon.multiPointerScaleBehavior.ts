@@ -80,12 +80,11 @@ module BABYLON {
             this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(()=>{
                 if(this._dragBehaviorA.dragging && this._dragBehaviorB.dragging){
                     var change = this._targetScale.subtract(ownerNode.scaling).scaleInPlace(0.1);
-                    if(change.length()>0.1){
+                    if(change.length()>0.01){
                         ownerNode.scaling.addInPlace(change);
                     }
                 }
-            })
-
+            });
         }
         /**
          *  Detaches the behavior from the mesh
