@@ -6,7 +6,7 @@ module BABYLON {
         public time: number = 0.0;
 
         @serialize()
-        public speed: number = 1.0;
+        public timeScale: number = 1.0;
 
         @serialize()
         public translationSpeed: number = 1.0;
@@ -29,7 +29,7 @@ module BABYLON {
             var deltaTime = scene.getEngine().getDeltaTime();
 
             this.time += deltaTime;
-            this.setFloat("time", this.time * this.speed / 1000);
+            this.setFloat("time", this.time * this.timeScale / 1000);
 
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;
             this.setFloat("translationSpeed", this._currentTranslation);
