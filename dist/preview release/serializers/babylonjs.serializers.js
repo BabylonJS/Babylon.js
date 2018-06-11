@@ -1622,64 +1622,14 @@ var BABYLON;
              * @returns The Babylon alpha mode value
              */
             _GLTFMaterial._GetAlphaMode = function (babylonMaterial) {
-                if (babylonMaterial instanceof BABYLON.StandardMaterial) {
-                    var babylonStandardMaterial = babylonMaterial;
-                    if ((babylonStandardMaterial.alpha !== 1.0) ||
-                        (babylonStandardMaterial.diffuseTexture != null && babylonStandardMaterial.diffuseTexture.hasAlpha) ||
-                        (babylonStandardMaterial.opacityTexture != null)) {
-                        return "BLEND" /* BLEND */;
-                    }
-                    else {
-                        return "OPAQUE" /* OPAQUE */;
-                    }
+                if (babylonMaterial.needAlphaBlending()) {
+                    return "BLEND" /* BLEND */;
                 }
-                else if (babylonMaterial instanceof BABYLON.PBRMetallicRoughnessMaterial) {
-                    var babylonPBRMetallicRoughness = babylonMaterial;
-                    switch (babylonPBRMetallicRoughness.transparencyMode) {
-                        case BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE: {
-                            return "OPAQUE" /* OPAQUE */;
-                        }
-                        case BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND: {
-                            return "BLEND" /* BLEND */;
-                        }
-                        case BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST: {
-                            return "MASK" /* MASK */;
-                        }
-                        case BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND: {
-                            BABYLON.Tools.Warn(babylonMaterial.name + ": GLTF Exporter | Alpha test and blend mode not supported in glTF.  Alpha blend used instead.");
-                            return "BLEND" /* BLEND */;
-                        }
-                        default: {
-                            BABYLON.Tools.Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
-                            return null;
-                        }
-                    }
-                }
-                else if (babylonMaterial instanceof BABYLON.PBRMaterial) {
-                    var babylonPBRMaterial = babylonMaterial;
-                    switch (babylonPBRMaterial.transparencyMode) {
-                        case BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE: {
-                            return "OPAQUE" /* OPAQUE */;
-                        }
-                        case BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND: {
-                            return "BLEND" /* BLEND */;
-                        }
-                        case BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST: {
-                            return "MASK" /* MASK */;
-                        }
-                        case BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND: {
-                            BABYLON.Tools.Warn(babylonMaterial.name + ": GLTF Exporter | Alpha test and blend mode not supported in glTF.  Alpha blend used instead.");
-                            return "BLEND" /* BLEND */;
-                        }
-                        default: {
-                            BABYLON.Tools.Error("Unsupported alpha mode " + babylonPBRMaterial.transparencyMode);
-                            return null;
-                        }
-                    }
+                else if (babylonMaterial.needAlphaTesting) {
+                    return "MASK" /* MASK */;
                 }
                 else {
-                    BABYLON.Tools.Error("Unsupported Babylon material type");
-                    return null;
+                    return "OPAQUE" /* OPAQUE */;
                 }
             };
             /**
@@ -1790,19 +1740,22 @@ var BABYLON;
                         resolve(texture);
                     }
                     else {
-                        var scene = texture.getScene();
-                        if (scene) {
-                            var proceduralTexture_1 = new BABYLON.ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
-                            if (proceduralTexture_1) {
+                        if (texture instanceof BABYLON.Texture) {
+                            var scene = texture.getScene();
+                            if (scene) {
+                                var proceduralTexture_1 = new BABYLON.ProceduralTexture('texture', texture.getSize(), 'setAlphaToOne', scene);
                                 proceduralTexture_1.setTexture('textureSampler', texture);
-                                proceduralTexture_1.onLoadObservable.add(function () { resolve(proceduralTexture_1); });
+                                proceduralTexture_1.onGenerated = function () {
+                                    resolve(proceduralTexture_1);
+                                };
                             }
                             else {
-                                reject("Cannot create procedural texture for " + texture.name + "!");
+                                reject("Scene not available for texture " + texture.name);
                             }
                         }
                         else {
-                            reject("Scene not available for texture " + texture.name);
+                            BABYLON.Tools.Warn("Removing alpha for " + texture.textureType + " not supported");
+                            resolve(texture);
                         }
                     }
                 });
@@ -1951,7 +1904,7 @@ var BABYLON;
                 var resizedTexture1;
                 var resizedTexture2;
                 if (texture1Size.width < texture2Size.width) {
-                    if (texture1) {
+                    if (texture1 && texture1 instanceof BABYLON.Texture) {
                         resizedTexture1 = BABYLON.TextureTools.CreateResizedCopy(texture1, texture2Size.width, texture2Size.height, true);
                     }
                     else {
@@ -1960,7 +1913,7 @@ var BABYLON;
                     resizedTexture2 = texture2;
                 }
                 else if (texture1Size.width > texture2Size.width) {
-                    if (texture2) {
+                    if (texture2 && texture2 instanceof BABYLON.Texture) {
                         resizedTexture2 = BABYLON.TextureTools.CreateResizedCopy(texture2, texture1Size.width, texture1Size.height, true);
                     }
                     else {

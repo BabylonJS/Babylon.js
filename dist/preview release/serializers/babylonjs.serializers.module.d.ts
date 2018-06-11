@@ -472,7 +472,7 @@ declare module BABYLON.GLTF2 {
          * @param babylonMaterial Babylon Material
          * @returns The Babylon alpha mode value
          */
-        static _GetAlphaMode(babylonMaterial: Material): Nullable<MaterialAlphaMode>;
+        static _GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
         /**
          * Converts a Babylon Standard Material to a glTF Material
          * @param babylonStandardMaterial BJS Standard Material
@@ -497,7 +497,7 @@ declare module BABYLON.GLTF2 {
          * @param useAlpha Specifies if alpha should be preserved or not
          * @returns Promise with texture
          */
-        static _SetAlphaToOneAsync(texture: BaseTexture, useAlpha: boolean): Promise<Texture>;
+        static _SetAlphaToOneAsync(texture: BaseTexture, useAlpha: boolean): Promise<BaseTexture>;
         /**
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
          * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness Material
