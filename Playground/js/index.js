@@ -282,7 +282,14 @@
                                 var query = queryString.replace("?", "");
                                 index = parseInt(query);
                                 if (!isNaN(index)) {
-                                    loadScriptFromIndex(index);
+                                    // Old examples
+                                    //loadScriptFromIndex(index);
+                                    var newPG = "";
+                                    switch(index) {
+                                        case 17 : newPG="#J19GYK#0"; break;
+                                        default: newPG=""; break;
+                                    }
+                                    window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
                                 } else if (query.indexOf("=") === -1) {
                                     loadScript("scripts/" + query + ".js", query);
                                 } else {
