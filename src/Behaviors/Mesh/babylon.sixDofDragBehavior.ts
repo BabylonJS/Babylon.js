@@ -1,6 +1,6 @@
 module BABYLON {
     /**
-     * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directiona and origin of the pointer's ray
+     * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
      */
     export class SixDofDragBehavior implements Behavior<Mesh> {
         private static _virtualScene:Scene;
