@@ -4533,7 +4533,7 @@
                 needsRestoreFrameBuffer = true; // Restore back buffer
             }
 
-            // Render EffecttLayer Texture
+            // Render EffectLayer Texture
             var stencilState = this._engine.getStencilBuffer();
             var renderEffects = false;
             var needStencil = false;
