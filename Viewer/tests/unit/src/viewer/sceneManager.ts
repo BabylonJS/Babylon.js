@@ -184,7 +184,7 @@ describe(name, function () {
             viewer.sceneManager.groundMirrorEnabled = false;
 
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
-            assert.isNull(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+            assert.isNotOk(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
 
             viewer.sceneManager.groundMirrorEnabled = true;
 
@@ -198,7 +198,7 @@ describe(name, function () {
             });
 
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
-            assert.isNull(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+            assert.isNotOk(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
             assert.isTrue(viewer.sceneManager.groundMirrorEnabled);
 
             viewer.dispose();
