@@ -143,22 +143,6 @@ declare module BABYLON {
         /** @hidden */
         _normalizeAnimationGroupsToBeginAtZero: boolean;
         /**
-         * Defines if the loader logging is enabled.
-         */
-        loggingEnabled: boolean;
-        /**
-         * Observable raised when the loader logs a message.
-         */
-        readonly onLogObservable: Observable<string>;
-        private _logIndentLevel;
-        private static readonly _logSpaces;
-        /** @hidden */
-        _log(message: string): void;
-        /** @hidden */
-        _logOpen(message: string): void;
-        /** @hidden */
-        _logClose(): void;
-        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -237,6 +221,14 @@ declare module BABYLON {
          * The loader state or null if the loader is not active.
          */
         readonly loaderState: Nullable<GLTFLoaderState>;
+        /**
+         * Defines if the loader logging is enabled.
+         */
+        loggingEnabled: boolean;
+        /**
+         * Defines if the loader should capture performance counters.
+         */
+        capturePerformanceCounters: boolean;
         private _loader;
         /**
          * Name of the loader ("gltf")
@@ -308,6 +300,26 @@ declare module BABYLON {
         private static _parseVersion(version);
         private static _compareVersion(a, b);
         private static _decodeBufferToText(buffer);
+        private static readonly _logSpaces;
+        private _logIndentLevel;
+        private _loggingEnabled;
+        /** @hidden */
+        _log: (message: string) => void;
+        /** @hidden */
+        _logOpen(message: string): void;
+        /** @hidden */
+        _logClose(): void;
+        private _logEnabled(message);
+        private _logDisabled(message);
+        private _capturePerformanceCounters;
+        /** @hidden */
+        _startPerformanceCounter: (counterName: string) => void;
+        /** @hidden */
+        _endPerformanceCounter: (counterName: string) => void;
+        private _startPerformanceCounterEnabled(counterName);
+        private _startPerformanceCounterDisabled(counterName);
+        private _endPerformanceCounterEnabled(counterName);
+        private _endPerformanceCounterDisabled(counterName);
     }
 }
 
@@ -433,8 +445,8 @@ declare module BABYLON.GLTF2 {
         _parent: GLTFFileLoader;
         _gltf: _ILoaderGLTF;
         _babylonScene: Scene;
+        _readyPromise: Promise<void>;
         _completePromises: Promise<void>[];
-        _onReadyObservable: Observable<IGLTFLoader>;
         private _disposed;
         private _state;
         private _extensions;
@@ -466,7 +478,6 @@ declare module BABYLON.GLTF2 {
         private _loadExtensions();
         private _checkExtensions();
         private _createRootNode();
-        private _loadNodesAsync(nodes);
         _loadSceneAsync(context: string, scene: _ILoaderScene): Promise<void>;
         private _forEachPrimitive(node, callback);
         private _getMeshes();
@@ -647,12 +658,12 @@ declare module BABYLON.GLTF2.Extensions {
          * Dispose the loader to cancel the loading of the next level of LODs.
          */
         onMaterialLODsLoadedObservable: Observable<number>;
-        private _loadingNodeLOD;
-        private _loadNodeSignals;
-        private _loadNodePromises;
-        private _loadingMaterialLOD;
-        private _loadMaterialSignals;
-        private _loadMaterialPromises;
+        private _nodeIndexLOD;
+        private _nodeSignalLODs;
+        private _nodePromiseLODs;
+        private _materialIndexLOD;
+        private _materialSignalLODs;
+        private _materialPromiseLODs;
         constructor(loader: GLTFLoader);
         dispose(): void;
         protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>>;

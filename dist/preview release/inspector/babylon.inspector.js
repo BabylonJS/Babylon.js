@@ -4220,8 +4220,8 @@ var INSPECTOR;
                 });
                 defaults.extensions[extension.name] = extensionDefaults;
             });
-            var data = '{ "asset": { "version": "2.0" }, "scenes": [ { } ] }';
-            return loader.loadAsync(scene, data, "").then(function () {
+            var data = '{ "asset": { "version": "2.0" } }';
+            return loader.importMeshAsync([], scene, data, "").then(function () {
                 scene.dispose();
                 engine.dispose();
                 return (GLTFTab._LoaderDefaults = defaults);

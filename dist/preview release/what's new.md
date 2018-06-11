@@ -31,7 +31,7 @@
 - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Position, rotation, scale, and bounding box gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
 - AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
-- Sprite isVisible field ([TrevorDev](https://github.com/TrevorDev))
+- Added sprite isVisible field ([TrevorDev](https://github.com/TrevorDev))
 - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY` for particles ([Deltakosh](https://github.com/deltakosh))
 
 ### glTF Loader
@@ -39,7 +39,7 @@
 - Added support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
 - Added `onNodeLODsLoadedObservable` and `onMaterialLODsLoadedObservable` to MSFT_lod loader extension ([bghgary](http://www.github.com/bghgary))
 - Added glTF loader settings to the GLTF tab in the debug layer ([bghgary](http://www.github.com/bghgary))
-- Added support for debug logging ([bghgary](http://www.github.com/bghgary))
+- Added debug logging and performance counters ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
@@ -84,6 +84,11 @@
 - It wasn't possible to disable camera behavior(s) using configuration  [#4348](https://github.com/BabylonJS/Babylon.js/issues/4348) ([RaananW](https://github.com/RaananW))
 - Animation blending was always set to true, ignoring configuration [#4412](https://github.com/BabylonJS/Babylon.js/issues/4412) ([RaananW](https://github.com/RaananW))
 - Animation navbar now updates correctly when a new model is loaded [#4441](https://github.com/BabylonJS/Babylon.js/issues/4441) ([RaananW](https://github.com/RaananW))
+- Non-normalized meshes didn't center and focus correctly ([RaananW](https://github.com/RaananW))
+
+### Loaders
+
+- STL Loader only supported binary downloads and no data: urls [#4473](https://github.com/BabylonJS/Babylon.js/issues/4473) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

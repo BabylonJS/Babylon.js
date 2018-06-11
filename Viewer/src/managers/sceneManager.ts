@@ -814,9 +814,6 @@ export class SceneManager {
         const sceneDiagonalLenght = sceneDiagonal.length();
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
-        else {
-            this.camera.upperRadiusLimit = 10;
-        }
 
         // sanity check!
         if (this.scene.imageProcessingConfiguration) {
@@ -844,6 +841,12 @@ export class SceneManager {
         this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
+        const sceneDiagonalLenght = sizeVec.length();
+        if (isFinite(sceneDiagonalLenght))
+            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+
+        if (this._configurationContainer.configuration)
+            this._configureEnvironment(this._configurationContainer.configuration.skybox, this._configurationContainer.configuration.ground);
         /*this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
             // casting ais safe, due to the constraints tested before
             (<ShadowLight>light).setDirectionToTarget(center);
@@ -960,7 +963,10 @@ export class SceneManager {
                     this.environmentHelper.dispose();
                     this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
                 } else {
-                    this.environmentHelper.updateOptions(options)!;
+                    //this.environmentHelper.updateOptions(options)!;
+                    // update doesn't change the size of the skybox and ground, so we have to recreate!
+                    this.environmentHelper.dispose();
+                    this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
                 }
             }
 

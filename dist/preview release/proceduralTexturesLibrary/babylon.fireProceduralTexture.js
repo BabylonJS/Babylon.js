@@ -104,6 +104,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(FireProceduralTexture.prototype, "autoGenerateTime", {
+            get: function () {
+                return this._autoGenerateTime;
+            },
+            set: function (value) {
+                this._autoGenerateTime = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(FireProceduralTexture.prototype, "fireColors", {
             get: function () {
                 return this._fireColors;
@@ -155,6 +165,10 @@ var BABYLON;
         FireProceduralTexture.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
             serializationObject.customType = "BABYLON.FireProceduralTexture";
+            serializationObject.fireColors = [];
+            for (var i = 0; i < this._fireColors.length; i++) {
+                serializationObject.fireColors.push(this._fireColors[i].asArray());
+            }
             return serializationObject;
         };
         /**
@@ -166,11 +180,16 @@ var BABYLON;
          */
         FireProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = BABYLON.SerializationHelper.Parse(function () { return new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            var colors = [];
+            for (var i = 0; i < parsedTexture.fireColors.length; i++) {
+                colors.push(BABYLON.Color3.FromArray(parsedTexture.fireColors[i]));
+            }
+            texture.fireColors = colors;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor3()
-        ], FireProceduralTexture.prototype, "fireColors", null);
+            BABYLON.serialize()
+        ], FireProceduralTexture.prototype, "autoGenerateTime", null);
         __decorate([
             BABYLON.serialize()
         ], FireProceduralTexture.prototype, "time", null);

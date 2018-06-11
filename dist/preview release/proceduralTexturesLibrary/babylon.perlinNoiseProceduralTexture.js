@@ -22,7 +22,7 @@ var BABYLON;
         function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
             _this.time = 0.0;
-            _this.speed = 1.0;
+            _this.timeScale = 1.0;
             _this.translationSpeed = 1.0;
             _this._currentTranslation = 0;
             _this.updateShaderUniforms();
@@ -36,7 +36,7 @@ var BABYLON;
             }
             var deltaTime = scene.getEngine().getDeltaTime();
             this.time += deltaTime;
-            this.setFloat("time", this.time * this.speed / 1000);
+            this.setFloat("time", this.time * this.timeScale / 1000);
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;
             this.setFloat("translationSpeed", this._currentTranslation);
         };
@@ -72,7 +72,7 @@ var BABYLON;
         ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
         __decorate([
             BABYLON.serialize()
-        ], PerlinNoiseProceduralTexture.prototype, "speed", void 0);
+        ], PerlinNoiseProceduralTexture.prototype, "timeScale", void 0);
         __decorate([
             BABYLON.serialize()
         ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
