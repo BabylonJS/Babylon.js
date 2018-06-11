@@ -1286,7 +1286,7 @@ declare module BabylonViewer {
             /**
                 * Babylon's environment helper of this viewer
                 */
-            environmentHelper: BABYLON.EnvironmentHelper;
+            environmentHelper?: BABYLON.EnvironmentHelper;
             protected _defaultHighpTextureType: number;
             protected _shadowGeneratorBias: number;
             protected _defaultPipelineTextureType: number;

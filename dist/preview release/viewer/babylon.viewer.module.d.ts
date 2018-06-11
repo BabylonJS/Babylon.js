@@ -1286,7 +1286,7 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
             /**
                 * Babylon's environment helper of this viewer
                 */
-            environmentHelper: EnvironmentHelper;
+            environmentHelper?: EnvironmentHelper;
             protected _defaultHighpTextureType: number;
             protected _shadowGeneratorBias: number;
             protected _defaultPipelineTextureType: number;
