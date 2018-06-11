@@ -71,7 +71,7 @@ export class SceneManager {
     /**
      * Babylon's environment helper of this viewer
      */
-    public environmentHelper: EnvironmentHelper;
+    public environmentHelper?: EnvironmentHelper;
 
     private _animationBlendingEnabled: boolean = true;
 
@@ -447,7 +447,7 @@ export class SceneManager {
                 }
             }
 
-            if (newConfiguration.lab.environmentMainColor) {
+            if (this.environmentHelper && newConfiguration.lab.environmentMainColor) {
                 let mainColor = new Color3().copyFrom(newConfiguration.lab.environmentMainColor as Color3);
                 this.environmentHelper.setMainColor(mainColor);
             }
@@ -1019,7 +1019,7 @@ export class SceneManager {
 
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
-            object: this.environmentHelper,
+            object: this.environmentHelper!,
             newConfiguration: {
                 skybox: skyboxConifguration,
                 ground: groundConfiguration
@@ -1229,7 +1229,7 @@ export class SceneManager {
     }
 
     private _updateGroundMirrorRenderList(model?: ViewerModel, resetList?: boolean) {
-        if (this.environmentHelper.groundMirror && this.environmentHelper.groundMirror.renderList) {
+        if (this.environmentHelper && this.environmentHelper.groundMirror && this.environmentHelper.groundMirror.renderList) {
             let focusMeshes = model ? model.meshes : this.scene.meshes;
             let renderList = this.environmentHelper.groundMirror.renderList;
             if (resetList) {
