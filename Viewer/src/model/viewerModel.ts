@@ -242,12 +242,16 @@ export class ViewerModel implements IDisposable {
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
                 let ag = new AnimationGroup("animation-" + idx);
+                let add = false;
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
+                        add = true;
                     }
                 });
-                this.addAnimationGroup(ag);
+                if (add) {
+                    this.addAnimationGroup(ag);
+                }
             });
         }
 
