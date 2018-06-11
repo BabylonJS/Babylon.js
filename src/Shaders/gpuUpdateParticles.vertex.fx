@@ -26,12 +26,13 @@ uniform vec3 maxEmitBox;
 
 #ifdef SPHEREEMITTER
 uniform float radius;
-  #ifdef DIRECTEDSPHEREEMITTER
+uniform float radiusRange;
+#ifdef DIRECTEDSPHEREEMITTER
   uniform vec3 direction1;
   uniform vec3 direction2;
-  #else
+#else
   uniform float directionRandomizer;
-  #endif
+#endif
 #endif
 
 #ifdef CONEEMITTER
@@ -127,7 +128,7 @@ void main() {
     float randY = cos(theta);
     float randZ = sin(phi) * sin(theta);
 
-    position = (radius * randoms2.z) * vec3(randX, randY, randZ);
+    position = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
       direction = direction1 + (direction2 - direction1) * randoms3;

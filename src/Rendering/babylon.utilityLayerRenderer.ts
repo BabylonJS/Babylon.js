@@ -30,6 +30,9 @@ module BABYLON {
          */
         public onPointerOutObservable = new Observable<number>();
 
+        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
+        public mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
+
         private _afterRenderObserver:Nullable<Observer<Scene>>;
         private _sceneDisposeObserver:Nullable<Observer<Scene>>;
         private _originalPointerObserver:Nullable<Observer<PointerInfoPre>>;
@@ -88,22 +91,31 @@ module BABYLON {
                     let pointerEvent = <PointerEvent>(prePointerInfo.event);
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
-                    if(originalScenePick && utilityScenePick){
+                    if (originalScenePick && utilityScenePick){
+                        // No pick in utility scene
                         if (utilityScenePick.distance === 0) {
-                            if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                            if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
+                                // We touched an utility mesh present in the main scene
+                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
+                                prePointerInfo.skipOnPointerObservable = true;                             
+                            } else if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
                             } 
                         }
 
+                        // We pick something in utility scene or the pick in utility is closer than the one in main scene
                         if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){
-                            if(!prePointerInfo.skipOnPointerObservable){
-                                this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
-                                this._lastPointerEvents[pointerEvent.pointerId] = pointerEvent.pointerType;
-                            }
+                            this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
                             prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
                         } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance > originalScenePick.distance)) {
-                            // We need to send a last pointup to the utilityLayerScene to make sure animations can complete
-                            if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                            // We have a pick in both scenes but main is closer than utility
+
+                            // We touched an utility mesh present in the main scene
+                            if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
+                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
+                                prePointerInfo.skipOnPointerObservable = true;                             
+                            } else if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
                                 this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
                                 delete this._lastPointerEvents[pointerEvent.pointerId];
                             }
@@ -131,6 +143,13 @@ module BABYLON {
             })
             
             this._updateCamera();
+        }
+
+        private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: PointerEvent) {
+            if (!prePointerInfo.skipOnPointerObservable){
+                this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo))
+                this._lastPointerEvents[pointerEvent.pointerId] = pointerEvent.pointerType;
+            }
         }
 
         /**

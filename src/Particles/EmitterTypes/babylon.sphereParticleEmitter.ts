@@ -6,6 +6,11 @@ module BABYLON {
     export class SphereParticleEmitter implements IParticleEmitterType {
 
         /**
+         * Gets or sets a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
+         */
+        public radiusRange = 1;
+
+        /**
          * Creates a new instance SphereParticleEmitter
          * @param radius the radius of the emission sphere (1 by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
@@ -19,7 +24,6 @@ module BABYLON {
              * How much to randomize the particle direction [0-1].
              */
             public directionRandomizer = 0) {
-
         }
 
         /**
@@ -51,7 +55,7 @@ module BABYLON {
         public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var phi = Scalar.RandomRange(0, 2 * Math.PI);
             var theta = Scalar.RandomRange(0, Math.PI);
-            var randRadius = Scalar.RandomRange(0, this.radius);
+            var randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
             var randX = randRadius * Math.cos(phi) * Math.sin(theta);
             var randY = randRadius * Math.cos(theta);
             var randZ = randRadius * Math.sin(phi) * Math.sin(theta);
@@ -76,6 +80,7 @@ module BABYLON {
          */        
         public applyToShader(effect: Effect): void {
             effect.setFloat("radius", this.radius);
+            effect.setFloat("radiusRange", this.radiusRange);
             effect.setFloat("directionRandomizer", this.directionRandomizer);
         }    
         
@@ -174,6 +179,7 @@ module BABYLON {
          */        
         public applyToShader(effect: Effect): void {
             effect.setFloat("radius", this.radius);
+            effect.setFloat("radiusRange", this.radiusRange);
             effect.setVector3("direction1", this.direction1);
             effect.setVector3("direction2", this.direction2);
         }       

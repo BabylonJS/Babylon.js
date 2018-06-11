@@ -376,7 +376,7 @@
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction", "angle"],
                 uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
-                                "angleRange"],
+                                "angleRange", "radiusRange"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
