@@ -258,6 +258,19 @@ module BABYLON {
             if (!this._mesh.rotationQuaternion) {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
+
+            // Sync controller mesh and pointing pose node's state with controller
+            this.update();
+            if(this._pointingPoseNode){
+                var parents = [];
+                var obj:Node = this._pointingPoseNode;
+                while(obj.parent){
+                    parents.push(obj.parent); 
+                    obj = obj.parent;
+                }
+                parents.reverse().forEach((p)=>{p.computeWorldMatrix(true)});
+            }
+
             this._meshAttachedObservable.notifyObservers(mesh);
         }
 
