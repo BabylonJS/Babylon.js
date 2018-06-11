@@ -95,8 +95,7 @@ export let defaultConfiguration: ViewerConfiguration = {
             bouncing: {
                 type: 1
             }
-        },
-        wheelPrecision: 200,
+        }
     },
     skybox: {
     },
