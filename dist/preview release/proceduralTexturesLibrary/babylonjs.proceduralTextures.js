@@ -190,6 +190,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(FireProceduralTexture.prototype, "autoGenerateTime", {
+            get: function () {
+                return this._autoGenerateTime;
+            },
+            set: function (value) {
+                this._autoGenerateTime = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(FireProceduralTexture.prototype, "fireColors", {
             get: function () {
                 return this._fireColors;
@@ -241,6 +251,10 @@ var BABYLON;
         FireProceduralTexture.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
             serializationObject.customType = "BABYLON.FireProceduralTexture";
+            serializationObject.fireColors = [];
+            for (var i = 0; i < this._fireColors.length; i++) {
+                serializationObject.fireColors.push(this._fireColors[i].asArray());
+            }
             return serializationObject;
         };
         /**
@@ -252,11 +266,16 @@ var BABYLON;
          */
         FireProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = BABYLON.SerializationHelper.Parse(function () { return new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            var colors = [];
+            for (var i = 0; i < parsedTexture.fireColors.length; i++) {
+                colors.push(BABYLON.Color3.FromArray(parsedTexture.fireColors[i]));
+            }
+            texture.fireColors = colors;
             return texture;
         };
         __decorate([
-            BABYLON.serializeAsColor3()
-        ], FireProceduralTexture.prototype, "fireColors", null);
+            BABYLON.serialize()
+        ], FireProceduralTexture.prototype, "autoGenerateTime", null);
         __decorate([
             BABYLON.serialize()
         ], FireProceduralTexture.prototype, "time", null);
@@ -403,6 +422,10 @@ var BABYLON;
         GrassProceduralTexture.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
             serializationObject.customType = "BABYLON.GrassProceduralTexture";
+            serializationObject.grassColors = [];
+            for (var i = 0; i < this._grassColors.length; i++) {
+                serializationObject.grassColors.push(this._grassColors[i].asArray());
+            }
             return serializationObject;
         };
         /**
@@ -414,11 +437,13 @@ var BABYLON;
          */
         GrassProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = BABYLON.SerializationHelper.Parse(function () { return new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            var colors = [];
+            for (var i = 0; i < parsedTexture.grassColors.length; i++) {
+                colors.push(BABYLON.Color3.FromArray(parsedTexture.grassColors[i]));
+            }
+            texture.grassColors = colors;
             return texture;
         };
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GrassProceduralTexture.prototype, "grassColors", null);
         __decorate([
             BABYLON.serializeAsColor3()
         ], GrassProceduralTexture.prototype, "groundColor", null);
@@ -1000,7 +1025,7 @@ var BABYLON;
         function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
             _this.time = 0.0;
-            _this.speed = 1.0;
+            _this.timeScale = 1.0;
             _this.translationSpeed = 1.0;
             _this._currentTranslation = 0;
             _this.updateShaderUniforms();
@@ -1014,7 +1039,7 @@ var BABYLON;
             }
             var deltaTime = scene.getEngine().getDeltaTime();
             this.time += deltaTime;
-            this.setFloat("time", this.time * this.speed / 1000);
+            this.setFloat("time", this.time * this.timeScale / 1000);
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;
             this.setFloat("translationSpeed", this._currentTranslation);
         };
@@ -1050,7 +1075,7 @@ var BABYLON;
         ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
         __decorate([
             BABYLON.serialize()
-        ], PerlinNoiseProceduralTexture.prototype, "speed", void 0);
+        ], PerlinNoiseProceduralTexture.prototype, "timeScale", void 0);
         __decorate([
             BABYLON.serialize()
         ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
