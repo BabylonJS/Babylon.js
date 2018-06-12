@@ -59,14 +59,14 @@ export let defaultConfiguration: ViewerConfiguration = {
             },
             events: {
                 pointerdown: {
-                    'navbar-control': true,
-                    'help-button': true
+                    '.navbar-control': true,
+                    '.help-button': true
                 },
                 input: {
-                    'progress-wrapper': true
+                    '.progress-wrapper': true
                 },
                 pointerup: {
-                    'progress-wrapper': true
+                    '.progress-wrapper': true
                 }
             }
         },

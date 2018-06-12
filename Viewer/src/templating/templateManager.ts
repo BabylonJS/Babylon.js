@@ -592,10 +592,16 @@ export class Template {
                         // strict null checl is working incorrectly, must override:
                         let event = this._configuration.events[eventName] || {};
                         selectorsArray.filter(selector => event[selector]).forEach(selector => {
-                            if (selector && selector.indexOf('#') !== 0) {
-                                selector = '#' + selector;
-                            }
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                            if (!htmlElement) {
+                                // backcompat, fallback to id
+                                if (selector && selector.indexOf('#') !== 0) {
+                                    selector = '#' + selector;
+                                }
+                                try {
+                                    htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                                } catch (e) { }
+                            }
                             if (htmlElement) {
                                 let binding = functionToFire.bind(this, selector);
                                 htmlElement.addEventListener(eventName, binding, false);
