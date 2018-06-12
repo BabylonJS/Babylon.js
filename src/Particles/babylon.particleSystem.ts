@@ -366,7 +366,7 @@
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
-        private _vertexBufferSize = 12;
+        private _vertexBufferSize: number;
         private _isAnimationSheetEnabled: boolean;
         private _isBillboardBased = true;
 
@@ -495,27 +495,19 @@
             this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
             this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
 
-            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3, this._vertexBufferSize, this._useInstancing);
+            let dataOffset = 0;        
+            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
+            dataOffset += 3;
 
-            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4, this._vertexBufferSize, this._useInstancing);
+            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, dataOffset, 4, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
+            dataOffset += 4;
 
-            var options = this._vertexBuffer.createVertexBuffer("angle", 7, 1, this._vertexBufferSize, this._useInstancing);
+            var options = this._vertexBuffer.createVertexBuffer("angle", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["angle"] = options;
+            dataOffset += 1;
             
-            var offsets: VertexBuffer;
-            let dataOffset = 8;
-            if (this._useInstancing) {
-                var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);  
-                this._spriteBuffer = new Buffer(engine, spriteData, false, 2);  
-                offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
-            } else {
-                offsets = this._vertexBuffer.createVertexBuffer("offset", 8, 2, this._vertexBufferSize, this._useInstancing);
-                dataOffset += 2;
-            }
-            this._vertexBuffers["offset"] = offsets;            
-
             var size = this._vertexBuffer.createVertexBuffer("size", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["size"] = size;
             dataOffset += 2;
@@ -531,6 +523,17 @@
                 this._vertexBuffers["direction"] = directionBuffer;
                 dataOffset += 3;
             }
+
+            var offsets: VertexBuffer;
+            if (this._useInstancing) {
+                var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);  
+                this._spriteBuffer = new Buffer(engine, spriteData, false, 2);  
+                offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
+            } else {
+                offsets = this._vertexBuffer.createVertexBuffer("offset", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
+                dataOffset += 2;
+            }
+            this._vertexBuffers["offset"] = offsets;              
         }
 
         private _createIndexBuffer() {
@@ -625,6 +628,19 @@
             this._vertexData[offset++] = particle.color.a;
             this._vertexData[offset++] = particle.angle;
 
+            this._vertexData[offset++] = particle.scale.x * particle.size;
+            this._vertexData[offset++] = particle.scale.y * particle.size;
+            
+            if (this._isAnimationSheetEnabled) {
+                this._vertexData[offset++] = particle.cellIndex;
+            }
+
+            if (!this._isBillboardBased) {
+                this._vertexData[offset++] = particle.direction.x;
+                this._vertexData[offset++] = particle.direction.y;
+                this._vertexData[offset++] = particle.direction.z;
+            }
+
             if (!this._useInstancing) {
                 if (this._isAnimationSheetEnabled) {
                     if (offsetX === 0)
@@ -640,19 +656,6 @@
 
                 this._vertexData[offset++] = offsetX;
                 this._vertexData[offset++] = offsetY;   
-            }
-
-            this._vertexData[offset++] = particle.scale.x * particle.size;
-            this._vertexData[offset++] = particle.scale.y * particle.size;
-            
-            if (this._isAnimationSheetEnabled) {
-                this._vertexData[offset++] = particle.cellIndex;
-            }
-
-            if (!this._isBillboardBased) {
-                this._vertexData[offset++] = particle.direction.x;
-                this._vertexData[offset++] = particle.direction.y;
-                this._vertexData[offset++] = particle.direction.z;
             }
         }
 
@@ -990,6 +993,7 @@
 
             if (this._useInstancing) {
                 engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);  
+                engine.unbindInstanceAttributes();
             } else {
                 engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
             }
