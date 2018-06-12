@@ -192,30 +192,42 @@ module BABYLON {
             }
         }
 
+        // Variables to avoid instantiation in the below method
+        private _pointA = new Vector3(0,0,0);
+        private _pointB = new Vector3(0,0,0);
+        private _pointC = new Vector3(0,0,0);
+        private _lineA = new Vector3(0,0,0);
+        private _lineB = new Vector3(0,0,0);
+        private _localAxis = new Vector3(0,0,0);
+        private _lookAt = new Vector3(0,0,0); 
         // Position the drag plane based on the attached mesh position, for single axis rotate the plane along the axis to face the camera
         private _updateDragPlanePosition(ray:Ray){
-            var pointA = this._dragPlaneParent ? this._dragPlaneParent.absolutePosition : (<Mesh>this._attachedNode).absolutePosition;
+            this._pointA.copyFrom(this._dragPlaneParent ? this._dragPlaneParent.absolutePosition : (<Mesh>this._attachedNode).absolutePosition);
             if(this.options.dragAxis){
-                var localAxis = this.useObjectOrienationForDragging ? Vector3.TransformCoordinates(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix()) : this.options.dragAxis;
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this.options.dragAxis);
 
                 // Calculate plane normal in direction of camera but perpendicular to drag axis
-                var pointB = pointA.add(localAxis); // towards drag axis
-                var pointC = pointA.add(ray.origin.subtract(pointA).normalize()); // towards camera
+                this._pointA.addToRef(this._localAxis, this._pointB); // towards drag axis
+                ray.origin.subtractToRef(this._pointA, this._pointC)
+                this._pointA.addToRef(this._pointC.normalize(), this._pointC); // towards camera
                 // Get perpendicular line from direction to camera and drag axis
-                var lineA = pointB.subtract(pointA);
-                var lineB = pointC.subtract(pointA);
-                var perpLine = BABYLON.Vector3.Cross(lineA, lineB);
+                this._pointB.subtractToRef(this._pointA, this._lineA);
+                this._pointC.subtractToRef(this._pointA, this._lineB);
+                BABYLON.Vector3.CrossToRef(this._lineA, this._lineB, this._lookAt);
                 // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendiculat to camera
-                var norm = BABYLON.Vector3.Cross(lineA, perpLine).normalize();
+                BABYLON.Vector3.CrossToRef(this._lineA, this._lookAt, this._lookAt);
+                this._lookAt.normalize();
 
-                this._dragPlane.position.copyFrom(pointA);
-                this._dragPlane.lookAt(pointA.subtract(norm));
+                this._dragPlane.position.copyFrom(this._pointA);
+                this._pointA.subtractToRef(this._lookAt, this._lookAt);
+                this._dragPlane.lookAt(this._lookAt);
             }else if(this.options.dragPlaneNormal){
-                var localAxis = this.useObjectOrienationForDragging ? Vector3.TransformCoordinates(this.options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix()) : this.options.dragPlaneNormal;
-                this._dragPlane.position.copyFrom(pointA);
-                this._dragPlane.lookAt(pointA.subtract(localAxis));
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix(),this._localAxis) : this._localAxis.copyFrom(this.options.dragPlaneNormal);
+                this._dragPlane.position.copyFrom(this._pointA);
+                this._pointA.subtractToRef(this._localAxis, this._lookAt);
+                this._dragPlane.lookAt(this._lookAt);
             }else{
-                this._dragPlane.position.copyFrom(pointA);
+                this._dragPlane.position.copyFrom(this._pointA);
                 this._dragPlane.lookAt(ray.origin);
             }
             this._dragPlane.computeWorldMatrix(true);
