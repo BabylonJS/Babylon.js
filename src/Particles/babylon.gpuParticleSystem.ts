@@ -57,7 +57,7 @@
 
         private _randomTexture: RawTexture;
 
-        private readonly _attributesStrideSize = 18;
+        private readonly _attributesStrideSize = 19;
         private _updateEffectOptions: EffectCreationOptions;
 
         private _randomTextureSize: number;
@@ -343,6 +343,23 @@
         public getClassName(): string {
             return "GPUParticleSystem";
         }            
+        
+        private _isBillboardBased = true;
+
+        /**
+         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+         */
+        public get isBillboardBased(): boolean {
+            return this._isBillboardBased;
+        }      
+        
+        public set isBillboardBased(value: boolean) {
+            if (this._isBillboardBased === value) {
+                return;
+            }
+
+            this._isBillboardBased = value;
+        }          
 
         /**
          * Instantiates a GPU particle system.
@@ -413,8 +430,8 @@
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 1);
             updateVertexBuffers["size"] = source.createVertexBuffer("size", 6, 3);
             updateVertexBuffers["color"] = source.createVertexBuffer("color", 9, 4);
-            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 3);
-            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", 16, 2);
+            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 4);
+            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", 17, 2);
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -429,7 +446,8 @@
             renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
             renderVertexBuffers["size"] = source.createVertexBuffer("size", 6, 3, this._attributesStrideSize, true);           
             renderVertexBuffers["color"] = source.createVertexBuffer("color", 9, 4, this._attributesStrideSize, true);
-            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", 16, 2, this._attributesStrideSize, true);
+            renderVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 4, this._attributesStrideSize, true);
+            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", 17, 2, this._attributesStrideSize, true);
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -474,7 +492,8 @@
               // direction
               data.push(0.0);
               data.push(0.0);
-              data.push(0.0);     
+              data.push(0.0);  
+              data.push(0.0);    
               
               // angle
               data.push(0.0);  
@@ -525,12 +544,16 @@
                 defines = "\n#define CLIPPLANE";
             }
 
+            if (this._isBillboardBased) {
+                defines = "\n#define BILLBOARD";
+            }            
+
             if (this._renderEffect && this._renderEffect.defines === defines) {
                 return;
             }
 
             this._renderEffect = new Effect("gpuRenderParticles", 
-                                            ["position", "age", "life", "size", "color", "offset", "uv", "angle"], 
+                                            ["position", "age", "life", "size", "color", "offset", "uv", "direction", "angle"], 
                                             ["view", "projection", "colorDead", "invView", "vClipPlane"], 
                                             ["textureSampler"], this._scene.getEngine(), defines);
         }        

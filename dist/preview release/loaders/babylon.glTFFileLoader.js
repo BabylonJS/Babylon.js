@@ -3023,9 +3023,6 @@ var BABYLON;
                     });
                     resultPromise.then(function () {
                         _this._parent._endPerformanceCounter("Loading => Ready");
-                        if (_this._rootBabylonMesh) {
-                            _this._rootBabylonMesh.setEnabled(true);
-                        }
                         BABYLON.Tools.SetImmediate(function () {
                             if (!_this._disposed) {
                                 Promise.all(_this._completePromises).then(function () {
@@ -3123,7 +3120,6 @@ var BABYLON;
             };
             GLTFLoader.prototype._createRootNode = function () {
                 this._rootBabylonMesh = new BABYLON.Mesh("__root__", this._babylonScene);
-                this._rootBabylonMesh.setEnabled(false);
                 var rootNode = { _babylonMesh: this._rootBabylonMesh };
                 switch (this._parent.coordinateSystemMode) {
                     case BABYLON.GLTFLoaderCoordinateSystemMode.AUTO: {
@@ -3260,6 +3256,7 @@ var BABYLON;
                 this._parent._logOpen(context + " " + (node.name || ""));
                 var babylonMesh = new BABYLON.Mesh(node.name || "node" + node._index, this._babylonScene, node._parent ? node._parent._babylonMesh : null);
                 node._babylonMesh = babylonMesh;
+                babylonMesh.setEnabled(false);
                 GLTFLoader._LoadTransform(node, babylonMesh);
                 if (node.mesh != undefined) {
                     var mesh = GLTFLoader._GetProperty(context + "/mesh", this._gltf.meshes, node.mesh);
@@ -3278,7 +3275,9 @@ var BABYLON;
                 }
                 this._parent.onMeshLoadedObservable.notifyObservers(babylonMesh);
                 this._parent._logClose();
-                return Promise.all(promises).then(function () { });
+                return Promise.all(promises).then(function () {
+                    babylonMesh.setEnabled(true);
+                });
             };
             GLTFLoader.prototype._loadMeshAsync = function (context, node, mesh, babylonMesh) {
                 var _this = this;
@@ -3972,24 +3971,37 @@ var BABYLON;
                 material._babylonData = material._babylonData || {};
                 var babylonData = material._babylonData[babylonDrawMode];
                 if (!babylonData) {
-                    var promises = new Array();
                     this._parent._logOpen(context + " " + (material.name || ""));
-                    var name_4 = material.name || "material_" + material._index;
+                    var name_4 = material.name || "material" + material._index;
                     var babylonMaterial = this._createMaterial(name_4, babylonDrawMode);
-                    promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                    promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
-                    this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
                     babylonData = {
                         material: babylonMaterial,
                         meshes: [],
-                        loaded: Promise.all(promises).then(function () { })
+                        loaded: this._loadMaterialPropertiesAsync(context, material, babylonMaterial)
                     };
                     material._babylonData[babylonDrawMode] = babylonData;
+                    this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
                     this._parent._logClose();
                 }
                 babylonData.meshes.push(babylonMesh);
+                babylonMesh.onDisposeObservable.addOnce(function () {
+                    var index = babylonData.meshes.indexOf(babylonMesh);
+                    if (index !== -1) {
+                        babylonData.meshes.splice(index, 1);
+                    }
+                });
                 assign(babylonData.material);
                 return babylonData.loaded;
+            };
+            GLTFLoader.prototype._loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
+                var promise = GLTF2.GLTFLoaderExtension._LoadMaterialPropertiesAsync(this, context, material, babylonMaterial);
+                if (promise) {
+                    return promise;
+                }
+                var promises = new Array();
+                promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
+                promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
+                return Promise.all(promises).then(function () { });
             };
             GLTFLoader.prototype._createMaterial = function (name, drawMode) {
                 var babylonMaterial = new BABYLON.PBRMaterial(name, this._babylonScene);
@@ -4414,6 +4426,11 @@ var BABYLON;
              */
             GLTFLoaderExtension.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) { return null; };
             /**
+             * Override this method to modify the default behavior for loading material properties.
+             * @hidden
+             */
+            GLTFLoaderExtension.prototype._loadMaterialPropertiesAsync = function (context, material, babylonMaterial) { return null; };
+            /**
              * Override this method to modify the default behavior for loading textures.
              * @hidden
              */
@@ -4497,6 +4514,13 @@ var BABYLON;
              */
             GLTFLoaderExtension._LoadMaterialAsync = function (loader, context, material, mesh, babylonMesh, babylonDrawMode, assign) {
                 return loader._applyExtensions(function (extension) { return extension._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, assign); });
+            };
+            /**
+             * Helper method called by the loader to allow extensions to override loading material properties.
+             * @hidden
+             */
+            GLTFLoaderExtension._LoadMaterialPropertiesAsync = function (loader, context, material, babylonMaterial) {
+                return loader._applyExtensions(function (extension) { return extension._loadMaterialPropertiesAsync(context, material, babylonMaterial); });
             };
             /**
              * Helper method called by the loader to allow extensions to override loading textures.
@@ -4633,8 +4657,9 @@ var BABYLON;
                                 if (indexLOD !== 0) {
                                     var previousNodeLOD = nodeLODs[indexLOD - 1];
                                     if (previousNodeLOD._babylonMesh) {
-                                        previousNodeLOD._babylonMesh.dispose(false, true);
+                                        previousNodeLOD._babylonMesh.dispose();
                                         delete previousNodeLOD._babylonMesh;
+                                        _this._disposeUnusedMaterials();
                                     }
                                 }
                             });
@@ -4733,6 +4758,23 @@ var BABYLON;
                     }
                     properties.push(property);
                     return properties;
+                };
+                MSFT_lod.prototype._disposeUnusedMaterials = function () {
+                    var materials = this._loader._gltf.materials;
+                    if (materials) {
+                        for (var _i = 0, materials_1 = materials; _i < materials_1.length; _i++) {
+                            var material = materials_1[_i];
+                            if (material._babylonData) {
+                                for (var drawMode in material._babylonData) {
+                                    var babylonData = material._babylonData[drawMode];
+                                    if (babylonData.meshes.length === 0) {
+                                        babylonData.material.dispose(false, true);
+                                        delete material._babylonData[drawMode];
+                                    }
+                                }
+                            }
+                        }
+                    }
                 };
                 return MSFT_lod;
             }(GLTF2.GLTFLoaderExtension));
@@ -4978,28 +5020,13 @@ var BABYLON;
                     _this.name = NAME;
                     return _this;
                 }
-                KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
+                KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
                     var _this = this;
                     return this._loadExtensionAsync(context, material, function (extensionContext, extension) {
-                        material._babylonData = material._babylonData || {};
-                        var babylonData = material._babylonData[babylonDrawMode];
-                        if (!babylonData) {
-                            var promises = new Array();
-                            var name_1 = material.name || "materialSG_" + material._index;
-                            var babylonMaterial = _this._loader._createMaterial(name_1, babylonDrawMode);
-                            promises.push(_this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                            promises.push(_this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
-                            _this._loader._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-                            babylonData = {
-                                material: babylonMaterial,
-                                meshes: [],
-                                loaded: Promise.all(promises).then(function () { })
-                            };
-                            material._babylonData[babylonDrawMode] = babylonData;
-                        }
-                        babylonData.meshes.push(babylonMesh);
-                        assign(babylonData.material);
-                        return babylonData.loaded;
+                        var promises = new Array();
+                        promises.push(_this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
+                        promises.push(_this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
+                        return Promise.all(promises).then(function () { });
                     });
                 };
                 KHR_materials_pbrSpecularGlossiness.prototype._loadSpecularGlossinessPropertiesAsync = function (context, material, properties, babylonMaterial) {
@@ -5066,31 +5093,15 @@ var BABYLON;
                     _this.name = NAME;
                     return _this;
                 }
-                KHR_materials_unlit.prototype._loadMaterialAsync = function (context, material, mesh, babylonMesh, babylonDrawMode, assign) {
+                KHR_materials_unlit.prototype._loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
                     var _this = this;
                     return this._loadExtensionAsync(context, material, function () {
-                        material._babylonData = material._babylonData || {};
-                        var babylonData = material._babylonData[babylonDrawMode];
-                        if (!babylonData) {
-                            var name_1 = material.name || "materialUnlit_" + material._index;
-                            var babylonMaterial = _this._loader._createMaterial(name_1, babylonDrawMode);
-                            babylonMaterial.unlit = true;
-                            var promise = _this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
-                            _this._loader._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-                            babylonData = {
-                                material: babylonMaterial,
-                                meshes: [],
-                                loaded: promise
-                            };
-                            material._babylonData[babylonDrawMode] = babylonData;
-                        }
-                        babylonData.meshes.push(babylonMesh);
-                        assign(babylonData.material);
-                        return babylonData.loaded;
+                        return _this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
                     });
                 };
                 KHR_materials_unlit.prototype._loadUnlitPropertiesAsync = function (context, material, babylonMaterial) {
                     var promises = new Array();
+                    babylonMaterial.unlit = true;
                     // Ensure metallic workflow
                     babylonMaterial.metallic = 1;
                     babylonMaterial.roughness = 1;

@@ -9,37 +9,16 @@ module BABYLON.GLTF2.Extensions {
     export class KHR_materials_unlit extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
             return this._loadExtensionAsync<{}>(context, material, () => {
-                material._babylonData = material._babylonData || {};
-                let babylonData = material._babylonData[babylonDrawMode];
-                if (!babylonData) {
-                    const name = material.name || `materialUnlit_${material._index}`;
-                    const babylonMaterial = this._loader._createMaterial(name, babylonDrawMode);
-                    babylonMaterial.unlit = true;
-
-                    const promise = this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
-
-                    this._loader._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-
-                    babylonData = {
-                        material: babylonMaterial,
-                        meshes: [],
-                        loaded: promise
-                    };
-
-                    material._babylonData[babylonDrawMode] = babylonData;
-                }
-
-                babylonData.meshes.push(babylonMesh);
-
-                assign(babylonData.material);
-                return babylonData.loaded;
+                return this._loadUnlitPropertiesAsync(context, material, babylonMaterial as PBRMaterial);
             });
         }
 
         private _loadUnlitPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
+
+            babylonMaterial.unlit = true;
 
             // Ensure metallic workflow
             babylonMaterial.metallic = 1;

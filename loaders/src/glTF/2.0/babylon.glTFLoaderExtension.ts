@@ -59,6 +59,12 @@ module BABYLON.GLTF2 {
         protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
 
         /**
+         * Override this method to modify the default behavior for loading material properties.
+         * @hidden
+         */
+        protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> { return null; }
+
+        /**
          * Override this method to modify the default behavior for loading textures.
          * @hidden
          */
@@ -158,6 +164,14 @@ module BABYLON.GLTF2 {
          */
         public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, assign));
+        }
+
+        /**
+         * Helper method called by the loader to allow extensions to override loading material properties.
+         * @hidden
+         */
+        public static _LoadMaterialPropertiesAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadMaterialPropertiesAsync(context, material, babylonMaterial));
         }
 
         /**

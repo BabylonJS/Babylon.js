@@ -32,17 +32,16 @@ module BABYLON {
 
         /**
          * Called by the particle System when the direction is computed for the created particle.
-         * @param emitPower is the power of the particle (speed)
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
             var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
             var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
 
-            Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+            Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
         }
 
         /**

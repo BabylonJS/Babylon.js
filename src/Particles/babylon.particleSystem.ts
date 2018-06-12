@@ -242,20 +242,20 @@
         }
 
         /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors
          */
         public color1 = new Color4(1.0, 1.0, 1.0, 1.0);
         /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors
          */
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
         /**
-         * Color the particle will have at the end of its lifetime.
+         * Color the particle will have at the end of its lifetime
          */
         public colorDead = new Color4(0, 0, 0, 1.0);
 
         /**
-         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel.
+         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel
          */
         public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
 
@@ -267,48 +267,48 @@
 
         /**
          * This function can be defined to specify initial direction for every new particle.
-         * It by default use the emitterType defined function.
+         * It by default use the emitterType defined function
          */
-        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
         /**
          * This function can be defined to specify initial position for every new particle.
-         * It by default use the emitterType defined function.
+         * It by default use the emitterType defined function
          */
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not.
+         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not
          */
         public spriteCellLoop = true;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop.
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop
          */
         public spriteCellChangeSpeed = 0;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display.
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display
          */
         public startSpriteCellID = 0;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display.
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display
          */
         public endSpriteCellID = 0;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use.
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
          */
         public spriteCellWidth = 0;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use.
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         public spriteCellHeight = 0;
 
         /**
-        * An event triggered when the system is disposed.
+        * An event triggered when the system is disposed
         */
         public onDisposeObservable = new Observable<ParticleSystem>();
 
         private _onDisposeObserver: Nullable<Observer<ParticleSystem>>;
         /**
-         * Sets a callback that will be triggered when the system is disposed.
+         * Sets a callback that will be triggered when the system is disposed
          */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
@@ -318,11 +318,27 @@
         }
 
         /**
-         * Gets wether an animation sprite sheet is enabled or not on the particle system.
+         * Gets whether an animation sprite sheet is enabled or not on the particle system
          */
-        public get isAnimationSheetEnabled(): Boolean {
+        public get isAnimationSheetEnabled(): boolean {
             return this._isAnimationSheetEnabled;
         }
+
+        /**
+         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+         */
+        public get isBillboardBased(): boolean {
+            return this._isBillboardBased;
+        }      
+        
+        public set isBillboardBased(value: boolean) {
+            if (this._isBillboardBased === value) {
+                return;
+            }
+
+            this._isBillboardBased = value;
+            this._resetEffect();
+        }            
 
         private _particles = new Array<Particle>();
         private _epsilon: number;
@@ -333,6 +349,7 @@
         private _vertexData: Float32Array;
         private _vertexBuffer: Nullable<Buffer>;
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+        private _spriteBuffer: Nullable<Buffer>;
         private _indexBuffer: Nullable<WebGLBuffer>;
         private _effect: Effect;
         private _customEffect: Nullable<Effect>;
@@ -343,13 +360,15 @@
         private _scaledGravity = Vector3.Zero();
         private _currentRenderId = -1;
         private _alive: boolean;
+        private _useInstancing = false;
 
         private _started = false;
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
-        private _vertexBufferSize = 12;
+        private _vertexBufferSize: number;
         private _isAnimationSheetEnabled: boolean;
+        private _isBillboardBased = true;
 
         // end of sheet animation
 
@@ -399,9 +418,6 @@
 
             this._epsilon = epsilon;
             this._isAnimationSheetEnabled = isAnimationSheetEnabled;
-            if (isAnimationSheetEnabled) {
-                this._vertexBufferSize = 13;
-            }
 
             this._scene = scene || Engine.LastCreatedScene;
 
@@ -409,26 +425,10 @@
 
             scene.particleSystems.push(this);
 
+            this._useInstancing = this._scene.getEngine().getCaps().instancedArrays;
+
             this._createIndexBuffer();
-
-            // 13 floats per particle (x, y, z, r, g, b, a, angle, scaleX, scaleY, offsetX, offsetY) + 1 filler
-            this._vertexData = new Float32Array(capacity * this._vertexBufferSize * 4);
-            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, this._vertexBufferSize);
-
-            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
-            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
-            var options = this._vertexBuffer.createVertexBuffer("options", 7, 3);
-            var size = this._vertexBuffer.createVertexBuffer("size", 10, 2);
-
-            if (this._isAnimationSheetEnabled) {
-                var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 12, 1);
-                this._vertexBuffers["cellIndex"] = cellIndexBuffer;
-            }
-
-            this._vertexBuffers[VertexBuffer.PositionKind] = positions;
-            this._vertexBuffers[VertexBuffer.ColorKind] = colors;
-            this._vertexBuffers["options"] = options;
-            this._vertexBuffers["size"] = size;
+            this._createVertexBuffers();
 
             // Default emitter type
             this.particleEmitterType = new BoxParticleEmitter();
@@ -453,7 +453,7 @@
 
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
-                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
+                        particle.direction.scaleToRef(this._scaledUpdateSpeed * particle.emitPower, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
@@ -467,7 +467,79 @@
             }
         }
 
+        private _resetEffect() {
+            if (this._vertexBuffer) {
+                this._vertexBuffer.dispose();
+                this._vertexBuffer = null;
+            }
+
+            if (this._spriteBuffer) {
+                this._spriteBuffer.dispose();
+                this._spriteBuffer = null;
+            }            
+
+            this._createVertexBuffers();           
+        }
+
+        private _createVertexBuffers() {
+            this._vertexBufferSize = this._useInstancing ? 10 : 12;
+            if (this._isAnimationSheetEnabled) {
+                this._vertexBufferSize += 1;
+            }
+
+            if (!this._isBillboardBased) {
+                this._vertexBufferSize += 3;
+            }
+
+            let engine = this._scene.getEngine();
+            this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
+            this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
+
+            let dataOffset = 0;        
+            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
+            this._vertexBuffers[VertexBuffer.PositionKind] = positions;
+            dataOffset += 3;
+
+            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, dataOffset, 4, this._vertexBufferSize, this._useInstancing);
+            this._vertexBuffers[VertexBuffer.ColorKind] = colors;
+            dataOffset += 4;
+
+            var options = this._vertexBuffer.createVertexBuffer("angle", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
+            this._vertexBuffers["angle"] = options;
+            dataOffset += 1;
+            
+            var size = this._vertexBuffer.createVertexBuffer("size", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
+            this._vertexBuffers["size"] = size;
+            dataOffset += 2;
+
+            if (this._isAnimationSheetEnabled) {
+                var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
+                this._vertexBuffers["cellIndex"] = cellIndexBuffer;
+                dataOffset += 1;
+            }
+
+            if (!this._isBillboardBased) {
+                var directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
+                this._vertexBuffers["direction"] = directionBuffer;
+                dataOffset += 3;
+            }
+
+            var offsets: VertexBuffer;
+            if (this._useInstancing) {
+                var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);  
+                this._spriteBuffer = new Buffer(engine, spriteData, false, 2);  
+                offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
+            } else {
+                offsets = this._vertexBuffer.createVertexBuffer("offset", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
+                dataOffset += 2;
+            }
+            this._vertexBuffers["offset"] = offsets;              
+        }
+
         private _createIndexBuffer() {
+            if (this._useInstancing) {
+                return;
+            }
             var indices = [];
             var index = 0;
             for (var count = 0; count < this._capacity; count++) {
@@ -546,48 +618,45 @@
          */
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
             var offset = index * this._vertexBufferSize;
-            this._vertexData[offset] = particle.position.x;
-            this._vertexData[offset + 1] = particle.position.y;
-            this._vertexData[offset + 2] = particle.position.z;
-            this._vertexData[offset + 3] = particle.color.r;
-            this._vertexData[offset + 4] = particle.color.g;
-            this._vertexData[offset + 5] = particle.color.b;
-            this._vertexData[offset + 6] = particle.color.a;
-            this._vertexData[offset + 7] = particle.angle;
-            this._vertexData[offset + 8] = offsetX;
-            this._vertexData[offset + 9] = offsetY;   
-            this._vertexData[offset + 10] = particle.scale.x * particle.size;
-            this._vertexData[offset + 11] = particle.scale.y * particle.size;      
-        }
 
-        /**
-         * @hidden (for internal use only)
-         */
-        public _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-            if (offsetX === 0)
-                offsetX = this._epsilon;
-            else if (offsetX === 1)
-                offsetX = 1 - this._epsilon;
+            this._vertexData[offset++] = particle.position.x;
+            this._vertexData[offset++] = particle.position.y;
+            this._vertexData[offset++] = particle.position.z;
+            this._vertexData[offset++] = particle.color.r;
+            this._vertexData[offset++] = particle.color.g;
+            this._vertexData[offset++] = particle.color.b;
+            this._vertexData[offset++] = particle.color.a;
+            this._vertexData[offset++] = particle.angle;
 
-            if (offsetY === 0)
-                offsetY = this._epsilon;
-            else if (offsetY === 1)
-                offsetY = 1 - this._epsilon;
+            this._vertexData[offset++] = particle.scale.x * particle.size;
+            this._vertexData[offset++] = particle.scale.y * particle.size;
+            
+            if (this._isAnimationSheetEnabled) {
+                this._vertexData[offset++] = particle.cellIndex;
+            }
 
-            var offset = index * this._vertexBufferSize;
-            this._vertexData[offset] = particle.position.x;
-            this._vertexData[offset + 1] = particle.position.y;
-            this._vertexData[offset + 2] = particle.position.z;
-            this._vertexData[offset + 3] = particle.color.r;
-            this._vertexData[offset + 4] = particle.color.g;
-            this._vertexData[offset + 5] = particle.color.b;
-            this._vertexData[offset + 6] = particle.color.a;
-            this._vertexData[offset + 7] = particle.angle;
-            this._vertexData[offset + 8] = offsetX;
-            this._vertexData[offset + 9] = offsetY;   
-            this._vertexData[offset + 10] = particle.scale.x * particle.size;
-            this._vertexData[offset + 11] = particle.scale.y * particle.size;
-            this._vertexData[offset + 12] = particle.cellIndex;
+            if (!this._isBillboardBased) {
+                this._vertexData[offset++] = particle.direction.x;
+                this._vertexData[offset++] = particle.direction.y;
+                this._vertexData[offset++] = particle.direction.z;
+            }
+
+            if (!this._useInstancing) {
+                if (this._isAnimationSheetEnabled) {
+                    if (offsetX === 0)
+                        offsetX = this._epsilon;
+                    else if (offsetX === 1)
+                        offsetX = 1 - this._epsilon;
+    
+                    if (offsetY === 0)
+                        offsetY = this._epsilon;
+                    else if (offsetY === 1)
+                        offsetY = 1 - this._epsilon;
+                }
+
+                this._vertexData[offset++] = offsetX;
+                this._vertexData[offset++] = offsetY;   
+            }
         }
 
         // start of sub system methods
@@ -680,7 +749,7 @@
 
                 this._particles.push(particle);
 
-                var emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
+                particle.emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
                     this.startPositionFunction(worldMatrix, particle.position, particle);
@@ -690,10 +759,10 @@
                 }
 
                 if (this.startDirectionFunction) {
-                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                    this.startDirectionFunction(worldMatrix, particle.direction, particle);
                 }
                 else {
-                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                    this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
                 }
 
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
@@ -726,21 +795,25 @@
                 defines.push("#define ANIMATESHEET");
             }
 
+            if (this._isBillboardBased) {
+                defines.push("#define BILLBOARD");
+            }
+
             // Effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions: any;
-                var effectCreationOption: any;
+                var attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
+                var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
 
                 if (this._isAnimationSheetEnabled) {
-                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "size", "cellIndex"];
-                    effectCreationOption = ["invView", "view", "projection", "particlesInfos", "vClipPlane", "textureMask"];
+                    attributesNamesOrOptions.push("cellIndex");
+                    effectCreationOption.push("particlesInfos")
                 }
-                else {
-                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "size", ];
-                    effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"]
+
+                if (!this._isBillboardBased) {
+                    attributesNamesOrOptions.push("direction");
                 }
 
                 this._effect = this._scene.getEngine().createEffect(
@@ -817,20 +890,12 @@
                 }
             }
 
-            // Animation sheet
-            if (this._isAnimationSheetEnabled) {
-                this._appendParticleVertexes = this._appenedParticleVertexesWithSheet;
-            }
-            else {
-                this._appendParticleVertexes = this._appenedParticleVertexesNoSheet;
-            }
-
             // Update VBO
             var offset = 0;
             for (var index = 0; index < this._particles.length; index++) {
                 var particle = this._particles[index];
-                this._appendParticleVertexes(offset, particle);
-                offset += 4;
+                this._appendParticleVertices(offset, particle);                
+                offset += this._useInstancing ? 1 : 4;
             }
 
             if (this._vertexBuffer) {
@@ -842,20 +907,13 @@
             }
         }
 
-        private _appendParticleVertexes: Nullable<(offset: number, particle: Particle) => void> = null;
-
-        private _appenedParticleVertexesWithSheet(offset: number, particle: Particle) {
-            this._appendParticleVertexWithAnimation(offset++, particle, 0, 0);
-            this._appendParticleVertexWithAnimation(offset++, particle, 1, 0);
-            this._appendParticleVertexWithAnimation(offset++, particle, 1, 1);
-            this._appendParticleVertexWithAnimation(offset++, particle, 0, 1);
-        }
-
-        private _appenedParticleVertexesNoSheet(offset: number, particle: Particle) {
+        private _appendParticleVertices(offset: number, particle: Particle) {
             this._appendParticleVertex(offset++, particle, 0, 0);
-            this._appendParticleVertex(offset++, particle, 1, 0);
-            this._appendParticleVertex(offset++, particle, 1, 1);
-            this._appendParticleVertex(offset++, particle, 0, 1);
+            if (!this._useInstancing) {
+                this._appendParticleVertex(offset++, particle, 1, 0);
+                this._appendParticleVertex(offset++, particle, 1, 1);
+                this._appendParticleVertex(offset++, particle, 0, 1);
+            }
         }
 
         /**
@@ -920,7 +978,6 @@
                 effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
 
-            // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
             // Draw order
@@ -934,7 +991,12 @@
                 engine.setDepthWrite(true);
             }
 
-            engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
+            if (this._useInstancing) {
+                engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);  
+                engine.unbindInstanceAttributes();
+            } else {
+                engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
+            }
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
             return this._particles.length;
@@ -948,6 +1010,11 @@
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
+            }
+
+            if (this._spriteBuffer) {
+                this._spriteBuffer.dispose();
+                this._spriteBuffer = null;
             }
 
             if (this._indexBuffer) {

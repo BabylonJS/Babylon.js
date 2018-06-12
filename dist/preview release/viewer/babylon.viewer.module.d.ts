@@ -168,6 +168,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * This will be executed when the templates initialize.
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+            toggleHD(): void;
             /**
                 * Toggle fullscreen of the entire viewer
                 */
@@ -366,6 +367,8 @@ declare module 'babylonjs-viewer/viewer/viewer' {
                 * force resizing the engine.
                 */
             forceResize(): void;
+            protected _hdToggled: boolean;
+            toggleHD(): void;
             /**
                 * The resize function that will be registered with the window object
                 */
@@ -986,6 +989,7 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                     disableResize?: boolean;
                     engineOptions?: EngineOptions;
                     adaptiveQuality?: boolean;
+                    hdEnabled?: boolean;
             };
             templates?: {
                     main: ITemplateConfiguration;

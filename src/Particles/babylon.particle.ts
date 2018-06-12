@@ -60,6 +60,11 @@
          */
         public cellIndex: number = 0;
 
+        /**
+         * Defines the energy applied to the particle direction.
+         */
+        public emitPower = 0;        
+
         private _currentFrameCounter = 0;
 
         /**

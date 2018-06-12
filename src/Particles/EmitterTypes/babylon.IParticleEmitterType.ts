@@ -6,12 +6,11 @@ module BABYLON {
     export interface IParticleEmitterType {
         /**
          * Called by the particle System when the direction is computed for the created particle.
-         * @param emitPower is the power of the particle (speed)
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
 
         /**
          * Called by the particle System when the position is computed for the created particle.

@@ -49,7 +49,7 @@ in float life;
 in float seed;
 in vec3 size;
 in vec4 color;
-in vec3 direction;
+in vec4 direction;
 in vec2 angle;
 
 // Output
@@ -59,7 +59,7 @@ out float outLife;
 out float outSeed;
 out vec3 outSize;
 out vec4 outColor;
-out vec3 outDirection;
+out vec4 outDirection;
 out vec2 outAngle;
 
 vec3 getRandomVec3(float offset) {
@@ -123,7 +123,7 @@ void main() {
 
     // Position on the sphere surface
     float phi = 2.0 * PI * randoms2.x;
-    float theta = PI * randoms2.y;
+    float theta = acos(2.0 * randoms2.y - 1.0);
     float randX = cos(phi) * sin(theta);
     float randY = cos(theta);
     float randZ = sin(phi) * sin(theta);
@@ -168,19 +168,20 @@ void main() {
     direction = 2.0 * (getRandomVec3(seed) - vec3(0.5, 0.5, 0.5));
 #endif
 
-    float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
+    outDirection.w = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
     outPosition = (emitterWM * vec4(position, 1.)).xyz;
-    outDirection = (emitterWM * vec4(direction * power, 0.)).xyz;
+    outDirection.xyz = (emitterWM * vec4(direction, 0.)).xyz;
 
   } else {   
-    outPosition = position + direction * timeDelta;
+    outPosition = position + direction.xyz * timeDelta * direction.w;
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
     outColor = color;
     outSize = size;
-    outDirection = direction + gravity * timeDelta;
+    outDirection.w = direction.w;
+    outDirection.xyz = direction.xyz + gravity * timeDelta;
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
   }
 }
