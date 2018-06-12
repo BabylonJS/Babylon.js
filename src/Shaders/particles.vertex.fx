@@ -52,25 +52,20 @@ void main(void) {
 	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.y = 0.;
 
-	vec3 worldPos = position + rotatedCorner; 
-
-	vec3 yaxis = normalize(position);
+	vec3 yaxis = normalize(direction);
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
 
-	vec4 row0 = vec4(xaxis.x, xaxis.y, xaxis.z, 0.);
-	vec4 row1 = vec4(yaxis.x, yaxis.y, yaxis.z, 0.);
-	vec4 row2 = vec4(zaxis.x, zaxis.y, zaxis.z, 0.);
-	// vec4 row0 = vec4(1., 0., 0., 0.);
-	// vec4 row1 = vec4(0., 1., 0., 0.);
-	// vec4 row2 = vec4(0., 0., 1., 0.);
-	vec4 row3 = vec4(0., 0., 0., 1.0);
+	vec3 row0 = vec3(xaxis.x, xaxis.y, xaxis.z);
+	vec3 row1 = vec3(yaxis.x, yaxis.y, yaxis.z);
+	vec3 row2 = vec3(zaxis.x, zaxis.y, zaxis.z);
 
-	mat4 rotMatrix =  mat4(row0, row1, row2, row3);
+	mat3 rotMatrix =  mat3(row0, row1, row2);
 
-	vec4 alignedWorld = rotMatrix * vec4(worldPos, 0.0);
+	vec3 alignedCorner = rotMatrix * rotatedCorner;
+	vec3 worldPos = position + alignedCorner; 
 
-	gl_Position = projection * view * vec4(alignedWorld.xyz, 1.0);  
+	gl_Position = projection * view * vec4(worldPos, 1.0);  
 #endif	
 	vColor = color;
 

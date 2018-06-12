@@ -269,7 +269,7 @@
          * This function can be defined to specify initial direction for every new particle.
          * It by default use the emitterType defined function
          */
-        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
         /**
          * This function can be defined to specify initial position for every new particle.
          * It by default use the emitterType defined function
@@ -453,7 +453,7 @@
 
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
-                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
+                        particle.direction.scaleToRef(this._scaledUpdateSpeed * particle.emitPower, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
@@ -749,7 +749,7 @@
 
                 this._particles.push(particle);
 
-                var emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
+                particle.emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
                     this.startPositionFunction(worldMatrix, particle.position, particle);
@@ -759,10 +759,10 @@
                 }
 
                 if (this.startDirectionFunction) {
-                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                    this.startDirectionFunction(worldMatrix, particle.direction, particle);
                 }
                 else {
-                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                    this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
                 }
 
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);

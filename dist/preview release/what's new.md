@@ -10,9 +10,11 @@
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
 - New `serialize` and `Parse` functions to serialize and parse all procedural textures from the Procedural Textures Library ([julien-moreau](https://github.com/julien-moreau))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
-  - Improved rendering performance (up to x2 on low end devices)
+  - Improved CPU particles rendering performance (up to x2 on low end devices)
+  - Added support for `isBillboardBased`
   - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`
   - Added support for `radiusRange` for sphere emitter
+  
 
 ## Updates
 

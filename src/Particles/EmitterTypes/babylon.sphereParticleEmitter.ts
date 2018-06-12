@@ -28,12 +28,11 @@ module BABYLON {
 
         /**
          * Called by the particle System when the direction is computed for the created particle.
-         * @param emitPower is the power of the particle (speed)
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
             var randX = Scalar.RandomRange(0, this.directionRandomizer);
             var randY = Scalar.RandomRange(0, this.directionRandomizer);
@@ -43,7 +42,7 @@ module BABYLON {
             direction.z += randZ;
             direction.normalize();
 
-            Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+            Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
         }
 
         /**
@@ -53,9 +52,10 @@ module BABYLON {
          * @param particle is the particle we are computed the position for
          */
         public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
-            var phi = Scalar.RandomRange(0, 2 * Math.PI);
-            var theta = Scalar.RandomRange(0, Math.PI);
             var randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
+            var v = Scalar.RandomRange(0, 1.0); 
+            var phi = Scalar.RandomRange(0, 2 * Math.PI);
+            var theta = Math.acos(2 * v - 1);
             var randX = randRadius * Math.cos(phi) * Math.sin(theta);
             var randY = randRadius * Math.cos(theta);
             var randZ = randRadius * Math.sin(phi) * Math.sin(theta);
@@ -149,16 +149,15 @@ module BABYLON {
 
         /**
          * Called by the particle System when the direction is computed for the created particle.
-         * @param emitPower is the power of the particle (speed)
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
             var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
             var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
-            Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+            Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
         }
 
         /**
