@@ -937,6 +937,10 @@ module BABYLON {
             }
         }
 
+        private get _noControllerIsActive(){
+            return !(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)
+        }
+
         private beforeRender = () => {
             if(this.leftController && this.leftController._activePointer){
                 this._castRayAndSelectObject(this.leftController);
@@ -946,7 +950,7 @@ module BABYLON {
                 this._castRayAndSelectObject(this.rightController);
             }
 
-            if(!(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)){
+            if(this._noControllerIsActive){
                 this._castRayAndSelectObject(this._cameraGazer);
             }else{
                 this._cameraGazer._gazeTracker.isVisible = false;
@@ -1139,12 +1143,16 @@ module BABYLON {
                     });
                 }
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
-                    if (!controller._pointerDownOnMeshAsked) {
+                    var gazer:VRExperienceHelperGazer = controller;
+                    if(this._noControllerIsActive){
+                        gazer = this._cameraGazer;
+                    }
+                    if (!gazer._pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
-                            controller._selectionPointerDown();
+                            gazer._selectionPointerDown();
                         }
                     } else if (stateObject.value < this._padSensibilityDown) {
-                        controller._selectionPointerUp();
+                        gazer._selectionPointerUp();
                     }
                 });
             }
