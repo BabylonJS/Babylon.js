@@ -348,14 +348,14 @@ module BABYLON {
 
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
-                }
+                }                    
             }, null, (scene: Scene, message: string) => {
                 Tools.Log(message);
                 Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
                 if (!forceDefault) {
                     this.initControllerMesh(scene, meshLoaded, true);
                 }
-            });
+            });            
         }
 
         /**
@@ -476,6 +476,8 @@ module BABYLON {
             loadedMeshInfo.pointingPoseNode = getChildByName(rootNode, this._mapping.pointingPoseMeshName);
             if (!loadedMeshInfo.pointingPoseNode) {
                 Tools.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
+            }else{
+                this._pointingPoseNode = loadedMeshInfo.pointingPoseNode;
             }
 
             return loadedMeshInfo;

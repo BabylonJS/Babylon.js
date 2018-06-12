@@ -11,6 +11,9 @@ module BABYLON.GUI {
         
         private _orientation = Container3D.FACEORIGIN_ORIENTATION;
 
+        protected _cellWidth: number;
+        protected _cellHeight: number;
+
         /**
          * Gets or sets the distance between elements
          */
@@ -92,8 +95,8 @@ module BABYLON.GUI {
         }        
 
         protected _arrangeChildren() {
-            let cellWidth = 0;
-            let cellHeight = 0;
+            this._cellWidth = 0;
+            this._cellHeight = 0;
             let rows = 0;
             let columns = 0;
             let controlCount = 0;
@@ -113,12 +116,12 @@ module BABYLON.GUI {
                 let boundingBox = child.mesh.getBoundingInfo().boundingBox;
                 let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
 
-                cellWidth = Math.max(cellWidth, extendSize.x * 2);
-                cellHeight = Math.max(cellHeight, extendSize.y * 2);
+                this._cellWidth = Math.max(this._cellWidth, extendSize.x * 2);
+                this._cellHeight = Math.max(this._cellHeight, extendSize.y * 2);
             }
 
-            cellWidth += this.margin * 2;
-            cellHeight += this.margin * 2;
+            this._cellWidth += this.margin * 2;
+            this._cellHeight += this.margin * 2;
 
             // Arrange
             if (this._rowThenColum) {
@@ -129,8 +132,8 @@ module BABYLON.GUI {
                 columns = Math.ceil(controlCount / this._rows);
             }
 
-            let startOffsetX = (columns * 0.5) * cellWidth;
-            let startOffsetY = (rows * 0.5) * cellHeight;
+            let startOffsetX = (columns * 0.5) * this._cellWidth;
+            let startOffsetY = (rows * 0.5) * this._cellHeight;
             let nodeGrid = [];
             let cellCounter = 0;
 
@@ -139,7 +142,7 @@ module BABYLON.GUI {
                 {
                     for (var c = 0; c < columns; c++)
                     {
-                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, (r * cellHeight) - startOffsetY + cellHeight / 2, 0));
+                        nodeGrid.push(new Vector3((c * this._cellWidth) - startOffsetX + this._cellWidth / 2, (r * this._cellHeight) - startOffsetY + this._cellHeight / 2, 0));
                         cellCounter++;
                         if (cellCounter > controlCount)
                         {
@@ -152,7 +155,7 @@ module BABYLON.GUI {
                 {
                     for (var r = 0; r < rows; r++)
                     {
-                        nodeGrid.push(new Vector3((c * cellWidth) - startOffsetX + cellWidth / 2, (r * cellHeight) - startOffsetY + cellHeight / 2, 0));
+                        nodeGrid.push(new Vector3((c * this._cellWidth) - startOffsetX + this._cellWidth / 2, (r * this._cellHeight) - startOffsetY + this._cellHeight / 2, 0));
                         cellCounter++;
                         if (cellCounter > controlCount)
                         {
@@ -172,9 +175,16 @@ module BABYLON.GUI {
 
                 cellCounter++;
             }
+
+            this._finalProcessing();
         }
 
         /** Child classes must implement this function to provide correct control positioning */
         protected abstract _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+
+        /** Child classes can implement this function to provide additional processing */
+        protected _finalProcessing() {
+
+        }
     }
 }

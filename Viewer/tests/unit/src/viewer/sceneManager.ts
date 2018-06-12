@@ -146,6 +146,12 @@ describe(name, function () {
         });
 
         viewer.onInitDoneObservable.add(() => {
+            if (!viewer.sceneManager.environmentHelper) {
+                assert.fail();
+                viewer.dispose();
+                done();
+                return;
+            }
             // ground should be defined, and mirror should be enabled
             assert.isDefined(viewer.sceneManager.environmentHelper.ground);
 
@@ -177,6 +183,12 @@ describe(name, function () {
         });
 
         viewer.onInitDoneObservable.add(() => {
+            if (!viewer.sceneManager.environmentHelper) {
+                assert.fail();
+                viewer.dispose();
+                done();
+                return;
+            }
             // ground should be defined, and mirror should be enabled
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
@@ -184,7 +196,7 @@ describe(name, function () {
             viewer.sceneManager.groundMirrorEnabled = false;
 
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
-            assert.isNull(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+            assert.isNotOk(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
 
             viewer.sceneManager.groundMirrorEnabled = true;
 
@@ -198,7 +210,7 @@ describe(name, function () {
             });
 
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);
-            assert.isNull(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
+            assert.isNotOk(viewer.sceneManager.environmentHelper.groundMaterial!.reflectionTexture);
             assert.isTrue(viewer.sceneManager.groundMirrorEnabled);
 
             viewer.dispose();

@@ -9,7 +9,7 @@
         "strictNullChecks": true,
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": true,
-        "inlineSourceMap": true,
+        "sourceMap": true,
         "lib": [
             "es5",
             "dom",
