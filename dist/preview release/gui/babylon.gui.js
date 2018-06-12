@@ -7990,6 +7990,75 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
+         * Class used to create a button in 3D
+         */
+        var MeshButton3D = /** @class */ (function (_super) {
+            __extends(MeshButton3D, _super);
+            /**
+             * Creates a new 3D button based on a mesh
+             * @param mesh mesh to become a 3D button
+             * @param name defines the control name
+             */
+            function MeshButton3D(mesh, name) {
+                var _this = _super.call(this, name) || this;
+                _this._currentMesh = mesh;
+                _this.pointerEnterAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    //this.mesh.scaling.scaleInPlace(0.95);
+                };
+                _this.pointerOutAnimation = function () {
+                };
+                _this.pointerDownAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(0.95);
+                };
+                _this.pointerUpAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(1.0 / 0.95);
+                };
+                return _this;
+            }
+            MeshButton3D.prototype._getTypeName = function () {
+                return "MeshButton3D";
+            };
+            // Mesh association
+            MeshButton3D.prototype._createNode = function (scene) {
+                var _this = this;
+                this._currentMesh.getChildMeshes().forEach(function (mesh) {
+                    mesh.metadata = _this;
+                });
+                return this._currentMesh;
+            };
+            MeshButton3D.prototype._affectMaterial = function (mesh) {
+            };
+            /**
+             * Releases all associated resources
+             */
+            MeshButton3D.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                if (this._currentMesh) {
+                    this._currentMesh.dispose();
+                }
+            };
+            return MeshButton3D;
+        }(GUI.Button3D));
+        GUI.MeshButton3D = MeshButton3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
          * Class used to create a holographic button in 3D
          */
         var HolographicButton = /** @class */ (function (_super) {
