@@ -189,10 +189,6 @@ module BABYLON.GLTF2 {
                 resultPromise.then(() => {
                     this._parent._endPerformanceCounter("Loading => Ready");
 
-                    if (this._rootBabylonMesh) {
-                        this._rootBabylonMesh.setEnabled(true);
-                    }
-
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
                             Promise.all(this._completePromises).then(() => {
@@ -299,7 +295,6 @@ module BABYLON.GLTF2 {
 
         private _createRootNode(): _ILoaderNode {
             this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
-            this._rootBabylonMesh.setEnabled(false);
 
             const rootNode = { _babylonMesh: this._rootBabylonMesh } as _ILoaderNode;
             switch (this._parent.coordinateSystemMode) {
@@ -457,6 +452,7 @@ module BABYLON.GLTF2 {
             const babylonMesh = new Mesh(node.name || `node${node._index}`, this._babylonScene, node._parent ? node._parent._babylonMesh : null);
             node._babylonMesh = babylonMesh;
 
+            babylonMesh.setEnabled(false);
             GLTFLoader._LoadTransform(node, babylonMesh);
 
             if (node.mesh != undefined) {
@@ -480,7 +476,9 @@ module BABYLON.GLTF2 {
 
             this._parent._logClose();
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => {
+                babylonMesh.setEnabled(true);
+            });
         }
 
         private _loadMeshAsync(context: string, node: _ILoaderNode, mesh: _ILoaderMesh, babylonMesh: Mesh): Promise<void> {
