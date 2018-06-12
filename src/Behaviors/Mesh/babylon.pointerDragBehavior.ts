@@ -50,10 +50,15 @@ module BABYLON {
         public _dragPlaneParent:Nullable<Mesh>=null;
 
         /**
-         *  If the drag behavior will react to drag events
+         *  If the drag behavior will react to drag events (Default: true)
          */
         public enabled = true;
         
+        /**
+         * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
+         */
+        public useObjectOrienationForDragging = true;
+
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
          * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
@@ -159,7 +164,7 @@ module BABYLON {
                                 pickedPoint.subtractToRef(this.lastDragPosition, delta);
                             }
                             if(this.moveAttached){
-                                (<Mesh>this._attachedNode).position.addInPlace(delta);
+                                (<Mesh>this._attachedNode).setAbsolutePosition((<Mesh>this._attachedNode).absolutePosition.add(delta));
                             }
                             this.onDragObservable.notifyObservers({dragDistance: dragLength, delta: delta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID});
                             this.lastDragPosition.copyFrom(pickedPoint);
@@ -191,7 +196,7 @@ module BABYLON {
         private _updateDragPlanePosition(ray:Ray){
             var pointA = this._dragPlaneParent ? this._dragPlaneParent.absolutePosition : (<Mesh>this._attachedNode).absolutePosition;
             if(this.options.dragAxis){
-                var localAxis = Vector3.TransformCoordinates(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix());
+                var localAxis = this.useObjectOrienationForDragging ? Vector3.TransformCoordinates(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix()) : this.options.dragAxis;
 
                 // Calculate plane normal in direction of camera but perpendicular to drag axis
                 var pointB = pointA.add(localAxis); // towards drag axis
@@ -206,8 +211,9 @@ module BABYLON {
                 this._dragPlane.position.copyFrom(pointA);
                 this._dragPlane.lookAt(pointA.subtract(norm));
             }else if(this.options.dragPlaneNormal){
+                var localAxis = this.useObjectOrienationForDragging ? Vector3.TransformCoordinates(this.options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix()) : this.options.dragPlaneNormal;
                 this._dragPlane.position.copyFrom(pointA);
-                this._dragPlane.lookAt(pointA.subtract(this.options.dragPlaneNormal));
+                this._dragPlane.lookAt(pointA.subtract(localAxis));
             }else{
                 this._dragPlane.position.copyFrom(pointA);
                 this._dragPlane.lookAt(ray.origin);
