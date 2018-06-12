@@ -1286,33 +1286,46 @@ module BABYLON.GLTF2 {
             material._babylonData = material._babylonData || {};
             let babylonData = material._babylonData[babylonDrawMode];
             if (!babylonData) {
-                const promises = new Array<Promise<void>>();
-
                 this._parent._logOpen(`${context} ${material.name || ""}`);
 
-                const name = material.name || `material_${material._index}`;
+                const name = material.name || `material${material._index}`;
                 const babylonMaterial = this._createMaterial(name, babylonDrawMode);
-
-                promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
-
-                this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
                 babylonData = {
                     material: babylonMaterial,
                     meshes: [],
-                    loaded: Promise.all(promises).then(() => {})
+                    loaded: this._loadMaterialPropertiesAsync(context, material, babylonMaterial)
                 };
 
                 material._babylonData[babylonDrawMode] = babylonData;
+
+                this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
                 this._parent._logClose();
             }
 
             babylonData.meshes.push(babylonMesh);
+            babylonMesh.onDisposeObservable.addOnce(() => {
+                const index = babylonData.meshes.indexOf(babylonMesh);
+                if (index !== -1) {
+                    babylonData.meshes.splice(index, 1);
+                }
+            });
 
             assign(babylonData.material);
             return babylonData.loaded;
+        }
+
+        public _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadMaterialPropertiesAsync(this, context, material, babylonMaterial);
+            if (promise) {
+                return promise;
+            }
+
+            const promises = new Array<Promise<void>>();
+            promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial as PBRMaterial));
+            promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial as PBRMaterial));
+            return Promise.all(promises).then(() => {});
         }
 
         public _createMaterial(name: string, drawMode: number): PBRMaterial {
