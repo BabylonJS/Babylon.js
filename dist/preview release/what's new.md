@@ -11,9 +11,9 @@
 - New `serialize` and `Parse` functions to serialize and parse all procedural textures from the Procedural Textures Library ([julien-moreau](https://github.com/julien-moreau))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
-  - Added support for `isBillboardBased`
-  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`
-  - Added support for `radiusRange` for sphere emitter
+  - Added support for `isBillboardBased`. [Doc](http://doc.babylonjs.com/babylon101/particles#alignment)
+  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](http://doc.babylonjs.com/babylon101/particles#size)
+  - Added support for `radiusRange` for sphere emitter. [Doc](http://doc.babylonjs.com/babylon101/particles#sphere-emitter)
   
 
 ## Updates
