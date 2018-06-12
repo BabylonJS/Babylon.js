@@ -445,7 +445,7 @@
     {{/unless}}{{#unless (or (not animations) hideAnimations)}}
     <div class="animation-control">
         <div class="types">
-            <button class="flex-container animation-buttons types-button">
+            <button class="flex-container types-button animation-buttons">
                 <!-- <div> -->
                 <span class="icon types-icon"></span>
                 <span class="control-text animation-label">{{selectedAnimationName}}</span>
@@ -457,7 +457,7 @@
             </button>
             <div class="menu-options">
                 {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
-                <button class="flex-container animation-buttons label-option-button" data-value="{{this}}">
+                <button class="flex-container label-option-button animation-buttons" data-value="{{this}}">
                     <!-- <div> -->
                     <span class="icon types-icon"></span>
                     <span class="control-text animation-label">{{this}}</span>
