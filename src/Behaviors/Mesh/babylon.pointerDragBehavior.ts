@@ -8,7 +8,18 @@ module BABYLON {
         private _scene:Scene;
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
         private static _planeScene:Scene;
-        private _draggingID = -1;
+        /**
+         * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
+         */
+        public currentDraggingPointerID = -1;
+        /**
+         * The last position where the pointer hit the drag plane in world space
+         */
+        public lastDragPosition:Vector3;
+        /**
+         * If the behavior is currently in a dragging state
+         */
+        public dragging = false;
         // Debug mode will display drag planes to help visualize behavior
         private _debugMode = false;
         private _maxDragAngle = Math.PI/5;
@@ -20,15 +31,15 @@ module BABYLON {
          *  * dragPlaneNormal normal of the current drag plane used during the drag
          *  * dragPlanePoint in world space where the drag intersects the drag plane
          */
-        public onDragObservable = new Observable<{delta:Vector3, dragPlanePoint:Vector3, dragPlaneNormal:Vector3, dragDistance:number}>()
+        public onDragObservable = new Observable<{delta:Vector3, dragPlanePoint:Vector3, dragPlaneNormal:Vector3, dragDistance:number, pointerId:number}>()
         /**
          *  Fires each time a drag begins (eg. mouse down on mesh)
          */
-        public onDragStartObservable = new Observable<{dragPlanePoint:Vector3}>()
+        public onDragStartObservable = new Observable<{dragPlanePoint:Vector3, pointerId:number}>()
         /**
          *  Fires each time a drag ends (eg. mouse release after drag)
          */
-        public onDragEndObservable = new Observable<{dragPlanePoint:Vector3}>()
+        public onDragEndObservable = new Observable<{dragPlanePoint:Vector3, pointerId:number}>()
         /**
          *  If the attached mesh should be moved when dragged
          */
@@ -39,10 +50,15 @@ module BABYLON {
         public _dragPlaneParent:Nullable<Mesh>=null;
 
         /**
-         *  If the drag behavior will react to drag events
+         *  If the drag behavior will react to drag events (Default: true)
          */
         public enabled = true;
         
+        /**
+         * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
+         */
+        public useObjectOrienationForDragging = true;
+
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
          * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
@@ -75,6 +91,8 @@ module BABYLON {
          */
         public init() {}
 
+        private _tmpVector = new Vector3(0,0,0);
+        private _worldDragAxis = new Vector3(0,0,0);
         /**
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
@@ -95,8 +113,7 @@ module BABYLON {
             this._dragPlane = BABYLON.Mesh.CreatePlane("pointerDragPlane", this._debugMode ? 1 : 10000, PointerDragBehavior._planeScene, false, BABYLON.Mesh.DOUBLESIDE);
 
             // State of the drag
-            var dragging = false;
-            var lastPosition = new BABYLON.Vector3(0,0,0);
+            this.lastDragPosition = new BABYLON.Vector3(0,0,0);
             var delta = new BABYLON.Vector3(0,0,0);
             var dragLength = 0;
 
@@ -110,24 +127,23 @@ module BABYLON {
                 }
                 
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
-                    if(!dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
+                    
+                    if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
                         this._updateDragPlanePosition(pointerInfo.pickInfo.ray);
                         var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         if(pickedPoint){
-                            dragging = true;
-                            this._draggingID = (<PointerEvent>pointerInfo.event).pointerId;
-                            lastPosition.copyFrom(pickedPoint);
-                            this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint});
+                            this.dragging = true;
+                            this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
+                            this.lastDragPosition.copyFrom(pickedPoint);
+                            this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID});
                         }
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
-                    if(this._draggingID == (<PointerEvent>pointerInfo.event).pointerId){
-                        dragging = false;
-                        this._draggingID = -1;
-                        this.onDragEndObservable.notifyObservers({dragPlanePoint: lastPosition});
+                    if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId){
+                        this.releaseDrag();
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
-                    if(this._draggingID == (<PointerEvent>pointerInfo.event).pointerId && dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray){
+                    if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray){
                         var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         
                          // Get angle between drag plane and ray. Only update the drag plane at non steep angles to avoid jumps in delta position
@@ -140,24 +156,32 @@ module BABYLON {
                             // depending on the drag mode option drag accordingly
                             if(this.options.dragAxis){
                                 // Convert local drag axis to world
-                                var worldDragAxis = Vector3.TransformCoordinates(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix());
+                                Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
 
                                 // Project delta drag from the drag plane onto the drag axis
-                                dragLength = BABYLON.Vector3.Dot(pickedPoint.subtract(lastPosition), worldDragAxis)
-                                worldDragAxis.scaleToRef(dragLength, delta);
+                                pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
+                                dragLength = BABYLON.Vector3.Dot(this._tmpVector, this._worldDragAxis)
+                                this._worldDragAxis.scaleToRef(dragLength, delta);
                             }else{
                                 dragLength = delta.length();
-                                pickedPoint.subtractToRef(lastPosition, delta);
+                                pickedPoint.subtractToRef(this.lastDragPosition, delta);
                             }
                             if(this.moveAttached){
-                                (<Mesh>this._attachedNode).position.addInPlace(delta);
+                                (<Mesh>this._attachedNode).absolutePosition.addToRef(delta, this._tmpVector);
+                                (<Mesh>this._attachedNode).setAbsolutePosition(this._tmpVector);
                             }
-                            this.onDragObservable.notifyObservers({dragDistance: dragLength, delta: delta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward});
-                            lastPosition.copyFrom(pickedPoint);
+                            this.onDragObservable.notifyObservers({dragDistance: dragLength, delta: delta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID});
+                            this.lastDragPosition.copyFrom(pickedPoint);
                         }
                     }
                 }
             });
+        }
+
+        public releaseDrag(){
+            this.dragging = false;
+            this.onDragEndObservable.notifyObservers({dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID});
+            this.currentDraggingPointerID = -1;
         }
 
         private _pickWithRayOnDragPlane(ray:Nullable<Ray>){
@@ -172,29 +196,42 @@ module BABYLON {
             }
         }
 
+        // Variables to avoid instantiation in the below method
+        private _pointA = new Vector3(0,0,0);
+        private _pointB = new Vector3(0,0,0);
+        private _pointC = new Vector3(0,0,0);
+        private _lineA = new Vector3(0,0,0);
+        private _lineB = new Vector3(0,0,0);
+        private _localAxis = new Vector3(0,0,0);
+        private _lookAt = new Vector3(0,0,0); 
         // Position the drag plane based on the attached mesh position, for single axis rotate the plane along the axis to face the camera
         private _updateDragPlanePosition(ray:Ray){
-            var pointA = this._dragPlaneParent ? this._dragPlaneParent.absolutePosition : (<Mesh>this._attachedNode).absolutePosition;
+            this._pointA.copyFrom(this._dragPlaneParent ? this._dragPlaneParent.absolutePosition : (<Mesh>this._attachedNode).absolutePosition);
             if(this.options.dragAxis){
-                var localAxis = Vector3.TransformCoordinates(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix());
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this.options.dragAxis);
 
                 // Calculate plane normal in direction of camera but perpendicular to drag axis
-                var pointB = pointA.add(localAxis); // towards drag axis
-                var pointC = pointA.add(ray.origin.subtract(pointA).normalize()); // towards camera
+                this._pointA.addToRef(this._localAxis, this._pointB); // towards drag axis
+                ray.origin.subtractToRef(this._pointA, this._pointC)
+                this._pointA.addToRef(this._pointC.normalize(), this._pointC); // towards camera
                 // Get perpendicular line from direction to camera and drag axis
-                var lineA = pointB.subtract(pointA);
-                var lineB = pointC.subtract(pointA);
-                var perpLine = BABYLON.Vector3.Cross(lineA, lineB);
+                this._pointB.subtractToRef(this._pointA, this._lineA);
+                this._pointC.subtractToRef(this._pointA, this._lineB);
+                BABYLON.Vector3.CrossToRef(this._lineA, this._lineB, this._lookAt);
                 // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendiculat to camera
-                var norm = BABYLON.Vector3.Cross(lineA, perpLine).normalize();
+                BABYLON.Vector3.CrossToRef(this._lineA, this._lookAt, this._lookAt);
+                this._lookAt.normalize();
 
-                this._dragPlane.position.copyFrom(pointA);
-                this._dragPlane.lookAt(pointA.subtract(norm));
+                this._dragPlane.position.copyFrom(this._pointA);
+                this._pointA.subtractToRef(this._lookAt, this._lookAt);
+                this._dragPlane.lookAt(this._lookAt);
             }else if(this.options.dragPlaneNormal){
-                this._dragPlane.position.copyFrom(pointA);
-                this._dragPlane.lookAt(pointA.subtract(this.options.dragPlaneNormal));
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix(),this._localAxis) : this._localAxis.copyFrom(this.options.dragPlaneNormal);
+                this._dragPlane.position.copyFrom(this._pointA);
+                this._pointA.subtractToRef(this._localAxis, this._lookAt);
+                this._dragPlane.lookAt(this._lookAt);
             }else{
-                this._dragPlane.position.copyFrom(pointA);
+                this._dragPlane.position.copyFrom(this._pointA);
                 this._dragPlane.lookAt(ray.origin);
             }
             this._dragPlane.computeWorldMatrix(true);

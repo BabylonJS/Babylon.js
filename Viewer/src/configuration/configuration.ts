@@ -54,6 +54,7 @@ export interface ViewerConfiguration {
         disableResize?: boolean;
         engineOptions?: EngineOptions;
         adaptiveQuality?: boolean;
+        hdEnabled?: boolean;
     },
     //templateStructure?: ITemplateStructure,
     templates?: {
