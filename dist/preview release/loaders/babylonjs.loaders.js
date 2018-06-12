@@ -4008,9 +4008,6 @@ var BABYLON;
                     });
                     resultPromise.then(function () {
                         _this._parent._endPerformanceCounter("Loading => Ready");
-                        if (_this._rootBabylonMesh) {
-                            _this._rootBabylonMesh.setEnabled(true);
-                        }
                         BABYLON.Tools.SetImmediate(function () {
                             if (!_this._disposed) {
                                 Promise.all(_this._completePromises).then(function () {
@@ -4108,7 +4105,6 @@ var BABYLON;
             };
             GLTFLoader.prototype._createRootNode = function () {
                 this._rootBabylonMesh = new BABYLON.Mesh("__root__", this._babylonScene);
-                this._rootBabylonMesh.setEnabled(false);
                 var rootNode = { _babylonMesh: this._rootBabylonMesh };
                 switch (this._parent.coordinateSystemMode) {
                     case BABYLON.GLTFLoaderCoordinateSystemMode.AUTO: {
@@ -4245,6 +4241,7 @@ var BABYLON;
                 this._parent._logOpen(context + " " + (node.name || ""));
                 var babylonMesh = new BABYLON.Mesh(node.name || "node" + node._index, this._babylonScene, node._parent ? node._parent._babylonMesh : null);
                 node._babylonMesh = babylonMesh;
+                babylonMesh.setEnabled(false);
                 GLTFLoader._LoadTransform(node, babylonMesh);
                 if (node.mesh != undefined) {
                     var mesh = GLTFLoader._GetProperty(context + "/mesh", this._gltf.meshes, node.mesh);
@@ -4263,7 +4260,9 @@ var BABYLON;
                 }
                 this._parent.onMeshLoadedObservable.notifyObservers(babylonMesh);
                 this._parent._logClose();
-                return Promise.all(promises).then(function () { });
+                return Promise.all(promises).then(function () {
+                    babylonMesh.setEnabled(true);
+                });
             };
             GLTFLoader.prototype._loadMeshAsync = function (context, node, mesh, babylonMesh) {
                 var _this = this;
