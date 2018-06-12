@@ -161,28 +161,25 @@ describe('Babylon Scene Loader', function () {
             return Promise.race(promises);
         });
 
-        it('Load BoomBox with rootMesh.isEnabled check', () => {
+        it('Load BoomBox with mesh.isEnabled check', () => {
             const scene = new BABYLON.Scene(subject);
-            let rootMesh: BABYLON.AbstractMesh;
 
             subject.runRenderLoop(() => {
-                if (!rootMesh) {
-                    for (const mesh of scene.meshes) {
-                        if (!mesh.parent) {
-                            rootMesh = mesh;
-                            break;
-                        }
+                for (const mesh of scene.meshes) {
+                    if (mesh.getTotalVertices() !== 0) {
+                        expect(mesh.isEnabled(), "mesh.isEnabled").to.be.false;
                     }
-                }
-
-                if (rootMesh) {
-                    expect(rootMesh.isEnabled(), "rootMesh.isEnabled").to.be.false;
                 }
             });
 
             return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(scene => {
-                expect(rootMesh.isEnabled(), "rootMesh.isEnabled").to.be.true;
                 subject.stopRenderLoop();
+
+                for (const mesh of scene.meshes) {
+                    if (mesh.getTotalVertices() !== 0) {
+                        expect(mesh.isEnabled(), "mesh.isEnabled").to.be.true;
+                    }
+                }
             });
         });
 
