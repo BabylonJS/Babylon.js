@@ -1,4 +1,11 @@
 ﻿module BABYLON {
+
+    /** @hidden */
+    class ColorGradient {
+        public gradient: number;
+        public color: Color4;
+    }
+
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -168,6 +175,8 @@
          * You can use gravity if you want to give an orientation to your particles.
          */
         public gravity = Vector3.Zero();
+
+        private _colorGradients: Nullable<Array<ColorGradient>> = null;
 
        /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -445,12 +454,28 @@
                         continue;
                     }
                     else {
-                        particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
-                        particle.color.addInPlace(this._scaledColorStep);
+                        if (this._colorGradients) {
+                            let ratio = particle.age / particle.lifeTime;
 
-                        if (particle.color.a < 0)
-                            particle.color.a = 0;
+                            for (var gradientIndex = 0; gradientIndex < this._colorGradients.length - 1; gradientIndex++) {
+                                let currentGradient = this._colorGradients[gradientIndex];
+                                let nextGradient = this._colorGradients[gradientIndex + 1];
 
+                                if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
+                                    let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                                    Color4.LerpToRef(currentGradient.color, nextGradient.color, scale, particle.color);
+                                    break;
+                                }
+                            }
+                        }
+                        else {
+                            particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                            particle.color.addInPlace(this._scaledColorStep);
+
+                            if (particle.color.a < 0) {
+                                particle.color.a = 0;
+                            }
+                        }
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
                         particle.direction.scaleToRef(this._scaledUpdateSpeed * particle.emitPower, this._scaledDirection);
@@ -465,6 +490,55 @@
                     }
                 }
             }
+        }
+
+        /**
+         * Adds a new color gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         */
+        public addColorGradient(gradient: number, color: Color4): ParticleSystem {
+            if (!this._colorGradients) {
+                this._colorGradients = [];
+            }
+
+            let colorGradient = new ColorGradient();
+            colorGradient.gradient = gradient;
+            colorGradient.color = color;
+            this._colorGradients.push(colorGradient);
+
+            this._colorGradients.sort((a, b) => {
+                if (a.gradient < b.gradient) {
+                    return -1;
+                } else if (a.gradient > b.gradient) {
+                    return 1;
+                }
+
+                return 0;
+            })
+
+            return this;
+        }
+
+        /**
+         * Remove a specific color gradient
+         * @param gradient defines the gradient to remove
+         */
+        public removeColorGradient(gradient: number): ParticleSystem {
+            if (!this._colorGradients) {
+                return this;
+            }
+
+            let index = 0;
+            for (var colorGradient of this._colorGradients) {
+                if (colorGradient.gradient === gradient) {
+                    this._colorGradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+
+            return this;
         }
 
         private _resetEffect() {
@@ -771,12 +845,14 @@
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
-                var step = Scalar.RandomRange(0, 1.0);
+                if (!this._colorGradients) {
+                    var step = Scalar.RandomRange(0, 1.0);
 
-                Color4.LerpToRef(this.color1, this.color2, step, particle.color);
+                    Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
-                this.colorDead.subtractToRef(particle.color, this._colorDiff);
-                this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
+                    this.colorDead.subtractToRef(particle.color, this._colorDiff);
+                    this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
+                }
             }
         }
 
