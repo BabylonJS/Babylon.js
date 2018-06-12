@@ -17,34 +17,12 @@ module BABYLON.GLTF2.Extensions {
     export class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (extensionContext, extension) => {
-                material._babylonData = material._babylonData || {};
-                let babylonData = material._babylonData[babylonDrawMode];
-                if (!babylonData) {
-                    const promises = new Array<Promise<void>>();
-
-                    const name = material.name || `materialSG_${material._index}`;
-                    const babylonMaterial = this._loader._createMaterial(name, babylonDrawMode);
-
-                    promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                    promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
-
-                    this._loader._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-
-                    babylonData = {
-                        material: babylonMaterial,
-                        meshes: [],
-                        loaded: Promise.all(promises).then(() => {})
-                    };
-
-                    material._babylonData[babylonDrawMode] = babylonData;
-                }
-
-                babylonData.meshes.push(babylonMesh);
-
-                assign(babylonData.material);
-                return babylonData.loaded;
+                const promises = new Array<Promise<void>>();
+                promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial as PBRMaterial));
+                promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial as PBRMaterial));
+                return Promise.all(promises).then(() => {});
             });
         }
 
