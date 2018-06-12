@@ -2,7 +2,6 @@
 attribute vec3 position;
 attribute vec4 color;
 attribute float angle;
-attribute vec2 offset;
 attribute vec2 size;
 #ifdef ANIMATESHEET	
 attribute float cellIndex;
@@ -10,6 +9,7 @@ attribute float cellIndex;
 #ifndef BILLBOARD	
 attribute vec3 direction;
 #endif
+attribute vec2 offset;
 
 // Uniforms
 uniform mat4 view;
@@ -54,7 +54,7 @@ void main(void) {
 
 	vec3 worldPos = position + rotatedCorner; 
 
-	vec3 yaxis = normalize(direction);
+	vec3 yaxis = normalize(position);
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
 
