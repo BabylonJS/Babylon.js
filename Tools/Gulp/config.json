@@ -313,7 +313,9 @@
         },
         "meshBehaviors": {
             "files": [
-                "../../src/Behaviors/Mesh/babylon.pointerDragBehavior.js"
+                "../../src/Behaviors/Mesh/babylon.pointerDragBehavior.js",
+                "../../src/Behaviors/Mesh/babylon.multiPointerScaleBehavior.js",
+                "../../src/Behaviors/Mesh/babylon.sixDofDragBehavior.js"
             ],
             "dependUpon": [
                 "behaviors"

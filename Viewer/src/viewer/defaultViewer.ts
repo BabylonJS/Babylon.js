@@ -157,6 +157,9 @@ export class DefaultViewer extends AbstractViewer {
             case "fullscreen-button":
                 this.toggleFullscreen();
                 break;
+            case "hd-button":
+                this.toggleHD();
+                break;
             default:
                 return;
         }
@@ -262,6 +265,24 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         this._updateAnimationSpeed("1.0", paramsObject);
+    }
+
+    public toggleHD() {
+        super.toggleHD();
+
+        // update UI element
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+
+        if (navbar.configuration.params) {
+            navbar.configuration.params.hdEnabled = this._hdToggled;
+        }
+
+        let span = navbar.parent.querySelector("button.hd-button span");
+        if (span) {
+            span.classList.remove(this._hdToggled ? "hd-icon" : "sd-icon");
+            span.classList.add(!this._hdToggled ? "hd-icon" : "sd-icon")
+        }
     }
 
     /**
