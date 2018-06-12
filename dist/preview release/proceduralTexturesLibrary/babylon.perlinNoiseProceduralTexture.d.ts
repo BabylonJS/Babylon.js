@@ -2,7 +2,7 @@
 declare module BABYLON {
     class PerlinNoiseProceduralTexture extends ProceduralTexture {
         time: number;
-        speed: number;
+        timeScale: number;
         translationSpeed: number;
         private _currentTranslation;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);

@@ -53,6 +53,9 @@ module BABYLON.GUI {
 
             this._utilityLayer = new UtilityLayerRenderer(this._scene);
             this._utilityLayer.onlyCheckPointerDownEvents = false;
+            this._utilityLayer.mainSceneTrackerPredicate = (mesh: Nullable<AbstractMesh>) => {
+                return mesh && mesh.metadata && mesh.metadata._node;
+            }
 
             // Root
             this._rootContainer = new Container3D("RootContainer");

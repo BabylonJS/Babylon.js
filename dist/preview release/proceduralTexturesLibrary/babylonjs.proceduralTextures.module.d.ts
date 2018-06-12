@@ -43,6 +43,7 @@ declare module BABYLON {
         static readonly GreenFireColors: Color3[];
         static readonly RedFireColors: Color3[];
         static readonly BlueFireColors: Color3[];
+        autoGenerateTime: boolean;
         fireColors: Color3[];
         time: number;
         speed: Vector2;
@@ -266,7 +267,7 @@ declare module BABYLON {
 declare module BABYLON {
     class PerlinNoiseProceduralTexture extends ProceduralTexture {
         time: number;
-        speed: number;
+        timeScale: number;
         translationSpeed: number;
         private _currentTranslation;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);

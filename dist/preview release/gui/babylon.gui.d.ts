@@ -2491,6 +2491,8 @@ declare module BABYLON.GUI {
         private _rows;
         private _rowThenColum;
         private _orientation;
+        protected _cellWidth: number;
+        protected _cellHeight: number;
         /**
          * Gets or sets the distance between elements
          */
@@ -2523,6 +2525,8 @@ declare module BABYLON.GUI {
         protected _arrangeChildren(): void;
         /** Child classes must implement this function to provide correct control positioning */
         protected abstract _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+        /** Child classes can implement this function to provide additional processing */
+        protected _finalProcessing(): void;
     }
 }
 
@@ -2539,6 +2543,33 @@ declare module BABYLON.GUI {
         radius: float;
         protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         private _sphericalMapping(source);
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel deployed on the surface of a plane
+     */
+    class PlanePanel extends VolumeBasedPanel {
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a container panel where items get randomized planar mapping
+     */
+    class ScatterPanel extends VolumeBasedPanel {
+        private _iteration;
+        /**
+         * Gets or sets the number of iteration to use to scatter the controls (100 by default)
+         */
+        iteration: float;
+        protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
+        private _scatterMapping(source);
+        protected _finalProcessing(): void;
     }
 }
 

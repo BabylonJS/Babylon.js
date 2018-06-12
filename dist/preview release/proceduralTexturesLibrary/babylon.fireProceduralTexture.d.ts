@@ -13,6 +13,7 @@ declare module BABYLON {
         static readonly GreenFireColors: Color3[];
         static readonly RedFireColors: Color3[];
         static readonly BlueFireColors: Color3[];
+        autoGenerateTime: boolean;
         fireColors: Color3[];
         time: number;
         speed: Vector2;

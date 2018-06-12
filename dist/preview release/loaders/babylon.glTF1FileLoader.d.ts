@@ -73,89 +73,15 @@ declare module BABYLON {
          */
         COMPLETE = 2,
     }
-    /**
-     * Loader interface.
-     */
+    /** @hidden */
     interface IGLTFLoader extends IDisposable {
-        /**
-         * Mode that determines the coordinate system to use.
-         */
-        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
-        /**
-         * Mode that determines what animations will start.
-         */
-        animationStartMode: GLTFLoaderAnimationStartMode;
-        /**
-         * Defines if the loader should compile materials.
-         */
-        compileMaterials: boolean;
-        /**
-         * Defines if the loader should also compile materials with clip planes.
-         */
-        useClipPlane: boolean;
-        /**
-         * Defines if the loader should compile shadow generators.
-         */
-        compileShadowGenerators: boolean;
-        /**
-         * Defines if the Alpha blended materials are only applied as coverage.
-         * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
-         * If true, no extra effects are applied to transparent pixels.
-         */
-        transparencyAsCoverage: boolean;
-        /** @hidden */
-        _normalizeAnimationGroupsToBeginAtZero: boolean;
-        /**
-         * Function called before loading a url referenced by the asset.
-         */
-        preprocessUrlAsync: (url: string) => Promise<string>;
-        /**
-         * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
-         */
-        onMeshLoadedObservable: Observable<AbstractMesh>;
-        /**
-         * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
-         */
-        onTextureLoadedObservable: Observable<BaseTexture>;
-        /**
-         * Observable raised when the loader creates a material after parsing the glTF properties of the material.
-         */
-        onMaterialLoadedObservable: Observable<Material>;
-        /**
-         * Observable raised when the loader creates a camera after parsing the glTF properties of the camera.
-         */
-        onCameraLoadedObservable: Observable<Camera>;
-        /**
-         * Observable raised when the asset is completely loaded, immediately before the loader is disposed.
-         * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
-         */
-        onCompleteObservable: Observable<IGLTFLoader>;
-        /**
-         * Observable raised after the loader is disposed.
-         */
-        onDisposeObservable: Observable<IGLTFLoader>;
-        /**
-         * Observable raised after a loader extension is created.
-         * Set additional options for a loader extension in this event.
-         */
-        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
-        /**
-         * Loader state or null if the loader is not active.
-         */
-        state: Nullable<GLTFLoaderState>;
-        /**
-         * Imports meshes from the given data and adds them to the scene.
-         */
+        readonly state: Nullable<GLTFLoaderState>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
-        /**
-         * Loads all objects from the given data and adds them to the scene.
-         */
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
     /**
@@ -163,9 +89,9 @@ declare module BABYLON {
      */
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         /** @hidden */
-        static _CreateGLTFLoaderV1: () => IGLTFLoader;
+        static _CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         /** @hidden */
-        static _CreateGLTFLoaderV2: () => IGLTFLoader;
+        static _CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
         /**
          * Raised when the asset has been parsed
          */
@@ -261,7 +187,7 @@ declare module BABYLON {
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
-        readonly onCompleteObservable: Observable<GLTFFileLoader>;
+        readonly onCompleteObservable: Observable<void>;
         private _onCompleteObserver;
         /**
          * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
@@ -270,7 +196,7 @@ declare module BABYLON {
         /**
          * Observable raised after the loader is disposed.
          */
-        readonly onDisposeObservable: Observable<GLTFFileLoader>;
+        readonly onDisposeObservable: Observable<void>;
         private _onDisposeObserver;
         /**
          * Callback raised after the loader is disposed.
@@ -295,6 +221,14 @@ declare module BABYLON {
          * The loader state or null if the loader is not active.
          */
         readonly loaderState: Nullable<GLTFLoaderState>;
+        /**
+         * Defines if the loader logging is enabled.
+         */
+        loggingEnabled: boolean;
+        /**
+         * Defines if the loader should capture performance counters.
+         */
+        capturePerformanceCounters: boolean;
         private _loader;
         /**
          * Name of the loader ("gltf")
@@ -308,6 +242,8 @@ declare module BABYLON {
          * Disposes the loader, releases resources during load, and cancels any outstanding requests.
          */
         dispose(): void;
+        /** @hidden */
+        _clear(): void;
         /**
          * Imports one or more meshes from the loaded glTF data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
@@ -358,12 +294,32 @@ declare module BABYLON {
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         private _parse(data);
         private _getLoader(loaderData);
-        private static _parseBinary(data);
-        private static _parseV1(binaryReader);
-        private static _parseV2(binaryReader);
+        private _parseBinary(data);
+        private _parseV1(binaryReader);
+        private _parseV2(binaryReader);
         private static _parseVersion(version);
         private static _compareVersion(a, b);
         private static _decodeBufferToText(buffer);
+        private static readonly _logSpaces;
+        private _logIndentLevel;
+        private _loggingEnabled;
+        /** @hidden */
+        _log: (message: string) => void;
+        /** @hidden */
+        _logOpen(message: string): void;
+        /** @hidden */
+        _logClose(): void;
+        private _logEnabled(message);
+        private _logDisabled(message);
+        private _capturePerformanceCounters;
+        /** @hidden */
+        _startPerformanceCounter: (counterName: string) => void;
+        /** @hidden */
+        _endPerformanceCounter: (counterName: string) => void;
+        private _startPerformanceCounterEnabled(counterName);
+        private _startPerformanceCounterDisabled(counterName);
+        private _endPerformanceCounterEnabled(counterName);
+        private _endPerformanceCounterDisabled(counterName);
     }
 }
 
@@ -760,21 +716,6 @@ declare module BABYLON.GLTF1 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
-        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
-        animationStartMode: GLTFLoaderAnimationStartMode;
-        compileMaterials: boolean;
-        useClipPlane: boolean;
-        compileShadowGenerators: boolean;
-        transparencyAsCoverage: boolean;
-        _normalizeAnimationGroupsToBeginAtZero: boolean;
-        preprocessUrlAsync: (url: string) => Promise<string>;
-        readonly onMeshLoadedObservable: Observable<AbstractMesh>;
-        readonly onTextureLoadedObservable: Observable<BaseTexture>;
-        readonly onMaterialLoadedObservable: Observable<Material>;
-        readonly onCameraLoadedObservable: Observable<Camera>;
-        readonly onCompleteObservable: Observable<IGLTFLoader>;
-        readonly onDisposeObservable: Observable<IGLTFLoader>;
-        readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
         dispose(): void;
         private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress?, onError?);

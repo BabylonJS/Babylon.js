@@ -16,23 +16,26 @@ var BABYLON;
         }
         STLFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
             var matches;
-            if (this.isBinary(data)) {
-                // binary .stl
-                var babylonMesh = new BABYLON.Mesh("stlmesh", scene);
-                this.parseBinary(babylonMesh, data);
-                if (meshes) {
-                    meshes.push(babylonMesh);
+            if (typeof data !== "string") {
+                if (this.isBinary(data)) {
+                    // binary .stl
+                    var babylonMesh = new BABYLON.Mesh("stlmesh", scene);
+                    this.parseBinary(babylonMesh, data);
+                    if (meshes) {
+                        meshes.push(babylonMesh);
+                    }
+                    return true;
                 }
-                return true;
+                // ASCII .stl
+                // convert to string
+                var array_buffer = new Uint8Array(data);
+                var str = '';
+                for (var i = 0; i < data.byteLength; i++) {
+                    str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
+                }
+                data = str;
             }
-            // ASCII .stl
-            // convert to string
-            var array_buffer = new Uint8Array(data);
-            var str = '';
-            for (var i = 0; i < data.byteLength; i++) {
-                str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
-            }
-            data = str;
+            //if arrived here, data is a string, containing the STLA data.
             while (matches = this.solidPattern.exec(data)) {
                 var meshName = matches[1];
                 var meshNameFromEnd = matches[3];

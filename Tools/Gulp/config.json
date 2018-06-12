@@ -14,7 +14,7 @@
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
             "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
-            "../../dist/preview release/gltf2Interface/babylon.glTF2Interface.d.ts"
+            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
@@ -313,7 +313,9 @@
         },
         "meshBehaviors": {
             "files": [
-                "../../src/Behaviors/Mesh/babylon.pointerDragBehavior.js"
+                "../../src/Behaviors/Mesh/babylon.pointerDragBehavior.js",
+                "../../src/Behaviors/Mesh/babylon.multiPointerScaleBehavior.js",
+                "../../src/Behaviors/Mesh/babylon.sixDofDragBehavior.js"
             ],
             "dependUpon": [
                 "behaviors"
@@ -1755,6 +1757,8 @@
                     "../../gui/src/3D/controls/stackPanel3D.ts",
                     "../../gui/src/3D/controls/volumeBasedPanel.ts",
                     "../../gui/src/3D/controls/spherePanel.ts",
+                    "../../gui/src/3D/controls/planePanel.ts",
+                    "../../gui/src/3D/controls/scatterPanel.ts",
                     "../../gui/src/3D/controls/cylinderPanel.ts"
                 ],
                 "shaderFiles": [
@@ -1895,7 +1899,7 @@
                             "addBabylonDeclaration": [
                                 "babylon.d.ts",
                                 "loaders/babylonjs.loaders.d.ts",
-                                "gltf2Interface/babylon.glTF2Interface.d.ts"
+                                "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
                         }
                     ],

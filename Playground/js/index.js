@@ -191,7 +191,7 @@
         var loadScriptsList = function () {
             var xhr = new XMLHttpRequest();
 
-            xhr.open('GET', 'examples/list.json', true);
+            xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
@@ -223,7 +223,7 @@
                                 example.id = ii;
 
                                 var exampleImg = document.createElement("img");
-                                exampleImg.src = scripts[i].samples[ii].icon.replace("icons", "http://doc.babylonjs.com/examples/icons");
+                                exampleImg.src = scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons");
                                 exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + scripts[i].samples[ii].PGID + "').click();");
 
                                 var exampleContent = document.createElement("div");
@@ -282,7 +282,47 @@
                                 var query = queryString.replace("?", "");
                                 index = parseInt(query);
                                 if (!isNaN(index)) {
-                                    loadScriptFromIndex(index);
+                                    // Old examples
+                                    //loadScriptFromIndex(index);
+                                    var newPG = "";
+                                    switch(index) {
+                                        case 1 : newPG = "#TAZ2CB#0"; break; // Basic scene
+                                        case 2 : newPG = "#A1210C#0"; break; // Basic elements
+                                        case 3 : newPG = "#CURCZC#0"; break; // Rotation and scaling
+                                        case 4 : newPG = "#DXARSP#0"; break; // Materials
+                                        case 5 : newPG = "#1A3M5C#0"; break; // Cameras
+                                        case 6 : newPG = "#AQRDKW#0"; break; // Lights
+                                        case 7 : newPG = "#QYFDDP#1"; break; // Animations
+                                        case 8 : newPG = "#9RI8CG#0"; break; // Sprites
+                                        case 9 : newPG = "#U8MEB0#0"; break; // Collisions
+                                        case 10 : newPG = "#KQV9SA#0"; break; // Intersections
+                                        case 11 : newPG = "#NU4F6Y#0"; break; // Picking
+                                        case 12 : newPG = "#EF9X5R#0"; break; // Particles
+                                        case 13 : newPG = "#7G0IQW#0"; break; // Environment
+                                        case 14 : newPG = "#95PXRY#0"; break; // Height map
+                                        case 15 : newPG = "#IFYDRS#0"; break; // Shadows
+                                        case 16 : newPG = "#AQZJ4C#0"; break; // Import meshes
+                                        case 17 : newPG = "#J19GYK#0"; break; // Actions
+                                        case 18 : newPG = "#UZ23UH#0"; break; // Drag and drop
+                                        case 19 : newPG = "#AQZJ4C#0"; break; // Fresnel
+                                        case 20 : newPG = "#8ZNVGR#0"; break; // Easing functions
+                                        case 21 : newPG = "#B2ZXG6#0"; break; // Procedural texture
+                                        case 22 : newPG = "#DXAEUY#0"; break; // Basic sounds
+                                        case 23 : newPG = "#EDVU95#0"; break; // Sound on mesh
+                                        case 24 : newPG = "#N96NXC#0"; break; // SSAO rendering pipeline
+                                        case 25 : newPG = "#7D2QDD#0"; break; // SSAO 2
+                                        case 26 : newPG = "#V2DAKC#0"; break; // Volumetric light scattering
+                                        case 27 : newPG = "#XH85A9#0"; break; // Refraction and reflection
+                                        case 28 : newPG = "#8MGKWK#0"; break; // PBR
+                                        case 29 : newPG = "#0K8EYN#0"; break; // Instanced bones
+                                        case 30 : newPG = "#C245A1#0"; break; // Pointer events handling
+                                        case 31 : newPG = "#TAFSN0#2"; break; // WebVR
+                                        case 32 : newPG = "#3VMTI9#0"; break; // GUI
+                                        case 33 : newPG = "#7149G4#0"; break; // Physics
+                                        
+                                        default: newPG = ""; break;
+                                    }
+                                    window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
                                 } else if (query.indexOf("=") === -1) {
                                     loadScript("scripts/" + query + ".js", query);
                                 } else {
