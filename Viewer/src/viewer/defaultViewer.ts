@@ -47,11 +47,15 @@ export class DefaultViewer extends AbstractViewer {
         this._initNavbar();
 
         // close overlay button
-        let closeButton = document.getElementById('close-button');
-        if (closeButton) {
-            closeButton.addEventListener('pointerdown', () => {
-                this.hideOverlayScreen();
-            });
+        let template = this.templateManager.getTemplate('overlay');
+        if (template) {
+
+            let closeButton = template.parent.querySelector('.close-button');
+            if (closeButton) {
+                closeButton.addEventListener('pointerdown', () => {
+                    this.hideOverlayScreen();
+                });
+            }
         }
 
         if (this.configuration.templates && this.configuration.templates.viewer) {
@@ -85,7 +89,7 @@ export class DefaultViewer extends AbstractViewer {
             // an example how to trigger the help button. publiclly available
             this.templateManager.eventManager.registerCallback("navBar", () => {
                 // do your thing
-            }, "pointerdown", "#help-button");
+            }, "pointerdown", ".help-button");
 
             this.templateManager.eventManager.registerCallback("navBar", (event: EventCallback) => {
                 const evt = event.event;
@@ -101,7 +105,7 @@ export class DefaultViewer extends AbstractViewer {
                     this._togglePlayPause(true);
                 }
                 this._resumePlay = false;
-            }, "pointerup", "#progress-wrapper");
+            }, "pointerup", ".progress-wrapper");
         }
     }
 
@@ -122,7 +126,19 @@ export class DefaultViewer extends AbstractViewer {
 
         let parentClasses = element.parentElement!.classList;
 
-        switch (element.id) {
+        let elementClasses = element.classList;
+
+        let elementName = ""; 0
+
+        for (let i = 0; i < elementClasses.length; ++i) {
+            let className = elementClasses[i];
+            if (className.indexOf("-button") !== -1 || className.indexOf("-wrapper") !== -1) {
+                elementName = className;
+                break;
+            }
+        }
+
+        switch (elementName) {
             case "speed-button":
             case "types-button":
                 if (parentClasses.contains("open")) {
@@ -198,7 +214,7 @@ export class DefaultViewer extends AbstractViewer {
     private _updateProgressBar = () => {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
-        var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input#progress-wrapper");
+        var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
         if (progressSlider && this._currentAnimation) {
             const progress = this._currentAnimation.currentFrame / this._currentAnimation.frames * 100;
             var currentValue = progressSlider.valueAsNumber;
