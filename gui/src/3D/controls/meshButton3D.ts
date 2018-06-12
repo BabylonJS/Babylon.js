@@ -2,7 +2,7 @@
 
 module BABYLON.GUI {
     /**
-     * Class used to create a button in 3D
+     * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
      */
     export class MeshButton3D extends Button3D {
         /** @hidden */
@@ -17,6 +17,10 @@ module BABYLON.GUI {
             super(name);
             this._currentMesh = mesh; 
 
+            /**
+             * Provides a default behavior on hover/out & up/down
+             * Override those function to create your own desired behavior specific to your mesh
+             */
             this.pointerEnterAnimation = () => {
                 if (!this.mesh) {
                     return;
@@ -35,7 +39,6 @@ module BABYLON.GUI {
                 if (!this.mesh) {
                     return;
                 }
-
                 this.mesh.scaling.scaleInPlace(0.95);
             }
 
@@ -67,10 +70,6 @@ module BABYLON.GUI {
          */
         public dispose() {
             super.dispose();
-
-            if (this._currentMesh) {
-                this._currentMesh.dispose();
-            }
         }
     }
 }
