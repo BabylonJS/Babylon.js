@@ -116,8 +116,9 @@ module BABYLON.GLTF2.Extensions {
                         if (indexLOD !== 0) {
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
                             if (previousNodeLOD._babylonMesh) {
-                                previousNodeLOD._babylonMesh.dispose(false, true);
+                                previousNodeLOD._babylonMesh.dispose();
                                 delete previousNodeLOD._babylonMesh;
+                                this._disposeUnusedMaterials();
                             }
                         }
                     });
@@ -227,6 +228,23 @@ module BABYLON.GLTF2.Extensions {
 
             properties.push(property);
             return properties;
+        }
+
+        private _disposeUnusedMaterials(): void {
+            const materials = this._loader._gltf.materials;
+            if (materials) {
+                for (const material of materials) {
+                    if (material._babylonData) {
+                        for (const drawMode in material._babylonData) {
+                            const babylonData = material._babylonData[drawMode];
+                            if (babylonData.meshes.length === 0) {
+                                babylonData.material.dispose(false, true);
+                                delete material._babylonData[drawMode];
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
