@@ -91,6 +91,8 @@ module BABYLON {
          */
         public init() {}
 
+        private _tmpVector = new Vector3(0,0,0);
+        private _worldDragAxis = new Vector3(0,0,0);
         /**
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
@@ -154,17 +156,19 @@ module BABYLON {
                             // depending on the drag mode option drag accordingly
                             if(this.options.dragAxis){
                                 // Convert local drag axis to world
-                                var worldDragAxis = Vector3.TransformCoordinates(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix());
+                                Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
 
                                 // Project delta drag from the drag plane onto the drag axis
-                                dragLength = BABYLON.Vector3.Dot(pickedPoint.subtract(this.lastDragPosition), worldDragAxis)
-                                worldDragAxis.scaleToRef(dragLength, delta);
+                                pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
+                                dragLength = BABYLON.Vector3.Dot(this._tmpVector, this._worldDragAxis)
+                                this._worldDragAxis.scaleToRef(dragLength, delta);
                             }else{
                                 dragLength = delta.length();
                                 pickedPoint.subtractToRef(this.lastDragPosition, delta);
                             }
                             if(this.moveAttached){
-                                (<Mesh>this._attachedNode).setAbsolutePosition((<Mesh>this._attachedNode).absolutePosition.add(delta));
+                                (<Mesh>this._attachedNode).absolutePosition.addToRef(delta, this._tmpVector);
+                                (<Mesh>this._attachedNode).setAbsolutePosition(this._tmpVector);
                             }
                             this.onDragObservable.notifyObservers({dragDistance: dragLength, delta: delta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID});
                             this.lastDragPosition.copyFrom(pickedPoint);
