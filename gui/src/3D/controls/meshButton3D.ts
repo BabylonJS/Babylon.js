@@ -21,11 +21,14 @@ module BABYLON.GUI {
                 if (!this.mesh) {
                     return;
                 }
-                //this.mesh.scaling.scaleInPlace(0.95);
+                this.mesh.scaling.scaleInPlace(1.1);
             }
 
             this.pointerOutAnimation = () => {
-                
+                if (!this.mesh) {
+                    return;
+                }
+                this.mesh.scaling.scaleInPlace(1.0 / 1.1);
             }    
 
             this.pointerDownAnimation = () => {
