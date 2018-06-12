@@ -168,6 +168,7 @@ declare module BabylonViewer {
                 * This will be executed when the templates initialize.
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+            toggleHD(): void;
             /**
                 * Toggle fullscreen of the entire viewer
                 */
@@ -366,6 +367,8 @@ declare module BabylonViewer {
                 * force resizing the engine.
                 */
             forceResize(): void;
+            protected _hdToggled: boolean;
+            toggleHD(): void;
             /**
                 * The resize function that will be registered with the window object
                 */
@@ -986,6 +989,7 @@ declare module BabylonViewer {
                     disableResize?: boolean;
                     engineOptions?: BABYLON.EngineOptions;
                     adaptiveQuality?: boolean;
+                    hdEnabled?: boolean;
             };
             templates?: {
                     main: ITemplateConfiguration;
