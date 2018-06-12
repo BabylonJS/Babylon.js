@@ -49,6 +49,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                 logoText: 'BabylonJS',
                 logoLink: 'https://babylonjs.com',
                 hideHelp: true,
+                hideHdButton: true,
                 disableOnFullscreen: false,
                 text: {
                     hdButton: "Toggle HD",
