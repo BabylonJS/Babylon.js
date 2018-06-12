@@ -91,6 +91,7 @@
 - Animation navbar now updates correctly when a new model is loaded [#4441](https://github.com/BabylonJS/Babylon.js/issues/4441) ([RaananW](https://github.com/RaananW))
 - Non-normalized meshes didn't center and focus correctly ([RaananW](https://github.com/RaananW))
 - Meshes with skeletons could have incorrect animations ([RaananW](https://github.com/RaananW))
+- Removed element IDs from viewer's templates to allow more than one viewqer in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
