@@ -9,6 +9,10 @@
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
 - New `serialize` and `Parse` functions to serialize and parse all procedural textures from the Procedural Textures Library ([julien-moreau](https://github.com/julien-moreau))
+- Particle system improvements ([Deltakosh](https://github.com/deltakosh))
+  - Improved rendering performance (up to x2 on low end devices)
+  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`
+  - Added support for `radiusRange` for sphere emitter
 
 ## Updates
 
@@ -32,8 +36,7 @@
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
 - AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
 - Added sprite isVisible field ([TrevorDev](https://github.com/TrevorDev))
-- Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY` for particles ([Deltakosh](https://github.com/deltakosh))
-- Added support for `radiusRange` for sphere particle emitter ([Deltakosh](https://github.com/deltakosh))
+
 
 ### glTF Loader
 
