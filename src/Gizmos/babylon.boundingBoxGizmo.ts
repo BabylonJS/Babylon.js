@@ -8,6 +8,7 @@ module BABYLON {
         private _scaleBoxesParent:AbstractMesh;
         private _boundingDimensions = new BABYLON.Vector3(1,1,1);
         private _renderObserver:Nullable<Observer<Scene>> = null;
+        private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
 
         /**
          * Creates an BoundingBoxGizmo
@@ -20,10 +21,13 @@ module BABYLON {
             // Do not update the gizmo's scale so it has a fixed size to the object its attached to
             this._updateScale = false;
 
-            // Create Material
+            // Create Materials
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
             coloredMaterial.emissiveColor = color;
+            var hoverColoredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            hoverColoredMaterial.disableLighting = true;
+            hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.2,0.2,0.2));
 
             // Build bounding box out of lines
             this._lineBoundingBox = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -141,6 +145,24 @@ module BABYLON {
             }
             this._rootMesh.addChild(this._scaleBoxesParent);
 
+            // Hover color change
+            var pointerIds = new Array<AbstractMesh>();
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo, eventState)=>{
+                if(!pointerIds[(<PointerEvent>pointerInfo.event).pointerId]){
+                    this._rotateSpheresParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes()).forEach((mesh)=>{
+                        if(pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh){
+                            pointerIds[(<PointerEvent>pointerInfo.event).pointerId]=mesh;
+                            mesh.material = hoverColoredMaterial;
+                        }
+                    });
+                }else{
+                    if(pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<PointerEvent>pointerInfo.event).pointerId]){
+                        pointerIds[(<PointerEvent>pointerInfo.event).pointerId].material = coloredMaterial;
+                        delete pointerIds[(<PointerEvent>pointerInfo.event).pointerId];
+                    }
+                }
+            });
+
             // Update bounding box positions
             this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(()=>{
                 this._updateBoundingBox();
@@ -214,6 +236,7 @@ module BABYLON {
          * Disposes of the gizmo
          */
         public dispose(){
+            this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver); 
             this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
             this._lineBoundingBox.dispose();
             this._rotateSpheresParent.dispose();
