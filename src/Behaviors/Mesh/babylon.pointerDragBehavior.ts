@@ -22,7 +22,6 @@ module BABYLON {
         public dragging = false;
         // Debug mode will display drag planes to help visualize behavior
         private _debugMode = false;
-        private _maxDragAngle = Math.PI/5;
         private _moving = false;
         /**
          *  Fires each time the attached mesh is dragged with the pointer
@@ -44,10 +43,6 @@ module BABYLON {
          *  If the attached mesh should be moved when dragged
          */
         public moveAttached = true;
-        /**
-         *  Mesh with the position where the drag plane should be placed
-         */
-        public _dragPlaneParent:Nullable<Mesh>=null;
 
         /**
          *  If the drag behavior will react to drag events (Default: true)
@@ -129,8 +124,8 @@ module BABYLON {
                 
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     
-                    if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
-                        this._updateDragPlanePosition(pointerInfo.pickInfo.ray);
+                    if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
+                        this._updateDragPlanePosition(pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                         var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         if(pickedPoint){
                             this.dragging = true;
@@ -149,13 +144,9 @@ module BABYLON {
                         this._moving = true;
                         var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         
-                         // Get angle between drag plane and ray. Only update the drag plane at non steep angles to avoid jumps in delta position
-                        var angle = Math.acos(Vector3.Dot(this._dragPlane.forward, pointerInfo.pickInfo.ray.direction));
-                        if(angle < this._maxDragAngle){
-                            this._updateDragPlanePosition(pointerInfo.pickInfo.ray);
-                        }
-                        
                         if (pickedPoint) {
+                            this._updateDragPlanePosition(pointerInfo.pickInfo.ray, pickedPoint);
+
                             // depending on the drag mode option drag accordingly
                             if(this.options.dragAxis){
                                 // Convert local drag axis to world
@@ -216,8 +207,8 @@ module BABYLON {
         private _localAxis = new Vector3(0,0,0);
         private _lookAt = new Vector3(0,0,0); 
         // Position the drag plane based on the attached mesh position, for single axis rotate the plane along the axis to face the camera
-        private _updateDragPlanePosition(ray:Ray){
-            this._pointA.copyFrom(this._dragPlaneParent ? this._dragPlaneParent.absolutePosition : (<Mesh>this._attachedNode).absolutePosition);
+        private _updateDragPlanePosition(ray:Ray, dragPlanePosition:Vector3){
+            this._pointA.copyFrom(dragPlanePosition);
             if(this.options.dragAxis){
                 this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this.options.dragAxis);
 
