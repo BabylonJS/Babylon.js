@@ -515,7 +515,7 @@ module BABYLON {
          * Setup the ground according to the specified options.
          */
         private _setupGround(sceneSize: ISceneSize): void {
-            if (!this._ground) {
+            if (!this._ground || this._ground.isDisposed()) {
                 this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
                 this._ground.rotation.x = Math.PI / 2; // Face up by default.
                 this._ground.parent = this._rootMesh;
@@ -623,7 +623,7 @@ module BABYLON {
          * Setup the skybox according to the specified options.
          */
         private _setupSkybox(sceneSize: ISceneSize): void {
-            if (!this._skybox) {
+            if (!this._skybox || this._skybox.isDisposed()) {
                 this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, Mesh.BACKSIDE);
                 this._skybox.onDisposeObservable.add(() => { this._skybox = null; })
             }
