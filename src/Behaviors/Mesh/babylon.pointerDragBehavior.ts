@@ -23,7 +23,7 @@ module BABYLON {
         // Debug mode will display drag planes to help visualize behavior
         private _debugMode = false;
         private _maxDragAngle = Math.PI/5;
-        
+        private _moving = false;
         /**
          *  Fires each time the attached mesh is dragged with the pointer
          *  * delta between last drag position and current drag position in world space
@@ -116,6 +116,7 @@ module BABYLON {
             this.lastDragPosition = new BABYLON.Vector3(0,0,0);
             var delta = new BABYLON.Vector3(0,0,0);
             var dragLength = 0;
+            var targetPosition = new BABYLON.Vector3(0,0,0);
 
             var pickPredicate = (m:AbstractMesh)=>{
                 return this._attachedNode == m || m.isDescendantOf(this._attachedNode)
@@ -136,6 +137,7 @@ module BABYLON {
                             this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
                             this.lastDragPosition.copyFrom(pickedPoint);
                             this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID});
+                            targetPosition.copyFrom((<Mesh>this._attachedNode).absolutePosition)
                         }
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
@@ -144,6 +146,7 @@ module BABYLON {
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray){
+                        this._moving = true;
                         var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         
                          // Get angle between drag plane and ray. Only update the drag plane at non steep angles to avoid jumps in delta position
@@ -166,14 +169,21 @@ module BABYLON {
                                 dragLength = delta.length();
                                 pickedPoint.subtractToRef(this.lastDragPosition, delta);
                             }
-                            if(this.moveAttached){
-                                (<Mesh>this._attachedNode).absolutePosition.addToRef(delta, this._tmpVector);
-                                (<Mesh>this._attachedNode).setAbsolutePosition(this._tmpVector);
-                            }
+                            targetPosition.addInPlace(delta);
                             this.onDragObservable.notifyObservers({dragDistance: dragLength, delta: delta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID});
                             this.lastDragPosition.copyFrom(pickedPoint);
                         }
                     }
+                }
+            });
+
+            this._scene.onBeforeRenderObservable.add(()=>{
+                if(this._moving && this.moveAttached){
+                    // Slowly move mesh to avoid jitter
+                    targetPosition.subtractToRef((<Mesh>this._attachedNode).absolutePosition, this._tmpVector);
+                    this._tmpVector.scaleInPlace(0.2);
+                    (<Mesh>this._attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
+                    (<Mesh>this._attachedNode).setAbsolutePosition(this._tmpVector);
                 }
             });
         }
@@ -182,6 +192,7 @@ module BABYLON {
             this.dragging = false;
             this.onDragEndObservable.notifyObservers({dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID});
             this.currentDraggingPointerID = -1;
+            this._moving = false;
         }
 
         private _pickWithRayOnDragPlane(ray:Nullable<Ray>){
