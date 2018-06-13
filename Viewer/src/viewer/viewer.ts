@@ -255,14 +255,9 @@ export abstract class AbstractViewer {
     public toggleHD() {
         this._hdToggled = !this._hdToggled;
 
-        let currentLevel = this.engine.getHardwareScalingLevel();
-        const scalingFactor = 2;
+        var scale = this._hdToggled ? Math.max(0.5, 1 / (window.devicePixelRatio || 2)) : 1;
 
-        if (this._hdToggled) {
-            this.engine.setHardwareScalingLevel(currentLevel / scalingFactor);
-        } else {
-            this.engine.setHardwareScalingLevel(currentLevel * scalingFactor);
-        }
+        this.engine.setHardwareScalingLevel(scale);
     }
 
     /**
