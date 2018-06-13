@@ -14,7 +14,7 @@ module BABYLON {
         /**
          * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
          */
-        public updateGizmoRotationToMatchAttachedMesh = false;
+        public updateGizmoRotationToMatchAttachedMesh = true;
         /**
          * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
          */
