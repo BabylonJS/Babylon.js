@@ -8,6 +8,8 @@ module BABYLON {
         private _scaleBoxesParent:AbstractMesh;
         private _boundingDimensions = new BABYLON.Vector3(1,1,1);
         private _renderObserver:Nullable<Observer<Scene>> = null;
+        private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
+        private _scaleDragSpeed = 0.2;
 
         /**
          * Creates an BoundingBoxGizmo
@@ -20,10 +22,13 @@ module BABYLON {
             // Do not update the gizmo's scale so it has a fixed size to the object its attached to
             this._updateScale = false;
 
-            // Create Material
+            // Create Materials
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
             coloredMaterial.emissiveColor = color;
+            var hoverColoredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            hoverColoredMaterial.disableLighting = true;
+            hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.2,0.2,0.2));
 
             // Build bounding box out of lines
             this._lineBoundingBox = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -117,6 +122,7 @@ module BABYLON {
                                 
                                 // Get the change in bounding box size/2 and add this to the mesh's position to offset from scaling with center pivot point
                                 var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
+                                deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 var scaleRatio = deltaScale.divide(this.attachedMesh.scaling).scaleInPlace(0.5);
                                 var moveDirection = boundBoxDimensions.multiply(scaleRatio).multiplyInPlace(dragAxis);
                                 var worldMoveDirection = Vector3.TransformCoordinates(moveDirection, this.attachedMesh.getWorldMatrix().getRotationMatrix());
@@ -141,6 +147,24 @@ module BABYLON {
             }
             this._rootMesh.addChild(this._scaleBoxesParent);
 
+            // Hover color change
+            var pointerIds = new Array<AbstractMesh>();
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo, eventState)=>{
+                if(!pointerIds[(<PointerEvent>pointerInfo.event).pointerId]){
+                    this._rotateSpheresParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes()).forEach((mesh)=>{
+                        if(pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh){
+                            pointerIds[(<PointerEvent>pointerInfo.event).pointerId]=mesh;
+                            mesh.material = hoverColoredMaterial;
+                        }
+                    });
+                }else{
+                    if(pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<PointerEvent>pointerInfo.event).pointerId]){
+                        pointerIds[(<PointerEvent>pointerInfo.event).pointerId].material = coloredMaterial;
+                        delete pointerIds[(<PointerEvent>pointerInfo.event).pointerId];
+                    }
+                }
+            });
+
             // Update bounding box positions
             this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(()=>{
                 this._updateBoundingBox();
@@ -162,12 +186,6 @@ module BABYLON {
                 var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
                 this._boundingDimensions.copyFrom(boundBoxDimensions);
                 this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
-                if(!this.attachedMesh.rotationQuaternion){
-                    this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
-                }
-                this._lineBoundingBox.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                this._rotateSpheresParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                this._scaleBoxesParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
             }
 
             // Update rotation sphere locations
@@ -214,6 +232,7 @@ module BABYLON {
          * Disposes of the gizmo
          */
         public dispose(){
+            this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver); 
             this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
             this._lineBoundingBox.dispose();
             this._rotateSpheresParent.dispose();

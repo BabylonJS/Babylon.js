@@ -49,7 +49,10 @@ in float life;
 in float seed;
 in vec3 size;
 in vec4 color;
-in vec4 direction;
+in vec3 direction;
+#ifndef BILLBOARD
+in vec3 initialDirection;
+#endif
 in vec2 angle;
 
 // Output
@@ -59,7 +62,10 @@ out float outLife;
 out float outSeed;
 out vec3 outSize;
 out vec4 outColor;
-out vec4 outDirection;
+out vec3 outDirection;
+#ifndef BILLBOARD
+out vec3 outInitialDirection;
+#endif
 out vec2 outAngle;
 
 vec3 getRandomVec3(float offset) {
@@ -80,6 +86,9 @@ void main() {
       outSeed = seed;
       outColor = vec4(0.,0.,0.,0.);
       outSize = vec3(0., 0., 0.);
+#ifndef BILLBOARD        
+      outInitialDirection = initialDirection;
+#endif      
       outDirection = direction;
       outAngle = angle;
       return;
@@ -168,20 +177,26 @@ void main() {
     direction = 2.0 * (getRandomVec3(seed) - vec3(0.5, 0.5, 0.5));
 #endif
 
-    outDirection.w = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
+    float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
     outPosition = (emitterWM * vec4(position, 1.)).xyz;
-    outDirection.xyz = (emitterWM * vec4(direction, 0.)).xyz;
+    vec3 initial = (emitterWM * vec4(direction, 0.)).xyz;
+    outDirection = initial * power;
+#ifndef BILLBOARD        
+    outInitialDirection = initial;
+#endif
 
   } else {   
-    outPosition = position + direction.xyz * timeDelta * direction.w;
+    outPosition = position + direction * timeDelta;
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
     outColor = color;
     outSize = size;
-    outDirection.w = direction.w;
-    outDirection.xyz = direction.xyz + gravity * timeDelta;
+#ifndef BILLBOARD    
+    outInitialDirection = initialDirection;
+#endif
+    outDirection = direction + gravity * timeDelta;
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
   }
 }

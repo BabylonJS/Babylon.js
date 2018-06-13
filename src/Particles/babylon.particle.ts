@@ -58,14 +58,12 @@
         /**
          * Defines the cell index used by the particle to be rendered from a sprite.
          */
-        public cellIndex: number = 0;
-
-        /**
-         * Defines the energy applied to the particle direction.
-         */
-        public emitPower = 0;        
+        public cellIndex: number = 0;  
 
         private _currentFrameCounter = 0;
+
+        /** @hidden */
+        public _initialDirection: Nullable<Vector3>;
 
         /**
          * Creates a new instance Particle
@@ -138,6 +136,15 @@
          */
         public copyTo(other: Particle) {
             other.position.copyFrom(this.position);
+            if (this._initialDirection) {
+                if (other._initialDirection) {
+                    other._initialDirection.copyFrom(this._initialDirection);
+                } else {
+                    other._initialDirection = this._initialDirection.clone();
+                }
+            } else {
+                other._initialDirection = null;
+            }
             other.direction.copyFrom(this.direction);
             other.color.copyFrom(this.color);
             other.colorStep.copyFrom(this.colorStep);

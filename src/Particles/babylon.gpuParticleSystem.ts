@@ -57,7 +57,7 @@
 
         private _randomTexture: RawTexture;
 
-        private readonly _attributesStrideSize = 19;
+        private _attributesStrideSize = 18;
         private _updateEffectOptions: EffectCreationOptions;
 
         private _randomTextureSize: number;
@@ -359,6 +359,8 @@
             }
 
             this._isBillboardBased = value;
+
+            this._releaseBuffers();
         }          
 
         /**
@@ -390,7 +392,7 @@
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "angle"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle"],
                 uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
                                 "angleRange", "radiusRange"],
@@ -402,7 +404,7 @@
                 onError: null,
                 indexParameters: null,
                 maxSimultaneousLights: 0,                                                      
-                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection", "outAngle"]
+                transformFeedbackVaryings: []
             };
 
             // Random data
@@ -430,8 +432,15 @@
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 1);
             updateVertexBuffers["size"] = source.createVertexBuffer("size", 6, 3);
             updateVertexBuffers["color"] = source.createVertexBuffer("color", 9, 4);
-            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 4);
-            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", 17, 2);
+            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 3);
+
+            let offset = 16;
+            if (!this._isBillboardBased) {
+                updateVertexBuffers["initialDirection"] = source.createVertexBuffer("initialDirection", offset, 3);
+                offset += 3;
+            }
+
+            updateVertexBuffers["angle"] = source.createVertexBuffer("angle", offset, 2);
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -446,8 +455,13 @@
             renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
             renderVertexBuffers["size"] = source.createVertexBuffer("size", 6, 3, this._attributesStrideSize, true);           
             renderVertexBuffers["color"] = source.createVertexBuffer("color", 9, 4, this._attributesStrideSize, true);
-            renderVertexBuffers["direction"] = source.createVertexBuffer("direction", 13, 4, this._attributesStrideSize, true);
-            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", 17, 2, this._attributesStrideSize, true);
+
+            let offset = 16;
+            if (!this._isBillboardBased) {
+                renderVertexBuffers["initialDirection"] = source.createVertexBuffer("initialDirection", offset, 3, this._attributesStrideSize, true);
+                offset += 3;
+            }
+            renderVertexBuffers["angle"] = source.createVertexBuffer("angle", offset, 2, this._attributesStrideSize, true);
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -465,39 +479,50 @@
 
             let engine = this._scene.getEngine();
             var data = new Array<float>();
+
+            if (!this.isBillboardBased) {
+                this._attributesStrideSize = 21;
+            }
+
             for (var particleIndex = 0; particleIndex < this._capacity; particleIndex++) {
-              // position
-              data.push(0.0);
-              data.push(0.0);
-              data.push(0.0);
+                // position
+                data.push(0.0);
+                data.push(0.0);
+                data.push(0.0);
 
-              // Age and life
-              data.push(0.0); // create the particle as a dead one to create a new one at start
-              data.push(0.0);
+                // Age and life
+                data.push(0.0); // create the particle as a dead one to create a new one at start
+                data.push(0.0);
 
-              // Seed
-              data.push(Math.random());
+                // Seed
+                data.push(Math.random());
 
-              // Size
-              data.push(0.0);
-              data.push(0.0);
-              data.push(0.0);
+                // Size
+                data.push(0.0);
+                data.push(0.0);
+                data.push(0.0);
 
-              // color
-              data.push(0.0);
-              data.push(0.0);
-              data.push(0.0);                     
-              data.push(0.0); 
+                // color
+                data.push(0.0);
+                data.push(0.0);
+                data.push(0.0);                     
+                data.push(0.0); 
 
-              // direction
-              data.push(0.0);
-              data.push(0.0);
-              data.push(0.0);  
-              data.push(0.0);    
-              
-              // angle
-              data.push(0.0);  
-              data.push(0.0); 
+                // direction
+                data.push(0.0);
+                data.push(0.0);
+                data.push(0.0);  
+
+                if (!this.isBillboardBased) {
+                    // initialDirection
+                    data.push(0.0);
+                    data.push(0.0);
+                    data.push(0.0);  
+                }
+
+                // angle
+                data.push(0.0);  
+                data.push(0.0); 
             }
 
             // Sprite data
@@ -530,9 +555,23 @@
         /** @hidden */
         public _recreateUpdateEffect() {
             let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
+
+            if (this._isBillboardBased) {
+                defines += "\n#define BILLBOARD";
+            }   
+
             if (this._updateEffect && this._updateEffectOptions.defines === defines) {
                 return;
             }
+
+            this._updateEffectOptions.transformFeedbackVaryings = ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection"];           
+
+            if (!this._isBillboardBased) {
+                this._updateEffectOptions.transformFeedbackVaryings.push("outInitialDirection");
+            }
+
+            this._updateEffectOptions.transformFeedbackVaryings.push("outAngle");
+
             this._updateEffectOptions.defines = defines;
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
         }
@@ -545,7 +584,7 @@
             }
 
             if (this._isBillboardBased) {
-                defines = "\n#define BILLBOARD";
+                defines += "\n#define BILLBOARD";
             }            
 
             if (this._renderEffect && this._renderEffect.defines === defines) {
@@ -553,7 +592,7 @@
             }
 
             this._renderEffect = new Effect("gpuRenderParticles", 
-                                            ["position", "age", "life", "size", "color", "offset", "uv", "direction", "angle"], 
+                                            ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle"], 
                                             ["view", "projection", "colorDead", "invView", "vClipPlane"], 
                                             ["textureSampler"], this._scene.getEngine(), defines);
         }        
@@ -595,7 +634,7 @@
             this._currentRenderId = this._scene.getRenderId();      
             
             // Get everything ready to render
-            this. _initialize();
+            this._initialize();
 
             this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + (this.emitRate * this._timeDelta) | 0);
             
