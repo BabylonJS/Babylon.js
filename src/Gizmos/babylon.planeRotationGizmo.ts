@@ -12,7 +12,8 @@ module BABYLON {
          */
         constructor(gizmoLayer:UtilityLayerRenderer, planeNormal:Vector3, color:Color3){
             super(gizmoLayer);
-
+            this.updateGizmoRotationToMatchAttachedMesh=false;
+            
             // Create Material
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;

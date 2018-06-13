@@ -9,6 +9,7 @@ module BABYLON {
         private _boundingDimensions = new BABYLON.Vector3(1,1,1);
         private _renderObserver:Nullable<Observer<Scene>> = null;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
+        private _scaleDragSpeed = 0.2;
 
         /**
          * Creates an BoundingBoxGizmo
@@ -121,6 +122,7 @@ module BABYLON {
                                 
                                 // Get the change in bounding box size/2 and add this to the mesh's position to offset from scaling with center pivot point
                                 var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
+                                deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 var scaleRatio = deltaScale.divide(this.attachedMesh.scaling).scaleInPlace(0.5);
                                 var moveDirection = boundBoxDimensions.multiply(scaleRatio).multiplyInPlace(dragAxis);
                                 var worldMoveDirection = Vector3.TransformCoordinates(moveDirection, this.attachedMesh.getWorldMatrix().getRotationMatrix());
@@ -184,12 +186,6 @@ module BABYLON {
                 var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
                 this._boundingDimensions.copyFrom(boundBoxDimensions);
                 this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
-                if(!this.attachedMesh.rotationQuaternion){
-                    this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
-                }
-                this._lineBoundingBox.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                this._rotateSpheresParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
-                this._scaleBoxesParent.rotationQuaternion!.copyFrom(this.attachedMesh.rotationQuaternion);
             }
 
             // Update rotation sphere locations
