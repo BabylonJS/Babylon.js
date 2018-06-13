@@ -662,11 +662,18 @@
             }            
 
             // Draw order
-            if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
-                this._engine.setAlphaMode(Engine.ALPHA_ONEONE);
-            } else {
-                this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            }            
+            switch(this.blendMode)
+            {
+                case ParticleSystem.BLENDMODE_ADD:
+                    this._engine.setAlphaMode(Engine.ALPHA_ADD);
+                    break;
+                case ParticleSystem.BLENDMODE_ONEONE:
+                    this._engine.setAlphaMode(Engine.ALPHA_ONEONE);
+                    break;
+                case ParticleSystem.BLENDMODE_STANDARD:
+                    this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    break;
+            }      
 
             if (this.forceDepthWrite) {
                 this._engine.setDepthWrite(true);
