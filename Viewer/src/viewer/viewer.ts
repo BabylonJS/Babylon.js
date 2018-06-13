@@ -250,6 +250,21 @@ export abstract class AbstractViewer {
         this._resize();
     }
 
+    protected _hdToggled: boolean = false;
+
+    public toggleHD() {
+        this._hdToggled = !this._hdToggled;
+
+        let currentLevel = this.engine.getHardwareScalingLevel();
+        const scalingFactor = 2;
+
+        if (this._hdToggled) {
+            this.engine.setHardwareScalingLevel(currentLevel / scalingFactor);
+        } else {
+            this.engine.setHardwareScalingLevel(currentLevel * scalingFactor);
+        }
+    }
+
     /**
      * The resize function that will be registered with the window object
      */
@@ -507,9 +522,14 @@ export abstract class AbstractViewer {
             window.addEventListener('resize', this._resize);
         }
 
-        if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
-            var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
-            this.engine.setHardwareScalingLevel(scale);
+        if (this.configuration.engine) {
+            if (this.configuration.engine.adaptiveQuality) {
+                var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
+                this.engine.setHardwareScalingLevel(scale);
+            }
+            if (this.configuration.engine.hdEnabled) {
+                this.toggleHD();
+            }
         }
 
         // create a new template manager for this viewer

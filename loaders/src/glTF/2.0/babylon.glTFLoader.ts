@@ -189,10 +189,6 @@ module BABYLON.GLTF2 {
                 resultPromise.then(() => {
                     this._parent._endPerformanceCounter("Loading => Ready");
 
-                    if (this._rootBabylonMesh) {
-                        this._rootBabylonMesh.setEnabled(true);
-                    }
-
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
                             Promise.all(this._completePromises).then(() => {
@@ -299,7 +295,6 @@ module BABYLON.GLTF2 {
 
         private _createRootNode(): _ILoaderNode {
             this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
-            this._rootBabylonMesh.setEnabled(false);
 
             const rootNode = { _babylonMesh: this._rootBabylonMesh } as _ILoaderNode;
             switch (this._parent.coordinateSystemMode) {
@@ -457,6 +452,7 @@ module BABYLON.GLTF2 {
             const babylonMesh = new Mesh(node.name || `node${node._index}`, this._babylonScene, node._parent ? node._parent._babylonMesh : null);
             node._babylonMesh = babylonMesh;
 
+            babylonMesh.setEnabled(false);
             GLTFLoader._LoadTransform(node, babylonMesh);
 
             if (node.mesh != undefined) {
@@ -480,7 +476,9 @@ module BABYLON.GLTF2 {
 
             this._parent._logClose();
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => {
+                babylonMesh.setEnabled(true);
+            });
         }
 
         private _loadMeshAsync(context: string, node: _ILoaderNode, mesh: _ILoaderMesh, babylonMesh: Mesh): Promise<void> {
@@ -1286,33 +1284,46 @@ module BABYLON.GLTF2 {
             material._babylonData = material._babylonData || {};
             let babylonData = material._babylonData[babylonDrawMode];
             if (!babylonData) {
-                const promises = new Array<Promise<void>>();
-
                 this._parent._logOpen(`${context} ${material.name || ""}`);
 
-                const name = material.name || `material_${material._index}`;
+                const name = material.name || `material${material._index}`;
                 const babylonMaterial = this._createMaterial(name, babylonDrawMode);
-
-                promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
-
-                this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
                 babylonData = {
                     material: babylonMaterial,
                     meshes: [],
-                    loaded: Promise.all(promises).then(() => {})
+                    loaded: this._loadMaterialPropertiesAsync(context, material, babylonMaterial)
                 };
 
                 material._babylonData[babylonDrawMode] = babylonData;
+
+                this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
                 this._parent._logClose();
             }
 
             babylonData.meshes.push(babylonMesh);
+            babylonMesh.onDisposeObservable.addOnce(() => {
+                const index = babylonData.meshes.indexOf(babylonMesh);
+                if (index !== -1) {
+                    babylonData.meshes.splice(index, 1);
+                }
+            });
 
             assign(babylonData.material);
             return babylonData.loaded;
+        }
+
+        public _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadMaterialPropertiesAsync(this, context, material, babylonMaterial);
+            if (promise) {
+                return promise;
+            }
+
+            const promises = new Array<Promise<void>>();
+            promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial as PBRMaterial));
+            promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial as PBRMaterial));
+            return Promise.all(promises).then(() => {});
         }
 
         public _createMaterial(name: string, drawMode: number): PBRMaterial {

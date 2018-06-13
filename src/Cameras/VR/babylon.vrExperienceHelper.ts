@@ -129,6 +129,7 @@ module BABYLON {
             this._laserPointer.rotation.x = Math.PI / 2;
             this._laserPointer.position.z = -0.5;
             this._laserPointer.isVisible = false;
+            this._laserPointer.isPickable = false;
 
             if(!webVRController.mesh){
                 // Create an empty mesh that is used prior to loading the high quality model
@@ -167,6 +168,7 @@ module BABYLON {
         public _setLaserPointerParent(mesh:AbstractMesh){
             var makeNotPick = (root: AbstractMesh) => {
                 root.name += " laserPointer";
+                root.isPickable = false;
                 root.getChildMeshes().forEach((c) => {
                     makeNotPick(c);
                 });
@@ -937,6 +939,10 @@ module BABYLON {
             }
         }
 
+        private get _noControllerIsActive(){
+            return !(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)
+        }
+
         private beforeRender = () => {
             if(this.leftController && this.leftController._activePointer){
                 this._castRayAndSelectObject(this.leftController);
@@ -946,7 +952,7 @@ module BABYLON {
                 this._castRayAndSelectObject(this.rightController);
             }
 
-            if(!(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)){
+            if(this._noControllerIsActive){
                 this._castRayAndSelectObject(this._cameraGazer);
             }else{
                 this._cameraGazer._gazeTracker.isVisible = false;
@@ -1139,12 +1145,16 @@ module BABYLON {
                     });
                 }
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
-                    if (!controller._pointerDownOnMeshAsked) {
+                    var gazer:VRExperienceHelperGazer = controller;
+                    if(this._noControllerIsActive){
+                        gazer = this._cameraGazer;
+                    }
+                    if (!gazer._pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
-                            controller._selectionPointerDown();
+                            gazer._selectionPointerDown();
                         }
                     } else if (stateObject.value < this._padSensibilityDown) {
-                        controller._selectionPointerUp();
+                        gazer._selectionPointerUp();
                     }
                 });
             }
