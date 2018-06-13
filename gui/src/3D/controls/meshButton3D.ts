@@ -64,12 +64,5 @@ module BABYLON.GUI {
 
         protected _affectMaterial(mesh: AbstractMesh) {
         }
-
-        /**
-         * Releases all associated resources
-         */
-        public dispose() {
-            super.dispose();
-        }
     }
 }
