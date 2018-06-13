@@ -23,6 +23,11 @@
         public static BLENDMODE_STANDARD = 1;
 
         /**
+         * Add current color and particle color multiplied by particle’s alpha.
+         */
+        public static BLENDMODE_ADD = 2;
+
+        /**
          * List of animations used by the particle system.
          */
         public animations: Animation[] = [];
@@ -1057,10 +1062,17 @@
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
             // Draw order
-            if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
-                engine.setAlphaMode(Engine.ALPHA_ONEONE);
-            } else {
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            switch(this.blendMode)
+            {
+                case ParticleSystem.BLENDMODE_ADD:
+                    engine.setAlphaMode(Engine.ALPHA_ADD);
+                    break;
+                case ParticleSystem.BLENDMODE_ONEONE:
+                    engine.setAlphaMode(Engine.ALPHA_ONEONE);
+                    break;
+                case ParticleSystem.BLENDMODE_STANDARD:
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    break;
             }
 
             if (this.forceDepthWrite) {
