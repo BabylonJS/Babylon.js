@@ -129,6 +129,7 @@ module BABYLON {
             this._laserPointer.rotation.x = Math.PI / 2;
             this._laserPointer.position.z = -0.5;
             this._laserPointer.isVisible = false;
+            this._laserPointer.isPickable = false;
 
             if(!webVRController.mesh){
                 // Create an empty mesh that is used prior to loading the high quality model
@@ -167,6 +168,7 @@ module BABYLON {
         public _setLaserPointerParent(mesh:AbstractMesh){
             var makeNotPick = (root: AbstractMesh) => {
                 root.name += " laserPointer";
+                root.isPickable = false;
                 root.getChildMeshes().forEach((c) => {
                     makeNotPick(c);
                 });
