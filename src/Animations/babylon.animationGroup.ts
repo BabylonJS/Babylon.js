@@ -270,9 +270,8 @@ module BABYLON {
                 return this;
             }
 
-            for (var index = 0; index < this._animatables.length; index++) {
-                let animatable = this._animatables[index];
-                animatable.stop();
+            while (this._animatables.length > 0) {
+                this._animatables[0].stop();
             }
 
             this._isStarted = false;
