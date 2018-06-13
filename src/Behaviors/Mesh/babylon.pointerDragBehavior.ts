@@ -20,6 +20,10 @@ module BABYLON {
          * If the behavior is currently in a dragging state
          */
         public dragging = false;
+        /**
+         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
+         */
+        public dragDeltaRatio = 0.2;
         // Debug mode will display drag planes to help visualize behavior
         private _debugMode = false;
         private _moving = false;

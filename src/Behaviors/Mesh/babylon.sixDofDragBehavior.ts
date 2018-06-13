@@ -11,12 +11,18 @@ module BABYLON {
         private _virtualOriginMesh:AbstractMesh;
         private _virtualDragMesh:AbstractMesh;
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
-        // How much faster the object should move when its further away
-        private _sixDofZDragFactor = 5;
+        /**
+         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 5)
+         */
+         private zDragFactor = 5;
         /**
          * If the behavior is currently in a dragging state
          */
         public dragging = false;
+        /**
+         * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
+         */
+        public dragDeltaRatio = 0.2;
         /**
          * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
          */
@@ -103,7 +109,7 @@ module BABYLON {
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
                         // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
                         var zDragDistance = Vector3.Dot(localOriginDragDifference, this._virtualOriginMesh.position.normalizeToNew());
-                        this._virtualDragMesh.position.z -= this._virtualDragMesh.position.z < 1 ? zDragDistance*this._sixDofZDragFactor : zDragDistance*this._sixDofZDragFactor*this._virtualDragMesh.position.z;
+                        this._virtualDragMesh.position.z -= this._virtualDragMesh.position.z < 1 ? zDragDistance*this.zDragFactor : zDragDistance*this.zDragFactor*this._virtualDragMesh.position.z;
                         if(this._virtualDragMesh.position.z < 0){
                             this._virtualDragMesh.position.z = 0;
                         }
@@ -126,7 +132,7 @@ module BABYLON {
             this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(()=>{
                 if(this.dragging && pickedMesh){
                     // Slowly move mesh to avoid jitter
-                    pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(0.2));
+                    pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
                 }
             });
         }
