@@ -16,6 +16,7 @@ module.exports = function (config) {
             './tests/unit/babylon/babylon.example.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
             './tests/unit/babylon/src/babylon.node.tests.js',
+            './tests/unit/babylon/src/Animations/babylon.animationGroup.tests.js',
             './tests/unit/babylon/src/Helpers/babylon.particleHelper.tests.js',
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/PostProcess/babylon.postProcess.tests.js',

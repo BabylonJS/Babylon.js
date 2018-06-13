@@ -25,7 +25,7 @@ module BABYLON {
             this.ray = ray;
         }
 
-        public show(scene: Scene, color: Color3): void {
+        public show(scene: Scene, color?: Color3): void {
 
             if (!this._renderFunction && this.ray) {
 

@@ -10,10 +10,12 @@ in float age;
 in float life;
 in vec3 size;
 in vec4 color;
+#ifndef BILLBOARD
+in vec3 initialDirection;
+#endif
+in vec2 angle;
 in vec2 offset;
 in vec2 uv;
-in vec4 direction;
-in vec2 angle;
 
 out vec2 vUV;
 out vec4 vColor;
@@ -50,7 +52,7 @@ void main() {
 	rotatedCorner.y = 0.;
 	rotatedCorner.z = cornerPos.x * sin(angle.x) + cornerPos.y * cos(angle.x);
 
-	vec3 yaxis = normalize(direction.xyz);
+	vec3 yaxis = normalize(initialDirection);
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
 
