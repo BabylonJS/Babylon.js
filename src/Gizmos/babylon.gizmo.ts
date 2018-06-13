@@ -12,6 +12,14 @@ module BABYLON {
          */
         public attachedMesh:Nullable<AbstractMesh>;
         /**
+         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+         */
+        public updateGizmoRotationToMatchAttachedMesh = true;
+        /**
+         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
+         */
+        public updateGizmoPositionToMatchAttachedMesh = true;
+        /**
          * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
          */
         protected _updateScale = true;
@@ -44,7 +52,15 @@ module BABYLON {
                     this._rootMesh.scaling.set(dist, dist, dist);
                 }
                 if(this.attachedMesh){
-                    this._rootMesh.position.copyFrom(this.attachedMesh.position);
+                    if(this.updateGizmoRotationToMatchAttachedMesh){
+                        if(!this._rootMesh.rotationQuaternion){
+                            this._rootMesh.rotationQuaternion = new BABYLON.Quaternion();
+                        }
+                        Quaternion.FromRotationMatrixToRef(this.attachedMesh.getWorldMatrix().getRotationMatrix(), this._rootMesh.rotationQuaternion);
+                    }
+                    if(this.updateGizmoPositionToMatchAttachedMesh){
+                        this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
+                    }
                 }
             })
         }
