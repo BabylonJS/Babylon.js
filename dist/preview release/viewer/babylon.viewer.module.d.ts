@@ -1476,12 +1476,13 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
 
 declare module 'babylonjs-viewer/configuration/configurationContainer' {
     import { ViewerConfiguration } from 'babylonjs-viewer/configuration/configuration';
-    import { Color3 } from 'babylonjs';
+    import { Color3, Scene } from 'babylonjs';
     export class ConfigurationContainer {
         configuration: ViewerConfiguration;
         viewerId: string;
         mainColor: Color3;
         reflectionColor: Color3;
+        scene?: Scene;
     }
 }
 

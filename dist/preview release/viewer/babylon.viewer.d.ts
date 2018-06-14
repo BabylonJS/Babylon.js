@@ -1482,6 +1482,7 @@ declare module BabylonViewer {
         viewerId: string;
         mainColor: BABYLON.Color3;
         reflectionColor: BABYLON.Color3;
+        scene?: BABYLON.Scene;
     }
 }
 
