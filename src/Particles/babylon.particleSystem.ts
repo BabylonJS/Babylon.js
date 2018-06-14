@@ -459,7 +459,7 @@
                         continue;
                     }
                     else {
-                        if (this._colorGradients) {
+                        if (this._colorGradients && this._colorGradients.length > 0) {
                             let ratio = particle.age / particle.lifeTime;
 
                             for (var gradientIndex = 0; gradientIndex < this._colorGradients.length - 1; gradientIndex++) {
@@ -483,7 +483,7 @@
                         }
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
-                        particle.direction.scaleToRef(this._scaledUpdateSpeed * particle.emitPower, this._scaledDirection);
+                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
@@ -715,9 +715,15 @@
             }
 
             if (!this._isBillboardBased) {
-                this._vertexData[offset++] = particle.direction.x;
-                this._vertexData[offset++] = particle.direction.y;
-                this._vertexData[offset++] = particle.direction.z;
+                if (particle._initialDirection) {
+                    this._vertexData[offset++] = particle._initialDirection.x;
+                    this._vertexData[offset++] = particle._initialDirection.y;
+                    this._vertexData[offset++] = particle._initialDirection.z;
+                } else {
+                    this._vertexData[offset++] = particle.direction.x;
+                    this._vertexData[offset++] = particle.direction.y;
+                    this._vertexData[offset++] = particle.direction.z;
+                }
             }
 
             if (!this._useInstancing) {
@@ -828,7 +834,7 @@
 
                 this._particles.push(particle);
 
-                particle.emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
+                let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
                     this.startPositionFunction(worldMatrix, particle.position, particle);
@@ -844,13 +850,25 @@
                     this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
                 }
 
+                if (emitPower === 0) {
+                    if (!particle._initialDirection) {
+                        particle._initialDirection = particle.direction.clone();
+                    } else {
+                        particle._initialDirection.copyFrom(particle.direction);
+                    }
+                } else {
+                    particle._initialDirection = null;
+                }
+
+                particle.direction.scaleInPlace(emitPower);
+
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
-                if (!this._colorGradients) {
+                if (!this._colorGradients || this._colorGradients.length === 0) {
                     var step = Scalar.RandomRange(0, 1.0);
 
                     Color4.LerpToRef(this.color1, this.color2, step, particle.color);

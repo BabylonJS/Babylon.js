@@ -338,6 +338,8 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._engine);
 
+        this._configurationContainer.scene = this.scene;
+
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
             var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
@@ -857,7 +859,7 @@ export class SceneManager {
         if (!skyboxConifguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
-                delete this.environmentHelper;
+                this.environmentHelper = undefined;
             };
         } else {
 
@@ -963,10 +965,19 @@ export class SceneManager {
                     this.environmentHelper.dispose();
                     this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
                 } else {
-                    //this.environmentHelper.updateOptions(options)!;
+                    // recreate the ground
+                    if (this.environmentHelper.ground) {
+                        this.environmentHelper.ground.dispose();
+                    }
+                    // recreate the skybox
+                    if (this.environmentHelper.skybox) {
+                        this.environmentHelper.skybox.dispose();
+                    }
+
+                    this.environmentHelper.updateOptions(options)!;
                     // update doesn't change the size of the skybox and ground, so we have to recreate!
-                    this.environmentHelper.dispose();
-                    this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                    //this.environmentHelper.dispose();
+                    //this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
                 }
             }
 

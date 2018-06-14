@@ -106,6 +106,12 @@ export class DefaultViewer extends AbstractViewer {
                 }
                 this._resumePlay = false;
             }, "pointerup", ".progress-wrapper");
+
+            if (window.devicePixelRatio === 1 && navbar.configuration.params && !navbar.configuration.params.hideHdButton) {
+                navbar.updateParams({
+                    hideHdButton: true
+                });
+            }
         }
     }
 
@@ -535,6 +541,7 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
+
         super._onConfigurationLoaded(configuration);
 
         // initialize the templates
