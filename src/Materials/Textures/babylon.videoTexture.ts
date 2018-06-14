@@ -92,6 +92,8 @@
                 this.video.loop = settings.loop;
             }
 
+            this.video.setAttribute("playsinline", "");
+                
             this.video.addEventListener("canplay", this._createInternalTexture);
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
