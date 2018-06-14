@@ -470,7 +470,7 @@
                                     let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                                     Color4.LerpToRef(currentGradient.color, nextGradient.color, scale, particle.color);
                                     break;
-                                }
+                               }
                             }
                         }
                         else {
@@ -752,7 +752,6 @@
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
             var lastParticle = <Particle>this._particles.pop();
-
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
             }
@@ -875,6 +874,8 @@
 
                     this.colorDead.subtractToRef(particle.color, this._colorDiff);
                     this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
+                } else {
+                    particle.color.copyFrom(this._colorGradients[0].color);
                 }
             }
         }
@@ -973,7 +974,6 @@
             } else {
                 newParticles = 0;
             }
-
             this._update(newParticles);
 
             // Stopped?
