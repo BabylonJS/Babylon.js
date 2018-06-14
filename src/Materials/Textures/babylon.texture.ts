@@ -429,8 +429,8 @@
         public dispose(): void {
             super.dispose();
 
-            if (this.onLoadObservable) {
-                this.onLoadObservable.clear();
+            if (this._onLoadObservable) {
+                this._onLoadObservable.clear();
                 this._onLoadObservable = null;
             }
 

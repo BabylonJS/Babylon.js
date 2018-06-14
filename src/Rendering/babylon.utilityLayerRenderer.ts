@@ -57,6 +57,11 @@ module BABYLON {
                     }
                 }
 
+                let pointerEvent = <PointerEvent>(prePointerInfo.event);
+                if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
+                    return;
+                }
+
                 var utilityScenePick = prePointerInfo.ray ? this.utilityLayerScene.pickWithRay(prePointerInfo.ray) : this.utilityLayerScene.pick(originalScene.pointerX, originalScene.pointerY);
                 if(!prePointerInfo.ray && utilityScenePick){
                     prePointerInfo.ray = utilityScenePick.ray;
@@ -70,7 +75,6 @@ module BABYLON {
                     if(!prePointerInfo.skipOnPointerObservable){
                         this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick))
                     }
-                    let pointerEvent = <PointerEvent>(prePointerInfo.event);
                     if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                         this._pointerCaptures[pointerEvent.pointerId] = false;
                     }
@@ -92,8 +96,9 @@ module BABYLON {
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
                     if (originalScenePick && utilityScenePick){
+
                         // No pick in utility scene
-                        if (utilityScenePick.distance === 0) {
+                        if (utilityScenePick.distance === 0 && originalScenePick.pickedMesh) {
                             if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
                                 // We touched an utility mesh present in the main scene
                                 this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
@@ -101,10 +106,8 @@ module BABYLON {
                             } else if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
                             } 
-                        }
-
-                        // We pick something in utility scene or the pick in utility is closer than the one in main scene
-                        if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){
+                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){
+                            // We pick something in utility scene or the pick in utility is closer than the one in main scene
                             this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
                             prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
                         } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance > originalScenePick.distance)) {
