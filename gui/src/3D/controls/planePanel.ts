@@ -12,6 +12,8 @@ module BABYLON.GUI {
                 return;
             }
 
+            control.position = nodePosition.clone();
+
             switch (this.orientation) {
                 case Container3D.FACEORIGIN_ORIENTATION:
                 case Container3D.FACEFORWARD_ORIENTATION:
@@ -23,7 +25,6 @@ module BABYLON.GUI {
                     break;
             }
             
-            control.position = nodePosition.clone();
         }
     }
 }

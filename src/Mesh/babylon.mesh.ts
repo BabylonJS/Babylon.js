@@ -242,6 +242,7 @@
                         system.clone(system.name, this);
                     }
                 }
+                this.refreshBoundingInfo();
                 this.computeWorldMatrix(true);
             }
 

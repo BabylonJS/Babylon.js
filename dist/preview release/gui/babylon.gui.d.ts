@@ -2400,6 +2400,26 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
+     * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
+     */
+    class MeshButton3D extends Button3D {
+        /** @hidden */
+        protected _currentMesh: Mesh;
+        /**
+         * Creates a new 3D button based on a mesh
+         * @param mesh mesh to become a 3D button
+         * @param name defines the control name
+         */
+        constructor(mesh: Mesh, name?: string);
+        protected _getTypeName(): string;
+        protected _createNode(scene: Scene): TransformNode;
+        protected _affectMaterial(mesh: AbstractMesh): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
      * Class used to create a holographic button in 3D
      */
     class HolographicButton extends Button3D {

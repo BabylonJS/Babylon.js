@@ -7990,6 +7990,74 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
+         * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
+         */
+        var MeshButton3D = /** @class */ (function (_super) {
+            __extends(MeshButton3D, _super);
+            /**
+             * Creates a new 3D button based on a mesh
+             * @param mesh mesh to become a 3D button
+             * @param name defines the control name
+             */
+            function MeshButton3D(mesh, name) {
+                var _this = _super.call(this, name) || this;
+                _this._currentMesh = mesh;
+                /**
+                 * Provides a default behavior on hover/out & up/down
+                 * Override those function to create your own desired behavior specific to your mesh
+                 */
+                _this.pointerEnterAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(1.1);
+                };
+                _this.pointerOutAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(1.0 / 1.1);
+                };
+                _this.pointerDownAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(0.95);
+                };
+                _this.pointerUpAnimation = function () {
+                    if (!_this.mesh) {
+                        return;
+                    }
+                    _this.mesh.scaling.scaleInPlace(1.0 / 0.95);
+                };
+                return _this;
+            }
+            MeshButton3D.prototype._getTypeName = function () {
+                return "MeshButton3D";
+            };
+            // Mesh association
+            MeshButton3D.prototype._createNode = function (scene) {
+                var _this = this;
+                this._currentMesh.getChildMeshes().forEach(function (mesh) {
+                    mesh.metadata = _this;
+                });
+                return this._currentMesh;
+            };
+            MeshButton3D.prototype._affectMaterial = function (mesh) {
+            };
+            return MeshButton3D;
+        }(GUI.Button3D));
+        GUI.MeshButton3D = MeshButton3D;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
          * Class used to create a holographic button in 3D
          */
         var HolographicButton = /** @class */ (function (_super) {
@@ -8544,11 +8612,12 @@ var BABYLON;
                 configurable: true
             });
             SpherePanel.prototype._mapGridNode = function (control, nodePosition) {
-                var newPos = this._sphericalMapping(nodePosition);
                 var mesh = control.mesh;
                 if (!mesh) {
                     return;
                 }
+                var newPos = this._sphericalMapping(nodePosition);
+                control.position = newPos;
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
                         mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
@@ -8563,7 +8632,6 @@ var BABYLON;
                         mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
                         break;
                 }
-                control.position = newPos;
             };
             SpherePanel.prototype._sphericalMapping = function (source) {
                 var newPos = new BABYLON.Vector3(0, 0, this._radius);
@@ -8597,6 +8665,7 @@ var BABYLON;
                 if (!mesh) {
                     return;
                 }
+                control.position = nodePosition.clone();
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
@@ -8607,7 +8676,6 @@ var BABYLON;
                         mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
                         break;
                 }
-                control.position = nodePosition.clone();
             };
             return PlanePanel;
         }(GUI.VolumeBasedPanel));
@@ -8764,11 +8832,12 @@ var BABYLON;
                 configurable: true
             });
             CylinderPanel.prototype._mapGridNode = function (control, nodePosition) {
-                var newPos = this._cylindricalMapping(nodePosition);
                 var mesh = control.mesh;
                 if (!mesh) {
                     return;
                 }
+                var newPos = this._cylindricalMapping(nodePosition);
+                control.position = newPos;
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
                         mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
@@ -8783,7 +8852,6 @@ var BABYLON;
                         mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
                         break;
                 }
-                control.position = newPos;
             };
             CylinderPanel.prototype._cylindricalMapping = function (source) {
                 var newPos = new BABYLON.Vector3(0, source.y, this._radius);

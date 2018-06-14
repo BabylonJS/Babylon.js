@@ -27,12 +27,14 @@ module BABYLON.GUI {
         }              
 
         protected _mapGridNode(control: Control3D, nodePosition: Vector3) {            
-            let newPos = this._sphericalMapping(nodePosition);
             let mesh = control.mesh;
 
             if (!mesh) {
                 return;
             }
+
+            let newPos = this._sphericalMapping(nodePosition);
+            control.position = newPos;
 
             switch (this.orientation) {
                 case Container3D.FACEORIGIN_ORIENTATION:
@@ -47,9 +49,7 @@ module BABYLON.GUI {
                 case Container3D.FACEFORWARDREVERSED_ORIENTATION:
                     mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
                     break;
-            }
-            
-            control.position = newPos;
+            }           
         }
 
         private _sphericalMapping(source: Vector3)
