@@ -114,8 +114,10 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
-        this.rootMesh = new AbstractMesh("modelRootMesh");
-        this._pivotMesh = new AbstractMesh("pivotMesh");
+        let scene = this._configurationContainer && this._configurationContainer.scene
+
+        this.rootMesh = new AbstractMesh("modelRootMesh", scene);
+        this._pivotMesh = new AbstractMesh("pivotMesh", scene);
         this._pivotMesh.parent = this.rootMesh;
         // rotate 180, gltf fun
         this._pivotMesh.rotation.y += Math.PI;
@@ -241,7 +243,7 @@ export class ViewerModel implements IDisposable {
         // check if this is not a gltf loader and init the animations
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx);
+                let ag = new AnimationGroup("animation-" + idx, this._configurationContainer && this._configurationContainer.scene);
                 let add = false;
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
