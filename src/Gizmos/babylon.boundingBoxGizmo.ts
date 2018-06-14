@@ -12,6 +12,7 @@ module BABYLON {
         private _scaleDragSpeed = 0.2;
 
         private _tmpQuaternion = new Quaternion();
+        private _tmpVector = new Vector3(0,0,0);
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -134,7 +135,8 @@ module BABYLON {
                                 
                                 // Update scale and position
                                 this.attachedMesh.scaling.addInPlace(deltaScale);
-                                this.attachedMesh.position.addInPlace(worldMoveDirection);
+                                this.attachedMesh.getAbsolutePosition().addToRef(worldMoveDirection, this._tmpVector)
+                                this.attachedMesh.setAbsolutePosition(this._tmpVector);
                             }
                         })
 
