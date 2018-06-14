@@ -11,6 +11,7 @@ module BABYLON {
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _scaleDragSpeed = 0.2;
 
+        private _tmpQuaternion = new Quaternion();
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -78,13 +79,17 @@ module BABYLON {
                         var projectDist = Vector3.Dot(dragAxis, event.delta);
 
                         // Rotate based on axis
-                        if(i>=8){
-                            this.attachedMesh.rotation.z -= projectDist;
-                        }else if(i>=4){
-                            this.attachedMesh.rotation.y -= projectDist;
-                        }else{
-                            this.attachedMesh.rotation.x -= projectDist;
+                        if(!this.attachedMesh.rotationQuaternion){
+                            this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y,this.attachedMesh.rotation.x,this.attachedMesh.rotation.z);
                         }
+                        if(i>=8){
+                            Quaternion.RotationYawPitchRollToRef(0,0,-projectDist, this._tmpQuaternion);
+                        }else if(i>=4){
+                            Quaternion.RotationYawPitchRollToRef(-projectDist,0,0, this._tmpQuaternion);
+                        }else{
+                            Quaternion.RotationYawPitchRollToRef(0,-projectDist,0, this._tmpQuaternion);
+                        }
+                        this.attachedMesh.rotationQuaternion!.multiplyInPlace(this._tmpQuaternion);
                     }
                 });
 

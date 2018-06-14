@@ -83,7 +83,7 @@ module BABYLON {
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
                         this._virtualDragMesh.position.copyFrom(pickedMesh.absolutePosition);
                         if(!pickedMesh.rotationQuaternion){
-                            pickedMesh.rotationQuaternion = new Quaternion();
+                            pickedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(pickedMesh.rotation.y,pickedMesh.rotation.x,pickedMesh.rotation.z);
                         }
                         this._virtualDragMesh.rotationQuaternion!.copyFrom(pickedMesh.rotationQuaternion);
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
