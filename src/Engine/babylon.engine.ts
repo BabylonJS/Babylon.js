@@ -4171,7 +4171,7 @@
 
             // determine if a ktx file should be substituted
             var isKTX = false;
-            if (this._textureFormatInUse && !isBase64 && !fallback) {
+            if (this._textureFormatInUse && !isBase64 && !fallback && !buffer) {
                 url = url.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
@@ -4201,7 +4201,8 @@
                     scene._removePendingData(texture);
                 }
 
-                if (onLoadObserver) {
+                if (onLoadObserver && !isKTX) {
+                    //dont remove the observer if its a ktx file, since the fallback createTexture call will require it.
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
 
