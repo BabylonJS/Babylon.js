@@ -1,9 +1,8 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags } from "babylonjs";
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders";
-import { ViewerConfiguration } from "../configuration/configuration";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { ViewerModel, ModelState } from "../model/viewerModel";
-import { getLoaderPluginByName, TelemetryLoaderPlugin, ILoaderPlugin } from './plugins/';
+import { getLoaderPluginByName, ILoaderPlugin } from './plugins/';
 import { ObservablesManager } from "../managers/observablesManager";
 import { ConfigurationContainer } from "../configuration/configurationContainer";
 
@@ -58,7 +57,7 @@ export class ModelLoader {
      */
     public load(modelConfiguration: IModelConfiguration): ViewerModel {
 
-        const model = new ViewerModel(this._observablesManager, modelConfiguration);
+        const model = new ViewerModel(this._observablesManager, modelConfiguration, this._configurationContainer);
 
         model.loadId = this._loadId++;
 

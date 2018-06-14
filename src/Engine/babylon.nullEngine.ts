@@ -410,10 +410,12 @@
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
         }
 
-        protected _bindTextureDirectly(target: number, texture: InternalTexture): void {
+        protected _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
             if (this._boundTexturesCache[this._activeChannel] !== texture) {
                 this._boundTexturesCache[this._activeChannel] = texture;
+                return true;
             }
+            return false;
         }
 
         public _bindTexture(channel: number, texture: InternalTexture): void {

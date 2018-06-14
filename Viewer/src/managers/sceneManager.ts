@@ -338,6 +338,8 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._engine);
 
+        this._configurationContainer.scene = this.scene;
+
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
             var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
