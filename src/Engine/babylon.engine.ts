@@ -710,7 +710,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.7";
+            return "3.3.0-alpha.8";
         }
 
         // Updatable statics so stick with vars here
@@ -4194,7 +4194,7 @@
 
             // determine if a ktx file should be substituted
             var isKTX = false;
-            if (this._textureFormatInUse && !isBase64 && !fallback) {
+            if (this._textureFormatInUse && !isBase64 && !fallback && !buffer) {
                 url = url.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
@@ -4224,7 +4224,8 @@
                     scene._removePendingData(texture);
                 }
 
-                if (onLoadObserver) {
+                if (onLoadObserver && !isKTX) {
+                    //dont remove the observer if its a ktx file, since the fallback createTexture call will require it.
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
 
