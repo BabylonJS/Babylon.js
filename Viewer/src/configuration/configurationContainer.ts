@@ -1,5 +1,5 @@
 import { ViewerConfiguration } from './configuration';
-import { Color3 } from 'babylonjs';
+import { Color3, Scene } from 'babylonjs';
 
 export class ConfigurationContainer {
 
@@ -9,4 +9,5 @@ export class ConfigurationContainer {
 
     public mainColor: Color3 = Color3.White();
     public reflectionColor: Color3 = Color3.White();
+    public scene?: Scene;
 }
