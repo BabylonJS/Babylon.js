@@ -220,16 +220,23 @@
             return false;
         }
 
+        private _cachedSize: ISize = Size.Zero();
         public getSize(): ISize {
-            if (this._texture && this._texture.width) {
-                return new Size(this._texture.width, this._texture.height);
+            if (this._texture) {
+                if (this._texture.width) {
+                    this._cachedSize.width = this._texture.width;
+                    this._cachedSize.height = this._texture.height;
+                    return this._cachedSize;
+                }
+
+                if (this._texture._size) {
+                    this._cachedSize.width = this._texture._size;
+                    this._cachedSize.height = this._texture._size;
+                    return this._cachedSize;
+                }
             }
 
-            if (this._texture && this._texture._size) {
-                return new Size(this._texture._size, this._texture._size);
-            }
-
-            return Size.Zero();
+            return this._cachedSize;
         }
 
         public getBaseSize(): ISize {
