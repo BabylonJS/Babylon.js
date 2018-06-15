@@ -813,9 +813,10 @@ export class SceneManager {
             return !this.environmentHelper || (mesh !== this.environmentHelper.ground && mesh !== this.environmentHelper.rootMesh && mesh !== this.environmentHelper.skybox);
         });
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-        const sceneDiagonalLenght = sceneDiagonal.length();
-        if (isFinite(sceneDiagonalLenght))
-            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+        const sceneDiagonalLength = sceneDiagonal.length();
+        if (isFinite(sceneDiagonalLength)) {
+            this.camera.upperRadiusLimit = sceneDiagonalLength * 4;
+        }
 
         // sanity check!
         if (this.scene.imageProcessingConfiguration) {
