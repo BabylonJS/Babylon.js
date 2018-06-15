@@ -1,9 +1,19 @@
 ﻿module BABYLON {
 
+    interface IValueGradient {
+        gradient: number;
+    }
+
     /** @hidden */
-    class ColorGradient {
+    class ColorGradient implements IValueGradient {
         public gradient: number;
         public color: Color4;
+    }
+
+    /** @hidden */
+    class FactorGradient implements IValueGradient {
+        public gradient: number;
+        public factor: number;
     }
 
     /**
@@ -191,6 +201,7 @@
         public gravity = Vector3.Zero();
 
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
+        private _sizeGradients: Nullable<Array<FactorGradient>> = null;
 
        /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -474,19 +485,13 @@
                         continue;
                     }
                     else {
+                        let ratio = particle.age / particle.lifeTime;
+
+                        // Color
                         if (this._colorGradients && this._colorGradients.length > 0) {
-                            let ratio = particle.age / particle.lifeTime;
-
-                            for (var gradientIndex = 0; gradientIndex < this._colorGradients.length - 1; gradientIndex++) {
-                                let currentGradient = this._colorGradients[gradientIndex];
-                                let nextGradient = this._colorGradients[gradientIndex + 1];
-
-                                if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                                    let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
-                                    Color4.LerpToRef(currentGradient.color, nextGradient.color, scale, particle.color);
-                                    break;
-                               }
-                            }
+                            this._getCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                                Color4.LerpToRef((<ColorGradient>currentGradient).color, (<ColorGradient>nextGradient).color, scale, particle.color);
+                            });
                         }
                         else {
                             particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
@@ -504,6 +509,14 @@
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
+                        // Gradient
+                        if (this._sizeGradients && this._sizeGradients.length > 0) {
+                            this._getCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
+                                particle.size = particle._initialSize * Scalar.Lerp((<FactorGradient>currentGradient).factor, (<FactorGradient>nextGradient).factor, scale);
+                            });
+                        }
+
+
                         if (this._isAnimationSheetEnabled) {
                             particle.updateCellIndex(this._scaledUpdateSpeed);
                         }
@@ -511,6 +524,67 @@
                 }
             }
         }
+
+        private _getCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
+            for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
+                let currentGradient = gradients[gradientIndex];
+                let nextGradient = gradients[gradientIndex + 1];
+
+                if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
+                    let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                    updateFunc(currentGradient, nextGradient, scale);
+               }
+            }
+        }
+
+        /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient
+         */
+        public addSizeGradient(gradient: number, factor: number): ParticleSystem {
+            if (!this._sizeGradients) {
+                this._sizeGradients = [];
+            }
+
+            let sizeGradient = new FactorGradient();
+            sizeGradient.gradient = gradient;
+            sizeGradient.factor = factor;
+            this._sizeGradients.push(sizeGradient);
+
+            this._sizeGradients.sort((a, b) => {
+                if (a.gradient < b.gradient) {
+                    return -1;
+                } else if (a.gradient > b.gradient) {
+                    return 1;
+                }
+
+                return 0;
+            })
+
+            return this;
+        }
+
+        /**
+         * Remove a specific size gradient
+         * @param gradient defines the gradient to remove
+         */
+        public removeSizeGradient(gradient: number): ParticleSystem {
+            if (!this._sizeGradients) {
+                return this;
+            }
+
+            let index = 0;
+            for (var sizeGradient of this._sizeGradients) {
+                if (sizeGradient.gradient === gradient) {
+                    this._sizeGradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+
+            return this;
+        }        
 
         /**
          * Adds a new color gradient
@@ -885,6 +959,7 @@
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                particle._initialSize = particle.size;
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
