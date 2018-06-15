@@ -67,30 +67,42 @@ module BABYLON {
                 // Drag behavior
                 var _dragBehavior = new PointerDragBehavior({});
                 _dragBehavior.moveAttached = false;
+                _dragBehavior.updateDragPlane = false;
                 sphere.addBehavior(_dragBehavior);
+                let startingTurnDirection = new Vector3(1,0,0);
+                let totalTurnAmountOfDrag = 0;
+                _dragBehavior.onDragStartObservable.add((event)=>{
+                    startingTurnDirection.copyFrom(sphere.forward);
+                    totalTurnAmountOfDrag = 0;
+                })
                 _dragBehavior.onDragObservable.add((event)=>{
                     if(this.attachedMesh){
-                        var worldDragDirection = sphere.forward;
+                        var worldDragDirection = startingTurnDirection;
 
                         // Project the world right on to the drag plane
                         var toSub = event.dragPlaneNormal.scale(Vector3.Dot(event.dragPlaneNormal, worldDragDirection));
                         var dragAxis = worldDragDirection.subtract(toSub).normalizeToNew();
 
                         // project drag delta on to the resulting drag axis and rotate based on that
-                        var projectDist = Vector3.Dot(dragAxis, event.delta);
+                        var projectDist = -Vector3.Dot(dragAxis, event.delta);
 
                         // Rotate based on axis
                         if(!this.attachedMesh.rotationQuaternion){
                             this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y,this.attachedMesh.rotation.x,this.attachedMesh.rotation.z);
                         }
-                        if(i>=8){
-                            Quaternion.RotationYawPitchRollToRef(0,0,-projectDist, this._tmpQuaternion);
-                        }else if(i>=4){
-                            Quaternion.RotationYawPitchRollToRef(-projectDist,0,0, this._tmpQuaternion);
-                        }else{
-                            Quaternion.RotationYawPitchRollToRef(0,-projectDist,0, this._tmpQuaternion);
+                       
+                        // Do not allow the object to trun more than a full circle
+                        totalTurnAmountOfDrag+=projectDist;
+                        if(Math.abs(totalTurnAmountOfDrag)<=2*Math.PI){
+                            if(i>=8){
+                                Quaternion.RotationYawPitchRollToRef(0,0,projectDist, this._tmpQuaternion);
+                            }else if(i>=4){
+                                Quaternion.RotationYawPitchRollToRef(projectDist,0,0, this._tmpQuaternion);
+                            }else{
+                                Quaternion.RotationYawPitchRollToRef(0,projectDist,0, this._tmpQuaternion);
+                            }
+                            this.attachedMesh.rotationQuaternion!.multiplyInPlace(this._tmpQuaternion);
                         }
-                        this.attachedMesh.rotationQuaternion!.multiplyInPlace(this._tmpQuaternion);
                     }
                 });
 
