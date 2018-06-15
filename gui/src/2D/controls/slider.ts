@@ -5,10 +5,12 @@ module BABYLON.GUI {
      * Class used to create slider controls
      */
     export class Slider extends Control {
-        private _thumbWidth = new ValueAndUnit(30, ValueAndUnit.UNITMODE_PIXEL, false);
+        private _thumbWidth = new ValueAndUnit(20, ValueAndUnit.UNITMODE_PIXEL, false);
+        private _thumbHeight = new ValueAndUnit(20, ValueAndUnit.UNITMODE_PIXEL, false);
         private _minimum = 0;
         private _maximum = 100;
         private _value = 50;
+        private _isVertical = false;
         private _background = "black";
         private _borderColor = "white";
         private _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
@@ -135,6 +137,20 @@ module BABYLON.GUI {
             this.onValueChangedObservable.notifyObservers(this._value);
         }
 
+        /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
+        public get isVertical(): boolean {
+            return this._isVertical;
+        }
+
+        public set isVertical(value: boolean) {
+            if(this._isVertical === value){
+                return;
+            }
+
+            this._isVertical = value;
+            this._markAsDirty();
+        }
+
         /** Gets or sets a boolean indicating if the thumb should be round or square */
         public get isThumbCircle(): boolean {
             return this._isThumbCircle;
@@ -183,21 +199,43 @@ module BABYLON.GUI {
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
                 // Main bar
-                var effectiveThumbWidth;
-                var effectiveBarOffset;
+                var effectiveThumbWidth = 0;//for horizontal slider 
+                var effectiveBarOffset = 0; 
+                var effectiveThumbHeight = 0; //for vertical slider
 
-                if (this._thumbWidth.isPixel) {
-                    effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
+                //throw error when height is less than width for vertical slider
+                if(this._isVertical && this._currentMeasure.height < this._currentMeasure.width){
+                    console.error("Height should be greater than width");
+                    return;
+                } 
+                if(this._isVertical){
+                    if (this._thumbWidth.isPixel) {
+                        effectiveThumbHeight = Math.min(this._thumbHeight.getValue(this._host), this._currentMeasure.height);
+                    }
+                    else {
+                        effectiveThumbHeight = this._currentMeasure.height * this._thumbHeight.getValue(this._host);
+                    } 
+                    if (this._barOffset.isPixel) {
+                        effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.width);
+                    }
+                    else {
+                        effectiveBarOffset = this._currentMeasure.width * this._barOffset.getValue(this._host);
+                    }
                 }
-                else {
-                    effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
-                }
+                else{
+                    if (this._thumbWidth.isPixel) {
+                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
+                    }
+                    else {
+                        effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
+                    }
 
-                if (this._barOffset.isPixel) {
-                    effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
-                }
-                else {
-                    effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
+                    if (this._barOffset.isPixel) {
+                        effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
+                    }
+                    else {
+                        effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
+                    }
                 }
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -208,15 +246,28 @@ module BABYLON.GUI {
                 }
 
                 var left = this._currentMeasure.left;
+                var top = this._currentMeasure.top;
                 var width = this._currentMeasure.width - effectiveThumbWidth;
-                var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
+                var height = this._currentMeasure.height - effectiveThumbHeight;
+
+                var thumbPosition = (this._isVertical)? ((this._maximum - this._value ) / (this._maximum - this._minimum)) * height:((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
 
                 context.fillStyle = this._background;
-                if (this.isThumbClamped) {
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                if(this._isVertical){
+                    if (this.isThumbClamped) {
+                        context.fillRect(left  + effectiveBarOffset, top, width - effectiveBarOffset * 2, height + effectiveThumbHeight);
+                    }
+                    else {
+                        context.fillRect(left + effectiveBarOffset, top + (effectiveThumbHeight / 2), width - effectiveBarOffset * 2, height);
+                    }
                 }
-                else {
-                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                else{
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
                 }
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -226,11 +277,21 @@ module BABYLON.GUI {
                 }
 
                 context.fillStyle = this.color;
-                if (this.isThumbClamped) {
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                if(this._isVertical){
+                    if (this.isThumbClamped) {
+                        context.fillRect(left + effectiveBarOffset, this._currentMeasure.top, this._currentMeasure.width - effectiveBarOffset * 2, thumbPosition);
+                    }
+                    else {
+                        context.fillRect(left + effectiveBarOffset, this._currentMeasure.top + (effectiveThumbHeight / 2), this._currentMeasure.width - effectiveBarOffset * 2, thumbPosition);
+                    }
                 }
-                else {
-                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                else{
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
                 }
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -242,7 +303,13 @@ module BABYLON.GUI {
 
                 if (this._isThumbCircle) {
                     context.beginPath();
-                    context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+
+                    if(this._isVertical){
+                        context.arc(left + this._currentMeasure.width / 2, top + thumbPosition + (effectiveThumbHeight / 2), width / 2, 0, 2 * Math.PI);
+                    }
+                    else{
+                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), top + this._currentMeasure.height / 2, height / 2, 0, 2 * Math.PI);
+                    } 
                     context.fill();
 
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -255,7 +322,12 @@ module BABYLON.GUI {
                     context.stroke();
                 }
                 else {
-                    context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    if(this._isVertical){
+                        context.fillRect(left, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, effectiveThumbHeight);
+                    }
+                    else{
+                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    }
 
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowBlur = 0;
@@ -264,7 +336,12 @@ module BABYLON.GUI {
                     }
 
                     context.strokeStyle = this._borderColor;
-                    context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    if(this._isVertical){
+                        context.strokeRect(left, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, effectiveThumbHeight);
+                    }
+                    else{
+                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    }
                 }
             }
             context.restore();
@@ -278,8 +355,15 @@ module BABYLON.GUI {
             if (this.rotation != 0) {
                 this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
                 x = this._transformedPosition.x;
+                y = this._transformedPosition.y;
             }
-            this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+            
+            if(this._isVertical){
+                this.value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
+            }
+            else{
+                this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+            }
         }
 
         public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
