@@ -17,6 +17,7 @@
   - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-blending)
   - Added support for color gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-colors)
   - Added support for pre-warming. [Doc](http://doc.babylonjs.com/babylon101/particles#pre-warming)
+  - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](http://doc.babylonjs.com/babylon101/particles#rotation)
 
 ## Updates
 
