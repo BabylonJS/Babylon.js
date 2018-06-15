@@ -241,7 +241,7 @@ export class TextureUtils {
 
                 let gl = (<any>(scene.getEngine()))._gl;
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, glTexture);
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                scene.getEngine()._unpackFlipY(false);
                 if (face instanceof HTMLElement || face instanceof ImageData) {
                     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, textureCube.internalFormat, textureCube.internalFormat, textureCube.type, <any>face);
                 } else {
