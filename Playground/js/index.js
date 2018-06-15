@@ -483,7 +483,7 @@
                 var code = jsEditor.getValue();
 
                 var createDefaultEngine = function () {
-                    return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                    return new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true, stencil: true });
                 }
 
                 var scene;

@@ -35,29 +35,6 @@ describe('Babylon glTF Serializer', () => {
      * This tests the glTF serializer help functions 
      */
     describe('#GLTF', () => {
-        // it('should get alpha mode from Babylon metallic roughness', () => {
-        //     let alphaMode: string;
-
-        //     const scene = new BABYLON.Scene(subject);
-        //     const babylonMaterial = new BABYLON.PBRMetallicRoughnessMaterial("metallicroughness", scene);
-        //     babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
-
-        //     alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
-        //     alphaMode.should.be.equal('OPAQUE');
-
-        //     babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
-        //     alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
-        //     alphaMode.should.be.equal('BLEND');
-
-        //     babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
-        //     alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
-        //     alphaMode.should.be.equal('BLEND');
-
-        //     babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
-        //     alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
-        //     alphaMode.should.be.equal('MASK');
-        // });
-
         it('should convert Babylon standard material to metallic roughness', () => {
             const scene = new BABYLON.Scene(subject);
             const babylonStandardMaterial = new BABYLON.StandardMaterial("specGloss", scene);
@@ -74,12 +51,10 @@ describe('Babylon glTF Serializer', () => {
 
             metalRough.roughnessFactor.should.be.approximately(0.328809, 1e-6);
         });
-
         it('should solve for metallic', () => {
             BABYLON.GLTF2._GLTFMaterial._SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
             BABYLON.GLTF2._GLTFMaterial._SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
         });
-
         it('should serialize empty Babylon scene to glTF with only asset property', () => {
             const scene = new BABYLON.Scene(subject);
 
@@ -92,7 +67,6 @@ describe('Babylon glTF Serializer', () => {
                 jsonData.asset.generator.should.be.equal("BabylonJS");
             });
         });
-
         it('should serialize sphere geometry in scene to glTF', () => {
             const scene = new BABYLON.Scene(subject);
             BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
@@ -125,33 +99,6 @@ describe('Babylon glTF Serializer', () => {
                     jsonData.scene.should.be.equal(0);
                 });
         });
-
-        // it('should serialize alpha mode and cutoff', () => {
-        //     const scene = new BABYLON.Scene(subject);
-
-        //     const plane = BABYLON.Mesh.CreatePlane('plane', 120, scene);
-        //     const babylonPBRMetalRoughMaterial = new BABYLON.PBRMetallicRoughnessMaterial('metalRoughMat', scene);
-        //     babylonPBRMetalRoughMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
-        //     const alphaCutoff = 0.8;
-        //     babylonPBRMetalRoughMaterial.alphaCutOff = alphaCutoff;
-
-        //     plane.material = babylonPBRMetalRoughMaterial;
-
-
-        //     return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
-        //         const jsonString = glTFData.glTFFiles['test.gltf'] as string;
-        //         const jsonData = JSON.parse(jsonString);
-
-        //         // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials
-        //         Object.keys(jsonData).length.should.be.equal(9);
-
-        //         jsonData.materials.length.should.be.equal(2);
-
-        //         jsonData.materials[0].alphaMode.should.be.equal('MASK');
-
-        //         jsonData.materials[0].alphaCutoff.should.be.equal(alphaCutoff);
-        //     });
-        // });
         it('should serialize single component translation animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
             const box = BABYLON.Mesh.CreateBox('box', 1, scene);
