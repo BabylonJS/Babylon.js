@@ -618,12 +618,22 @@ module BABYLON.GLTF2 {
         }
 
         /**
+         * Resets the exporter variables
+         */
+        private _resetExporter() {
+            _GLTFMaterial._Reset();
+        }
+
+        /**
          * Creates a binary buffer for glTF
          * @returns array buffer for binary data
          */
         private _generateBinaryAsync(): Promise<ArrayBuffer> {
             let binaryWriter = new _BinaryWriter(4);
             return this.createSceneAsync(this.babylonScene, binaryWriter).then(() => {
+                // reset the material map and texture map
+                this._resetExporter();
+                
                 return binaryWriter.getArrayBuffer();
             });
         }
