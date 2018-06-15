@@ -315,6 +315,12 @@
          */
         public spriteCellHeight = 0;
 
+        /** Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
+        public preWarmCycles = 0;
+
+        /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
+        public preWarmStepOffset = 1;
+
         /**
         * An event triggered when the system is disposed
         */
@@ -668,6 +674,12 @@
             if (this.subEmitters && this.subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
             }
+
+            if (this.preWarmCycles) {
+                for (var index = 0; index < this.preWarmCycles; index++) {
+                    this.animate(true);
+                }
+            }
         }
 
         /**
@@ -928,24 +940,26 @@
 
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         * @param preWarmOnly will prevent the system from updating the vertex buffer (default is false)
          */
-        public animate(): void {
+        public animate(preWarmOnly = false): void {
             if (!this._started)
                 return;
 
-            var effect = this._getEffect();
+            if (!preWarmOnly) {
+                var effect = this._getEffect();
 
-            // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
-                return;
+                // Check
+                if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
+                    return;
 
-            if (this._currentRenderId === this._scene.getRenderId()) {
-                return;
+                if (this._currentRenderId === this._scene.getRenderId()) {
+                    return;
+                }
+                this._currentRenderId = this._scene.getRenderId();
             }
 
-            this._currentRenderId = this._scene.getRenderId();
-
-            this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
+            this._scaledUpdateSpeed = this.updateSpeed * (preWarmOnly ? this.preWarmStepOffset : this._scene.getAnimationRatio());
 
             // determine the number of particles we need to create
             var newParticles;
@@ -989,16 +1003,18 @@
                 }
             }
 
-            // Update VBO
-            var offset = 0;
-            for (var index = 0; index < this._particles.length; index++) {
-                var particle = this._particles[index];
-                this._appendParticleVertices(offset, particle);                
-                offset += this._useInstancing ? 1 : 4;
-            }
+            if (!preWarmOnly) {
+                // Update VBO
+                var offset = 0;
+                for (var index = 0; index < this._particles.length; index++) {
+                    var particle = this._particles[index];
+                    this._appendParticleVertices(offset, particle);                
+                    offset += this._useInstancing ? 1 : 4;
+                }
 
-            if (this._vertexBuffer) {
-                this._vertexBuffer.update(this._vertexData);
+                if (this._vertexBuffer) {
+                    this._vertexBuffer.update(this._vertexData);
+                }
             }
 
             if (this.manualEmitCount === 0 && this.disposeOnStop) {
