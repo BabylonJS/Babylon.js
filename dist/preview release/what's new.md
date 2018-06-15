@@ -40,6 +40,7 @@
 - AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
 - Added sprite isVisible field ([TrevorDev](https://github.com/TrevorDev))
 - EnvironmentHelper will recreate ground and skybox meshes if force-disposed ([RaananW](https://github.com/RaananW))
+- `Sound` now accepts `MediaStream` as source to enable easier WebAudio and WebRTC integrations ([menduz](https://github.com/menduz))
 
 ### glTF Loader
 
