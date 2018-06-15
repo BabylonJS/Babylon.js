@@ -13,11 +13,22 @@ module BABYLON {
         protected _photoTexture: Texture;
 
         /**
-         * Gets the texture being displayed on the sphere
+         * Gets or sets the texture being displayed on the sphere
          */
         public get photoTexture(): Texture {
             return this._photoTexture;
         }        
+
+        public set photoTexture(value: Texture) {
+            if (this._photoTexture === value) {
+                return;
+            }
+            this._photoTexture = value;
+            this._photoTexture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
+            this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down            
+            this._material.reflectionTexture = this._photoTexture;
+        }        
+
 
         /**
          * The skybox material
@@ -59,7 +70,6 @@ module BABYLON {
 
             // create
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
-            let texture = this._photoTexture = new Texture(urlOfPhoto, scene);
             this._mesh = MeshBuilder.CreateIcoSphere(name + "_mesh", {
                 flat: false, // saves on vertex data
                 radius: options.size,
@@ -68,12 +78,11 @@ module BABYLON {
             }, scene);
 
             // configure material
-            texture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
-            texture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down
-            material.reflectionTexture = this._photoTexture;
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
 
+            this.photoTexture = new Texture(urlOfPhoto, scene);
+           
             // configure mesh
             this._mesh.material = material;
             this._mesh.parent = this;
