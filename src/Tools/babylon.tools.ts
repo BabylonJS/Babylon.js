@@ -3,6 +3,39 @@
         animations: Array<Animation>;
     }
 
+    
+    /** Interface used by value gradients (color, factor, ...) */
+    export interface IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */        
+        gradient: number;
+    }
+
+    /** Class used to store color gradient */
+    export class ColorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number;
+        /**
+         * Gets or sets associated color
+         */
+        public color: Color4;
+    }
+
+    /** Class used to store factor gradient */
+    export class FactorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number;
+        /**
+         * Gets or sets associated factor
+         */        
+        public factor: number;
+    }  
+
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
     // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
     export class LoadFileError extends Error {
@@ -1606,6 +1639,25 @@
                     resolve();
                 }, delay);
             });
+        }
+
+
+        /**
+         * Gets the current gradient from an array of IValueGradient
+         * @param ratio defines the current ratio to get
+         * @param gradients defines the array of IValueGradient
+         * @param updateFunc defines the callback function used to get the final value from the selected gradients
+         */
+        public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
+            for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
+                let currentGradient = gradients[gradientIndex];
+                let nextGradient = gradients[gradientIndex + 1];
+
+                if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
+                    let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                    updateFunc(currentGradient, nextGradient, scale);
+               }
+            }
         }
     }
 

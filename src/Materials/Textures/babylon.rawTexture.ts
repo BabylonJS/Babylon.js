@@ -34,5 +34,9 @@
         public static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): RawTexture {
             return new RawTexture(data, width, height, Engine.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
         }
+
+        public static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Engine.TEXTURETYPE_FLOAT): RawTexture {
+            return new RawTexture(data, width, height, Engine.TEXTUREFORMAT_R, scene, generateMipMaps, invertY, samplingMode, type);
+        }        
     }
 }

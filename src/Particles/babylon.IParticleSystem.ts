@@ -6,6 +6,10 @@ module BABYLON {
      */
     export interface IParticleSystem {
         /**
+         * List of animations used by the particle system.
+         */
+        animations: Animation[];
+        /**
          * The id of the Particle system.
          */
         id: string;
@@ -114,12 +118,35 @@ module BABYLON {
          * Maximum power of emitting particles.
          */
         maxEmitPower: number;        
-
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        minAngularSpeed: number;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        maxAngularSpeed: number;
+        /**
+         * Gets or sets the minimal initial rotation in radians.         
+         */
+        minInitialRotation: number;
+        /**
+         * Gets or sets the maximal initial rotation in radians.         
+         */
+        maxInitialRotation: number;         
         /**
          * The particle emitter type defines the emitter used by the particle system.
          * It can be for example box, sphere, or cone...
          */
-        particleEmitterType: Nullable<IParticleEmitterType>;        
+        particleEmitterType: Nullable<IParticleEmitterType>;  
+        /** 
+         * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 
+         */
+        preWarmCycles: number;   
+        /** 
+         * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) 
+         */
+        preWarmStepOffset: number;               
 
         /**
          * Gets the maximum number of particles active at the same time.
@@ -188,6 +215,40 @@ module BABYLON {
          * Is this system ready to be used/rendered
          * @return true if the system is ready
          */
-        isReady(): boolean;        
-    }
+        isReady(): boolean; 
+        /**
+         * Adds a new color gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         */
+        addColorGradient(gradient: number, color: Color4): IParticleSystem;   
+        /**
+         * Remove a specific color gradient
+         * @param gradient defines the gradient to remove
+         */
+        removeColorGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient
+         */
+        addSizeGradient(gradient: number, factor: number): IParticleSystem;
+        /**
+         * Remove a specific size gradient
+         * @param gradient defines the gradient to remove
+         */
+        removeSizeGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of color gradients.
+         * You must use addColorGradient and removeColorGradient to udpate this list
+         * @returns the list of color gradients
+         */
+        getColorGradients(): Nullable<Array<ColorGradient>>;
+        /**
+         * Gets the current list of size gradients.
+         * You must use addSizeGradient and removeSizeGradient to udpate this list
+         * @returns the list of size gradients
+         */
+        getSizeGradients(): Nullable<Array<FactorGradient>>;
+    }  
 }
