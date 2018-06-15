@@ -16,6 +16,7 @@
   - Added support for `radiusRange` for sphere emitter. [Doc](http://doc.babylonjs.com/babylon101/particles#sphere-emitter)
   - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-blending)
   - Added support for color gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-colors)
+  - Added support for pre-warming. [Doc](http://doc.babylonjs.com/babylon101/particles#pre-warming)
 
 ## Updates
 
@@ -48,6 +49,7 @@
 - Prevent ```lodGenerationScale``` and ```lodGenerationOffset``` to force rebind ([sebavan](http://www.github.com/sebavan))
 - Added poster property on VideoTexture ([sebavan](http://www.github.com/sebavan))
 - Added ```onUserActionRequestedObservable``` to workaround and detect autoplay video policy restriction on VideoTexture ([sebavan](http://www.github.com/sebavan))
+- `Sound` now accepts `MediaStream` as source to enable easier WebAudio and WebRTC integrations ([menduz](https://github.com/menduz))
 
 ### glTF Loader
 
