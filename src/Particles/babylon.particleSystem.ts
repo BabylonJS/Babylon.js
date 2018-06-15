@@ -120,7 +120,16 @@
         /**
          * Maximum scale of emitting particles on Y axis.
          */
-        public maxScaleY = 1;           
+        public maxScaleY = 1;          
+        
+        /**
+         * Gets or sets the minimal initial rotation in radians.         
+         */
+        public minInitialRotation = 0;
+        /**
+         * Gets or sets the maximal initial rotation in radians.         
+         */
+        public maxInitialRotation = 0;             
 
         /**
          * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
@@ -879,6 +888,8 @@
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
+                particle.angle = Scalar.RandomRange(this.minInitialRotation, this.maxInitialRotation);
+
                 if (!this._colorGradients || this._colorGradients.length === 0) {
                     var step = Scalar.RandomRange(0, 1.0);
 
@@ -1309,6 +1320,10 @@
             serializationObject.blendMode = this.blendMode;
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
+            serializationObject.preWarmCycles = this.preWarmCycles;
+            serializationObject.preWarmStepOffset = this.preWarmStepOffset;
+            serializationObject.minInitialRotation = this.minInitialRotation;
+            serializationObject.maxInitialRotation = this.maxInitialRotation;
 
             serializationObject.startSpriteCellID = this.startSpriteCellID;
             serializationObject.endSpriteCellID = this.endSpriteCellID;
@@ -1391,6 +1406,16 @@
                 particleSystem.maxScaleX = parsedParticleSystem.maxScaleX;                
                 particleSystem.minScaleY = parsedParticleSystem.minScaleY;
                 particleSystem.maxScaleY = parsedParticleSystem.maxScaleY;                
+            }
+
+            if (parsedParticleSystem.preWarmCycles !== undefined) {
+                particleSystem.preWarmCycles = parsedParticleSystem.preWarmCycles;
+                particleSystem.preWarmStepOffset = parsedParticleSystem.preWarmStepOffset;
+            }   
+
+            if (parsedParticleSystem.minInitialRotation !== undefined) {
+                particleSystem.minInitialRotation = parsedParticleSystem.minInitialRotation;
+                particleSystem.maxInitialRotation = parsedParticleSystem.maxInitialRotation;
             }
 
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
