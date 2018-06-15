@@ -11,6 +11,8 @@ module BABYLON {
         private _virtualOriginMesh:AbstractMesh;
         private _virtualDragMesh:AbstractMesh;
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
+        private _moving = false;
+        private _startingOrientation = new Quaternion();
         /**
          * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 5)
          */
@@ -87,14 +89,16 @@ module BABYLON {
                         }
                         this._virtualDragMesh.rotationQuaternion!.copyFrom(pickedMesh.rotationQuaternion);
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
-
+                        
                         // Update state
+                        this._targetPosition.copyFrom(this._virtualDragMesh.absolutePosition);
                         this.dragging = true;
                         this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId){
                         this.dragging = false;
+                        this._moving = false;
                         this.currentDraggingPointerID = -1;
                         pickedMesh = null;
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
@@ -105,7 +109,7 @@ module BABYLON {
                         var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(lastSixDofOriginPosition);
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
                         var localOriginDragDifference = Vector3.TransformCoordinates(originDragDifference, Matrix.Invert(this._virtualOriginMesh.getWorldMatrix().getRotationMatrix()));
-                        
+
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
                         // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
                         var zDragDistance = Vector3.Dot(localOriginDragDifference, this._virtualOriginMesh.position.normalizeToNew());
@@ -113,26 +117,44 @@ module BABYLON {
                         if(this._virtualDragMesh.position.z < 0){
                             this._virtualDragMesh.position.z = 0;
                         }
-                        
+
                         // Update the controller position
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                         this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh)
-                    
+                        
                         // Move the virtualObjectsPosition into the picked mesh's space if needed
                         this._targetPosition.copyFrom(this._virtualDragMesh.absolutePosition);
                         if(pickedMesh.parent){
                             Vector3.TransformCoordinatesToRef(this._targetPosition, Matrix.Invert(pickedMesh.parent.getWorldMatrix()), this._targetPosition);
                         }
+
+                        if(!this._moving){
+                            this._startingOrientation.copyFrom(this._virtualDragMesh.rotationQuaternion!)
+                        }
+                        this._moving = true;
                     }
                 }
             });
 
+            var tmpQuaternion = new Quaternion();
             // On every frame move towards target scaling to avoid jitter caused by vr controllers
             this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(()=>{
-                if(this.dragging && pickedMesh){
+                if(this.dragging && this._moving && pickedMesh){
                     // Slowly move mesh to avoid jitter
                     pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
+                    
+                    // Get change in rotation
+                    tmpQuaternion.copyFrom(this._startingOrientation);
+                    tmpQuaternion.x = -tmpQuaternion.x;
+                    tmpQuaternion.y = -tmpQuaternion.y;
+                    tmpQuaternion.z = -tmpQuaternion.z;
+                    this._virtualDragMesh.rotationQuaternion!.multiplyToRef(tmpQuaternion, tmpQuaternion);
+                    // Convert change in rotation to only y axis rotation
+                    Quaternion.RotationYawPitchRollToRef(tmpQuaternion.toEulerAngles("xyz").y,0,0, tmpQuaternion);
+                    tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
+                    // Slowly move mesh to avoid jitter
+                    Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
                 }
             });
         }
