@@ -869,9 +869,9 @@
          */
         constructor(
             /** defines the first coordinate */
-            public x: number, 
+            public x: number = 0, 
             /** defines the second coordinate */
-            public y: number) {
+            public y: number = 0) {
         }
 
         /**
@@ -1496,15 +1496,15 @@
             /**
              * Defines the first coordinates (on X axis)
              */
-            public x: number,
+            public x: number = 0,
             /**
              * Defines the second coordinates (on Y axis)
              */
-            public y: number,
+            public y: number = 0,
             /**
              * Defines the third coordinates (on Z axis)
              */
-            public z: number
+            public z: number = 0
         ) {
         }
 
@@ -6663,6 +6663,7 @@
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
     export class Tmp {
         public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
+        public static Color4: Color4[] = [new Color4(0, 0, 0, 0)];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
         Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
