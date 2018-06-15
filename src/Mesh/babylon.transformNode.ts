@@ -536,7 +536,9 @@ module BABYLON {
          * Returns the TransformNode.
          */
         public setParent(node: Nullable<Node>): TransformNode {
-
+            if (node === null && this.parent === null) {
+                return this;
+            }
             if (node === null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
