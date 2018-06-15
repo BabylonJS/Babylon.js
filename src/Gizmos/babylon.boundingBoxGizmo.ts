@@ -91,7 +91,7 @@ module BABYLON {
                             this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y,this.attachedMesh.rotation.x,this.attachedMesh.rotation.z);
                         }
                        
-                        // Do not allow the object to trun more than a full circle
+                        // Do not allow the object to turn more than a full circle
                         totalTurnAmountOfDrag+=projectDist;
                         if(Math.abs(totalTurnAmountOfDrag)<=2*Math.PI){
                             if(i>=8){
