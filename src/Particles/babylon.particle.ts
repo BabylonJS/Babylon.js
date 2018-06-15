@@ -65,6 +65,9 @@
         /** @hidden */
         public _initialDirection: Nullable<Vector3>;
 
+        /** @hidden */
+        public _initialSize: number;
+
         /**
          * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to

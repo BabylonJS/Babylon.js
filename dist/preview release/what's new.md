@@ -18,6 +18,7 @@
   - Added support for color gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-colors)
   - Added support for pre-warming. [Doc](http://doc.babylonjs.com/babylon101/particles#pre-warming)
   - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](http://doc.babylonjs.com/babylon101/particles#rotation)
+  - Added support for size gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#size)
 
 ## Updates
 
