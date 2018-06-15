@@ -1,6 +1,6 @@
 #version 300 es
 
-uniform vec4 colorDead;
+
 uniform mat4 view;
 uniform mat4 projection;
 
@@ -9,7 +9,6 @@ in vec3 position;
 in float age;
 in float life;
 in vec3 size;
-in vec4 color;
 #ifndef BILLBOARD
 in vec3 initialDirection;
 #endif
@@ -26,11 +25,22 @@ uniform mat4 invView;
 out float fClipDistance;
 #endif
 
+#ifdef COLORGRADIENTS
+uniform sampler2D colorGradientSampler;
+#else
+uniform vec4 colorDead;
+in vec4 color;
+#endif
 
 void main() {
   vUV = uv;
   float ratio = age / life;
-  vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
+#ifdef COLORGRADIENTS
+	vColor = texture(colorGradientSampler, vec2(ratio, 0));
+#else
+	vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
+#endif
+  
 
   vec2 cornerPos = offset * size.yz * size.x;
 

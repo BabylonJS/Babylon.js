@@ -5,17 +5,19 @@
 uniform float currentCount;
 uniform float timeDelta;
 uniform float stopFactor;
-uniform vec3 generalRandoms;
 uniform mat4 emitterWM;
 uniform vec2 lifeTime;
 uniform vec2 emitPower;
 uniform vec2 sizeRange;
 uniform vec4 scaleRange;
+#ifndef COLORGRADIENTS
 uniform vec4 color1;
 uniform vec4 color2;
+#endif
 uniform vec3 gravity;
 uniform sampler2D randomSampler;
-uniform vec2 angleRange;
+uniform sampler2D randomSampler2;
+uniform vec4 angleRange;
 
 #ifdef BOXEMITTER
 uniform vec3 direction1;
@@ -46,9 +48,11 @@ uniform float directionRandomizer;
 in vec3 position;
 in float age;
 in float life;
-in float seed;
+in vec4 seed;
 in vec3 size;
+#ifndef COLORGRADIENTS
 in vec4 color;
+#endif
 in vec3 direction;
 #ifndef BILLBOARD
 in vec3 initialDirection;
@@ -59,23 +63,32 @@ in vec2 angle;
 out vec3 outPosition;
 out float outAge;
 out float outLife;
-out float outSeed;
+out vec4 outSeed;
 out vec3 outSize;
+#ifdef SIZEGRADIENTS
+out vec3 outInitialSize;
+#endif
+#ifndef COLORGRADIENTS
 out vec4 outColor;
+#endif
 out vec3 outDirection;
 #ifndef BILLBOARD
 out vec3 outInitialDirection;
 #endif
 out vec2 outAngle;
 
+#ifdef SIZEGRADIENTS
+uniform sampler2D sizeGradientSampler;
+in vec3 initialSize;
+#endif 
+
 vec3 getRandomVec3(float offset) {
-  return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
+  return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
 }
 
 vec4 getRandomVec4(float offset) {
   return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0));
 }
-
 
 void main() {
   if (age >= life) {
@@ -84,7 +97,9 @@ void main() {
       outAge = life;
       outLife = life;
       outSeed = seed;
+#ifndef COLORGRADIENTS      
       outColor = vec4(0.,0.,0.,0.);
+#endif
       outSize = vec3(0., 0., 0.);
 #ifndef BILLBOARD        
       outInitialDirection = initialDirection;
@@ -97,7 +112,7 @@ void main() {
     vec3 direction;
 
     // Let's get some random values
-    vec4 randoms = getRandomVec4(generalRandoms.x);
+    vec4 randoms = getRandomVec4(seed.x);
 
     // Age and life
     outAge = 0.0;
@@ -109,26 +124,32 @@ void main() {
     // Size
     outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
-    outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a;
+    outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
 
+#ifdef SIZEGRADIENTS
+    outInitialSize = outSize;
+#endif    
+
+#ifndef COLORGRADIENTS
     // Color
     outColor = color1 + (color2 - color1) * randoms.b;
+#endif
 
     // Angular speed
     outAngle.y = angleRange.x + (angleRange.y - angleRange.x) * randoms.a;
-    outAngle.x = 0.;
+    outAngle.x = angleRange.z + (angleRange.w - angleRange.z) * randoms.r;
 
     // Position / Direction (based on emitter type)
 #ifdef BOXEMITTER
-    vec3 randoms2 = getRandomVec3(generalRandoms.y);
-    vec3 randoms3 = getRandomVec3(generalRandoms.z);
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
 
     position = minEmitBox + (maxEmitBox - minEmitBox) * randoms2;
 
     direction = direction1 + (direction2 - direction1) * randoms3;
 #elif defined(SPHEREEMITTER)
-    vec3 randoms2 = getRandomVec3(generalRandoms.y);
-    vec3 randoms3 = getRandomVec3(generalRandoms.z);
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
 
     // Position on the sphere surface
     float phi = 2.0 * PI * randoms2.x;
@@ -146,7 +167,7 @@ void main() {
       direction = position + directionRandomizer * randoms3;
     #endif
 #elif defined(CONEEMITTER)
-    vec3 randoms2 = getRandomVec3(generalRandoms.y);
+    vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
     float h = randoms2.y;
@@ -166,7 +187,7 @@ void main() {
     if (coneAngle == 0.) {
         direction = vec3(0., 1.0, 0.);
     } else {
-        vec3 randoms3 = getRandomVec3(generalRandoms.z);
+        vec3 randoms3 = getRandomVec3(seed.z);
         direction = position + directionRandomizer * randoms3;
     }
 #else    
@@ -174,7 +195,7 @@ void main() {
     position = vec3(0., 0., 0.);
 
     // Spread in all directions
-    direction = 2.0 * (getRandomVec3(seed) - vec3(0.5, 0.5, 0.5));
+    direction = 2.0 * (getRandomVec3(seed.w) - vec3(0.5, 0.5, 0.5));
 #endif
 
     float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
@@ -191,8 +212,17 @@ void main() {
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
+#ifndef COLORGRADIENTS    
     outColor = color;
+#endif
+
+#ifdef SIZEGRADIENTS
+    outInitialSize = initialSize;
+	outSize = initialSize * texture(sizeGradientSampler, vec2(age / life, 0)).r;
+#else
     outSize = size;
+#endif 
+
 #ifndef BILLBOARD    
     outInitialDirection = initialDirection;
 #endif
