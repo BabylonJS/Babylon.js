@@ -602,7 +602,6 @@ export abstract class AbstractViewer {
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
 
-        this.engine.initWebVR();
         return Promise.resolve(this.engine);
     }
 
