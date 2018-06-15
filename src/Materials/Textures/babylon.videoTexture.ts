@@ -17,6 +17,11 @@
          * Automatically updates internal texture from video at every frame in the render loop
          */
         autoUpdateTexture: boolean;
+
+        /**
+         * Image src displayed during the video loading or until the user interacts with the video.
+         */
+        poster?: string;
     }
 
     export class VideoTexture extends Texture {
@@ -29,6 +34,15 @@
          * The video instance used by the texture internally
          */
         public readonly video: HTMLVideoElement;
+
+        private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
+
+        public get onUserActionRequestedObservable(): Observable<Texture> {
+            if (!this._onUserActionRequestedObservable) {
+                this._onUserActionRequestedObservable = new Observable<Texture>();
+            }
+            return this._onUserActionRequestedObservable;
+        }
 
         private _generateMipMaps: boolean;
         private _engine: Engine;
@@ -67,6 +81,9 @@
 
             this.name = name || this._getName(src);
             this.video = this._getVideo(src);
+            if (settings.poster) {
+                this.video.poster = settings.poster;
+            }
 
             if (settings.autoPlay !== undefined) {
                 this.video.autoplay = settings.autoPlay;
@@ -75,6 +92,8 @@
                 this.video.loop = settings.loop;
             }
 
+            this.video.setAttribute("playsinline", "");
+                
             this.video.addEventListener("canplay", this._createInternalTexture);
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
@@ -143,16 +162,39 @@
 
             if (!this.video.autoplay) {
                 let oldHandler = this.video.onplaying;
+                let error = false;
                 this.video.onplaying = () => {
                     this.video.onplaying = oldHandler;
                     this._texture!.isReady = true;
                     this._updateInternalTexture();
-                    this.video.pause();
+                    if (!error) {
+                        this.video.pause();
+                    }
                     if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
                         this.onLoadObservable.notifyObservers(this);
                     }
                 };
-                this.video.play();
+                var playing = this.video.play();
+                if (playing) {
+                    playing.then(() => {
+                        // Everything is good.
+                    })
+                    .catch(() => {
+                        error = true;
+                        // On Chrome for instance, new policies might prevent playing without user interaction.
+                        if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
+                            this._onUserActionRequestedObservable.notifyObservers(this);
+                        }
+                    });
+                }
+                else {
+                    this.video.onplaying = oldHandler;
+                    this._texture.isReady = true;
+                    this._updateInternalTexture();
+                    if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                        this.onLoadObservable.notifyObservers(this);
+                    }
+                }
             }
             else {
                 this._texture.isReady = true;
@@ -226,6 +268,12 @@
 
         public dispose(): void {
             super.dispose();
+            
+            if (this._onUserActionRequestedObservable) {
+                this._onUserActionRequestedObservable.clear();
+                this._onUserActionRequestedObservable = null;
+            }
+
             this.video.removeEventListener("canplay", this._createInternalTexture);
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);

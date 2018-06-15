@@ -2174,6 +2174,24 @@
             }
         }
 
+        private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
+        
+        /** @hidden */
+        public _viewport(x: number, y: number, width: number, height: number): void {
+            if (x !== this._viewportCached.x ||
+                y !== this._viewportCached.y ||
+                width !== this._viewportCached.z ||
+                height !== this._viewportCached.w)
+            {
+                this._viewportCached.x = x;
+                this._viewportCached.y = y;
+                this._viewportCached.z = width;
+                this._viewportCached.w = height;
+
+                this._gl.viewport(x, y, width, height);
+            }
+        }
+
         /**
          * Set the WebGL's viewport
          * @param viewport defines the viewport element to be used
@@ -2188,7 +2206,7 @@
 
             this._cachedViewport = viewport;
 
-            this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
+            this._viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         }
 
         /**
@@ -2203,7 +2221,7 @@
             let currentViewport = this._cachedViewport;
             this._cachedViewport = null;
 
-            this._gl.viewport(x, y, width, height);
+            this._viewport(x, y, width, height);
 
             return currentViewport;
         }
@@ -2465,7 +2483,7 @@
                     }
                 }
 
-                gl.viewport(0, 0, requiredWidth, requiredHeight);
+                this._viewport(0, 0, requiredWidth, requiredHeight);
             }
 
             this.wipeCaches();
@@ -4072,6 +4090,11 @@
                 return;
             }
             this._currentEffect = null;
+            this._unpackFlipYCached = null;
+            this._viewportCached.x = 0;
+            this._viewportCached.y = 0;
+            this._viewportCached.z = 0;
+            this._viewportCached.w = 0;
 
             if (bruteForce) {
                 this.resetTextureCache();
@@ -4385,7 +4408,7 @@
             var internalFormat = this._getInternalFormat(format);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
@@ -4464,6 +4487,15 @@
             return texture;
         }
 
+        private _unpackFlipYCached: Nullable<boolean> = null;
+        /** @hidden */
+        public _unpackFlipY(value: boolean) {
+            if (this._unpackFlipYCached !== value) {
+                this._unpackFlipYCached = value;
+                this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
+            }
+        }
+
         /**
          * Creates a dynamic texture
          * @param width defines the width of the texture
@@ -4535,7 +4567,7 @@
             }
 
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
+            this._unpackFlipY(invertY);
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
             }
@@ -4562,8 +4594,8 @@
                 return;
             }
 
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
+            var wasPreviouslyBound = this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+            this._unpackFlipY(!invertY); // Video are upside down by default
 
             try {
                 // Testing video texture support
@@ -4603,7 +4635,9 @@
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
 
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                if (!wasPreviouslyBound) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                }
                 //    this.resetTextureCache();
                 texture.isReady = true;
 
@@ -5302,7 +5336,7 @@
             var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
             this._bindTextureDirectly(bindTarget, texture, true);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.invertY ? 1 : 0);
+            this._unpackFlipY(texture.invertY);
 
             var target = gl.TEXTURE_2D;
             if (texture.isCube) {
@@ -5467,7 +5501,7 @@
                     if (loadData.isDDS) {
                         var info: DDSInfo = loadData.info;
                         var data: any = loadData.data;
-                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+                        this._unpackFlipY(info.isCompressed);
 
                         DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
                     }
@@ -5555,7 +5589,7 @@
                     var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+                    this._unpackFlipY(true);
 
                     ktx.uploadLevels(this._gl, !noMipmap);
 
@@ -5602,7 +5636,7 @@
                                 loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+                                this._unpackFlipY(info.isCompressed);
 
                                 DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
 
@@ -5637,7 +5671,7 @@
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+                            this._unpackFlipY(info.isCompressed);
 
                             DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
 
@@ -5684,7 +5718,7 @@
                     ];
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                    this._unpackFlipY(false);
 
                     let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
                     for (var index = 0; index < faces.length; index++) {
@@ -5759,7 +5793,7 @@
             }
 
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             if (texture.width % 4 !== 0) {
                 gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
@@ -5923,7 +5957,7 @@
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                    this._unpackFlipY(false);
 
                     var mipData = mipmapGenerator(faceDataArrays);
                     for (var level = 0; level < mipData.length; level++) {
@@ -5976,7 +6010,7 @@
             var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
 
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
@@ -6101,7 +6135,7 @@
             }
 
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -6327,7 +6361,8 @@
         }
 
         /** @hidden */
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): void {
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
+            var wasPreviouslyBound = false;
             if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
                 this._activeChannel = texture._designatedSlot;
             }
@@ -6359,12 +6394,15 @@
                     texture._designatedSlot = this._activeChannel;
                 }
             } else if (forTextureDataUpdate) {
+                wasPreviouslyBound = true;
                 this._activateCurrentTexture();
             }
 
             if (isTextureForRendering && !forTextureDataUpdate) {
                 this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
             }
+
+            return wasPreviouslyBound;
         }
 
         /** @hidden */
