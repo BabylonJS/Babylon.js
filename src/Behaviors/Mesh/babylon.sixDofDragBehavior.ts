@@ -87,7 +87,10 @@ module BABYLON {
                         if(!pickedMesh.rotationQuaternion){
                             pickedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(pickedMesh.rotation.y,pickedMesh.rotation.x,pickedMesh.rotation.z);
                         }
+                        var oldParent=pickedMesh.parent;
+                        pickedMesh.setParent(null);
                         this._virtualDragMesh.rotationQuaternion!.copyFrom(pickedMesh.rotationQuaternion);
+                        pickedMesh.setParent(oldParent);
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
                         
                         // Update state
@@ -154,7 +157,10 @@ module BABYLON {
                     Quaternion.RotationYawPitchRollToRef(tmpQuaternion.toEulerAngles("xyz").y,0,0, tmpQuaternion);
                     tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
                     // Slowly move mesh to avoid jitter
+                    var oldParent=pickedMesh.parent;
+                    pickedMesh.setParent(null);
                     Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
+                    pickedMesh.setParent(oldParent);
                 }
             });
         }
