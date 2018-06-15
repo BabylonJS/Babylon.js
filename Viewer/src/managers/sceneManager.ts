@@ -783,6 +783,9 @@ export class SceneManager {
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
             this.camera.setTarget(Vector3.Zero());
         }
+        if (!this.camera) {
+            this.camera = <ArcRotateCamera>this.scene.activeCamera!;
+        }
         if (cameraConfig.position) {
             let newPosition = this.camera.position.clone();
             extendClassWithConfig(newPosition, cameraConfig.position);
