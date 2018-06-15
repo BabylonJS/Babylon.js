@@ -869,9 +869,9 @@
          */
         constructor(
             /** defines the first coordinate */
-            public x: number, 
+            public x: number = 0, 
             /** defines the second coordinate */
-            public y: number) {
+            public y: number = 0) {
         }
 
         /**
@@ -1496,15 +1496,15 @@
             /**
              * Defines the first coordinates (on X axis)
              */
-            public x: number,
+            public x: number = 0,
             /**
              * Defines the second coordinates (on Y axis)
              */
-            public y: number,
+            public y: number = 0,
             /**
              * Defines the third coordinates (on Z axis)
              */
-            public z: number
+            public z: number = 0
         ) {
         }
 
