@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { SceneManager } from '../managers/sceneManager';
 import { ConfigurationLoader } from '../configuration/loader';
-import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager } from 'babylonjs';
+import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager, VRExperienceHelper, VRExperienceHelperOptions, TargetCamera } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/';
 
 import { ViewerModel } from '../model/viewerModel';
@@ -198,6 +198,7 @@ export abstract class AbstractViewer {
         this.onInitDoneObservable.add(() => {
             this._isInit = true;
             this.engine.runRenderLoop(this._render);
+            this._prepareVR();
         });
 
         this._prepareContainerElement();
@@ -258,6 +259,77 @@ export abstract class AbstractViewer {
         var scale = this._hdToggled ? Math.max(0.5, 1 / (window.devicePixelRatio || 2)) : 1;
 
         this.engine.setHardwareScalingLevel(scale);
+    }
+
+    protected _vrToggled: boolean = false;
+    protected _vrHelper?: VRExperienceHelper;
+    protected _vrScale: number = 1;
+
+    private _prepareVR() {
+        let vrOptions: VRExperienceHelperOptions = {
+            useCustomVRButton: true,
+            createDeviceOrientationCamera: false,
+            trackPosition: true
+        }
+
+        this._vrHelper = this.sceneManager.scene.createDefaultVRExperience(vrOptions);
+        this._vrHelper.enableInteractions();
+        this._vrHelper.enableTeleportation({
+            floorMeshName: "BackgroundPlane"
+        });
+    }
+
+    public toggleVR() {
+        this._vrToggled = !this._vrToggled;
+
+        if (this._vrToggled && this._vrHelper) {
+            // make sure the floor is set
+            if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
+                this._vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
+            }
+
+            this._vrHelper.enterVR();
+            // calculate position and vr scale
+            if (this.sceneManager.models.length) {
+                let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
+                let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+                let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+                this._vrScale = 1 / maxDimension;
+
+                this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
+
+                // reposition the object to "float" in front of the user
+                this.sceneManager.models[0].rootMesh.position.y += 1.7;
+
+            }
+
+            if (this.sceneManager.environmentHelper) {
+                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
+                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
+            }
+
+            // position the vr camera to be in front of the object
+            if (this._vrHelper.currentVRCamera) {
+                this._vrHelper.currentVRCamera.position.copyFromFloats(0, 1.7, -1);
+                (<TargetCamera>this._vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this._vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+            }
+
+        } else {
+            if (this._vrHelper) {
+                this._vrHelper.exitVR();
+                //this.sceneManager.scene.activeCamera = this.sceneManager.camera;
+                if (this.sceneManager.models.length) {
+                    this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
+                    this.sceneManager.models[0].rootMesh.position.y -= 1.7;
+
+                }
+
+                if (this.sceneManager.environmentHelper) {
+                    this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
+                    this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+                }
+            }
+        }
     }
 
     /**
@@ -530,6 +602,7 @@ export abstract class AbstractViewer {
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
 
+        this.engine.initWebVR();
         return Promise.resolve(this.engine);
     }
 
