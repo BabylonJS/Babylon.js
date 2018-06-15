@@ -95,10 +95,15 @@ module BABYLON {
                 // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
                 if (urlOrArrayBuffer) {
                     try {
-                        if (typeof (urlOrArrayBuffer) === "string") this._urlType = "String";
-                        if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
-                        if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
-                        if (urlOrArrayBuffer instanceof MediaStream) this._urlType = "MediaStream";
+                        if (typeof (urlOrArrayBuffer) === "string") {
+                            this._urlType = "String";
+                        } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
+                            this._urlType = "ArrayBuffer";
+                        } else if (urlOrArrayBuffer instanceof MediaStream) {
+                            this._urlType = "MediaStream";
+                        } else if (Array.isArray(urlOrArrayBuffer)) {
+                            this._urlType = "Array";
+                        }
 
                         var urls: string[] = [];
                         var codecSupportedFound = false;
