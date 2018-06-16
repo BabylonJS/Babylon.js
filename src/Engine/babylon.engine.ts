@@ -4310,22 +4310,42 @@
                             return false;
                         }
 
-                        // Using shaders to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
-                        this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+                        let maxTextureSize = this._caps.maxTextureSize;
 
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        if (img.width > maxTextureSize || img.height > maxTextureSize) {
+                            this._prepareWorkingCanvas();
+                            if (!this._workingCanvas || !this._workingContext) {
+                                return false;
+                            }
 
-                        this._rescaleTexture(source, texture, scene, internalFormat, () => {
-                            this._releaseTexture(source);
-                            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+                            this._workingCanvas.width = potWidth;
+                            this._workingCanvas.height = potHeight;
+        
+                            this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+    
+                            texture.width = potWidth;
+                            texture.height = potHeight;
 
-                            continuationCallback();
-                        });
+                            return false;
+                        } else {
+                            // Using shaders when possible to rescale because canvas.drawImage is lossy
+                            let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                            this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                            this._rescaleTexture(source, texture, scene, internalFormat, () => {
+                                this._releaseTexture(source);
+                                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+
+                                continuationCallback();
+                            });
+                        }
 
                         return true;
                     }, samplingMode);
@@ -6117,8 +6137,9 @@
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
             processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
-            var potWidth = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
-            var potHeight = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
+            var maxTextureSize = this.getCaps().maxTextureSize;    
+            var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
+            var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
 
             var gl = this._gl;
             if (!gl) {
