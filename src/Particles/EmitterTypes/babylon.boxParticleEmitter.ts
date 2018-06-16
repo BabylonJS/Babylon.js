@@ -119,10 +119,10 @@ module BABYLON {
          * @param serializationObject defines the JSON object
          */
         public parse(serializationObject: any): void {
-            this.direction1.copyFrom(serializationObject.direction1);
-            this.direction2.copyFrom(serializationObject.direction2);
-            this.minEmitBox.copyFrom(serializationObject.minEmitBox);
-            this.maxEmitBox.copyFrom(serializationObject.maxEmitBox);
+            Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
+            Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
+            Vector3.FromArrayToRef(serializationObject.minEmitBox, 0, this.minEmitBox);
+            Vector3.FromArrayToRef(serializationObject.maxEmitBox, 0, this.maxEmitBox);
         }
     }
 }
