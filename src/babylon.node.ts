@@ -67,7 +67,7 @@
         /** @hidden */
         public _cache: any;
 
-        private _parentNode: Nullable<Node> = null;
+        private _parentNode: Nullable<Node>;
         private _children: Node[];
 
         /**
