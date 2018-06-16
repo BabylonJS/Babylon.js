@@ -90,6 +90,7 @@ module BABYLON {
             // configure material
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
+            material.opacityFresnel = false;
 
             if (this._useDirectMapping) {
                 texture.wrapU = Texture.CLAMP_ADDRESSMODE;     
