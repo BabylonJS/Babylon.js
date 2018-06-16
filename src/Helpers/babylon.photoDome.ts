@@ -91,7 +91,7 @@ module BABYLON {
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
 
-            this.photoTexture = new Texture(urlOfPhoto, scene, false, !this._useDirectMapping);
+            this.photoTexture = new Texture(urlOfPhoto, scene, true, !this._useDirectMapping);
            
             // configure mesh
             this._mesh.material = material;
