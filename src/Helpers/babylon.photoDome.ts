@@ -84,16 +84,7 @@ module BABYLON {
 
             // create
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
-            if (this._useDirectMapping) {
-                this._mesh = BABYLON.Mesh.CreateSphere("sphere1", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
-            } else {
-                this._mesh = MeshBuilder.CreateIcoSphere(name + "_mesh", {
-                    flat: false, // saves on vertex data
-                    radius: options.size,
-                    subdivisions: options.resolution,
-                    sideOrientation: Mesh.BACKSIDE // needs to be inside out
-                }, scene);    
-            }
+            this._mesh = BABYLON.Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
 
             // configure material
             material.opacityFresnel = false;
