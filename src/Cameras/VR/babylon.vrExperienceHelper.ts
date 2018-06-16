@@ -621,6 +621,7 @@ module BABYLON {
             document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
             document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
             document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
+            (<any>document).onmsfullscreenchange = this._onFullscreenChange;
 
             // Display vr button when headset is connected
             if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
@@ -724,6 +725,8 @@ module BABYLON {
                 this._fullscreenVRpresenting = document.webkitIsFullScreen;
             } else if (document.msIsFullScreen !== undefined) {
                 this._fullscreenVRpresenting = document.msIsFullScreen;
+            } else if ((<any>document).msFullscreenElement !== undefined) {
+                this._fullscreenVRpresenting = (<any>document).msFullscreenElement;
             }
             if (!this._fullscreenVRpresenting && this._canvas) {
                 this.exitVR();
@@ -1796,6 +1799,7 @@ module BABYLON {
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+            (<any>document).onmsfullscreenchange = null;
 
             this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChanged);
             this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);
