@@ -20,8 +20,8 @@ module BABYLON {
             coloredMaterial.emissiveColor = color;
 
             // Build mesh on root node
-            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 1}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameter:0.03, height: 0.2, tessellation: 96}, gizmoLayer.utilityLayerScene);
+            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.5}, gizmoLayer.utilityLayerScene);
+            var arrowTail = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameter:0.015, height: 0.3, tessellation: 96}, gizmoLayer.utilityLayerScene);
             this._rootMesh.addChild(arrowMesh);
             this._rootMesh.addChild(arrowTail);
 
@@ -32,7 +32,7 @@ module BABYLON {
             arrowMesh.position.z+=0.3;
             arrowTail.rotation.x = Math.PI/2;
             arrowTail.material = coloredMaterial;
-            arrowTail.position.z+=0.2;
+            arrowTail.position.z+=0.15;
             this._rootMesh.lookAt(this._rootMesh.position.subtract(dragAxis));
 
             // Add drag behavior to handle events when the gizmo is dragged
