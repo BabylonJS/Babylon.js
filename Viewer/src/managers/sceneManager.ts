@@ -812,6 +812,38 @@ export class SceneManager {
                 floorMeshName
             });
         }
+        let rotationOffset: Quaternion | null;
+        this._vrHelper.onControllerMeshLoadedObservable.add((controller) => {
+            controller.onTriggerStateChangedObservable.add((data) => {
+                if (controller.mesh && controller.mesh.rotationQuaternion) {
+                    if (data.pressed) {
+                        if (!rotationOffset) {
+                            rotationOffset = controller.mesh.rotationQuaternion.conjugate();
+                        }
+                    } else {
+                        rotationOffset = null;
+                    }
+                    if (this.models[0]) {
+                        if (rotationOffset) {
+                            this.models[0].rootMesh.rotationQuaternion = controller.mesh.rotationQuaternion.multiply(rotationOffset);
+                        } else {
+                            this.models[0].rootMesh.rotationQuaternion = null;
+                        }
+
+                    }
+                }
+            });
+            this.scene.registerBeforeRender(() => {
+                if (this.models[0]) {
+                    if (rotationOffset) {
+                        this.models[0].rootMesh.rotationQuaternion = controller.mesh && controller.mesh.rotationQuaternion && controller.mesh.rotationQuaternion.multiply(rotationOffset);
+                    } else {
+                        this.models[0].rootMesh.rotationQuaternion = null;
+                    }
+
+                }
+            })
+        })
         this.onVRConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this._vrHelper,
