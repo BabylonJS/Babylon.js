@@ -594,7 +594,7 @@
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
             colorGradient.color1 = color;
-            colorGradient.color2 = color;
+            colorGradient.color2 = color2;
             this._colorGradients.push(colorGradient);
 
             this._colorGradients.sort((a, b) => {
