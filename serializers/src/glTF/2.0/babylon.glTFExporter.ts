@@ -56,22 +56,22 @@ module BABYLON.GLTF2 {
         /**
          * Stores all the generated material information, which represents the appearance of each primitive
          */
-        private materials: IMaterial[];
+        public materials: IMaterial[];
 
-        private materialMap: { [materialID: number]: number };
+        public materialMap: { [materialID: number]: number };
         /**
          * Stores all the generated texture information, which is referenced by glTF materials
          */
-        private textures: ITexture[];
+        public textures: ITexture[];
         /**
          * Stores all the generated image information, which is referenced by glTF textures
          */
-        private images: IImage[];
+        public images: IImage[];
 
         /**
          * Stores all the texture samplers
          */
-        private samplers: ISampler[];
+        public samplers: ISampler[];
         /**
          * Stores all the generated animation samplers, which is referenced by glTF animations
          */
@@ -91,7 +91,7 @@ module BABYLON.GLTF2 {
          * Stores a map of the image data, where the key is the file name and the value
          * is the image data
          */
-        private imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } };
+        public imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } };
 
         /**
          * Stores a map of the unique id of a node to its index in the node array
@@ -112,6 +112,10 @@ module BABYLON.GLTF2 {
          * Callback which specifies if a transform node should be exported or not
          */
         private shouldExportTransformNode: ((babylonTransformNode: TransformNode) => boolean);
+
+        public _localEngine: Engine;
+
+        private _glTFMaterial: _GLTFMaterial;
 
         /**
          * Creates a glTF Exporter instance, which can accept optional exporter options
@@ -137,6 +141,13 @@ module BABYLON.GLTF2 {
             const _options = options || {};
             this.shouldExportTransformNode = _options.shouldExportTransformNode ? _options.shouldExportTransformNode : (babylonTransformNode: TransformNode) => true;
             this.animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
+
+            const localCanvas = document.createElement('canvas');
+            localCanvas.id = "WriteCanvas";
+            localCanvas.width = 2048;
+            localCanvas.height = 2048;
+            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            this._glTFMaterial = new _GLTFMaterial(this);
         }
 
         private reorderIndicesBasedOnPrimitiveMode(submesh: SubMesh, primitiveMode: number, babylonIndices: IndicesArray, byteOffset: number, binaryWriter: _BinaryWriter) {
@@ -618,22 +629,12 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Resets the exporter variables
-         */
-        private _resetExporter() {
-            _GLTFMaterial._Reset();
-        }
-
-        /**
          * Creates a binary buffer for glTF
          * @returns array buffer for binary data
          */
         private _generateBinaryAsync(): Promise<ArrayBuffer> {
             let binaryWriter = new _BinaryWriter(4);
             return this.createSceneAsync(this.babylonScene, binaryWriter).then(() => {
-                // reset the material map and texture map
-                this._resetExporter();
-                
                 return binaryWriter.getArrayBuffer();
             });
         }
@@ -732,6 +733,8 @@ module BABYLON.GLTF2 {
 
                 const container = new GLTFData();
                 container.glTFFiles[glbFileName] = glbFile;
+
+                this._localEngine.dispose();
 
                 return container;
             });
@@ -995,7 +998,7 @@ module BABYLON.GLTF2 {
                         for (const attribute of attributeData) {
                             const attributeKind = attribute.kind;
                             if (attributeKind === VertexBuffer.UVKind || attributeKind === VertexBuffer.UV2Kind) {
-                                if (glTFMaterial && !_GLTFMaterial._HasTexturesPresent(glTFMaterial)) {
+                                if (glTFMaterial && !this._glTFMaterial._hasTexturesPresent(glTFMaterial)) {
                                     continue;
                                 }
                             }
@@ -1054,8 +1057,8 @@ module BABYLON.GLTF2 {
                                 }
                             }
 
-                            if (!uvCoordsPresent && _GLTFMaterial._HasTexturesPresent(this.materials[materialIndex])) {
-                                const newMat = _GLTFMaterial._StripTexturesFromMaterial(this.materials[materialIndex]);
+                            if (!uvCoordsPresent && this._glTFMaterial._hasTexturesPresent(this.materials[materialIndex])) {
+                                const newMat = this._glTFMaterial._stripTexturesFromMaterial(this.materials[materialIndex]);
                                 this.materials.push(newMat);
                                 materialIndex = this.materials.length - 1;
                             }
@@ -1082,7 +1085,7 @@ module BABYLON.GLTF2 {
             let directDescendents: Node[];
             const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
 
-            return _GLTFMaterial._ConvertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.samplers, this.materials, this.materialMap, this.imageData, true).then(() => {
+            return this._glTFMaterial._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
                 this.nodeMap = this.createNodeMapAndAnimations(babylonScene, nodes, this.shouldExportTransformNode, binaryWriter);
 
                 this.totalByteLength = binaryWriter.getByteOffset();
