@@ -82,7 +82,7 @@ module BABYLON {
          */
         groundMirrorTextureType: number;
         /**
-         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
+         * Specifies a bias applied to the ground vertical position to prevent z-fighting with
          * the shown objects.
          */
         groundYBias: number;
