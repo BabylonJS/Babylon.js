@@ -19,9 +19,27 @@
          */
         public gradient: number;
         /**
-         * Gets or sets associated color
+         * Gets or sets first associated color
          */
-        public color: Color4;
+        public color1: Color4;
+        /**
+         * Gets or sets second associated color
+         */
+        public color2?: Color4;
+
+        /** 
+         * Will get a color picked randomly between color1 and color2.
+         * If color2 is undefined then color1 will be used
+         * @param result defines the target Color4 to store the result in
+         */
+        public getColorToRef(result: Color4) {
+            if (!this.color2) {
+                result.copyFrom(this.color1);
+                return;
+            }
+
+            Color4.LerpToRef(this.color1, this.color2, Math.random(), result);
+        }
     }
 
     /** Class used to store factor gradient */

@@ -408,15 +408,16 @@
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          */
-        public addColorGradient(gradient: number, color: Color4): GPUParticleSystem {
+        public addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem {
             if (!this._colorGradients) {
                 this._colorGradients = [];
             }
 
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
-            colorGradient.color = color;
+            colorGradient.color1 = color1;
             this._colorGradients.push(colorGradient);
 
             this._colorGradients.sort((a, b) => {
@@ -893,7 +894,7 @@
 
                 Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
 
-                    Color4.LerpToRef((<ColorGradient>currentGradient).color, (<ColorGradient>nextGradient).color, scale, tmpColor);
+                    Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
                     data[x * 4] = tmpColor.r * 255;
                     data[x * 4 + 1] = tmpColor.g * 255;
                     data[x * 4 + 2] = tmpColor.b * 255;
