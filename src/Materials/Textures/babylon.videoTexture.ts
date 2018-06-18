@@ -293,6 +293,10 @@
             }
         ): void {
             var video = document.createElement("video");
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+
             var constraintsDeviceId;
             if (constraints && constraints.deviceId) {
                 constraintsDeviceId = {

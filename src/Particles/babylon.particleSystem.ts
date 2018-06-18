@@ -967,6 +967,31 @@
             }
         }
 
+        /** @hidden */
+        public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false): string[] {
+            var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
+
+            if (isAnimationSheetEnabled) {
+                attributeNamesOrOptions.push("cellIndex");
+            }
+
+            if (!isBillboardBased) {
+                attributeNamesOrOptions.push("direction");
+            }            
+
+            return attributeNamesOrOptions;
+        }
+
+        public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
+            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
+
+            if (isAnimationSheetEnabled) {
+                effectCreationOption.push("particlesInfos")
+            }
+
+            return effectCreationOption;
+        }
+
         private _getEffect(): Effect {
             if (this._customEffect) {
                 return this._customEffect;
@@ -991,17 +1016,8 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
-                var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
-
-                if (this._isAnimationSheetEnabled) {
-                    attributesNamesOrOptions.push("cellIndex");
-                    effectCreationOption.push("particlesInfos")
-                }
-
-                if (!this._isBillboardBased) {
-                    attributesNamesOrOptions.push("direction");
-                }
+                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased);
+                var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",

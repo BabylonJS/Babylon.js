@@ -3433,7 +3433,8 @@
         }
 
         /**
-         * Create an effect to use with particle systems
+         * Create an effect to use with particle systems.
+         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
          * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
          * @param uniformsNames defines a list of attribute names 
          * @param samplers defines an array of string used to represent textures
@@ -3446,13 +3447,18 @@
         public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
+            var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
+            var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
+
+            defines += "\n#define BILLBOARD\n";
+
             return this.createEffect(
                 {
                     vertex: "particles",
                     fragmentElement: fragmentName
                 },
-                ["position", "color", "options"],
-                ["view", "projection"].concat(uniformsNames),
+                attributesNamesOrOptions,
+                effectCreationOption.concat(uniformsNames),
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
