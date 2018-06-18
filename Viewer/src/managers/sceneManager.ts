@@ -1,5 +1,5 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh } from 'babylonjs';
-import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration } from '../configuration';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper } from 'babylonjs';
+import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
@@ -51,6 +51,11 @@ export class SceneManager {
      * Will notify after the envirnoment was configured. Can be used to further configure the environment
      */
     onEnvironmentConfiguredObservable: Observable<IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean, ground?: IGroundConfiguration | boolean }>>;
+
+    /**
+     * Will notify after the model(s) were configured. Can be used to further configure models
+     */
+    onVRConfiguredObservable: Observable<IPostConfigurationCallback<VRExperienceHelper, IVRConfiguration>>;
 
     /**
      * The Babylon Scene of this viewer
@@ -106,6 +111,13 @@ export class SceneManager {
         return this._defaultRenderingPipeline;
     }
 
+
+    protected _vrHelper?: VRExperienceHelper;
+
+    public get vrHelper() {
+        return this._vrHelper;
+    }
+
     constructor(private _engine: Engine, private _configurationContainer: ConfigurationContainer, private _observablesManager?: ObservablesManager) {
         this.models = [];
 
@@ -116,6 +128,7 @@ export class SceneManager {
         this.onSceneInitObservable = new Observable();
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
+        this.onVRConfiguredObservable = new Observable();
 
         //this._viewer.onEngineInitObservable.add(() => {
         this._handleHardwareLimitations();
@@ -426,6 +439,10 @@ export class SceneManager {
 
         // camera
         this._configureCamera(newConfiguration.camera);
+
+        if (newConfiguration.vr) {
+            this._configureVR(newConfiguration.vr);
+        }
 
         if (newConfiguration.lab) {
             if (newConfiguration.lab.environmentMap) {
@@ -767,6 +784,40 @@ export class SceneManager {
             newConfiguration: modelConfiguration
         });
     }*/
+
+    protected _configureVR(vrConfig: IVRConfiguration) {
+        if (vrConfig.disabled) {
+            if (this._vrHelper) {
+                if (this._vrHelper.isInVRMode) {
+                    this._vrHelper.exitVR();
+                }
+                this._vrHelper.dispose();
+                this._vrHelper = undefined;
+            }
+            return;
+        }
+        let vrOptions: VRExperienceHelperOptions = vrConfig.vrOptions || {
+            useCustomVRButton: true,
+            createDeviceOrientationCamera: false,
+            trackPosition: true
+        }
+
+        this._vrHelper = this.scene.createDefaultVRExperience(vrOptions);
+        if (!vrConfig.disableInteractions) {
+            this._vrHelper.enableInteractions();
+        }
+        if (!vrConfig.disableTeleportation) {
+            let floorMeshName = vrConfig.overrideFloorMeshName || "BackgroundPlane";
+            this._vrHelper.enableTeleportation({
+                floorMeshName
+            });
+        }
+        this.onVRConfiguredObservable.notifyObservers({
+            sceneManager: this,
+            object: this._vrHelper,
+            newConfiguration: vrConfig
+        });
+    }
 
     /**
      * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
@@ -1332,6 +1383,7 @@ export class SceneManager {
         this.onSceneConfiguredObservable.clear();
         this.onSceneInitObservable.clear();
         this.onSceneOptimizerConfiguredObservable.clear();
+        this.onVRConfiguredObservable.clear();
 
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();

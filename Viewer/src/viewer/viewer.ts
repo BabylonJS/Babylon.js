@@ -198,7 +198,6 @@ export abstract class AbstractViewer {
         this.onInitDoneObservable.add(() => {
             this._isInit = true;
             this.engine.runRenderLoop(this._render);
-            this._prepareVR();
         });
 
         this._prepareContainerElement();
@@ -262,46 +261,20 @@ export abstract class AbstractViewer {
     }
 
     protected _vrToggled: boolean = false;
-    protected _vrHelper?: VRExperienceHelper;
+    private _vrModelRepositioning: number = 0;
     protected _vrScale: number = 1;
-
-    private _prepareVR() {
-        let vrOptions: VRExperienceHelperOptions = {
-            useCustomVRButton: true,
-            createDeviceOrientationCamera: false,
-            trackPosition: true
-        }
-
-        this._vrHelper = this.sceneManager.scene.createDefaultVRExperience(vrOptions);
-        this._vrHelper.enableInteractions();
-        this._vrHelper.enableTeleportation({
-            floorMeshName: "BackgroundPlane"
-        });
-    }
 
     public toggleVR() {
         this._vrToggled = !this._vrToggled;
 
-        if (this._vrToggled && this._vrHelper) {
+        if (this._vrToggled && this.sceneManager.vrHelper) {
             // make sure the floor is set
             if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
-                this._vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
+                this.sceneManager.vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
             }
 
-            this._vrHelper.enterVR();
+            this.sceneManager.vrHelper.enterVR();
             // calculate position and vr scale
-            if (this.sceneManager.models.length) {
-                let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
-                let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
-                let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-                this._vrScale = 1 / maxDimension;
-
-                this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
-
-                // reposition the object to "float" in front of the user
-                this.sceneManager.models[0].rootMesh.position.y += 1.7;
-
-            }
 
             if (this.sceneManager.environmentHelper) {
                 this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
@@ -309,18 +282,37 @@ export abstract class AbstractViewer {
             }
 
             // position the vr camera to be in front of the object
-            if (this._vrHelper.currentVRCamera) {
-                this._vrHelper.currentVRCamera.position.copyFromFloats(0, 1.7, -1);
-                (<TargetCamera>this._vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this._vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+            if (this.sceneManager.vrHelper.currentVRCamera) {
+                this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
+                (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
+            } else {
+                this._vrModelRepositioning = 0;
+            }
+
+            if (this.sceneManager.models.length) {
+                let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
+                let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+                let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+                this._vrScale = (1 / maxDimension);
+                if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
+                    this._vrScale *= this.configuration.vr.objectScaleFactor;
+                }
+
+                this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
+
+                // reposition the object to "float" in front of the user
+                this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
+
             }
 
         } else {
-            if (this._vrHelper) {
-                this._vrHelper.exitVR();
+            if (this.sceneManager.vrHelper) {
+                this.sceneManager.vrHelper.exitVR();
                 //this.sceneManager.scene.activeCamera = this.sceneManager.camera;
                 if (this.sceneManager.models.length) {
                     this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.models[0].rootMesh.position.y -= 1.7;
+                    this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
 
                 }
 
