@@ -220,8 +220,9 @@ module BABYLON {
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          */
-        addColorGradient(gradient: number, color: Color4): IParticleSystem;   
+        addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem;   
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
