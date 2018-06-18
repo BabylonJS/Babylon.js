@@ -18,9 +18,9 @@ module BABYLON {
          */
         constructor(gizmoLayer:UtilityLayerRenderer){
             super(gizmoLayer);
-            this._xDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(1,0,0), BABYLON.Color3.FromHexString("#00b894"));
-            this._yDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(0,1,0), BABYLON.Color3.FromHexString("#d63031"));
-            this._zDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(0,0,1), BABYLON.Color3.FromHexString("#0984e3"));
+            this._xDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5));
+            this._yDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5));
+            this._zDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5));
         }
 
         protected _onInteractionsEnabledChanged(value:boolean){

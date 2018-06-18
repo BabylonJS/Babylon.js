@@ -20,7 +20,7 @@ module BABYLON {
             coloredMaterial.emissiveColor = color;
 
             // Build mesh on root node
-            var rotationMesh = BABYLON.Mesh.CreateTorus("torus", 3, 0.3, 20, gizmoLayer.utilityLayerScene, false);
+            var rotationMesh = BABYLON.Mesh.CreateTorus("torus", 3, 0.15, 20, gizmoLayer.utilityLayerScene, false);
             this._rootMesh.addChild(rotationMesh);
 
             // Position arrow pointing in its drag axis
