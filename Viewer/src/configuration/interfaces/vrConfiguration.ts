@@ -1,7 +1,7 @@
 import { VRExperienceHelperOptions } from "babylonjs";
 
 export interface IVRConfiguration {
-    enabled?: boolean;
+    disabled?: boolean;
     objectScaleFactor?: number;
     disableInteractions?: boolean;
     disableTeleportation?: boolean;
