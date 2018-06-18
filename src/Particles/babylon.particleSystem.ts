@@ -491,8 +491,13 @@
 
                         // Color
                         if (this._colorGradients && this._colorGradients.length > 0) {
+                            var color1 = Tmp.Color4[0];
+                            var color2 = Tmp.Color4[1];
+
                             Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
-                                Color4.LerpToRef((<ColorGradient>currentGradient).color, (<ColorGradient>nextGradient).color, scale, particle.color);
+                                (<ColorGradient>currentGradient).getColorToRef(color1);
+                                (<ColorGradient>nextGradient).getColorToRef(color2);
+                                Color4.LerpToRef(color1, color2, scale, particle.color);
                             });
                         }
                         else {
@@ -579,15 +584,17 @@
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          */
-        public addColorGradient(gradient: number, color: Color4): ParticleSystem {
+        public addColorGradient(gradient: number, color: Color4, color2?: Color4): ParticleSystem {
             if (!this._colorGradients) {
                 this._colorGradients = [];
             }
 
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
-            colorGradient.color = color;
+            colorGradient.color1 = color;
+            colorGradient.color2 = color;
             this._colorGradients.push(colorGradient);
 
             this._colorGradients.sort((a, b) => {
@@ -962,7 +969,7 @@
                     this.colorDead.subtractToRef(particle.color, this._colorDiff);
                     this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
                 } else {
-                    particle.color.copyFrom(this._colorGradients[0].color);
+                    this._colorGradients[0].getColorToRef(particle.color);
                 }
             }
         }
@@ -1427,10 +1434,16 @@
             if (colorGradients) {
                 serializationObject.colorGradients = [];
                 for (var colorGradient of colorGradients) {
-                    serializationObject.colorGradients.push({
+                    var serializedGradient: any = {
                         gradient: colorGradient.gradient,
-                        color: colorGradient.color.asArray()
-                    })
+                        color1: colorGradient.color1.asArray()
+                    };
+
+                    if (colorGradient.color2) {
+                        serializedGradient.color2 = colorGradient.color2.asArray();
+                    }
+
+                    serializationObject.colorGradients.push(serializedGradient);
                 }
             }
 
@@ -1513,7 +1526,7 @@
 
             if (parsedParticleSystem.colorGradients) {
                 for (var colorGradient of parsedParticleSystem.colorGradients) {
-                    particleSystem.addColorGradient(colorGradient.gradient, Color4.FromArray(colorGradient.color));
+                    particleSystem.addColorGradient(colorGradient.gradient, Color4.FromArray(colorGradient.color1), colorGradient.color2 ? Color4.FromArray(colorGradient.color2) : undefined);
                 }
             }
 
