@@ -46,7 +46,7 @@ describe('Babylon Animation Group', function () {
 
             const length = 10;
             for (let i = 0; i < length; i++) {
-                const animation = new BABYLON.Animation(`animation${i}`, "", 1, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
+                const animation = new BABYLON.Animation(`animation${i}`, "position", 1, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
                 animation.setKeys([
                     {
                         frame: 0,
