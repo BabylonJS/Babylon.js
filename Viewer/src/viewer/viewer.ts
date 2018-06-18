@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { SceneManager } from '../managers/sceneManager';
 import { ConfigurationLoader } from '../configuration/loader';
-import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager, VRExperienceHelper, VRExperienceHelperOptions, TargetCamera } from 'babylonjs';
+import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager, VRExperienceHelper, VRExperienceHelperOptions, TargetCamera, WebVRFreeCamera } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/';
 
 import { ViewerModel } from '../model/viewerModel';
@@ -286,6 +286,12 @@ export abstract class AbstractViewer {
                 this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
                 (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
                 this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
+
+                // enable rotation using the axels
+                // check if the camera is a webvr camera
+                if (this.sceneManager.vrHelper.currentVRCamera.getClassName() === "WebVRFreeCamera") {
+                    let vrCamera: WebVRFreeCamera = (<WebVRFreeCamera>this.sceneManager.vrHelper.currentVRCamera);
+                }
             } else {
                 this._vrModelRepositioning = 0;
             }
@@ -305,6 +311,8 @@ export abstract class AbstractViewer {
                 this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
 
             }
+
+
 
         } else {
             if (this.sceneManager.vrHelper) {
