@@ -4,6 +4,7 @@ module BABYLON {
      */
     export class AxisDragGizmo extends Gizmo {
         private _dragBehavior:PointerDragBehavior;
+        private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         /**
          * Creates an AxisDragGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -18,6 +19,10 @@ module BABYLON {
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
             coloredMaterial.emissiveColor = color;
+
+            var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            hoverMaterial.disableLighting = true;
+            hoverMaterial.emissiveColor = color.add(new Color3(0.2,0.2,0.2));
 
             // Build mesh on root node
             var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop:0, height: 2, tessellation: 96}, gizmoLayer.utilityLayerScene);
@@ -47,6 +52,18 @@ module BABYLON {
                     this.attachedMesh.position.addInPlace(event.delta);
                 }
             })
+
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo, eventState)=>{
+                if(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1)){
+                    this._rootMesh.getChildMeshes().forEach((m)=>{
+                        m.material = hoverMaterial;
+                    });
+                }else{
+                    this._rootMesh.getChildMeshes().forEach((m)=>{
+                        m.material = coloredMaterial;
+                    });
+                }
+            });
         }
         protected _onInteractionsEnabledChanged(value:boolean){
             this._dragBehavior.enabled = value;
@@ -55,6 +72,7 @@ module BABYLON {
          * Disposes of the gizmo
          */
         public dispose(){
+            this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
             this._dragBehavior.detach();
             super.dispose();
         } 
