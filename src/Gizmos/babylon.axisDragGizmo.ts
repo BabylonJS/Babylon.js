@@ -10,6 +10,11 @@ module BABYLON {
          */
         public snapDistance = 0;
         /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        public snapObservable = new Observable<{snapDistance:number}>();
+        /**
          * Creates an AxisDragGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param dragAxis The axis which the gizmo will be able to drag on
@@ -68,6 +73,7 @@ module BABYLON {
                             event.delta.normalizeToRef(tmpVector);
                             tmpVector.scaleInPlace(this.snapDistance*dragSteps);
                             this.attachedMesh.position.addInPlace(tmpVector);
+                            this.snapObservable.notifyObservers({snapDistance: this.snapDistance*dragSteps});
                         }
                     }
                 }

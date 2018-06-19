@@ -10,6 +10,11 @@ module BABYLON {
          * Rotation distance in radians that the gizmo will snap to (Defult: 0)
          */
         public snapDistance = 0;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        public snapObservable = new Observable<{snapDistance:number}>();
 
         /**
          * Creates a PlaneRotationGizmo
@@ -92,12 +97,14 @@ module BABYLON {
                     if (halfCircleSide) angle = -angle;
                     
                     // Snapping logic
+                    var snapped = false;
                     if(this.snapDistance != 0){
                         currentSnapDragDistance+=angle
                         if(Math.abs(currentSnapDragDistance)>this.snapDistance){
                             var dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                             angle = this.snapDistance*dragSteps;
+                            snapped = true;
                         }else{
                             angle = 0;
                         }
@@ -110,6 +117,9 @@ module BABYLON {
                      this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate,this.attachedMesh.rotationQuaternion);
 
                     lastDragPosition = event.dragPlanePoint;
+                    if(snapped){
+                        this.snapObservable.notifyObservers({snapDistance: angle});
+                    }
                 }
             })
 

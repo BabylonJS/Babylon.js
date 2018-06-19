@@ -10,6 +10,11 @@ module BABYLON {
          */
         public snapDistance = 0;
         /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        public snapObservable = new Observable<{snapDistance:number}>();
+        /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param dragAxis The axis which the gizmo will be able to scale on
@@ -60,14 +65,17 @@ module BABYLON {
                 
                 if(this.attachedMesh){
                     // Snapping logic
+                    var snapped = false;
+                    var dragSteps = 0;
                     if(this.snapDistance == 0){
                         dragAxis.scaleToRef(event.dragDistance, tmpVector);
                     }else{
-                        currentSnapDragDistance+=event.dragDistance
+                        currentSnapDragDistance+=event.dragDistance;
                         if(Math.abs(currentSnapDragDistance)>this.snapDistance){
-                            var dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
+                            dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                             dragAxis.scaleToRef(this.snapDistance*dragSteps, tmpVector);
+                            snapped = true;
                         }else{
                             tmpVector.scaleInPlace(0);
                         }
@@ -87,6 +95,10 @@ module BABYLON {
                         this.attachedMesh.scaling.addInPlace(tmpVector);
                     }else{
                         this.attachedMesh.scaling.subtractInPlace(tmpVector);
+                    }
+
+                    if(snapped){
+                        this.snapObservable.notifyObservers({snapDistance: this.snapDistance*dragSteps});
                     }
                 }
             })
