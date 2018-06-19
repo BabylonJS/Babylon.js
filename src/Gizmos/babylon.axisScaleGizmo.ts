@@ -57,12 +57,7 @@ module BABYLON {
 
             var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
-            this._dragBehavior.onDragObservable.add((event)=>{
-                if(!this.interactionsEnabled){
-                    return;
-                }
-
-                
+            this._dragBehavior.onDragObservable.add((event)=>{                
                 if(this.attachedMesh){
                     // Snapping logic
                     var snapped = false;
@@ -116,8 +111,10 @@ module BABYLON {
             });
         }
         
-        protected _onInteractionsEnabledChanged(value:boolean){
-            this._dragBehavior.enabled = value;
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+            if(this._dragBehavior){
+                this._dragBehavior.enabled = value ? true : false;
+            }
         }
         
         /**

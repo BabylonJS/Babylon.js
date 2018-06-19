@@ -58,9 +58,6 @@ module BABYLON {
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
             this._dragBehavior.onDragObservable.add((event)=>{
-                if(!this.interactionsEnabled){
-                    return;
-                }
                 if(this.attachedMesh){
                     // Snapping logic
                     if(this.snapDistance == 0){
@@ -91,8 +88,10 @@ module BABYLON {
                 }
             });
         }
-        protected _onInteractionsEnabledChanged(value:boolean){
-            this._dragBehavior.enabled = value;
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+            if(this._dragBehavior){
+                this._dragBehavior.enabled = value?true:false;
+            }
         }
         /**
          * Disposes of the gizmo

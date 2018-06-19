@@ -54,10 +54,9 @@ module BABYLON {
             var lastDragPosition:Nullable<Vector3> = null;
 
             this._dragBehavior.onDragStartObservable.add((e)=>{
-                if(!this.interactionsEnabled){
-                    return;
+                if(this.attachedMesh){
+                    lastDragPosition = e.dragPlanePoint;
                 }
-                lastDragPosition = e.dragPlanePoint;
             })
 
             var rotationMatrix = new Matrix();
@@ -66,9 +65,6 @@ module BABYLON {
 
             var currentSnapDragDistance = 0;
             this._dragBehavior.onDragObservable.add((event)=>{
-                if(!this.interactionsEnabled){
-                    return;
-                }
                 if(this.attachedMesh && lastDragPosition){
                     if(!this.attachedMesh.rotationQuaternion){
                         this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
@@ -136,8 +132,10 @@ module BABYLON {
             });
         }
 
-        protected _onInteractionsEnabledChanged(value:boolean){
-            this._dragBehavior.enabled = value;
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+            if(this._dragBehavior){
+                this._dragBehavior.enabled = value ? true : false;
+            }
         }
 
         /**
