@@ -309,6 +309,7 @@ export abstract class AbstractViewer {
 
                 // reposition the object to "float" in front of the user
                 this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
+                this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
 
             }
 
