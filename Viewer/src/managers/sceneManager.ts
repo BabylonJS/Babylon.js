@@ -440,7 +440,7 @@ export class SceneManager {
         // camera
         this._configureCamera(newConfiguration.camera);
 
-        if (newConfiguration.vr) {
+        if (newConfiguration.vr !== undefined) {
             this._configureVR(newConfiguration.vr);
         }
 
@@ -818,25 +818,18 @@ export class SceneManager {
                 if (controller.mesh && controller.mesh.rotationQuaternion) {
                     if (data.pressed) {
                         if (!rotationOffset) {
-                            rotationOffset = controller.mesh.rotationQuaternion.conjugate();
+                            this.models[0].rootMesh.rotationQuaternion = this.models[0].rootMesh.rotationQuaternion || new Quaternion();
+                            rotationOffset = controller.mesh.rotationQuaternion.conjugate().multiply(this.models[0].rootMesh.rotationQuaternion!);
                         }
                     } else {
                         rotationOffset = null;
-                    }
-                    if (this.models[0]) {
-                        if (rotationOffset) {
-                            this.models[0].rootMesh.rotationQuaternion = controller.mesh.rotationQuaternion.multiply(rotationOffset);
-                        } else {
-                            this.models[0].rootMesh.rotationQuaternion = null;
-                        }
-
                     }
                 }
             });
             this.scene.registerBeforeRender(() => {
                 if (this.models[0]) {
-                    if (rotationOffset) {
-                        this.models[0].rootMesh.rotationQuaternion = controller.mesh && controller.mesh.rotationQuaternion && controller.mesh.rotationQuaternion.multiply(rotationOffset);
+                    if (rotationOffset && controller.mesh && controller.mesh.rotationQuaternion) {
+                        this.models[0].rootMesh.rotationQuaternion!.copyFrom(controller.mesh.rotationQuaternion).multiplyInPlace(rotationOffset);
                     } else {
                         this.models[0].rootMesh.rotationQuaternion = null;
                     }
