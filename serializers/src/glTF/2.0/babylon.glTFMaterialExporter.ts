@@ -52,8 +52,6 @@ module BABYLON.GLTF2 {
      * @hidden
      */
     export class _GLTFMaterialExporter {
-        private _createBase64FromCanvasPromiseChain: Promise<any> = Promise.resolve();
-
         /**
          * Represents the dielectric specular values for R, G and B
          */
@@ -478,7 +476,7 @@ module BABYLON.GLTF2 {
          * @returns base64 image string
          */
         private _createBase64FromCanvasAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<string> {
-            this._createBase64FromCanvasPromiseChain = this._createBase64FromCanvasPromiseChain.then(() => {
+           // this._createBase64FromCanvasPromiseChain = this._createBase64FromCanvasPromiseChain.then(() => {
                 return new Promise<string>((resolve, reject) => {
                     let hostingScene: Scene;
 
@@ -524,9 +522,9 @@ module BABYLON.GLTF2 {
                         }
                     });
                 });
-            });
+         //   });
 
-            return this._createBase64FromCanvasPromiseChain;
+         //   return this._createBase64FromCanvasPromiseChain;
         }
 
         /**
@@ -1125,10 +1123,10 @@ module BABYLON.GLTF2 {
          * @return glTF texture info, or null if the texture format is not supported
          */
         private _exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-            return new Promise((resolve, reject) => {
+            return Promise.resolve().then(() => {
                 const textureUid = babylonTexture.uid;
                 if (textureUid in this._textureMap) {
-                    resolve(this._textureMap[textureUid]);
+                    return Promise.resolve(this._textureMap[textureUid]);
                 }
                 else {
                     const samplers = this._exporter._samplers;
@@ -1155,15 +1153,15 @@ module BABYLON.GLTF2 {
                     const pixels = this.getPixelsFromTexture(babylonTexture);
                     const size = babylonTexture.getSize();
 
-                    this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(base64Data => {
+                    return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(base64Data => {
                         const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name, mimeType, babylonTexture.coordinatesIndex, samplerIndex);
                         if (textureInfo) {
                             this._textureMap[textureUid] = textureInfo;
                         }
-                        resolve(textureInfo);
+                        return Promise.resolve(textureInfo);
                     });
                 }
-            })
+            }); 
         }
 
         /**
