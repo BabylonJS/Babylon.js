@@ -6,6 +6,10 @@ module BABYLON {
         private _dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         /**
+         * Scale distance in babylon units that the gizmo will snap to when dragged (Defult: 0)
+         */
+        public snapDistance = 0;
+        /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param dragAxis The axis which the gizmo will be able to scale on
@@ -46,13 +50,29 @@ module BABYLON {
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
 
+            var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
             this._dragBehavior.onDragObservable.add((event)=>{
                 if(!this.interactionsEnabled){
                     return;
                 }
+
+                
                 if(this.attachedMesh){
-                    dragAxis.scaleToRef(event.dragDistance, tmpVector);
+                    // Snapping logic
+                    if(this.snapDistance == 0){
+                        dragAxis.scaleToRef(event.dragDistance, tmpVector);
+                    }else{
+                        currentSnapDragDistance+=event.dragDistance
+                        if(Math.abs(currentSnapDragDistance)>this.snapDistance){
+                            var dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
+                            currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
+                            dragAxis.scaleToRef(this.snapDistance*dragSteps, tmpVector);
+                        }else{
+                            tmpVector.scaleInPlace(0);
+                        }
+                    }
+                    
                     var invertCount = 0;
                     if(this.attachedMesh.scaling["x"] < 0){
                         invertCount++;
