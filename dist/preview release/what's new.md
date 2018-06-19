@@ -109,6 +109,7 @@
 ### Loaders
 
 - STL Loader only supported binary downloads and no data: urls [#4473](https://github.com/BabylonJS/Babylon.js/issues/4473) ([RaananW](https://github.com/RaananW))
+- OBJ Loader is now an async loader [#4571](https://github.com/BabylonJS/Babylon.js/issues/4571) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
