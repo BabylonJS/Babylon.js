@@ -113,7 +113,7 @@ module BABYLON.GLTF2 {
          */
         private _shouldExportTransformNode: ((babylonTransformNode: TransformNode) => boolean);
 
-        public _localEngine: Engine;
+        private _localEngine: Engine;
 
         private _glTFMaterialExporter: _GLTFMaterialExporter;
 
@@ -142,13 +142,24 @@ module BABYLON.GLTF2 {
             this._shouldExportTransformNode = _options.shouldExportTransformNode ? _options.shouldExportTransformNode : (babylonTransformNode: TransformNode) => true;
             this._animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
 
-            const localCanvas = document.createElement('canvas');
-            localCanvas.id = "WriteCanvas";
-            localCanvas.width = 2048;
-            localCanvas.height = 2048;
-            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
-            this._localEngine.setViewport(new Viewport(0,0,1,1));
+
             this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
+        }
+
+        /**
+         * Lazy load a local engine with premultiplied alpha set to false
+         */
+        public _getLocalEngine(): Engine {
+            if (!this._localEngine) {
+                const localCanvas = document.createElement('canvas');
+                localCanvas.id = "WriteCanvas";
+                localCanvas.width = 2048;
+                localCanvas.height = 2048;
+                this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+                this._localEngine.setViewport(new Viewport(0, 0, 1, 1));
+            }
+
+            return this._localEngine;
         }
 
         private reorderIndicesBasedOnPrimitiveMode(submesh: SubMesh, primitiveMode: number, babylonIndices: IndicesArray, byteOffset: number, binaryWriter: _BinaryWriter) {
@@ -636,6 +647,9 @@ module BABYLON.GLTF2 {
         private _generateBinaryAsync(): Promise<ArrayBuffer> {
             let binaryWriter = new _BinaryWriter(4);
             return this.createSceneAsync(this._babylonScene, binaryWriter).then(() => {
+                if (this._localEngine) {
+                    this._localEngine.dispose();
+                }
                 return binaryWriter.getArrayBuffer();
             });
         }
