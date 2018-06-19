@@ -483,7 +483,7 @@ module BABYLON.GLTF2 {
                     let hostingScene: Scene;
 
                     let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
-                    const engine = this._exporter._localEngine;
+                    const engine = this._exporter._getLocalEngine();
 
                     hostingScene = new Scene(engine);
 
