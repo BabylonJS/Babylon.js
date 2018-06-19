@@ -476,55 +476,51 @@ module BABYLON.GLTF2 {
          * @returns base64 image string
          */
         private _createBase64FromCanvasAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<string> {
-           // this._createBase64FromCanvasPromiseChain = this._createBase64FromCanvasPromiseChain.then(() => {
-                return new Promise<string>((resolve, reject) => {
-                    let hostingScene: Scene;
+            return new Promise<string>((resolve, reject) => {
+                let hostingScene: Scene;
 
-                    let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
-                    const engine = this._exporter._getLocalEngine();
+                let textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+                const engine = this._exporter._getLocalEngine();
 
-                    hostingScene = new Scene(engine);
+                hostingScene = new Scene(engine);
 
-                    // Create a temporary texture with the texture buffer data
-                    let tempTexture = engine.createRawTexture(buffer, width, height, Engine.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-                    let postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
-                    postProcess.getEffect().executeWhenCompiled(() => {
-                        postProcess.onApply = (effect) => {
-                            effect._bindTexture("textureSampler", tempTexture);
-                        }
+                // Create a temporary texture with the texture buffer data
+                let tempTexture = engine.createRawTexture(buffer, width, height, Engine.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+                let postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+                postProcess.getEffect().executeWhenCompiled(() => {
+                    postProcess.onApply = (effect) => {
+                        effect._bindTexture("textureSampler", tempTexture);
+                    }
 
-                        // Set the size of the texture
-                        engine.setSize(width, height);
-                        hostingScene.postProcessManager.directRender([postProcess], null);
-                        postProcess.dispose();
-                        tempTexture.dispose();
+                    // Set the size of the texture
+                    engine.setSize(width, height);
+                    hostingScene.postProcessManager.directRender([postProcess], null);
+                    postProcess.dispose();
+                    tempTexture.dispose();
 
-                        // Read data from WebGL
-                        const canvas = engine.getRenderingCanvas();
-                        if (canvas) {
-                            canvas.toBlob(blob => {
-                                if (blob) {
-                                    let fileReader = new FileReader();
-                                    fileReader.onload = (event: any) => {
-                                        let base64String = event.target.result as string;
-                                        hostingScene.dispose();
-                                        resolve(base64String);
-                                    };
-                                    fileReader.readAsDataURL(blob);
-                                }
-                                else {
-                                    reject("Failed to get blob from image canvas!");
-                                }
-                            });
-                        }
-                        else {
-                            reject("Engine is missing a canvas!");
-                        }
-                    });
+                    // Read data from WebGL
+                    const canvas = engine.getRenderingCanvas();
+                    if (canvas) {
+                        canvas.toBlob(blob => {
+                            if (blob) {
+                                let fileReader = new FileReader();
+                                fileReader.onload = (event: any) => {
+                                    let base64String = event.target.result as string;
+                                    hostingScene.dispose();
+                                    resolve(base64String);
+                                };
+                                fileReader.readAsDataURL(blob);
+                            }
+                            else {
+                                reject("Failed to get blob from image canvas!");
+                            }
+                        });
+                    }
+                    else {
+                        reject("Engine is missing a canvas!");
+                    }
                 });
-         //   });
-
-         //   return this._createBase64FromCanvasPromiseChain;
+            });
         }
 
         /**
@@ -1126,7 +1122,7 @@ module BABYLON.GLTF2 {
             return Promise.resolve().then(() => {
                 const textureUid = babylonTexture.uid;
                 if (textureUid in this._textureMap) {
-                    return Promise.resolve(this._textureMap[textureUid]);
+                    return this._textureMap[textureUid];
                 }
                 else {
                     const samplers = this._exporter._samplers;
@@ -1158,10 +1154,10 @@ module BABYLON.GLTF2 {
                         if (textureInfo) {
                             this._textureMap[textureUid] = textureInfo;
                         }
-                        return Promise.resolve(textureInfo);
+                        return textureInfo;
                     });
                 }
-            }); 
+            });
         }
 
         /**
