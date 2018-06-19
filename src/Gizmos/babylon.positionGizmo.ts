@@ -28,6 +28,17 @@ module BABYLON {
             this._yDrag.interactionsEnabled = value
             this._zDrag.interactionsEnabled = value
         }
+
+        public set updateGizmoRotationToMatchAttachedMesh(value:boolean){
+            if(this._xDrag){
+                this._xDrag.updateGizmoRotationToMatchAttachedMesh = value;
+                this._yDrag.updateGizmoRotationToMatchAttachedMesh = value;
+                this._zDrag.updateGizmoRotationToMatchAttachedMesh = value;
+            }
+        }
+        public get updateGizmoRotationToMatchAttachedMesh(){
+            return this._xDrag.updateGizmoRotationToMatchAttachedMesh;
+        }
         
         /**
          * Disposes of the gizmo
