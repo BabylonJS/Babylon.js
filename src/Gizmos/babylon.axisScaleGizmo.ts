@@ -13,7 +13,7 @@ module BABYLON {
          * Event that fires each time the gizmo snaps to a new location.
          * * snapDistance is the the change in distance
          */
-        public snapObservable = new Observable<{snapDistance:number}>();
+        public onSnapObservable = new Observable<{snapDistance:number}>();
         /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -98,7 +98,7 @@ module BABYLON {
                     }
 
                     if(snapped){
-                        this.snapObservable.notifyObservers({snapDistance: this.snapDistance*dragSteps});
+                        this.onSnapObservable.notifyObservers({snapDistance: this.snapDistance*dragSteps});
                     }
                 }
             })

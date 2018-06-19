@@ -14,7 +14,7 @@ module BABYLON {
          * Event that fires each time the gizmo snaps to a new location.
          * * snapDistance is the the change in distance
          */
-        public snapObservable = new Observable<{snapDistance:number}>();
+        public onSnapObservable = new Observable<{snapDistance:number}>();
 
         /**
          * Creates a PlaneRotationGizmo
@@ -118,7 +118,7 @@ module BABYLON {
 
                     lastDragPosition = event.dragPlanePoint;
                     if(snapped){
-                        this.snapObservable.notifyObservers({snapDistance: angle});
+                        this.onSnapObservable.notifyObservers({snapDistance: angle});
                     }
                 }
             })
