@@ -53,7 +53,7 @@ declare module BABYLON {
          */
         private static _getTexture(rootUrl, value, scene);
     }
-    class OBJFileLoader implements ISceneLoaderPlugin {
+    class OBJFileLoader implements ISceneLoaderPluginAsync {
         static OPTIMIZE_WITH_UV: boolean;
         static INVERT_Y: boolean;
         name: string;
@@ -82,9 +82,14 @@ declare module BABYLON {
          * @private
          */
         private _loadMTL(url, rootUrl, onSuccess);
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
-        load(scene: Scene, data: string, rootUrl: string): boolean;
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.

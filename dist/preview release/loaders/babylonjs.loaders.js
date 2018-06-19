@@ -448,26 +448,30 @@ var BABYLON;
             // Loads through the babylon tools to allow fileInput search.
             BABYLON.Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function () { console.warn("Error - Unable to load " + pathOfFile); });
         };
-        OBJFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
+        OBJFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
             //get the meshes from OBJ file
-            var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
-            //Push meshes from OBJ file into the variable mesh of this function
-            if (meshes) {
-                loadedMeshes.forEach(function (mesh) {
-                    meshes.push(mesh);
-                });
-            }
-            return true;
+            return this._parseSolid(meshesNames, scene, data, rootUrl).then(function (meshes) {
+                return {
+                    meshes: meshes,
+                    particleSystems: [],
+                    skeletons: [],
+                    animationGroups: []
+                };
+            });
         };
-        OBJFileLoader.prototype.load = function (scene, data, rootUrl) {
+        OBJFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
             //Get the 3D model
-            return this.importMesh(null, scene, data, rootUrl, null, null, null);
+            return this.importMeshAsync(null, scene, data, rootUrl, onProgress).then(function () {
+                // return void
+            });
         };
-        OBJFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
-            var container = new BABYLON.AssetContainer(scene);
-            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-            container.removeAllFromScene();
-            return container;
+        OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress) {
+            return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
+                var container = new BABYLON.AssetContainer(scene);
+                result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });
+                container.removeAllFromScene();
+                return container;
+            });
         };
         /**
          * Read the OBJ file and create an Array of meshes.
@@ -482,6 +486,7 @@ var BABYLON;
          * @private
          */
         OBJFileLoader.prototype._parseSolid = function (meshesNames, scene, data, rootUrl) {
+            var _this = this;
             var positions = []; //values for the positions of vertices
             var normals = []; //Values for the normals
             var uvs = []; //Values for the textures
@@ -951,42 +956,53 @@ var BABYLON;
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
+            var mtlPromises = [];
             //load the materials
             //Check if we have a file to load
             if (fileToLoad !== "") {
                 //Load the file synchronously
-                this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
-                    //Create materials thanks MTLLoader function
-                    materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
-                    //Look at each material loaded in the mtl file
-                    for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
-                        //Three variables to get all meshes with the same material
-                        var startIndex = 0;
-                        var _indices = [];
-                        var _index;
-                        //The material from MTL file is used in the meshes loaded
-                        //Push the indice in an array
-                        //Check if the material is not used for another mesh
-                        while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
-                            _indices.push(_index);
-                            startIndex = _index + 1;
-                        }
-                        //If the material is not used dispose it
-                        if (_index == -1 && _indices.length == 0) {
-                            //If the material is not needed, remove it
-                            materialsFromMTLFile.materials[n].dispose();
-                        }
-                        else {
-                            for (var o = 0; o < _indices.length; o++) {
-                                //Apply the material to the BABYLON.Mesh for each mesh with the material
-                                babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                mtlPromises.push(new Promise(function (resolve, reject) {
+                    _this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
+                        try {
+                            //Create materials thanks MTLLoader function
+                            materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                            //Look at each material loaded in the mtl file
+                            for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
+                                //Three variables to get all meshes with the same material
+                                var startIndex = 0;
+                                var _indices = [];
+                                var _index;
+                                //The material from MTL file is used in the meshes loaded
+                                //Push the indice in an array
+                                //Check if the material is not used for another mesh
+                                while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
+                                    _indices.push(_index);
+                                    startIndex = _index + 1;
+                                }
+                                //If the material is not used dispose it
+                                if (_index == -1 && _indices.length == 0) {
+                                    //If the material is not needed, remove it
+                                    materialsFromMTLFile.materials[n].dispose();
+                                }
+                                else {
+                                    for (var o = 0; o < _indices.length; o++) {
+                                        //Apply the material to the BABYLON.Mesh for each mesh with the material
+                                        babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                                    }
+                                }
                             }
+                            resolve();
                         }
-                    }
-                });
+                        catch (e) {
+                            reject(e);
+                        }
+                    });
+                }));
             }
             //Return an array with all BABYLON.Mesh
-            return babylonMeshesArray;
+            return Promise.all(mtlPromises).then(function () {
+                return babylonMeshesArray;
+            });
         };
         OBJFileLoader.OPTIMIZE_WITH_UV = false;
         OBJFileLoader.INVERT_Y = false;
