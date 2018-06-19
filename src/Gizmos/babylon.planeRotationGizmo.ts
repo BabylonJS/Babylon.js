@@ -13,7 +13,6 @@ module BABYLON {
          */
         constructor(gizmoLayer:UtilityLayerRenderer, planeNormal:Vector3, color:Color3){
             super(gizmoLayer);
-            this.updateGizmoRotationToMatchAttachedMesh=false;
             
             // Create Material
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
@@ -25,17 +24,19 @@ module BABYLON {
             hoverMaterial.emissiveColor = color.add(new Color3(0.2,0.2,0.2));
 
             // Build mesh on root node
+            var parentMesh = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
             var rotationMesh = BABYLON.Mesh.CreateTorus("torus", 3, 0.15, 20, gizmoLayer.utilityLayerScene, false);
-            this._rootMesh.addChild(rotationMesh);
-
+            
             // Position arrow pointing in its drag axis
             rotationMesh.scaling.scaleInPlace(0.1);
             rotationMesh.material = coloredMaterial;
             rotationMesh.rotation.x = Math.PI/2;
-            this._rootMesh.lookAt(this._rootMesh.position.subtract(planeNormal));
-
+            parentMesh.addChild(rotationMesh);
+            parentMesh.lookAt(this._rootMesh.position.subtract(planeNormal));
+            
+            this._rootMesh.addChild(parentMesh);
             // Add drag behavior to handle events when the gizmo is dragged
-            this._dragBehavior = new PointerDragBehavior({dragPlaneNormal: new Vector3(0,0,1)});
+            this._dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
 
@@ -48,6 +49,9 @@ module BABYLON {
                 lastDragPosition = e.dragPlanePoint;
             })
 
+            var rotationMatrix = new Matrix();
+            var planeNormalTowardsCamera = new Vector3();
+            var localPlaneNormalTowardsCamera = new Vector3();
             this._dragBehavior.onDragObservable.add((event)=>{
                 if(!this.interactionsEnabled){
                     return;
@@ -62,24 +66,30 @@ module BABYLON {
                     var cross = Vector3.Cross(newVector,originalVector);
                     var dot = Vector3.Dot(newVector,originalVector);
                     var angle = Math.atan2(cross.length(), dot);
-                    var up = planeNormal.clone();
+                    planeNormalTowardsCamera.copyFrom(planeNormal);
+                    localPlaneNormalTowardsCamera.copyFrom(planeNormal);
+                    if(this.updateGizmoRotationToMatchAttachedMesh){
+                        this.attachedMesh.rotationQuaternion.toRotationMatrix(rotationMatrix);
+                        localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
+                    }
                     // Flip up vector depending on which side the camera is on
                     if(gizmoLayer.utilityLayerScene.activeCamera){
                         var camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(this.attachedMesh.position);
-                        if(Vector3.Dot(camVec, up) > 0){
-                            up.scaleInPlace(-1);
+                        if(Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0){
+                            planeNormalTowardsCamera.scaleInPlace(-1);
+                            localPlaneNormalTowardsCamera.scaleInPlace(-1);
                         }
                     }
-                    var halfCircleSide = Vector3.Dot(up, cross) > 0.0;
+                    var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
                     if (halfCircleSide) angle = -angle;
                     
 
                     // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
                     var quaternionCoefficient = Math.sin(angle/2)
-                    var amountToRotate = new BABYLON.Quaternion(up.x*quaternionCoefficient,up.y*quaternionCoefficient,up.z*quaternionCoefficient,Math.cos(angle/2));
+                    var amountToRotate = new BABYLON.Quaternion(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
 
                     // Rotate selected mesh quaternion over fixed axis
-                    amountToRotate.multiplyToRef(this.attachedMesh.rotationQuaternion,this.attachedMesh.rotationQuaternion);
+                    this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate,this.attachedMesh.rotationQuaternion);
 
                     lastDragPosition = event.dragPlanePoint;
                 }

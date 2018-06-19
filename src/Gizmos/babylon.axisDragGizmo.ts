@@ -13,7 +13,6 @@ module BABYLON {
          */
         constructor(gizmoLayer:UtilityLayerRenderer, dragAxis:Vector3, color:Color3){
             super(gizmoLayer);
-            this.updateGizmoRotationToMatchAttachedMesh = false;
             
             // Create Material
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
@@ -25,10 +24,11 @@ module BABYLON {
             hoverMaterial.emissiveColor = color.add(new Color3(0.2,0.2,0.2));
 
             // Build mesh on root node
+            var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
             var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop:0, height: 2, tessellation: 96}, gizmoLayer.utilityLayerScene);
             var arrowTail = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameter:0.015, height: 0.3, tessellation: 96}, gizmoLayer.utilityLayerScene);
-            this._rootMesh.addChild(arrowMesh);
-            this._rootMesh.addChild(arrowTail);
+            arrow.addChild(arrowMesh);
+            arrow.addChild(arrowTail);
 
             // Position arrow pointing in its drag axis
             arrowMesh.scaling.scaleInPlace(0.05);
@@ -38,10 +38,12 @@ module BABYLON {
             arrowTail.rotation.x = Math.PI/2;
             arrowTail.material = coloredMaterial;
             arrowTail.position.z+=0.15;
-            this._rootMesh.lookAt(this._rootMesh.position.subtract(dragAxis));
+            arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
+
+            this._rootMesh.addChild(arrow)
 
             // Add drag behavior to handle events when the gizmo is dragged
-            this._dragBehavior = new PointerDragBehavior({dragAxis: new BABYLON.Vector3(0,0,1)});
+            this._dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
             this._dragBehavior.onDragObservable.add((event)=>{
