@@ -52,6 +52,10 @@ class HTMLMapper implements IMapper {
                         val = true;
                     } else if (val === "false") {
                         val = false;
+                    } else if (val === "undefined") {
+                        val = undefined;
+                    } else if (val === "null") {
+                        val = null;
                     } else {
                         var isnum = !isNaN(parseFloat(val)) && isFinite(val);///^\d+$/.test(val);
                         if (isnum) {
