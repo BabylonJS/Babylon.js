@@ -57,6 +57,7 @@ module BABYLON {
 
             var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
+            var tmpSnapEvent = {snapDistance: 0};
             this._dragBehavior.onDragObservable.add((event)=>{                
                 if(this.attachedMesh){
                     // Snapping logic
@@ -93,7 +94,8 @@ module BABYLON {
                     }
 
                     if(snapped){
-                        this.onSnapObservable.notifyObservers({snapDistance: this.snapDistance*dragSteps});
+                        tmpSnapEvent.snapDistance = this.snapDistance*dragSteps;
+                        this.onSnapObservable.notifyObservers(tmpSnapEvent);
                     }
                 }
             })
