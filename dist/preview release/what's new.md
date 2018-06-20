@@ -112,6 +112,7 @@
 - Meshes with skeletons could have incorrect animations ([RaananW](https://github.com/RaananW))
 - Removed element IDs from viewer's templates to allow muitiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 - Viewer is not using Engine.LastCreatedScene anymore, to support multiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
+- Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
