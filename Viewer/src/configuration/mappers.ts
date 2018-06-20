@@ -52,7 +52,7 @@ class HTMLMapper implements IMapper {
                         val = true;
                     } else if (val === "false") {
                         val = false;
-                    } else if (val === "undefeind") {
+                    } else if (val === "undefined") {
                         val = undefined;
                     } else if (val === "null") {
                         val = null;
