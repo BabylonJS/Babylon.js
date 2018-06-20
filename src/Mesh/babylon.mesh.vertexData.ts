@@ -326,9 +326,7 @@
          * @returns the VertexData 
          */
         public transform(matrix: Matrix): VertexData {
-            var scaling = Vector3.One();
-            matrix.decompose(scaling, BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[0]);
-            var flip = scaling.x * scaling.y * scaling.z < 0;
+            var flip = matrix.m[0] * matrix.m[5] * matrix.m[10] < 0;
             var transformed = Vector3.Zero();
             var index: number;
             if (this.positions) {
