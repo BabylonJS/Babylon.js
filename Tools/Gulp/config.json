@@ -1691,12 +1691,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFMaterialExporter.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFAnimation.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFUtilities.ts"
-                ],
-                "shaderFiles": [
-                    "../../serializers/src/glTF/2.0/shaders/setAlphaToOne.fragment.fx"
                 ],
                 "output": "babylon.glTF2Serializer.js"
             }

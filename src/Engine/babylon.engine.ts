@@ -3450,7 +3450,13 @@
             var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
             var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
 
-            defines += "\n#define BILLBOARD\n";
+            if (defines.indexOf(" BILLBOARD") === -1) {
+                defines += "\n#define BILLBOARD\n";
+            }
+
+            if (samplers.indexOf("diffuseSampler") === -1) {
+                samplers.push("diffuseSampler");
+            }
 
             return this.createEffect(
                 {
@@ -3459,7 +3465,7 @@
                 },
                 attributesNamesOrOptions,
                 effectCreationOption.concat(uniformsNames),
-                ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
+                samplers, defines, fallbacks, onCompiled, onError);
         }
 
         /**
