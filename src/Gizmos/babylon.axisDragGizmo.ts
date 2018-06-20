@@ -53,6 +53,7 @@ module BABYLON {
 
             var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
+            var tmpSnapEvent = {snapDistance: 0};
             // Add drag behavior to handle events when the gizmo is dragged
             this._dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
             this._dragBehavior.moveAttached = false;
@@ -70,7 +71,8 @@ module BABYLON {
                             event.delta.normalizeToRef(tmpVector);
                             tmpVector.scaleInPlace(this.snapDistance*dragSteps);
                             this.attachedMesh.position.addInPlace(tmpVector);
-                            this.onSnapObservable.notifyObservers({snapDistance: this.snapDistance*dragSteps});
+                            tmpSnapEvent.snapDistance = this.snapDistance*dragSteps;
+                            this.onSnapObservable.notifyObservers(tmpSnapEvent);
                         }
                     }
                 }

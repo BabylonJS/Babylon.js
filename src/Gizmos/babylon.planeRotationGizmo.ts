@@ -63,6 +63,7 @@ module BABYLON {
             var planeNormalTowardsCamera = new Vector3();
             var localPlaneNormalTowardsCamera = new Vector3();
 
+            var tmpSnapEvent = {snapDistance: 0};
             var currentSnapDragDistance = 0;
             this._dragBehavior.onDragObservable.add((event)=>{
                 if(this.attachedMesh && lastDragPosition){
@@ -114,7 +115,8 @@ module BABYLON {
 
                     lastDragPosition = event.dragPlanePoint;
                     if(snapped){
-                        this.onSnapObservable.notifyObservers({snapDistance: angle});
+                        tmpSnapEvent.snapDistance = angle;
+                        this.onSnapObservable.notifyObservers(tmpSnapEvent);
                     }
                 }
             })
