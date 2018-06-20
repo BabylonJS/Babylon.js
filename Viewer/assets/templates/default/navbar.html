@@ -139,6 +139,26 @@
         content: "\E740";
     }
 
+    /*
+    A few browsers dont support combining the next rule to one. Redudant.
+    */
+
+    viewer:fullscreen .fullscreen-icon:after {
+        content: "\E73F";
+    }
+
+    viewer:-webkit-full-screen .fullscreen-icon:after {
+        content: "\E73F";
+    }
+
+    viewer:-moz-full-screen .fullscreen-icon:after {
+        content: "\E73F";
+    }
+
+    viewer:-ms-full-screen .fullscreen-icon:after {
+        content: "\E73F";
+    }
+
     .help-icon:after {
         font-size: 16px;
         content: "\EF4E";
