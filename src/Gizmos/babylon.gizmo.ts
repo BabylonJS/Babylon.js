@@ -7,10 +7,19 @@ module BABYLON {
          * The root mesh of the gizmo
          */
         protected _rootMesh:Mesh;
+        private _attachedMesh:Nullable<AbstractMesh>;
         /**
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+         * * When set, interactions will be enabled
          */
-        public attachedMesh:Nullable<AbstractMesh>;
+        public get attachedMesh(){
+            return this._attachedMesh;
+        }
+        public set attachedMesh(value){
+            this._attachedMesh = value;
+            this._rootMesh.setEnabled(value?true:false);
+            this._attachedMeshChanged(value);
+        }
         /**
          * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
          */
@@ -24,18 +33,7 @@ module BABYLON {
          */
         protected _updateScale = true;
         protected _interactionsEnabled = true;
-        protected _onInteractionsEnabledChanged(value:boolean){
-        }
-
-        /**
-         * If interactions are enabled with this gizmo. (eg. dragging/rotation)
-         */
-        public set interactionsEnabled(value:boolean){
-            this._interactionsEnabled = value;
-            this._onInteractionsEnabledChanged(value);
-        }
-        public get interactionsEnabled(){
-            return this._interactionsEnabled;
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
         }
 
         private _beforeRenderObserver:Nullable<Observer<Scene>>;
@@ -63,6 +61,7 @@ module BABYLON {
                     }
                 }
             })
+            this.attachedMesh = null;
         }
         /**
          * Disposes of the gizmo
