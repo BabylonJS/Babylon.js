@@ -326,6 +326,9 @@
          * @returns the VertexData 
          */
         public transform(matrix: Matrix): VertexData {
+            var scaling = Vector3.One();
+            matrix.decompose(scaling, BABYLON.Tmp.Quaternion[0], BABYLON.Tmp.Vector3[0]);
+            var flip = scaling.x * scaling.y * scaling.z < 0;
             var transformed = Vector3.Zero();
             var index: number;
             if (this.positions) {
@@ -366,6 +369,14 @@
                     this.tangents[index + 1] = tangentTransformed.y;
                     this.tangents[index + 2] = tangentTransformed.z;
                     this.tangents[index + 3] = tangentTransformed.w;
+                }
+            }
+
+            if (flip && this.indices) {
+                for (index = 0; index < this.indices!.length; index += 3) {
+                    let tmp = this.indices[index + 1];
+                    this.indices[index + 1] = this.indices[index + 2];
+                    this.indices[index + 2] = tmp;
                 }
             }
 
