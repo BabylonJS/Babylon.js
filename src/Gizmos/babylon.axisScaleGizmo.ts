@@ -121,6 +121,7 @@ module BABYLON {
          * Disposes of the gizmo
          */
         public dispose(){
+            this.onSnapObservable.clear();
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
             this._dragBehavior.detach();
             super.dispose();
