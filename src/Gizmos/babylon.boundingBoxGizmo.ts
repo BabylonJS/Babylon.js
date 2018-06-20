@@ -248,6 +248,22 @@ module BABYLON {
         }
 
         /**
+         * Enables rotation on the specified axis and disables rotation on the others
+         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
+         */
+        public setEnabledRotationAxis(axis:string){
+            this._rotateSpheresParent.getChildMeshes().forEach((m,i)=>{
+                if(i<4){
+                    m.setEnabled(axis.indexOf("x")!=-1);
+                }else if(i<8){
+                    m.setEnabled(axis.indexOf("y")!=-1);
+                }else{
+                    m.setEnabled(axis.indexOf("z")!=-1);
+                }
+            })
+        }
+
+        /**
          * Disposes of the gizmo
          */
         public dispose(){
