@@ -310,11 +310,13 @@ export abstract class AbstractViewer {
                 // reposition the object to "float" in front of the user
                 this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
                 this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
-
             }
 
-
-
+            // post processing
+            if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
+                this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
+                this.sceneManager.defaultRenderingPipeline.prepare();
+            }
         } else {
             if (this.sceneManager.vrHelper) {
                 this.sceneManager.vrHelper.exitVR();
@@ -328,6 +330,12 @@ export abstract class AbstractViewer {
                 if (this.sceneManager.environmentHelper) {
                     this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
                     this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+                }
+
+                // post processing
+                if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
+                    this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
+                    this.sceneManager.defaultRenderingPipeline.prepare();
                 }
             }
         }
