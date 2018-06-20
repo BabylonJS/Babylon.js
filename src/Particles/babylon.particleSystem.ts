@@ -1593,10 +1593,19 @@
                 particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
-            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
-            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
-            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
-            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
+            if (parsedParticleSystem.minEmitBox) {
+                particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
+            }
+            if (parsedParticleSystem.maxEmitBox) {
+                particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
+            }
+
+            if (parsedParticleSystem.direction1) {
+                particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
+            }
+            if (parsedParticleSystem.direction2) {
+                particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
+            }
 
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
