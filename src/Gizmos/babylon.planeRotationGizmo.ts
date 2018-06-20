@@ -7,7 +7,7 @@ module BABYLON {
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         
         /**
-         * Rotation distance in radians that the gizmo will snap to (Defult: 0)
+         * Rotation distance in radians that the gizmo will snap to (Default: 0)
          */
         public snapDistance = 0;
         /**

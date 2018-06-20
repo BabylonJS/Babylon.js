@@ -6,7 +6,7 @@ module BABYLON {
         private _dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Defult: 0)
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
          */
         public snapDistance = 0;
         /**
