@@ -121,6 +121,7 @@
 - Added `alphaCutOff` support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - New `serialize` and `Parse` functions for SSAO2 Rendering Pipeline ([julien-moreau](https://github.com/julien-moreau))
 - Added `furOcclusion` property to FurMaterial to control the occlusion strength ([julien-moreau](https://github.com/julien-moreau))
+- Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
 
 ## Bug fixes
 
