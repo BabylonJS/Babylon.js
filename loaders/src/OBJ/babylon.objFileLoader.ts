@@ -24,7 +24,7 @@ module BABYLON {
             if (data instanceof ArrayBuffer) {
                 return;
             }
-            
+
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char
@@ -202,7 +202,7 @@ module BABYLON {
         }
     }
 
-    export class OBJFileLoader implements ISceneLoaderPlugin {
+    export class OBJFileLoader implements ISceneLoaderPluginAsync {
 
         public static OPTIMIZE_WITH_UV = false;
         public static INVERT_Y = false;
@@ -252,28 +252,32 @@ module BABYLON {
                 () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
-        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             //get the meshes from OBJ file
-            var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
-            //Push meshes from OBJ file into the variable mesh of this function
-            if (meshes) {
-                loadedMeshes.forEach(function (mesh) {
-                    meshes.push(mesh);
-                });
-            }
-            return true;
+            return this._parseSolid(meshesNames, scene, data, rootUrl).then(meshes => {
+                return {
+                    meshes,
+                    particleSystems: [],
+                    skeletons: [],
+                    animationGroups: []
+                }
+            });
         }
 
-        public load(scene: Scene, data: string, rootUrl: string): boolean {
+        public loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             //Get the 3D model
-            return this.importMesh(null, scene, data, rootUrl, null, null, null);
+            return this.importMeshAsync(null, scene, data, rootUrl, onProgress).then(() => {
+                // return void
+            });
         }
 
-        public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
-            var container = new AssetContainer(scene);
-            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-            container.removeAllFromScene();
-            return container;
+        public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer> {
+            return this.importMeshAsync(null, scene, data, rootUrl).then(result => {
+                var container = new AssetContainer(scene);
+                result.meshes.forEach(mesh => container.meshes.push(mesh));
+                container.removeAllFromScene();
+                return container;
+            });
         }
 
         /**
@@ -288,7 +292,7 @@ module BABYLON {
          * @returns Array<AbstractMesh>
          * @private
          */
-        private _parseSolid(meshesNames: any, scene: BABYLON.Scene, data: string, rootUrl: string): Array<AbstractMesh> {
+        private _parseSolid(meshesNames: any, scene: BABYLON.Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
 
             var positions: Array<BABYLON.Vector3> = [];      //values for the positions of vertices
             var normals: Array<BABYLON.Vector3> = [];      //Values for the normals
@@ -702,15 +706,15 @@ module BABYLON {
                         uvs?: Array<number>;
                         materialName: string;
                     } =
-                        //Set the name of the current obj mesh
-                        {
-                            name: line.substring(2).trim(),
-                            indices: undefined,
-                            positions: undefined,
-                            normals: undefined,
-                            uvs: undefined,
-                            materialName: ""
-                        };
+                    //Set the name of the current obj mesh
+                    {
+                        name: line.substring(2).trim(),
+                        indices: undefined,
+                        positions: undefined,
+                        normals: undefined,
+                        uvs: undefined,
+                        materialName: ""
+                    };
                     addPreviousObjMesh();
 
                     //Push the last mesh created with only the name
@@ -739,15 +743,15 @@ module BABYLON {
                             uvs?: Array<number>;
                             materialName: string;
                         } =
-                            //Set the name of the current obj mesh
-                            {
-                                name: objMeshName + "_mm" + increment.toString(),
-                                indices: undefined,
-                                positions: undefined,
-                                normals: undefined,
-                                uvs: undefined,
-                                materialName: materialNameFromObj
-                            };
+                        //Set the name of the current obj mesh
+                        {
+                            name: objMeshName + "_mm" + increment.toString(),
+                            indices: undefined,
+                            positions: undefined,
+                            normals: undefined,
+                            uvs: undefined,
+                            materialName: materialNameFromObj
+                        };
                         increment++;
                         //If meshes are already defined
                         meshesFromObj.push(objMesh);
@@ -847,49 +851,61 @@ module BABYLON {
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
                 vertexData.applyToMesh(babylonMesh);
                 if (OBJFileLoader.INVERT_Y) {
-                    babylonMesh.scaling.y *=-1;
+                    babylonMesh.scaling.y *= -1;
                 }
 
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
+
+            let mtlPromises: Array<Promise<any>> = [];
             //load the materials
             //Check if we have a file to load
             if (fileToLoad !== "") {
                 //Load the file synchronously
-                this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
-                    //Create materials thanks MTLLoader function
-                    materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
-                    //Look at each material loaded in the mtl file
-                    for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
-                        //Three variables to get all meshes with the same material
-                        var startIndex = 0;
-                        var _indices = [];
-                        var _index;
+                mtlPromises.push(new Promise((resolve, reject) => {
+                    this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
+                        try {
+                            //Create materials thanks MTLLoader function
+                            materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                            //Look at each material loaded in the mtl file
+                            for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
+                                //Three variables to get all meshes with the same material
+                                var startIndex = 0;
+                                var _indices = [];
+                                var _index;
 
-                        //The material from MTL file is used in the meshes loaded
-                        //Push the indice in an array
-                        //Check if the material is not used for another mesh
-                        while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
-                            _indices.push(_index);
-                            startIndex = _index + 1;
-                        }
-                        //If the material is not used dispose it
-                        if (_index == -1 && _indices.length == 0) {
-                            //If the material is not needed, remove it
-                            materialsFromMTLFile.materials[n].dispose();
-                        } else {
-                            for (var o = 0; o < _indices.length; o++) {
-                                //Apply the material to the BABYLON.Mesh for each mesh with the material
-                                babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                                //The material from MTL file is used in the meshes loaded
+                                //Push the indice in an array
+                                //Check if the material is not used for another mesh
+                                while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
+                                    _indices.push(_index);
+                                    startIndex = _index + 1;
+                                }
+                                //If the material is not used dispose it
+                                if (_index == -1 && _indices.length == 0) {
+                                    //If the material is not needed, remove it
+                                    materialsFromMTLFile.materials[n].dispose();
+                                } else {
+                                    for (var o = 0; o < _indices.length; o++) {
+                                        //Apply the material to the BABYLON.Mesh for each mesh with the material
+                                        babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                                    }
+                                }
                             }
+                            resolve();
+                        } catch (e) {
+                            reject(e);
                         }
-                    }
 
-                });
+                    });
+                }));
+
             }
             //Return an array with all BABYLON.Mesh
-            return babylonMeshesArray;
+            return Promise.all(mtlPromises).then(() => {
+                return babylonMeshesArray;
+            });
         }
 
     }

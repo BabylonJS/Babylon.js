@@ -42,12 +42,12 @@ module BABYLON {
         private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
         private _isOutputConnected = false;
         private _htmlAudioElement: HTMLAudioElement;
-        private _urlType: string = "Unknown";
+        private _urlType: 'Unknown' | 'String' | 'Array' | 'ArrayBuffer' | 'MediaStream' = "Unknown";
 
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound 
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer 
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
@@ -95,14 +95,33 @@ module BABYLON {
                 // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
                 if (urlOrArrayBuffer) {
                     try {
-                        if (typeof (urlOrArrayBuffer) === "string") this._urlType = "String";
-                        if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
-                        if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
+                        if (typeof (urlOrArrayBuffer) === "string") {
+                            this._urlType = "String";
+                        } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
+                            this._urlType = "ArrayBuffer";
+                        } else if (urlOrArrayBuffer instanceof MediaStream) {
+                            this._urlType = "MediaStream";
+                        } else if (Array.isArray(urlOrArrayBuffer)) {
+                            this._urlType = "Array";
+                        }
 
                         var urls: string[] = [];
                         var codecSupportedFound = false;
 
                         switch (this._urlType) {
+                            case "MediaStream":
+                                this._streaming = true;
+                                this._isReadyToPlay = true;
+                                this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
+
+                                if (this.autoplay) {
+                                    this.play();
+                                }
+
+                                if (this._readyToPlayCallback) {
+                                    this._readyToPlayCallback();
+                                }
+                                break;
                             case "ArrayBuffer":
                                 if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
                                     codecSupportedFound = true;
@@ -131,8 +150,8 @@ module BABYLON {
                                     if (codecSupportedFound) {
                                         // Loading sound using XHR2
                                         if (!this._streaming) {
-                                            this._scene._loadFile(url, (data) => { 
-                                                this._soundLoaded(data as ArrayBuffer); 
+                                            this._scene._loadFile(url, (data) => {
+                                                this._soundLoaded(data as ArrayBuffer);
                                             }, undefined, true, true, (exception) => {
                                                 if (exception) {
                                                     Tools.Error("XHR " + exception.status + " error on: " + url + ".");
@@ -210,7 +229,7 @@ module BABYLON {
         }
 
         public dispose() {
-            if (Engine.audioEngine.canUseWebAudio) { 
+            if (Engine.audioEngine.canUseWebAudio) {
                 if (this.isPlaying) {
                     this.stop();
                 }
@@ -239,6 +258,10 @@ module BABYLON {
                     this._htmlAudioElement.pause();
                     this._htmlAudioElement.src = "";
                     document.body.removeChild(this._htmlAudioElement);
+                }
+
+                if (this._streamingSource) {
+                    this._streamingSource.disconnect();
                 }
 
                 if (this._connectedMesh && this._registerFunc) {
@@ -282,7 +305,7 @@ module BABYLON {
                 this._playbackRate = options.playbackRate || this._playbackRate;
                 this._updateSpatialParameters();
                 if (this.isPlaying) {
-                    if (this._streaming) {
+                    if (this._streaming && this._htmlAudioElement) {
                         this._htmlAudioElement.playbackRate = this._playbackRate;
                     }
                     else {
@@ -449,7 +472,9 @@ module BABYLON {
                         }
                         this._streamingSource.disconnect();
                         this._streamingSource.connect(this._inputAudioNode);
-                        this._htmlAudioElement.play();
+                        if (this._htmlAudioElement) {
+                            this._htmlAudioElement.play();
+                        }
                     }
                     else {
                         this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
@@ -486,10 +511,14 @@ module BABYLON {
         public stop(time?: number) {
             if (this.isPlaying) {
                 if (this._streaming) {
-                    this._htmlAudioElement.pause();
-                    // Test needed for Firefox or it will generate an Invalid State Error
-                    if (this._htmlAudioElement.currentTime > 0) {
-                        this._htmlAudioElement.currentTime = 0;
+                    if (this._htmlAudioElement) {
+                        this._htmlAudioElement.pause();
+                        // Test needed for Firefox or it will generate an Invalid State Error
+                        if (this._htmlAudioElement.currentTime > 0) {
+                            this._htmlAudioElement.currentTime = 0;
+                        }
+                    } else {
+                        this._streamingSource.disconnect();
                     }
                 }
                 else if (Engine.audioEngine.audioContext && this._soundSource) {
@@ -508,7 +537,11 @@ module BABYLON {
             if (this.isPlaying) {
                 this.isPaused = true;
                 if (this._streaming) {
-                    this._htmlAudioElement.pause();
+                    if (this._htmlAudioElement) {
+                        this._htmlAudioElement.pause();
+                    } else {
+                        this._streamingSource.disconnect();
+                    }
                 }
                 else if (Engine.audioEngine.audioContext) {
                     this.stop(0);
@@ -534,7 +567,7 @@ module BABYLON {
         public setPlaybackRate(newPlaybackRate: number) {
             this._playbackRate = newPlaybackRate;
             if (this.isPlaying) {
-                if (this._streaming) {
+                if (this._streaming && this._htmlAudioElement) {
                     this._htmlAudioElement.playbackRate = this._playbackRate;
                 }
                 else if (this._soundSource) {

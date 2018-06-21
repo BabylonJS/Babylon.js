@@ -6,6 +6,7 @@ module BABYLON {
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
     export class PhotoDome extends Node {
+        private _useDirectMapping = false;
 
         /**
          * The texture being displayed on the sphere
@@ -13,11 +14,28 @@ module BABYLON {
         protected _photoTexture: Texture;
 
         /**
-         * Gets the texture being displayed on the sphere
+         * Gets or sets the texture being displayed on the sphere
          */
         public get photoTexture(): Texture {
             return this._photoTexture;
         }        
+
+        public set photoTexture(value: Texture) {
+            if (this._photoTexture === value) {
+                return;
+            }
+            this._photoTexture = value;
+            if (this._useDirectMapping) {
+                this._photoTexture.wrapU = Texture.CLAMP_ADDRESSMODE;     
+                this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                this._material.diffuseTexture = this._photoTexture;
+            } else {
+                this._photoTexture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
+                this._photoTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                this._material.reflectionTexture = this._photoTexture;
+            }
+        }        
+
 
         /**
          * The skybox material
@@ -48,32 +66,33 @@ module BABYLON {
          */
         constructor(name: string, urlOfPhoto: string, options: {
             resolution?: number,
-            size?: number
+            size?: number,
+            useDirectMapping?: boolean
         }, scene: Scene) {
             super(name, scene);
 
             // set defaults and manage values
             name = name || "photoDome";
-            options.resolution = (Math.abs(options.resolution as any) | 0) || 12;
+            options.resolution = (Math.abs(options.resolution as any) | 0) || 32;
             options.size = Math.abs(options.size as any) || (scene.activeCamera ? scene.activeCamera.maxZ * 0.48 : 1000);
+
+            if (options.useDirectMapping === undefined) {
+                this._useDirectMapping = true;    
+            } else {
+                this._useDirectMapping = options.useDirectMapping;            
+            }
 
             // create
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
-            let texture = this._photoTexture = new Texture(urlOfPhoto, scene);
-            this._mesh = MeshBuilder.CreateIcoSphere(name + "_mesh", {
-                flat: false, // saves on vertex data
-                radius: options.size,
-                subdivisions: options.resolution,
-                sideOrientation: Mesh.BACKSIDE // needs to be inside out
-            }, scene);
+            this._mesh = BABYLON.Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
 
             // configure material
-            texture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
-            texture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down
-            material.reflectionTexture = this._photoTexture;
+            material.opacityFresnel = false;
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
 
+            this.photoTexture = new Texture(urlOfPhoto, scene, true, !this._useDirectMapping);
+           
             // configure mesh
             this._mesh.material = material;
             this._mesh.parent = this;

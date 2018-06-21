@@ -3433,7 +3433,8 @@
         }
 
         /**
-         * Create an effect to use with particle systems
+         * Create an effect to use with particle systems.
+         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
          * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
          * @param uniformsNames defines a list of attribute names 
          * @param samplers defines an array of string used to represent textures
@@ -3446,14 +3447,25 @@
         public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
+            var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
+            var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
+
+            if (defines.indexOf(" BILLBOARD") === -1) {
+                defines += "\n#define BILLBOARD\n";
+            }
+
+            if (samplers.indexOf("diffuseSampler") === -1) {
+                samplers.push("diffuseSampler");
+            }
+
             return this.createEffect(
                 {
                     vertex: "particles",
                     fragmentElement: fragmentName
                 },
-                ["position", "color", "options"],
-                ["view", "projection"].concat(uniformsNames),
-                ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
+                attributesNamesOrOptions,
+                effectCreationOption.concat(uniformsNames),
+                samplers, defines, fallbacks, onCompiled, onError);
         }
 
         /**
@@ -4310,22 +4322,42 @@
                             return false;
                         }
 
-                        // Using shaders to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
-                        this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+                        let maxTextureSize = this._caps.maxTextureSize;
 
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        if (img.width > maxTextureSize || img.height > maxTextureSize) {
+                            this._prepareWorkingCanvas();
+                            if (!this._workingCanvas || !this._workingContext) {
+                                return false;
+                            }
 
-                        this._rescaleTexture(source, texture, scene, internalFormat, () => {
-                            this._releaseTexture(source);
-                            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+                            this._workingCanvas.width = potWidth;
+                            this._workingCanvas.height = potHeight;
+        
+                            this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+    
+                            texture.width = potWidth;
+                            texture.height = potHeight;
 
-                            continuationCallback();
-                        });
+                            return false;
+                        } else {
+                            // Using shaders when possible to rescale because canvas.drawImage is lossy
+                            let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                            this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                            this._rescaleTexture(source, texture, scene, internalFormat, () => {
+                                this._releaseTexture(source);
+                                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+
+                                continuationCallback();
+                            });
+                        }
 
                         return true;
                     }, samplingMode);
@@ -5545,12 +5577,13 @@
          * @param createPolynomials if a polynomial sphere should be created for the cube texture
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
             var gl = this._gl;
 
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+            var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
@@ -5567,8 +5600,7 @@
             var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-            if (this._textureFormatInUse) {
-                extension = this._textureFormatInUse;
+            if (this._textureFormatInUse && !fallback) {
                 rootUrl = (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + this._textureFormatInUse;
                 isKTX = true;
             } else {
@@ -5577,6 +5609,11 @@
             }
 
             let onerror = (request?: XMLHttpRequest, exception?: any) => {
+                if(isKTX){
+                    //remove the format appended to the rootUrl in the original createCubeTexture call.
+                    var exp = new RegExp("" + this._textureFormatInUse + "$");
+                    this.createCubeTexture(rootUrl.replace(exp, ""), scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                }
                 if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
@@ -6117,8 +6154,9 @@
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
             processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
-            var potWidth = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
-            var potHeight = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
+            var maxTextureSize = this.getCaps().maxTextureSize;    
+            var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
+            var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
 
             var gl = this._gl;
             if (!gl) {
