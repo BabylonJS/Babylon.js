@@ -72,6 +72,7 @@
 - New lab feature - global light rotation [#4347](https://github.com/BabylonJS/Babylon.js/issues/4347) ([RaananW](https://github.com/RaananW))
 - New NPM package - babylonjs-viewer-assets, to separate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
 - A new HD-Toggler button allows setting a better hardware scaling rate ([RaananW](https://github.com/RaananW))
+- It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
