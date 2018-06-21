@@ -312,16 +312,23 @@ export class DefaultViewer extends AbstractViewer {
      */
     public toggleFullscreen = () => {
         let viewerTemplate = this.templateManager.getTemplate('viewer');
-        let fullscreenElement = this.fullscreenElement || (viewerTemplate && viewerTemplate.parent);
+        let viewerElement = viewerTemplate && viewerTemplate.parent;
+        let fullscreenElement = this.fullscreenElement || viewerElement;
 
         if (fullscreenElement) {
-            let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
-            if (!fullscreenElement) {
+            let currentElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            if (!currentElement) {
                 let requestFullScreen = fullscreenElement.requestFullscreen || fullscreenElement.webkitRequestFullscreen || (<any>fullscreenElement).msRequestFullscreen || (<any>fullscreenElement).mozRequestFullScreen;
                 requestFullScreen.call(fullscreenElement);
+                if (viewerElement) {
+                    viewerElement.classList.add("in-fullscreen");
+                }
             } else {
                 let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
                 exitFullscreen.call(document);
+                if (viewerElement) {
+                    viewerElement.classList.remove("in-fullscreen");
+                }
             }
         }
     }
