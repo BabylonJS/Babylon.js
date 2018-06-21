@@ -15,7 +15,7 @@ import { IModelAnimation, AnimationState } from '../model/modelAnimation';
  */
 export class DefaultViewer extends AbstractViewer {
 
-
+    public fullscreenElement?: HTMLElement;
 
     /**
      * Create a new default viewer
@@ -312,13 +312,13 @@ export class DefaultViewer extends AbstractViewer {
      */
     public toggleFullscreen = () => {
         let viewerTemplate = this.templateManager.getTemplate('viewer');
-        let viewerElement = viewerTemplate && viewerTemplate.parent;
+        let fullscreenElement = this.fullscreenElement || (viewerTemplate && viewerTemplate.parent);
 
-        if (viewerElement) {
+        if (fullscreenElement) {
             let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
             if (!fullscreenElement) {
-                let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
-                requestFullScreen.call(viewerElement);
+                let requestFullScreen = fullscreenElement.requestFullscreen || fullscreenElement.webkitRequestFullscreen || (<any>fullscreenElement).msRequestFullscreen || (<any>fullscreenElement).mozRequestFullScreen;
+                requestFullScreen.call(fullscreenElement);
             } else {
                 let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
                 exitFullscreen.call(document);
