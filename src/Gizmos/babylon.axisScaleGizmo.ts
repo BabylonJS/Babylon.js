@@ -6,6 +6,15 @@ module BABYLON {
         private _dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         /**
+         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        public snapDistance = 0;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        public onSnapObservable = new Observable<{snapDistance:number}>();
+        /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param dragAxis The axis which the gizmo will be able to scale on
@@ -46,13 +55,28 @@ module BABYLON {
             this._dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this._dragBehavior);
 
+            var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
-            this._dragBehavior.onDragObservable.add((event)=>{
-                if(!this.interactionsEnabled){
-                    return;
-                }
+            var tmpSnapEvent = {snapDistance: 0};
+            this._dragBehavior.onDragObservable.add((event)=>{                
                 if(this.attachedMesh){
-                    dragAxis.scaleToRef(event.dragDistance, tmpVector);
+                    // Snapping logic
+                    var snapped = false;
+                    var dragSteps = 0;
+                    if(this.snapDistance == 0){
+                        dragAxis.scaleToRef(event.dragDistance, tmpVector);
+                    }else{
+                        currentSnapDragDistance+=event.dragDistance;
+                        if(Math.abs(currentSnapDragDistance)>this.snapDistance){
+                            dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
+                            currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
+                            dragAxis.scaleToRef(this.snapDistance*dragSteps, tmpVector);
+                            snapped = true;
+                        }else{
+                            tmpVector.scaleInPlace(0);
+                        }
+                    }
+                    
                     var invertCount = 0;
                     if(this.attachedMesh.scaling["x"] < 0){
                         invertCount++;
@@ -67,6 +91,11 @@ module BABYLON {
                         this.attachedMesh.scaling.addInPlace(tmpVector);
                     }else{
                         this.attachedMesh.scaling.subtractInPlace(tmpVector);
+                    }
+
+                    if(snapped){
+                        tmpSnapEvent.snapDistance = this.snapDistance*dragSteps;
+                        this.onSnapObservable.notifyObservers(tmpSnapEvent);
                     }
                 }
             })
@@ -84,14 +113,17 @@ module BABYLON {
             });
         }
         
-        protected _onInteractionsEnabledChanged(value:boolean){
-            this._dragBehavior.enabled = value;
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+            if(this._dragBehavior){
+                this._dragBehavior.enabled = value ? true : false;
+            }
         }
         
         /**
          * Disposes of the gizmo
          */
         public dispose(){
+            this.onSnapObservable.clear();
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
             this._dragBehavior.detach();
             super.dispose();

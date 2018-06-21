@@ -8,9 +8,11 @@ module BABYLON {
         private _zDrag:AxisScaleGizmo;
 
         public set attachedMesh(mesh:Nullable<AbstractMesh>){
-            this._xDrag.attachedMesh = mesh;
-            this._yDrag.attachedMesh = mesh;
-            this._zDrag.attachedMesh = mesh;
+            if(this._xDrag){
+                this._xDrag.attachedMesh = mesh;
+                this._yDrag.attachedMesh = mesh;
+                this._zDrag.attachedMesh = mesh;
+            }
         }
         /**
          * Creates a ScaleGizmo
@@ -21,12 +23,7 @@ module BABYLON {
             this._xDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5));
             this._yDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5));
             this._zDrag = new AxisScaleGizmo(gizmoLayer, new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5));
-        }
-
-        protected _onInteractionsEnabledChanged(value:boolean){
-            this._xDrag.interactionsEnabled = value
-            this._yDrag.interactionsEnabled = value
-            this._zDrag.interactionsEnabled = value
+            this.attachedMesh = null;
         }
 
         public set updateGizmoRotationToMatchAttachedMesh(value:boolean){

@@ -491,13 +491,13 @@
 
                         // Color
                         if (this._colorGradients && this._colorGradients.length > 0) {
-                            var color1 = Tmp.Color4[0];
-                            var color2 = Tmp.Color4[1];
-
                             Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
-                                (<ColorGradient>currentGradient).getColorToRef(color1);
-                                (<ColorGradient>nextGradient).getColorToRef(color2);
-                                Color4.LerpToRef(color1, color2, scale, particle.color);
+                                if (currentGradient !== particle._currentColorGradient) {
+                                    particle._currentColor1.copyFrom(particle._currentColor2);
+                                    (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);    
+                                    particle._currentColorGradient = (<ColorGradient>currentGradient);
+                                }
+                                Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
                             });
                         }
                         else {
@@ -864,6 +864,7 @@
             if (this._stockParticles.length !== 0) {
                 particle = <Particle>this._stockParticles.pop();
                 particle.age = 0;
+                particle._currentColorGradient = null;
                 particle.cellIndex = this.startSpriteCellID;
             } else {
                 particle = new Particle(this);
@@ -969,7 +970,15 @@
                     this.colorDead.subtractToRef(particle.color, this._colorDiff);
                     this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
                 } else {
-                    this._colorGradients[0].getColorToRef(particle.color);
+                    particle._currentColorGradient = this._colorGradients[0];
+                    particle._currentColorGradient.getColorToRef(particle.color);
+                    particle._currentColor1.copyFrom(particle.color);
+
+                    if (this._colorGradients.length > 1) {
+                        this._colorGradients[1].getColorToRef(particle._currentColor2);
+                    } else {
+                        particle._currentColor2.copyFrom(particle.color);
+                    }
                 }
             }
         }
