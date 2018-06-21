@@ -174,6 +174,16 @@
         content: "\F766";
     }
 
+    viewer.in-vr .vr-icon:after {
+        font-size: 16px;
+        content: "\E7F4";
+    }
+
+    .vr-icon:after {
+        font-size: 16px;
+        content: "\F119";
+    }
+
     .progress-control {
         display: flex;
         flex: 1;
@@ -513,7 +523,7 @@
     </div>
     {{/unless}}
     <div class="default-control">
-        {{#unless hideHdButton}}
+        {{#unless hideHd}}
         <button class="hd-button hd-button" title="{{text.hdButton}}">
             {{#if hdEnabled}}
             <span class="icon sd-icon"></span>
@@ -521,7 +531,11 @@
             <span class="icon hd-icon"></span>
             {{/if}}
         </button>
-        {{/unless}} {{#unless hideHelp}}
+        {{/unless}} {{#unless hideVr}}
+        <button class="vr vr-button" title="{{text.vrButton}}">
+            <span class="icon vr-icon"></span>
+        </button>
+        {{/unless}}{{#unless hideHelp}}
         <button class="help help-button" title="{{text.helpButton}}">
             <span class="icon help-icon"></span>
         </button>
