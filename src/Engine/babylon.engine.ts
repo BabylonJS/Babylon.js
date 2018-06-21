@@ -3450,7 +3450,13 @@
             var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
             var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
 
-            defines += "\n#define BILLBOARD\n";
+            if (defines.indexOf(" BILLBOARD") === -1) {
+                defines += "\n#define BILLBOARD\n";
+            }
+
+            if (samplers.indexOf("diffuseSampler") === -1) {
+                samplers.push("diffuseSampler");
+            }
 
             return this.createEffect(
                 {
@@ -3459,7 +3465,7 @@
                 },
                 attributesNamesOrOptions,
                 effectCreationOption.concat(uniformsNames),
-                ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
+                samplers, defines, fallbacks, onCompiled, onError);
         }
 
         /**
@@ -5571,12 +5577,13 @@
          * @param createPolynomials if a polynomial sphere should be created for the cube texture
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
             var gl = this._gl;
 
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+            var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
@@ -5593,8 +5600,7 @@
             var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-            if (this._textureFormatInUse) {
-                extension = this._textureFormatInUse;
+            if (this._textureFormatInUse && !fallback) {
                 rootUrl = (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + this._textureFormatInUse;
                 isKTX = true;
             } else {
@@ -5603,6 +5609,11 @@
             }
 
             let onerror = (request?: XMLHttpRequest, exception?: any) => {
+                if(isKTX){
+                    //remove the format appended to the rootUrl in the original createCubeTexture call.
+                    var exp = new RegExp("" + this._textureFormatInUse + "$");
+                    this.createCubeTexture(rootUrl.replace(exp, ""), scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                }
                 if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }

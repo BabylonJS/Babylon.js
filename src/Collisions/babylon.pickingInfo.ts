@@ -92,10 +92,24 @@
             }
 
             if (useWorldCoordinates) {
-                result = Vector3.TransformNormal(result, this.pickedMesh.getWorldMatrix());
+                let wm = this.pickedMesh.getWorldMatrix();
+
+                if (this.pickedMesh.nonUniformScaling) {
+                    Tmp.Matrix[0].copyFrom(wm);
+                    wm = Tmp.Matrix[0];
+                    wm.setTranslationFromFloats(0, 0, 0);
+                    wm.invert();
+                    wm.transposeToRef(Tmp.Matrix[1]);
+
+                    wm = Tmp.Matrix[1];
+                }
+
+                result = Vector3.TransformNormal(result, wm);
             }
 
-            return Vector3.Normalize(result);
+            result.normalize();
+
+            return result;
         }
 
         /**

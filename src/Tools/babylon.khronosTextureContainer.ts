@@ -125,13 +125,13 @@ module BABYLON {
             var mipmapCount = loadMipmaps ? this.numberOfMipmapLevels : 1;
             for (var level = 0; level < mipmapCount; level++) {
                 var imageSize = new Int32Array(this.arrayBuffer, dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
-
+                dataOffset += 4;//image data starts from next multiple of 4 offset. Each face refers to same imagesize field above.
                 for (var face = 0; face < this.numberOfFaces; face++) {
                     var sampler = this.numberOfFaces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
-                    var byteArray = new Uint8Array(this.arrayBuffer, dataOffset + 4, imageSize);
+                    var byteArray = new Uint8Array(this.arrayBuffer, dataOffset, imageSize);
                     gl.compressedTexImage2D(sampler, level, this.glInternalFormat, width, height, 0, byteArray);
 
-                    dataOffset += imageSize + 4; // size of the image + 4 for the imageSize field
+                    dataOffset += imageSize; // add size of the image for the next face/mipmap
                     dataOffset += 3 - ((imageSize + 3) % 4); // add padding for odd sized image
                 }
                 width = Math.max(1.0, width * 0.5);
