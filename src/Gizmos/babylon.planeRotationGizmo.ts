@@ -5,6 +5,17 @@ module BABYLON {
     export class PlaneRotationGizmo extends Gizmo {
         private _dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
+        
+        /**
+         * Rotation distance in radians that the gizmo will snap to (Default: 0)
+         */
+        public snapDistance = 0;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        public onSnapObservable = new Observable<{snapDistance:number}>();
+
         /**
          * Creates a PlaneRotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -43,19 +54,18 @@ module BABYLON {
             var lastDragPosition:Nullable<Vector3> = null;
 
             this._dragBehavior.onDragStartObservable.add((e)=>{
-                if(!this.interactionsEnabled){
-                    return;
+                if(this.attachedMesh){
+                    lastDragPosition = e.dragPlanePoint;
                 }
-                lastDragPosition = e.dragPlanePoint;
             })
 
             var rotationMatrix = new Matrix();
             var planeNormalTowardsCamera = new Vector3();
             var localPlaneNormalTowardsCamera = new Vector3();
+
+            var tmpSnapEvent = {snapDistance: 0};
+            var currentSnapDragDistance = 0;
             this._dragBehavior.onDragObservable.add((event)=>{
-                if(!this.interactionsEnabled){
-                    return;
-                }
                 if(this.attachedMesh && lastDragPosition){
                     if(!this.attachedMesh.rotationQuaternion){
                         this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
@@ -83,15 +93,31 @@ module BABYLON {
                     var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
                     if (halfCircleSide) angle = -angle;
                     
+                    // Snapping logic
+                    var snapped = false;
+                    if(this.snapDistance != 0){
+                        currentSnapDragDistance+=angle
+                        if(Math.abs(currentSnapDragDistance)>this.snapDistance){
+                            var dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
+                            currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
+                            angle = this.snapDistance*dragSteps;
+                            snapped = true;
+                        }else{
+                            angle = 0;
+                        }
+                    }
+                     // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
+                     var quaternionCoefficient = Math.sin(angle/2)
+                     var amountToRotate = new BABYLON.Quaternion(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
 
-                    // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
-                    var quaternionCoefficient = Math.sin(angle/2)
-                    var amountToRotate = new BABYLON.Quaternion(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
-
-                    // Rotate selected mesh quaternion over fixed axis
-                    this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate,this.attachedMesh.rotationQuaternion);
+                     // Rotate selected mesh quaternion over fixed axis
+                     this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate,this.attachedMesh.rotationQuaternion);
 
                     lastDragPosition = event.dragPlanePoint;
+                    if(snapped){
+                        tmpSnapEvent.snapDistance = angle;
+                        this.onSnapObservable.notifyObservers(tmpSnapEvent);
+                    }
                 }
             })
 
@@ -108,14 +134,17 @@ module BABYLON {
             });
         }
 
-        protected _onInteractionsEnabledChanged(value:boolean){
-            this._dragBehavior.enabled = value;
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+            if(this._dragBehavior){
+                this._dragBehavior.enabled = value ? true : false;
+            }
         }
 
         /**
          * Disposes of the gizmo
          */
         public dispose(){
+            this.onSnapObservable.clear();
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
             this._dragBehavior.detach();
             super.dispose();

@@ -599,6 +599,25 @@
         }
 
         /**
+         * Adds a camera to the pipeline
+         * @param camera the camera to be added
+         */
+        public addCamera(camera:Camera):void{
+            this._originalCameras.push(camera);
+            this._buildPipeline();
+        }
+
+        /**
+         * Removes a camera from the pipeline
+         * @param camera the camera to remove
+         */
+        public removeCamera(camera:Camera):void{
+            var index = this._originalCameras.indexOf(camera);
+            this._originalCameras.splice(index, 1);
+            this._buildPipeline();
+        }
+
+        /**
          * Dispose of the pipeline and stop all post processes
          */
         public dispose(): void {
