@@ -14,7 +14,7 @@ module BABYLON.GLTF2 {
          * @param name name of the buffer view
          * @returns bufferView for glTF
          */
-        public static CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView {
+        public static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView {
             let bufferview: IBufferView = { buffer: bufferIndex, byteLength: byteLength };
             if (byteOffset) {
                 bufferview.byteOffset = byteOffset;
@@ -41,7 +41,7 @@ module BABYLON.GLTF2 {
          * @param max Maximum value of each component in this attribute
          * @returns accessor for glTF 
          */
-        public static CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor {
+        public static _CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor {
             let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
 
             if (min != null) {
@@ -64,7 +64,7 @@ module BABYLON.GLTF2 {
          * @param vertexCount Number of vertices to check for min and max values
          * @returns min number array and max number array
          */
-        public static CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): { min: number[], max: number[] } {
+        public static _CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): { min: number[], max: number[] } {
             const min = [Infinity, Infinity, Infinity];
             const max = [-Infinity, -Infinity, -Infinity];
             const positionStrideSize = 3;
@@ -78,7 +78,7 @@ module BABYLON.GLTF2 {
 
                     position = Vector3.FromArray(positions, indexOffset);
                     if (convertToRightHandedSystem) {
-                        _GLTFUtilities.GetRightHandedPositionVector3FromRef(position);
+                        _GLTFUtilities._GetRightHandedPositionVector3FromRef(position);
                     }
                     vector = position.asArray();
 
@@ -102,7 +102,7 @@ module BABYLON.GLTF2 {
          * @param vector vector3 array
          * @returns right-handed Vector3
          */
-        public static GetRightHandedPositionVector3(vector: Vector3): Vector3 {
+        public static _GetRightHandedPositionVector3(vector: Vector3): Vector3 {
             return new Vector3(vector.x, vector.y, -vector.z);
         }
 
@@ -110,7 +110,7 @@ module BABYLON.GLTF2 {
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
-        public static GetRightHandedPositionVector3FromRef(vector: Vector3) {
+        public static _GetRightHandedPositionVector3FromRef(vector: Vector3) {
             vector.z *= -1;
         }
 
@@ -118,7 +118,7 @@ module BABYLON.GLTF2 {
          * Converts a three element number array to right-handed
          * @param vector number array to convert to right-handed
          */
-        public static GetRightHandedPositionArray3FromRef(vector: number[]) {
+        public static _GetRightHandedPositionArray3FromRef(vector: number[]) {
             vector[2] *= -1;
         }
 
@@ -127,7 +127,7 @@ module BABYLON.GLTF2 {
          * @param vector vector3 array
          * @returns right-handed Vector3
          */
-        public static GetRightHandedNormalVector3(vector: Vector3): Vector3 {
+        public static _GetRightHandedNormalVector3(vector: Vector3): Vector3 {
             return new Vector3(vector.x, vector.y, -vector.z);
         }
 
@@ -135,7 +135,7 @@ module BABYLON.GLTF2 {
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
-        public static GetRightHandedNormalVector3FromRef(vector: Vector3) {
+        public static _GetRightHandedNormalVector3FromRef(vector: Vector3) {
             vector.z *= -1;
         }
 
@@ -143,7 +143,7 @@ module BABYLON.GLTF2 {
          * Converts a three element number array to right-handed
          * @param vector number array to convert to right-handed
          */
-        public static GetRightHandedNormalArray3FromRef(vector: number[]) {
+        public static _GetRightHandedNormalArray3FromRef(vector: number[]) {
             vector[2] *= -1;
         }
 
@@ -151,7 +151,7 @@ module BABYLON.GLTF2 {
          * Converts a Vector4 to right-handed
          * @param vector Vector4 to convert to right-handed
          */
-        public static GetRightHandedVector4FromRef(vector: Vector4) {
+        public static _GetRightHandedVector4FromRef(vector: Vector4) {
             vector.z *= -1;
             vector.w *= -1;
         }
@@ -160,7 +160,7 @@ module BABYLON.GLTF2 {
          * Converts a Vector4 to right-handed
          * @param vector Vector4 to convert to right-handed
          */
-        public static GetRightHandedArray4FromRef(vector: number[]) {
+        public static _GetRightHandedArray4FromRef(vector: number[]) {
             vector[2] *= -1;
             vector[3] *= -1;
         }
@@ -169,7 +169,7 @@ module BABYLON.GLTF2 {
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */
-        public static GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
+        public static _GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
              quaternion.x *= -1;
              quaternion.y *= -1;
         }
@@ -178,9 +178,16 @@ module BABYLON.GLTF2 {
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */
-        public static GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
+        public static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
              quaternion[0] *= -1;
              quaternion[1] *= -1;
+        }
+
+        public static _NormalizeTangentFromRef(tangent: Vector4) {
+            const normalizedTangentComponent = new Vector3(tangent.x, tangent.y, tangent.z).normalize();
+            tangent.x = normalizedTangentComponent.x;
+            tangent.y = normalizedTangentComponent.y;
+            tangent.z = normalizedTangentComponent.z;
         }
     }
 }

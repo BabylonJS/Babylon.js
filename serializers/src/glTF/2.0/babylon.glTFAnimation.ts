@@ -271,14 +271,14 @@ module BABYLON.GLTF2 {
 
                 // Creates buffer view and accessor for key frames.
                 let byteLength = animationData.inputs.length * 4;
-                bufferView = _GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  keyframe data view`);
+                bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  keyframe data view`);
                 bufferViews.push(bufferView);
 
                 animationData.inputs.forEach(function (input) {
                     binaryWriter.setFloat32(input);
                 });
 
-                accessor = _GLTFUtilities.CreateAccessor(bufferViews.length - 1, `${name}  keyframes`, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, null, [animationData.inputsMin], [animationData.inputsMax]);
+                accessor = _GLTFUtilities._CreateAccessor(bufferViews.length - 1, `${name}  keyframes`, AccessorType.SCALAR, AccessorComponentType.FLOAT, animationData.inputs.length, null, [animationData.inputsMin], [animationData.inputsMax]);
                 accessors.push(accessor);
                 keyframeAccessorIndex = accessors.length - 1;
 
@@ -287,7 +287,7 @@ module BABYLON.GLTF2 {
                 byteLength = dataAccessorType === AccessorType.VEC3 ? animationData.outputs.length * 12 : animationData.outputs.length * 16;
 
                 // check for in and out tangents
-                bufferView = _GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  data view`);
+                bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  data view`);
                 bufferViews.push(bufferView);
 
                 animationData.outputs.forEach(function (output) {
@@ -296,7 +296,7 @@ module BABYLON.GLTF2 {
                     });
                 });
 
-                accessor = _GLTFUtilities.CreateAccessor(bufferViews.length - 1, `${name}  data`, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null, null, null);
+                accessor = _GLTFUtilities._CreateAccessor(bufferViews.length - 1, `${name}  data`, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null, null, null);
                 accessors.push(accessor);
                 dataAccessorIndex = accessors.length - 1;
 
@@ -447,7 +447,7 @@ module BABYLON.GLTF2 {
                         Quaternion.RotationYawPitchRollToRef(cacheValue.y, cacheValue.x, cacheValue.z, quaternionCache);
                     }
                     if (convertToRightHandedSystem) {
-                        _GLTFUtilities.GetRightHandedQuaternionFromRef(quaternionCache);
+                        _GLTFUtilities._GetRightHandedQuaternionFromRef(quaternionCache);
 
                         if (!babylonTransformNode.parent) {
                             quaternionCache = Quaternion.FromArray([0, 1, 0, 0]).multiply(quaternionCache);
@@ -458,7 +458,7 @@ module BABYLON.GLTF2 {
                 else {
                     cacheValue = value as Vector3;
                     if (convertToRightHandedSystem && (animationChannelTargetPath !== AnimationChannelTargetPath.SCALE)) {
-                        _GLTFUtilities.GetRightHandedPositionVector3FromRef(cacheValue);
+                        _GLTFUtilities._GetRightHandedPositionVector3FromRef(cacheValue);
                         if (!babylonTransformNode.parent) {
                             cacheValue.x *= -1;
                             cacheValue.z *= -1;
@@ -536,7 +536,7 @@ module BABYLON.GLTF2 {
                     if (babylonTransformNode.rotationQuaternion) {
                         basePositionRotationOrScale = babylonTransformNode.rotationQuaternion.asArray();
                         if (convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
+                            _GLTFUtilities._GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
                             if (!babylonTransformNode.parent) {
                                 basePositionRotationOrScale = Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(basePositionRotationOrScale)).asArray();
                             }
@@ -548,13 +548,13 @@ module BABYLON.GLTF2 {
                 }
                 else {
                     basePositionRotationOrScale = babylonTransformNode.rotation.asArray();
-                    _GLTFUtilities.GetRightHandedNormalArray3FromRef(basePositionRotationOrScale);
+                    _GLTFUtilities._GetRightHandedNormalArray3FromRef(basePositionRotationOrScale);
                 }
             }
             else if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
                 basePositionRotationOrScale = babylonTransformNode.position.asArray();
                 if (convertToRightHandedSystem) {
-                    _GLTFUtilities.GetRightHandedPositionArray3FromRef(basePositionRotationOrScale);
+                    _GLTFUtilities._GetRightHandedPositionArray3FromRef(basePositionRotationOrScale);
                 }
             }
             else { // scale
@@ -583,7 +583,7 @@ module BABYLON.GLTF2 {
                     const array = Vector3.FromArray(value);
                     let rotationQuaternion = Quaternion.RotationYawPitchRoll(array.y, array.x, array.z);
                     if (convertToRightHandedSystem) {
-                        _GLTFUtilities.GetRightHandedQuaternionFromRef(rotationQuaternion);
+                        _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
 
                         if (!babylonTransformNode.parent) {
                             rotationQuaternion = Quaternion.FromArray([0, 1, 0, 0]).multiply(rotationQuaternion);
@@ -593,7 +593,7 @@ module BABYLON.GLTF2 {
                 }
                 else if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
                     if (convertToRightHandedSystem) {
-                        _GLTFUtilities.GetRightHandedNormalArray3FromRef(value);
+                        _GLTFUtilities._GetRightHandedNormalArray3FromRef(value);
                         if (!babylonTransformNode.parent) {
                             value[0] *= -1;
                             value[2] *= -1;
@@ -609,7 +609,7 @@ module BABYLON.GLTF2 {
                     if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                         let posRotScale = useQuaternion ? newPositionRotationOrScale as Quaternion : Quaternion.RotationYawPitchRoll(newPositionRotationOrScale.y, newPositionRotationOrScale.x, newPositionRotationOrScale.z).normalize();
                         if (convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedQuaternionFromRef(posRotScale);
+                            _GLTFUtilities._GetRightHandedQuaternionFromRef(posRotScale);
 
                             if (!babylonTransformNode.parent) {
                                 posRotScale = Quaternion.FromArray([0, 1, 0, 0]).multiply(posRotScale);
@@ -619,7 +619,7 @@ module BABYLON.GLTF2 {
                     }
                     else if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
                         if (convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedNormalVector3FromRef(newPositionRotationOrScale as Vector3);
+                            _GLTFUtilities._GetRightHandedNormalVector3FromRef(newPositionRotationOrScale as Vector3);
 
                             if (!babylonTransformNode.parent) {
                                 newPositionRotationOrScale.x *= -1;
@@ -634,7 +634,7 @@ module BABYLON.GLTF2 {
                 value = (keyFrame.value as Quaternion).normalize().asArray();
 
                 if (convertToRightHandedSystem) {
-                    _GLTFUtilities.GetRightHandedQuaternionArrayFromRef(value);
+                    _GLTFUtilities._GetRightHandedQuaternionArrayFromRef(value);
 
                     if (!babylonTransformNode.parent) {
                         value = Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(value)).asArray();
@@ -730,7 +730,7 @@ module BABYLON.GLTF2 {
                         }
 
                         if (convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedQuaternionArrayFromRef(tangent);
+                            _GLTFUtilities._GetRightHandedQuaternionArrayFromRef(tangent);
                             if (!babylonTransformNode.parent) {
                                 tangent = Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(tangent)).asArray();
                             }
@@ -745,7 +745,7 @@ module BABYLON.GLTF2 {
                         tangent = (tangentValue as Vector3).scale(frameDelta).asArray();
                         if (convertToRightHandedSystem) {
                             if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
-                                _GLTFUtilities.GetRightHandedPositionArray3FromRef(tangent);
+                                _GLTFUtilities._GetRightHandedPositionArray3FromRef(tangent);
                                 if (!babylonTransformNode.parent) {
                                     tangent[0] *= -1; // x
                                     tangent[2] *= -1; // z
