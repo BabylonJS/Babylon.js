@@ -6,6 +6,7 @@ module BABYLON {
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
     export class VideoDome extends Node {
+        private _useDirectMapping = false;
 
         /**
          * The video texture being displayed on the sphere
@@ -52,35 +53,45 @@ module BABYLON {
             autoPlay?: boolean,
             loop?: boolean,
             size?: number,
-            poster?: string
+            poster?: string,            
+            useDirectMapping?: boolean
         }, scene: Scene) {
             super(name, scene);
 
             // set defaults and manage values
             name = name || "videoDome";
-            options.resolution = (Math.abs(options.resolution as any) | 0) || 12;
+            options.resolution = (Math.abs(options.resolution as any) | 0) || 32;
             options.clickToPlay = Boolean(options.clickToPlay);
             options.autoPlay = options.autoPlay === undefined ? true : Boolean(options.autoPlay);
             options.loop = options.loop === undefined ? true : Boolean(options.loop);
             options.size = Math.abs(options.size as any) || (scene.activeCamera ? scene.activeCamera.maxZ * 0.48 : 1000);
 
+            if (options.useDirectMapping === undefined) {
+                this._useDirectMapping = true;    
+            } else {
+                this._useDirectMapping = options.useDirectMapping;            
+            }
+
             // create
             let tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
-            let texture = this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
-            this._mesh = MeshBuilder.CreateIcoSphere(name + "_mesh", {
-                flat: false, // saves on vertex data
-                radius: options.size,
-                subdivisions: options.resolution,
-                sideOrientation: Mesh.BACKSIDE // needs to be inside out
-            }, scene);
+            let texture = this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
+            this._mesh = BABYLON.Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
 
             // configure material
-            texture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
-            texture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down
-            material.reflectionTexture = this._videoTexture;
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
+            material.opacityFresnel = false;
+
+            if (this._useDirectMapping) {
+                texture.wrapU = Texture.CLAMP_ADDRESSMODE;     
+                texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                material.diffuseTexture = texture;
+            } else {
+                texture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
+                texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                material.reflectionTexture =texture;
+            }            
 
             // configure mesh
             this._mesh.material = material;

@@ -24,6 +24,10 @@ module BABYLON {
          * The distance towards the target drag position to move each frame. This can be useful to avoid jitter. Set this to 1 for no delay. (Default: 0.2)
          */
         public dragDeltaRatio = 0.2;
+        /**
+         * If the drag plane orientation should be updated during the dragging (Default: true)
+         */
+        public updateDragPlane = true;
         // Debug mode will display drag planes to help visualize behavior
         private _debugMode = false;
         private _moving = false;
@@ -149,8 +153,10 @@ module BABYLON {
                         var pickedPoint = this._pickWithRayOnDragPlane(pointerInfo.pickInfo.ray);
                         
                         if (pickedPoint) {
-                            this._updateDragPlanePosition(pointerInfo.pickInfo.ray, pickedPoint);
-
+                            if(this.updateDragPlane){
+                                this._updateDragPlanePosition(pointerInfo.pickInfo.ray, pickedPoint);
+                            }
+                            
                             // depending on the drag mode option drag accordingly
                             if(this.options.dragAxis){
                                 // Convert local drag axis to world
@@ -209,7 +215,7 @@ module BABYLON {
         private _lineA = new Vector3(0,0,0);
         private _lineB = new Vector3(0,0,0);
         private _localAxis = new Vector3(0,0,0);
-        private _lookAt = new Vector3(0,0,0); 
+        private _lookAt = new Vector3(0,0,0);
         // Position the drag plane based on the attached mesh position, for single axis rotate the plane along the axis to face the camera
         private _updateDragPlanePosition(ray:Ray, dragPlanePosition:Vector3){
             this._pointA.copyFrom(dragPlanePosition);

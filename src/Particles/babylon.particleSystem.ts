@@ -1,11 +1,5 @@
 ﻿module BABYLON {
 
-    /** @hidden */
-    class ColorGradient {
-        public gradient: number;
-        public color: Color4;
-    }
-
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -120,7 +114,16 @@
         /**
          * Maximum scale of emitting particles on Y axis.
          */
-        public maxScaleY = 1;           
+        public maxScaleY = 1;          
+        
+        /**
+         * Gets or sets the minimal initial rotation in radians.         
+         */
+        public minInitialRotation = 0;
+        /**
+         * Gets or sets the maximal initial rotation in radians.         
+         */
+        public maxInitialRotation = 0;             
 
         /**
          * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
@@ -182,8 +185,27 @@
         public gravity = Vector3.Zero();
 
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
+        private _sizeGradients: Nullable<Array<FactorGradient>> = null;
 
-       /**
+        /**
+         * Gets the current list of color gradients.
+         * You must use addColorGradient and removeColorGradient to udpate this list
+         * @returns the list of color gradients
+         */
+        public getColorGradients(): Nullable<Array<ColorGradient>> {
+            return this._colorGradients;
+        }
+
+        /**
+         * Gets the current list of size gradients.
+         * You must use addSizeGradient and removeSizeGradient to udpate this list
+         * @returns the list of size gradients
+         */
+        public getSizeGradients(): Nullable<Array<FactorGradient>> {
+            return this._sizeGradients;
+        }        
+
+        /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
@@ -314,6 +336,12 @@
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         public spriteCellHeight = 0;
+
+        /** Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
+        public preWarmCycles = 0;
+
+        /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
+        public preWarmStepOffset = 1;
 
         /**
         * An event triggered when the system is disposed
@@ -459,19 +487,18 @@
                         continue;
                     }
                     else {
+                        let ratio = particle.age / particle.lifeTime;
+
+                        // Color
                         if (this._colorGradients && this._colorGradients.length > 0) {
-                            let ratio = particle.age / particle.lifeTime;
+                            var color1 = Tmp.Color4[0];
+                            var color2 = Tmp.Color4[1];
 
-                            for (var gradientIndex = 0; gradientIndex < this._colorGradients.length - 1; gradientIndex++) {
-                                let currentGradient = this._colorGradients[gradientIndex];
-                                let nextGradient = this._colorGradients[gradientIndex + 1];
-
-                                if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                                    let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
-                                    Color4.LerpToRef(currentGradient.color, nextGradient.color, scale, particle.color);
-                                    break;
-                               }
-                            }
+                            Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                                (<ColorGradient>currentGradient).getColorToRef(color1);
+                                (<ColorGradient>nextGradient).getColorToRef(color2);
+                                Color4.LerpToRef(color1, color2, scale, particle.color);
+                            });
                         }
                         else {
                             particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
@@ -489,6 +516,13 @@
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
+                        // Gradient
+                        if (this._sizeGradients && this._sizeGradients.length > 0) {
+                            Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
+                                particle.size = particle._initialSize * Scalar.Lerp((<FactorGradient>currentGradient).factor, (<FactorGradient>nextGradient).factor, scale);
+                            });
+                        }
+
                         if (this._isAnimationSheetEnabled) {
                             particle.updateCellIndex(this._scaledUpdateSpeed);
                         }
@@ -498,18 +532,69 @@
         }
 
         /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient
+         */
+        public addSizeGradient(gradient: number, factor: number): ParticleSystem {
+            if (!this._sizeGradients) {
+                this._sizeGradients = [];
+            }
+
+            let sizeGradient = new FactorGradient();
+            sizeGradient.gradient = gradient;
+            sizeGradient.factor = factor;
+            this._sizeGradients.push(sizeGradient);
+
+            this._sizeGradients.sort((a, b) => {
+                if (a.gradient < b.gradient) {
+                    return -1;
+                } else if (a.gradient > b.gradient) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            return this;
+        }
+
+        /**
+         * Remove a specific size gradient
+         * @param gradient defines the gradient to remove
+         */
+        public removeSizeGradient(gradient: number): ParticleSystem {
+            if (!this._sizeGradients) {
+                return this;
+            }
+
+            let index = 0;
+            for (var sizeGradient of this._sizeGradients) {
+                if (sizeGradient.gradient === gradient) {
+                    this._sizeGradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+
+            return this;
+        }        
+
+        /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
          */
-        public addColorGradient(gradient: number, color: Color4): ParticleSystem {
+        public addColorGradient(gradient: number, color: Color4, color2?: Color4): ParticleSystem {
             if (!this._colorGradients) {
                 this._colorGradients = [];
             }
 
             let colorGradient = new ColorGradient();
             colorGradient.gradient = gradient;
-            colorGradient.color = color;
+            colorGradient.color1 = color;
+            colorGradient.color2 = color2;
             this._colorGradients.push(colorGradient);
 
             this._colorGradients.sort((a, b) => {
@@ -520,7 +605,7 @@
                 }
 
                 return 0;
-            })
+            });
 
             return this;
         }
@@ -667,6 +752,12 @@
             this._actualFrame = 0;
             if (this.subEmitters && this.subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
+            }
+
+            if (this.preWarmCycles) {
+                for (var index = 0; index < this.preWarmCycles; index++) {
+                    this.animate(true);
+                }
             }
         }
 
@@ -864,8 +955,11 @@
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                particle._initialSize = particle.size;
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
+
+                particle.angle = Scalar.RandomRange(this.minInitialRotation, this.maxInitialRotation);
 
                 if (!this._colorGradients || this._colorGradients.length === 0) {
                     var step = Scalar.RandomRange(0, 1.0);
@@ -875,9 +969,34 @@
                     this.colorDead.subtractToRef(particle.color, this._colorDiff);
                     this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
                 } else {
-                    particle.color.copyFrom(this._colorGradients[0].color);
+                    this._colorGradients[0].getColorToRef(particle.color);
                 }
             }
+        }
+
+        /** @hidden */
+        public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false): string[] {
+            var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
+
+            if (isAnimationSheetEnabled) {
+                attributeNamesOrOptions.push("cellIndex");
+            }
+
+            if (!isBillboardBased) {
+                attributeNamesOrOptions.push("direction");
+            }            
+
+            return attributeNamesOrOptions;
+        }
+
+        public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
+            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
+
+            if (isAnimationSheetEnabled) {
+                effectCreationOption.push("particlesInfos")
+            }
+
+            return effectCreationOption;
         }
 
         private _getEffect(): Effect {
@@ -904,17 +1023,8 @@
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
-                var attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
-                var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
-
-                if (this._isAnimationSheetEnabled) {
-                    attributesNamesOrOptions.push("cellIndex");
-                    effectCreationOption.push("particlesInfos")
-                }
-
-                if (!this._isBillboardBased) {
-                    attributesNamesOrOptions.push("direction");
-                }
+                var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased);
+                var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
@@ -928,24 +1038,26 @@
 
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         * @param preWarmOnly will prevent the system from updating the vertex buffer (default is false)
          */
-        public animate(): void {
+        public animate(preWarmOnly = false): void {
             if (!this._started)
                 return;
 
-            var effect = this._getEffect();
+            if (!preWarmOnly) {
+                var effect = this._getEffect();
 
-            // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
-                return;
+                // Check
+                if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
+                    return;
 
-            if (this._currentRenderId === this._scene.getRenderId()) {
-                return;
+                if (this._currentRenderId === this._scene.getRenderId()) {
+                    return;
+                }
+                this._currentRenderId = this._scene.getRenderId();
             }
 
-            this._currentRenderId = this._scene.getRenderId();
-
-            this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
+            this._scaledUpdateSpeed = this.updateSpeed * (preWarmOnly ? this.preWarmStepOffset : this._scene.getAnimationRatio());
 
             // determine the number of particles we need to create
             var newParticles;
@@ -989,16 +1101,18 @@
                 }
             }
 
-            // Update VBO
-            var offset = 0;
-            for (var index = 0; index < this._particles.length; index++) {
-                var particle = this._particles[index];
-                this._appendParticleVertices(offset, particle);                
-                offset += this._useInstancing ? 1 : 4;
-            }
+            if (!preWarmOnly) {
+                // Update VBO
+                var offset = 0;
+                for (var index = 0; index < this._particles.length; index++) {
+                    var particle = this._particles[index];
+                    this._appendParticleVertices(offset, particle);                
+                    offset += this._useInstancing ? 1 : 4;
+                }
 
-            if (this._vertexBuffer) {
-                this._vertexBuffer.update(this._vertexData);
+                if (this._vertexBuffer) {
+                    this._vertexBuffer.update(this._vertexData);
+                }
             }
 
             if (this.manualEmitCount === 0 && this.disposeOnStop) {
@@ -1215,6 +1329,8 @@
                 program = this.customShader;
                 var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            } else if (this._customEffect) {
+                custom = this._customEffect;
             }
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
@@ -1244,53 +1360,9 @@
         public serialize(): any {
             var serializationObject: any = {};
 
-            serializationObject.name = this.name;
-            serializationObject.id = this.id;
+            ParticleSystem._Serialize(serializationObject, this);
 
-            // Emitter
-            if ((<AbstractMesh>this.emitter).position) {
-                var emitterMesh = (<AbstractMesh>this.emitter);
-                serializationObject.emitterId = emitterMesh.id;
-            } else {
-                var emitterPosition = (<Vector3>this.emitter);
-                serializationObject.emitter = emitterPosition.asArray();
-            }
-
-            serializationObject.capacity = this.getCapacity();
-
-            if (this.particleTexture) {
-                serializationObject.textureName = this.particleTexture.name;
-            }
-
-            // Animations
-            Animation.AppendSerializedAnimations(this, serializationObject);
-
-            // Particle system
-            serializationObject.minAngularSpeed = this.minAngularSpeed;
-            serializationObject.maxAngularSpeed = this.maxAngularSpeed;
-            serializationObject.minSize = this.minSize;
-            serializationObject.maxSize = this.maxSize;
-            serializationObject.minScaleX = this.minScaleX;
-            serializationObject.maxScaleX = this.maxScaleX;
-            serializationObject.minScaleY = this.minScaleY;
-            serializationObject.maxScaleY = this.maxScaleY;            
-            serializationObject.minEmitPower = this.minEmitPower;
-            serializationObject.maxEmitPower = this.maxEmitPower;
-            serializationObject.minLifeTime = this.minLifeTime;
-            serializationObject.maxLifeTime = this.maxLifeTime;
-            serializationObject.emitRate = this.emitRate;
-            serializationObject.minEmitBox = this.minEmitBox.asArray();
-            serializationObject.maxEmitBox = this.maxEmitBox.asArray();
-            serializationObject.gravity = this.gravity.asArray();
-            serializationObject.direction1 = this.direction1.asArray();
-            serializationObject.direction2 = this.direction2.asArray();
-            serializationObject.color1 = this.color1.asArray();
-            serializationObject.color2 = this.color2.asArray();
-            serializationObject.colorDead = this.colorDead.asArray();
-            serializationObject.updateSpeed = this.updateSpeed;
-            serializationObject.targetStopDuration = this.targetStopDuration;
             serializationObject.textureMask = this.textureMask.asArray();
-            serializationObject.blendMode = this.blendMode;
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
@@ -1303,42 +1375,95 @@
 
             serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
 
-            // Emitter
-            if (this.particleEmitterType) {
-                serializationObject.particleEmitterType = this.particleEmitterType.serialize();
-            }            
-
             return serializationObject;
         }
 
-        /**
-         * Parses a JSON object to create a particle system.
-         * @param parsedParticleSystem The JSON object to parse
-         * @param scene The scene to create the particle system in
-         * @param rootUrl The root url to use to load external dependencies like texture
-         * @returns the Parsed particle system
-         */
-        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
-            var name = parsedParticleSystem.name;
-            var custom: Nullable<Effect> = null;
-            var program: any = null;
-            if (parsedParticleSystem.customShader) {
-                program = parsedParticleSystem.customShader;
-                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
-                custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
-            }
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom, parsedParticleSystem.isAnimationSheetEnabled);
-            particleSystem.customShader = program;
+        /** @hidden */
+        public static _Serialize(serializationObject: any, particleSystem: IParticleSystem) {
+            serializationObject.name = particleSystem.name;
+            serializationObject.id = particleSystem.id;
 
-            if (parsedParticleSystem.id) {
-                particleSystem.id = parsedParticleSystem.id;
+            serializationObject.capacity = particleSystem.getCapacity();
+
+            // Emitter
+            if ((<AbstractMesh>particleSystem.emitter).position) {
+                var emitterMesh = (<AbstractMesh>particleSystem.emitter);
+                serializationObject.emitterId = emitterMesh.id;
+            } else {
+                var emitterPosition = (<Vector3>particleSystem.emitter);
+                serializationObject.emitter = emitterPosition.asArray();
             }
 
-            // Auto start
-            if (parsedParticleSystem.preventAutoStart) {
-                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+            // Emitter
+            if (particleSystem.particleEmitterType) {
+                serializationObject.particleEmitterType = particleSystem.particleEmitterType.serialize();
+            }           
+            
+            if (particleSystem.particleTexture) {
+                serializationObject.textureName = particleSystem.particleTexture.name;
+            }
+            
+            // Animations
+            Animation.AppendSerializedAnimations(particleSystem, serializationObject);
+
+            // Particle system
+            serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
+            serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
+            serializationObject.minSize = particleSystem.minSize;
+            serializationObject.maxSize = particleSystem.maxSize;
+            serializationObject.minScaleX = particleSystem.minScaleX;
+            serializationObject.maxScaleX = particleSystem.maxScaleX;
+            serializationObject.minScaleY = particleSystem.minScaleY;
+            serializationObject.maxScaleY = particleSystem.maxScaleY;            
+            serializationObject.minEmitPower = particleSystem.minEmitPower;
+            serializationObject.maxEmitPower = particleSystem.maxEmitPower;
+            serializationObject.minLifeTime = particleSystem.minLifeTime;
+            serializationObject.maxLifeTime = particleSystem.maxLifeTime;
+            serializationObject.emitRate = particleSystem.emitRate;
+            serializationObject.gravity = particleSystem.gravity.asArray();
+            serializationObject.color1 = particleSystem.color1.asArray();
+            serializationObject.color2 = particleSystem.color2.asArray();
+            serializationObject.colorDead = particleSystem.colorDead.asArray();
+            serializationObject.updateSpeed = particleSystem.updateSpeed;
+            serializationObject.targetStopDuration = particleSystem.targetStopDuration;
+            serializationObject.blendMode = particleSystem.blendMode;
+            serializationObject.preWarmCycles = particleSystem.preWarmCycles;
+            serializationObject.preWarmStepOffset = particleSystem.preWarmStepOffset;
+            serializationObject.minInitialRotation = particleSystem.minInitialRotation;
+            serializationObject.maxInitialRotation = particleSystem.maxInitialRotation;
+
+            let colorGradients = particleSystem.getColorGradients();
+            if (colorGradients) {
+                serializationObject.colorGradients = [];
+                for (var colorGradient of colorGradients) {
+                    var serializedGradient: any = {
+                        gradient: colorGradient.gradient,
+                        color1: colorGradient.color1.asArray()
+                    };
+
+                    if (colorGradient.color2) {
+                        serializedGradient.color2 = colorGradient.color2.asArray();
+                    }
+
+                    serializationObject.colorGradients.push(serializedGradient);
+                }
             }
 
+            let sizeGradients = particleSystem.getSizeGradients();
+            if (sizeGradients) {
+                serializationObject.sizeGradients = [];
+                for (var sizeGradient of sizeGradients) {
+                    serializationObject.sizeGradients.push({
+                        gradient: sizeGradient.gradient,
+                        factor: sizeGradient.factor
+                    })
+                }
+            }            
+
+        }
+
+        /** @hidden */
+        public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string) {
             // Texture
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
@@ -1377,24 +1502,105 @@
                 particleSystem.maxScaleY = parsedParticleSystem.maxScaleY;                
             }
 
+            if (parsedParticleSystem.preWarmCycles !== undefined) {
+                particleSystem.preWarmCycles = parsedParticleSystem.preWarmCycles;
+                particleSystem.preWarmStepOffset = parsedParticleSystem.preWarmStepOffset;
+            }   
+
+            if (parsedParticleSystem.minInitialRotation !== undefined) {
+                particleSystem.minInitialRotation = parsedParticleSystem.minInitialRotation;
+                particleSystem.maxInitialRotation = parsedParticleSystem.maxInitialRotation;
+            }
+
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
             particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
             particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
-            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
-            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
             particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
-            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
-            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
             particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
             particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
             particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
             particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
-            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
 
+
+            if (parsedParticleSystem.colorGradients) {
+                for (var colorGradient of parsedParticleSystem.colorGradients) {
+                    particleSystem.addColorGradient(colorGradient.gradient, Color4.FromArray(colorGradient.color1), colorGradient.color2 ? Color4.FromArray(colorGradient.color2) : undefined);
+                }
+            }
+
+            if (parsedParticleSystem.sizeGradients) {
+                for (var sizeGradient of parsedParticleSystem.sizeGradients) {
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor);
+                }
+            }       
+            
+            // Emitter
+            let emitterType: IParticleEmitterType;
+            if (parsedParticleSystem.particleEmitterType) {
+                switch (parsedParticleSystem.particleEmitterType.type) {
+                    case "SphereEmitter":
+                        emitterType = new SphereParticleEmitter();
+                        break;
+                    case "SphereDirectedParticleEmitter":
+                        emitterType = new SphereDirectedParticleEmitter();
+                        break;
+                    case "ConeEmitter":
+                        emitterType = new ConeParticleEmitter();
+                        break;
+                    case "BoxEmitter":
+                    default:
+                        emitterType = new BoxParticleEmitter();
+                        break;                                                
+                }
+
+                emitterType.parse(parsedParticleSystem.particleEmitterType);
+            } else {
+                emitterType = new BoxParticleEmitter();
+                emitterType.parse(parsedParticleSystem);
+            }
+            particleSystem.particleEmitterType = emitterType;
+        }
+
+        /**
+         * Parses a JSON object to create a particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the Parsed particle system
+         */
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+            var name = parsedParticleSystem.name;
+            var custom: Nullable<Effect> = null;
+            var program: any = null;
+            if (parsedParticleSystem.customShader) {
+                program = parsedParticleSystem.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom, parsedParticleSystem.isAnimationSheetEnabled);
+            particleSystem.customShader = program;
+
+            if (parsedParticleSystem.id) {
+                particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Auto start
+            if (parsedParticleSystem.preventAutoStart) {
+                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+            }
+
+            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
+            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
+            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
+            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
+
+            ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
+
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
             particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
             particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;

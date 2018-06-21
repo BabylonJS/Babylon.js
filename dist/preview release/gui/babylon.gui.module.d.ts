@@ -1200,6 +1200,7 @@ declare module BABYLON.GUI {
         private _minimum;
         private _maximum;
         private _value;
+        private _isVertical;
         private _background;
         private _borderColor;
         private _barOffset;
@@ -1225,6 +1226,8 @@ declare module BABYLON.GUI {
         maximum: number;
         /** Gets or sets current value */
         value: number;
+        /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
+        isVertical: boolean;
         /** Gets or sets a boolean indicating if the thumb should be round or square */
         isThumbCircle: boolean;
         /** Gets or sets a value indicating if the thumb can go over main bar extends */
@@ -1235,6 +1238,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        protected _getThumbThickness(type: string, backgroundLength: number): number;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
         private _updateValueFromPointer(x, y);
