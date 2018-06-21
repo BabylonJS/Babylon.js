@@ -99,7 +99,6 @@
 - Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
 - Add isThumbClamped option on GUI slider control ([JeanPhilippeKernel](https://github.com/JeanPhilippeKernel))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
-- Add internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
 - Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
