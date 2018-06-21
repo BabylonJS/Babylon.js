@@ -1329,6 +1329,8 @@
                 program = this.customShader;
                 var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            } else if (this._customEffect) {
+                custom = this._customEffect;
             }
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
@@ -1537,8 +1539,8 @@
             }       
             
             // Emitter
+            let emitterType: IParticleEmitterType;
             if (parsedParticleSystem.particleEmitterType) {
-                let emitterType: IParticleEmitterType;
                 switch (parsedParticleSystem.particleEmitterType.type) {
                     case "SphereEmitter":
                         emitterType = new SphereParticleEmitter();
@@ -1556,8 +1558,11 @@
                 }
 
                 emitterType.parse(parsedParticleSystem.particleEmitterType);
-                particleSystem.particleEmitterType = emitterType;
+            } else {
+                emitterType = new BoxParticleEmitter();
+                emitterType.parse(parsedParticleSystem);
             }
+            particleSystem.particleEmitterType = emitterType;
         }
 
         /**

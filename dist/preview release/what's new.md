@@ -8,7 +8,7 @@
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
-- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale, and bounding box ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
   - Added support for `isBillboardBased`. [Doc](http://doc.babylonjs.com/babylon101/particles#alignment)
@@ -55,6 +55,7 @@
 - Vector x, y and z constructor parameters are now optional and default to 0 ([TrevorDev](https://github.com/TrevorDev))
 - New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
 - Add and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
+- Add internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 
 ### glTF Loader
 
@@ -86,6 +87,7 @@
 - WindowsMotionController's trackpad field will be updated prior to it's onTrackpadChangedObservable event ([TrevorDev](https://github.com/TrevorDev))
 - VR experience helper's controllers will not fire pointer events when laser's are disabled, instead the camera ray pointer event will be used ([TrevorDev](https://github.com/TrevorDev))
 - Node's setParent(node.parent) will no longer throw an exception when parent is undefined and will behave the same as setParent(null) ([TrevorDev](https://github.com/TrevorDev))
+- Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
 
 ### Core Engine
 
@@ -113,6 +115,7 @@
 - Meshes with skeletons could have incorrect animations ([RaananW](https://github.com/RaananW))
 - Removed element IDs from viewer's templates to allow muitiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 - Viewer is not using Engine.LastCreatedScene anymore, to support multiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
+- Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 

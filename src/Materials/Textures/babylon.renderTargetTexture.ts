@@ -172,8 +172,9 @@
          * @param generateDepthBuffer True to generate a depth buffer
          * @param generateStencilBuffer True to generate a stencil buffer
          * @param isMulti True if multiple textures need to be created (Draw Buffers)
+         * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
          */
-        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
+        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 
@@ -204,6 +205,7 @@
             this._renderTargetOptions = {
                 generateMipMaps: generateMipMaps,
                 type: type,
+                format: format,
                 samplingMode: samplingMode,
                 generateDepthBuffer: generateDepthBuffer,
                 generateStencilBuffer: generateStencilBuffer
