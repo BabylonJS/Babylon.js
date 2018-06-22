@@ -205,6 +205,9 @@ export class DefaultViewer extends AbstractViewer {
             case "hd-button":
                 this.toggleHD();
                 break;
+            case "vr-button":
+                this.toggleVR();
+                break;
             default:
                 return;
         }
@@ -327,6 +330,21 @@ export class DefaultViewer extends AbstractViewer {
         if (span) {
             span.classList.remove(this._hdToggled ? "hd-icon" : "sd-icon");
             span.classList.add(!this._hdToggled ? "hd-icon" : "sd-icon")
+        }
+    }
+
+    public toggleVR() {
+        super.toggleVR();
+
+        let viewerTemplate = this.templateManager.getTemplate('viewer');
+        let viewerElement = viewerTemplate && viewerTemplate.parent;
+
+        if (viewerElement) {
+            if (this._vrToggled) {
+                viewerElement.classList.add("in-vr");
+            } else {
+                viewerElement.classList.remove("in-vr");
+            }
         }
     }
 
