@@ -8,6 +8,7 @@ import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
+import { IViewerPlugin } from 'templating/viewerPlugin';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -35,6 +36,31 @@ export class DefaultViewer extends AbstractViewer {
                 this._configureLights(data.newConfiguration, data.model!);
             })
         });
+    }
+
+    private _registeredPlugins: Array<IViewerPlugin> = [];
+
+    public registerTemplatePlugin(plugin: IViewerPlugin) {
+        //validate
+        if (!plugin.templateName) {
+            throw new Error("No template name provided");
+        }
+        this._registeredPlugins.push(plugin);
+        let template = this.templateManager.getTemplate(plugin.templateName);
+        if (!template) {
+            throw new Error(`Template ${plugin.templateName} not found`);
+        }
+        if (plugin.addHTMLTemplate) {
+            template.onHTMLRendered.add((tmpl) => {
+                plugin.addHTMLTemplate && plugin.addHTMLTemplate(tmpl);
+            });
+        }
+
+        if (plugin.eventsToAttach) {
+            plugin.eventsToAttach.forEach(eventName => {
+                plugin.onEvent && this.templateManager.eventManager.registerCallback(plugin.templateName, plugin.onEvent, eventName);
+            });
+        }
     }
 
     /**
@@ -75,10 +101,6 @@ export class DefaultViewer extends AbstractViewer {
 
 
         return super._onTemplatesLoaded();
-    }
-
-    private _dropped(evt: EventCallback) {
-
     }
 
     private _initNavbar() {
@@ -134,7 +156,7 @@ export class DefaultViewer extends AbstractViewer {
 
         let elementClasses = element.classList;
 
-        let elementName = ""; 0
+        let elementName = "";
 
         for (let i = 0; i < elementClasses.length; ++i) {
             let className = elementClasses[i];
