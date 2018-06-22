@@ -1,12 +1,10 @@
 
 
 import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration';
-import { Template, EventCallback, TemplateManager } from '../templating/templateManager';
+import { Template, EventCallback } from '../templating/templateManager';
 import { AbstractViewer } from './viewer';
-import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight, FilesInput } from 'babylonjs';
-import { CameraBehavior } from '../interfaces';
+import { SpotLight, Vector3, FilesInput } from 'babylonjs';
 import { ViewerModel } from '../model/viewerModel';
-import { extendClassWithConfig } from '../helper';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
 import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
@@ -34,7 +32,7 @@ export class DefaultViewer extends AbstractViewer {
 
         this.onEngineInitObservable.add(() => {
             this.sceneManager.onLightsConfiguredObservable.add((data) => {
-                this._configureLights(data.newConfiguration, data.model!);
+                this._configureLights();
             })
         });
     }
@@ -127,7 +125,7 @@ export class DefaultViewer extends AbstractViewer {
                 this._currentAnimation.goToFrame(gotoFrame);
             }, "input");
 
-            this.templateManager.eventManager.registerCallback("navBar", (e) => {
+            this.templateManager.eventManager.registerCallback("navBar", () => {
                 if (this._resumePlay) {
                     this._togglePlayPause(true);
                 }
@@ -597,10 +595,9 @@ export class DefaultViewer extends AbstractViewer {
      * @param lightsConfiguration the light configuration to use
      * @param model the model that will be used to configure the lights (if the lights are model-dependant)
      */
-    private _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}, model?: ViewerModel) {
+    private _configureLights() {
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
-            let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
@@ -625,7 +622,7 @@ export class DefaultViewer extends AbstractViewer {
 
             }
             this.sceneManager.scene.constantlyUpdateMeshUnderPointer = true;
-            this.sceneManager.scene.onPointerObservable.add((eventData, eventState) => {
+            this.sceneManager.scene.onPointerObservable.add((eventData) => {
                 if (eventData.type === 4 && eventData.pickInfo) {
                     lightTarget = (eventData.pickInfo.pickedPoint);
                 } else {
