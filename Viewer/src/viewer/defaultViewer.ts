@@ -8,7 +8,7 @@ import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
-import { IViewerTemplatePlugin } from 'templating/viewerTemplatePlugin';
+import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
 import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
 
 /**
