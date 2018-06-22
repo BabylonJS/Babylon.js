@@ -1,4 +1,16 @@
 {
+  "emitter" : {
+    "kind": "Sphere",
+    "options": {
+      "diameter": 2.01,
+      "segments": 32,
+      "color": [
+      0.3773, 
+      0.0930, 
+      0.0266]
+    },
+    "renderingGroupId": 3
+  },
   "systems": [
     {
       "name": "surfaceParticles",
@@ -9,6 +21,7 @@
       "particleEmitterType": {
         "type": "SphereParticleEmitter",
         "radius": 1,
+        "radiusRange": 0,
         "directionRandomizer": 0
       },
       "textureName": "sun/T_SunSurface.png",
@@ -101,7 +114,7 @@
         1
       ],
       "customShader": null,
-      "preventAutoStart": false,
+      "preventAutoStart": true,
       "startSpriteCellID": 0,
       "endSpriteCellID": 0,
       "spriteCellLoop": true,
@@ -118,6 +131,7 @@
       "particleEmitterType": {
         "type": "SphereParticleEmitter",
         "radius": 1,
+        "radiusRange": 0,
         "directionRandomizer": 0
       },
       "textureName": "sun/T_SunFlare.png",
@@ -211,7 +225,7 @@
         1
       ],
       "customShader": null,
-      "preventAutoStart": false,
+      "preventAutoStart": true,
       "startSpriteCellID": 0,
       "endSpriteCellID": 0,
       "spriteCellLoop": true,
@@ -228,6 +242,7 @@
       "particleEmitterType": {
         "type": "SphereParticleEmitter",
         "radius": 1,
+        "radiusRange": 0,
         "directionRandomizer": 0
       },
       "textureName": "sun/T_Star.png",
@@ -311,7 +326,7 @@
         1
       ],
       "customShader": null,
-      "preventAutoStart": false,
+      "preventAutoStart": true,
       "startSpriteCellID": 0,
       "endSpriteCellID": 0,
       "spriteCellLoop": true,
