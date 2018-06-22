@@ -158,6 +158,7 @@ declare module BabylonViewer {
         */
     export class DefaultViewer extends AbstractViewer {
             containerElement: HTMLElement;
+            fullscreenElement?: HTMLElement;
             /**
                 * Create a new default viewer
                 * @param containerElement the element in which the templates will be rendered
@@ -169,6 +170,7 @@ declare module BabylonViewer {
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
             toggleHD(): void;
+            toggleVR(): void;
             /**
                 * Toggle fullscreen of the entire viewer
                 */
@@ -369,6 +371,9 @@ declare module BabylonViewer {
             forceResize(): void;
             protected _hdToggled: boolean;
             toggleHD(): void;
+            protected _vrToggled: boolean;
+            protected _vrScale: number;
+            toggleVR(): void;
             /**
                 * The resize function that will be registered with the window object
                 */
@@ -1010,6 +1015,7 @@ declare module BabylonViewer {
                     minecraft?: boolean;
                     [propName: string]: boolean | undefined;
             };
+            vr?: IVRConfiguration;
             lab?: {
                     flashlight?: boolean | {
                             exponent?: number;
@@ -1272,6 +1278,10 @@ declare module BabylonViewer {
                     ground?: IGroundConfiguration | boolean;
             }>>;
             /**
+                * Will notify after the model(s) were configured. Can be used to further configure models
+                */
+            onVRConfiguredObservable: BABYLON.Observable<IPostConfigurationCallback<BABYLON.VRExperienceHelper, IVRConfiguration>>;
+            /**
                 * The Babylon BABYLON.Scene of this viewer
                 */
             scene: BABYLON.Scene;
@@ -1304,6 +1314,8 @@ declare module BabylonViewer {
                 */
             labs: ViewerLabs;
             readonly defaultRenderingPipeline: BABYLON.Nullable<BABYLON.DefaultRenderingPipeline>;
+            protected _vrHelper?: BABYLON.VRExperienceHelper;
+            readonly vrHelper: BABYLON.VRExperienceHelper | undefined;
             constructor(_engine: BABYLON.Engine, _configurationContainer: ConfigurationContainer, _observablesManager?: ObservablesManager | undefined);
             /**
                 * Returns a boolean representing HDR support
@@ -1360,6 +1372,11 @@ declare module BabylonViewer {
                 * @param optimizerConfig the (new) optimizer configuration
                 */
             protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
+            /**
+                * configure all models using the configuration.
+                * @param modelConfiguration the configuration to use to reconfigure the models
+                */
+            protected _configureVR(vrConfig: IVRConfiguration): void;
             /**
                 * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
                 * @param cameraConfig the new camera configuration
@@ -1588,6 +1605,7 @@ declare module BabylonViewer {
     export * from 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/templateConfiguration';
+    export * from 'babylonjs-viewer/configuration/interfaces/vrConfiguration';
 }
 
 declare module BabylonViewer {
@@ -2209,6 +2227,18 @@ declare module BabylonViewer {
                             [id: string]: boolean;
                     } | undefined;
             };
+    }
+}
+
+declare module BabylonViewer {
+    
+    export interface IVRConfiguration {
+        disabled?: boolean;
+        objectScaleFactor?: number;
+        disableInteractions?: boolean;
+        disableTeleportation?: boolean;
+        overrideFloorMeshName?: string;
+        vrOptions?: BABYLON.VRExperienceHelperOptions;
     }
 }
 
