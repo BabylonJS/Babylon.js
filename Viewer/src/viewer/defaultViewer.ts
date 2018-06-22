@@ -157,9 +157,10 @@ export class DefaultViewer extends AbstractViewer {
                 this._togglePlayPause();
                 break;
             case "label-option-button":
-                var label = element.dataset["value"];
-                if (label) {
-                    this._updateAnimationType(label);
+                var value = element.dataset["value"];
+                var label = element.querySelector("span.animation-label");
+                if (label && value) {
+                    this._updateAnimationType({ value, label: label.innerHTML });
                 }
                 break;
             case "speed-option-button":
@@ -268,21 +269,21 @@ export class DefaultViewer extends AbstractViewer {
     /** 
      * Update Current Animation Type
      */
-    private _updateAnimationType = (label: string, paramsObject?: any) => {
+    private _updateAnimationType = (data: { label: string, value: string }, paramsObject?: any) => {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
-        if (label) {
-            this._currentAnimation = this.sceneManager.models[0].setCurrentAnimationByName(label);
+        if (data) {
+            this._currentAnimation = this.sceneManager.models[0].setCurrentAnimationByName(data.value);
         }
 
         if (paramsObject) {
-            paramsObject.selectedAnimation = (this._animationList.indexOf(label) + 1);
-            paramsObject.selectedAnimationName = label;
+            paramsObject.selectedAnimation = (this._animationList.indexOf(data.value) + 1);
+            paramsObject.selectedAnimationName = data.label;
         } else {
             navbar.updateParams({
-                selectedAnimation: (this._animationList.indexOf(label) + 1),
-                selectedAnimationName: label
+                selectedAnimation: (this._animationList.indexOf(data.value) + 1),
+                selectedAnimationName: data.label
             });
         }
 
@@ -370,7 +371,7 @@ export class DefaultViewer extends AbstractViewer {
                         animationIndex = 0;
                     }
                 }
-                this._updateAnimationType(animationNames[animationIndex], newParams);
+                this._updateAnimationType(newParams.animations[animationIndex], newParams);
             } else {
                 newParams.animations = null;
             }
