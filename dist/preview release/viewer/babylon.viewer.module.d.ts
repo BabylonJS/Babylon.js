@@ -158,6 +158,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
         */
     export class DefaultViewer extends AbstractViewer {
             containerElement: HTMLElement;
+            fullscreenElement?: HTMLElement;
             /**
                 * Create a new default viewer
                 * @param containerElement the element in which the templates will be rendered
@@ -169,6 +170,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
             toggleHD(): void;
+            toggleVR(): void;
             /**
                 * Toggle fullscreen of the entire viewer
                 */
@@ -369,6 +371,9 @@ declare module 'babylonjs-viewer/viewer/viewer' {
             forceResize(): void;
             protected _hdToggled: boolean;
             toggleHD(): void;
+            protected _vrToggled: boolean;
+            protected _vrScale: number;
+            toggleVR(): void;
             /**
                 * The resize function that will be registered with the window object
                 */
@@ -961,7 +966,7 @@ declare module 'babylonjs-viewer/configuration' {
 
 declare module 'babylonjs-viewer/configuration/configuration' {
     import { EngineOptions } from 'babylonjs';
-    import { IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from 'babylonjs-viewer/configuration/interfaces';
+    import { IVRConfiguration, IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from 'babylonjs-viewer/configuration/interfaces';
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;
@@ -1010,6 +1015,7 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                     minecraft?: boolean;
                     [propName: string]: boolean | undefined;
             };
+            vr?: IVRConfiguration;
             lab?: {
                     flashlight?: boolean | {
                             exponent?: number;
@@ -1220,8 +1226,8 @@ declare module 'babylonjs-viewer/templating/templateManager' {
 }
 
 declare module 'babylonjs-viewer/managers/sceneManager' {
-    import { Scene, ArcRotateCamera, Engine, Light, SceneOptimizer, EnvironmentHelper, Color3, Observable, DefaultRenderingPipeline, Nullable } from 'babylonjs';
-    import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration } from 'babylonjs-viewer/configuration';
+    import { Scene, ArcRotateCamera, Engine, Light, SceneOptimizer, EnvironmentHelper, Color3, Observable, DefaultRenderingPipeline, Nullable, VRExperienceHelper } from 'babylonjs';
+    import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration';
     import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
     import { ViewerLabs } from 'babylonjs-viewer/labs/viewerLabs';
     import { ObservablesManager } from 'babylonjs-viewer/managers/observablesManager';
@@ -1272,6 +1278,10 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
                     ground?: IGroundConfiguration | boolean;
             }>>;
             /**
+                * Will notify after the model(s) were configured. Can be used to further configure models
+                */
+            onVRConfiguredObservable: Observable<IPostConfigurationCallback<VRExperienceHelper, IVRConfiguration>>;
+            /**
                 * The Babylon Scene of this viewer
                 */
             scene: Scene;
@@ -1304,6 +1314,8 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
                 */
             labs: ViewerLabs;
             readonly defaultRenderingPipeline: Nullable<DefaultRenderingPipeline>;
+            protected _vrHelper?: VRExperienceHelper;
+            readonly vrHelper: VRExperienceHelper | undefined;
             constructor(_engine: Engine, _configurationContainer: ConfigurationContainer, _observablesManager?: ObservablesManager | undefined);
             /**
                 * Returns a boolean representing HDR support
@@ -1360,6 +1372,11 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
                 * @param optimizerConfig the (new) optimizer configuration
                 */
             protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
+            /**
+                * configure all models using the configuration.
+                * @param modelConfiguration the configuration to use to reconfigure the models
+                */
+            protected _configureVR(vrConfig: IVRConfiguration): void;
             /**
                 * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
                 * @param cameraConfig the new camera configuration
@@ -1588,6 +1605,7 @@ declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/templateConfiguration';
+    export * from 'babylonjs-viewer/configuration/interfaces/vrConfiguration';
 }
 
 declare module 'babylonjs-viewer/templating/eventManager' {
@@ -2209,6 +2227,18 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
                             [id: string]: boolean;
                     } | undefined;
             };
+    }
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
+    import { VRExperienceHelperOptions } from "babylonjs";
+    export interface IVRConfiguration {
+        disabled?: boolean;
+        objectScaleFactor?: number;
+        disableInteractions?: boolean;
+        disableTeleportation?: boolean;
+        overrideFloorMeshName?: string;
+        vrOptions?: VRExperienceHelperOptions;
     }
 }
 
