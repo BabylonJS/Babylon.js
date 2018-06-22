@@ -49,12 +49,14 @@ export let defaultConfiguration: ViewerConfiguration = {
                 logoText: 'BabylonJS',
                 logoLink: 'https://babylonjs.com',
                 hideHelp: true,
-                hideHdButton: true,
+                hideHd: true,
+                hideVr: true,
                 disableOnFullscreen: false,
                 text: {
                     hdButton: "Toggle HD",
                     fullscreenButton: "Fullscreen",
-                    helpButton: "Help"
+                    helpButton: "Help",
+                    vrButton: "Toggle VR"
                 }
             },
             events: {
