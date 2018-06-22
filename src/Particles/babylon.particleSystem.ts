@@ -1602,11 +1602,6 @@
                 particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
-            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
-            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
-            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
-            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
-
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
