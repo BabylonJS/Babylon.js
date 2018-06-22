@@ -22,6 +22,10 @@ module BABYLON {
          */
         emitter: Nullable<AbstractMesh | Vector3>;
         /**
+         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+         */
+        isBillboardBased: boolean;        
+        /**
          * The rendering group used by the Particle system to chose when to render.
          */
         renderingGroupId: number;
@@ -46,7 +50,7 @@ module BABYLON {
         particleTexture: Nullable<Texture>;   
         
         /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
          */
         blendMode: number;   
         
