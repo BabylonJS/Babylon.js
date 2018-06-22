@@ -143,19 +143,7 @@
     A few browsers dont support combining the next rule to one. Redudant.
     */
 
-    viewer:fullscreen .fullscreen-icon:after {
-        content: "\E73F";
-    }
-
-    viewer:-webkit-full-screen .fullscreen-icon:after {
-        content: "\E73F";
-    }
-
-    viewer:-moz-full-screen .fullscreen-icon:after {
-        content: "\E73F";
-    }
-
-    viewer:-ms-full-screen .fullscreen-icon:after {
+    viewer.in-fullscreen .fullscreen-icon:after {
         content: "\E73F";
     }
 
@@ -438,15 +426,7 @@
 </style>
 {{/if}} {{/if}} {{#if disableOnFullscreen}}
 <style>
-    viewer:fullscreen nav-bar {
-        display: none;
-    }
-
-    viewer:-moz-full-screen nav-bar {
-        display: none;
-    }
-
-    viewer:-webkit-full-screen nav-bar {
+    viewer.in-fullscreen nav-bar {
         display: none;
     }
 </style>
