@@ -1,22 +1,86 @@
 module BABYLON {
 
+    /** Internal class used to store shapes for emitters */
+    class ParticleSystemSetEmitterCreationOptions {
+        public kind: string;
+        public options: any;
+        public renderingGroupId: number;
+    }
+
     /**
      * Represents a set of particle systems working together to create a specific effect
      */
-    export class ParticleSystemSet {
+    export class ParticleSystemSet implements IDisposable {
+        private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
+        private _emitterMesh: Nullable<Mesh>;
+
         /**
          * Gets or sets the particle system list
          */
         public systems = new Array<IParticleSystem>();
 
         /**
-         * Starts all particle systems of the set
-         * @param emitter defines the mesh to use as emitter for the particle systems
+         * Gets or set the emitter mesh used with this set
          */
-        public start(emitter: AbstractMesh): void {
+        public get emitterMesh(): Nullable<Mesh> {
+            return this._emitterMesh;
+        }
+
+        /**
+         * Creates a new emitter mesh as a sphere
+         * @param options defines the options used to create the sphere
+         * @param renderingGroupId defines the renderingGroupId to use for the sphere
+         * @param scene defines the hosting scene
+         */
+        public setEmitterAsSphere(options: {diameter: number, segments: number, color: Color3} , renderingGroupId: number, scene: Scene) {
+            if (this._emitterMesh) {
+                this._emitterMesh.dispose();
+            }
+
+            this._emitterCreationOptions = {
+                kind: "Sphere",
+                options: options,
+                renderingGroupId: renderingGroupId
+            }
+
+            this._emitterMesh = MeshBuilder.CreateSphere("emitterSphere", {diameter: options.diameter, segments: options.segments}, scene);
+            this._emitterMesh.renderingGroupId = renderingGroupId;
+
+            var material = new BABYLON.StandardMaterial("emitterSphereMaterial", scene)
+            material.emissiveColor = options.color;    
+            this._emitterMesh.material = material;     
+            
             for (var system of this.systems) {
-                system.emitter = emitter;
+                system.emitter = this._emitterMesh;
+            }
+        }
+
+        /**
+         * Starts all particle systems of the set
+         * @param emitter defines an optional mesh to use as emitter for the particle systems
+         */
+        public start(emitter?: AbstractMesh): void {
+            for (var system of this.systems) {
+                if (emitter) {
+                    system.emitter = emitter;
+                }
                 system.start();
+            }
+        }
+
+        /**
+         * Release all associated resources
+         */
+        public dispose(): void {
+            for (var system of this.systems) {
+                system.dispose();
+            }
+
+            this.systems = [];
+
+            if (this._emitterMesh) {
+                this._emitterMesh.dispose();
+                this._emitterMesh = null;
             }
         }
 
@@ -30,6 +94,10 @@ module BABYLON {
             result.systems = [];
             for (var system of this.systems) {
                 result.systems.push(system.serialize());
+            }
+
+            if (this._emitterMesh) {
+                result.emitter = this._emitterCreationOptions;
             }
 
             return result;
@@ -48,6 +116,19 @@ module BABYLON {
 
             for (var system of data.systems) {
                 result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl) : ParticleSystem.Parse(system, scene, rootUrl));
+            }
+
+            if (data.emitter) {
+                let options = data.emitter.options;
+                switch (data.emitter.kind) {                    
+                    case "Sphere":
+                        result.setEmitterAsSphere({
+                            diameter: options.diameter, 
+                            segments: options.segments,
+                            color: Color3.FromArray(options.color)
+                        }, data.emitter.renderingGroupId, scene);
+                        break;
+                }
             }
 
             return result;

@@ -1572,9 +1572,11 @@
                         emitterType = new SphereDirectedParticleEmitter();
                         break;
                     case "ConeEmitter":
+                    case "ConeParticleEmitter":
                         emitterType = new ConeParticleEmitter();
                         break;
                     case "BoxEmitter":
+                    case "BoxParticleEmitter":
                     default:
                         emitterType = new BoxParticleEmitter();
                         break;                                                

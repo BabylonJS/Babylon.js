@@ -37,9 +37,9 @@ module BABYLON {
         }
 
         /**
-         * Static function used to export a particle system to a IParticleSystemData variable.
-         * Please note that texture file name is not exported and must be added manually
-         * @param system defines the particle system to export
+         * Static function used to export a particle system to a ParticleSystemSet variable.
+         * Please note that the emitter shape is not exported
+         * @param system defines the particle systems to export
          */
         public static ExportSet(systems: ParticleSystem[]): ParticleSystemSet {
             var set = new ParticleSystemSet();
