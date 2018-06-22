@@ -477,10 +477,10 @@
             </button>
             <div class="menu-options">
                 {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
-                <button class="flex-container label-option-button animation-buttons" data-value="{{this}}">
+                <button class="flex-container label-option-button animation-buttons" data-value="{{this.value}}">
                     <!-- <div> -->
                     <span class="icon types-icon"></span>
-                    <span class="control-text animation-label">{{this}}</span>
+                    <span class="control-text animation-label">{{this.label}}</span>
                     <span class="control-text animation-number">{{add @index 1}}</span>
                     <!-- </div> -->
                 </button>

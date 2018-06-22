@@ -351,7 +351,7 @@ export class DefaultViewer extends AbstractViewer {
         } else {
 
             let animationNames = model.getAnimationNames();
-            newParams.animations = animationNames;
+            newParams.animations = animationNames.map(a => { return { label: a, value: a } });
             if (animationNames.length) {
                 this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
                 this._animationList = animationNames;
