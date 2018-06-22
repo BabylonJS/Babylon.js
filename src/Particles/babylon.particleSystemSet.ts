@@ -15,12 +15,12 @@ module BABYLON {
         private _emitterMesh: Nullable<Mesh>;
 
         /**
-         * Gets or sets the particle system list
+         * Gets the particle system list
          */
         public systems = new Array<IParticleSystem>();
 
         /**
-         * Gets or set the emitter mesh used with this set
+         * Gets the emitter mesh used with this set
          */
         public get emitterMesh(): Nullable<Mesh> {
             return this._emitterMesh;
