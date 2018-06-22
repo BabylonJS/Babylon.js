@@ -13,6 +13,20 @@ module BABYLON {
 
         private _tmpQuaternion = new Quaternion();
         private _tmpVector = new Vector3(0,0,0);
+
+        /**
+         * Fired when a rotation sphere or scale box is dragged
+         */
+        public dragStartObservable = new Observable<{}>();
+        /**
+         * Fired when a rotation sphere or scale box drag is started
+         */
+        public dragObservable = new Observable<{}>();
+        /**
+         * Fired when a rotation sphere or scale box drag is eneded
+         */
+        public dragEndObservable = new Observable<{}>();
+        
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -76,6 +90,7 @@ module BABYLON {
                     totalTurnAmountOfDrag = 0;
                 })
                 _dragBehavior.onDragObservable.add((event)=>{
+                    this.dragObservable.notifyObservers({});
                     if(this.attachedMesh){
                         var worldDragDirection = startingTurnDirection;
 
@@ -108,9 +123,11 @@ module BABYLON {
 
                 // Selection/deselection
                 _dragBehavior.onDragStartObservable.add(()=>{
+                    this.dragStartObservable.notifyObservers({});
                     this._selectNode(sphere)
                 })
                 _dragBehavior.onDragEndObservable.add(()=>{
+                    this.dragEndObservable.notifyObservers({});
                     this._selectNode(null)
                 })
 
@@ -133,6 +150,7 @@ module BABYLON {
                         _dragBehavior.moveAttached = false;
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event)=>{
+                            this.dragObservable.notifyObservers({});
                             if(this.attachedMesh){
                                 // Current boudning box dimensions
                                 var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
@@ -154,9 +172,11 @@ module BABYLON {
 
                         // Selection/deselection
                         _dragBehavior.onDragStartObservable.add(()=>{
+                            this.dragStartObservable.notifyObservers({});
                             this._selectNode(box)
                         })
                         _dragBehavior.onDragEndObservable.add(()=>{
+                            this.dragEndObservable.notifyObservers({});
                             this._selectNode(null)
                         })
 
