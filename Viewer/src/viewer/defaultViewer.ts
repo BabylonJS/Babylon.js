@@ -15,7 +15,7 @@ import { IModelAnimation, AnimationState } from '../model/modelAnimation';
  */
 export class DefaultViewer extends AbstractViewer {
 
-
+    public fullscreenElement?: HTMLElement;
 
     /**
      * Create a new default viewer
@@ -313,15 +313,22 @@ export class DefaultViewer extends AbstractViewer {
     public toggleFullscreen = () => {
         let viewerTemplate = this.templateManager.getTemplate('viewer');
         let viewerElement = viewerTemplate && viewerTemplate.parent;
+        let fullscreenElement = this.fullscreenElement || viewerElement;
 
-        if (viewerElement) {
-            let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
-            if (!fullscreenElement) {
-                let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
-                requestFullScreen.call(viewerElement);
+        if (fullscreenElement) {
+            let currentElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            if (!currentElement) {
+                let requestFullScreen = fullscreenElement.requestFullscreen || fullscreenElement.webkitRequestFullscreen || (<any>fullscreenElement).msRequestFullscreen || (<any>fullscreenElement).mozRequestFullScreen;
+                requestFullScreen.call(fullscreenElement);
+                if (viewerElement) {
+                    viewerElement.classList.add("in-fullscreen");
+                }
             } else {
                 let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
                 exitFullscreen.call(document);
+                if (viewerElement) {
+                    viewerElement.classList.remove("in-fullscreen");
+                }
             }
         }
     }
