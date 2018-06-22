@@ -1,5 +1,5 @@
 import { EngineOptions, IGlowLayerOptions, DepthOfFieldEffectBlurLevel } from 'babylonjs';
-import { IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from './interfaces';
+import { IVRConfiguration, IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from './interfaces';
 
 export function getConfigurationKey(key: string, configObject: any) {
     let splits = key.split('.');
@@ -79,6 +79,8 @@ export interface ViewerConfiguration {
 
         [propName: string]: boolean | undefined;
     };
+
+    vr?: IVRConfiguration;
 
     // features that are being tested.
     // those features' syntax will change and move out! 

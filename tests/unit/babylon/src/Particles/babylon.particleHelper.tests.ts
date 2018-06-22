@@ -33,33 +33,22 @@ describe('Babylon Particle Helper', function () {
 
   describe('#ParticleHelper.CreateAsync', () => {
       let scene: BABYLON.Scene;
-      let emitter: BABYLON.Mesh;
 
       beforeEach(() => {
         scene = new BABYLON.Scene(subject);
-        emitter = BABYLON.Mesh.CreateSphere("sphere", 10, 5, scene);
       });
 
-      it('creates a fire particle system', (done) => {
-        BABYLON.ParticleHelper.CreateAsync("fire", emitter, scene)
+      it('creates a sun particle system set', (done) => {
+        BABYLON.ParticleHelper.CreateAsync("fire", scene)
             .then((system) => {
                 expect(system).to.be.instanceof(BABYLON.ParticleSystem);
                 done();
             })
             .catch((error) => { throw new Error("was not supposed to fail"); });
       });
-
-      it('creates a smoke particle system', (done) => {
-        BABYLON.ParticleHelper.CreateAsync("smoke", emitter, scene)
-            .then((system) => {
-                expect(system).to.be.instanceof(BABYLON.ParticleSystem);
-                done();
-            })
-            .catch((error) => { throw new Error("was not supposed to fail"); });
-    });
 
       it('rejects the creation of the particle system', (done) => {
-        BABYLON.ParticleHelper.CreateAsync("test", emitter, scene)
+        BABYLON.ParticleHelper.CreateAsync("test", scene)
             .then(() => { throw new Error("was not supposed to succeed"); })
             .catch((error) => {
                 expect(error).to.equals("An error occured while the creation of your particle system. Check if your type 'test' exists.");
