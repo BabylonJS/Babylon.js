@@ -633,8 +633,8 @@
 
         /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
         public cameraToUseForPointers: Nullable<Camera> = null;
-        private _pointerX: number;
-        private _pointerY: number;
+        private _pointerX: number = 0;
+        private _pointerY: number = 0;
         private _unTranslatedPointerX: number;
         private _unTranslatedPointerY: number;
         private _startingPointerPosition = new Vector2(0, 0);
