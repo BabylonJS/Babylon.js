@@ -1237,7 +1237,8 @@
         },
         "particleHelper": {
             "files": [
-                "../../src/Helpers/babylon.particleHelper.js"
+                "../../src/Particles/babylon.particleSystemSet.js",
+                "../../src/Particles/babylon.particleHelper.js"
             ],
             "dependUpon": [
                 "particles"

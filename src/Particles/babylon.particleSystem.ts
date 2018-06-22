@@ -1416,6 +1416,8 @@
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
 
             // Particle system
+            serializationObject.renderingGroupId = particleSystem.renderingGroupId;
+            serializationObject.isBillboardBased = particleSystem.isBillboardBased;
             serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
             serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
             serializationObject.minSize = particleSystem.minSize;
@@ -1480,10 +1482,22 @@
             }
 
             // Emitter
-            if (parsedParticleSystem.emitterId) {
+            if (parsedParticleSystem.emitterId === undefined) {
+                particleSystem.emitter = Vector3.Zero();
+            }
+             else if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             } else {
                 particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+
+            // Misc.
+            if (parsedParticleSystem.renderingGroupId !== undefined) {
+                particleSystem.renderingGroupId = parsedParticleSystem.renderingGroupId;
+            }
+
+            if (parsedParticleSystem.isBillboardBased !== undefined) {
+                particleSystem.isBillboardBased = parsedParticleSystem.isBillboardBased;
             }
 
             // Animations
@@ -1551,16 +1565,18 @@
             let emitterType: IParticleEmitterType;
             if (parsedParticleSystem.particleEmitterType) {
                 switch (parsedParticleSystem.particleEmitterType.type) {
-                    case "SphereEmitter":
+                    case "SphereParticleEmitter":
                         emitterType = new SphereParticleEmitter();
                         break;
                     case "SphereDirectedParticleEmitter":
                         emitterType = new SphereDirectedParticleEmitter();
                         break;
                     case "ConeEmitter":
+                    case "ConeParticleEmitter":
                         emitterType = new ConeParticleEmitter();
                         break;
                     case "BoxEmitter":
+                    case "BoxParticleEmitter":
                     default:
                         emitterType = new BoxParticleEmitter();
                         break;                                                
