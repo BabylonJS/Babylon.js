@@ -9,6 +9,7 @@ import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 import { IViewerTemplatePlugin } from 'templating/viewerTemplatePlugin';
+import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -58,7 +59,11 @@ export class DefaultViewer extends AbstractViewer {
 
         if (plugin.eventsToAttach) {
             plugin.eventsToAttach.forEach(eventName => {
-                plugin.onEvent && this.templateManager.eventManager.registerCallback(plugin.templateName, plugin.onEvent, eventName);
+                plugin.onEvent && this.templateManager.eventManager.registerCallback(plugin.templateName, (event) => {
+                    if (plugin.onEvent && plugin.interactionPredicate(event)) {
+                        plugin.onEvent(event);
+                    }
+                }, eventName);
             });
         }
     }
@@ -134,6 +139,8 @@ export class DefaultViewer extends AbstractViewer {
                     hideHdButton: true
                 });
             }
+
+            this.registerTemplatePlugin(new HDButtonPlugin(this));
         }
     }
 
@@ -201,9 +208,6 @@ export class DefaultViewer extends AbstractViewer {
                 break;
             case "fullscreen-button":
                 this.toggleFullscreen();
-                break;
-            case "hd-button":
-                this.toggleHD();
                 break;
             case "vr-button":
                 this.toggleVR();
@@ -313,24 +317,6 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         this._updateAnimationSpeed("1.0", paramsObject);
-    }
-
-    public toggleHD() {
-        super.toggleHD();
-
-        // update UI element
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
-
-        if (navbar.configuration.params) {
-            navbar.configuration.params.hdEnabled = this._hdToggled;
-        }
-
-        let span = navbar.parent.querySelector("button.hd-button span");
-        if (span) {
-            span.classList.remove(this._hdToggled ? "hd-icon" : "sd-icon");
-            span.classList.add(!this._hdToggled ? "hd-icon" : "sd-icon")
-        }
     }
 
     public toggleVR() {
