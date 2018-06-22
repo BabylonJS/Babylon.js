@@ -8,7 +8,7 @@ import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
-import { IViewerPlugin } from 'templating/viewerPlugin';
+import { IViewerTemplatePlugin } from 'templating/viewerTemplatePlugin';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -38,9 +38,9 @@ export class DefaultViewer extends AbstractViewer {
         });
     }
 
-    private _registeredPlugins: Array<IViewerPlugin> = [];
+    private _registeredPlugins: Array<IViewerTemplatePlugin> = [];
 
-    public registerTemplatePlugin(plugin: IViewerPlugin) {
+    public registerTemplatePlugin(plugin: IViewerTemplatePlugin) {
         //validate
         if (!plugin.templateName) {
             throw new Error("No template name provided");
