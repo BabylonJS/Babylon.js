@@ -196,7 +196,7 @@ module BABYLON {
                             hostingScene.postProcessManager.directRender([rgbdPostProcess], null);
 
                             // Reading datas from WebGL
-                            canvas!.toBlob((blob) => {
+                            Tools.ToBlob(canvas!, (blob) => {
                                 let fileReader = new FileReader();
                                 fileReader.onload = (event: any) => {
                                     let arrayBuffer = event.target!.result as ArrayBuffer;
