@@ -68,9 +68,6 @@ out float outAge;
 out float outLife;
 out vec4 outSeed;
 out vec3 outSize;
-#ifdef SIZEGRADIENTS
-out vec3 outInitialSize;
-#endif
 #ifndef COLORGRADIENTS
 out vec4 outColor;
 #endif
@@ -85,7 +82,6 @@ out float outCellIndex;
 
 #ifdef SIZEGRADIENTS
 uniform sampler2D sizeGradientSampler;
-in vec3 initialSize;
 #endif 
 
 #ifdef ANIMATESHEET
@@ -136,13 +132,9 @@ void main() {
     outSeed = seed;
 
     // Size
-    outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+    outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
-
-#ifdef SIZEGRADIENTS
-    outInitialSize = outSize;
-#endif    
 
 #ifndef COLORGRADIENTS
     // Color
@@ -234,8 +226,8 @@ void main() {
 #endif
 
 #ifdef SIZEGRADIENTS
-    outInitialSize = initialSize;
-	outSize = initialSize * texture(sizeGradientSampler, vec2(age / life, 0)).r;
+	outSize.x = texture(sizeGradientSampler, vec2(age / life, 0)).r;
+    outSize.yz = size.yz;
 #else
     outSize = size;
 #endif 

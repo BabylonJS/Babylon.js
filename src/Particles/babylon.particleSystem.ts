@@ -530,7 +530,7 @@
                                     particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();    
                                     particle._currentSizeGradient = (<FactorGradient>currentGradient);
                                 }                                
-                                particle.size = particle._initialSize * Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
+                                particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
                             });
                         }
 
@@ -1031,7 +1031,6 @@
                     }
                 }
                 // Size and scale
-                particle._initialSize = particle.size;
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
 
                 // Angle
