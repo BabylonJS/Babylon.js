@@ -501,7 +501,7 @@ module BABYLON.GLTF2 {
                     // Read data from WebGL
                     const canvas = engine.getRenderingCanvas();
                     if (canvas) {
-                        canvas.toBlob(blob => {
+                        BABYLON.Tools.ToBlob(canvas, blob => {
                             if (blob) {
                                 let fileReader = new FileReader();
                                 fileReader.onload = (event: any) => {

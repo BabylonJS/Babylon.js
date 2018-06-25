@@ -5,7 +5,7 @@
      */
     export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         private _scene: Scene;
-        private _originalCameras:Array<Camera> = [];
+        private _camerasToBeAttached:Array<Camera> = [];
         /**
 		 * ID of the sharpen post process,
 		 */
@@ -367,7 +367,7 @@
         constructor(name: string = "", hdr: boolean = true, scene: Scene = BABYLON.Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
             this._cameras = cameras ||  scene.cameras;
-            this._originalCameras = this._cameras.slice();
+            this._camerasToBeAttached = this._cameras.slice();
 
             this._buildAllowed = automaticBuild;
 
@@ -468,7 +468,7 @@
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
                 // get back cameras to be used to reattach pipeline
-                this._cameras = this._originalCameras.slice();
+                this._cameras = this._camerasToBeAttached.slice();
             }
             this._reset();
             this._prevPostProcess = null;
@@ -603,7 +603,7 @@
          * @param camera the camera to be added
          */
         public addCamera(camera:Camera):void{
-            this._originalCameras.push(camera);
+            this._camerasToBeAttached.push(camera);
             this._buildPipeline();
         }
 
@@ -612,8 +612,8 @@
          * @param camera the camera to remove
          */
         public removeCamera(camera:Camera):void{
-            var index = this._originalCameras.indexOf(camera);
-            this._originalCameras.splice(index, 1);
+            var index = this._camerasToBeAttached.indexOf(camera);
+            this._camerasToBeAttached.splice(index, 1);
             this._buildPipeline();
         }
 

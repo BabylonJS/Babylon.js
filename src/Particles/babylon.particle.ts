@@ -60,8 +60,6 @@
          */
         public cellIndex: number = 0;  
 
-        private _currentFrameCounter = 0;
-
         /** @hidden */
         public _initialDirection: Nullable<Vector3>;
 
@@ -93,51 +91,16 @@
 
         private updateCellInfoFromSystem(): void {
             this.cellIndex = this.particleSystem.startSpriteCellID;
-
-            if (this.particleSystem.spriteCellChangeSpeed == 0) {
-                this.updateCellIndex = this._updateCellIndexWithSpeedCalculated;
-            }
-            else {
-                this.updateCellIndex = this._updateCellIndexWithCustomSpeed;
-            }
         }
 
         /**
-         * Defines how the sprite cell index is updated for the particle. This is 
-         * defined as a callback.
+         * Defines how the sprite cell index is updated for the particle
          */
-        public updateCellIndex: (scaledUpdateSpeed: number) => void;
+        public updateCellIndex(): void {
+            let dist = (this.particleSystem.endSpriteCellID - this.particleSystem.startSpriteCellID);
+            let ratio = Scalar.Clamp(((this.age * this.particleSystem.spriteCellChangeSpeed) / this.lifeTime) % this.lifeTime);
 
-        private _updateCellIndexWithSpeedCalculated(scaledUpdateSpeed: number): void {
-            //   (ageOffset / scaledUpdateSpeed) / available cells
-            var numberOfScaledUpdatesPerCell = ((this.lifeTime - this.age) / scaledUpdateSpeed) / (this.particleSystem.endSpriteCellID + 1 - this.cellIndex);
-
-            this._currentFrameCounter += scaledUpdateSpeed;
-            if (this._currentFrameCounter >= numberOfScaledUpdatesPerCell * scaledUpdateSpeed) {
-                this._currentFrameCounter = 0;
-                this.cellIndex++;
-                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
-                    this.cellIndex = this.particleSystem.endSpriteCellID;
-                }
-            }
-        }
-
-        private _updateCellIndexWithCustomSpeed(): void {
-            if (this._currentFrameCounter >= this.particleSystem.spriteCellChangeSpeed) {
-                this.cellIndex++;
-                this._currentFrameCounter = 0;
-                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
-                    if (this.particleSystem.spriteCellLoop) {
-                        this.cellIndex = this.particleSystem.startSpriteCellID;
-                    }
-                    else {
-                        this.cellIndex = this.particleSystem.endSpriteCellID;
-                    }
-                }
-            }
-            else {
-                this._currentFrameCounter++;
-            }
+            this.cellIndex = this.particleSystem.startSpriteCellID + (ratio * dist) | 0;
         }
 
         /**

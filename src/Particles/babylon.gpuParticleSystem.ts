@@ -301,7 +301,37 @@
         /**
          * Gets or sets the maximal initial rotation in radians.         
          */
-        public maxInitialRotation = 0;            
+        public maxInitialRotation = 0;   
+        
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
+         */
+        public spriteCellChangeSpeed = 1;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
+         */
+        public startSpriteCellID = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
+         */
+        public endSpriteCellID = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
+         */
+        public spriteCellWidth = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
+         */
+        public spriteCellHeight = 0;
+                
+        private _isAnimationSheetEnabled: boolean;
+
+        /**
+         * Gets whether an animation sprite sheet is enabled or not on the particle system
+         */
+        public get isAnimationSheetEnabled(): boolean {
+            return this._isAnimationSheetEnabled;
+        }        
 
         /**
          * Is this system ready to be used/rendered
@@ -538,17 +568,22 @@
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
-         * @param capacity The max number of particles alive at the same time
+         * @param options The options used to create the system
          * @param scene The scene the particle system belongs to
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
                         capacity: number,
                         randomTextureSize: number
-                    }>, scene: Scene) {
+                    }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
             this.id = name;
             this.name = name;
             this._scene = scene || Engine.LastCreatedScene;
             this._engine = this._scene.getEngine();
+
+            if (!options.randomTextureSize) {
+                delete options.randomTextureSize;
+            }
 
             let fullOptions = {
                 capacity: 50000,
@@ -564,14 +599,15 @@
             this._capacity = fullOptions.capacity;
             this._activeCount = fullOptions.capacity;
             this._currentActiveCount = 0;
+            this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "initialSize"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "initialSize", "cellIndex"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
-                                "angleRange", "radiusRange"],
+                                "angleRange", "radiusRange", "cellInfos"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler", "randomSampler2", "sizeGradientSampler"],
                 defines: "",
@@ -639,6 +675,12 @@
             }
 
             updateVertexBuffers["angle"] = source.createVertexBuffer("angle", offset, 2);
+            offset += 2;
+
+            if (this._isAnimationSheetEnabled) {
+                updateVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1);
+                offset += 1;
+            }            
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -670,6 +712,12 @@
                 offset += 3;
             }
             renderVertexBuffers["angle"] = source.createVertexBuffer("angle", offset, 2, this._attributesStrideSize, true);
+            offset += 2;
+
+            if (this._isAnimationSheetEnabled) {
+                renderVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1, this._attributesStrideSize, true);
+                offset += 1;
+            }               
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -699,6 +747,10 @@
             if (this._sizeGradientsTexture) {
                 this._attributesStrideSize += 3;
             }
+
+            if (this._isAnimationSheetEnabled) {
+                this._attributesStrideSize += 1;
+            }            
 
             for (var particleIndex = 0; particleIndex < this._capacity; particleIndex++) {
                 // position
@@ -750,6 +802,10 @@
                 // angle
                 data.push(0.0);  
                 data.push(0.0); 
+
+                if (this._isAnimationSheetEnabled) {
+                    data.push(0.0); 
+                }                
             }
 
             // Sprite data
@@ -793,7 +849,11 @@
             
             if (this._sizeGradientsTexture) {
                 defines += "\n#define SIZEGRADIENTS";
-            }                 
+            }     
+            
+            if (this.isAnimationSheetEnabled) {
+                defines += "\n#define ANIMATESHEET";
+            }             
 
             if (this._updateEffect && this._updateEffectOptions.defines === defines) {
                 return;
@@ -817,6 +877,10 @@
 
             this._updateEffectOptions.transformFeedbackVaryings.push("outAngle");
 
+            if (this.isAnimationSheetEnabled) {
+                this._updateEffectOptions.transformFeedbackVaryings.push("outCellIndex");
+            }               
+
             this._updateEffectOptions.defines = defines;
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
         }
@@ -836,13 +900,17 @@
                 defines += "\n#define COLORGRADIENTS";
             }   
 
+            if (this.isAnimationSheetEnabled) {
+                defines += "\n#define ANIMATESHEET";
+            }                 
+
             if (this._renderEffect && this._renderEffect.defines === defines) {
                 return;
             }
 
             this._renderEffect = new Effect("gpuRenderParticles", 
-                                            ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle"], 
-                                            ["view", "projection", "colorDead", "invView", "vClipPlane"], 
+                                            ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle", "cellIndex"], 
+                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos"], 
                                             ["textureSampler", "colorGradientSampler"], this._scene.getEngine(), defines);
         }        
 
@@ -984,6 +1052,9 @@
             if (this.particleEmitterType) {
                 this.particleEmitterType.applyToShader(this._updateEffect);
             }
+            if (this._isAnimationSheetEnabled) {
+                this._updateEffect.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
+            }            
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
@@ -1020,6 +1091,10 @@
                     this._renderEffect.setDirectColor4("colorDead", this.colorDead);
                 }
 
+                if (this._isAnimationSheetEnabled && this.particleTexture) {
+                    let baseSize = this.particleTexture.getBaseSize();
+                    this._renderEffect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+                }
 
                 if (this._scene.clipPlane) {
                     var clipPlane = this._scene.clipPlane;
@@ -1179,6 +1254,7 @@
             var serializationObject: any = {};
 
             ParticleSystem._Serialize(serializationObject, this);
+            serializationObject.activeParticleCount = this.activeParticleCount;
 
             return serializationObject;            
         }
@@ -1194,7 +1270,9 @@
             var name = parsedParticleSystem.name;
             var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
 
-            particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            if (parsedParticleSystem.activeParticleCount) {
+                particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            }
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             return particleSystem;

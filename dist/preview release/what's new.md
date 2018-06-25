@@ -7,18 +7,18 @@
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
-- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Built in gizmo types include: position, rotation, scale and bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
-  - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
+  - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style. [Doc](https://doc.babylonjs.com/How_To/ParticleHelper) ([Deltakosh](https://github.com/deltakosh)) / ([DevChris](https://github.com/yovanoc))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
   - Added support for `isBillboardBased`. [Doc](http://doc.babylonjs.com/babylon101/particles#alignment)
-  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](http://doc.babylonjs.com/babylon101/particles#size)
-  - Added support for `radiusRange` for sphere emitter. [Doc](http://doc.babylonjs.com/babylon101/particles#sphere-emitter)
-  - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-blending)
-  - Added support for color gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-colors)
-  - Added support for pre-warming. [Doc](http://doc.babylonjs.com/babylon101/particles#pre-warming)
-  - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](http://doc.babylonjs.com/babylon101/particles#rotation)
-  - Added support for size gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#size)
+  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
+  - Added support for `radiusRange` for sphere emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#sphere-emitter)
+  - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-blending)
+  - Added support for color gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-colors)
+  - Added support for pre-warming. [Doc](https://doc.babylonjs.com/babylon101/particles#pre-warming)
+  - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
+  - Added support for size gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
 
 ## Updates
 
@@ -54,8 +54,9 @@
 - `Sound` now accepts `MediaStream` as source to enable easier WebAudio and WebRTC integrations ([menduz](https://github.com/menduz))
 - Vector x, y and z constructor parameters are now optional and default to 0 ([TrevorDev](https://github.com/TrevorDev))
 - New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
-- Add and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
-- Add internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Added and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
+- Added internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 

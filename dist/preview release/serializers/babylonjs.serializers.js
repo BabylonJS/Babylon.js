@@ -1870,7 +1870,7 @@ var BABYLON;
                         // Read data from WebGL
                         var canvas = engine.getRenderingCanvas();
                         if (canvas) {
-                            canvas.toBlob(function (blob) {
+                            BABYLON.Tools.ToBlob(canvas, function (blob) {
                                 if (blob) {
                                     var fileReader = new FileReader();
                                     fileReader.onload = function (event) {
