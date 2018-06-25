@@ -550,6 +550,10 @@
             this._scene = scene || Engine.LastCreatedScene;
             this._engine = this._scene.getEngine();
 
+            if (!options.randomTextureSize) {
+                delete options.randomTextureSize;
+            }
+
             let fullOptions = {
                 capacity: 50000,
                 randomTextureSize: this._engine.getCaps().maxTextureSize,
@@ -1179,6 +1183,7 @@
             var serializationObject: any = {};
 
             ParticleSystem._Serialize(serializationObject, this);
+            serializationObject.activeParticleCount = this.activeParticleCount;
 
             return serializationObject;            
         }
@@ -1194,7 +1199,9 @@
             var name = parsedParticleSystem.name;
             var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
 
-            particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            if (parsedParticleSystem.activeParticleCount) {
+                particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            }
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             return particleSystem;
