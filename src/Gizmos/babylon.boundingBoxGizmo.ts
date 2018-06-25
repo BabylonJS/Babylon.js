@@ -28,17 +28,21 @@ module BABYLON {
         public fixedDragMeshScreenSize = false;
 
         /**
+         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
+         */
+        public fixedDragMeshScreenSizeDistanceFactor = 10;
+        /**
          * Fired when a rotation sphere or scale box is dragged
          */
-        public dragStartObservable = new Observable<{}>();
+        public onDragStartObservable = new Observable<{}>();
         /**
          * Fired when a rotation sphere or scale box drag is started
          */
-        public dragObservable = new Observable<{}>();
+        public onDragObservable = new Observable<{}>();
         /**
-         * Fired when a rotation sphere or scale box drag is eneded
+         * Fired when a rotation sphere or scale box drag is needed
          */
-        public dragEndObservable = new Observable<{}>();
+        public onDragEndObservable = new Observable<{}>();
         
         /**
          * Creates an BoundingBoxGizmo
@@ -103,7 +107,7 @@ module BABYLON {
                     totalTurnAmountOfDrag = 0;
                 })
                 _dragBehavior.onDragObservable.add((event)=>{
-                    this.dragObservable.notifyObservers({});
+                    this.onDragObservable.notifyObservers({});
                     if(this.attachedMesh){
                         var worldDragDirection = startingTurnDirection;
 
@@ -136,11 +140,11 @@ module BABYLON {
 
                 // Selection/deselection
                 _dragBehavior.onDragStartObservable.add(()=>{
-                    this.dragStartObservable.notifyObservers({});
+                    this.onDragStartObservable.notifyObservers({});
                     this._selectNode(sphere)
                 })
                 _dragBehavior.onDragEndObservable.add(()=>{
-                    this.dragEndObservable.notifyObservers({});
+                    this.onDragEndObservable.notifyObservers({});
                     this._selectNode(null)
                 })
 
@@ -163,7 +167,7 @@ module BABYLON {
                         _dragBehavior.moveAttached = false;
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event)=>{
-                            this.dragObservable.notifyObservers({});
+                            this.onDragObservable.notifyObservers({});
                             if(this.attachedMesh){
                                 // Current boudning box dimensions
                                 var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
@@ -185,11 +189,11 @@ module BABYLON {
 
                         // Selection/deselection
                         _dragBehavior.onDragStartObservable.add(()=>{
-                            this.dragStartObservable.notifyObservers({});
+                            this.onDragStartObservable.notifyObservers({});
                             this._selectNode(box)
                         })
                         _dragBehavior.onDragEndObservable.add(()=>{
-                            this.dragEndObservable.notifyObservers({});
+                            this.onDragEndObservable.notifyObservers({});
                             this._selectNode(null)
                         })
 
@@ -263,7 +267,7 @@ module BABYLON {
                         }
                         if(this.fixedDragMeshScreenSize){
                             rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
-                            var distanceFromCamera = this.rotationSphereSize*this._tmpVector.length()/9;
+                            var distanceFromCamera = this.rotationSphereSize*this._tmpVector.length()/this.fixedDragMeshScreenSizeDistanceFactor;
                             rotateSpheres[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                         }else{
                             rotateSpheres[index].scaling.set(this.rotationSphereSize, this.rotationSphereSize, this.rotationSphereSize);
@@ -283,7 +287,7 @@ module BABYLON {
                             scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x/2,-this._boundingDimensions.y/2,-this._boundingDimensions.z/2));
                             if(this.fixedDragMeshScreenSize){
                                 scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
-                                var distanceFromCamera = this.scaleBoxSize*this._tmpVector.length()/9;
+                                var distanceFromCamera = this.scaleBoxSize*this._tmpVector.length()/this.fixedDragMeshScreenSizeDistanceFactor;
                                 scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                             }else{
                                 scaleBoxes[index].scaling.set(this.scaleBoxSize, this.scaleBoxSize, this.scaleBoxSize);
