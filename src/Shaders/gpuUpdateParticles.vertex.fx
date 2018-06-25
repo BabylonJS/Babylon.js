@@ -58,6 +58,9 @@ in vec3 direction;
 in vec3 initialDirection;
 #endif
 in vec2 angle;
+#ifdef ANIMATESHEET
+in float cellIndex;
+#endif
 
 // Output
 out vec3 outPosition;
@@ -76,11 +79,19 @@ out vec3 outDirection;
 out vec3 outInitialDirection;
 #endif
 out vec2 outAngle;
+#ifdef ANIMATESHEET
+out float outCellIndex;
+#endif
 
 #ifdef SIZEGRADIENTS
 uniform sampler2D sizeGradientSampler;
 in vec3 initialSize;
 #endif 
+
+#ifdef ANIMATESHEET
+uniform vec3 cellInfos;
+#endif
+
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -106,6 +117,9 @@ void main() {
 #endif      
       outDirection = direction;
       outAngle = angle;
+#ifdef ANIMATESHEET      
+      outCellIndex = cellIndex;
+#endif
       return;
     }
     vec3 position;
@@ -206,6 +220,9 @@ void main() {
 #ifndef BILLBOARD        
     outInitialDirection = initial;
 #endif
+#ifdef ANIMATESHEET      
+    outCellIndex = cellInfos.x;
+#endif
 
   } else {   
     outPosition = position + direction * timeDelta;
@@ -228,5 +245,11 @@ void main() {
 #endif
     outDirection = direction + gravity * timeDelta;
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
+#ifdef ANIMATESHEET      
+    float dist = cellInfos.y - cellInfos.x;
+    float ratio = clamp(mod(((outAge * cellInfos.z) / life), life), 0., 1.0);
+
+    outCellIndex = float(int(cellInfos.x + ratio * dist));
+#endif
   }
 }
