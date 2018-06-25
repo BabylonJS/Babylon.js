@@ -49,9 +49,26 @@
          */
         public gradient: number;
         /**
-         * Gets or sets associated factor
+         * Gets or sets first associated factor
          */        
-        public factor: number;
+        public factor1: number;
+        /**
+         * Gets or sets second associated factor
+         */        
+        public factor2?: number;    
+        
+        /** 
+         * Will get a number picked randomly between factor1 and factor2.
+         * If factor2 is undefined then factor1 will be used
+         * @returns the picked number
+         */
+        public getFactor(): number {
+            if (this.factor2 === undefined) {
+                return this.factor1;
+            }
+
+            return Scalar.Lerp(this.factor1, this.factor2, Math.random());
+        }        
     }  
 
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
