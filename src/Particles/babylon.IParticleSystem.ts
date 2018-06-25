@@ -257,8 +257,9 @@ module BABYLON {
          * Adds a new size gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param factor defines the size factor to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          */
-        addSizeGradient(gradient: number, factor: number): IParticleSystem;
+        addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
         /**
          * Remove a specific size gradient
          * @param gradient defines the gradient to remove

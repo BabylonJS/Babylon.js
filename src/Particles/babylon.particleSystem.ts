@@ -186,6 +186,7 @@
 
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
         private _sizeGradients: Nullable<Array<FactorGradient>> = null;
+        private _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
 
         /**
          * Gets the current list of color gradients.
@@ -513,9 +514,14 @@
                         particle.direction.addInPlace(this._scaledGravity);
 
                         // Gradient
-                        if (this._sizeGradients && this._sizeGradients.length > 0) {
+                        if (this._sizeGradients && this._sizeGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                                particle.size = particle._initialSize * Scalar.Lerp((<FactorGradient>currentGradient).factor, (<FactorGradient>nextGradient).factor, scale);
+                                if (currentGradient !== particle._currentSizeGradient) {
+                                    particle._currentSize1 = particle._currentSize2;
+                                    particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentSizeGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                particle.size = particle._initialSize * Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
                             });
                         }
 
@@ -530,16 +536,18 @@
         /**
          * Adds a new size gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient
+         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          */
-        public addSizeGradient(gradient: number, factor: number): ParticleSystem {
+        public addSizeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
             if (!this._sizeGradients) {
                 this._sizeGradients = [];
             }
 
             let sizeGradient = new FactorGradient();
             sizeGradient.gradient = gradient;
-            sizeGradient.factor = factor;
+            sizeGradient.factor1 = factor;
+            sizeGradient.factor2 = factor2;
             this._sizeGradients.push(sizeGradient);
 
             this._sizeGradients.sort((a, b) => {
@@ -1458,10 +1466,17 @@
             if (sizeGradients) {
                 serializationObject.sizeGradients = [];
                 for (var sizeGradient of sizeGradients) {
-                    serializationObject.sizeGradients.push({
+
+                    var serializedGradient: any = {
                         gradient: sizeGradient.gradient,
-                        factor: sizeGradient.factor
-                    })
+                        factor1: sizeGradient.factor1
+                    };
+
+                    if (sizeGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = sizeGradient.factor2;
+                    }
+
+                    serializationObject.sizeGradients.push(serializedGradient);
                 }
             }            
 
@@ -1551,7 +1566,7 @@
 
             if (parsedParticleSystem.sizeGradients) {
                 for (var sizeGradient of parsedParticleSystem.sizeGradients) {
-                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor);
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ?  sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
                 }
             }       
             

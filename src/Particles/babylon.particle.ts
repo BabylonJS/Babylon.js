@@ -73,6 +73,13 @@
         /** @hidden */
         public _currentColor2 = new Color4(0, 0, 0, 0);
 
+        /** @hidden */
+        public _currentSizeGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentSize1 = 0;
+        /** @hidden */
+        public _currentSize2 = 0;        
+
         /**
          * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to
@@ -133,6 +140,11 @@
                 other._currentColorGradient = this._currentColorGradient;
                 other._currentColor1.copyFrom(this._currentColor1);
                 other._currentColor2.copyFrom(this._currentColor2);
+            }
+            if (this._currentSizeGradient) {
+                other._currentSizeGradient = this._currentSizeGradient;
+                other._currentSize1 = this._currentSize1;
+                other._currentSize2 = this._currentSize2;
             }
         }
     }
