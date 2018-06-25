@@ -513,7 +513,7 @@
 
             let sizeGradient = new FactorGradient();
             sizeGradient.gradient = gradient;
-            sizeGradient.factor = factor;
+            sizeGradient.factor1 = factor;
             this._sizeGradients.push(sizeGradient);
 
             this._sizeGradients.sort((a, b) => {
@@ -941,7 +941,7 @@
                 var ratio = x / textureWidth;
 
                 Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                    data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor, (<FactorGradient>nextGradient).factor, scale);
+                    data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
                 });
             }
 

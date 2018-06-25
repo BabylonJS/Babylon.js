@@ -959,7 +959,20 @@
 
                 particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
 
-                particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+
+                if (!this._sizeGradients || this._sizeGradients.length === 0) {
+                    particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                } else {
+                    particle._currentSizeGradient = this._sizeGradients[0];
+                    particle._currentSize1 = particle._currentSizeGradient.getFactor();
+                    particle.size = particle._currentSize1;
+
+                    if (this._sizeGradients.length > 1) {
+                        particle._currentSize2 = this._sizeGradients[1].getFactor();
+                    } else {
+                        particle._currentSize2 = particle._currentSize1;
+                    }
+                }
                 particle._initialSize = particle.size;
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
                 particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
