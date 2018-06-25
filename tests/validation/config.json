@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [  
     {
+      "title": "Particle Helper",
+      "playgroundId": "#1VGT5D#2",
+      "renderCount": 50,
+      "referenceImage": "particle_helper.png"
+    },     
+    {
       "title": "Chibi Rex",
       "playgroundId": "#QATUCH#4",
       "renderCount": 50,

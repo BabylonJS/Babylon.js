@@ -604,7 +604,7 @@
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "initialSize", "cellIndex"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
                                 "angleRange", "radiusRange", "cellInfos"],
@@ -656,10 +656,6 @@
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 4);
             updateVertexBuffers["size"] = source.createVertexBuffer("size", 9, 3);
             let offset = 12;
-            if (this._sizeGradientsTexture) {
-                updateVertexBuffers["initialSize"] = source.createVertexBuffer("initialSize", offset, 3);
-                offset += 3;
-            }
 
             if (!this._colorGradientsTexture) {
                 updateVertexBuffers["color"] = source.createVertexBuffer("color", offset, 4);
@@ -696,9 +692,6 @@
             renderVertexBuffers["size"] = source.createVertexBuffer("size", 9, 3, this._attributesStrideSize, true);      
             
             let offset = 12;
-            if (this._sizeGradientsTexture) {
-                offset += 3;
-            }
 
             if (!this._colorGradientsTexture) {
                 renderVertexBuffers["color"] = source.createVertexBuffer("color", offset, 4, this._attributesStrideSize, true);
@@ -744,10 +737,6 @@
                 this._attributesStrideSize -= 4;
             }
 
-            if (this._sizeGradientsTexture) {
-                this._attributesStrideSize += 3;
-            }
-
             if (this._isAnimationSheetEnabled) {
                 this._attributesStrideSize += 1;
             }            
@@ -772,12 +761,6 @@
                 data.push(0.0);
                 data.push(0.0);
                 data.push(0.0);
-
-                if (this._sizeGradientsTexture) {
-                    data.push(0.0);
-                    data.push(0.0);
-                    data.push(0.0);  
-                }                
 
                 if (!this._colorGradientsTexture) {
                     // color
@@ -860,10 +843,6 @@
             }
 
             this._updateEffectOptions.transformFeedbackVaryings = ["outPosition", "outAge", "outLife", "outSeed", "outSize"];           
-
-            if (this._sizeGradientsTexture) {
-                this._updateEffectOptions.transformFeedbackVaryings.push("outInitialSize");
-            }
 
             if (!this._colorGradientsTexture) {
                 this._updateEffectOptions.transformFeedbackVaryings.push("outColor");

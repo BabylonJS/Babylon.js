@@ -64,9 +64,6 @@
         public _initialDirection: Nullable<Vector3>;
 
         /** @hidden */
-        public _initialSize: number;
-
-        /** @hidden */
         public _initialStartSpriteCellID: number;
         public _initialEndSpriteCellID: number;
 
