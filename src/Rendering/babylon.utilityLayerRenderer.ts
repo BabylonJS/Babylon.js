@@ -59,6 +59,7 @@ module BABYLON {
 
                 let pointerEvent = <PointerEvent>(prePointerInfo.event);
                 if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
+                    this._pointerCaptures[pointerEvent.pointerId] = false;
                     return;
                 }
 
@@ -96,7 +97,7 @@ module BABYLON {
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
                     if (originalScenePick && utilityScenePick){
-
+                        
                         // No pick in utility scene
                         if (utilityScenePick.distance === 0 && originalScenePick.pickedMesh) {
                             if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
