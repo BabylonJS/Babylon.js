@@ -162,6 +162,11 @@ var engine = new BABYLON.NullEngine();
 
 BABYLON.Tools.LogLevels = BABYLON.Tools.ErrorLogLevel & BABYLON.Tools.WarningLogLevel;
 const scene = new BABYLON.Scene(engine);
+BABYLON.ParticleHelper.CreateAsync("sun", scene)
+            .then((system) => {
+                console.log("ok");
+            });
+
 const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
 const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
 mesh.position.set(0.5, 0.5, 0.5);

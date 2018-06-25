@@ -313,19 +313,15 @@
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
          */
-        public spriteCellLoop = true;
+        public spriteCellChangeSpeed = 1;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop
-         */
-        public spriteCellChangeSpeed = 0;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
          */
         public startSpriteCellID = 0;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
          */
         public endSpriteCellID = 0;
         /**
@@ -524,7 +520,7 @@
                         }
 
                         if (this._isAnimationSheetEnabled) {
-                            particle.updateCellIndex(this._scaledUpdateSpeed);
+                            particle.updateCellIndex();
                         }
                     }
                 }
@@ -1375,13 +1371,6 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
-            serializationObject.startSpriteCellID = this.startSpriteCellID;
-            serializationObject.endSpriteCellID = this.endSpriteCellID;
-            serializationObject.spriteCellLoop = this.spriteCellLoop;
-            serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
-            serializationObject.spriteCellWidth = this.spriteCellWidth;
-            serializationObject.spriteCellHeight = this.spriteCellHeight;
-
             serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
 
             return serializationObject;
@@ -1442,6 +1431,11 @@
             serializationObject.preWarmStepOffset = particleSystem.preWarmStepOffset;
             serializationObject.minInitialRotation = particleSystem.minInitialRotation;
             serializationObject.maxInitialRotation = particleSystem.maxInitialRotation;
+            serializationObject.startSpriteCellID = particleSystem.startSpriteCellID;
+            serializationObject.endSpriteCellID = particleSystem.endSpriteCellID;
+            serializationObject.spriteCellChangeSpeed = particleSystem.spriteCellChangeSpeed;
+            serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
+            serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;            
 
             let colorGradients = particleSystem.getColorGradients();
             if (colorGradients) {
@@ -1588,6 +1582,13 @@
                 emitterType.parse(parsedParticleSystem);
             }
             particleSystem.particleEmitterType = emitterType;
+
+            // Animation sheet
+            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
+            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
+            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
+            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
         }
 
         /**
@@ -1621,12 +1622,6 @@
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
-            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
-            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
-            particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;
-            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
-            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
-            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
 
             if (!particleSystem.preventAutoStart) {
                 particleSystem.start();
