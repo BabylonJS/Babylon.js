@@ -1031,7 +1031,7 @@
          * @param successCallback Defines the callback triggered once the data are available
          * @param mimeType Defines the mime type of the result
          */
-        static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png") {
+        static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png"): void {
             // We need HTMLCanvasElement.toBlob for HD screenshots
             if (!screenshotCanvas.toBlob) {
                 //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
@@ -1059,7 +1059,7 @@
          * @param mimeType Defines the mime type of the result
          * @param fileName The filename to download. If present, the result will automatically be downloaded
          */
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             if (successCallback) {
                 var base64Image = screenshotCanvas.toDataURL(mimeType);
                 successCallback(base64Image);
