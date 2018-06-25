@@ -67,6 +67,10 @@
         public _initialSize: number;
 
         /** @hidden */
+        public _initialStartSpriteCellID: number;
+        public _initialEndSpriteCellID: number;
+
+        /** @hidden */
         public _currentColorGradient: Nullable<ColorGradient>;
         /** @hidden */
         public _currentColor1 = new Color4(0, 0, 0, 0);
@@ -104,10 +108,10 @@
          * Defines how the sprite cell index is updated for the particle
          */
         public updateCellIndex(): void {
-            let dist = (this.particleSystem.endSpriteCellID - this.particleSystem.startSpriteCellID);
+            let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
             let ratio = Scalar.Clamp(((this.age * this.particleSystem.spriteCellChangeSpeed) / this.lifeTime) % this.lifeTime);
 
-            this.cellIndex = this.particleSystem.startSpriteCellID + (ratio * dist) | 0;
+            this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
         }
 
         /**
@@ -145,6 +149,10 @@
                 other._currentSizeGradient = this._currentSizeGradient;
                 other._currentSize1 = this._currentSize1;
                 other._currentSize2 = this._currentSize2;
+            }
+            if (this.particleSystem.isAnimationSheetEnabled) {
+                other._initialStartSpriteCellID = this._initialStartSpriteCellID;
+                other._initialEndSpriteCellID = this._initialEndSpriteCellID;
             }
         }
     }

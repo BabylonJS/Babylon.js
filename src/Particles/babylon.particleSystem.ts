@@ -207,6 +207,15 @@
         }        
 
         /**
+         * Gets the current list of life time gradients.
+         * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
+         * @returns the list of life time gradients
+         */
+        public getLifeTimeGradients(): Nullable<Array<FactorGradient>> {
+            return this._lifeTimeGradients;
+        }          
+
+        /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
@@ -533,6 +542,65 @@
             }
         }
 
+        private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
+            let newGradient = new FactorGradient();
+            newGradient.gradient = gradient;
+            newGradient.factor1 = factor;
+            newGradient.factor2 = factor2;
+            factorGradients.push(newGradient);
+
+            factorGradients.sort((a, b) => {
+                if (a.gradient < b.gradient) {
+                    return -1;
+                } else if (a.gradient > b.gradient) {
+                    return 1;
+                }
+
+                return 0;
+            });            
+        }
+
+        private _removeFactorGradient(factorGradients: Nullable<FactorGradient[]>, gradient: number) {
+            if (!factorGradients) {
+                return;
+            }
+
+            let index = 0;
+            for (var factorGradient of factorGradients) {
+                if (factorGradient.gradient === gradient) {
+                    factorGradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+        }
+
+        /**
+         * Adds a new life time gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the life time factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         */
+        public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+            if (!this._lifeTimeGradients) {
+                this._lifeTimeGradients = [];
+            }
+
+            this._addFactorGradient(this._lifeTimeGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific life time gradient
+         * @param gradient defines the gradient to remove
+         */
+        public removeLifeTimeGradient(gradient: number): ParticleSystem {
+            this._removeFactorGradient(this._lifeTimeGradients, gradient);
+
+            return this;
+        }       
+
         /**
          * Adds a new size gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -544,21 +612,7 @@
                 this._sizeGradients = [];
             }
 
-            let sizeGradient = new FactorGradient();
-            sizeGradient.gradient = gradient;
-            sizeGradient.factor1 = factor;
-            sizeGradient.factor2 = factor2;
-            this._sizeGradients.push(sizeGradient);
-
-            this._sizeGradients.sort((a, b) => {
-                if (a.gradient < b.gradient) {
-                    return -1;
-                } else if (a.gradient > b.gradient) {
-                    return 1;
-                }
-
-                return 0;
-            });
+            this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
 
             return this;
         }
@@ -568,18 +622,7 @@
          * @param gradient defines the gradient to remove
          */
         public removeSizeGradient(gradient: number): ParticleSystem {
-            if (!this._sizeGradients) {
-                return this;
-            }
-
-            let index = 0;
-            for (var sizeGradient of this._sizeGradients) {
-                if (sizeGradient.gradient === gradient) {
-                    this._sizeGradients.splice(index, 1);
-                    break;
-                }
-                index++;
-            }
+            this._removeFactorGradient(this._sizeGradients, gradient);
 
             return this;
         }        
@@ -900,7 +943,7 @@
             subSystem.start();
         }
 
-        // end of sub system methods
+        // End of sub system methods
 
         private _update(newParticles: number): void {
             // Update current
@@ -929,6 +972,7 @@
 
                 this._particles.push(particle);
 
+                // Emitter
                 let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
@@ -957,9 +1001,22 @@
 
                 particle.direction.scaleInPlace(emitPower);
 
-                particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+                // Life time
+                if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
+                    let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
+                    Tools.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient, scale) => {
+                        let factorGradient1 = (<FactorGradient>currentGradient);
+                        let factorGradient2 = (<FactorGradient>nextGradient);
+                        let lifeTime1 = factorGradient1.getFactor(); 
+                        let lifeTime2 = factorGradient2.getFactor(); 
+                        let gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
+                        particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
+                    });
+                } else {
+                    particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+                }
 
-
+                // Size
                 if (!this._sizeGradients || this._sizeGradients.length === 0) {
                     particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
                 } else {
@@ -973,12 +1030,15 @@
                         particle._currentSize2 = particle._currentSize1;
                     }
                 }
+                // Size and scale
                 particle._initialSize = particle.size;
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
-                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
+                // Angle
+                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
                 particle.angle = Scalar.RandomRange(this.minInitialRotation, this.maxInitialRotation);
 
+                // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
                     var step = Scalar.RandomRange(0, 1.0);
 
@@ -996,6 +1056,12 @@
                     } else {
                         particle._currentColor2.copyFrom(particle.color);
                     }
+                }
+
+                // Sheet
+                if (this._isAnimationSheetEnabled) {
+                    particle._initialStartSpriteCellID = this.startSpriteCellID;
+                    particle._initialEndSpriteCellID = this.endSpriteCellID;
                 }
             }
         }
