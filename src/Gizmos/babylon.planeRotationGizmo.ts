@@ -22,7 +22,7 @@ module BABYLON {
          * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
          * @param color The color of the gizmo
          */
-        constructor(gizmoLayer:UtilityLayerRenderer, planeNormal:Vector3, color:Color3){
+        constructor(planeNormal:Vector3, color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.defaultUtilityLayer){
             super(gizmoLayer);
             
             // Create Material

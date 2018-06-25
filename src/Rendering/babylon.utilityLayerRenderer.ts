@@ -5,6 +5,16 @@ module BABYLON {
     export class UtilityLayerRenderer implements IDisposable {
         private _pointerCaptures: {[pointerId:number]: boolean} = {};
         private _lastPointerEvents: {[pointerId:number]: number} = {};
+        private static _defaultUtilityLayer:Nullable<UtilityLayerRenderer> = null;
+        public static get defaultUtilityLayer():UtilityLayerRenderer{
+            if(UtilityLayerRenderer._defaultUtilityLayer == null){
+                UtilityLayerRenderer._defaultUtilityLayer = new UtilityLayerRenderer(BABYLON.Engine.LastCreatedScene!);
+                UtilityLayerRenderer._defaultUtilityLayer.originalScene.onDisposeObservable.add(()=>{
+                    UtilityLayerRenderer._defaultUtilityLayer = null;
+                });
+            }
+            return UtilityLayerRenderer._defaultUtilityLayer;
+        }
 
         /** 
          * The scene that is rendered on top of the original scene
