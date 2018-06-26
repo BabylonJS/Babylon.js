@@ -10,6 +10,16 @@ module BABYLON {
         private _height: number;
 
         /**
+         * Gets or sets a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
+         */
+        public radiusRange = 1;        
+
+        /**
+         * Gets or sets a value indicating where on the height the start position should be picked (1 = everywhere, 0 = only surface)
+         */
+        public heightRange = 1;   
+
+        /**
          * Gets or sets the radius of the emission cone
          */
         public get radius(): number {
@@ -62,7 +72,7 @@ module BABYLON {
          * @param particle is the particle we are computed the direction for
          */
         public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
-            if (this._angle === 0) {
+            if (Math.abs(Math.cos(this._angle)) === 1.0) {
                 Vector3.TransformNormalFromFloatsToRef(0, 1.0, 0, worldMatrix, directionToUpdate);
             }
             else {
@@ -88,10 +98,10 @@ module BABYLON {
          */
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var s = Scalar.RandomRange(0, Math.PI * 2);
-            var h = Scalar.RandomRange(0, 1);
+            var h = Scalar.RandomRange(0, this.heightRange);
             // Better distribution in a cone at normal angles.
             h = 1 - h * h;
-            var radius = Scalar.RandomRange(0, this._radius);
+            var radius = this._radius - Scalar.RandomRange(0, this._radius * this.radiusRange);
             radius = radius * h;
 
             var randX = radius * Math.sin(s);
@@ -118,9 +128,9 @@ module BABYLON {
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {
-            effect.setFloat("radius", this._radius);
+            effect.setFloat2("radius", this._radius, this.radiusRange);
             effect.setFloat("coneAngle", this._angle);
-            effect.setFloat("height", this._height);
+            effect.setFloat2("height", this._height, this.heightRange);
             effect.setFloat("directionRandomizer", this.directionRandomizer);
         }
 

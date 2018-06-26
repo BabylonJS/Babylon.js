@@ -38,9 +38,9 @@ uniform float radiusRange;
 #endif
 
 #ifdef CONEEMITTER
-uniform float radius;
+uniform vec2 radius;
 uniform float coneAngle;
-uniform float height;
+uniform vec2 height;
 uniform float directionRandomizer;
 #endif
 
@@ -132,7 +132,11 @@ void main() {
     outSeed = seed;
 
     // Size
+#ifdef SIZEGRADIENTS    
     outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
+#else
+    outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+#endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
 
@@ -176,21 +180,21 @@ void main() {
     vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
-    float h = randoms2.y;
+    float h = randoms2.y * height.y;
     
     // Better distribution in a cone at normal angles.
     h = 1. - h * h;
-    float lRadius = radius * randoms2.z;
+    float lRadius = radius.x - radius.x * randoms2.z * radius.y;
     lRadius = lRadius * h;
 
     float randX = lRadius * sin(s);
     float randZ = lRadius * cos(s);
-    float randY = h  * height;
+    float randY = h  * height.x;
 
     position = vec3(randX, randY, randZ); 
 
     // Direction
-    if (coneAngle == 0.) {
+    if (abs(cos(coneAngle)) == 1.0) {
         direction = vec3(0., 1.0, 0.);
     } else {
         vec3 randoms3 = getRandomVec3(seed.z);
@@ -239,7 +243,7 @@ void main() {
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
 #ifdef ANIMATESHEET      
     float dist = cellInfos.y - cellInfos.x;
-    float ratio = clamp(mod(((outAge * cellInfos.z) / life), life), 0., 1.0);
+    float ratio = clamp(mod(outAge * cellInfos.z, life) / life, 0., 1.0);
 
     outCellIndex = float(int(cellInfos.x + ratio * dist));
 #endif

@@ -14,6 +14,7 @@ attribute vec2 offset;
 // Uniforms
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec2 translationPivot;
 
 #ifdef ANIMATESHEET	
 uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSize)
@@ -29,19 +30,50 @@ uniform mat4 invView;
 varying float fClipDistance;
 #endif
 
+#ifdef BILLBOARD
+	uniform vec3 eyePosition;	
+#endif
+
+vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
+	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
+	vec3 zaxis = normalize(cross(yaxis, xaxis));
+
+	vec3 row0 = vec3(xaxis.x, xaxis.y, xaxis.z);
+	vec3 row1 = vec3(yaxis.x, yaxis.y, yaxis.z);
+	vec3 row2 = vec3(zaxis.x, zaxis.y, zaxis.z);
+
+	mat3 rotMatrix =  mat3(row0, row1, row2);
+
+	vec3 alignedCorner = rotMatrix * rotatedCorner;
+	return position + alignedCorner; 
+}
+
 void main(void) {	
 	vec2 cornerPos;
 	
-	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
+	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size + translationPivot;
 
 #ifdef BILLBOARD	
 	// Rotate
 	vec3 rotatedCorner;
+
+#ifdef BILLBOARDY	
+	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
+	rotatedCorner.y = 0.;
+
+	vec3 yaxis = normalize(position - eyePosition);
+	yaxis.y = 0.;
+	vec3 worldPos = rotate(yaxis, rotatedCorner);
+	
+	vec3 viewPos = (view * vec4(worldPos, 1.0)).xyz; 
+#else
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.z = 0.;
 
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz + rotatedCorner; 
+#endif
 
 	// Position
 	gl_Position = projection * vec4(viewPos, 1.0);   
@@ -53,17 +85,7 @@ void main(void) {
 	rotatedCorner.y = 0.;
 
 	vec3 yaxis = normalize(direction);
-	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
-	vec3 zaxis = normalize(cross(yaxis, xaxis));
-
-	vec3 row0 = vec3(xaxis.x, xaxis.y, xaxis.z);
-	vec3 row1 = vec3(yaxis.x, yaxis.y, yaxis.z);
-	vec3 row2 = vec3(zaxis.x, zaxis.y, zaxis.z);
-
-	mat3 rotMatrix =  mat3(row0, row1, row2);
-
-	vec3 alignedCorner = rotMatrix * rotatedCorner;
-	vec3 worldPos = position + alignedCorner; 
+	vec3 worldPos = rotate(yaxis, rotatedCorner);
 
 	gl_Position = projection * view * vec4(worldPos, 1.0);  
 #endif	

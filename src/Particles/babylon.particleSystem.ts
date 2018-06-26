@@ -349,6 +349,9 @@
         /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
         public preWarmStepOffset = 1;
 
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        public translationPivot = new Vector2(0, 0);
+
         /**
         * An event triggered when the system is disposed
         */
@@ -386,7 +389,13 @@
 
             this._isBillboardBased = value;
             this._resetEffect();
-        }            
+        }     
+        
+        /**
+         * Gets or sets the billboard mode to use when isBillboardBased = true.
+         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         */
+        public billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
 
         private _particles = new Array<Particle>();
         private _epsilon: number;
@@ -1081,7 +1090,7 @@
         }
 
         public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
+            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask", "translationPivot", "eyePosition"];
 
             if (isAnimationSheetEnabled) {
                 effectCreationOption.push("particlesInfos")
@@ -1107,6 +1116,15 @@
 
             if (this._isBillboardBased) {
                 defines.push("#define BILLBOARD");
+
+                switch (this.billboardMode) {
+                    case AbstractMesh.BILLBOARDMODE_Y:
+                        defines.push("#define BILLBOARDY");
+                        break;
+                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    default:
+                        break;
+                }
             }
 
             // Effect
@@ -1272,7 +1290,13 @@
                 effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
 
+            effect.setVector2("translationPivot", this.translationPivot);
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
+
+            if (this._isBillboardBased) {
+                var camera = this._scene.activeCamera!;
+                effect.setVector3("eyePosition", camera.globalPosition);
+            }
 
             if (this._scene.clipPlane) {
                 var clipPlane = this._scene.clipPlane;
