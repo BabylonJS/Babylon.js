@@ -3537,7 +3537,16 @@
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
-                context.validateProgram(shaderProgram);
+                var error = context.getProgramInfoLog(shaderProgram);
+                if (error) {
+                    throw new Error(error);
+                }
+            }
+
+            context.validateProgram(shaderProgram);
+            var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
+
+            if(!validated) {
                 var error = context.getProgramInfoLog(shaderProgram);
                 if (error) {
                     throw new Error(error);
