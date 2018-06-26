@@ -38,9 +38,9 @@ uniform float radiusRange;
 #endif
 
 #ifdef CONEEMITTER
-uniform float radius;
+uniform vec2 radius;
 uniform float coneAngle;
-uniform float height;
+uniform vec2 height;
 uniform float directionRandomizer;
 #endif
 
@@ -180,16 +180,16 @@ void main() {
     vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
-    float h = randoms2.y;
+    float h = randoms2.y * height.y;
     
     // Better distribution in a cone at normal angles.
     h = 1. - h * h;
-    float lRadius = radius * randoms2.z;
+    float lRadius = radius.x - radius.x * randoms2.z * radius.y;
     lRadius = lRadius * h;
 
     float randX = lRadius * sin(s);
     float randZ = lRadius * cos(s);
-    float randY = h  * height;
+    float randY = h  * height.x;
 
     position = vec3(randX, randY, randZ); 
 
