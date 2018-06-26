@@ -143,19 +143,7 @@
     A few browsers dont support combining the next rule to one. Redudant.
     */
 
-    viewer:fullscreen .fullscreen-icon:after {
-        content: "\E73F";
-    }
-
-    viewer:-webkit-full-screen .fullscreen-icon:after {
-        content: "\E73F";
-    }
-
-    viewer:-moz-full-screen .fullscreen-icon:after {
-        content: "\E73F";
-    }
-
-    viewer:-ms-full-screen .fullscreen-icon:after {
+    viewer.in-fullscreen .fullscreen-icon:after {
         content: "\E73F";
     }
 
@@ -164,14 +152,14 @@
         content: "\EF4E";
     }
 
-    .hd-icon:after {
+    viewer.in-vr .vr-icon:after {
         font-size: 16px;
-        content: "\F765";
+        content: "\E7F4";
     }
 
-    .sd-icon:after {
+    .vr-icon:after {
         font-size: 16px;
-        content: "\F766";
+        content: "\F119";
     }
 
     .progress-control {
@@ -438,15 +426,7 @@
 </style>
 {{/if}} {{/if}} {{#if disableOnFullscreen}}
 <style>
-    viewer:fullscreen nav-bar {
-        display: none;
-    }
-
-    viewer:-moz-full-screen nav-bar {
-        display: none;
-    }
-
-    viewer:-webkit-full-screen nav-bar {
+    viewer.in-fullscreen nav-bar {
         display: none;
     }
 </style>
@@ -477,10 +457,10 @@
             </button>
             <div class="menu-options">
                 {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
-                <button class="flex-container label-option-button animation-buttons" data-value="{{this}}">
+                <button class="flex-container label-option-button animation-buttons" data-value="{{this.value}}">
                     <!-- <div> -->
                     <span class="icon types-icon"></span>
-                    <span class="control-text animation-label">{{this}}</span>
+                    <span class="control-text animation-label">{{this.label}}</span>
                     <span class="control-text animation-number">{{add @index 1}}</span>
                     <!-- </div> -->
                 </button>
@@ -513,15 +493,11 @@
     </div>
     {{/unless}}
     <div class="default-control">
-        {{#unless hideHdButton}}
-        <button class="hd-button hd-button" title="{{text.hdButton}}">
-            {{#if hdEnabled}}
-            <span class="icon sd-icon"></span>
-            {{else}}
-            <span class="icon hd-icon"></span>
-            {{/if}}
+        {{#unless hideVr}}
+        <button class="vr vr-button" title="{{text.vrButton}}">
+            <span class="icon vr-icon"></span>
         </button>
-        {{/unless}} {{#unless hideHelp}}
+        {{/unless}}{{#unless hideHelp}}
         <button class="help help-button" title="{{text.helpButton}}">
             <span class="icon help-icon"></span>
         </button>

@@ -2,7 +2,6 @@
 
 ## Major updates
 
-- Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style ([DevChris](https://github.com/yovanoc))
 - Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
@@ -10,15 +9,17 @@
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
 - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
+  - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style. [Doc](https://doc.babylonjs.com/How_To/ParticleHelper) ([Deltakosh](https://github.com/deltakosh)) / ([DevChris](https://github.com/yovanoc))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
   - Added support for `isBillboardBased`. [Doc](http://doc.babylonjs.com/babylon101/particles#alignment)
-  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](http://doc.babylonjs.com/babylon101/particles#size)
-  - Added support for `radiusRange` for sphere emitter. [Doc](http://doc.babylonjs.com/babylon101/particles#sphere-emitter)
-  - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-blending)
-  - Added support for color gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#particle-colors)
-  - Added support for pre-warming. [Doc](http://doc.babylonjs.com/babylon101/particles#pre-warming)
-  - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](http://doc.babylonjs.com/babylon101/particles#rotation)
-  - Added support for size gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#size)
+  - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
+  - Added support for `radiusRange` for sphere emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#sphere-emitter)
+  - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-blending)
+  - Added support for color gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-colors)
+  - Added support for pre-warming. [Doc](https://doc.babylonjs.com/babylon101/particles#pre-warming)
+  - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
+  - Added support for size gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
+  - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
 
 ## Updates
 
@@ -54,8 +55,9 @@
 - `Sound` now accepts `MediaStream` as source to enable easier WebAudio and WebRTC integrations ([menduz](https://github.com/menduz))
 - Vector x, y and z constructor parameters are now optional and default to 0 ([TrevorDev](https://github.com/TrevorDev))
 - New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
-- Add and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
-- Add internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Added and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
+- Added internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 
@@ -74,6 +76,9 @@
 - New lab feature - global light rotation [#4347](https://github.com/BabylonJS/Babylon.js/issues/4347) ([RaananW](https://github.com/RaananW))
 - New NPM package - babylonjs-viewer-assets, to separate the binary assets and the code of the viewer ([RaananW](https://github.com/RaananW))
 - A new HD-Toggler button allows setting a better hardware scaling rate ([RaananW](https://github.com/RaananW))
+- An initial support for WebVR is implemented ([RaananW](https://github.com/RaananW))
+- It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
+- The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
@@ -88,6 +93,7 @@
 - VR experience helper's controllers will not fire pointer events when laser's are disabled, instead the camera ray pointer event will be used ([TrevorDev](https://github.com/TrevorDev))
 - Node's setParent(node.parent) will no longer throw an exception when parent is undefined and will behave the same as setParent(null) ([TrevorDev](https://github.com/TrevorDev))
 - Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
+- Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev]
 
 ### Core Engine
 

@@ -188,6 +188,13 @@ module BABYLON {
          */
         public update() {
             super.update();
+            this._updatePoseAndMesh();
+        }
+
+        /**
+         * Updates only the pose device and mesh without doing any button event checking
+         */
+        protected _updatePoseAndMesh(){
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
 
@@ -204,6 +211,7 @@ module BABYLON {
                 }
             }
         }
+
         /**
          * Updates the state of the pose enbaled controller based on the raw pose data from the device
          * @param poseData raw pose fromthe device
@@ -259,8 +267,8 @@ module BABYLON {
                 this._mesh.rotationQuaternion = new Quaternion();
             }
 
-            // Sync controller mesh and pointing pose node's state with controller
-            this.update();
+            // Sync controller mesh and pointing pose node's state with controller, this is done to avoid a frame where position is 0,0,0 when attaching mesh
+            this._updatePoseAndMesh();
             if(this._pointingPoseNode){
                 var parents = [];
                 var obj:Node = this._pointingPoseNode;

@@ -272,6 +272,10 @@ export class Template {
      */
     public onEventTriggered: Observable<EventCallback>;
 
+    public onParamsUpdated: Observable<Template>;
+
+    public onHTMLRendered: Observable<Template>;
+
     /**
      * is the template loaded?
      */
@@ -309,6 +313,8 @@ export class Template {
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
         this.onEventTriggered = new Observable<EventCallback>();
+        this.onParamsUpdated = new Observable<Template>();
+        this.onHTMLRendered = new Observable<Template>();
 
         this.loadRequests = [];
 
@@ -432,6 +438,9 @@ export class Template {
         } else {
             this.parent.insertAdjacentHTML("beforeend", this._rawHtml);
         }
+
+        this.onHTMLRendered.notifyObservers(this);
+
         // appended only one frame after.
         setTimeout(() => {
             this._registerEvents();
