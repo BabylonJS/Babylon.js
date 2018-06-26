@@ -152,16 +152,6 @@
         content: "\EF4E";
     }
 
-    .hd-icon:after {
-        font-size: 16px;
-        content: "\F765";
-    }
-
-    .sd-icon:after {
-        font-size: 16px;
-        content: "\F766";
-    }
-
     viewer.in-vr .vr-icon:after {
         font-size: 16px;
         content: "\E7F4";
@@ -503,15 +493,7 @@
     </div>
     {{/unless}}
     <div class="default-control">
-        {{#unless hideHd}}
-        <button class="hd-button hd-button" title="{{text.hdButton}}">
-            {{#if hdEnabled}}
-            <span class="icon sd-icon"></span>
-            {{else}}
-            <span class="icon hd-icon"></span>
-            {{/if}}
-        </button>
-        {{/unless}} {{#unless hideVr}}
+        {{#unless hideVr}}
         <button class="vr vr-button" title="{{text.vrButton}}">
             <span class="icon vr-icon"></span>
         </button>
