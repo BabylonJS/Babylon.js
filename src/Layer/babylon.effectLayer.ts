@@ -116,6 +116,12 @@
             this.name = name;
 
             this._scene = scene || Engine.LastCreatedScene;
+            let component = this._scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
+            if (!component) {
+                component = new EffectLayerSceneComponent();
+                scene._addComponent(component);
+            }
+
             this._engine = scene.getEngine();
             this._maxSize = this._engine.getCaps().maxTextureSize;
             this._scene.effectLayers.push(this);

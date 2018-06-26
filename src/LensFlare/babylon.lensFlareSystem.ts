@@ -19,6 +19,12 @@
         constructor(public name: string, emitter: any, scene: Scene) {
 
             this._scene = scene || Engine.LastCreatedScene;
+            let component = this._scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
+            if (!component) {
+                component = new LensFlareSystemSceneComponent();
+                scene._addComponent(component);
+            }
+
             this._emitter = emitter;
             this.id = name;
             scene.lensFlareSystems.push(this);
@@ -305,4 +311,4 @@
             return serializationObject;
         }
     }
-} 
+}
