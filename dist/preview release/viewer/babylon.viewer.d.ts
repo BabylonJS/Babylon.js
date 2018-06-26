@@ -152,6 +152,7 @@ declare module BabylonViewer {
     
     
     
+    
     /**
         * The Default viewer is the default implementation of the AbstractViewer.
         * It uses the templating system to render a new canvas and controls.
@@ -165,11 +166,11 @@ declare module BabylonViewer {
                 * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
                 */
             constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
+            registerTemplatePlugin(plugin: IViewerTemplatePlugin): void;
             /**
                 * This will be executed when the templates initialize.
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
-            toggleHD(): void;
             toggleVR(): void;
             /**
                 * Toggle fullscreen of the entire viewer
@@ -1152,6 +1153,8 @@ declare module BabylonViewer {
                 * The event is a native browser event (like mouse or pointer events)
                 */
             onEventTriggered: BABYLON.Observable<EventCallback>;
+            onParamsUpdated: BABYLON.Observable<Template>;
+            onHTMLRendered: BABYLON.Observable<Template>;
             /**
                 * is the template loaded?
                 */
@@ -1222,6 +1225,28 @@ declare module BabylonViewer {
                 * Dispose this template
                 */
             dispose(): void;
+    }
+}
+
+declare module BabylonViewer {
+    
+    export interface IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach?: Array<string>;
+        interactionPredicate(event: EventCallback): boolean;
+        onEvent?(event: EventCallback): void;
+        addHTMLTemplate?(template: Template): void;
+    }
+    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach: Array<string>;
+        protected _prepend: boolean;
+        protected abstract _buttonClass: string;
+        protected abstract _htmlTemplate: string;
+        interactionPredicate(event: EventCallback): boolean;
+        abstract onEvent(event: EventCallback): void;
+        addHTMLTemplate(template: Template): void;
+        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
     }
 }
 
