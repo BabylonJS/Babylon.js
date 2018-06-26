@@ -323,6 +323,9 @@
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
         public spriteCellHeight = 0;
+
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        public translationPivot = new Vector2(0, 0);        
                 
         private _isAnimationSheetEnabled: boolean;
 
@@ -889,7 +892,7 @@
 
             this._renderEffect = new Effect("gpuRenderParticles", 
                                             ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle", "cellIndex"], 
-                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos"], 
+                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot"], 
                                             ["textureSampler", "colorGradientSampler"], this._scene.getEngine(), defines);
         }        
 
@@ -1064,6 +1067,7 @@
                 this._renderEffect.setMatrix("view", viewMatrix);
                 this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
                 this._renderEffect.setTexture("textureSampler", this.particleTexture);
+                this._renderEffect.setVector2("translationPivot", this.translationPivot);
                 if (this._colorGradientsTexture) {
                     this._renderEffect.setTexture("colorGradientSampler", this._colorGradientsTexture);
                 } else {
