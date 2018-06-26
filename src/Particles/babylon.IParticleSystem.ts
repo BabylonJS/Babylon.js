@@ -22,6 +22,10 @@ module BABYLON {
          */
         emitter: Nullable<AbstractMesh | Vector3>;
         /**
+         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+         */
+        isBillboardBased: boolean;        
+        /**
          * The rendering group used by the Particle system to chose when to render.
          */
         renderingGroupId: number;
@@ -46,7 +50,7 @@ module BABYLON {
         particleTexture: Nullable<Texture>;   
         
         /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
          */
         blendMode: number;   
         
@@ -146,7 +150,31 @@ module BABYLON {
         /** 
          * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) 
          */
-        preWarmStepOffset: number;               
+        preWarmStepOffset: number;     
+        
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
+         */
+        spriteCellChangeSpeed: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
+         */
+        startSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
+         */
+        endSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
+         */
+        spriteCellWidth: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
+         */
+        spriteCellHeight: number;           
+
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        translationPivot: Vector2;
 
         /**
          * Gets the maximum number of particles active at the same time.
@@ -232,8 +260,9 @@ module BABYLON {
          * Adds a new size gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param factor defines the size factor to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          */
-        addSizeGradient(gradient: number, factor: number): IParticleSystem;
+        addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
         /**
          * Remove a specific size gradient
          * @param gradient defines the gradient to remove

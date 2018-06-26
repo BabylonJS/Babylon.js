@@ -14,6 +14,7 @@ attribute vec2 offset;
 // Uniforms
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec2 translationPivot;
 
 #ifdef ANIMATESHEET	
 uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSize)
@@ -32,7 +33,7 @@ varying float fClipDistance;
 void main(void) {	
 	vec2 cornerPos;
 	
-	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
+	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size + translationPivot;
 
 #ifdef BILLBOARD	
 	// Rotate
