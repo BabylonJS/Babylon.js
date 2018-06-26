@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export interface Scene {
+    export interface AbstractScene {
         /**
          * Return a the first highlight layer of the scene with a given name.
          * @param name The name of the highlight layer to look for.
@@ -8,7 +8,7 @@
         getHighlightLayerByName(name: string): Nullable<HighlightLayer>;
     }
 
-    Scene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
+    AbstractScene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
         for (var index = 0; index < this.effectLayers.length; index++) {
             if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
                 return (<any>this.effectLayers[index]) as HighlightLayer;
