@@ -31,7 +31,7 @@
         addEffectLayer(newEffectLayer: EffectLayer): void;
     }
 
-    Scene.prototype.removeEffectLayer = function(toRemove: EffectLayer): number {
+    AbstractScene.prototype.removeEffectLayer = function(toRemove: EffectLayer): number {
         var index = this.effectLayers.indexOf(toRemove);
         if (index !== -1) {
             this.effectLayers.splice(index, 1);
@@ -40,7 +40,7 @@
         return index;
     }
 
-    Scene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): void {
+    AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): void {
         this.effectLayers.push(newEffectLayer);
     }
 

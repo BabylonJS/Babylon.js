@@ -166,6 +166,7 @@
                 "../../src/Rendering/babylon.renderingManager.js",
                 "../../src/Rendering/babylon.renderingGroup.js",
                 "../../src/babylon.sceneComponent.js",
+                "../../src/babylon.abstractScene.js",
                 "../../src/babylon.scene.js",
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
