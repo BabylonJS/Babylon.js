@@ -132,7 +132,11 @@ void main() {
     outSeed = seed;
 
     // Size
+#ifdef SIZEGRADIENTS    
     outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
+#else
+    outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+#endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
 
@@ -190,7 +194,7 @@ void main() {
     position = vec3(randX, randY, randZ); 
 
     // Direction
-    if (coneAngle == 0.) {
+    if (abs(cos(coneAngle)) == 1.0) {
         direction = vec3(0., 1.0, 0.);
     } else {
         vec3 randoms3 = getRandomVec3(seed.z);
@@ -239,7 +243,7 @@ void main() {
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
 #ifdef ANIMATESHEET      
     float dist = cellInfos.y - cellInfos.x;
-    float ratio = clamp(mod(((outAge * cellInfos.z) / life), life), 0., 1.0);
+    float ratio = clamp(mod(outAge * cellInfos.z, life) / life, 0., 1.0);
 
     outCellIndex = float(int(cellInfos.x + ratio * dist));
 #endif
