@@ -18,11 +18,10 @@ module BABYLON.GLTF2.Extensions {
         type: LightType;
         color?: number[];
         intensity?: number;
-    }
-
-    interface ISpotLight extends ILight {
-        innerConeAngle?: number;
-        outerConeAngle?: number;
+        spot?: {
+            innerConeAngle?: number;
+            outerConeAngle?: number;
+        };
     }
 
     interface ILights {
@@ -71,10 +70,9 @@ module BABYLON.GLTF2.Extensions {
                         break;
                     }
                     case LightType.SPOT: {
-                        const spotLight = light as ISpotLight;
                         // TODO: support inner and outer cone angles
                         //const innerConeAngle = spotLight.innerConeAngle || 0;
-                        const outerConeAngle = spotLight.outerConeAngle || Math.PI / 4;
+                        const outerConeAngle = light.spot && light.spot.outerConeAngle || Math.PI / 4;
                         babylonLight = new SpotLight(name, Vector3.Zero(), Vector3.Forward(), outerConeAngle, 2, this._loader._babylonScene);
                         break;
                     }

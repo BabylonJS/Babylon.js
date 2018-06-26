@@ -17,7 +17,20 @@ module BABYLON {
             this.zz = this.zz.add(colorVector);
         }
 
-        public static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
+        public scale(scale: number)
+        {
+            this.x = this.x.scale(scale);
+            this.y = this.y.scale(scale);
+            this.z = this.z.scale(scale);
+            this.xx = this.xx.scale(scale);
+            this.yy = this.yy.scale(scale);
+            this.zz = this.zz.scale(scale);
+            this.yz = this.yz.scale(scale);
+            this.zx = this.zx.scale(scale);
+            this.xy = this.xy.scale(scale);
+        }
+
+        public static FromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
             var result = new SphericalPolynomial();
 
             result.x = harmonics.L11.scale(1.02333);
@@ -37,17 +50,22 @@ module BABYLON {
             return result;
         }
 
-        public scale(scale: number)
-        {
-            this.x = this.x.scale(scale);
-            this.y = this.y.scale(scale);
-            this.z = this.z.scale(scale);
-            this.xx = this.xx.scale(scale);
-            this.yy = this.yy.scale(scale);
-            this.zz = this.zz.scale(scale);
-            this.yz = this.yz.scale(scale);
-            this.zx = this.zx.scale(scale);
-            this.xy = this.xy.scale(scale);
+        /**
+         * Constructs a spherical polynomial from an array.
+         * @param data defines the 9x3 coefficients (x, y, z, xx, yy, zz, yz, zx, xy)
+         */
+        public static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalPolynomial {
+            const sp = new SphericalPolynomial();
+            Vector3.FromArrayToRef(data[0], 0, sp.x);
+            Vector3.FromArrayToRef(data[1], 0, sp.y);
+            Vector3.FromArrayToRef(data[2], 0, sp.z);
+            Vector3.FromArrayToRef(data[3], 0, sp.xx);
+            Vector3.FromArrayToRef(data[4], 0, sp.yy);
+            Vector3.FromArrayToRef(data[5], 0, sp.zz);
+            Vector3.FromArrayToRef(data[6], 0, sp.yz);
+            Vector3.FromArrayToRef(data[7], 0, sp.zx);
+            Vector3.FromArrayToRef(data[8], 0, sp.xy);
+            return sp;
         }
     }
 
@@ -131,7 +149,7 @@ module BABYLON {
             // (The pixel shader must apply albedo after texture fetches, etc).
         }
 
-        public static getsphericalHarmonicsFromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics
+        public static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics
         {
             var result = new SphericalHarmonics();
 
@@ -148,6 +166,24 @@ module BABYLON {
             result.scale(Math.PI);
 
             return result;
+        }
+
+        /**
+         * Constructs a spherical harmonics from an array.
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         */
+        public static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics {
+            const sh = new SphericalHarmonics();
+            Vector3.FromArrayToRef(data[0], 0, sh.L00);
+            Vector3.FromArrayToRef(data[1], 0, sh.L1_1);
+            Vector3.FromArrayToRef(data[2], 0, sh.L10);
+            Vector3.FromArrayToRef(data[3], 0, sh.L11);
+            Vector3.FromArrayToRef(data[4], 0, sh.L2_2);
+            Vector3.FromArrayToRef(data[5], 0, sh.L2_1);
+            Vector3.FromArrayToRef(data[6], 0, sh.L20);
+            Vector3.FromArrayToRef(data[7], 0, sh.L21);
+            Vector3.FromArrayToRef(data[8], 0, sh.L22);
+            return sh;
         }
     }
 }
