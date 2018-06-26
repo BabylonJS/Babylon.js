@@ -49,7 +49,7 @@ module BABYLON {
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param color The color of the gizmo
          */
-        constructor(gizmoLayer:UtilityLayerRenderer, color:Color3){
+        constructor(color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer){
             super(gizmoLayer);
 
             // Do not update the gizmo's scale so it has a fixed size to the object its attached to
