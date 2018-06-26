@@ -186,6 +186,7 @@
 
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
         private _sizeGradients: Nullable<Array<FactorGradient>> = null;
+        private _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
 
         /**
          * Gets the current list of color gradients.
@@ -204,6 +205,15 @@
         public getSizeGradients(): Nullable<Array<FactorGradient>> {
             return this._sizeGradients;
         }        
+
+        /**
+         * Gets the current list of life time gradients.
+         * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
+         * @returns the list of life time gradients
+         */
+        public getLifeTimeGradients(): Nullable<Array<FactorGradient>> {
+            return this._lifeTimeGradients;
+        }          
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -313,19 +323,15 @@
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
          */
-        public spriteCellLoop = true;
+        public spriteCellChangeSpeed = 1;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop
-         */
-        public spriteCellChangeSpeed = 0;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
          */
         public startSpriteCellID = 0;
         /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
          */
         public endSpriteCellID = 0;
         /**
@@ -517,36 +523,33 @@
                         particle.direction.addInPlace(this._scaledGravity);
 
                         // Gradient
-                        if (this._sizeGradients && this._sizeGradients.length > 0) {
+                        if (this._sizeGradients && this._sizeGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                                particle.size = particle._initialSize * Scalar.Lerp((<FactorGradient>currentGradient).factor, (<FactorGradient>nextGradient).factor, scale);
+                                if (currentGradient !== particle._currentSizeGradient) {
+                                    particle._currentSize1 = particle._currentSize2;
+                                    particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentSizeGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
                             });
                         }
 
                         if (this._isAnimationSheetEnabled) {
-                            particle.updateCellIndex(this._scaledUpdateSpeed);
+                            particle.updateCellIndex();
                         }
                     }
                 }
             }
         }
 
-        /**
-         * Adds a new size gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient
-         */
-        public addSizeGradient(gradient: number, factor: number): ParticleSystem {
-            if (!this._sizeGradients) {
-                this._sizeGradients = [];
-            }
+        private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
+            let newGradient = new FactorGradient();
+            newGradient.gradient = gradient;
+            newGradient.factor1 = factor;
+            newGradient.factor2 = factor2;
+            factorGradients.push(newGradient);
 
-            let sizeGradient = new FactorGradient();
-            sizeGradient.gradient = gradient;
-            sizeGradient.factor = factor;
-            this._sizeGradients.push(sizeGradient);
-
-            this._sizeGradients.sort((a, b) => {
+            factorGradients.sort((a, b) => {
                 if (a.gradient < b.gradient) {
                     return -1;
                 } else if (a.gradient > b.gradient) {
@@ -554,7 +557,62 @@
                 }
 
                 return 0;
-            });
+            });            
+        }
+
+        private _removeFactorGradient(factorGradients: Nullable<FactorGradient[]>, gradient: number) {
+            if (!factorGradients) {
+                return;
+            }
+
+            let index = 0;
+            for (var factorGradient of factorGradients) {
+                if (factorGradient.gradient === gradient) {
+                    factorGradients.splice(index, 1);
+                    break;
+                }
+                index++;
+            }
+        }
+
+        /**
+         * Adds a new life time gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the life time factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         */
+        public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+            if (!this._lifeTimeGradients) {
+                this._lifeTimeGradients = [];
+            }
+
+            this._addFactorGradient(this._lifeTimeGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific life time gradient
+         * @param gradient defines the gradient to remove
+         */
+        public removeLifeTimeGradient(gradient: number): ParticleSystem {
+            this._removeFactorGradient(this._lifeTimeGradients, gradient);
+
+            return this;
+        }       
+
+        /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         */
+        public addSizeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+            if (!this._sizeGradients) {
+                this._sizeGradients = [];
+            }
+
+            this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
 
             return this;
         }
@@ -564,18 +622,7 @@
          * @param gradient defines the gradient to remove
          */
         public removeSizeGradient(gradient: number): ParticleSystem {
-            if (!this._sizeGradients) {
-                return this;
-            }
-
-            let index = 0;
-            for (var sizeGradient of this._sizeGradients) {
-                if (sizeGradient.gradient === gradient) {
-                    this._sizeGradients.splice(index, 1);
-                    break;
-                }
-                index++;
-            }
+            this._removeFactorGradient(this._sizeGradients, gradient);
 
             return this;
         }        
@@ -896,7 +943,7 @@
             subSystem.start();
         }
 
-        // end of sub system methods
+        // End of sub system methods
 
         private _update(newParticles: number): void {
             // Update current
@@ -925,6 +972,7 @@
 
                 this._particles.push(particle);
 
+                // Emitter
                 let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
@@ -953,15 +1001,43 @@
 
                 particle.direction.scaleInPlace(emitPower);
 
-                particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+                // Life time
+                if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
+                    let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
+                    Tools.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient, scale) => {
+                        let factorGradient1 = (<FactorGradient>currentGradient);
+                        let factorGradient2 = (<FactorGradient>nextGradient);
+                        let lifeTime1 = factorGradient1.getFactor(); 
+                        let lifeTime2 = factorGradient2.getFactor(); 
+                        let gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
+                        particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
+                    });
+                } else {
+                    particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+                }
 
-                particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
-                particle._initialSize = particle.size;
+                // Size
+                if (!this._sizeGradients || this._sizeGradients.length === 0) {
+                    particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                } else {
+                    particle._currentSizeGradient = this._sizeGradients[0];
+                    particle._currentSize1 = particle._currentSizeGradient.getFactor();
+                    particle.size = particle._currentSize1;
+
+                    if (this._sizeGradients.length > 1) {
+                        particle._currentSize2 = this._sizeGradients[1].getFactor();
+                    } else {
+                        particle._currentSize2 = particle._currentSize1;
+                    }
+                }
+                // Size and scale
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
-                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
 
+                // Angle
+                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
                 particle.angle = Scalar.RandomRange(this.minInitialRotation, this.maxInitialRotation);
 
+                // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
                     var step = Scalar.RandomRange(0, 1.0);
 
@@ -979,6 +1055,12 @@
                     } else {
                         particle._currentColor2.copyFrom(particle.color);
                     }
+                }
+
+                // Sheet
+                if (this._isAnimationSheetEnabled) {
+                    particle._initialStartSpriteCellID = this.startSpriteCellID;
+                    particle._initialEndSpriteCellID = this.endSpriteCellID;
                 }
             }
         }
@@ -1375,13 +1457,6 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
-            serializationObject.startSpriteCellID = this.startSpriteCellID;
-            serializationObject.endSpriteCellID = this.endSpriteCellID;
-            serializationObject.spriteCellLoop = this.spriteCellLoop;
-            serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
-            serializationObject.spriteCellWidth = this.spriteCellWidth;
-            serializationObject.spriteCellHeight = this.spriteCellHeight;
-
             serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
 
             return serializationObject;
@@ -1416,6 +1491,8 @@
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
 
             // Particle system
+            serializationObject.renderingGroupId = particleSystem.renderingGroupId;
+            serializationObject.isBillboardBased = particleSystem.isBillboardBased;
             serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
             serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
             serializationObject.minSize = particleSystem.minSize;
@@ -1440,6 +1517,11 @@
             serializationObject.preWarmStepOffset = particleSystem.preWarmStepOffset;
             serializationObject.minInitialRotation = particleSystem.minInitialRotation;
             serializationObject.maxInitialRotation = particleSystem.maxInitialRotation;
+            serializationObject.startSpriteCellID = particleSystem.startSpriteCellID;
+            serializationObject.endSpriteCellID = particleSystem.endSpriteCellID;
+            serializationObject.spriteCellChangeSpeed = particleSystem.spriteCellChangeSpeed;
+            serializationObject.spriteCellWidth = particleSystem.spriteCellWidth;
+            serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;            
 
             let colorGradients = particleSystem.getColorGradients();
             if (colorGradients) {
@@ -1462,10 +1544,17 @@
             if (sizeGradients) {
                 serializationObject.sizeGradients = [];
                 for (var sizeGradient of sizeGradients) {
-                    serializationObject.sizeGradients.push({
+
+                    var serializedGradient: any = {
                         gradient: sizeGradient.gradient,
-                        factor: sizeGradient.factor
-                    })
+                        factor1: sizeGradient.factor1
+                    };
+
+                    if (sizeGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = sizeGradient.factor2;
+                    }
+
+                    serializationObject.sizeGradients.push(serializedGradient);
                 }
             }            
 
@@ -1480,10 +1569,22 @@
             }
 
             // Emitter
-            if (parsedParticleSystem.emitterId) {
+            if (parsedParticleSystem.emitterId === undefined) {
+                particleSystem.emitter = Vector3.Zero();
+            }
+             else if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             } else {
                 particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+
+            // Misc.
+            if (parsedParticleSystem.renderingGroupId !== undefined) {
+                particleSystem.renderingGroupId = parsedParticleSystem.renderingGroupId;
+            }
+
+            if (parsedParticleSystem.isBillboardBased !== undefined) {
+                particleSystem.isBillboardBased = parsedParticleSystem.isBillboardBased;
             }
 
             // Animations
@@ -1543,7 +1644,7 @@
 
             if (parsedParticleSystem.sizeGradients) {
                 for (var sizeGradient of parsedParticleSystem.sizeGradients) {
-                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor);
+                    particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ?  sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
                 }
             }       
             
@@ -1551,16 +1652,18 @@
             let emitterType: IParticleEmitterType;
             if (parsedParticleSystem.particleEmitterType) {
                 switch (parsedParticleSystem.particleEmitterType.type) {
-                    case "SphereEmitter":
+                    case "SphereParticleEmitter":
                         emitterType = new SphereParticleEmitter();
                         break;
                     case "SphereDirectedParticleEmitter":
                         emitterType = new SphereDirectedParticleEmitter();
                         break;
                     case "ConeEmitter":
+                    case "ConeParticleEmitter":
                         emitterType = new ConeParticleEmitter();
                         break;
                     case "BoxEmitter":
+                    case "BoxParticleEmitter":
                     default:
                         emitterType = new BoxParticleEmitter();
                         break;                                                
@@ -1572,6 +1675,13 @@
                 emitterType.parse(parsedParticleSystem);
             }
             particleSystem.particleEmitterType = emitterType;
+
+            // Animation sheet
+            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
+            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
+            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
+            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
         }
 
         /**
@@ -1602,20 +1712,9 @@
                 particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
-            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
-            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
-            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
-            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
-
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
-            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
-            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
-            particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;
-            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
-            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
-            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
 
             if (!particleSystem.preventAutoStart) {
                 particleSystem.start();

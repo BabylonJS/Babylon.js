@@ -133,11 +133,11 @@ module BABYLON {
         }     
         
         /**
-         * Returns the string "BoxEmitter"
+         * Returns the string "ConeParticleEmitter"
          * @returns a string containing the class name
          */
         public getClassName(): string {
-            return "ConeEmitter";
+            return "ConeParticleEmitter";
         }  
         
         /**
