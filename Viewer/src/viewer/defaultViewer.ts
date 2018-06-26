@@ -1,13 +1,13 @@
 
 
 import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration';
-import { Template, EventCallback, TemplateManager } from '../templating/templateManager';
+import { Template, EventCallback } from '../templating/templateManager';
 import { AbstractViewer } from './viewer';
-import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight, FilesInput } from 'babylonjs';
-import { CameraBehavior } from '../interfaces';
+import { SpotLight, Vector3, FilesInput } from 'babylonjs';
 import { ViewerModel } from '../model/viewerModel';
-import { extendClassWithConfig } from '../helper';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
+import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
+import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -32,9 +32,38 @@ export class DefaultViewer extends AbstractViewer {
 
         this.onEngineInitObservable.add(() => {
             this.sceneManager.onLightsConfiguredObservable.add((data) => {
-                this._configureLights(data.newConfiguration, data.model!);
+                this._configureLights();
             })
         });
+    }
+
+    private _registeredPlugins: Array<IViewerTemplatePlugin> = [];
+
+    public registerTemplatePlugin(plugin: IViewerTemplatePlugin) {
+        //validate
+        if (!plugin.templateName) {
+            throw new Error("No template name provided");
+        }
+        this._registeredPlugins.push(plugin);
+        let template = this.templateManager.getTemplate(plugin.templateName);
+        if (!template) {
+            throw new Error(`Template ${plugin.templateName} not found`);
+        }
+        if (plugin.addHTMLTemplate) {
+            template.onHTMLRendered.add((tmpl) => {
+                plugin.addHTMLTemplate && plugin.addHTMLTemplate(tmpl);
+            });
+        }
+
+        if (plugin.eventsToAttach) {
+            plugin.eventsToAttach.forEach(eventName => {
+                plugin.onEvent && this.templateManager.eventManager.registerCallback(plugin.templateName, (event) => {
+                    if (plugin.onEvent && plugin.interactionPredicate(event)) {
+                        plugin.onEvent(event);
+                    }
+                }, eventName);
+            });
+        }
     }
 
     /**
@@ -77,10 +106,6 @@ export class DefaultViewer extends AbstractViewer {
         return super._onTemplatesLoaded();
     }
 
-    private _dropped(evt: EventCallback) {
-
-    }
-
     private _initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
         if (navbar) {
@@ -100,7 +125,7 @@ export class DefaultViewer extends AbstractViewer {
                 this._currentAnimation.goToFrame(gotoFrame);
             }, "input");
 
-            this.templateManager.eventManager.registerCallback("navBar", (e) => {
+            this.templateManager.eventManager.registerCallback("navBar", () => {
                 if (this._resumePlay) {
                     this._togglePlayPause(true);
                 }
@@ -112,6 +137,8 @@ export class DefaultViewer extends AbstractViewer {
                     hideHdButton: true
                 });
             }
+
+            this.registerTemplatePlugin(new HDButtonPlugin(this));
         }
     }
 
@@ -134,7 +161,7 @@ export class DefaultViewer extends AbstractViewer {
 
         let elementClasses = element.classList;
 
-        let elementName = ""; 0
+        let elementName = "";
 
         for (let i = 0; i < elementClasses.length; ++i) {
             let className = elementClasses[i];
@@ -179,9 +206,6 @@ export class DefaultViewer extends AbstractViewer {
                 break;
             case "fullscreen-button":
                 this.toggleFullscreen();
-                break;
-            case "hd-button":
-                this.toggleHD();
                 break;
             case "vr-button":
                 this.toggleVR();
@@ -291,24 +315,6 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         this._updateAnimationSpeed("1.0", paramsObject);
-    }
-
-    public toggleHD() {
-        super.toggleHD();
-
-        // update UI element
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
-
-        if (navbar.configuration.params) {
-            navbar.configuration.params.hdEnabled = this._hdToggled;
-        }
-
-        let span = navbar.parent.querySelector("button.hd-button span");
-        if (span) {
-            span.classList.remove(this._hdToggled ? "hd-icon" : "sd-icon");
-            span.classList.add(!this._hdToggled ? "hd-icon" : "sd-icon")
-        }
     }
 
     public toggleVR() {
@@ -589,10 +595,9 @@ export class DefaultViewer extends AbstractViewer {
      * @param lightsConfiguration the light configuration to use
      * @param model the model that will be used to configure the lights (if the lights are model-dependant)
      */
-    private _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}, model?: ViewerModel) {
+    private _configureLights() {
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
-            let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
@@ -617,7 +622,7 @@ export class DefaultViewer extends AbstractViewer {
 
             }
             this.sceneManager.scene.constantlyUpdateMeshUnderPointer = true;
-            this.sceneManager.scene.onPointerObservable.add((eventData, eventState) => {
+            this.sceneManager.scene.onPointerObservable.add((eventData) => {
                 if (eventData.type === 4 && eventData.pickInfo) {
                     lightTarget = (eventData.pickInfo.pickedPoint);
                 } else {

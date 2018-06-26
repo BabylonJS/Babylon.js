@@ -78,6 +78,7 @@
 - A new HD-Toggler button allows setting a better hardware scaling rate ([RaananW](https://github.com/RaananW))
 - An initial support for WebVR is implemented ([RaananW](https://github.com/RaananW))
 - It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
+- The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
