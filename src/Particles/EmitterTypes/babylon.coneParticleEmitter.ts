@@ -62,7 +62,7 @@ module BABYLON {
          * @param particle is the particle we are computed the direction for
          */
         public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
-            if (this._angle === 0) {
+            if (Math.abs(Math.cos(this._angle)) === 1.0) {
                 Vector3.TransformNormalFromFloatsToRef(0, 1.0, 0, worldMatrix, directionToUpdate);
             }
             else {
@@ -88,7 +88,7 @@ module BABYLON {
          */
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var s = Scalar.RandomRange(0, Math.PI * 2);
-            var h = Scalar.RandomRange(0, 1);
+            var h = Scalar.RandomRange(0, 1.0);
             // Better distribution in a cone at normal angles.
             h = 1 - h * h;
             var radius = Scalar.RandomRange(0, this._radius);

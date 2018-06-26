@@ -171,7 +171,10 @@ module BABYLON {
         /**
          * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
          */
-        spriteCellHeight: number;        
+        spriteCellHeight: number;           
+
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        translationPivot: Vector2;
 
         /**
          * Gets the maximum number of particles active at the same time.

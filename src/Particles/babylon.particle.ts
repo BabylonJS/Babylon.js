@@ -106,7 +106,7 @@
          */
         public updateCellIndex(): void {
             let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
-            let ratio = Scalar.Clamp(((this.age * this.particleSystem.spriteCellChangeSpeed) / this.lifeTime) % this.lifeTime);
+            let ratio = Scalar.Clamp(((this.age * this.particleSystem.spriteCellChangeSpeed) % this.lifeTime) / this.lifeTime);
 
             this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
         }

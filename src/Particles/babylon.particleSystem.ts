@@ -349,6 +349,9 @@
         /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
         public preWarmStepOffset = 1;
 
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        public translationPivot = new Vector2(0, 0);
+
         /**
         * An event triggered when the system is disposed
         */
@@ -1081,7 +1084,7 @@
         }
 
         public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"];
+            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask", "translationPivot"];
 
             if (isAnimationSheetEnabled) {
                 effectCreationOption.push("particlesInfos")
@@ -1272,6 +1275,7 @@
                 effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
 
+            effect.setVector2("translationPivot", this.translationPivot);
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
             if (this._scene.clipPlane) {
