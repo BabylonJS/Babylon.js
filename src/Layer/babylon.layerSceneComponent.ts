@@ -25,16 +25,21 @@
         private _layers: Array<Layer>;
 
         /**
-         * Registers the component in a given scene
+         * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
          */
-        public register(scene: Scene): void {
+        constructor(scene: Scene) {
             this.scene = scene;
             this._engine = scene.getEngine();
             this._layers = scene.layers = new Array<Layer>();
+        }
 
-            scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_LAYER, this, this._drawBackground);
-            scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawForeground);
+        /**
+         * Registers the component in a given scene
+         */
+        public register(): void {
+            this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_LAYER, this, this._drawBackground);
+            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawForeground);
         }
 
         /**

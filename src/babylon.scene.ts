@@ -1279,13 +1279,26 @@
         private _transientComponents: ISceneComponent[] = [];
 
         /**
+         * Registers the transient components if needed.
+         */
+        private _registerTransientComponents(): void {
+            // Register components that have been associated lately to the scene.
+            if (this._transientComponents.length > 0) {
+                for (let component of this._transientComponents) {
+                    component.register();
+                }
+                this._transientComponents = [];
+            }
+        }
+
+        /**
          * Add a component to the scene.
          * Note that the ccomponent could be registered on th next frame if this is called after 
          * the register component stage.
          */
         public _addComponent(component: ISceneComponent) {
-            this._transientComponents.push(component);
             this._components.push(component);
+            this._transientComponents.push(component);
         }
 
         /**
@@ -1305,19 +1318,19 @@
         /**
          * Defines the actions happening during the per mesh ready checks.
          */
-        public _isReadyForMeshStage = new Stage<MeshStageAction>();
+        public _isReadyForMeshStage = Stage.Create<MeshStageAction>();
         /**
          * Defines the actions happening during the per camera render target step.
          */
-        public _cameraDrawRenderTargetStage = new Stage<CameraStageAction>();
+        public _cameraDrawRenderTargetStage = Stage.Create<CameraStageAction>();
         /**
          * Defines the actions happening just before the active camera is drawing.
          */
-        public _beforeCameraDrawStage = new Stage<CameraStageAction>();
+        public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
          * Defines the actions happening just after the active camera is drawing.
          */
-        public _afterCameraDrawStage = new Stage<CameraStageAction>();
+        public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
        
         /**
          * Creates a new Scene
@@ -2595,6 +2608,8 @@
 
         /** @hidden */
         public _checkIsReady() {
+            this._registerTransientComponents();
+
             if (this.isReady()) {
                 this.onReadyObservable.notifyObservers(this);
 
@@ -4628,12 +4643,7 @@
             }
 
             // Register components that have been associated lately to the scene.
-            if (this._transientComponents.length > 0) {
-                for (let component of this._transientComponents) {
-                    component.register(this);
-                }
-                this._transientComponents = [];
-            }
+            this._registerTransientComponents();
 
             this._activeParticles.fetchNewFrame();
             this._totalVertices.fetchNewFrame();

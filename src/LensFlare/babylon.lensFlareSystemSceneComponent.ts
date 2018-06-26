@@ -95,15 +95,20 @@
         private _lensFlareSystems: Array<LensFlareSystem>;
 
         /**
-         * Registers the component in a given scene
+         * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
          */
-        public register(scene: Scene): void {
+        constructor(scene: Scene) {
             this.scene = scene;
 
             this._lensFlareSystems = scene.lensFlareSystems = new Array<LensFlareSystem>();
+        }
 
-            scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LENSFLARESYSTEM, this, this._draw);
+        /**
+         * Registers the component in a given scene
+         */
+        public register(): void {
+            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LENSFLARESYSTEM, this, this._draw);
         }
 
         /**

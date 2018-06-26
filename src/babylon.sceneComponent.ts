@@ -41,9 +41,8 @@
 
         /**
          * Register the component to one instance of a scene.
-         * @param scene defines the scene to register the component for
          */
-        register(scene: Scene): void;
+        register(): void;
 
         /**
          * Adds all the element from the container to the scene
@@ -94,6 +93,21 @@
      * Repressentation of a stage in the scene (Basically a list of ordered steps) 
      */
     export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {
+        /**
+         * Hide ctor from the rest of the world.
+         * @param items 
+         */
+        private constructor(items?: { index: number, component: ISceneComponent, action: T }[]) {
+            super(...<any>items)
+        }
+
+        /**
+         * Creates a new Stage.
+         */
+        static Create<T extends Function>(): Stage<T> {
+            return Object.create(Stage.prototype);
+        }
+
         /**
          * Registers a step in an ordered way in the targeted stage.
          * @param index Defines the position to register the step in

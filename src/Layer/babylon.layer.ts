@@ -65,7 +65,7 @@
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
             let layerComponent = this._scene._getComponent(SceneComponentConstants.NAME_LAYER) as LayerSceneComponent;
             if (!layerComponent) {
-                layerComponent = new LayerSceneComponent();
+                layerComponent = new LayerSceneComponent(this._scene);
                 this._scene._addComponent(layerComponent);
             }
             this._scene.layers.push(this);
