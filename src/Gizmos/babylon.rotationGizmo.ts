@@ -18,7 +18,7 @@ module BABYLON {
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          */
-        constructor(gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.defaultUtilityLayer){
+        constructor(gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer){
             super(gizmoLayer);
             this._xDrag = new PlaneRotationGizmo(new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
             this._yDrag = new PlaneRotationGizmo(new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
