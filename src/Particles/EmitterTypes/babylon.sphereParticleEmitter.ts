@@ -108,6 +108,7 @@ module BABYLON {
             var serializationObject: any = {};
             serializationObject.type = this.getClassName();
             serializationObject.radius = this.radius;
+            serializationObject.radiusRange = this.radiusRange;
             serializationObject.directionRandomizer = this.directionRandomizer;
 
             return serializationObject;
@@ -119,6 +120,7 @@ module BABYLON {
          */
         public parse(serializationObject: any): void {
             this.radius = serializationObject.radius;
+            this.radiusRange = serializationObject.radiusRange;
             this.directionRandomizer = serializationObject.directionRandomizer;
         }          
     }

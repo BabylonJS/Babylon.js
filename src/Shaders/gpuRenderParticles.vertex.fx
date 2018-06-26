@@ -13,6 +13,9 @@ in vec3 size;
 in vec3 initialDirection;
 #endif
 in vec2 angle;
+#ifdef ANIMATESHEET
+in float cellIndex;
+#endif
 in vec2 offset;
 in vec2 uv;
 
@@ -32,8 +35,22 @@ uniform vec4 colorDead;
 in vec4 color;
 #endif
 
+#ifdef ANIMATESHEET
+uniform vec3 sheetInfos;
+#endif
+
 void main() {
-  vUV = uv;
+
+	#ifdef ANIMATESHEET
+		float rowOffset = floor(cellIndex / sheetInfos.z);
+		float columnOffset = cellIndex - rowOffset * sheetInfos.z;
+
+		vec2 uvScale = sheetInfos.xy;
+		vec2 uvOffset = vec2(uv.x , 1.0 - uv.y);
+		vUV = (uvOffset + vec2(columnOffset, rowOffset)) * uvScale;
+	#else	
+   	vUV = uv;
+	#endif
   float ratio = age / life;
 #ifdef COLORGRADIENTS
 	vColor = texture(colorGradientSampler, vec2(ratio, 0));
