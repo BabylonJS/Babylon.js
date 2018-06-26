@@ -6,7 +6,7 @@ module BABYLON {
         private _pointerCaptures: {[pointerId:number]: boolean} = {};
         private _lastPointerEvents: {[pointerId:number]: number} = {};
         private static _defaultUtilityLayer:Nullable<UtilityLayerRenderer> = null;
-        public static get defaultUtilityLayer():UtilityLayerRenderer{
+        public static get DefaultUtilityLayer():UtilityLayerRenderer{
             if(UtilityLayerRenderer._defaultUtilityLayer == null){
                 UtilityLayerRenderer._defaultUtilityLayer = new UtilityLayerRenderer(BABYLON.Engine.LastCreatedScene!);
                 UtilityLayerRenderer._defaultUtilityLayer.originalScene.onDisposeObservable.add(()=>{
