@@ -325,7 +325,13 @@
         public spriteCellHeight = 0;
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
-        public translationPivot = new Vector2(0, 0);        
+        public translationPivot = new Vector2(0, 0);     
+        
+        /**
+         * Gets or sets the billboard mode to use when isBillboardBased = true.
+         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         */
+        public billboardMode = AbstractMesh.BILLBOARDMODE_ALL;        
                 
         private _isAnimationSheetEnabled: boolean;
 
@@ -876,6 +882,15 @@
 
             if (this._isBillboardBased) {
                 defines += "\n#define BILLBOARD";
+
+                switch (this.billboardMode) {
+                    case AbstractMesh.BILLBOARDMODE_Y:
+                        defines += "\n#define BILLBOARDY";
+                        break;
+                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    default:
+                        break;
+                }                
             }         
             
             if (this._colorGradientsTexture) {
@@ -892,7 +907,7 @@
 
             this._renderEffect = new Effect("gpuRenderParticles", 
                                             ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle", "cellIndex"], 
-                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot"], 
+                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot", "eyePosition"], 
                                             ["textureSampler", "colorGradientSampler"], this._scene.getEngine(), defines);
         }        
 
@@ -1077,6 +1092,11 @@
                 if (this._isAnimationSheetEnabled && this.particleTexture) {
                     let baseSize = this.particleTexture.getBaseSize();
                     this._renderEffect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+                }
+
+                if (this._isBillboardBased) {
+                    var camera = this._scene.activeCamera!;
+                    this._renderEffect.setVector3("eyePosition", camera.globalPosition);
                 }
 
                 if (this._scene.clipPlane) {
