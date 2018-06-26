@@ -21,7 +21,7 @@
             this._scene = scene || Engine.LastCreatedScene;
             let component = this._scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
             if (!component) {
-                component = new LensFlareSystemSceneComponent();
+                component = new LensFlareSystemSceneComponent(this._scene);
                 scene._addComponent(component);
             }
 
