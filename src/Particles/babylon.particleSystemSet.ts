@@ -12,7 +12,7 @@ module BABYLON {
      */
     export class ParticleSystemSet implements IDisposable {
         private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
-        private _emitterMesh: Nullable<Mesh>;
+        private _emitterNode: Nullable<TransformNode>;
 
         /**
          * Gets the particle system list
@@ -20,10 +20,10 @@ module BABYLON {
         public systems = new Array<IParticleSystem>();
 
         /**
-         * Gets the emitter mesh used with this set
+         * Gets the emitter node used with this set
          */
-        public get emitterMesh(): Nullable<Mesh> {
-            return this._emitterMesh;
+        public get emitterNode(): Nullable<TransformNode> {
+            return this._emitterNode;
         }
 
         /**
@@ -33,8 +33,8 @@ module BABYLON {
          * @param scene defines the hosting scene
          */
         public setEmitterAsSphere(options: {diameter: number, segments: number, color: Color3} , renderingGroupId: number, scene: Scene) {
-            if (this._emitterMesh) {
-                this._emitterMesh.dispose();
+            if (this._emitterNode) {
+                this._emitterNode.dispose();
             }
 
             this._emitterCreationOptions = {
@@ -43,16 +43,18 @@ module BABYLON {
                 renderingGroupId: renderingGroupId
             }
 
-            this._emitterMesh = MeshBuilder.CreateSphere("emitterSphere", {diameter: options.diameter, segments: options.segments}, scene);
-            this._emitterMesh.renderingGroupId = renderingGroupId;
+            let emitterMesh = MeshBuilder.CreateSphere("emitterSphere", {diameter: options.diameter, segments: options.segments}, scene);
+            emitterMesh.renderingGroupId = renderingGroupId;
 
             var material = new BABYLON.StandardMaterial("emitterSphereMaterial", scene)
             material.emissiveColor = options.color;    
-            this._emitterMesh.material = material;     
+            emitterMesh.material = material;     
             
             for (var system of this.systems) {
-                system.emitter = this._emitterMesh;
+                system.emitter = emitterMesh;
             }
+
+            this._emitterNode = emitterMesh;
         }
 
         /**
@@ -78,9 +80,9 @@ module BABYLON {
 
             this.systems = [];
 
-            if (this._emitterMesh) {
-                this._emitterMesh.dispose();
-                this._emitterMesh = null;
+            if (this._emitterNode) {
+                this._emitterNode.dispose();
+                this._emitterNode = null;
             }
         }
 
@@ -96,7 +98,7 @@ module BABYLON {
                 result.systems.push(system.serialize());
             }
 
-            if (this._emitterMesh) {
+            if (this._emitterNode) {
                 result.emitter = this._emitterCreationOptions;
             }
 

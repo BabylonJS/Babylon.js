@@ -3,6 +3,7 @@
 
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec2 translationPivot;
 
 // Particles state
 in vec3 position;
@@ -58,8 +59,7 @@ void main() {
 	vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 #endif
   
-
-  vec2 cornerPos = offset * size.yz * size.x;
+  vec2 cornerPos = (offset - translationPivot) * size.yz * size.x + translationPivot;
 
 #ifdef BILLBOARD
   // Rotate
