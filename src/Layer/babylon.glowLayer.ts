@@ -1,4 +1,24 @@
 ﻿module BABYLON {
+
+    export interface Scene {
+        /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null.
+         */
+        getGlowLayerByName(name: string): Nullable<GlowLayer>;
+    }
+
+    Scene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
+        for (var index = 0; index < this.effectLayers.length; index++) {
+            if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
+                return (<any>this.effectLayers[index]) as GlowLayer;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Glow layer options. This helps customizing the behaviour
      * of the glow layer.

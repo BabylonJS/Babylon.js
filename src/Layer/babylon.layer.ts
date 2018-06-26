@@ -63,6 +63,11 @@
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
             
             this._scene = <Scene>(scene || Engine.LastCreatedScene);
+            let layerComponent = this._scene._getComponent(SceneComponentConstants.NAME_LAYER) as LayerSceneComponent;
+            if (!layerComponent) {
+                layerComponent = new LayerSceneComponent();
+                this._scene._addComponent(layerComponent);
+            }
             this._scene.layers.push(this);
 
             var engine = this._scene.getEngine();

@@ -165,6 +165,7 @@
                 "../../src/Cameras/babylon.camera.js",
                 "../../src/Rendering/babylon.renderingManager.js",
                 "../../src/Rendering/babylon.renderingGroup.js",
+                "../../src/babylon.sceneComponent.js",
                 "../../src/babylon.scene.js",
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
@@ -1007,6 +1008,7 @@
         "lensFlares": {
             "files": [
                 "../../src/LensFlare/babylon.lensFlare.js",
+                "../../src/LensFlare/babylon.lensFlareSystemSceneComponent.js",
                 "../../src/LensFlare/babylon.lensFlareSystem.js"
             ],
             "dependUpon": [
@@ -1153,6 +1155,7 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
+                "../../src/Layer/babylon.effectLayerSceneComponent.js",
                 "../../src/Layer/babylon.effectLayer.js",
                 "../../src/Layer/babylon.highlightLayer.js",
                 "../../src/Layer/babylon.glowLayer.js"
@@ -1198,6 +1201,7 @@
         },
         "layer": {
             "files": [
+                "../../src/Layer/babylon.layerSceneComponent.js",
                 "../../src/Layer/babylon.layer.js"
             ],
             "dependUpon": [
