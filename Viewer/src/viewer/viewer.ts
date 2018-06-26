@@ -1,15 +1,12 @@
 import { viewerManager } from './viewerManager';
 import { SceneManager } from '../managers/sceneManager';
 import { ConfigurationLoader } from '../configuration/loader';
-import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager, VRExperienceHelper, VRExperienceHelperOptions, TargetCamera, WebVRFreeCamera } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/';
+import { Effect, Observable, Engine, Scene, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, RenderingManager, TargetCamera, WebVRFreeCamera } from 'babylonjs';
+import { ViewerConfiguration, IObserversConfiguration, IModelConfiguration } from '../configuration/';
 
 import { ViewerModel } from '../model/viewerModel';
-import { GroupModelAnimation } from '../model/modelAnimation';
 import { ModelLoader } from '../loader/modelLoader';
-import { CameraBehavior } from '../interfaces';
 import { viewerGlobals } from '../configuration/globals';
-import { extendClassWithConfig } from '../helper';
 import { telemetryManager } from '../managers/telemetryManager';
 import { deepmerge } from '../helper/';
 import { ObservablesManager } from '../managers/observablesManager';
@@ -290,7 +287,6 @@ export abstract class AbstractViewer {
                 // enable rotation using the axels
                 // check if the camera is a webvr camera
                 if (this.sceneManager.vrHelper.currentVRCamera.getClassName() === "WebVRFreeCamera") {
-                    let vrCamera: WebVRFreeCamera = (<WebVRFreeCamera>this.sceneManager.vrHelper.currentVRCamera);
                 }
             } else {
                 this._vrModelRepositioning = 0;
@@ -551,7 +547,7 @@ export abstract class AbstractViewer {
             }).then(() => {
                 this._initTelemetryEvents();
                 if (autoLoad) {
-                    return this.loadModel(this.configuration.model!).catch(e => { }).then(() => { return this.sceneManager.scene });
+                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene });
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
                 }
