@@ -112,7 +112,7 @@ module BABYLON {
                     return null;
                 }
             }
-            
+
             // Read json manifest - collect characters up to null terminator
             let manifestString = '';
             let charCode = 0x00;
@@ -164,7 +164,7 @@ module BABYLON {
 
             let cubeWidth = internalTexture.width;
             let hostingScene = new Scene(engine);
-            let specularTextures: { [key: number]: ArrayBuffer } = { };
+            let specularTextures: { [key: number]: ArrayBuffer } = {};
             let promises: Promise<void>[] = [];
 
             // Read and collect all mipmaps data from the cube.
@@ -186,7 +186,7 @@ module BABYLON {
                             rgbdPostProcess.onApply = (effect) => {
                                 effect._bindTexture("textureSampler", tempTexture);
                             }
-            
+
                             // As the process needs to happen on the main canvas, keep track of the current size
                             let currentW = engine.getRenderWidth();
                             let currentH = engine.getRenderHeight();
@@ -246,7 +246,7 @@ module BABYLON {
                 let infoString = JSON.stringify(info);
                 let infoBuffer = new ArrayBuffer(infoString.length + 1);
                 let infoView = new Uint8Array(infoBuffer); // Limited to ascii subset matching unicode.
-                for (let i= 0, strLen = infoString.length; i < strLen; i++) {
+                for (let i = 0, strLen = infoString.length; i < strLen; i++) {
                     infoView[i] = infoString.charCodeAt(i);
                 }
                 // Ends up with a null terminator for easier parsing
@@ -287,7 +287,7 @@ module BABYLON {
          * @param texture defines the texture containing the polynomials
          * @return the JSON representation of the spherical info
          */
-        private static _CreateEnvTextureIrradiance(texture: CubeTexture) : Nullable<EnvironmentTextureIrradianceInfoV1> {
+        private static _CreateEnvTextureIrradiance(texture: CubeTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
             let polynmials = texture.sphericalPolynomial;
             if (polynmials == null) {
                 return null;
@@ -311,13 +311,13 @@ module BABYLON {
         }
 
         /**
-         * Uploads the texture info contained in the env file to te GPU.
+         * Uploads the texture info contained in the env file to the GPU.
          * @param texture defines the internal texture to upload to
          * @param arrayBuffer defines the buffer cotaining the data to load
          * @param info defines the texture info retrieved through the GetEnvInfo method
          * @returns a promise
          */
-        public static UploadLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
+        public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
             if (info.version !== 1) {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
             }
@@ -335,13 +335,45 @@ module BABYLON {
                 Tools.Warn('Unsupported specular mipmaps number "' + specularInfo.mipmaps.length + '"');
             }
 
+            const imageData = new Array<Array<ArrayBufferView>>(mipmapsCount);
+            for (let i = 0; i < mipmapsCount; i++) {
+                imageData[i] = new Array<ArrayBufferView>(6);
+                for (let face = 0; face < 6; face++) {
+                    const imageInfo = specularInfo.mipmaps[i * 6 + face];
+                    imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
+
+
+                    // {
+                    //     const link = document.createElement('a');
+                    //     document.body.appendChild(link);
+                    //     link.setAttribute("type", "hidden");
+                    //     link.download = `image${face}${i}`;
+                    //     const blob = new Blob([imageData[i][face]], { type: "image/png" });
+                    //     link.href = window.URL.createObjectURL(blob);
+                    //     link.click();
+                    // }
+                }
+            }
+
+            return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
+        }
+
+        /**
+         * Uploads the levels of image data to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param imageData defines the array buffer views of image data [mipmap][face]
+         * @returns a promise
+         */
+        public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void> {
+            const mipmapsCount = imageData.length;
+
             // Gets everything ready.
             let engine = texture.getEngine();
             let expandTexture = false;
             let generateNonLODTextures = false;
             let rgbdPostProcess: Nullable<PostProcess> = null;
             let cubeRtt: Nullable<InternalTexture> = null;
-            let lodTextures: Nullable<{ [lod: number]: BaseTexture}> = null;
+            let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
             let caps = engine.getCaps();
 
             texture.format = Engine.TEXTUREFORMAT_RGBA;
@@ -352,7 +384,7 @@ module BABYLON {
             if (!caps.textureLOD) {
                 expandTexture = false;
                 generateNonLODTextures = true;
-                lodTextures = { };
+                lodTextures = {};
             }
             // in webgl 1 there are no ways to either render or copy lod level information for float textures.
             else if (engine.webGLVersion < 2) {
@@ -373,7 +405,7 @@ module BABYLON {
             if (expandTexture) {
                 // Simply run through the decode PP
                 rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Texture.TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
-                
+
                 texture._isRGBD = false;
                 texture.invertY = false;
                 cubeRtt = engine.createRenderTargetCubeTexture(texture.width, {
@@ -394,24 +426,24 @@ module BABYLON {
                     let mipSlices = 3;
                     let scale = texture._lodGenerationScale;
                     let offset = texture._lodGenerationOffset;
-    
+
                     for (let i = 0; i < mipSlices; i++) {
                         //compute LOD from even spacing in smoothness (matching shader calculation)
                         let smoothness = i / (mipSlices - 1);
                         let roughness = 1 - smoothness;
-    
+
                         let minLODIndex = offset; // roughness = 0
-                        let maxLODIndex = Scalar.Log2(info.width) * scale + offset; // roughness = 1
-    
+                        let maxLODIndex = mipmapsCount * scale + offset; // roughness = 1
+
                         let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                         let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
-    
+
                         let glTextureFromLod = new InternalTexture(engine, InternalTexture.DATASOURCE_TEMP);
                         glTextureFromLod.isCube = true;
                         glTextureFromLod.invertY = true;
                         glTextureFromLod.generateMipMaps = false;
                         engine.updateTextureSamplingMode(Texture.LINEAR_LINEAR, glTextureFromLod);
-    
+
                         // Wrap in a base texture for easy binding.
                         let lodTexture = new BaseTexture(null);
                         lodTexture.isCube = true;
@@ -420,14 +452,14 @@ module BABYLON {
 
                         switch (i) {
                             case 0:
-                            texture._lodTextureLow = lodTexture;
-                            break;
+                                texture._lodTextureLow = lodTexture;
+                                break;
                             case 1:
-                            texture._lodTextureMid = lodTexture;
-                            break;
+                                texture._lodTextureMid = lodTexture;
+                                break;
                             case 2:
-                            texture._lodTextureHigh = lodTexture;
-                            break;
+                                texture._lodTextureHigh = lodTexture;
+                                break;
                         }
                     }
                 }
@@ -438,25 +470,22 @@ module BABYLON {
             for (let i = 0; i < mipmapsCount; i++) {
                 // All faces
                 for (let face = 0; face < 6; face++) {
-                    // Retrieves the face data
-                    let imageData = specularInfo.mipmaps[i * 6 + face];
-                    let bytes = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageData.position, imageData.length);
-
-                    // Constructs an image element from bytes
+                    // Constructs an image element from image data
+                    let bytes = imageData[i][face];
                     let blob = new Blob([bytes], { type: 'image/png' });
                     let url = URL.createObjectURL(blob);
                     let image = new Image();
                     image.src = url;
 
                     // Enqueue promise to upload to the texture.
-                    let promise = new Promise<void>((resolve, reject) => {;
+                    let promise = new Promise<void>((resolve, reject) => {
                         image.onload = () => {
                             if (expandTexture) {
                                 let tempTexture = engine.createTexture(null, true, true, null, Texture.NEAREST_SAMPLINGMODE, null,
-                                (message) => {
-                                    reject(message);
-                                },
-                                image);
+                                    (message) => {
+                                        reject(message);
+                                    },
+                                    image);
 
                                 rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
                                     // Uncompress the data to a RTT
@@ -464,7 +493,7 @@ module BABYLON {
                                         effect._bindTexture("textureSampler", tempTexture);
                                         effect.setFloat2("scale", 1, 1);
                                     }
-                                    
+
                                     engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
 
                                     // Cleanup
@@ -524,10 +553,9 @@ module BABYLON {
         /**
          * Uploads spherical polynomials information to the texture.
          * @param texture defines the texture we are trying to upload the information to
-         * @param arrayBuffer defines the array buffer holding the data
          * @param info defines the environment texture info retrieved through the GetEnvInfo method
          */
-        public static UploadPolynomials(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): void {
+        public static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void {
             if (info.version !== 1) {
                 Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
             }
@@ -536,151 +564,33 @@ module BABYLON {
             if (!irradianceInfo) {
                 return;
             }
-            
-            //harmonics now represent radiance
-            texture._sphericalPolynomial = new SphericalPolynomial();
 
             if (irradianceInfo.polynomials) {
-                EnvironmentTextureTools._UploadSP(irradianceInfo, texture._sphericalPolynomial);
+                const sp = new SphericalPolynomial();
+                Vector3.FromArrayToRef(irradianceInfo.x, 0, sp.x);
+                Vector3.FromArrayToRef(irradianceInfo.y, 0, sp.y);
+                Vector3.FromArrayToRef(irradianceInfo.z, 0, sp.z);
+                Vector3.FromArrayToRef(irradianceInfo.xx, 0, sp.xx);
+                Vector3.FromArrayToRef(irradianceInfo.yy, 0, sp.yy);
+                Vector3.FromArrayToRef(irradianceInfo.zz, 0, sp.zz);
+                Vector3.FromArrayToRef(irradianceInfo.yz, 0, sp.yz);
+                Vector3.FromArrayToRef(irradianceInfo.zx, 0, sp.zx);
+                Vector3.FromArrayToRef(irradianceInfo.xy, 0, sp.xy);
+                texture._sphericalPolynomial = sp;
             }
             else {
-                // convert From SH to SP.
-                EnvironmentTextureTools._ConvertSHIrradianceToLambertianRadiance(irradianceInfo);
-                EnvironmentTextureTools._ConvertSHToSP(irradianceInfo, texture._sphericalPolynomial);
+                const sh = new SphericalHarmonics();
+                Vector3.FromArrayToRef(irradianceInfo.l00, 0, sh.L00);
+                Vector3.FromArrayToRef(irradianceInfo.l1_1, 0, sh.L1_1);
+                Vector3.FromArrayToRef(irradianceInfo.l10, 0, sh.L10);
+                Vector3.FromArrayToRef(irradianceInfo.l11, 0, sh.L11);
+                Vector3.FromArrayToRef(irradianceInfo.l2_2, 0, sh.L2_2);
+                Vector3.FromArrayToRef(irradianceInfo.l2_1, 0, sh.L2_1);
+                Vector3.FromArrayToRef(irradianceInfo.l20, 0, sh.L20);
+                Vector3.FromArrayToRef(irradianceInfo.l21, 0, sh.L21);
+                Vector3.FromArrayToRef(irradianceInfo.l22, 0, sh.L22);
+                texture._sphericalPolynomial = SphericalPolynomial.FromHarmonics(sh);
             }
-        }
-
-        /**
-         * Upload spherical polynomial coefficients to the texture
-         * @param polynmials Spherical polynmial coefficients (9)
-         * @param outPolynomialCoefficents Polynomial coefficients (9) object to store result
-         */
-        private static _UploadSP(polynmials: EnvironmentTextureIrradianceInfoV1, outPolynomialCoefficents: SphericalPolynomial) {
-            outPolynomialCoefficents.x.x = polynmials.x[0];
-            outPolynomialCoefficents.x.y = polynmials.x[1];
-            outPolynomialCoefficents.x.z = polynmials.x[2];
-
-            outPolynomialCoefficents.y.x = polynmials.y[0];
-            outPolynomialCoefficents.y.y = polynmials.y[1];
-            outPolynomialCoefficents.y.z = polynmials.y[2];
-
-            outPolynomialCoefficents.z.x = polynmials.z[0];
-            outPolynomialCoefficents.z.y = polynmials.z[1];
-            outPolynomialCoefficents.z.z = polynmials.z[2];
-
-            //xx
-            outPolynomialCoefficents.xx.x = polynmials.xx[0];
-            outPolynomialCoefficents.xx.y = polynmials.xx[1];
-            outPolynomialCoefficents.xx.z = polynmials.xx[2];
-
-            outPolynomialCoefficents.yy.x = polynmials.yy[0];
-            outPolynomialCoefficents.yy.y = polynmials.yy[1];
-            outPolynomialCoefficents.yy.z = polynmials.yy[2];
-
-            outPolynomialCoefficents.zz.x = polynmials.zz[0];
-            outPolynomialCoefficents.zz.y = polynmials.zz[1];
-            outPolynomialCoefficents.zz.z = polynmials.zz[2];
-
-            //yz
-            outPolynomialCoefficents.yz.x = polynmials.yz[0];
-            outPolynomialCoefficents.yz.y = polynmials.yz[1];
-            outPolynomialCoefficents.yz.z = polynmials.yz[2];
-
-            outPolynomialCoefficents.zx.x = polynmials.zx[0];
-            outPolynomialCoefficents.zx.y = polynmials.zx[1];
-            outPolynomialCoefficents.zx.z = polynmials.zx[2];
-
-            outPolynomialCoefficents.xy.x = polynmials.xy[0];
-            outPolynomialCoefficents.xy.y = polynmials.xy[1];
-            outPolynomialCoefficents.xy.z = polynmials.xy[2];
-        }
-
-        /**
-         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
-         *	  L = (1/pi) * E * rho
-         * 
-         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
-         * @param harmonics Spherical harmonic coefficients (9)
-         */
-        private static _ConvertSHIrradianceToLambertianRadiance(harmonics: any): void {
-            let scaleFactor = 1 / Math.PI;
-            // The resultant SH now represents outgoing radiance, so includes the Lambert 1/pi normalisation factor but without albedo (rho) applied
-            // (The pixel shader must apply albedo after texture fetches, etc).
-            harmonics.l00[0] *= scaleFactor;
-            harmonics.l00[1] *= scaleFactor;
-            harmonics.l00[2] *= scaleFactor;
-            harmonics.l1_1[0] *= scaleFactor;
-            harmonics.l1_1[1] *= scaleFactor;
-            harmonics.l1_1[2] *= scaleFactor;
-            harmonics.l10[0] *= scaleFactor;
-            harmonics.l10[1] *= scaleFactor;
-            harmonics.l10[2] *= scaleFactor;
-            harmonics.l11[0] *= scaleFactor;
-            harmonics.l11[1] *= scaleFactor;
-            harmonics.l11[2] *= scaleFactor;
-            harmonics.l2_2[0] *= scaleFactor;
-            harmonics.l2_2[1] *= scaleFactor;
-            harmonics.l2_2[2] *= scaleFactor;
-            harmonics.l2_1[0] *= scaleFactor;
-            harmonics.l2_1[1] *= scaleFactor;
-            harmonics.l2_1[2] *= scaleFactor;
-            harmonics.l20[0] *= scaleFactor;
-            harmonics.l20[1] *= scaleFactor;
-            harmonics.l20[2] *= scaleFactor;
-            harmonics.l21[0] *= scaleFactor;
-            harmonics.l21[1] *= scaleFactor;
-            harmonics.l21[2] *= scaleFactor;
-            harmonics.l22[0] *= scaleFactor;
-            harmonics.l22[1] *= scaleFactor;
-            harmonics.l22[2] *= scaleFactor;
-        }
-
-        /**
-         * Convert spherical harmonics to spherical polynomial coefficients
-         * @param harmonics Spherical harmonic coefficients (9)
-         * @param outPolynomialCoefficents Polynomial coefficients (9) object to store result
-         */
-        private static _ConvertSHToSP(harmonics: any, outPolynomialCoefficents: SphericalPolynomial) {
-            let rPi = 1 / Math.PI;
-
-            //x
-            outPolynomialCoefficents.x.x = 1.02333 * harmonics.l11[0] * rPi;
-            outPolynomialCoefficents.x.y = 1.02333 * harmonics.l11[1] * rPi;
-            outPolynomialCoefficents.x.z = 1.02333 * harmonics.l11[2] * rPi;
-
-            outPolynomialCoefficents.y.x = 1.02333 * harmonics.l1_1[0] * rPi;
-            outPolynomialCoefficents.y.y = 1.02333 * harmonics.l1_1[1] * rPi;
-            outPolynomialCoefficents.y.z = 1.02333 * harmonics.l1_1[2] * rPi;
-
-            outPolynomialCoefficents.z.x = 1.02333 * harmonics.l10[0] * rPi;
-            outPolynomialCoefficents.z.y = 1.02333 * harmonics.l10[1] * rPi;
-            outPolynomialCoefficents.z.z = 1.02333 * harmonics.l10[2] * rPi;
-
-            //xx
-            outPolynomialCoefficents.xx.x = (0.886277 * harmonics.l00[0] - 0.247708 * harmonics.l20[0] + 0.429043 * harmonics.l22[0]) * rPi;
-            outPolynomialCoefficents.xx.y = (0.886277 * harmonics.l00[1] - 0.247708 * harmonics.l20[1] + 0.429043 * harmonics.l22[1]) * rPi;
-            outPolynomialCoefficents.xx.z = (0.886277 * harmonics.l00[2] - 0.247708 * harmonics.l20[2] + 0.429043 * harmonics.l22[2]) * rPi;
-
-            outPolynomialCoefficents.yy.x = (0.886277 * harmonics.l00[0] - 0.247708 * harmonics.l20[0] - 0.429043 * harmonics.l22[0]) * rPi;
-            outPolynomialCoefficents.yy.y = (0.886277 * harmonics.l00[1] - 0.247708 * harmonics.l20[1] - 0.429043 * harmonics.l22[1]) * rPi;
-            outPolynomialCoefficents.yy.z = (0.886277 * harmonics.l00[2] - 0.247708 * harmonics.l20[2] - 0.429043 * harmonics.l22[2]) * rPi;
-
-            outPolynomialCoefficents.zz.x = (0.886277 * harmonics.l00[0] + 0.495417 * harmonics.l20[0]) * rPi;
-            outPolynomialCoefficents.zz.y = (0.886277 * harmonics.l00[1] + 0.495417 * harmonics.l20[1]) * rPi;
-            outPolynomialCoefficents.zz.z = (0.886277 * harmonics.l00[2] + 0.495417 * harmonics.l20[2]) * rPi;
-
-            //yz
-            outPolynomialCoefficents.yz.x = 0.858086 * harmonics.l2_1[0] * rPi;
-            outPolynomialCoefficents.yz.y = 0.858086 * harmonics.l2_1[1] * rPi;
-            outPolynomialCoefficents.yz.z = 0.858086 * harmonics.l2_1[2] * rPi;
-
-            outPolynomialCoefficents.zx.x = 0.858086 * harmonics.l21[0] * rPi;
-            outPolynomialCoefficents.zx.y = 0.858086 * harmonics.l21[1] * rPi;
-            outPolynomialCoefficents.zx.z = 0.858086 * harmonics.l21[2] * rPi;
-
-            outPolynomialCoefficents.xy.x = 0.858086 * harmonics.l2_2[0] * rPi;
-            outPolynomialCoefficents.xy.y = 0.858086 * harmonics.l2_2[1] * rPi;
-            outPolynomialCoefficents.xy.z = 0.858086 * harmonics.l2_2[2] * rPi;
         }
     }
 }

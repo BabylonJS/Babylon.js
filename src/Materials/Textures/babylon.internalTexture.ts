@@ -144,7 +144,7 @@ module BABYLON {
         /** @hidden */
         public _bufferView: Nullable<ArrayBufferView>;
         /** @hidden */
-        public _bufferViewArray: Nullable<ArrayBufferView[]>;
+        public _bufferViewArray: Nullable<ArrayBufferView[] | ArrayBufferView[][]>;
         /** @hidden */
         public _size: number;
         /** @hidden */
@@ -186,11 +186,13 @@ module BABYLON {
         /** @hidden */
         public _comparisonFunction: number = 0;
         /** @hidden */
-        public _sphericalPolynomial: Nullable<SphericalPolynomial>;
+        public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
         /** @hidden */
         public _lodGenerationScale: number = 0;
         /** @hidden */
         public _lodGenerationOffset: number = 0;
+        /** @hidden */
+        public _sourceIsRGBD: boolean = false;
 
         // The following three fields helps sharing generated fixed LODs for texture filtering
         // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -350,10 +352,10 @@ module BABYLON {
                     return;
 
                 case InternalTexture.DATASOURCE_CUBERAW:
-                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression, () => {
+                        this.isReady = true;
+                    }, null, this._sphericalPolynomial, this._sourceIsRGBD, this._lodGenerationScale, this._lodGenerationOffset);
                     proxy._swapAndDie(this);
-
-                    this.isReady = true;
                     return;
 
                 case InternalTexture.DATASOURCE_CUBEPREFILTERED:
