@@ -91,11 +91,12 @@
 
     /** 
      * Repressentation of a stage in the scene (Basically a list of ordered steps) 
+     * @hidden
      */
     export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {
         /**
          * Hide ctor from the rest of the world.
-         * @param items 
+         * @param items The items to add.
          */
         private constructor(items?: { index: number, component: ISceneComponent, action: T }[]) {
             super(...<any>items)
@@ -103,6 +104,7 @@
 
         /**
          * Creates a new Stage.
+         * @returns A new instance of a Stage
          */
         static Create<T extends Function>(): Stage<T> {
             return Object.create(Stage.prototype);
