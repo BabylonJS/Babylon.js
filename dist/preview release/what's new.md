@@ -96,6 +96,7 @@
 - Node's setParent(node.parent) will no longer throw an exception when parent is undefined and will behave the same as setParent(null) ([TrevorDev](https://github.com/TrevorDev))
 - Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
 - Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev]
+- Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
 
 ### Core Engine
 
