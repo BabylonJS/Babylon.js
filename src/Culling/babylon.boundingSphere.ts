@@ -2,6 +2,7 @@
     export class BoundingSphere {
         public center: Vector3;
         public radius: number;
+        public realRadius : number;
         public centerWorld: Vector3;
         public radiusWorld: number;
         public minimum: Vector3;
@@ -26,6 +27,21 @@
         public reConstruct(min: Vector3, max: Vector3) {
             this.minimum = min.clone();
             this.maximum = max.clone()
+            
+            var _min = Number.POSITIVE_INFINITY;
+            var _max = Number.NEGATIVE_INFINITY;
+            var _va = ['x','y','z'];
+    
+            for(var i=0; i<3; i++){
+                if(min[_va[i]]<_min){
+                    _min=min[_va[i]];
+                }
+            if(max[va[i]]>_max){
+                    _max=max[_va[i]];
+                }
+            }
+            var _distance = max-min;
+            this.realRadius = _distance*0.5;
 
             var distance = Vector3.Distance(min, max);
 
