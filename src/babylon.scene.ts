@@ -1171,6 +1171,7 @@
          * Add a component to the scene.
          * Note that the ccomponent could be registered on th next frame if this is called after 
          * the register component stage.
+         * @param component Defines the component to add to the scene
          */
         public _addComponent(component: ISceneComponent) {
             this._components.push(component);
