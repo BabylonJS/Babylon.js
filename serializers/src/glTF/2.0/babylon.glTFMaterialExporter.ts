@@ -793,7 +793,7 @@ module BABYLON.GLTF2 {
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          * @returns glTF PBR Metallic Roughness factors
          */
-        private _gonvertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, hasTextureCoords: boolean): Promise<_IPBRMetallicRoughness> {
+        private _convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, hasTextureCoords: boolean): Promise<_IPBRMetallicRoughness> {
             const promises = [];
             const metallicRoughness: _IPBRMetallicRoughness = {
                 baseColor: babylonPBRMaterial.albedoColor,
@@ -951,9 +951,8 @@ module BABYLON.GLTF2 {
                 if (babylonPBRMaterial.reflectivityTexture && !babylonPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha) {
                     return Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
                 }
-                if (babylonPBRMaterial.albedoTexture || babylonPBRMaterial.reflectivityTexture) {
+                if ((babylonPBRMaterial.albedoTexture || babylonPBRMaterial.reflectivityTexture) && hasTextureCoords) {
                     return this._convertSpecularGlossinessTexturesToMetallicRoughnessAsync(babylonPBRMaterial.albedoTexture, babylonPBRMaterial.reflectivityTexture, specGloss, mimeType).then(metallicRoughnessFactors => {
-                        if (hasTextureCoords) {
                             if (metallicRoughnessFactors.baseColorTextureBase64) {
                                 const glTFBaseColorTexture = this._getTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex);
                                 if (glTFBaseColorTexture) {
@@ -968,10 +967,6 @@ module BABYLON.GLTF2 {
                             }
 
                             return metallicRoughnessFactors;
-                        }
-                        else {
-                            return this._convertSpecularGlossinessToMetallicRoughness(specGloss);
-                        }
                     });
                 }
                 else {
@@ -1006,7 +1001,7 @@ module BABYLON.GLTF2 {
                         babylonPBRMaterial.alpha
                     ]
                 }
-                return this._gonvertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords).then(metallicRoughness => {
+                return this._convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords).then(metallicRoughness => {
                     return this.setMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, hasTextureCoords);
                 });
             }

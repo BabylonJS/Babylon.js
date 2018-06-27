@@ -184,10 +184,10 @@ module BABYLON.GLTF2 {
         }
 
         public static _NormalizeTangentFromRef(tangent: Vector4) {
-            const normalizedTangentComponent = new Vector3(tangent.x, tangent.y, tangent.z).normalize();
-            tangent.x = normalizedTangentComponent.x;
-            tangent.y = normalizedTangentComponent.y;
-            tangent.z = normalizedTangentComponent.z;
+            const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z + tangent.z);
+            tangent.x /= length;
+            tangent.y /= length;
+            tangent.z /= length;
         }
     }
 }
