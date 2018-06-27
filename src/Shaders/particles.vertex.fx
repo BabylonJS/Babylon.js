@@ -62,9 +62,10 @@ void main(void) {
 	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.y = 0.;
 
-	vec3 yaxis = normalize(position - eyePosition);
+	vec3 yaxis = position - eyePosition;
 	yaxis.y = 0.;
-	vec3 worldPos = rotate(yaxis, rotatedCorner);
+	
+	vec3 worldPos = rotate(normalize(yaxis), rotatedCorner);
 	
 	vec3 viewPos = (view * vec4(worldPos, 1.0)).xyz; 
 #else
