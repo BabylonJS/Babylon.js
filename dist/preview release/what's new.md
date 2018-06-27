@@ -97,6 +97,7 @@
 - Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
 - Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev]
 - Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
+- Removing observers during observable notify should not skip over valid observers ([TrevorDev]
 
 ### Core Engine
 

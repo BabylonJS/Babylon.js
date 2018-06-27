@@ -217,7 +217,7 @@
             var index = this._observers.indexOf(observer);
 
             if (index !== -1) {
-
+                observer._willBeUnregistered = true;
                 this._observers.splice(index, 1);
                 return true;
             }
@@ -273,7 +273,9 @@
             state.skipNextObservers = false;
             state.lastReturnValue = eventData;
 
-            for (var obs of this._observers) {
+            // Iterate over copy of array to handle removed observables during callback
+            var observerList = this._observers.slice();
+            for (var obs of observerList) {
                 if (obs._willBeUnregistered) {
                     continue;
                 }
