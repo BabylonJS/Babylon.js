@@ -75,12 +75,32 @@ module BABYLON.GLTF2.Extensions {
                 light._loaded = Promise.all(promises).then(() => {
                     return new Promise<void>((resolve, reject) => {
                         const size = Math.pow(2, imageData.length - 1);
-                        const sphericalPolynomial = SphericalPolynomial.FromHarmonics(SphericalHarmonics.FromArray(light.irradianceCoefficients));
+
+                        const sphericalHarmonics = SphericalHarmonics.FromArray(light.irradianceCoefficients);
+                        sphericalHarmonics.scale(light.intensity);
+
+                        const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);
+
                         light._babylonTexture = new RawCubeTexture(this._loader._babylonScene, imageData, size, undefined, undefined, undefined, undefined, undefined, undefined, () => {
                             resolve();
                         }, (message, exception) => {
                             reject(exception);
                         }, sphericalPolynomial, true);
+
+                        if (light.intensity != undefined) {
+                            light._babylonTexture.level = light.intensity;
+                        }
+
+                        if (light.rotation) {
+                            let rotation = Quaternion.FromArray(light.rotation);
+
+                            // Invert the rotation so that positive rotation is counter-clockwise.
+                            if (!this._loader._babylonScene.useRightHandedSystem) {
+                                rotation = Quaternion.Inverse(rotation);
+                            }
+
+                            Matrix.FromQuaternionToRef(rotation, light._babylonTexture.getReflectionTextureMatrix());
+                        }
                     });
                 });
             }
