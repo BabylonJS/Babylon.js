@@ -273,7 +273,7 @@
             state.skipNextObservers = false;
             state.lastReturnValue = eventData;
 
-            // Iterate over copy of array to handle removed observables during callback
+            // Iterate over copy of array to handle removed observers during callback
             var observerList = this._observers.slice();
             for (var obs of observerList) {
                 if (obs._willBeUnregistered) {
