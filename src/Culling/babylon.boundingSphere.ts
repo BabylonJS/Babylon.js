@@ -2,6 +2,7 @@
     export class BoundingSphere {
         public center: Vector3;
         public radius: number;
+        public internalRadius : number;
         public centerWorld: Vector3;
         public radiusWorld: number;
         public minimum: Vector3;
@@ -31,6 +32,8 @@
 
             this.center = Vector3.Lerp(min, max, 0.5);
             this.radius = distance * 0.5;
+            
+            this.internalRadius = (distance/Math.sqrt(3))*0.5;
 
             this.centerWorld = Vector3.Zero();
             this._update(Matrix.Identity());            
