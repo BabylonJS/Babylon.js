@@ -1,4 +1,7 @@
 module BABYLON {
+    /**
+     * Raw cube texture where the raw buffers are passed in
+     */
     export class RawCubeTexture extends CubeTexture {
         /**
          * Creates a cube texture where the raw buffers are passed in.
@@ -11,36 +14,72 @@ module BABYLON {
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compression used (null by default)
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param sphericalPolynomial defines the spherical polynomial for irradiance
-         * @param rgbd defines if the data is stored as RGBD
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          */
-        constructor(scene: Scene, data: ArrayBufferView[] | ArrayBufferView[][], size: number,
+        constructor(scene: Scene, data: Nullable<ArrayBufferView[]>, size: number,
                     format: number = Engine.TEXTUREFORMAT_RGBA, type: number = Engine.TEXTURETYPE_UNSIGNED_INT,
                     generateMipMaps: boolean = false, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-                    compression: Nullable<string> = null, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null,
-                    sphericalPolynomial: Nullable<SphericalPolynomial> = null, rgbd = false, lodScale: number = 0.8, lodOffset: number = 0) {
+                    compression: Nullable<string> = null) {
             super("", scene);
 
-            this._texture = scene.getEngine().createRawCubeTexture(
-                data, size, format, type, generateMipMaps, invertY, samplingMode, compression,
-                onLoad, onError, sphericalPolynomial, rgbd, lodScale, lodOffset);
+            this._texture = scene.getEngine().createRawCubeTexture(data, size, format, type, generateMipMaps, invertY, samplingMode, compression);
+        }
+
+        /**
+         * Updates the raw cube texture.
+         * @param data defines the data to store
+         * @param format defines the data format
+         * @param type defines the type fo the data (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param compression defines the compression used (null by default)
+         * @param level defines which level of the texture to update
+         */
+        public update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level = 0): void {
+            this._texture!.getEngine().updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);
+        }
+
+        /**
+         * Creates a raw cube texture from RGBD encoded data.
+         * @param data defines the array of data [mipmap][face] to use to create each face
+         * @param sphericalPolynomial defines the spherical polynomial for irradiance
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @returns a promsie that resolves when the operation is complete
+         */
+        public updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial> = null, lodScale: number = 0.8, lodOffset: number = 0): Promise<void> {
+            return RawCubeTexture._UpdateRGBDAsync(this._texture!, data, sphericalPolynomial, lodScale, lodOffset);
         }
 
         /**
          * Clones the raw cube texture.
+         * @return a new cube texture
          */
         public clone(): CubeTexture {
             return SerializationHelper.Clone(() => {
                 const scene = this.getScene()!;
-                const texture = this._texture!;
-                return new RawCubeTexture(scene, texture._bufferViewArray!, texture.width, texture.format, texture.type,
-                    texture.generateMipMaps, texture.invertY, texture.samplingMode, texture._compression, null, null,
-                    texture._sphericalPolynomial, texture._sourceIsRGBD, texture._lodGenerationScale, texture._lodGenerationOffset);
+                const internalTexture = this._texture!;
+
+                const texture = new RawCubeTexture(scene, internalTexture._bufferViewArray!, internalTexture.width, internalTexture.format, internalTexture.type,
+                    internalTexture.generateMipMaps, internalTexture.invertY, internalTexture.samplingMode, internalTexture._compression);
+
+                if (internalTexture.dataSource === InternalTexture.DATASOURCE_CUBERAW_RGBD) {
+                    texture.updateRGBDAsync(internalTexture._bufferViewArrayArray!, internalTexture._sphericalPolynomial, internalTexture._lodGenerationScale, internalTexture._lodGenerationOffset);
+                }
+
+                return texture;
             }, this);
+        }
+
+        /** @hidden */
+        public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
+            internalTexture._dataSource = InternalTexture.DATASOURCE_CUBERAW_RGBD;
+            internalTexture._bufferViewArrayArray = data;
+            internalTexture._lodGenerationScale = lodScale;
+            internalTexture._lodGenerationOffset = lodOffset;
+            internalTexture._sphericalPolynomial = sphericalPolynomial;
+
+            return EnvironmentTextureTools.UploadLevelsAsync(internalTexture, data).then(() => {
+                internalTexture.isReady = true;
+            });
         }
     }
 }

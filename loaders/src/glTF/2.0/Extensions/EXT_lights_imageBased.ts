@@ -73,35 +73,32 @@ module BABYLON.GLTF2.Extensions {
                 this._loader._parent._logClose();
 
                 light._loaded = Promise.all(promises).then(() => {
-                    return new Promise<void>((resolve, reject) => {
-                        const size = Math.pow(2, imageData.length - 1);
+                    const size = Math.pow(2, imageData.length - 1);
+                    const babylonTexture = new RawCubeTexture(this._loader._babylonScene, null, size);
+                    light._babylonTexture = babylonTexture;
 
-                        const sphericalHarmonics = SphericalHarmonics.FromArray(light.irradianceCoefficients);
-                        sphericalHarmonics.scale(light.intensity);
+                    if (light.intensity != undefined) {
+                        babylonTexture.level = light.intensity;
+                    }
 
-                        const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);
+                    if (light.rotation) {
+                        let rotation = Quaternion.FromArray(light.rotation);
 
-                        light._babylonTexture = new RawCubeTexture(this._loader._babylonScene, imageData, size, undefined, undefined, undefined, undefined, undefined, undefined, () => {
-                            resolve();
-                        }, (message, exception) => {
-                            reject(exception);
-                        }, sphericalPolynomial, true);
-
-                        if (light.intensity != undefined) {
-                            light._babylonTexture.level = light.intensity;
+                        // Invert the rotation so that positive rotation is counter-clockwise.
+                        if (!this._loader._babylonScene.useRightHandedSystem) {
+                            rotation = Quaternion.Inverse(rotation);
                         }
 
-                        if (light.rotation) {
-                            let rotation = Quaternion.FromArray(light.rotation);
+                        Matrix.FromQuaternionToRef(rotation, babylonTexture.getReflectionTextureMatrix());
+                    }
 
-                            // Invert the rotation so that positive rotation is counter-clockwise.
-                            if (!this._loader._babylonScene.useRightHandedSystem) {
-                                rotation = Quaternion.Inverse(rotation);
-                            }
+                    const sphericalHarmonics = SphericalHarmonics.FromArray(light.irradianceCoefficients);
+                    sphericalHarmonics.scale(light.intensity);
 
-                            Matrix.FromQuaternionToRef(rotation, light._babylonTexture.getReflectionTextureMatrix());
-                        }
-                    });
+                    sphericalHarmonics.convertIrradianceToLambertianRadiance();
+                    const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);
+
+                    return babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial);
                 });
             }
 
