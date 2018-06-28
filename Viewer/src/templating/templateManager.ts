@@ -379,6 +379,10 @@ export class Template {
         }
     }
 
+    public redraw() {
+        this.updateParams({});
+    }
+
     /**
      * Get the template'S configuration
      */
