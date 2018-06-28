@@ -3,7 +3,10 @@ module BABYLON {
      * Single plane rotation gizmo
      */
     export class PlaneRotationGizmo extends Gizmo {
-        private _dragBehavior:PointerDragBehavior;
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        public dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         
         /**
@@ -47,13 +50,13 @@ module BABYLON {
             
             this._rootMesh.addChild(parentMesh);
             // Add drag behavior to handle events when the gizmo is dragged
-            this._dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
-            this._dragBehavior.moveAttached = false;
-            this._rootMesh.addBehavior(this._dragBehavior);
+            this.dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
+            this.dragBehavior.moveAttached = false;
+            this._rootMesh.addBehavior(this.dragBehavior);
 
             var lastDragPosition:Nullable<Vector3> = null;
 
-            this._dragBehavior.onDragStartObservable.add((e)=>{
+            this.dragBehavior.onDragStartObservable.add((e)=>{
                 if(this.attachedMesh){
                     lastDragPosition = e.dragPlanePoint;
                 }
@@ -65,7 +68,7 @@ module BABYLON {
 
             var tmpSnapEvent = {snapDistance: 0};
             var currentSnapDragDistance = 0;
-            this._dragBehavior.onDragObservable.add((event)=>{
+            this.dragBehavior.onDragObservable.add((event)=>{
                 if(this.attachedMesh && lastDragPosition){
                     if(!this.attachedMesh.rotationQuaternion){
                         this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
@@ -135,8 +138,8 @@ module BABYLON {
         }
 
         protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
-            if(this._dragBehavior){
-                this._dragBehavior.enabled = value ? true : false;
+            if(this.dragBehavior){
+                this.dragBehavior.enabled = value ? true : false;
             }
         }
 
@@ -146,7 +149,7 @@ module BABYLON {
         public dispose(){
             this.onSnapObservable.clear();
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-            this._dragBehavior.detach();
+            this.dragBehavior.detach();
             super.dispose();
         } 
     }

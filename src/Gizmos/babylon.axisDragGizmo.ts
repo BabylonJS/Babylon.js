@@ -3,7 +3,10 @@ module BABYLON {
      * Single axis drag gizmo
      */
     export class AxisDragGizmo extends Gizmo {
-        private _dragBehavior:PointerDragBehavior;
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        public dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         /**
          * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
@@ -55,10 +58,10 @@ module BABYLON {
             var tmpVector = new Vector3();
             var tmpSnapEvent = {snapDistance: 0};
             // Add drag behavior to handle events when the gizmo is dragged
-            this._dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
-            this._dragBehavior.moveAttached = false;
-            this._rootMesh.addBehavior(this._dragBehavior);
-            this._dragBehavior.onDragObservable.add((event)=>{
+            this.dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
+            this.dragBehavior.moveAttached = false;
+            this._rootMesh.addBehavior(this.dragBehavior);
+            this.dragBehavior.onDragObservable.add((event)=>{
                 if(this.attachedMesh){
                     // Snapping logic
                     if(this.snapDistance == 0){
@@ -91,8 +94,8 @@ module BABYLON {
             });
         }
         protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
-            if(this._dragBehavior){
-                this._dragBehavior.enabled = value?true:false;
+            if(this.dragBehavior){
+                this.dragBehavior.enabled = value?true:false;
             }
         }
         /**
@@ -101,7 +104,7 @@ module BABYLON {
         public dispose(){
             this.onSnapObservable.clear();
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-            this._dragBehavior.detach();
+            this.dragBehavior.detach();
             super.dispose();
         } 
     }
