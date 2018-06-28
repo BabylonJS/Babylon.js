@@ -61,7 +61,7 @@
         public cellIndex: number = 0;  
 
         /** @hidden */
-        public _emitPower: number = 0;
+        public _initialDirection: Nullable<Vector3>;
 
         /** @hidden */
         public _initialStartSpriteCellID: number;
@@ -117,7 +117,15 @@
          */
         public copyTo(other: Particle) {
             other.position.copyFrom(this.position);
-            other._emitPower = this._emitPower;
+            if (this._initialDirection) {
+                if (other._initialDirection) {
+                    other._initialDirection.copyFrom(this._initialDirection);
+                } else {
+                    other._initialDirection = this._initialDirection.clone();
+                }
+            } else {
+                other._initialDirection = null;
+            }
             other.direction.copyFrom(this.direction);
             other.color.copyFrom(this.color);
             other.colorStep.copyFrom(this.colorStep);

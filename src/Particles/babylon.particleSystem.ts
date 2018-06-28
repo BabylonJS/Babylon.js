@@ -490,7 +490,6 @@
             // Default emitter type
             this.particleEmitterType = new BoxParticleEmitter();
 
-            // Default update function
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
@@ -526,10 +525,10 @@
                         }
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
-                        particle.direction.scaleToRef(this._scaledUpdateSpeed * particle._emitPower, this._scaledDirection);
+                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
-                        this.gravity.scaleToRef(this._scaledUpdateSpeed / particle._emitPower, this._scaledGravity);
+                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
                         // Gradient
@@ -863,9 +862,15 @@
             }
 
             if (!this._isBillboardBased) {
-                this._vertexData[offset++] = particle.direction.x;
-                this._vertexData[offset++] = particle.direction.y;
-                this._vertexData[offset++] = particle.direction.z;
+                if (particle._initialDirection) {
+                    this._vertexData[offset++] = particle._initialDirection.x;
+                    this._vertexData[offset++] = particle._initialDirection.y;
+                    this._vertexData[offset++] = particle._initialDirection.z;
+                } else {
+                    this._vertexData[offset++] = particle.direction.x;
+                    this._vertexData[offset++] = particle.direction.y;
+                    this._vertexData[offset++] = particle.direction.z;
+                }
             }
 
             if (!this._useInstancing) {
@@ -977,7 +982,7 @@
                 this._particles.push(particle);
 
                 // Emitter
-                particle._emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
+                let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
                     this.startPositionFunction(worldMatrix, particle.position, particle);
@@ -992,6 +997,18 @@
                 else {
                     this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
                 }
+
+                if (emitPower === 0) {
+                    if (!particle._initialDirection) {
+                        particle._initialDirection = particle.direction.clone();
+                    } else {
+                        particle._initialDirection.copyFrom(particle.direction);
+                    }
+                } else {
+                    particle._initialDirection = null;
+                }
+
+                particle.direction.scaleInPlace(emitPower);
 
                 // Life time
                 if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
