@@ -1,6 +1,5 @@
 {
-    "rules": {  
-        "no-invalid-this": true,
+    "rules": {
         "no-this-assignment": true,
         "completed-docs": true
     }

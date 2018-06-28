@@ -1,195 +1,64 @@
 {
-  "errors": 4318,
+  "errors": 4329,
   "babylon.typedoc.json": {
-    "errors": 4318,
-    "Animatable": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new Animatable": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "fromFrame": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "toFrame": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loopAnimation": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onAnimationEnd": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animations": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
+    "errors": 4329,
+    "AbstractScene": {
       "Property": {
-        "animationStarted": {
-          "Comments": {
-            "MissingText": true
+        "effectLayers": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "fromFrame": {
-          "Comments": {
-            "MissingText": true
+        "layers": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "loopAnimation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onAnimationEnd": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "target": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "toFrame": {
-          "Comments": {
-            "MissingText": true
+        "lensFlareSystems": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       },
       "Method": {
-        "appendAnimations": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animations": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "addEffectLayer": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "disableBlending": {
-          "Comments": {
-            "MissingText": true
+        "addLensFlareSystem": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "enableBlending": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "blendingSpeed": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "getGlowLayerByName": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "getAnimationByTargetProperty": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "property": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "getHighlightLayerByName": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "getAnimations": {
-          "Comments": {
-            "MissingText": true
+        "getLensFlareSystemByID": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "getRuntimeAnimationByTargetProperty": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "property": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "getLensFlareSystemByName": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "goToFrame": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frame": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "removeEffectLayer": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "pause": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "reset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "restart": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "stop": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "animationName": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "removeLensFlareSystem": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       }
