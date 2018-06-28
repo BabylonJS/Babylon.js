@@ -57,8 +57,9 @@ export class DefaultViewer extends AbstractViewer {
         }
         if (plugin.addHTMLTemplate) {
             template.onHTMLRendered.add((tmpl) => {
-                plugin.addHTMLTemplate && plugin.addHTMLTemplate(tmpl);
+                plugin.addHTMLTemplate!(tmpl);
             });
+            template.redraw();
         }
 
         if (plugin.eventsToAttach) {
