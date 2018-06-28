@@ -53,6 +53,10 @@ module BABYLON {
          * Texture content is a depth texture
          */
         public static DATASOURCE_DEPTHTEXTURE = 11;
+        /**
+         * Texture data comes from a raw cube data encoded with RGBD
+         */
+        public static DATASOURCE_CUBERAW_RGBD = 12;
 
         /**
          * Defines if the texture is ready
@@ -144,7 +148,9 @@ module BABYLON {
         /** @hidden */
         public _bufferView: Nullable<ArrayBufferView>;
         /** @hidden */
-        public _bufferViewArray: Nullable<ArrayBufferView[] | ArrayBufferView[][]>;
+        public _bufferViewArray: Nullable<ArrayBufferView[]>;
+        /** @hidden */
+        public _bufferViewArrayArray: Nullable<ArrayBufferView[][]>;
         /** @hidden */
         public _size: number;
         /** @hidden */
@@ -191,8 +197,6 @@ module BABYLON {
         public _lodGenerationScale: number = 0;
         /** @hidden */
         public _lodGenerationOffset: number = 0;
-        /** @hidden */
-        public _sourceIsRGBD: boolean = false;
 
         // The following three fields helps sharing generated fixed LODs for texture filtering
         // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -352,9 +356,11 @@ module BABYLON {
                     return;
 
                 case InternalTexture.DATASOURCE_CUBERAW:
-                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression, () => {
-                        this.isReady = true;
-                    }, null, this._sphericalPolynomial, this._sourceIsRGBD, this._lodGenerationScale, this._lodGenerationOffset);
+                case InternalTexture.DATASOURCE_CUBERAW_RGBD:
+                    proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    if (this._dataSource) {
+                        RawCubeTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset);
+                    }
                     proxy._swapAndDie(this);
                     return;
 

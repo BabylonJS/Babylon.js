@@ -58,20 +58,6 @@ module BABYLON {
      * Defines the required storage to save the environment irradiance information.
      */
     interface EnvironmentTextureIrradianceInfoV1 {
-        polynomials: boolean;
-
-        l00: Array<number>;
-
-        l1_1: Array<number>;
-        l10: Array<number>;
-        l11: Array<number>;
-
-        l2_2: Array<number>;
-        l2_1: Array<number>;
-        l20: Array<number>;
-        l21: Array<number>;
-        l22: Array<number>;
-
         x: Array<number>;
         y: Array<number>;
         z: Array<number>;
@@ -294,8 +280,6 @@ module BABYLON {
             }
 
             return {
-                polynomials: true,
-
                 x: [polynmials.x.x, polynmials.x.y, polynmials.x.z],
                 y: [polynmials.y.x, polynmials.y.y, polynmials.y.z],
                 z: [polynmials.z.x, polynmials.z.y, polynmials.z.z],
@@ -341,17 +325,6 @@ module BABYLON {
                 for (let face = 0; face < 6; face++) {
                     const imageInfo = specularInfo.mipmaps[i * 6 + face];
                     imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
-
-
-                    // {
-                    //     const link = document.createElement('a');
-                    //     document.body.appendChild(link);
-                    //     link.setAttribute("type", "hidden");
-                    //     link.download = `image${face}${i}`;
-                    //     const blob = new Blob([imageData[i][face]], { type: "image/png" });
-                    //     link.href = window.URL.createObjectURL(blob);
-                    //     link.click();
-                    // }
                 }
             }
 
@@ -433,7 +406,7 @@ module BABYLON {
                         let roughness = 1 - smoothness;
 
                         let minLODIndex = offset; // roughness = 0
-                        let maxLODIndex = mipmapsCount * scale + offset; // roughness = 1
+                        let maxLODIndex = (mipmapsCount - 1) * scale + offset; // roughness = 1
 
                         let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                         let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
@@ -565,32 +538,17 @@ module BABYLON {
                 return;
             }
 
-            if (irradianceInfo.polynomials) {
-                const sp = new SphericalPolynomial();
-                Vector3.FromArrayToRef(irradianceInfo.x, 0, sp.x);
-                Vector3.FromArrayToRef(irradianceInfo.y, 0, sp.y);
-                Vector3.FromArrayToRef(irradianceInfo.z, 0, sp.z);
-                Vector3.FromArrayToRef(irradianceInfo.xx, 0, sp.xx);
-                Vector3.FromArrayToRef(irradianceInfo.yy, 0, sp.yy);
-                Vector3.FromArrayToRef(irradianceInfo.zz, 0, sp.zz);
-                Vector3.FromArrayToRef(irradianceInfo.yz, 0, sp.yz);
-                Vector3.FromArrayToRef(irradianceInfo.zx, 0, sp.zx);
-                Vector3.FromArrayToRef(irradianceInfo.xy, 0, sp.xy);
-                texture._sphericalPolynomial = sp;
-            }
-            else {
-                const sh = new SphericalHarmonics();
-                Vector3.FromArrayToRef(irradianceInfo.l00, 0, sh.L00);
-                Vector3.FromArrayToRef(irradianceInfo.l1_1, 0, sh.L1_1);
-                Vector3.FromArrayToRef(irradianceInfo.l10, 0, sh.L10);
-                Vector3.FromArrayToRef(irradianceInfo.l11, 0, sh.L11);
-                Vector3.FromArrayToRef(irradianceInfo.l2_2, 0, sh.L2_2);
-                Vector3.FromArrayToRef(irradianceInfo.l2_1, 0, sh.L2_1);
-                Vector3.FromArrayToRef(irradianceInfo.l20, 0, sh.L20);
-                Vector3.FromArrayToRef(irradianceInfo.l21, 0, sh.L21);
-                Vector3.FromArrayToRef(irradianceInfo.l22, 0, sh.L22);
-                texture._sphericalPolynomial = SphericalPolynomial.FromHarmonics(sh);
-            }
+            const sp = new SphericalPolynomial();
+            Vector3.FromArrayToRef(irradianceInfo.x, 0, sp.x);
+            Vector3.FromArrayToRef(irradianceInfo.y, 0, sp.y);
+            Vector3.FromArrayToRef(irradianceInfo.z, 0, sp.z);
+            Vector3.FromArrayToRef(irradianceInfo.xx, 0, sp.xx);
+            Vector3.FromArrayToRef(irradianceInfo.yy, 0, sp.yy);
+            Vector3.FromArrayToRef(irradianceInfo.zz, 0, sp.zz);
+            Vector3.FromArrayToRef(irradianceInfo.yz, 0, sp.yz);
+            Vector3.FromArrayToRef(irradianceInfo.zx, 0, sp.zx);
+            Vector3.FromArrayToRef(irradianceInfo.xy, 0, sp.xy);
+            texture._sphericalPolynomial = sp;
         }
     }
 }

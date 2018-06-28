@@ -5859,9 +5859,6 @@
             // this.resetTextureCache();
 
             texture.isReady = true;
-
-            texture.onLoadedObservable.notifyObservers(texture);
-            texture.onLoadedObservable.clear();
         }
 
         /**
@@ -5874,28 +5871,17 @@
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compression used (null by default)
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param sphericalPolynomial defines the spherical polynomial for irradiance
-         * @param rgbd defines if the data is stored as RGBD
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @returns the cube texture as an InternalTexture
          */
-        public createRawCubeTexture(data: Nullable<ArrayBufferView[] | ArrayBufferView[][]>, size: number, format: number, type: number,
-                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null,
-                                    onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null,
-                                    sphericalPolynomial: Nullable<SphericalPolynomial> = null, rgbd = false, lodScale: number = 0, lodOffset: number = 0): InternalTexture {
+        public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
+                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+                                    compression: Nullable<string> = null): InternalTexture {
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
             texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
-            texture._lodGenerationScale = lodScale;
-            texture._lodGenerationOffset = lodOffset;
-            texture._sourceIsRGBD = rgbd;
-            texture._sphericalPolynomial = sphericalPolynomial;
             if (!this._doNotHandleContextLost) {
                 texture._bufferViewArray = data;
             }
@@ -5920,32 +5906,8 @@
             }
 
             // Upload data if needed. The texture won't be ready until then.
-            if (data && data.length) {
-                if (rgbd) {
-                    EnvironmentTextureTools.UploadLevelsAsync(texture, data as ArrayBufferView[][]).then(() => {
-                        texture.isReady = true;
-
-                        texture.onLoadedObservable.notifyObservers(texture);
-                        texture.onLoadedObservable.clear();
-
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, reason => {
-                        if (onError) {
-                            onError("Failed to upload raw cube texture data to the GPU", reason);
-                        }
-                    });
-                }
-                else {
-                    Tools.SetImmediate(() => {
-                        this.updateRawCubeTexture(texture, data as ArrayBufferView[], format, type, invertY, compression);
-
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    });
-                }
+            if (data) {
+                this.updateRawCubeTexture(texture, data as ArrayBufferView[], format, type, invertY, compression);
             }
 
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
