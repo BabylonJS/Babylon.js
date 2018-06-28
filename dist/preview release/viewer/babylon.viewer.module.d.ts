@@ -1212,6 +1212,7 @@ declare module 'babylonjs-viewer/templating/templateManager' {
             updateParams(params: {
                     [key: string]: string | number | boolean | object;
             }, append?: boolean): void;
+            redraw(): void;
             /**
                 * Get the template'S configuration
                 */
