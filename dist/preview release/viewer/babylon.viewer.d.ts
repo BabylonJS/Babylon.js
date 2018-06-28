@@ -19,6 +19,7 @@ declare module BabylonViewer {
     
     
     
+    
     /**
         * BabylonJS Viewer
         *
@@ -947,6 +948,28 @@ declare module BabylonViewer {
 }
 
 declare module BabylonViewer {
+    
+    export interface IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach?: Array<string>;
+        interactionPredicate(event: EventCallback): boolean;
+        onEvent?(event: EventCallback): void;
+        addHTMLTemplate?(template: Template): void;
+    }
+    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach: Array<string>;
+        protected _prepend: boolean;
+        protected abstract _buttonClass: string;
+        protected abstract _htmlTemplate: string;
+        interactionPredicate(event: EventCallback): boolean;
+        abstract onEvent(event: EventCallback): void;
+        addHTMLTemplate(template: Template): void;
+        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
+    }
+}
+
+declare module BabylonViewer {
     /**
         * Will attach an init function the the DOMContentLoaded event.
         * The init function will be removed automatically after the event was triggered.
@@ -1189,6 +1212,7 @@ declare module BabylonViewer {
             updateParams(params: {
                     [key: string]: string | number | boolean | object;
             }, append?: boolean): void;
+            redraw(): void;
             /**
                 * Get the template'S configuration
                 */
@@ -1225,28 +1249,6 @@ declare module BabylonViewer {
                 * Dispose this template
                 */
             dispose(): void;
-    }
-}
-
-declare module BabylonViewer {
-    
-    export interface IViewerTemplatePlugin {
-        readonly templateName: string;
-        readonly eventsToAttach?: Array<string>;
-        interactionPredicate(event: EventCallback): boolean;
-        onEvent?(event: EventCallback): void;
-        addHTMLTemplate?(template: Template): void;
-    }
-    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
-        readonly templateName: string;
-        readonly eventsToAttach: Array<string>;
-        protected _prepend: boolean;
-        protected abstract _buttonClass: string;
-        protected abstract _htmlTemplate: string;
-        interactionPredicate(event: EventCallback): boolean;
-        abstract onEvent(event: EventCallback): void;
-        addHTMLTemplate(template: Template): void;
-        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
     }
 }
 

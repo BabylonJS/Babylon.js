@@ -116,6 +116,8 @@ module BABYLON {
             var result = new ParticleSystemSet();
             var rootUrl = ParticleHelper.BaseAssetsUrl + "/textures/";
 
+            scene = scene || Engine.LastCreatedScene;
+
             for (var system of data.systems) {
                 result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl) : ParticleSystem.Parse(system, scene, rootUrl));
             }

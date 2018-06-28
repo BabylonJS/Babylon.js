@@ -442,5 +442,11 @@
 
         public releaseEffects() {
         }
+
+        public displayLoadingUI(): void {
+        }
+
+        public hideLoadingUI(): void {
+        }
     }
 }

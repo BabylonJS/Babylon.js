@@ -116,7 +116,13 @@
             this.name = name;
 
             this._scene = scene || Engine.LastCreatedScene;
-            this._engine = scene.getEngine();
+            let component = this._scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
+            if (!component) {
+                component = new EffectLayerSceneComponent(this._scene);
+                this._scene._addComponent(component);
+            }
+
+            this._engine = this._scene.getEngine();
             this._maxSize = this._engine.getCaps().maxTextureSize;
             this._scene.effectLayers.push(this);
 
@@ -595,7 +601,7 @@
                 mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
             } else {
-                // Need to reset refresh rate of the shadowMap
+                // Need to reset refresh rate of the main map
                 this._mainTexture.resetRefreshCounter();
             }
         }
