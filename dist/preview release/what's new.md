@@ -96,8 +96,9 @@
 - VR experience helper's controllers will not fire pointer events when laser's are disabled, instead the camera ray pointer event will be used ([TrevorDev](https://github.com/TrevorDev))
 - Node's setParent(node.parent) will no longer throw an exception when parent is undefined and will behave the same as setParent(null) ([TrevorDev](https://github.com/TrevorDev))
 - Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
-- Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev]
+- Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev](https://github.com/TrevorDev))
 - Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
+- Removing observers during observable notify should not skip over valid observers ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
