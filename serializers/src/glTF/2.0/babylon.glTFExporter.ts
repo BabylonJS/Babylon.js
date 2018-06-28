@@ -437,12 +437,28 @@ module BABYLON.GLTF2 {
             for (let vertex of vertices) {
                 if (this._convertToRightHandedSystem && !(vertexAttributeKind === VertexBuffer.ColorKind) && !(vertex instanceof Vector2)) {
                     if (vertex instanceof Vector3) {
-                        (vertexAttributeKind === VertexBuffer.PositionKind) ? _GLTFUtilities.GetRightHandedPositionVector3FromRef(vertex) : _GLTFUtilities.GetRightHandedNormalVector3FromRef(vertex);
+                        if (vertexAttributeKind === VertexBuffer.NormalKind) {
+                            _GLTFUtilities._GetRightHandedNormalVector3FromRef(vertex);
+                        }
+                        else if (vertexAttributeKind === VertexBuffer.PositionKind) {
+                            _GLTFUtilities._GetRightHandedPositionVector3FromRef(vertex);
+                        }
+                        else {
+                            Tools.Error('Unsupported vertex attribute kind!');
+                        }
                     }
                     else {
-                        _GLTFUtilities.GetRightHandedVector4FromRef(vertex);
+                        
+                        _GLTFUtilities._GetRightHandedVector4FromRef(vertex);   
                     }
                 }
+                if (vertexAttributeKind === VertexBuffer.NormalKind) {
+                    vertex.normalize();
+                }
+                else if (vertexAttributeKind === VertexBuffer.TangentKind && vertex instanceof Vector4) {
+                    _GLTFUtilities._NormalizeTangentFromRef(vertex);
+                }
+
                 for (let component of vertex.asArray()) {
                     binaryWriter.setFloat32(component, byteOffset);
                     byteOffset += 4;
@@ -469,7 +485,7 @@ module BABYLON.GLTF2 {
                         index = k * stride;
                         const vertexData = Vector3.FromArray(meshAttributeArray, index);
                         if (this._convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedPositionVector3FromRef(vertexData);
+                            _GLTFUtilities._GetRightHandedPositionVector3FromRef(vertexData);
                         }
                         vertexAttributes.push(vertexData.asArray());
                     }
@@ -480,8 +496,9 @@ module BABYLON.GLTF2 {
                         index = k * stride;
                         const vertexData = Vector3.FromArray(meshAttributeArray, index);
                         if (this._convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedNormalVector3FromRef(vertexData);
+                            _GLTFUtilities._GetRightHandedNormalVector3FromRef(vertexData);
                         }
+                        vertexData.normalize();
                         vertexAttributes.push(vertexData.asArray());
                     }
                     break;
@@ -491,8 +508,10 @@ module BABYLON.GLTF2 {
                         index = k * stride;
                         const vertexData = Vector4.FromArray(meshAttributeArray, index);
                         if (this._convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedVector4FromRef(vertexData);
+                            _GLTFUtilities._GetRightHandedVector4FromRef(vertexData);
                         }
+                        _GLTFUtilities._NormalizeTangentFromRef(vertexData);
+
                         vertexAttributes.push(vertexData.asArray());
                     }
                     break;
@@ -584,7 +603,7 @@ module BABYLON.GLTF2 {
                         if (image.uri) {
                             imageData = this._imageData[image.uri];
                             imageName = image.uri.split('.')[0] + " image";
-                            bufferView = _GLTFUtilities.CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
+                            bufferView = _GLTFUtilities._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                             byteOffset += imageData.data.buffer.byteLength;
                             this._bufferViews.push(bufferView);
                             image.bufferView = this._bufferViews.length - 1;
@@ -762,7 +781,7 @@ module BABYLON.GLTF2 {
          */
         private setNodeTransformation(node: INode, babylonTransformNode: TransformNode): void {
             if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
-                node.translation = this._convertToRightHandedSystem ? _GLTFUtilities.GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
+                node.translation = this._convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
             }
 
             if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
@@ -775,7 +794,7 @@ module BABYLON.GLTF2 {
             }
             if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
                 if (this._convertToRightHandedSystem) {
-                    _GLTFUtilities.GetRightHandedQuaternionFromRef(rotationQuaternion);
+                    _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
 
                 }
                 node.rotation = rotationQuaternion.normalize().asArray();
@@ -808,7 +827,7 @@ module BABYLON.GLTF2 {
 
                 if (vertexData) {
                     const byteLength = vertexData.length * 4;
-                    const bufferView = _GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
+                    const bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
                     this._bufferViews.push(bufferView);
 
                     this.writeAttributeData(
@@ -963,7 +982,7 @@ module BABYLON.GLTF2 {
                     const indices = bufferMesh.getIndices();
                     if (indices) {
                         const byteLength = indices.length * 4;
-                        bufferView = _GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
+                        bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
                         this._bufferViews.push(bufferView);
                         indexBufferViewIndex = this._bufferViews.length - 1;
 
@@ -1026,9 +1045,9 @@ module BABYLON.GLTF2 {
                                     if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                         minMax = { min: null, max: null };
                                         if (attributeKind == VertexBuffer.PositionKind) {
-                                            minMax = _GLTFUtilities.CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
+                                            minMax = _GLTFUtilities._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
                                         }
-                                        const accessor = _GLTFUtilities.CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, AccessorComponentType.FLOAT, vertexData.length / stride, 0, minMax.min, minMax.max);
+                                        const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, AccessorComponentType.FLOAT, vertexData.length / stride, 0, minMax.min, minMax.max);
                                         this._accessors.push(accessor);
                                         this.setAttributeKind(meshPrimitive, attributeKind);
                                         if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
@@ -1040,7 +1059,7 @@ module BABYLON.GLTF2 {
                         }
                         if (indexBufferViewIndex) {
                             // Create accessor
-                            const accessor = _GLTFUtilities.CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, AccessorType.SCALAR, AccessorComponentType.UNSIGNED_INT, submesh.indexCount, submesh.indexStart * 4, null, null);
+                            const accessor = _GLTFUtilities._CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, AccessorType.SCALAR, AccessorComponentType.UNSIGNED_INT, submesh.indexCount, submesh.indexStart * 4, null, null);
                             this._accessors.push(accessor);
                             meshPrimitive.indices = this._accessors.length - 1;
                         }
