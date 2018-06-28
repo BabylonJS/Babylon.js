@@ -1,5 +1,6 @@
-import { Observable, Scene, Engine, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
-import { ViewerModel } from "../model/viewerModel";
+import { Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, Scene, SceneLoaderProgressEvent } from 'babylonjs';
+
+import { ViewerModel } from '../model/viewerModel';
 
 export class ObservablesManager {
 

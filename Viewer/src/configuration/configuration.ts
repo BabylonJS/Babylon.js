@@ -1,5 +1,5 @@
-import { EngineOptions, IGlowLayerOptions, DepthOfFieldEffectBlurLevel } from 'babylonjs';
-import { IVRConfiguration, IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from './interfaces';
+import { EngineOptions } from 'babylonjs';
+import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from './interfaces';
 
 export function getConfigurationKey(key: string, configObject: any) {
     let splits = key.split('.');
