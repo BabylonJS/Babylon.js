@@ -1037,7 +1037,7 @@
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
         /** @hidden */
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();

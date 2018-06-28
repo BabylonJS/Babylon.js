@@ -1766,14 +1766,6 @@
                 this.instances[0].dispose();
             }
 
-            // Effect layers.
-            let effectLayers = this.getScene().effectLayers;
-            for (let i = 0; i < effectLayers.length; i++) {
-                let effectLayer = effectLayers[i];
-                if (effectLayer) {
-                    effectLayer._disposeMesh(this);
-                }
-            }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
