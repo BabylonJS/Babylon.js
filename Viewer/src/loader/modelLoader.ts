@@ -61,22 +61,22 @@ export class ModelLoader {
 
         model.loadId = this._loadId++;
 
-        if (!modelConfiguration.url) {
-            model.state = ModelState.ERROR;
-            Tools.Error("No URL provided");
-            return model;
-        }
-
-        let base: string;
+        let base: string = "";
 
         let filename: any;
         if (modelConfiguration.file) {
             base = "file:";
             filename = modelConfiguration.file;
         }
-        else {
+        else if (modelConfiguration.url) {
             filename = Tools.GetFilename(modelConfiguration.url) || modelConfiguration.url;
             base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
+        }
+
+        if (!filename || !base) {
+            model.state = ModelState.ERROR;
+            Tools.Error("No URL provided");
+            return model;
         }
 
 
