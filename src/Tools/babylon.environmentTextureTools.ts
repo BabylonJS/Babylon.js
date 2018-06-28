@@ -406,7 +406,7 @@ module BABYLON {
                         let roughness = 1 - smoothness;
 
                         let minLODIndex = offset; // roughness = 0
-                        let maxLODIndex = (mipmapsCount - 1) * scale + offset; // roughness = 1
+                        let maxLODIndex = (mipmapsCount - 1) * scale + offset; // roughness = 1 (mipmaps start from 0)
 
                         let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                         let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
