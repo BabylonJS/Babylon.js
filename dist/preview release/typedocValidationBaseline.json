@@ -1,7 +1,68 @@
 {
-  "errors": 4318,
+  "errors": 4329,
   "babylon.typedoc.json": {
-    "errors": 4318,
+    "errors": 4329,
+    "AbstractScene": {
+      "Property": {
+        "effectLayers": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "layers": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "lensFlareSystems": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        }
+      },
+      "Method": {
+        "addEffectLayer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "addLensFlareSystem": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "getGlowLayerByName": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "getHighlightLayerByName": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "getLensFlareSystemByID": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "getLensFlareSystemByName": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "removeEffectLayer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "removeLensFlareSystem": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        }
+      }
+    },
     "Animatable": {
       "Class": {
         "Comments": {

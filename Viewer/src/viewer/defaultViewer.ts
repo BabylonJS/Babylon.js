@@ -35,6 +35,12 @@ export class DefaultViewer extends AbstractViewer {
                 this._configureLights();
             })
         });
+
+        this.onInitDoneObservable.add(() => {
+            if (!this.sceneManager.models.length) {
+                this.hideLoadingScreen();
+            }
+        })
     }
 
     private _registeredPlugins: Array<IViewerTemplatePlugin> = [];
@@ -89,16 +95,18 @@ export class DefaultViewer extends AbstractViewer {
 
         if (this.configuration.templates && this.configuration.templates.viewer) {
             if (this.configuration.templates.viewer.params && this.configuration.templates.viewer.params.enableDragAndDrop) {
-                let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
-                }, () => {
-                }, () => {
-                }, () => {
-                }, function () {
-                }, (file: File) => {
-                    this.loadModel(file);
-                }, () => {
-                });
-                filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
+                this.onSceneInitObservable.addOnce(() => {
+                    let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
+                    }, () => {
+                    }, () => {
+                    }, () => {
+                    }, function () {
+                    }, (file: File) => {
+                        this.loadModel(file);
+                    }, () => {
+                    });
+                    filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
+                })
             }
         }
 
