@@ -20,7 +20,7 @@ module BABYLON {
          * @param dragAxis The axis which the gizmo will be able to scale on
          * @param color The color of the gizmo
          */
-        constructor(gizmoLayer:UtilityLayerRenderer, dragAxis:Vector3, color:Color3){
+        constructor(dragAxis:Vector3, color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer){
             super(gizmoLayer);
             
             // Create Material

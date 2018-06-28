@@ -1037,7 +1037,7 @@
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
         /** @hidden */
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
@@ -3537,7 +3537,16 @@
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
-                context.validateProgram(shaderProgram);
+                var error = context.getProgramInfoLog(shaderProgram);
+                if (error) {
+                    throw new Error(error);
+                }
+            }
+
+            context.validateProgram(shaderProgram);
+            var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
+
+            if(!validated) {
                 var error = context.getProgramInfoLog(shaderProgram);
                 if (error) {
                     throw new Error(error);

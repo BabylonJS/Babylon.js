@@ -18,11 +18,11 @@ module BABYLON {
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          */
-        constructor(gizmoLayer:UtilityLayerRenderer){
+        constructor(gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer){
             super(gizmoLayer);
-            this._xDrag = new PlaneRotationGizmo(gizmoLayer, new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5));
-            this._yDrag = new PlaneRotationGizmo(gizmoLayer, new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5));
-            this._zDrag = new PlaneRotationGizmo(gizmoLayer, new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5));
+            this._xDrag = new PlaneRotationGizmo(new Vector3(1,0,0), BABYLON.Color3.Green().scale(0.5), gizmoLayer);
+            this._yDrag = new PlaneRotationGizmo(new Vector3(0,1,0), BABYLON.Color3.Red().scale(0.5), gizmoLayer);
+            this._zDrag = new PlaneRotationGizmo(new Vector3(0,0,1), BABYLON.Color3.Blue().scale(0.5), gizmoLayer);
             this.attachedMesh = null;
         }
 
