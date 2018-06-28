@@ -19,7 +19,7 @@
         "del": "2.2.2",
         "es6-promise": "^4.2.4",
         "exports-loader": "^0.6.4",
-        "gulp": "^3.8.11",
+        "gulp": "^3.9.1",
         "gulp-changed-in-place": "2.0.3",
         "gulp-clean-ts-extends": "~0.1.1",
         "gulp-concat": "~2.5.2",

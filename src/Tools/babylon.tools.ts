@@ -49,9 +49,26 @@
          */
         public gradient: number;
         /**
-         * Gets or sets associated factor
+         * Gets or sets first associated factor
          */        
-        public factor: number;
+        public factor1: number;
+        /**
+         * Gets or sets second associated factor
+         */        
+        public factor2?: number;    
+        
+        /** 
+         * Will get a number picked randomly between factor1 and factor2.
+         * If factor2 is undefined then factor1 will be used
+         * @returns the picked number
+         */
+        public getFactor(): number {
+            if (this.factor2 === undefined) {
+                return this.factor1;
+            }
+
+            return Scalar.Lerp(this.factor1, this.factor2, Math.random());
+        }        
     }  
 
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
@@ -1024,29 +1041,48 @@
             }
         }
 
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
-            var base64Image = screenshotCanvas.toDataURL(mimeType);
+        /**
+         * Converts the canvas data to blob.
+         * This acts as a polyfill for browsers not supporting the to blob function.
+         * @param canvas Defines the canvas to extract the data from
+         * @param successCallback Defines the callback triggered once the data are available
+         * @param mimeType Defines the mime type of the result
+         */
+        static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png"): void {
+            // We need HTMLCanvasElement.toBlob for HD screenshots
+            if (!canvas.toBlob) {
+                //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
+                canvas.toBlob = function (callback, type, quality) {
+                    setTimeout(() => {
+                        var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
+                            len = binStr.length,
+                            arr = new Uint8Array(len);
+
+                        for (var i = 0; i < len; i++) {
+                            arr[i] = binStr.charCodeAt(i);
+                        }
+                        callback(new Blob([arr]));
+                    });
+                }
+            }
+            canvas.toBlob(function (blob) {
+                successCallback(blob);
+            }, mimeType);
+        }
+
+        /**
+         * Encodes the canvas data to base 64 or automatically download the result if filename is defined
+         * @param successCallback Defines the callback triggered once the data are available
+         * @param mimeType Defines the mime type of the result
+         * @param fileName The filename to download. If present, the result will automatically be downloaded
+         */
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             if (successCallback) {
+                var base64Image = screenshotCanvas.toDataURL(mimeType);
                 successCallback(base64Image);
             }
             else {
-                // We need HTMLCanvasElement.toBlob for HD screenshots
-                if (!screenshotCanvas.toBlob) {
-                    //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-                    screenshotCanvas.toBlob = function (callback, type, quality) {
-                        setTimeout(() => {
-                            var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
-                                len = binStr.length,
-                                arr = new Uint8Array(len);
-
-                            for (var i = 0; i < len; i++) {
-                                arr[i] = binStr.charCodeAt(i);
-                            }
-                            callback(new Blob([arr], { type: type || 'image/png' }));
-                        });
-                    }
-                }
-                screenshotCanvas.toBlob(function (blob) {
+                this.ToBlob(screenshotCanvas, function (blob) {
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         if (!fileName) {
@@ -1069,8 +1105,7 @@
                         img.src = url;
                         newWindow.document.body.appendChild(img);
                     }
-
-                });
+                }, mimeType);
             }
         }
 

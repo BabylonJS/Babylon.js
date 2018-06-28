@@ -301,7 +301,46 @@
         /**
          * Gets or sets the maximal initial rotation in radians.         
          */
-        public maxInitialRotation = 0;            
+        public maxInitialRotation = 0;   
+        
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
+         */
+        public spriteCellChangeSpeed = 1;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
+         */
+        public startSpriteCellID = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
+         */
+        public endSpriteCellID = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
+         */
+        public spriteCellWidth = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
+         */
+        public spriteCellHeight = 0;
+
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        public translationPivot = new Vector2(0, 0);     
+        
+        /**
+         * Gets or sets the billboard mode to use when isBillboardBased = true.
+         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         */
+        public billboardMode = AbstractMesh.BILLBOARDMODE_ALL;        
+                
+        private _isAnimationSheetEnabled: boolean;
+
+        /**
+         * Gets whether an animation sprite sheet is enabled or not on the particle system
+         */
+        public get isAnimationSheetEnabled(): boolean {
+            return this._isAnimationSheetEnabled;
+        }        
 
         /**
          * Is this system ready to be used/rendered
@@ -483,7 +522,7 @@
 
             let sizeGradient = new FactorGradient();
             sizeGradient.gradient = gradient;
-            sizeGradient.factor = factor;
+            sizeGradient.factor1 = factor;
             this._sizeGradients.push(sizeGradient);
 
             this._sizeGradients.sort((a, b) => {
@@ -538,17 +577,22 @@
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
-         * @param capacity The max number of particles alive at the same time
+         * @param options The options used to create the system
          * @param scene The scene the particle system belongs to
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          */
         constructor(name: string, options: Partial<{
                         capacity: number,
                         randomTextureSize: number
-                    }>, scene: Scene) {
+                    }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
             this.id = name;
             this.name = name;
             this._scene = scene || Engine.LastCreatedScene;
             this._engine = this._scene.getEngine();
+
+            if (!options.randomTextureSize) {
+                delete options.randomTextureSize;
+            }
 
             let fullOptions = {
                 capacity: 50000,
@@ -564,14 +608,15 @@
             this._capacity = fullOptions.capacity;
             this._activeCount = fullOptions.capacity;
             this._currentActiveCount = 0;
+            this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
             this._scene.particleSystems.push(this);
 
             this._updateEffectOptions = {
-                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "initialSize"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
-                                "angleRange", "radiusRange"],
+                                "angleRange", "radiusRange", "cellInfos"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler", "randomSampler2", "sizeGradientSampler"],
                 defines: "",
@@ -620,10 +665,6 @@
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 4);
             updateVertexBuffers["size"] = source.createVertexBuffer("size", 9, 3);
             let offset = 12;
-            if (this._sizeGradientsTexture) {
-                updateVertexBuffers["initialSize"] = source.createVertexBuffer("initialSize", offset, 3);
-                offset += 3;
-            }
 
             if (!this._colorGradientsTexture) {
                 updateVertexBuffers["color"] = source.createVertexBuffer("color", offset, 4);
@@ -639,6 +680,12 @@
             }
 
             updateVertexBuffers["angle"] = source.createVertexBuffer("angle", offset, 2);
+            offset += 2;
+
+            if (this._isAnimationSheetEnabled) {
+                updateVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1);
+                offset += 1;
+            }            
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -654,9 +701,6 @@
             renderVertexBuffers["size"] = source.createVertexBuffer("size", 9, 3, this._attributesStrideSize, true);      
             
             let offset = 12;
-            if (this._sizeGradientsTexture) {
-                offset += 3;
-            }
 
             if (!this._colorGradientsTexture) {
                 renderVertexBuffers["color"] = source.createVertexBuffer("color", offset, 4, this._attributesStrideSize, true);
@@ -670,6 +714,12 @@
                 offset += 3;
             }
             renderVertexBuffers["angle"] = source.createVertexBuffer("angle", offset, 2, this._attributesStrideSize, true);
+            offset += 2;
+
+            if (this._isAnimationSheetEnabled) {
+                renderVertexBuffers["cellIndex"] = source.createVertexBuffer("cellIndex", offset, 1, this._attributesStrideSize, true);
+                offset += 1;
+            }               
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -696,9 +746,9 @@
                 this._attributesStrideSize -= 4;
             }
 
-            if (this._sizeGradientsTexture) {
-                this._attributesStrideSize += 3;
-            }
+            if (this._isAnimationSheetEnabled) {
+                this._attributesStrideSize += 1;
+            }            
 
             for (var particleIndex = 0; particleIndex < this._capacity; particleIndex++) {
                 // position
@@ -720,12 +770,6 @@
                 data.push(0.0);
                 data.push(0.0);
                 data.push(0.0);
-
-                if (this._sizeGradientsTexture) {
-                    data.push(0.0);
-                    data.push(0.0);
-                    data.push(0.0);  
-                }                
 
                 if (!this._colorGradientsTexture) {
                     // color
@@ -750,6 +794,10 @@
                 // angle
                 data.push(0.0);  
                 data.push(0.0); 
+
+                if (this._isAnimationSheetEnabled) {
+                    data.push(0.0); 
+                }                
             }
 
             // Sprite data
@@ -793,17 +841,17 @@
             
             if (this._sizeGradientsTexture) {
                 defines += "\n#define SIZEGRADIENTS";
-            }                 
+            }     
+            
+            if (this.isAnimationSheetEnabled) {
+                defines += "\n#define ANIMATESHEET";
+            }             
 
             if (this._updateEffect && this._updateEffectOptions.defines === defines) {
                 return;
             }
 
             this._updateEffectOptions.transformFeedbackVaryings = ["outPosition", "outAge", "outLife", "outSeed", "outSize"];           
-
-            if (this._sizeGradientsTexture) {
-                this._updateEffectOptions.transformFeedbackVaryings.push("outInitialSize");
-            }
 
             if (!this._colorGradientsTexture) {
                 this._updateEffectOptions.transformFeedbackVaryings.push("outColor");
@@ -816,6 +864,10 @@
             }
 
             this._updateEffectOptions.transformFeedbackVaryings.push("outAngle");
+
+            if (this.isAnimationSheetEnabled) {
+                this._updateEffectOptions.transformFeedbackVaryings.push("outCellIndex");
+            }               
 
             this._updateEffectOptions.defines = defines;
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
@@ -830,19 +882,32 @@
 
             if (this._isBillboardBased) {
                 defines += "\n#define BILLBOARD";
+
+                switch (this.billboardMode) {
+                    case AbstractMesh.BILLBOARDMODE_Y:
+                        defines += "\n#define BILLBOARDY";
+                        break;
+                    case AbstractMesh.BILLBOARDMODE_ALL:
+                    default:
+                        break;
+                }                
             }         
             
             if (this._colorGradientsTexture) {
                 defines += "\n#define COLORGRADIENTS";
             }   
 
+            if (this.isAnimationSheetEnabled) {
+                defines += "\n#define ANIMATESHEET";
+            }                 
+
             if (this._renderEffect && this._renderEffect.defines === defines) {
                 return;
             }
 
             this._renderEffect = new Effect("gpuRenderParticles", 
-                                            ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle"], 
-                                            ["view", "projection", "colorDead", "invView", "vClipPlane"], 
+                                            ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle", "cellIndex"], 
+                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot", "eyePosition"], 
                                             ["textureSampler", "colorGradientSampler"], this._scene.getEngine(), defines);
         }        
 
@@ -873,7 +938,7 @@
                 var ratio = x / textureWidth;
 
                 Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                    data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor, (<FactorGradient>nextGradient).factor, scale);
+                    data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
                 });
             }
 
@@ -984,6 +1049,9 @@
             if (this.particleEmitterType) {
                 this.particleEmitterType.applyToShader(this._updateEffect);
             }
+            if (this._isAnimationSheetEnabled) {
+                this._updateEffect.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
+            }            
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
@@ -1014,12 +1082,22 @@
                 this._renderEffect.setMatrix("view", viewMatrix);
                 this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
                 this._renderEffect.setTexture("textureSampler", this.particleTexture);
+                this._renderEffect.setVector2("translationPivot", this.translationPivot);
                 if (this._colorGradientsTexture) {
                     this._renderEffect.setTexture("colorGradientSampler", this._colorGradientsTexture);
                 } else {
                     this._renderEffect.setDirectColor4("colorDead", this.colorDead);
                 }
 
+                if (this._isAnimationSheetEnabled && this.particleTexture) {
+                    let baseSize = this.particleTexture.getBaseSize();
+                    this._renderEffect.setFloat3("sheetInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+                }
+
+                if (this._isBillboardBased) {
+                    var camera = this._scene.activeCamera!;
+                    this._renderEffect.setVector3("eyePosition", camera.globalPosition);
+                }
 
                 if (this._scene.clipPlane) {
                     var clipPlane = this._scene.clipPlane;
@@ -1179,6 +1257,7 @@
             var serializationObject: any = {};
 
             ParticleSystem._Serialize(serializationObject, this);
+            serializationObject.activeParticleCount = this.activeParticleCount;
 
             return serializationObject;            
         }
@@ -1194,7 +1273,9 @@
             var name = parsedParticleSystem.name;
             var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
 
-            particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            if (parsedParticleSystem.activeParticleCount) {
+                particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            }
             ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
             return particleSystem;

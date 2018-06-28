@@ -257,7 +257,7 @@
         constructor(scene: Scene) {
             this._scene = scene || Engine.LastCreatedScene;
 
-            scene._actionManagers.push(this);
+            scene.actionManagers.push(this);
         }
 
         // Methods
@@ -266,7 +266,7 @@
          * Releases all associated resources
          */
         public dispose(): void {
-            var index = this._scene._actionManagers.indexOf(this);
+            var index = this._scene.actionManagers.indexOf(this);
 
             for (var i = 0; i < this.actions.length; i++) {
                 var action = this.actions[i];
@@ -277,7 +277,7 @@
             }
 
             if (index > -1) {
-                this._scene._actionManagers.splice(index, 1);
+                this._scene.actionManagers.splice(index, 1);
             }
         }
 

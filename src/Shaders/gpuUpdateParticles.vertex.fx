@@ -38,9 +38,9 @@ uniform float radiusRange;
 #endif
 
 #ifdef CONEEMITTER
-uniform float radius;
+uniform vec2 radius;
 uniform float coneAngle;
-uniform float height;
+uniform vec2 height;
 uniform float directionRandomizer;
 #endif
 
@@ -58,6 +58,9 @@ in vec3 direction;
 in vec3 initialDirection;
 #endif
 in vec2 angle;
+#ifdef ANIMATESHEET
+in float cellIndex;
+#endif
 
 // Output
 out vec3 outPosition;
@@ -65,9 +68,6 @@ out float outAge;
 out float outLife;
 out vec4 outSeed;
 out vec3 outSize;
-#ifdef SIZEGRADIENTS
-out vec3 outInitialSize;
-#endif
 #ifndef COLORGRADIENTS
 out vec4 outColor;
 #endif
@@ -76,11 +76,18 @@ out vec3 outDirection;
 out vec3 outInitialDirection;
 #endif
 out vec2 outAngle;
+#ifdef ANIMATESHEET
+out float outCellIndex;
+#endif
 
 #ifdef SIZEGRADIENTS
 uniform sampler2D sizeGradientSampler;
-in vec3 initialSize;
 #endif 
+
+#ifdef ANIMATESHEET
+uniform vec3 cellInfos;
+#endif
+
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -106,6 +113,9 @@ void main() {
 #endif      
       outDirection = direction;
       outAngle = angle;
+#ifdef ANIMATESHEET      
+      outCellIndex = cellIndex;
+#endif
       return;
     }
     vec3 position;
@@ -122,13 +132,13 @@ void main() {
     outSeed = seed;
 
     // Size
+#ifdef SIZEGRADIENTS    
+    outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
+#else
     outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+#endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
-
-#ifdef SIZEGRADIENTS
-    outInitialSize = outSize;
-#endif    
 
 #ifndef COLORGRADIENTS
     // Color
@@ -170,21 +180,21 @@ void main() {
     vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
-    float h = randoms2.y;
+    float h = randoms2.y * height.y;
     
     // Better distribution in a cone at normal angles.
     h = 1. - h * h;
-    float lRadius = radius * randoms2.z;
+    float lRadius = radius.x - radius.x * randoms2.z * radius.y;
     lRadius = lRadius * h;
 
     float randX = lRadius * sin(s);
     float randZ = lRadius * cos(s);
-    float randY = h  * height;
+    float randY = h  * height.x;
 
     position = vec3(randX, randY, randZ); 
 
     // Direction
-    if (coneAngle == 0.) {
+    if (abs(cos(coneAngle)) == 1.0) {
         direction = vec3(0., 1.0, 0.);
     } else {
         vec3 randoms3 = getRandomVec3(seed.z);
@@ -206,6 +216,9 @@ void main() {
 #ifndef BILLBOARD        
     outInitialDirection = initial;
 #endif
+#ifdef ANIMATESHEET      
+    outCellIndex = cellInfos.x;
+#endif
 
   } else {   
     outPosition = position + direction * timeDelta;
@@ -217,8 +230,8 @@ void main() {
 #endif
 
 #ifdef SIZEGRADIENTS
-    outInitialSize = initialSize;
-	outSize = initialSize * texture(sizeGradientSampler, vec2(age / life, 0)).r;
+	outSize.x = texture(sizeGradientSampler, vec2(age / life, 0)).r;
+    outSize.yz = size.yz;
 #else
     outSize = size;
 #endif 
@@ -228,5 +241,11 @@ void main() {
 #endif
     outDirection = direction + gravity * timeDelta;
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
+#ifdef ANIMATESHEET      
+    float dist = cellInfos.y - cellInfos.x;
+    float ratio = clamp(mod(outAge * cellInfos.z, life) / life, 0., 1.0);
+
+    outCellIndex = float(int(cellInfos.x + ratio * dist));
+#endif
   }
 }

@@ -1,5 +1,4 @@
 ﻿module BABYLON {
-
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
@@ -309,21 +308,12 @@
                 }
             }
 
-            // Lens flares
-            if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
-                for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
-                    var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                    var lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
-                    container.lensFlareSystems.push(lf);
-                }
-            }
-
             // Shadows
             if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
                 for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                     var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                    var sg = ShadowGenerator.Parse(parsedShadowGenerator, scene);
-                    container.shadowGenerators.push(sg);
+                    ShadowGenerator.Parse(parsedShadowGenerator, scene);
+                    // SG would be available on their associated lights
                 }
             }
 
@@ -357,13 +347,7 @@
                 }
             }
 
-            // Effect layers
-            if (parsedData.effectLayers) {
-                for (index = 0; index < parsedData.effectLayers.length; index++) {
-                    var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
-                    container.effectLayers.push(effectLayer);
-                }
-            }
+            AbstractScene.Parse(parsedData, scene, container, rootUrl);
 
             // Actions (scene)
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
