@@ -1,10 +1,11 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, SceneLoader, Tags } from "babylonjs";
-import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { ViewerModel, ModelState } from "../model/viewerModel";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoader, Tags, Tools } from 'babylonjs';
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from 'babylonjs-loaders';
+
+import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
+import { ObservablesManager } from '../managers/observablesManager';
+import { ModelState, ViewerModel } from '../model/viewerModel';
 import { getLoaderPluginByName, ILoaderPlugin } from './plugins/';
-import { ObservablesManager } from "../managers/observablesManager";
-import { ConfigurationContainer } from "../configuration/configurationContainer";
 
 /**
  * An instance of the class is in charge of loading the model correctly.

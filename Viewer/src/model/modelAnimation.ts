@@ -1,4 +1,4 @@
-import { AnimationGroup, Animatable, Skeleton, Vector3 } from "babylonjs";
+import { Animatable, AnimationGroup, Vector3 } from 'babylonjs';
 
 /**
  * Animation play mode enum - is the animation looping or playing once
