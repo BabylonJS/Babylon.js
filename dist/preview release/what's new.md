@@ -23,6 +23,7 @@
   - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
   - Added support for size gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
   - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
+  - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
 - Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
 
 ## Updates

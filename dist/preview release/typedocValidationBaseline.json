@@ -1,7 +1,7 @@
 {
-  "errors": 4295,
+  "errors": 4283,
   "babylon.typedoc.json": {
-    "errors": 4295,
+    "errors": 4283,
     "AbstractScene": {
       "Property": {
         "effectLayers": {
@@ -6303,30 +6303,12 @@
     "GPUParticleSystem": {
       "Method": {
         "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "color1": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
@@ -10792,27 +10774,7 @@
             "MissingReturn": true
           }
         },
-        "addLifeTimeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
         "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeLifeTimeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
           "Comments": {
             "MissingReturn": true
           }
@@ -22879,30 +22841,12 @@
     "IParticleSystem": {
       "Method": {
         "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "color1": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
