@@ -217,8 +217,7 @@
             var index = this._observers.indexOf(observer);
 
             if (index !== -1) {
-                observer._willBeUnregistered = true;
-                this._observers.splice(index, 1);
+                this._deferUnregister(observer);
                 return true;
             }
 
@@ -236,7 +235,7 @@
 
             for (var index = 0; index < this._observers.length; index++) {
                 if (this._observers[index].callback === callback && (!scope || scope === this._observers[index].scope)) {
-                    this._observers.splice(index, 1);
+                    this._deferUnregister(this._observers[index]);
                     return true;
                 }
             }
@@ -248,8 +247,25 @@
             observer.unregisterOnNextCall = false;
             observer._willBeUnregistered = true;
             Tools.SetImmediate(() => {
-                this.remove(observer);
+                this._remove(observer);
             })
+        }
+
+        // This should only be called when not iterating over _observers to avoid callback skipping.
+        // Removes an observer from the _observer Array.
+        private _remove(observer: Nullable<Observer<T>>): boolean {
+            if (!observer) {
+                return false;
+            }
+
+            var index = this._observers.indexOf(observer);
+
+            if (index !== -1) {
+                this._observers.splice(index, 1);
+                return true;
+            }
+
+            return false;
         }
 
         /**
@@ -273,9 +289,7 @@
             state.skipNextObservers = false;
             state.lastReturnValue = eventData;
 
-            // Iterate over copy of array to handle removed observers during callback
-            var observerList = this._observers.slice();
-            for (var obs of observerList) {
+            for (var obs of this._observers) {
                 if (obs._willBeUnregistered) {
                     continue;
                 }
