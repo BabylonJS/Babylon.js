@@ -372,6 +372,8 @@ export abstract class AbstractViewer {
         }
 
         this.templateManager = new TemplateManager(this.containerElement);
+
+        this.observablesManager.onViewerInitStartedObservable.notifyObservers(this);
     }
 
     /**
