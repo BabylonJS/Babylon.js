@@ -356,11 +356,16 @@ module BABYLON {
                     return;
 
                 case InternalTexture.DATASOURCE_CUBERAW:
+                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray!, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy._swapAndDie(this);
+                    this.isReady = true;
+                    return;
+
                 case InternalTexture.DATASOURCE_CUBERAW_RGBD:
                     proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
-                    if (this._dataSource === InternalTexture.DATASOURCE_CUBERAW_RGBD) {
-                        RawCubeTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset);
-                    }
+                    RawCubeTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
+                        this.isReady = true;
+                    });
                     proxy._swapAndDie(this);
                     return;
 
