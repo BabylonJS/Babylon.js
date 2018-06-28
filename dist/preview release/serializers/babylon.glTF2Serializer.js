@@ -367,11 +367,25 @@ var BABYLON;
                     var vertex = vertices_1[_i];
                     if (this._convertToRightHandedSystem && !(vertexAttributeKind === BABYLON.VertexBuffer.ColorKind) && !(vertex instanceof BABYLON.Vector2)) {
                         if (vertex instanceof BABYLON.Vector3) {
-                            (vertexAttributeKind === BABYLON.VertexBuffer.PositionKind) ? GLTF2._GLTFUtilities.GetRightHandedPositionVector3FromRef(vertex) : GLTF2._GLTFUtilities.GetRightHandedNormalVector3FromRef(vertex);
+                            if (vertexAttributeKind === BABYLON.VertexBuffer.NormalKind) {
+                                GLTF2._GLTFUtilities._GetRightHandedNormalVector3FromRef(vertex);
+                            }
+                            else if (vertexAttributeKind === BABYLON.VertexBuffer.PositionKind) {
+                                GLTF2._GLTFUtilities._GetRightHandedPositionVector3FromRef(vertex);
+                            }
+                            else {
+                                BABYLON.Tools.Error('Unsupported vertex attribute kind!');
+                            }
                         }
                         else {
-                            GLTF2._GLTFUtilities.GetRightHandedVector4FromRef(vertex);
+                            GLTF2._GLTFUtilities._GetRightHandedVector4FromRef(vertex);
                         }
+                    }
+                    if (vertexAttributeKind === BABYLON.VertexBuffer.NormalKind) {
+                        vertex.normalize();
+                    }
+                    else if (vertexAttributeKind === BABYLON.VertexBuffer.TangentKind && vertex instanceof BABYLON.Vector4) {
+                        GLTF2._GLTFUtilities._NormalizeTangentFromRef(vertex);
                     }
                     for (var _a = 0, _b = vertex.asArray(); _a < _b.length; _a++) {
                         var component = _b[_a];
@@ -398,7 +412,7 @@ var BABYLON;
                             index = k * stride;
                             var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
                             if (this._convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedPositionVector3FromRef(vertexData);
+                                GLTF2._GLTFUtilities._GetRightHandedPositionVector3FromRef(vertexData);
                             }
                             vertexAttributes.push(vertexData.asArray());
                         }
@@ -409,8 +423,9 @@ var BABYLON;
                             index = k * stride;
                             var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
                             if (this._convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedNormalVector3FromRef(vertexData);
+                                GLTF2._GLTFUtilities._GetRightHandedNormalVector3FromRef(vertexData);
                             }
+                            vertexData.normalize();
                             vertexAttributes.push(vertexData.asArray());
                         }
                         break;
@@ -420,8 +435,9 @@ var BABYLON;
                             index = k * stride;
                             var vertexData = BABYLON.Vector4.FromArray(meshAttributeArray, index);
                             if (this._convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedVector4FromRef(vertexData);
+                                GLTF2._GLTFUtilities._GetRightHandedVector4FromRef(vertexData);
                             }
+                            GLTF2._GLTFUtilities._NormalizeTangentFromRef(vertexData);
                             vertexAttributes.push(vertexData.asArray());
                         }
                         break;
@@ -513,7 +529,7 @@ var BABYLON;
                             if (image.uri) {
                                 imageData = _this._imageData[image.uri];
                                 imageName = image.uri.split('.')[0] + " image";
-                                bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
+                                bufferView = GLTF2._GLTFUtilities._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                                 byteOffset += imageData.data.buffer.byteLength;
                                 _this._bufferViews.push(bufferView);
                                 image.bufferView = _this._bufferViews.length - 1;
@@ -663,7 +679,7 @@ var BABYLON;
              */
             _Exporter.prototype.setNodeTransformation = function (node, babylonTransformNode) {
                 if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
-                    node.translation = this._convertToRightHandedSystem ? GLTF2._GLTFUtilities.GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
+                    node.translation = this._convertToRightHandedSystem ? GLTF2._GLTFUtilities._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
                 }
                 if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
                     node.scale = babylonTransformNode.scaling.asArray();
@@ -674,7 +690,7 @@ var BABYLON;
                 }
                 if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
                     if (this._convertToRightHandedSystem) {
-                        GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(rotationQuaternion);
+                        GLTF2._GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
                     }
                     node.rotation = rotationQuaternion.normalize().asArray();
                 }
@@ -702,7 +718,7 @@ var BABYLON;
                     var vertexData = bufferMesh.getVerticesData(kind);
                     if (vertexData) {
                         var byteLength = vertexData.length * 4;
-                        var bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
+                        var bufferView = GLTF2._GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
                         this._bufferViews.push(bufferView);
                         this.writeAttributeData(kind, vertexData, byteStride, binaryWriter);
                     }
@@ -843,7 +859,7 @@ var BABYLON;
                         var indices = bufferMesh.getIndices();
                         if (indices) {
                             var byteLength = indices.length * 4;
-                            bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
+                            bufferView = GLTF2._GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
                             this._bufferViews.push(bufferView);
                             indexBufferViewIndex = this._bufferViews.length - 1;
                             for (var k = 0, length_7 = indices.length; k < length_7; ++k) {
@@ -902,9 +918,9 @@ var BABYLON;
                                         if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                             minMax = { min: null, max: null };
                                             if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
-                                                minMax = GLTF2._GLTFUtilities.CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
+                                                minMax = GLTF2._GLTFUtilities._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
                                             }
-                                            var accessor = GLTF2._GLTFUtilities.CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
+                                            var accessor = GLTF2._GLTFUtilities._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
                                             this._accessors.push(accessor);
                                             this.setAttributeKind(meshPrimitive, attributeKind);
                                             if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
@@ -916,7 +932,7 @@ var BABYLON;
                             }
                             if (indexBufferViewIndex) {
                                 // Create accessor
-                                var accessor = GLTF2._GLTFUtilities.CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, "SCALAR" /* SCALAR */, 5125 /* UNSIGNED_INT */, submesh.indexCount, submesh.indexStart * 4, null, null);
+                                var accessor = GLTF2._GLTFUtilities._CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, "SCALAR" /* SCALAR */, 5125 /* UNSIGNED_INT */, submesh.indexCount, submesh.indexStart * 4, null, null);
                                 this._accessors.push(accessor);
                                 meshPrimitive.indices = this._accessors.length - 1;
                             }
@@ -1970,7 +1986,7 @@ var BABYLON;
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              * @returns glTF PBR Metallic Roughness factors
              */
-            _GLTFMaterialExporter.prototype._gonvertMetalRoughFactorsToMetallicRoughnessAsync = function (babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords) {
+            _GLTFMaterialExporter.prototype._convertMetalRoughFactorsToMetallicRoughnessAsync = function (babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords) {
                 var promises = [];
                 var metallicRoughness = {
                     baseColor: babylonPBRMaterial.albedoColor,
@@ -2102,39 +2118,41 @@ var BABYLON;
              * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
              * @returns glTF PBR Metallic Roughness factors
              */
-            _GLTFMaterialExporter.prototype._convertSpecGlossFactorsToMetallicRoughness = function (babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords) {
+            _GLTFMaterialExporter.prototype._convertSpecGlossFactorsToMetallicRoughnessAsync = function (babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords) {
                 var _this = this;
-                var samplers = this._exporter._samplers;
-                var textures = this._exporter._textures;
-                var specGloss = {
-                    diffuseColor: babylonPBRMaterial.albedoColor || BABYLON.Color3.White(),
-                    specularColor: babylonPBRMaterial.reflectivityColor || BABYLON.Color3.White(),
-                    glossiness: babylonPBRMaterial.microSurface || 1,
-                };
-                var samplerIndex = null;
-                var sampler = this._getGLTFTextureSampler(babylonPBRMaterial.albedoTexture);
-                if (sampler.magFilter != null && sampler.minFilter != null && sampler.wrapS != null && sampler.wrapT != null) {
-                    samplers.push(sampler);
-                    samplerIndex = samplers.length - 1;
-                }
-                if (babylonPBRMaterial.reflectivityTexture && !babylonPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha) {
-                    return Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
-                }
-                return this._convertSpecularGlossinessTexturesToMetallicRoughnessAsync(babylonPBRMaterial.albedoTexture, babylonPBRMaterial.reflectivityTexture, specGloss, mimeType).then(function (metallicRoughnessFactors) {
-                    if (hasTextureCoords) {
-                        if (metallicRoughnessFactors.baseColorTextureBase64) {
-                            var glTFBaseColorTexture = _this._getTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex);
-                            if (glTFBaseColorTexture) {
-                                glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
+                return Promise.resolve().then(function () {
+                    var samplers = _this._exporter._samplers;
+                    var textures = _this._exporter._textures;
+                    var specGloss = {
+                        diffuseColor: babylonPBRMaterial.albedoColor || BABYLON.Color3.White(),
+                        specularColor: babylonPBRMaterial.reflectivityColor || BABYLON.Color3.White(),
+                        glossiness: babylonPBRMaterial.microSurface || 1,
+                    };
+                    var samplerIndex = null;
+                    var sampler = _this._getGLTFTextureSampler(babylonPBRMaterial.albedoTexture);
+                    if (sampler.magFilter != null && sampler.minFilter != null && sampler.wrapS != null && sampler.wrapT != null) {
+                        samplers.push(sampler);
+                        samplerIndex = samplers.length - 1;
+                    }
+                    if (babylonPBRMaterial.reflectivityTexture && !babylonPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha) {
+                        return Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
+                    }
+                    if ((babylonPBRMaterial.albedoTexture || babylonPBRMaterial.reflectivityTexture) && hasTextureCoords) {
+                        return _this._convertSpecularGlossinessTexturesToMetallicRoughnessAsync(babylonPBRMaterial.albedoTexture, babylonPBRMaterial.reflectivityTexture, specGloss, mimeType).then(function (metallicRoughnessFactors) {
+                            if (metallicRoughnessFactors.baseColorTextureBase64) {
+                                var glTFBaseColorTexture = _this._getTextureInfoFromBase64(metallicRoughnessFactors.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, babylonPBRMaterial.albedoTexture ? babylonPBRMaterial.albedoTexture.coordinatesIndex : null, samplerIndex);
+                                if (glTFBaseColorTexture) {
+                                    glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
+                                }
                             }
-                        }
-                        if (metallicRoughnessFactors.metallicRoughnessTextureBase64) {
-                            var glTFMRColorTexture = _this._getTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, babylonPBRMaterial.reflectivityTexture ? babylonPBRMaterial.reflectivityTexture.coordinatesIndex : null, samplerIndex);
-                            if (glTFMRColorTexture) {
-                                glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
+                            if (metallicRoughnessFactors.metallicRoughnessTextureBase64) {
+                                var glTFMRColorTexture = _this._getTextureInfoFromBase64(metallicRoughnessFactors.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, babylonPBRMaterial.reflectivityTexture ? babylonPBRMaterial.reflectivityTexture.coordinatesIndex : null, samplerIndex);
+                                if (glTFMRColorTexture) {
+                                    glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
+                                }
                             }
-                        }
-                        return metallicRoughnessFactors;
+                            return metallicRoughnessFactors;
+                        });
                     }
                     else {
                         return _this._convertSpecularGlossinessToMetallicRoughness(specGloss);
@@ -2167,12 +2185,12 @@ var BABYLON;
                             babylonPBRMaterial.alpha
                         ];
                     }
-                    return this._gonvertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords).then(function (metallicRoughness) {
+                    return this._convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords).then(function (metallicRoughness) {
                         return _this.setMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, hasTextureCoords);
                     });
                 }
                 else {
-                    return this._convertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords).then(function (metallicRoughness) {
+                    return this._convertSpecGlossFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords).then(function (metallicRoughness) {
                         return _this.setMetallicRoughnessPbrMaterial(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, hasTextureCoords);
                     });
                 }
@@ -2598,26 +2616,26 @@ var BABYLON;
                     var nodeIndex = nodeMap[babylonTransformNode.uniqueId];
                     // Creates buffer view and accessor for key frames.
                     var byteLength = animationData.inputs.length * 4;
-                    bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  keyframe data view");
+                    bufferView = GLTF2._GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  keyframe data view");
                     bufferViews.push(bufferView);
                     animationData.inputs.forEach(function (input) {
                         binaryWriter.setFloat32(input);
                     });
-                    accessor = GLTF2._GLTFUtilities.CreateAccessor(bufferViews.length - 1, name + "  keyframes", "SCALAR" /* SCALAR */, 5126 /* FLOAT */, animationData.inputs.length, null, [animationData.inputsMin], [animationData.inputsMax]);
+                    accessor = GLTF2._GLTFUtilities._CreateAccessor(bufferViews.length - 1, name + "  keyframes", "SCALAR" /* SCALAR */, 5126 /* FLOAT */, animationData.inputs.length, null, [animationData.inputsMin], [animationData.inputsMax]);
                     accessors.push(accessor);
                     keyframeAccessorIndex = accessors.length - 1;
                     // create bufferview and accessor for keyed values.
                     outputLength = animationData.outputs.length;
                     byteLength = dataAccessorType === "VEC3" /* VEC3 */ ? animationData.outputs.length * 12 : animationData.outputs.length * 16;
                     // check for in and out tangents
-                    bufferView = GLTF2._GLTFUtilities.CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  data view");
+                    bufferView = GLTF2._GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  data view");
                     bufferViews.push(bufferView);
                     animationData.outputs.forEach(function (output) {
                         output.forEach(function (entry) {
                             binaryWriter.setFloat32(entry);
                         });
                     });
-                    accessor = GLTF2._GLTFUtilities.CreateAccessor(bufferViews.length - 1, name + "  data", dataAccessorType, 5126 /* FLOAT */, outputLength, null, null, null);
+                    accessor = GLTF2._GLTFUtilities._CreateAccessor(bufferViews.length - 1, name + "  data", dataAccessorType, 5126 /* FLOAT */, outputLength, null, null, null);
                     accessors.push(accessor);
                     dataAccessorIndex = accessors.length - 1;
                     // create sampler
@@ -2757,7 +2775,7 @@ var BABYLON;
                             BABYLON.Quaternion.RotationYawPitchRollToRef(cacheValue.y, cacheValue.x, cacheValue.z, quaternionCache);
                         }
                         if (convertToRightHandedSystem) {
-                            GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(quaternionCache);
+                            GLTF2._GLTFUtilities._GetRightHandedQuaternionFromRef(quaternionCache);
                             if (!babylonTransformNode.parent) {
                                 quaternionCache = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(quaternionCache);
                             }
@@ -2767,7 +2785,7 @@ var BABYLON;
                     else {
                         cacheValue = value;
                         if (convertToRightHandedSystem && (animationChannelTargetPath !== "scale" /* SCALE */)) {
-                            GLTF2._GLTFUtilities.GetRightHandedPositionVector3FromRef(cacheValue);
+                            GLTF2._GLTFUtilities._GetRightHandedPositionVector3FromRef(cacheValue);
                             if (!babylonTransformNode.parent) {
                                 cacheValue.x *= -1;
                                 cacheValue.z *= -1;
@@ -2822,7 +2840,7 @@ var BABYLON;
                         if (babylonTransformNode.rotationQuaternion) {
                             basePositionRotationOrScale = babylonTransformNode.rotationQuaternion.asArray();
                             if (convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
+                                GLTF2._GLTFUtilities._GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
                                 if (!babylonTransformNode.parent) {
                                     basePositionRotationOrScale = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(basePositionRotationOrScale)).asArray();
                                 }
@@ -2834,13 +2852,13 @@ var BABYLON;
                     }
                     else {
                         basePositionRotationOrScale = babylonTransformNode.rotation.asArray();
-                        GLTF2._GLTFUtilities.GetRightHandedNormalArray3FromRef(basePositionRotationOrScale);
+                        GLTF2._GLTFUtilities._GetRightHandedNormalArray3FromRef(basePositionRotationOrScale);
                     }
                 }
                 else if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
                     basePositionRotationOrScale = babylonTransformNode.position.asArray();
                     if (convertToRightHandedSystem) {
-                        GLTF2._GLTFUtilities.GetRightHandedPositionArray3FromRef(basePositionRotationOrScale);
+                        GLTF2._GLTFUtilities._GetRightHandedPositionArray3FromRef(basePositionRotationOrScale);
                     }
                 }
                 else { // scale
@@ -2868,7 +2886,7 @@ var BABYLON;
                         var array = BABYLON.Vector3.FromArray(value);
                         var rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(array.y, array.x, array.z);
                         if (convertToRightHandedSystem) {
-                            GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(rotationQuaternion);
+                            GLTF2._GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
                             if (!babylonTransformNode.parent) {
                                 rotationQuaternion = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(rotationQuaternion);
                             }
@@ -2877,7 +2895,7 @@ var BABYLON;
                     }
                     else if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
                         if (convertToRightHandedSystem) {
-                            GLTF2._GLTFUtilities.GetRightHandedNormalArray3FromRef(value);
+                            GLTF2._GLTFUtilities._GetRightHandedNormalArray3FromRef(value);
                             if (!babylonTransformNode.parent) {
                                 value[0] *= -1;
                                 value[2] *= -1;
@@ -2892,7 +2910,7 @@ var BABYLON;
                         if (animationChannelTargetPath === "rotation" /* ROTATION */) {
                             var posRotScale = useQuaternion ? newPositionRotationOrScale : BABYLON.Quaternion.RotationYawPitchRoll(newPositionRotationOrScale.y, newPositionRotationOrScale.x, newPositionRotationOrScale.z).normalize();
                             if (convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedQuaternionFromRef(posRotScale);
+                                GLTF2._GLTFUtilities._GetRightHandedQuaternionFromRef(posRotScale);
                                 if (!babylonTransformNode.parent) {
                                     posRotScale = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(posRotScale);
                                 }
@@ -2901,7 +2919,7 @@ var BABYLON;
                         }
                         else if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
                             if (convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedNormalVector3FromRef(newPositionRotationOrScale);
+                                GLTF2._GLTFUtilities._GetRightHandedNormalVector3FromRef(newPositionRotationOrScale);
                                 if (!babylonTransformNode.parent) {
                                     newPositionRotationOrScale.x *= -1;
                                     newPositionRotationOrScale.z *= -1;
@@ -2914,7 +2932,7 @@ var BABYLON;
                 else if (animationType === BABYLON.Animation.ANIMATIONTYPE_QUATERNION) {
                     value = keyFrame.value.normalize().asArray();
                     if (convertToRightHandedSystem) {
-                        GLTF2._GLTFUtilities.GetRightHandedQuaternionArrayFromRef(value);
+                        GLTF2._GLTFUtilities._GetRightHandedQuaternionArrayFromRef(value);
                         if (!babylonTransformNode.parent) {
                             value = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(value)).asArray();
                         }
@@ -3002,7 +3020,7 @@ var BABYLON;
                                 tangent = BABYLON.Quaternion.RotationYawPitchRoll(array.y, array.x, array.z).asArray();
                             }
                             if (convertToRightHandedSystem) {
-                                GLTF2._GLTFUtilities.GetRightHandedQuaternionArrayFromRef(tangent);
+                                GLTF2._GLTFUtilities._GetRightHandedQuaternionArrayFromRef(tangent);
                                 if (!babylonTransformNode.parent) {
                                     tangent = BABYLON.Quaternion.FromArray([0, 1, 0, 0]).multiply(BABYLON.Quaternion.FromArray(tangent)).asArray();
                                 }
@@ -3017,7 +3035,7 @@ var BABYLON;
                             tangent = tangentValue.scale(frameDelta).asArray();
                             if (convertToRightHandedSystem) {
                                 if (animationChannelTargetPath === "translation" /* TRANSLATION */) {
-                                    GLTF2._GLTFUtilities.GetRightHandedPositionArray3FromRef(tangent);
+                                    GLTF2._GLTFUtilities._GetRightHandedPositionArray3FromRef(tangent);
                                     if (!babylonTransformNode.parent) {
                                         tangent[0] *= -1; // x
                                         tangent[2] *= -1; // z
@@ -3074,7 +3092,7 @@ var BABYLON;
              * @param name name of the buffer view
              * @returns bufferView for glTF
              */
-            _GLTFUtilities.CreateBufferView = function (bufferIndex, byteOffset, byteLength, byteStride, name) {
+            _GLTFUtilities._CreateBufferView = function (bufferIndex, byteOffset, byteLength, byteStride, name) {
                 var bufferview = { buffer: bufferIndex, byteLength: byteLength };
                 if (byteOffset) {
                     bufferview.byteOffset = byteOffset;
@@ -3099,7 +3117,7 @@ var BABYLON;
              * @param max Maximum value of each component in this attribute
              * @returns accessor for glTF
              */
-            _GLTFUtilities.CreateAccessor = function (bufferviewIndex, name, type, componentType, count, byteOffset, min, max) {
+            _GLTFUtilities._CreateAccessor = function (bufferviewIndex, name, type, componentType, count, byteOffset, min, max) {
                 var accessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
                 if (min != null) {
                     accessor.min = min;
@@ -3119,7 +3137,7 @@ var BABYLON;
              * @param vertexCount Number of vertices to check for min and max values
              * @returns min number array and max number array
              */
-            _GLTFUtilities.CalculateMinMaxPositions = function (positions, vertexStart, vertexCount, convertToRightHandedSystem) {
+            _GLTFUtilities._CalculateMinMaxPositions = function (positions, vertexStart, vertexCount, convertToRightHandedSystem) {
                 var min = [Infinity, Infinity, Infinity];
                 var max = [-Infinity, -Infinity, -Infinity];
                 var positionStrideSize = 3;
@@ -3131,7 +3149,7 @@ var BABYLON;
                         indexOffset = positionStrideSize * i;
                         position = BABYLON.Vector3.FromArray(positions, indexOffset);
                         if (convertToRightHandedSystem) {
-                            _GLTFUtilities.GetRightHandedPositionVector3FromRef(position);
+                            _GLTFUtilities._GetRightHandedPositionVector3FromRef(position);
                         }
                         vector = position.asArray();
                         for (var j = 0; j < positionStrideSize; ++j) {
@@ -3153,21 +3171,21 @@ var BABYLON;
              * @param vector vector3 array
              * @returns right-handed Vector3
              */
-            _GLTFUtilities.GetRightHandedPositionVector3 = function (vector) {
+            _GLTFUtilities._GetRightHandedPositionVector3 = function (vector) {
                 return new BABYLON.Vector3(vector.x, vector.y, -vector.z);
             };
             /**
              * Converts a Vector3 to right-handed
              * @param vector Vector3 to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedPositionVector3FromRef = function (vector) {
+            _GLTFUtilities._GetRightHandedPositionVector3FromRef = function (vector) {
                 vector.z *= -1;
             };
             /**
              * Converts a three element number array to right-handed
              * @param vector number array to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedPositionArray3FromRef = function (vector) {
+            _GLTFUtilities._GetRightHandedPositionArray3FromRef = function (vector) {
                 vector[2] *= -1;
             };
             /**
@@ -3175,28 +3193,28 @@ var BABYLON;
              * @param vector vector3 array
              * @returns right-handed Vector3
              */
-            _GLTFUtilities.GetRightHandedNormalVector3 = function (vector) {
+            _GLTFUtilities._GetRightHandedNormalVector3 = function (vector) {
                 return new BABYLON.Vector3(vector.x, vector.y, -vector.z);
             };
             /**
              * Converts a Vector3 to right-handed
              * @param vector Vector3 to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedNormalVector3FromRef = function (vector) {
+            _GLTFUtilities._GetRightHandedNormalVector3FromRef = function (vector) {
                 vector.z *= -1;
             };
             /**
              * Converts a three element number array to right-handed
              * @param vector number array to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedNormalArray3FromRef = function (vector) {
+            _GLTFUtilities._GetRightHandedNormalArray3FromRef = function (vector) {
                 vector[2] *= -1;
             };
             /**
              * Converts a Vector4 to right-handed
              * @param vector Vector4 to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedVector4FromRef = function (vector) {
+            _GLTFUtilities._GetRightHandedVector4FromRef = function (vector) {
                 vector.z *= -1;
                 vector.w *= -1;
             };
@@ -3204,7 +3222,7 @@ var BABYLON;
              * Converts a Vector4 to right-handed
              * @param vector Vector4 to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedArray4FromRef = function (vector) {
+            _GLTFUtilities._GetRightHandedArray4FromRef = function (vector) {
                 vector[2] *= -1;
                 vector[3] *= -1;
             };
@@ -3212,7 +3230,7 @@ var BABYLON;
              * Converts a Quaternion to right-handed
              * @param quaternion Source quaternion to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedQuaternionFromRef = function (quaternion) {
+            _GLTFUtilities._GetRightHandedQuaternionFromRef = function (quaternion) {
                 quaternion.x *= -1;
                 quaternion.y *= -1;
             };
@@ -3220,9 +3238,15 @@ var BABYLON;
              * Converts a Quaternion to right-handed
              * @param quaternion Source quaternion to convert to right-handed
              */
-            _GLTFUtilities.GetRightHandedQuaternionArrayFromRef = function (quaternion) {
+            _GLTFUtilities._GetRightHandedQuaternionArrayFromRef = function (quaternion) {
                 quaternion[0] *= -1;
                 quaternion[1] *= -1;
+            };
+            _GLTFUtilities._NormalizeTangentFromRef = function (tangent) {
+                var length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z + tangent.z);
+                tangent.x /= length;
+                tangent.y /= length;
+                tangent.z /= length;
             };
             return _GLTFUtilities;
         }());
