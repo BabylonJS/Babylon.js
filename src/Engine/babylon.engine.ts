@@ -5857,7 +5857,6 @@
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
 
             // this.resetTextureCache();
-
             texture.isReady = true;
         }
 
@@ -5907,7 +5906,7 @@
 
             // Upload data if needed. The texture won't be ready until then.
             if (data) {
-                this.updateRawCubeTexture(texture, data as ArrayBufferView[], format, type, invertY, compression);
+                this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
             }
 
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
