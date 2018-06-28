@@ -358,7 +358,7 @@ module BABYLON {
                 case InternalTexture.DATASOURCE_CUBERAW:
                 case InternalTexture.DATASOURCE_CUBERAW_RGBD:
                     proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
-                    if (this._dataSource) {
+                    if (this._dataSource === InternalTexture.DATASOURCE_CUBERAW_RGBD) {
                         RawCubeTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset);
                     }
                     proxy._swapAndDie(this);
