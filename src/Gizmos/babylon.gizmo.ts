@@ -8,6 +8,7 @@ module BABYLON {
          */
         protected _rootMesh:Mesh;
         private _attachedMesh:Nullable<AbstractMesh>;
+        private _scaleFactor = 3;
         /**
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          * * When set, interactions will be enabled
@@ -44,11 +45,8 @@ module BABYLON {
          */
         constructor(/** The utility layer the gizmo will be added to */ public gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer){
             this._rootMesh = new BABYLON.Mesh("gizmoRootNode",gizmoLayer.utilityLayerScene);
+            var tempVector = new Vector3();
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(()=>{
-                if(this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
-                    var dist = this.attachedMesh.position.subtract(this.gizmoLayer.utilityLayerScene.activeCamera.position).length()/3;
-                    this._rootMesh.scaling.set(dist, dist, dist);
-                }
                 if(this.attachedMesh){
                     if(this.updateGizmoRotationToMatchAttachedMesh){
                         if(!this._rootMesh.rotationQuaternion){
@@ -58,6 +56,11 @@ module BABYLON {
                     }
                     if(this.updateGizmoPositionToMatchAttachedMesh){
                         this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
+                    }
+                    if(this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
+                        this._rootMesh.position.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, tempVector);
+                        var dist = tempVector.length()/this._scaleFactor;
+                        this._rootMesh.scaling.set(dist, dist, dist);
                     }
                 }
             })
