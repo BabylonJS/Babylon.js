@@ -8,6 +8,9 @@ export const useNullEngine = true;
 export class Helper {
 
     public static getNewViewerInstance(element: HTMLElement = Helper.getViewerContainer(), configuration?: ViewerConfiguration, useAbstractViewer?: boolean) {
+        if (configuration) {
+            configuration.extends = configuration.extends || "default";
+        }
         if (useNullEngine) {
             if (useAbstractViewer) {
                 return new NullEngineAbstractViewer(element, configuration);
