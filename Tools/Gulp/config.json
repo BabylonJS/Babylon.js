@@ -165,6 +165,8 @@
                 "../../src/Cameras/babylon.camera.js",
                 "../../src/Rendering/babylon.renderingManager.js",
                 "../../src/Rendering/babylon.renderingGroup.js",
+                "../../src/babylon.sceneComponent.js",
+                "../../src/babylon.abstractScene.js",
                 "../../src/babylon.scene.js",
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
@@ -539,6 +541,7 @@
         "additionalTextures": {
             "files": [
                 "../../src/Materials/Textures/babylon.cubeTexture.js",
+                "../../src/Materials/Textures/babylon.rawCubeTexture.js",
                 "../../src/Materials/Textures/babylon.renderTargetTexture.js",
                 "../../src/Materials/Textures/babylon.multiRenderTarget.js",
                 "../../src/Materials/Textures/babylon.mirrorTexture.js",
@@ -1007,6 +1010,7 @@
         "lensFlares": {
             "files": [
                 "../../src/LensFlare/babylon.lensFlare.js",
+                "../../src/LensFlare/babylon.lensFlareSystemSceneComponent.js",
                 "../../src/LensFlare/babylon.lensFlareSystem.js"
             ],
             "dependUpon": [
@@ -1153,6 +1157,7 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
+                "../../src/Layer/babylon.effectLayerSceneComponent.js",
                 "../../src/Layer/babylon.effectLayer.js",
                 "../../src/Layer/babylon.highlightLayer.js",
                 "../../src/Layer/babylon.glowLayer.js"
@@ -1198,6 +1203,7 @@
         },
         "layer": {
             "files": [
+                "../../src/Layer/babylon.layerSceneComponent.js",
                 "../../src/Layer/babylon.layer.js"
             ],
             "dependUpon": [
@@ -1633,7 +1639,8 @@
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_imageBased.ts"
                 ],
                 "doNotIncludeInBundle": true,
                 "output": "babylon.glTF2FileLoader.js"
@@ -1657,7 +1664,8 @@
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_imageBased.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }

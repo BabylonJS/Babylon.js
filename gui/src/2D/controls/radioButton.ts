@@ -75,7 +75,7 @@ module BABYLON.GUI {
 
             this.onIsCheckedChangedObservable.notifyObservers(value);
 
-            if (this._isChecked) {
+            if (this._isChecked && this._host) {
                 // Update all controls from same group
                 this._host.executeOnAllControls((control) => {
                     if (control === this) {

@@ -187,6 +187,8 @@
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
         private _sizeGradients: Nullable<Array<FactorGradient>> = null;
         private _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
+        private _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
+        private _velocityGradients: Nullable<Array<FactorGradient>> = null;
 
         /**
          * Gets the current list of color gradients.
@@ -213,7 +215,25 @@
          */
         public getLifeTimeGradients(): Nullable<Array<FactorGradient>> {
             return this._lifeTimeGradients;
-        }          
+        }   
+        
+        /**
+         * Gets the current list of angular speed gradients.
+         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
+         * @returns the list of angular speed gradients
+         */
+        public getAngularSpeedGradients(): Nullable<Array<FactorGradient>> {
+            return this._angularSpeedGradients;
+        } 
+
+        /**
+         * Gets the current list of velocity gradients.
+         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+         * @returns the list of velocity gradients
+         */
+        public getVelocityGradients(): Nullable<Array<FactorGradient>> {
+            return this._velocityGradients;
+        }         
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -523,15 +543,37 @@
                                 particle.color.a = 0;
                             }
                         }
+
+                        if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {                  
+                            Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
+                                if (currentGradient !== particle._currentAngularSpeedGradient) {
+                                    particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
+                                    particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentAngularSpeedGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
+                            });
+                        }                        
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
-                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
+                        let directionScale = this._scaledUpdateSpeed;
+                        if (this._velocityGradients && this._velocityGradients.length > 0) {                  
+                            Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
+                                if (currentGradient !== particle._currentVelocityGradient) {
+                                    particle._currentVelocity1 = particle._currentVelocity2;
+                                    particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentVelocityGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
+                            });
+                        }                          
+                        particle.direction.scaleToRef(directionScale, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
-                        // Gradient
+                        // Size
                         if (this._sizeGradients && this._sizeGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
                                 if (currentGradient !== particle._currentSizeGradient) {
@@ -589,6 +631,7 @@
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param factor defines the life time factor to affect to the specified gradient         
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
          */
         public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
             if (!this._lifeTimeGradients) {
@@ -603,6 +646,7 @@
         /**
          * Remove a specific life time gradient
          * @param gradient defines the gradient to remove
+         * @returns the current particle system
          */
         public removeLifeTimeGradient(gradient: number): ParticleSystem {
             this._removeFactorGradient(this._lifeTimeGradients, gradient);
@@ -615,6 +659,7 @@
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param factor defines the size factor to affect to the specified gradient         
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
          */
         public addSizeGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
             if (!this._sizeGradients) {
@@ -629,12 +674,69 @@
         /**
          * Remove a specific size gradient
          * @param gradient defines the gradient to remove
+         * @returns the current particle system
          */
         public removeSizeGradient(gradient: number): ParticleSystem {
             this._removeFactorGradient(this._sizeGradients, gradient);
 
             return this;
         }        
+
+        /**
+         * Adds a new angular speed gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+            if (!this._angularSpeedGradients) {
+                this._angularSpeedGradients = [];
+            }
+
+            this._addFactorGradient(this._angularSpeedGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific angular speed gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeAngularSpeedGradient(gradient: number): ParticleSystem {
+            this._removeFactorGradient(this._angularSpeedGradients, gradient);
+
+            return this;
+        }          
+        
+        /**
+         * Adds a new velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addVelocityGradient(gradient: number, factor: number, factor2?: number): ParticleSystem {
+            if (!this._velocityGradients) {
+                this._velocityGradients = [];
+            }
+
+            this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeVelocityGradient(gradient: number): ParticleSystem {
+            this._removeFactorGradient(this._velocityGradients, gradient);
+
+            return this;
+        }         
 
         /**
          * Adds a new color gradient
@@ -1043,8 +1145,32 @@
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
 
                 // Angle
-                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
+                if (!this._angularSpeedGradients || this._angularSpeedGradients.length === 0) {
+                    particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
+                } else {
+                    particle._currentAngularSpeedGradient = this._angularSpeedGradients[0];
+                    particle.angularSpeed =  particle._currentAngularSpeedGradient.getFactor();
+                    particle._currentAngularSpeed1 = particle.angularSpeed;
+
+                    if (this._angularSpeedGradients.length > 1) {
+                        particle._currentAngularSpeed2 = this._angularSpeedGradients[1].getFactor();
+                    } else {
+                        particle._currentAngularSpeed2 = particle._currentAngularSpeed1;
+                    }
+                }
                 particle.angle = Scalar.RandomRange(this.minInitialRotation, this.maxInitialRotation);
+
+                // Velocity
+                if (this._velocityGradients && this._velocityGradients.length > 0) {
+                    particle._currentVelocityGradient = this._velocityGradients[0];
+                    particle._currentVelocity1 = particle._currentVelocityGradient.getFactor();
+
+                    if (this._velocityGradients.length > 1) {
+                        particle._currentVelocity2 = this._velocityGradients[1].getFactor();
+                    } else {
+                        particle._currentVelocity2 = particle._currentVelocity1;
+                    }
+                }                
 
                 // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
@@ -1580,8 +1706,43 @@
 
                     serializationObject.sizeGradients.push(serializedGradient);
                 }
-            }            
+            }       
+                        
+            let angularSpeedGradients = particleSystem.getAngularSpeedGradients();
+            if (angularSpeedGradients) {
+                serializationObject.angularSpeedGradients = [];
+                for (var angularSpeedGradient of angularSpeedGradients) {
 
+                    var serializedGradient: any = {
+                        gradient: angularSpeedGradient.gradient,
+                        factor1: angularSpeedGradient.factor1
+                    };
+
+                    if (angularSpeedGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = angularSpeedGradient.factor2;
+                    }
+
+                    serializationObject.angularSpeedGradients.push(serializedGradient);
+                }
+            }  
+
+            let velocityGradients = particleSystem.getVelocityGradients();
+            if (velocityGradients) {
+                serializationObject.velocityGradients = [];
+                for (var velocityGradient of velocityGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: velocityGradient.gradient,
+                        factor1: velocityGradient.factor1
+                    };
+
+                    if (velocityGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = velocityGradient.factor2;
+                    }
+
+                    serializationObject.velocityGradients.push(serializedGradient);
+                }
+            }              
         }
 
         /** @hidden */
@@ -1671,6 +1832,18 @@
                     particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ?  sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
                 }
             }       
+
+            if (parsedParticleSystem.angularSpeedGradients) {
+                for (var angularSpeedGradient of parsedParticleSystem.angularSpeedGradients) {
+                    particleSystem.addAngularSpeedGradient(angularSpeedGradient.gradient, angularSpeedGradient.factor1 !== undefined ?  angularSpeedGradient.factor1 : angularSpeedGradient.factor, angularSpeedGradient.factor2);
+                }
+            }       
+            
+            if (parsedParticleSystem.velocityGradients) {
+                for (var velocityGradient of parsedParticleSystem.velocityGradients) {
+                    particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
+                }
+            }              
             
             // Emitter
             let emitterType: IParticleEmitterType;

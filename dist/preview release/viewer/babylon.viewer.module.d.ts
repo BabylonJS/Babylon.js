@@ -19,6 +19,7 @@ declare module 'babylonjs-viewer' {
     import { ViewerModel, ModelState } from 'babylonjs-viewer/model/viewerModel';
     import { AnimationPlayMode, AnimationState } from 'babylonjs-viewer/model/modelAnimation';
     import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
+    import { AbstractViewerNavbarButton } from 'babylonjs-viewer/templating/viewerTemplatePlugin';
     /**
         * BabylonJS Viewer
         *
@@ -34,7 +35,7 @@ declare module 'babylonjs-viewer' {
         */
     function disposeAll(): void;
     const Version: string;
-    export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin };
+    export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton };
     export * from 'babylonjs-viewer/configuration';
 }
 
@@ -515,11 +516,11 @@ declare module 'babylonjs-viewer/managers/telemetryManager' {
 }
 
 declare module 'babylonjs-viewer/loader/modelLoader' {
-    import { IModelConfiguration } from "babylonjs-viewer/configuration/interfaces/modelConfiguration";
-    import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
+    import { ConfigurationContainer } from 'babylonjs-viewer/configuration/configurationContainer';
+    import { IModelConfiguration } from 'babylonjs-viewer/configuration/interfaces/modelConfiguration';
+    import { ObservablesManager } from 'babylonjs-viewer/managers/observablesManager';
+    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
     import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins';
-    import { ObservablesManager } from "babylonjs-viewer/managers/observablesManager";
-    import { ConfigurationContainer } from "babylonjs-viewer/configuration/configurationContainer";
     /**
         * An instance of the class is in charge of loading the model correctly.
         * This class will continously be expended with tasks required from the specific loaders Babylon has.
@@ -718,7 +719,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
 }
 
 declare module 'babylonjs-viewer/model/modelAnimation' {
-    import { AnimationGroup, Vector3 } from "babylonjs";
+    import { AnimationGroup, Vector3 } from 'babylonjs';
     /**
         * Animation play mode enum - is the animation looping or playing once
         */
@@ -946,6 +947,28 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
     }
 }
 
+declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
+    import { EventCallback, Template } from "babylonjs-viewer/templating/templateManager";
+    export interface IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach?: Array<string>;
+        interactionPredicate(event: EventCallback): boolean;
+        onEvent?(event: EventCallback): void;
+        addHTMLTemplate?(template: Template): void;
+    }
+    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach: Array<string>;
+        protected _prepend: boolean;
+        protected abstract _buttonClass: string;
+        protected abstract _htmlTemplate: string;
+        interactionPredicate(event: EventCallback): boolean;
+        abstract onEvent(event: EventCallback): void;
+        addHTMLTemplate(template: Template): void;
+        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
+    }
+}
+
 declare module 'babylonjs-viewer/initializer' {
     /**
         * Will attach an init function the the DOMContentLoaded event.
@@ -967,7 +990,7 @@ declare module 'babylonjs-viewer/configuration' {
 
 declare module 'babylonjs-viewer/configuration/configuration' {
     import { EngineOptions } from 'babylonjs';
-    import { IVRConfiguration, IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from 'babylonjs-viewer/configuration/interfaces';
+    import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;
@@ -1189,6 +1212,7 @@ declare module 'babylonjs-viewer/templating/templateManager' {
             updateParams(params: {
                     [key: string]: string | number | boolean | object;
             }, append?: boolean): void;
+            redraw(): void;
             /**
                 * Get the template'S configuration
                 */
@@ -1225,28 +1249,6 @@ declare module 'babylonjs-viewer/templating/templateManager' {
                 * Dispose this template
                 */
             dispose(): void;
-    }
-}
-
-declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
-    import { EventCallback, Template } from "babylonjs-viewer/templating/templateManager";
-    export interface IViewerTemplatePlugin {
-        readonly templateName: string;
-        readonly eventsToAttach?: Array<string>;
-        interactionPredicate(event: EventCallback): boolean;
-        onEvent?(event: EventCallback): void;
-        addHTMLTemplate?(template: Template): void;
-    }
-    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
-        readonly templateName: string;
-        readonly eventsToAttach: Array<string>;
-        protected _prepend: boolean;
-        protected abstract _buttonClass: string;
-        protected abstract _htmlTemplate: string;
-        interactionPredicate(event: EventCallback): boolean;
-        abstract onEvent(event: EventCallback): void;
-        addHTMLTemplate(template: Template): void;
-        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
     }
 }
 
@@ -1463,8 +1465,8 @@ declare module 'babylonjs-viewer/configuration/loader' {
 }
 
 declare module 'babylonjs-viewer/managers/observablesManager' {
-    import { Observable, Scene, Engine, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
-    import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
+    import { Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, Scene, SceneLoaderProgressEvent } from 'babylonjs';
+    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
     export class ObservablesManager {
             /**
                 * Will notify when the scene was initialized
@@ -1507,6 +1509,10 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
                 * Observers registered here will be executed when the entire load process has finished.
                 */
             onViewerInitDoneObservable: Observable<any>;
+            /**
+                * Will notify when the viewer init started (after configuration was loaded)
+                */
+            onViewerInitStartedObservable: Observable<any>;
             /**
                 * Functions added to this observable will be executed on each frame rendered.
                 */
@@ -1761,10 +1767,10 @@ declare module 'babylonjs-viewer/loader/plugins/telemetryLoaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/msftLodLoaderPlugin' {
-    import { ILoaderPlugin } from "babylonjs-viewer/loader/plugins/loaderPlugin";
-    import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
-    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
-    import { IGLTFLoaderExtension } from "babylonjs-loaders";
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
+    import { IGLTFLoaderExtension } from 'babylonjs-loaders';
+    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
     /**
       * A loder plugin to use MSFT_lod extension correctly (glTF)
       */
@@ -1775,9 +1781,9 @@ declare module 'babylonjs-viewer/loader/plugins/msftLodLoaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/applyMaterialConfig' {
-    import { ILoaderPlugin } from "babylonjs-viewer/loader/plugins/loaderPlugin";
-    import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
-    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from "babylonjs";
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from 'babylonjs';
+    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
     /**
       * Force-apply material configuration right after a material was loaded.
       */
@@ -1788,8 +1794,8 @@ declare module 'babylonjs-viewer/loader/plugins/applyMaterialConfig' {
 }
 
 declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {
-    import { ILoaderPlugin } from "babylonjs-viewer/loader/plugins/loaderPlugin";
-    import { Material } from "babylonjs";
+    import { Material } from 'babylonjs';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
     /**
       * A (PBR) material will be extended using this function.
       * This function will hold extra default configuration for the viewer, if not implemented in Babylon itself.

@@ -160,16 +160,64 @@ var engine = new BABYLON.NullEngine();
 // new BABYLON.PBRMetallicRoughnessMaterial("asdfasf", scene);
 // scene.dispose();
 
-BABYLON.Tools.LogLevels = BABYLON.Tools.ErrorLogLevel & BABYLON.Tools.WarningLogLevel;
-const scene = new BABYLON.Scene(engine);
-BABYLON.ParticleHelper.CreateAsync("sun", scene)
-            .then((system) => {
-                console.log("ok");
-            });
+// BABYLON.Tools.LogLevels = BABYLON.Tools.ErrorLogLevel & BABYLON.Tools.WarningLogLevel;
+// const scene = new BABYLON.Scene(engine);
+// BABYLON.ParticleHelper.CreateAsync("sun", scene)
+//             .then((system) => {
+//                 console.log("ok");
+//             });
 
-const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
-const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-mesh.position.set(0.5, 0.5, 0.5);
-mesh.isPickable = true;
-scene.render();
-engine.dispose();
+// const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
+// const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+// mesh.position.set(0.5, 0.5, 0.5);
+// mesh.isPickable = true;
+// scene.render();
+// engine.dispose();
+
+var scene = new BABYLON.Scene(engine);
+var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+
+var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+
+var assetsManager = new BABYLON.AssetsManager(scene);
+var meshTask = assetsManager.addMeshTask("skull task", "", "https://raw.githubusercontent.com/RaggarDK/Baby/baby/", "he4.babylon");
+
+meshTask.onSuccess = function (task) {
+    
+    //0 = ground plane, 1,2,3 = boxes
+    for(var i=1;i<task.loadedMeshes.length;i++){
+        var mesh = task.loadedMeshes[i];
+        //mesh.computeWorldMatrix(true);
+
+        var position = mesh.position.clone();
+        var rotation = mesh.rotationQuaternion.clone();
+        var scaling = mesh.getBoundingInfo().boundingBox.extendSize;
+        var centerWorld = mesh.getBoundingInfo().boundingBox.centerWorld;
+        console.log(position);
+        console.log(mesh.getBoundingInfo());
+
+        var box = BABYLON.MeshBuilder.CreateBox("box"+i,{height:2,width:2,depth:2});
+        box.scaling.copyFromFloats(scaling.x,scaling.y,scaling.z);    
+        box.rotationQuaternion = rotation;
+        //box.position = position;
+        box.position.set(centerWorld.x,centerWorld.y,centerWorld.z);
+
+        var material = new BABYLON.StandardMaterial("mat", scene);
+        material.diffuseColor = new BABYLON.Color3(0.5,1,0.5); 
+        box.material = material;       
+
+    }
+
+}	
+
+scene.registerBeforeRender(function () {
+    light.position = camera.position;
+});
+
+assetsManager.onFinish = function (tasks) {
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
+};
+
+assetsManager.load();

@@ -1050,9 +1050,9 @@
          */
         static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png"): void {
             // We need HTMLCanvasElement.toBlob for HD screenshots
-            if (!screenshotCanvas.toBlob) {
+            if (!canvas.toBlob) {
                 //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-                screenshotCanvas.toBlob = function (callback, type, quality) {
+                canvas.toBlob = function (callback, type, quality) {
                     setTimeout(() => {
                         var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
                             len = binStr.length,
@@ -1065,7 +1065,7 @@
                     });
                 }
             }
-            screenshotCanvas.toBlob(function (blob) {
+            canvas.toBlob(function (blob) {
                 successCallback(blob);
             }, mimeType);
         }
