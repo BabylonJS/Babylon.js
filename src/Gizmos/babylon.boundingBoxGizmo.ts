@@ -182,8 +182,12 @@ module BABYLON {
                                 
                                 // Update scale and position
                                 this.attachedMesh.scaling.addInPlace(deltaScale);
-                                this.attachedMesh.getAbsolutePosition().addToRef(worldMoveDirection, this._tmpVector)
-                                this.attachedMesh.setAbsolutePosition(this._tmpVector);
+                                if(this.attachedMesh.scaling.x < 0 || this.attachedMesh.scaling.y < 0 || this.attachedMesh.scaling.z < 0){
+                                    this.attachedMesh.scaling.subtractInPlace(deltaScale);
+                                }else{
+                                    this.attachedMesh.getAbsolutePosition().addToRef(worldMoveDirection, this._tmpVector)
+                                    this.attachedMesh.setAbsolutePosition(this._tmpVector);
+                                }
                             }
                         })
 
