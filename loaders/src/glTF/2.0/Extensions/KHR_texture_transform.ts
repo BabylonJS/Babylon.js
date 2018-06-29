@@ -16,9 +16,9 @@ module BABYLON.GLTF2.Extensions {
     export class KHR_texture_transform extends GLTFLoaderExtension {
         public readonly name = NAME;
 
-        protected _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>> {
+        protected _loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IKHRTextureTransform>(context, textureInfo, (extensionContext, extension) => {
-                return this._loader._loadTextureAsync(context, textureInfo, babylonTexture => {
+                return this._loader._loadTextureInfoAsync(context, textureInfo, babylonTexture => {
                     if (extension.offset) {
                         babylonTexture.uOffset = extension.offset[0];
                         babylonTexture.vOffset = extension.offset[1];
