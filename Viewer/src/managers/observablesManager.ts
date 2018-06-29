@@ -1,5 +1,6 @@
-import { Observable, Scene, Engine, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs";
-import { ViewerModel } from "../model/viewerModel";
+import { Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, Scene, SceneLoaderProgressEvent } from 'babylonjs';
+
+import { ViewerModel } from '../model/viewerModel';
 
 export class ObservablesManager {
 
@@ -44,6 +45,11 @@ export class ObservablesManager {
     public onViewerInitDoneObservable: Observable<any>;
 
     /**
+     * Will notify when the viewer init started (after configuration was loaded)
+     */
+    public onViewerInitStartedObservable: Observable<any>;
+
+    /**
      * Functions added to this observable will be executed on each frame rendered.
      */
     public onFrameRenderedObservable: Observable<any>;
@@ -57,6 +63,7 @@ export class ObservablesManager {
         this.onModelAddedObservable = new Observable();
         this.onModelRemovedObservable = new Observable();
         this.onViewerInitDoneObservable = new Observable();
+        this.onViewerInitStartedObservable = new Observable();
         this.onLoaderInitObservable = new Observable();
         this.onFrameRenderedObservable = new Observable();
     }

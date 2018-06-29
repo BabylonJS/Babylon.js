@@ -781,6 +781,9 @@
          */
         public postProcesses = new Array<PostProcess>();
 
+        /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
+        public validateShaderPrograms = false;
+
         // Observables
 
         /**
@@ -1037,7 +1040,7 @@
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
         /** @hidden */
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
@@ -3543,13 +3546,15 @@
                 }
             }
 
-            context.validateProgram(shaderProgram);
-            var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
+            if (this.validateShaderPrograms) {
+                context.validateProgram(shaderProgram);
+                var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
 
-            if(!validated) {
-                var error = context.getProgramInfoLog(shaderProgram);
-                if (error) {
-                    throw new Error(error);
+                if(!validated) {
+                    var error = context.getProgramInfoLog(shaderProgram);
+                    if (error) {
+                        throw new Error(error);
+                    }
                 }
             }
 
@@ -5654,8 +5659,8 @@
                         texture.width = info.width;
                         texture.height = info.width;
 
-                        EnvironmentTextureTools.UploadPolynomials(texture, data, info!);
-                        EnvironmentTextureTools.UploadLevelsAsync(texture, data, info!).then(() => {
+                        EnvironmentTextureTools.UploadEnvSpherical(texture, info);
+                        EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
                             texture.isReady = true;
                             if (onLoad) {
                                 onLoad();
@@ -5874,15 +5879,15 @@
          * @param data defines the array of data to use to create each face
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type of the data (like BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT)
          * @param generateMipMaps  defines if the engine should generate the mip levels
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compression used (null by default)
          * @returns the cube texture as an InternalTexture
          */
-        public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, 
-                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number, 
+        public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
+                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number,
                                     compression: Nullable<string> = null): InternalTexture {
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);

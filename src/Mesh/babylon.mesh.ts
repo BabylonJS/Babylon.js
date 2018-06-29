@@ -1285,9 +1285,10 @@
         }
 
         /**
-         * Triggers the draw call for the mesh.
-         * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.   
-         * Returns the Mesh.   
+         * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
+         * @param subMesh defines the subMesh to render
+         * @param enableAlphaMode defines if alpha mode can be changed
+         * @returns the current mesh
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
@@ -1766,14 +1767,6 @@
                 this.instances[0].dispose();
             }
 
-            // Effect layers.
-            let effectLayers = this.getScene().effectLayers;
-            for (let i = 0; i < effectLayers.length; i++) {
-                let effectLayer = effectLayers[i];
-                if (effectLayer) {
-                    effectLayer._disposeMesh(this);
-                }
-            }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
