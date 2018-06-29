@@ -23,6 +23,7 @@
   - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
   - Added support for size gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
   - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
+  - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
 - Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
 
 ## Updates
@@ -62,6 +63,7 @@
 - Added internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
 - Added `RawCubeTexture` class with RGBD and mipmap support ([bghgary](http://www.github.com/bghgary))
+- Added effect layer per rendering group addressing [Issue 4463](https://github.com/BabylonJS/Babylon.js/issues/4463) ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 
@@ -84,6 +86,7 @@
 - An initial support for WebVR is implemented ([RaananW](https://github.com/RaananW))
 - It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
 - The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
+- The extended configuration is now the default when not providing the "extended" parameter ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 

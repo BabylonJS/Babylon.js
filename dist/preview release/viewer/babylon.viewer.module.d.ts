@@ -1510,6 +1510,10 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
                 */
             onViewerInitDoneObservable: Observable<any>;
             /**
+                * Will notify when the viewer init started (after configuration was loaded)
+                */
+            onViewerInitStartedObservable: Observable<any>;
+            /**
                 * Functions added to this observable will be executed on each frame rendered.
                 */
             onFrameRenderedObservable: Observable<any>;

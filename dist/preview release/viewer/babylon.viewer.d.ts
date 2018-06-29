@@ -1510,6 +1510,10 @@ declare module BabylonViewer {
                 */
             onViewerInitDoneObservable: BABYLON.Observable<any>;
             /**
+                * Will notify when the viewer init started (after configuration was loaded)
+                */
+            onViewerInitStartedObservable: BABYLON.Observable<any>;
+            /**
                 * Functions added to this observable will be executed on each frame rendered.
                 */
             onFrameRenderedObservable: BABYLON.Observable<any>;
