@@ -13,7 +13,7 @@ module BABYLON {
          */
         public maxDragAngle = 0;
         /**
-         * @ignore
+         * @hidden
          */
         public _useAlternatePickedPointAboveMaxDragAngle = false;
         /**
