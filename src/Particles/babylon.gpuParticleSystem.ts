@@ -447,12 +447,21 @@
         
         /**
          * Gets the current list of angular speed gradients.
-         * You must use addAngularSpeedGradient and removeAngularGradient to udpate this list
+         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
          * @returns the list of angular speed gradients
          */
         public getAngularSpeedGradients(): Nullable<Array<FactorGradient>> {
             return this._angularSpeedGradients;
         } 
+
+        /**
+         * Gets the current list of velocity gradients.
+         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+         * @returns the list of angular speed gradients
+         */
+        public getVelocityGradients(): Nullable<Array<FactorGradient>> {
+            return this._velocityGradients;
+        }         
 
         private _removeGradient(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): GPUParticleSystem {
             if (!gradients) {
@@ -532,6 +541,9 @@
         private _sizeGradients: Nullable<Array<FactorGradient>> = null;
         private _sizeGradientsTexture: RawTexture;     
         
+        private _velocityGradients: Nullable<Array<FactorGradient>> = null;
+        private _velocityGradientsTexture: RawTexture;    
+
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
             let valueGradient = new FactorGradient();
             valueGradient.gradient = gradient;
@@ -619,7 +631,42 @@
             (<any>this._angularSpeedGradientsTexture) = null;
 
             return this;           
-        }            
+        }           
+        
+        /**
+         * Adds a new velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient    
+         * @returns the current particle system     
+         */
+        public addVelocityGradient(gradient: number, factor: number): GPUParticleSystem {
+            if (!this._velocityGradients) {
+                this._velocityGradients = [];
+            }
+
+            this._addFactorGradient(this._velocityGradients, gradient, factor);
+
+            if (this._velocityGradientsTexture) {
+                this._velocityGradientsTexture.dispose();
+                (<any>this._velocityGradientsTexture) = null;
+            }
+
+            this._releaseBuffers();   
+
+            return this;
+        }
+
+        /**
+         * Remove a specific velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeVelocityGradient(gradient: number): GPUParticleSystem {
+            this._removeGradient(gradient, this._velocityGradients, this._velocityGradientsTexture);
+            (<any>this._velocityGradientsTexture) = null;
+
+            return this;           
+        }          
 
         /**
          * Instantiates a GPU particle system.
@@ -666,7 +713,7 @@
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
                                 "angleRange", "radiusRange", "cellInfos"],
                 uniformBuffersNames: [],
-                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler"],
+                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler"],
                 defines: "",
                 fallbacks: null,  
                 onCompiled: null,
@@ -910,7 +957,11 @@
 
             if (this._angularSpeedGradientsTexture) {
                 defines += "\n#define ANGULARSPEEDGRADIENTS";
-            }                 
+            }               
+            
+            if (this._velocityGradientsTexture) {
+                defines += "\n#define VELOCITYGRADIENTS";
+            }                    
             
             if (this.isAnimationSheetEnabled) {
                 defines += "\n#define ANIMATESHEET";
@@ -1022,6 +1073,10 @@
         private _createAngularSpeedGradientTexture() {
             this._createFactorGradientTexture(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
         }     
+
+        private _createVelocityGradientTexture() {
+            this._createFactorGradientTexture(this._velocityGradients, "_velocityGradientsTexture");
+        }          
             
         private _createColorGradientTexture() {
             if (!this._colorGradients || !this._colorGradients.length || this._colorGradientsTexture) {
@@ -1061,6 +1116,7 @@
             this._createColorGradientTexture();
             this._createSizeGradientTexture();
             this._createAngularSpeedGradientTexture();
+            this._createVelocityGradientTexture();
 
             this._recreateUpdateEffect();
             this._recreateRenderEffect();
@@ -1126,6 +1182,10 @@
 
             if (this._angularSpeedGradientsTexture) {      
                 this._updateEffect.setTexture("angularSpeedGradientSampler", this._angularSpeedGradientsTexture);      
+            }
+
+            if (this._velocityGradientsTexture) {      
+                this._updateEffect.setTexture("velocityGradientSampler", this._velocityGradientsTexture);      
             }
 
             if (this.particleEmitterType) {
@@ -1293,6 +1353,11 @@
                 this._angularSpeedGradientsTexture.dispose();
                 (<any>this._angularSpeedGradientsTexture) = null;
             }             
+
+            if (this._velocityGradientsTexture) {
+                this._velocityGradientsTexture.dispose();
+                (<any>this._velocityGradientsTexture) = null;
+            }                
          
             if (this._randomTexture) {
                 this._randomTexture.dispose();
