@@ -53,6 +53,10 @@ module BABYLON {
          * Texture content is a depth texture
          */
         public static DATASOURCE_DEPTHTEXTURE = 11;
+        /**
+         * Texture data comes from a raw cube data encoded with RGBD
+         */
+        public static DATASOURCE_CUBERAW_RGBD = 12;
 
         /**
          * Defines if the texture is ready
@@ -146,6 +150,8 @@ module BABYLON {
         /** @hidden */
         public _bufferViewArray: Nullable<ArrayBufferView[]>;
         /** @hidden */
+        public _bufferViewArrayArray: Nullable<ArrayBufferView[][]>;
+        /** @hidden */
         public _size: number;
         /** @hidden */
         public _extension: string;
@@ -186,7 +192,7 @@ module BABYLON {
         /** @hidden */
         public _comparisonFunction: number = 0;
         /** @hidden */
-        public _sphericalPolynomial: Nullable<SphericalPolynomial>;
+        public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
         /** @hidden */
         public _lodGenerationScale: number = 0;
         /** @hidden */
@@ -350,10 +356,17 @@ module BABYLON {
                     return;
 
                 case InternalTexture.DATASOURCE_CUBERAW:
-                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    proxy = this._engine.createRawCubeTexture(this._bufferViewArray!, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
                     proxy._swapAndDie(this);
-
                     this.isReady = true;
+                    return;
+
+                case InternalTexture.DATASOURCE_CUBERAW_RGBD:
+                    proxy = this._engine.createRawCubeTexture(null, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                    RawCubeTexture._UpdateRGBDAsync(proxy, this._bufferViewArrayArray!, this._sphericalPolynomial, this._lodGenerationScale, this._lodGenerationOffset).then(() => {
+                        this.isReady = true;
+                    });
+                    proxy._swapAndDie(this);
                     return;
 
                 case InternalTexture.DATASOURCE_CUBEPREFILTERED:
