@@ -96,6 +96,11 @@ uniform sampler2D sizeGradientSampler;
 uniform sampler2D angularSpeedGradientSampler;
 #endif 
 
+#ifdef VELOCITYGRADIENTS
+uniform sampler2D velocityGradientSampler;
+#endif
+
+
 #ifdef ANIMATESHEET
 uniform vec3 cellInfos;
 #endif
@@ -227,7 +232,7 @@ void main() {
     float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
     outPosition = (emitterWM * vec4(position, 1.)).xyz;
-    vec3 initial = (emitterWM * vec4(direction, 0.)).xyz;
+    vec3 initial = (emitterWM * vec4(normalize(direction), 0.)).xyz;
     outDirection = initial * power;
 #ifndef BILLBOARD        
     outInitialDirection = initial;
@@ -237,7 +242,14 @@ void main() {
 #endif
 
   } else {   
-    outPosition = position + direction * timeDelta;
+    float directionScale = timeDelta;
+    float ageGradient = age / life;
+
+#ifdef VELOCITYGRADIENTS
+    directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
+#endif
+
+    outPosition = position + direction * directionScale;
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
@@ -246,7 +258,7 @@ void main() {
 #endif
 
 #ifdef SIZEGRADIENTS
-	outSize.x = texture(sizeGradientSampler, vec2(age / life, 0)).r;
+	outSize.x = texture(sizeGradientSampler, vec2(ageGradient, 0)).r;
     outSize.yz = size.yz;
 #else
     outSize = size;
@@ -255,10 +267,10 @@ void main() {
 #ifndef BILLBOARD    
     outInitialDirection = initialDirection;
 #endif
-    outDirection = direction + gravity * timeDelta;
+    outDirection = direction;// + gravity * timeDelta;
 
 #ifdef ANGULARSPEEDGRADIENTS
-    float angularSpeed = texture(angularSpeedGradientSampler, vec2(age / life, 0)).r;
+    float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).r;
     outAngle = angle + angularSpeed * timeDelta;
 #else
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);

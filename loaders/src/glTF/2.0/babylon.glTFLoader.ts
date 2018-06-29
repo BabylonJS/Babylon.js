@@ -10,7 +10,8 @@ module BABYLON.GLTF2 {
         _total?: number;
     }
 
-    class _ArrayItem {
+    /** @hidden */
+    export class _ArrayItem {
         public static Assign(values?: _IArrayItem[]): void {
             if (values) {
                 for (let index = 0; index < values.length; index++) {
@@ -320,9 +321,9 @@ module BABYLON.GLTF2 {
         }
 
         public _loadSceneAsync(context: string, scene: _ILoaderScene): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadSceneAsync(this, context, scene);
-            if (promise) {
-                return promise;
+            const extensionPromise = GLTFLoaderExtension._LoadSceneAsync(this, context, scene);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             const promises = new Array<Promise<void>>();
@@ -436,9 +437,9 @@ module BABYLON.GLTF2 {
         }
 
         public _loadNodeAsync(context: string, node: _ILoaderNode): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadNodeAsync(this, context, node);
-            if (promise) {
-                return promise;
+            const extensionPromise = GLTFLoaderExtension._LoadNodeAsync(this, context, node);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             if (node._babylonMesh) {
@@ -549,9 +550,9 @@ module BABYLON.GLTF2 {
         }
 
         private _loadVertexDataAsync(context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
-            const promise = GLTFLoaderExtension._LoadVertexDataAsync(this, context, primitive, babylonMesh);
-            if (promise) {
-                return promise;
+            const extensionPromise = GLTFLoaderExtension._LoadVertexDataAsync(this, context, primitive, babylonMesh);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             const attributes = primitive.attributes;
@@ -1254,13 +1255,13 @@ module BABYLON.GLTF2 {
                 babylonMaterial.roughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
 
                 if (properties.baseColorTexture) {
-                    promises.push(this._loadTextureAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
+                    promises.push(this._loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
                         babylonMaterial.albedoTexture = texture;
                     }));
                 }
 
                 if (properties.metallicRoughnessTexture) {
-                    promises.push(this._loadTextureAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, texture => {
+                    promises.push(this._loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, texture => {
                         babylonMaterial.metallicTexture = texture;
                     }));
 
@@ -1276,9 +1277,9 @@ module BABYLON.GLTF2 {
         }
 
         public _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, mesh, babylonMesh, babylonDrawMode, assign);
-            if (promise) {
-                return promise;
+            const extensionPromise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, mesh, babylonMesh, babylonDrawMode, assign);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             material._babylonData = material._babylonData || {};
@@ -1315,9 +1316,9 @@ module BABYLON.GLTF2 {
         }
 
         public _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadMaterialPropertiesAsync(this, context, material, babylonMaterial);
-            if (promise) {
-                return promise;
+            const extensionPromise = GLTFLoaderExtension._LoadMaterialPropertiesAsync(this, context, material, babylonMaterial);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             const promises = new Array<Promise<void>>();
@@ -1346,7 +1347,7 @@ module BABYLON.GLTF2 {
             }
 
             if (material.normalTexture) {
-                promises.push(this._loadTextureAsync(`${context}/normalTexture`, material.normalTexture, texture => {
+                promises.push(this._loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, texture => {
                     babylonMaterial.bumpTexture = texture;
                 }));
 
@@ -1358,7 +1359,7 @@ module BABYLON.GLTF2 {
             }
 
             if (material.occlusionTexture) {
-                promises.push(this._loadTextureAsync(`${context}/occlusionTexture`, material.occlusionTexture, texture => {
+                promises.push(this._loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, texture => {
                     babylonMaterial.ambientTexture = texture;
                 }));
 
@@ -1369,7 +1370,7 @@ module BABYLON.GLTF2 {
             }
 
             if (material.emissiveTexture) {
-                promises.push(this._loadTextureAsync(`${context}/emissiveTexture`, material.emissiveTexture, texture => {
+                promises.push(this._loadTextureInfoAsync(`${context}/emissiveTexture`, material.emissiveTexture, texture => {
                     babylonMaterial.emissiveTexture = texture;
                 }));
             }
@@ -1406,16 +1407,30 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadTextureAsync(this, context, textureInfo, assign);
-            if (promise) {
-                return promise;
+        public _loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: Texture) => void): Promise<void> {
+            const extensionPromise = GLTFLoaderExtension._LoadTextureInfoAsync(this, context, textureInfo, assign);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             this._parent._logOpen(`${context}`);
 
             const texture = GLTFLoader._GetProperty(`${context}/index`, this._gltf.textures, textureInfo.index);
-            context = `#/textures/${textureInfo.index}`;
+            const promise = this._loadTextureAsync(`#/textures/${textureInfo.index}`, texture, babylonTexture => {
+                babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
+                assign(babylonTexture);
+            });
+
+            this._parent._logClose();
+
+            return promise;
+        }
+
+        public _loadTextureAsync(context: string, texture: _ILoaderTexture, assign: (babylonTexture: Texture) => void): Promise<void> {
+            const extensionPromise = GLTFLoaderExtension._LoadTextureAsync(this, context, texture, assign);
+            if (extensionPromise) {
+                return extensionPromise;
+            }
 
             const promises = new Array<Promise<void>>();
 
@@ -1439,18 +1454,16 @@ module BABYLON.GLTF2 {
             babylonTexture.name = texture.name || `texture${texture._index}`;
             babylonTexture.wrapU = samplerData.wrapU;
             babylonTexture.wrapV = samplerData.wrapV;
-            babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
 
             const image = GLTFLoader._GetProperty(`${context}/source`, this._gltf.images, texture.source);
-            promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(blob => {
+            promises.push(this._loadImageAsync(`#/images/${image._index}`, image).then(data => {
                 const dataUrl = `data:${this._rootUrl}${image.uri || `image${image._index}`}`;
-                babylonTexture.updateURL(dataUrl, blob);
+                babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
             }));
 
             assign(babylonTexture);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
 
-            this._parent._logClose();
             this._parent._logClose();
 
             return Promise.all(promises).then(() => {});
@@ -1469,33 +1482,28 @@ module BABYLON.GLTF2 {
             return sampler._data;
         }
 
-        private _loadImageAsync(context: string, image: _ILoaderImage): Promise<Blob> {
-            if (!image._blob) {
+        public _loadImageAsync(context: string, image: _ILoaderImage): Promise<ArrayBufferView> {
+            if (!image._data) {
                 this._parent._logOpen(`${context} ${image.name || ""}`);
 
-                let promise: Promise<ArrayBufferView>;
                 if (image.uri) {
-                    promise = this._loadUriAsync(context, image.uri);
+                    image._data = this._loadUriAsync(context, image.uri);
                 }
                 else {
                     const bufferView = GLTFLoader._GetProperty(`${context}/bufferView`, this._gltf.bufferViews, image.bufferView);
-                    promise = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView);
+                    image._data = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView);
                 }
-
-                image._blob = promise.then(data => {
-                    return new Blob([data], { type: image.mimeType });
-                });
 
                 this._parent._logClose();
             }
 
-            return image._blob;
+            return image._data;
         }
 
         public _loadUriAsync(context: string, uri: string): Promise<ArrayBufferView> {
-            const promise = GLTFLoaderExtension._LoadUriAsync(this, context, uri);
-            if (promise) {
-                return promise;
+            const extensionPromise = GLTFLoaderExtension._LoadUriAsync(this, context, uri);
+            if (extensionPromise) {
+                return extensionPromise;
             }
 
             if (!GLTFLoader._ValidateUri(uri)) {
