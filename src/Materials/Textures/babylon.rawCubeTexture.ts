@@ -38,7 +38,7 @@ module BABYLON {
         }
 
         /**
-         * Creates a raw cube texture from RGBD encoded data.
+         * Updates a raw cube texture with RGBD encoded data.
          * @param data defines the array of data [mipmap][face] to use to create each face
          * @param sphericalPolynomial defines the spherical polynomial for irradiance
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
