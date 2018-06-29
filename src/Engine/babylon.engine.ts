@@ -781,6 +781,9 @@
          */
         public postProcesses = new Array<PostProcess>();
 
+        /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
+        public validateShaderPrograms = false;
+
         // Observables
 
         /**
@@ -3543,13 +3546,15 @@
                 }
             }
 
-            context.validateProgram(shaderProgram);
-            var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
+            if (this.validateShaderPrograms) {
+                context.validateProgram(shaderProgram);
+                var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
 
-            if(!validated) {
-                var error = context.getProgramInfoLog(shaderProgram);
-                if (error) {
-                    throw new Error(error);
+                if(!validated) {
+                    var error = context.getProgramInfoLog(shaderProgram);
+                    if (error) {
+                        throw new Error(error);
+                    }
                 }
             }
 
