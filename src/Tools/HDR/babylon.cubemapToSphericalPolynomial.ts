@@ -172,7 +172,7 @@ module BABYLON {
             sphericalHarmonics.convertIncidentRadianceToIrradiance();
             sphericalHarmonics.convertIrradianceToLambertianRadiance();
 
-            return SphericalPolynomial.getSphericalPolynomialFromHarmonics(sphericalHarmonics);
+            return SphericalPolynomial.FromHarmonics(sphericalHarmonics);
         }
     }
 } 
