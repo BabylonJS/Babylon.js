@@ -543,7 +543,7 @@ export class Template {
     private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject('No templateConfig provided');
-        } else if (templateConfig.html) {
+        } else if (templateConfig.html && !templateConfig.location) {
             return Promise.resolve(templateConfig.html);
         } else {
             let location = this._getTemplateLocation(templateConfig);
