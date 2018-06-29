@@ -80,8 +80,9 @@ export class TemplateManager {
             // register the observers
             //template.onLoaded.add(() => {
             let addToParent = () => {
-                let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
-                template.appendTo(containingElement);
+                let lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
+                let containingElement = (lastElements && lastElements.item(lastElements.length - 1)) || this.containerElement;
+                template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
             }
 
