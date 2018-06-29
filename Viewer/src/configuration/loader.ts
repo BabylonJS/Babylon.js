@@ -33,8 +33,9 @@ export class ConfigurationLoader {
     public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
 
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
+        this._processInitialConfiguration(loadedConfig);
 
-        let extendedConfiguration = getConfigurationType(loadedConfig.extends || "");
+        let extendedConfiguration = getConfigurationType(loadedConfig.extends || "extended");
 
         if (loadedConfig.configuration) {
 
@@ -92,6 +93,20 @@ export class ConfigurationLoader {
             request.abort();
         });
         this._loadRequests.length = 0;
+    }
+
+    /**
+     * This function will process the initial configuration and make needed changes for the viewer to work.
+     * @param config the mutable(!) initial configuration to process
+     */
+    private _processInitialConfiguration(config: ViewerConfiguration) {
+        if (config.model) {
+            if (typeof config.model === "string") {
+                config.model = {
+                    url: config.model
+                }
+            }
+        }
     }
 
     private _loadFile(url: string): Promise<any> {
