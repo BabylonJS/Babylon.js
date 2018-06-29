@@ -81,7 +81,7 @@ export class TemplateManager {
             //template.onLoaded.add(() => {
             let addToParent = () => {
                 let lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
-                let containingElement = (lastElements && lastElements.item(lastElements.length - 1)) || this.containerElement;
+                let containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
                 template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
             }
