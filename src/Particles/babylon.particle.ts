@@ -79,7 +79,21 @@
         /** @hidden */
         public _currentSize1 = 0;
         /** @hidden */
-        public _currentSize2 = 0;        
+        public _currentSize2 = 0;      
+        
+        /** @hidden */
+        public _currentAngularSpeedGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentAngularSpeed1 = 0;
+        /** @hidden */
+        public _currentAngularSpeed2 = 0;          
+
+        /** @hidden */
+        public _currentVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentVelocity1 = 0;
+        /** @hidden */
+        public _currentVelocity2 = 0;             
 
         /**
          * Creates a new instance Particle
@@ -147,6 +161,16 @@
                 other._currentSize1 = this._currentSize1;
                 other._currentSize2 = this._currentSize2;
             }
+            if (this._currentAngularSpeedGradient) {
+                other._currentAngularSpeedGradient = this._currentAngularSpeedGradient;
+                other._currentAngularSpeed1 = this._currentAngularSpeed1;
+                other._currentAngularSpeed2 = this._currentAngularSpeed2;
+            }        
+            if (this._currentVelocityGradient) {
+                other._currentVelocityGradient = this._currentVelocityGradient;
+                other._currentVelocity1 = this._currentVelocity1;
+                other._currentVelocity2 = this._currentVelocity2;
+            }                  
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;

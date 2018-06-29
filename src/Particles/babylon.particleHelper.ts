@@ -15,21 +15,28 @@ module BABYLON {
          * @param gpu If the system will use gpu
          * @returns the ParticleSystemSet created
          */
-        public static CreateAsync(type: string, scene: Nullable<Scene> = Engine.LastCreatedScene, gpu: boolean = false): Promise<ParticleSystemSet> {
+        public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false): Promise<ParticleSystemSet> {
             
-            return new Promise((resolve, reject) => {
-                if (!scene) {
-                    scene = Engine.LastCreatedScene;;
-                }
+            if (!scene) {
+                scene = Engine.LastCreatedScene;;
+            }
 
+            let token = {};
+
+            scene!._addPendingData(token);
+
+            return new Promise((resolve, reject) => {
                 if (gpu && !GPUParticleSystem.IsSupported) {
+                    scene!._removePendingData(token);
                     return reject("Particle system with GPU is not supported.");
                 }
 
                 Tools.LoadFile(`${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`, (data, response) => {
+                    scene!._removePendingData(token);
                     const newData = JSON.parse(data.toString());
                     return resolve(ParticleSystemSet.Parse(newData, scene!, gpu));
                 }, undefined, undefined, undefined, (req, exception) => {
+                    scene!._removePendingData(token);
                     return reject(`An error occured while the creation of your particle system. Check if your type '${type}' exists.`);
                 });
 

@@ -80,8 +80,9 @@ export class TemplateManager {
             // register the observers
             //template.onLoaded.add(() => {
             let addToParent = () => {
-                let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
-                template.appendTo(containingElement);
+                let lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
+                let containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
+                template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
             }
 
@@ -379,6 +380,10 @@ export class Template {
         }
     }
 
+    public redraw() {
+        this.updateParams({});
+    }
+
     /**
      * Get the template'S configuration
      */
@@ -539,7 +544,7 @@ export class Template {
     private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject('No templateConfig provided');
-        } else if (templateConfig.html) {
+        } else if (templateConfig.html && !templateConfig.location) {
             return Promise.resolve(templateConfig.html);
         } else {
             let location = this._getTemplateLocation(templateConfig);
