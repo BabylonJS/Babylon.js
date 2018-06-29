@@ -62,6 +62,7 @@
 - Added and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
 - Added internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
+- Added effect layer per rendering group addressing [Issue 4463](https://github.com/BabylonJS/Babylon.js/issues/4463) ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 
