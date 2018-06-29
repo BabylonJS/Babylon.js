@@ -9,6 +9,7 @@ module BABYLON {
         protected _rootMesh:Mesh;
         private _attachedMesh:Nullable<AbstractMesh>;
         private _scaleFactor = 3;
+        private _tmpMatrix = new Matrix();
         /**
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          * * When set, interactions will be enabled
@@ -52,7 +53,8 @@ module BABYLON {
                         if(!this._rootMesh.rotationQuaternion){
                             this._rootMesh.rotationQuaternion = new BABYLON.Quaternion();
                         }
-                        Quaternion.FromRotationMatrixToRef(this.attachedMesh.getWorldMatrix().getRotationMatrix(), this._rootMesh.rotationQuaternion);
+                        this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpMatrix, true);
+                        Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
                     }
                     if(this.updateGizmoPositionToMatchAttachedMesh){
                         this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);

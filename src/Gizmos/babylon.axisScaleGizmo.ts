@@ -80,21 +80,7 @@ module BABYLON {
                         }
                     }
                     
-                    var invertCount = 0;
-                    if(this.attachedMesh.scaling["x"] < 0){
-                        invertCount++;
-                    }
-                    if(this.attachedMesh.scaling["y"] < 0){
-                        invertCount++;
-                    }
-                    if(this.attachedMesh.scaling["z"] < 0){
-                        invertCount++;
-                    }
-                    if(invertCount % 2 == 0){
-                        this.attachedMesh.scaling.addInPlace(tmpVector);
-                    }else{
-                        this.attachedMesh.scaling.subtractInPlace(tmpVector);
-                    }
+                    this.attachedMesh.scaling.addInPlace(tmpVector);
 
                     if(snapped){
                         tmpSnapEvent.snapDistance = this.snapDistance*dragSteps;
