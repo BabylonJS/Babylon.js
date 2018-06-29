@@ -110,8 +110,15 @@
                     observable.notifyObservers(info, renderingGroupMask);
                 }
 
-                if (renderingGroup)
+                if (renderingGroup) {
+                    for (let step of this._scene._beforeRenderingGroupDrawStage) {
+                        step.action(index);
+                    }
                     renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
+                    for (let step of this._scene._afterRenderingGroupDrawStage) {
+                        step.action(index);
+                    }
+                }
 
                 // Fire POSTTRANSPARENT stage
                 if (observable && info) {

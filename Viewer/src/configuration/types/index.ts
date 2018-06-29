@@ -28,17 +28,17 @@ let getConfigurationType = function (types: string): ViewerConfiguration {
             case 'shadowSpotLight':
                 config = deepmerge(config, shadowSpotlLightConfiguration);
                 break;
-            case 'extended':
-                config = deepmerge(config, extendedConfiguration);
+            case 'default':
+                config = deepmerge(config, defaultConfiguration);
                 break;
             case 'minimal':
                 config = deepmerge(config, minimalConfiguration);
                 break;
             case 'none':
                 break;
-            case 'default':
+            case 'extended':
             default:
-                config = deepmerge(config, defaultConfiguration);
+                config = deepmerge(config, extendedConfiguration);
                 break;
         }
 

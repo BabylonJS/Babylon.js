@@ -1205,7 +1205,15 @@
          */
         public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
-         * Defines the actions happening just after the active camera is drawing.
+         * Defines the actions happening just before a rendering group is drawing.
+         */
+        public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * Defines the actions happening just after a rendering group has been drawn.
+         */
+        public _afterRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * Defines the actions happening just after the active camera has been drawn.
          */
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
        
@@ -5002,6 +5010,8 @@
             this._isReadyForMeshStage.clear();
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
+            this._beforeRenderingGroupDrawStage.clear();
+            this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             for (let component of this._components) {
                 component.dispose();

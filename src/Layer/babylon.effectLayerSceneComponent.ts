@@ -85,8 +85,11 @@
             this.scene._cameraDrawRenderTargetStage.registerStep(SceneComponentConstants.STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER, this, this._renderMainTexture);
 
             this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_EFFECTLAYER, this, this._setStencil);
+
+            this.scene._afterRenderingGroupDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW, this, this._drawRenderingGroup);
+
             this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_EFFECTLAYER, this, this._setStencilBack);
-            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW, this, this._draw);
+            this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW, this, this._drawCamera);
         }
 
         /**
@@ -205,15 +208,29 @@
             }
         }
 
-        private _draw(camera: Camera): void {
+        private _draw(renderingGroupId: number): void {
             if (this._renderEffects) {
                 this._engine.setDepthBuffer(false);
                 for (let i = 0; i < this._effectLayers.length; i++) {
-                    if (this._effectLayers[i].shouldRender()) {
-                        this._effectLayers[i].render();
+                    const effectLayer = this._effectLayers[i];
+                    if (effectLayer.renderingGroupId === renderingGroupId) {
+                        if (effectLayer.shouldRender()) {
+                            effectLayer.render();
+                        }
                     }
                 }
                 this._engine.setDepthBuffer(true);
+            }
+        }
+
+        private _drawCamera(camera: Camera): void {
+            if (this._renderEffects) {
+                this._draw(-1);
+            }
+        }
+        private _drawRenderingGroup(index: number): void {
+            if (!this.scene._isInIntermediateRendering() && this._renderEffects) {
+                this._draw(index);
             }
         }
     }

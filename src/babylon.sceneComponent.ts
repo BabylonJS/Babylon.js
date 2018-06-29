@@ -15,6 +15,8 @@
         public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
 
+        public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
+
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 2;
@@ -83,6 +85,11 @@
      * Strong typing of a Camera related stage step action 
      */
     export type CameraStageAction = (camera: Camera) => void;
+
+    /** 
+     * Strong typing of a RenderingGroup related stage step action 
+     */
+    export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 
     /** 
      * Strong typing of a simple stage step action 

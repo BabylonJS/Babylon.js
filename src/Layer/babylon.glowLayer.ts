@@ -49,6 +49,11 @@
          * Enable MSAA by chosing the number of samples.
          */
         mainTextureSamples?: number;
+
+        /**
+         * The rendering group to draw the layer in.
+         */
+        renderingGroupId: number;
     }
 
     /**
@@ -150,6 +155,7 @@
                 mainTextureFixedSize: undefined,
                 camera: null,
                 mainTextureSamples: 1,
+                renderingGroupId: -1,
                 ...options,
             };
 
@@ -158,7 +164,8 @@
                 alphaBlendingMode: Engine.ALPHA_ADD,
                 camera: this._options.camera,
                 mainTextureFixedSize: this._options.mainTextureFixedSize,
-                mainTextureRatio: this._options.mainTextureRatio
+                mainTextureRatio: this._options.mainTextureRatio,
+                renderingGroupId: this._options.renderingGroupId
             });
         }
 
@@ -443,6 +450,10 @@
          * @returns true if the mesh will be highlighted by the current glow layer
          */
         public hasMesh(mesh: AbstractMesh): boolean {
+            if (!super.hasMesh(mesh)) {
+                return false;
+            }
+
             // Included Mesh
             if (this._includedOnlyMeshes.length) {
                 return this._includedOnlyMeshes.indexOf(mesh.uniqueId) !== -1;
