@@ -7,8 +7,15 @@
         public static readonly NAME_EFFECTLAYER = "EffectLayer";
         public static readonly NAME_LAYER = "Layer";
         public static readonly NAME_LENSFLARESYSTEM = "LensFlareSystem";
+        public static readonly NAME_BOUNDINGBOXRENDERER = "BoundingBoxRenderer";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
+
+        public static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER = 0;
+
+        public static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER = 0;
+
+        public static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
         public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
         
@@ -19,9 +26,9 @@
 
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
-        public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 2;
-        public static readonly STEP_AFTERCAMERADRAW_LAYER = 3;
-
+        public static readonly STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER = 2;
+        public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
+        public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
     }
 
     /**
@@ -47,6 +54,24 @@
         register(): void;
 
         /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
+    }
+
+    /**
+     * This represents a SERIALIZABLE scene component.
+     * 
+     * This extends Scene Component to add Serialization methods on top.
+     */
+    export interface ISceneSerializableComponent extends ISceneComponent {
+        /**
          * Adds all the element from the container to the scene
          * @param container the container holding the elements
          */
@@ -59,27 +84,26 @@
         removeFromContainer(container: AbstractScene): void;
 
         /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-
-        /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
          */
         serialize(serializationObject: any): void;
-
-        /**
-         * Disposes the component and the associated ressources.
-         */
-        dispose(): void;
     }
 
     /** 
      * Strong typing of a Mesh related stage step action 
      */
     export type MeshStageAction = (mesh: AbstractMesh, hardwareInstancedRendering: boolean) => boolean;
+
+    /** 
+     * Strong typing of a Evaluate Sub Mesh related stage step action
+     */
+    export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
+
+    /**
+     * Strong typing of a Active Mesh related stage step action
+     */
+    export type ActiveMeshStageAction =  (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
 
     /** 
      * Strong typing of a Camera related stage step action 

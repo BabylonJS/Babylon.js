@@ -48,7 +48,7 @@
      * Defines the layer scene component responsible to manage any effect layers
      * in a given scene.
      */
-    export class EffectLayerSceneComponent implements ISceneComponent {
+    export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         /**
          * The component name helpfull to identify the component in the list of scene components.
          */
