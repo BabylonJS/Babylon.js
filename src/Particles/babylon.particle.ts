@@ -88,6 +88,13 @@
         /** @hidden */
         public _currentAngularSpeed2 = 0;          
 
+        /** @hidden */
+        public _currentVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentVelocity1 = 0;
+        /** @hidden */
+        public _currentVelocity2 = 0;             
+
         /**
          * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to
@@ -158,7 +165,12 @@
                 other._currentAngularSpeedGradient = this._currentAngularSpeedGradient;
                 other._currentAngularSpeed1 = this._currentAngularSpeed1;
                 other._currentAngularSpeed2 = this._currentAngularSpeed2;
-            }            
+            }        
+            if (this._currentVelocityGradient) {
+                other._currentVelocityGradient = this._currentVelocityGradient;
+                other._currentVelocity1 = this._currentVelocity1;
+                other._currentVelocity2 = this._currentVelocity2;
+            }                  
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;
