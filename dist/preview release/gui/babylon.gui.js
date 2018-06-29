@@ -4401,7 +4401,7 @@ var BABYLON;
                     this._isChecked = value;
                     this._markAsDirty();
                     this.onIsCheckedChangedObservable.notifyObservers(value);
-                    if (this._isChecked) {
+                    if (this._isChecked && this._host) {
                         // Update all controls from same group
                         this._host.executeOnAllControls(function (control) {
                             if (control === _this) {

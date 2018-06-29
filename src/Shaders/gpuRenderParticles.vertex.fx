@@ -13,7 +13,7 @@ in vec3 size;
 #ifndef BILLBOARD
 in vec3 initialDirection;
 #endif
-in vec2 angle;
+in float angle;
 #ifdef ANIMATESHEET
 in float cellIndex;
 #endif
@@ -85,8 +85,8 @@ void main() {
 	rotatedCorner.w = 0.;
 
 	#ifdef BILLBOARDY	
-		rotatedCorner.x = cornerPos.x * cos(angle.x) - cornerPos.y * sin(angle.x);
-		rotatedCorner.z = cornerPos.x * sin(angle.x) + cornerPos.y * cos(angle.x);
+		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+		rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		rotatedCorner.y = 0.;
 
 		vec3 yaxis = position - eyePosition;
@@ -96,8 +96,8 @@ void main() {
 		vec4 viewPosition = (view * vec4(worldPos, 1.0)); 
 	#else
 		// Rotate
-		rotatedCorner.x = cornerPos.x * cos(angle.x) - cornerPos.y * sin(angle.x);
-		rotatedCorner.y = cornerPos.x * sin(angle.x) + cornerPos.y * cos(angle.x);
+		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+		rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		rotatedCorner.z = 0.;
 
 		// Expand position
@@ -107,9 +107,9 @@ void main() {
 #else
   // Rotate
 	vec3 rotatedCorner;
-	rotatedCorner.x = cornerPos.x * cos(angle.x) - cornerPos.y * sin(angle.x);
+	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.y = 0.;
-	rotatedCorner.z = cornerPos.x * sin(angle.x) + cornerPos.y * cos(angle.x);
+	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 
 	vec3 yaxis = normalize(initialDirection);
 	vec3 worldPos = rotate(yaxis, rotatedCorner);

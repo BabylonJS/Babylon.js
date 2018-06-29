@@ -272,12 +272,6 @@
                 serializationObject.particleSystems.push(scene.particleSystems[index].serialize());
             }
 
-            // Lens flares
-            serializationObject.lensFlareSystems = [];
-            for (index = 0; index < scene.lensFlareSystems.length; index++) {
-                serializationObject.lensFlareSystems.push(scene.lensFlareSystems[index].serialize());
-            }
-
             // Shadows
             serializationObject.shadowGenerators = [];
             for (index = 0; index < scene.lights.length; index++) {
@@ -305,14 +299,9 @@
                 }
             }
 
-            // Effect layers
-            serializationObject.effectLayers = [];
-
-            for (index = 0; index < scene.effectLayers.length; index++) {
-                var layer = scene.effectLayers[index];
-                if (layer.serialize) {
-                    serializationObject.effectLayers.push(layer.serialize());
-                }
+            // Components
+            for (let component of scene._components) {
+                component.serialize(serializationObject);
             }
 
             return serializationObject;

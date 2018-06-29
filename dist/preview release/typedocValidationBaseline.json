@@ -1,195 +1,64 @@
 {
-  "errors": 4318,
+  "errors": 4233,
   "babylon.typedoc.json": {
-    "errors": 4318,
-    "Animatable": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new Animatable": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "fromFrame": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "toFrame": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loopAnimation": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onAnimationEnd": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animations": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
+    "errors": 4233,
+    "AbstractScene": {
       "Property": {
-        "animationStarted": {
-          "Comments": {
-            "MissingText": true
+        "effectLayers": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "fromFrame": {
-          "Comments": {
-            "MissingText": true
+        "layers": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "loopAnimation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onAnimationEnd": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "target": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "toFrame": {
-          "Comments": {
-            "MissingText": true
+        "lensFlareSystems": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       },
       "Method": {
-        "appendAnimations": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animations": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "addEffectLayer": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "disableBlending": {
-          "Comments": {
-            "MissingText": true
+        "addLensFlareSystem": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "enableBlending": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "blendingSpeed": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "getGlowLayerByName": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "getAnimationByTargetProperty": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "property": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "getHighlightLayerByName": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "getAnimations": {
-          "Comments": {
-            "MissingText": true
+        "getLensFlareSystemByID": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "getRuntimeAnimationByTargetProperty": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "property": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "getLensFlareSystemByName": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "goToFrame": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frame": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "removeEffectLayer": {
+          "Naming": {
+            "NotPascalCase": true
           }
         },
-        "pause": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "reset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "restart": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "stop": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "animationName": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
+        "removeLensFlareSystem": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       }
@@ -6434,30 +6303,12 @@
     "GPUParticleSystem": {
       "Method": {
         "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "color1": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
@@ -8594,23 +8445,6 @@
           },
           "Parameter": {
             "func": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "render": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "enableAlphaMode": {
               "Comments": {
                 "MissingText": true
               }
@@ -10923,27 +10757,7 @@
             "MissingReturn": true
           }
         },
-        "addLifeTimeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
         "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeLifeTimeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
           "Comments": {
             "MissingReturn": true
           }
@@ -16815,243 +16629,6 @@
         "switchPanningModelToHRTF": {
           "Comments": {
             "MissingText": true
-          }
-        }
-      }
-    },
-    "SphericalHarmonics": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "L00": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L10": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L11": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L1_1": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L20": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L21": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L22": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L2_1": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L2_2": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "addLight": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "direction": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "color": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "deltaSolidAngle": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "convertIncidentRadianceToIrradiance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "convertIrradianceToLambertianRadiance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "scale": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scale": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getsphericalHarmonicsFromPolynomial": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "polynomial": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "SphericalPolynomial": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "x": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "xx": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "xy": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "y": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "yy": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "yz": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "z": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "zx": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "zz": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "addAmbient": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "color": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "scale": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scale": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getSphericalPolynomialFromHarmonics": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "harmonics": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -23010,30 +22587,12 @@
     "IParticleSystem": {
       "Method": {
         "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "color1": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
