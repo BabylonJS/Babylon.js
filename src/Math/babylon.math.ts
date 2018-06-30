@@ -4554,12 +4554,11 @@
 
         /**
          * Gets only rotation part of the current matrix
-         * @param ignoreScaling when set, do not let negative scale matrix values modify the rotation matrix (Default: false)
          * @returns a new matrix sets to the extracted rotation matrix from the current one
          */
-        public getRotationMatrix(ignoreScaling = false): Matrix {
+        public getRotationMatrix(): Matrix {
             var result = Matrix.Identity();
-            this.getRotationMatrixToRef(result, ignoreScaling);
+            this.getRotationMatrixToRef(result);
             return result;
         }
 
@@ -4569,24 +4568,8 @@
          * @param result defines the target matrix to store data to
          * @returns the current matrix  
          */
-        public getRotationMatrixToRef(result: Matrix, ignoreScaling = false): Matrix {
-            var matrix:Matrix = this;
-
-            // By default inverting scale causes the rotation matrix, when converted to a quaternion, not be the same as when not inverted
-            if(ignoreScaling){
-                matrix = MathTmp.Matrix[0];
-                matrix.copyFrom(this);
-                matrix.m[0] = Math.abs(matrix.m[0]);
-                matrix.m[1] = Math.abs(matrix.m[1]);
-                matrix.m[2] = Math.abs(matrix.m[2]);
-                matrix.m[4] = Math.abs(matrix.m[4]);
-                matrix.m[5] = Math.abs(matrix.m[5]);
-                matrix.m[6] = Math.abs(matrix.m[6]);
-                matrix.m[8] = Math.abs(matrix.m[8]);
-                matrix.m[9] = Math.abs(matrix.m[9]);
-                matrix.m[10] = Math.abs(matrix.m[10]);
-            }
-            
+        public getRotationMatrixToRef(result: Matrix): Matrix {
+            var matrix:Matrix = this;            
             var m = matrix.m;
 
             var sx = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);

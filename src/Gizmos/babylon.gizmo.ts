@@ -51,9 +51,23 @@ module BABYLON {
                 if(this.attachedMesh){
                     if(this.updateGizmoRotationToMatchAttachedMesh){
                         if(!this._rootMesh.rotationQuaternion){
-                            this._rootMesh.rotationQuaternion = new BABYLON.Quaternion();
+                            this._rootMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._rootMesh.rotation.y, this._rootMesh.rotation.x, this._rootMesh.rotation.z);
                         }
-                        this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpMatrix, true);
+
+                        // Remove scaling before getting rotation matrix to get rotation matrix unmodified by scale
+                        tempVector.copyFrom(this.attachedMesh.scaling);
+                        if(this.attachedMesh.scaling.x < 0){
+                            this.attachedMesh.scaling.x *= -1;
+                        }
+                        if(this.attachedMesh.scaling.y < 0){
+                            this.attachedMesh.scaling.y *= -1;
+                        }
+                        if(this.attachedMesh.scaling.z < 0){
+                            this.attachedMesh.scaling.z *= -1;
+                        }
+                        this.attachedMesh.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
+                        this.attachedMesh.scaling.copyFrom(tempVector);
+                        this.attachedMesh.computeWorldMatrix();
                         Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
                     }
                     if(this.updateGizmoPositionToMatchAttachedMesh){
