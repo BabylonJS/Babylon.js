@@ -4564,7 +4564,6 @@
 
         /**
          * Extracts the rotation matrix from the current one and sets it as the given "result"  
-         * @param ignoreScaling when set, do not let negative scale matrix values modify the rotation matrix (Default: false)
          * @param result defines the target matrix to store data to
          * @returns the current matrix  
          */
