@@ -2662,13 +2662,14 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target
-         * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
          */
-        public stopAnimation(target: any, animationName?: string): void {
+        public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
             var animatables = this.getAllAnimatablesByTarget(target);
 
             for (var animatable of animatables) {
-                animatable.stop(animationName);
+                animatable.stop(animationName, targetMask);
             }
         }
 
