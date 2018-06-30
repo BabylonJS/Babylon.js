@@ -282,9 +282,10 @@
         /**
          * Stop and delete the current animation
          * @param animationName defines a string used to only stop some of the runtime animations instead of all
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
          */
-        public stop(animationName?: string): void {
-            if (animationName) {
+        public stop(animationName?: string, targetMask?: (target: any) => boolean): void {
+            if (animationName || targetMask) {
                 var idx = this._scene._activeAnimatables.indexOf(this);
 
                 if (idx > -1) {
@@ -292,11 +293,15 @@
                     var runtimeAnimations = this._runtimeAnimations;
 
                     for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
-                        if (typeof animationName === "string" && runtimeAnimations[index].animation.name != animationName) {
+                        const runtimeAnimation = runtimeAnimations[index];
+                        if (typeof animationName === "string" && runtimeAnimation.animation.name != animationName) {
+                            continue;
+                        }
+                        if (typeof targetMask === "function" && !targetMask(runtimeAnimation.target)) {
                             continue;
                         }
 
-                        runtimeAnimations[index].dispose();
+                        runtimeAnimation.dispose();
                         runtimeAnimations.splice(index, 1);
                     }
 
