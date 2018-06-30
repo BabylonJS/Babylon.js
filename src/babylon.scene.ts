@@ -2544,20 +2544,20 @@
          * @returns the animatable object created for this animation
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable {
-            const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
-            if (stopCurrent && shouldRunTargetAnimations) {
-                this.stopAnimation(target);
+            if (stopCurrent) {
+                this.stopAnimation(target, undefined, targetMask);
             }
 
             if (!animatable) {
                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
             }
 
+            const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
             // Local animations
             if (target.animations && shouldRunTargetAnimations) {
                 animatable.appendAnimations(target, target.animations);
