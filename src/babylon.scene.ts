@@ -2520,7 +2520,7 @@
          * @param speedRatio defines the speed in which to run the animation (1.0 by default)
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-         * @param targetMask defines if the target should be animated if animations are present (called recursively on descendant animatables)
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
          * @returns the animatable object created for this animation
          */
         public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean): Animatable { 
@@ -2540,16 +2540,17 @@
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
-         * @param targetMask determines if a target should be excluded if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
          * @returns the animatable object created for this animation
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable {
+            const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
-            if (stopCurrent) {
+            if (stopCurrent && shouldRunTargetAnimations) {
                 this.stopAnimation(target);
             }
 
@@ -2557,9 +2558,8 @@
                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
             }
 
-            const shouldMaskOutTarget = targetMask ? targetMask(target) : false;
             // Local animations
-            if (target.animations && !shouldMaskOutTarget) {
+            if (target.animations && shouldRunTargetAnimations) {
                 animatable.appendAnimations(target, target.animations);
             }
 
