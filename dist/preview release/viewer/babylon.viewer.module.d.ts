@@ -1212,6 +1212,7 @@ declare module 'babylonjs-viewer/templating/templateManager' {
             updateParams(params: {
                     [key: string]: string | number | boolean | object;
             }, append?: boolean): void;
+            redraw(): void;
             /**
                 * Get the template'S configuration
                 */
@@ -1508,6 +1509,10 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
                 * Observers registered here will be executed when the entire load process has finished.
                 */
             onViewerInitDoneObservable: Observable<any>;
+            /**
+                * Will notify when the viewer init started (after configuration was loaded)
+                */
+            onViewerInitStartedObservable: Observable<any>;
             /**
                 * Functions added to this observable will be executed on each frame rendered.
                 */

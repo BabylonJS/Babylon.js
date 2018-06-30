@@ -1,7 +1,6 @@
 ﻿module BABYLON {
     export class CubeTexture extends BaseTexture {
         public url: string;
-        public coordinatesMode = Texture.CUBIC_MODE;
 
         /**
          * Gets or sets the center of the bounding box associated with the cube texture
@@ -110,6 +109,7 @@
             this.isCube = true;
             this._textureMatrix = Matrix.Identity();
             this._createPolynomials = createPolynomials;
+            this.coordinatesMode = Texture.CUBIC_MODE;
 
             if (!rootUrl && !files) {
                 return;

@@ -1,7 +1,7 @@
 {
-  "errors": 4329,
+  "errors": 4234,
   "babylon.typedoc.json": {
-    "errors": 4329,
+    "errors": 4234,
     "AbstractScene": {
       "Property": {
         "effectLayers": {
@@ -1973,11 +1973,6 @@
         }
       },
       "Method": {
-        "_rebuild": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "dispose": {
           "Comments": {
             "MissingText": true
@@ -6303,30 +6298,12 @@
     "GPUParticleSystem": {
       "Method": {
         "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "color1": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
@@ -8463,23 +8440,6 @@
           },
           "Parameter": {
             "func": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "render": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "enableAlphaMode": {
               "Comments": {
                 "MissingText": true
               }
@@ -10792,27 +10752,7 @@
             "MissingReturn": true
           }
         },
-        "addLifeTimeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
         "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeLifeTimeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
           "Comments": {
             "MissingReturn": true
           }
@@ -15235,6 +15175,22 @@
         }
       }
     },
+    "Scene": {
+      "Property": {
+        "forceShowBoundingBoxes": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        }
+      },
+      "Method": {
+        "getBoundingBoxRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        }
+      }
+    },
     "SceneInstrumentation": {
       "Constructor": {
         "new SceneInstrumentation": {
@@ -16684,243 +16640,6 @@
         "switchPanningModelToHRTF": {
           "Comments": {
             "MissingText": true
-          }
-        }
-      }
-    },
-    "SphericalHarmonics": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "L00": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L10": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L11": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L1_1": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L20": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L21": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L22": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L2_1": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "L2_2": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "addLight": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "direction": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "color": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "deltaSolidAngle": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "convertIncidentRadianceToIrradiance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "convertIrradianceToLambertianRadiance": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "scale": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scale": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getsphericalHarmonicsFromPolynomial": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "polynomial": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "SphericalPolynomial": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "x": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "xx": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "xy": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "y": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "yy": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "yz": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "z": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "zx": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "zz": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "addAmbient": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "color": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "scale": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scale": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getSphericalPolynomialFromHarmonics": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "harmonics": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -22879,30 +22598,12 @@
     "IParticleSystem": {
       "Method": {
         "addColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "color1": {
               "Comments": {
                 "MissingText": true
               }
             }
-          }
-        },
-        "addSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeColorGradient": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeSizeGradient": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }

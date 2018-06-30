@@ -24,6 +24,11 @@
          * The camera attached to the layer.
          */
         camera: Nullable<Camera>;
+
+        /**
+         * The rendering group to draw the layer in.
+         */
+        renderingGroupId: number;
     }
 
     /**
@@ -77,6 +82,14 @@
         @serializeAsCameraReference()
         public get camera(): Nullable<Camera> {
             return this._effectLayerOptions.camera;
+        }
+
+        /**
+         * Gets the rendering group id the layer should render in.
+         */
+        @serialize()
+        public get renderingGroupId(): number {
+            return this._effectLayerOptions.renderingGroupId;
         }
 
         /**
@@ -197,6 +210,7 @@
                 mainTextureRatio: 0.5,
                 alphaBlendingMode: Engine.ALPHA_COMBINE,
                 camera: null,
+                renderingGroupId: -1,
                 ...options,
             };
 
@@ -489,7 +503,10 @@
          * @returns true if the mesh will be used
          */
         public hasMesh(mesh: AbstractMesh): boolean {
-            return true;
+            if (this.renderingGroupId === -1 || mesh.renderingGroupId === this.renderingGroupId) {
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -692,7 +709,7 @@
          */
         public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
             var effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
-            
+
             return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
         }
     }

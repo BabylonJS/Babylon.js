@@ -74,7 +74,7 @@ module BABYLON {
                 this.scene.addTexture(o);
             });
 
-            for (let component of this.scene._components) {
+            for (let component of this.scene._serializableComponents) {
                 component.addFromContainer(this.scene);
             }
         }
@@ -131,7 +131,7 @@ module BABYLON {
                 this.scene.removeTexture(o);
             });
 
-            for (let component of this.scene._components) {
+            for (let component of this.scene._serializableComponents) {
                 component.removeFromContainer(this.scene);
             }
         }

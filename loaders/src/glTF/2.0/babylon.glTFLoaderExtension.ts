@@ -65,10 +65,16 @@ module BABYLON.GLTF2 {
         protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> { return null; }
 
         /**
+         * Override this method to modify the default behavior for loading texture infos.
+         * @hidden
+         */
+        protected _loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> { return null; }
+
+        /**
          * Override this method to modify the default behavior for loading textures.
          * @hidden
          */
-        protected _loadTextureAsync(context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>> { return null; }
+        protected _loadTextureAsync(context: string, texture: _ILoaderTexture, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> { return null; }
 
         /**
          * Override this method to modify the default behavior for loading uris.
@@ -175,11 +181,19 @@ module BABYLON.GLTF2 {
         }
 
         /**
+         * Helper method called by the loader to allow extensions to override loading texture infos.
+         * @hidden
+         */
+        public static _LoadTextureInfoAsync(loader: GLTFLoader, context: string, textureInfo: ITextureInfo, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadTextureInfoAsync(context, textureInfo, assign));
+        }
+
+        /**
          * Helper method called by the loader to allow extensions to override loading textures.
          * @hidden
          */
-        public static _LoadTextureAsync(loader: GLTFLoader, context: string, textureInfo: ITextureInfo, assign: (texture: Texture) => void): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadTextureAsync(context, textureInfo, assign));
+        public static _LoadTextureAsync(loader: GLTFLoader, context: string, texture: _ILoaderTexture, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadTextureAsync(context, texture, assign));
         }
 
         /**
