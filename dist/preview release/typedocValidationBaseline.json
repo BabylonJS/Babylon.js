@@ -1973,11 +1973,6 @@
         }
       },
       "Method": {
-        "_rebuild": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "dispose": {
           "Comments": {
             "MissingText": true
@@ -9700,11 +9695,6 @@
           "Comments": {
             "MissingText": true
           }
-        },
-        "unbindFrameBuffer": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
         }
       }
     },
@@ -14457,11 +14447,6 @@
               }
             }
           }
-        },
-        "unbindFrameBuffer": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
         }
       }
     },
@@ -15176,6 +15161,22 @@
                 "MissingText": true
               }
             }
+          }
+        }
+      }
+    },
+    "Scene": {
+      "Property": {
+        "forceShowBoundingBoxes": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        }
+      },
+      "Method": {
+        "getBoundingBoxRenderer": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       }
@@ -18648,6 +18649,11 @@
         "_getLockedTargetPosition": {
           "Comments": {
             "MissingText": true
+          }
+        },
+        "_restoreStateValues": {
+          "Comments": {
+            "MissingReturn": true
           }
         },
         "_updatePosition": {
