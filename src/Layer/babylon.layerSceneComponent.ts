@@ -53,47 +53,6 @@
         }
 
         /**
-         * Serializes the component data to the specified json object
-         * @param serializationObject The object to serialize to
-         */
-        public serialize(serializationObject: any): void {
-            // TODO. Implement layer serialization
-            // serializationObject.layers = [];
-
-            // for (let layer of this._layers) {
-            //     if (layer.serialize) {
-            //         serializationObject.layers.push(layer.serialize());
-            //     }
-            // }
-        }
-
-        /**
-         * Adds all the element from the container to the scene
-         * @param container the container holding the elements
-         */
-        public addFromContainer(container: AbstractScene): void {
-            if (!container.layers) {
-                return;
-            }
-            // container.layers.forEach((o) => {
-            //     this.scene.addLayer(o);
-            // });
-        }
-
-        /**
-         * Removes all the elements in the container from the scene
-         * @param container contains the elements to remove 
-         */
-        public removeFromContainer(container: AbstractScene): void {
-            if (!container.layers) {
-                return;
-            }
-            // container.layers.forEach((o) => {
-            //     this.scene.removeLayer(o);
-            // });
-        }
-
-        /**
          * Disposes the component and the associated ressources.
          */
         public dispose(): void {
