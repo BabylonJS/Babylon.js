@@ -243,11 +243,6 @@
         }
 
         /**
-         * Gets or sets a boolean indicating if all bounding boxes must be rendered
-         */    
-        public forceShowBoundingBoxes = false;
-
-        /**
          * Gets or sets the active clipplane
          */
         public clipPlane: Nullable<Plane>;
@@ -1080,8 +1075,6 @@
         private _alternateSceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-
-        private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
@@ -1150,6 +1143,11 @@
         public _components: ISceneComponent[] = [];
 
         /**
+         * Backing store of defined scene components.
+         */
+        public _serializableComponents: ISceneSerializableComponent[] = [];
+
+        /**
          * List of components to register on the next registration step.
          */
         private _transientComponents: ISceneComponent[] = [];
@@ -1176,6 +1174,11 @@
         public _addComponent(component: ISceneComponent) {
             this._components.push(component);
             this._transientComponents.push(component);
+
+            const serializableComponent = component as ISceneSerializableComponent;
+            if (serializableComponent.addFromContainer) {
+                this._serializableComponents.push(serializableComponent);
+            }
         }
 
         /**
@@ -1196,6 +1199,18 @@
          * Defines the actions happening during the per mesh ready checks.
          */
         public _isReadyForMeshStage = Stage.Create<MeshStageAction>();
+        /**
+         * Defines the actions happening before evaluate active mesh checks.
+         */
+        public _beforeEvaluateActiveMeshStage = Stage.Create<SimpleStageAction>();
+        /**
+         * Defines the actions happening during the evaluate sub mesh checks.
+         */
+        public _evaluateSubMeshStage = Stage.Create<EvaluateSubMeshStageAction>();
+        /**
+         * Defines the actions happening during the active mesh stage.
+         */
+        public _activeMeshStage = Stage.Create<ActiveMeshStageAction>();
         /**
          * Defines the actions happening during the per camera render target step.
          */
@@ -1357,18 +1372,6 @@
          */
         public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
-        }
-
-        /** 
-         * Gets the bounding box renderer associated with the scene
-         * @returns a BoundingBoxRenderer
-         */
-        public getBoundingBoxRenderer(): BoundingBoxRenderer {
-            if (!this._boundingBoxRenderer) {
-                this._boundingBoxRenderer = new BoundingBoxRenderer(this);
-            }
-
-            return this._boundingBoxRenderer;
         }
 
         /** 
@@ -4049,11 +4052,8 @@
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
             if (this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
-                if (mesh.showSubMeshesBoundingBox) {
-                    const boundingInfo = subMesh.getBoundingInfo();
-                    if (boundingInfo !== null && boundingInfo !== undefined) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                for (let step of this._evaluateSubMeshStage) {
+                    step.action(mesh, subMesh);
                 }
 
                 const material = subMesh.getMaterial();
@@ -4184,8 +4184,8 @@
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer.reset();
+            for (let step of this._beforeEvaluateActiveMeshStage) {
+                step.action();
             }
 
             // Meshes
@@ -4291,10 +4291,8 @@
                 }
             }
 
-            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
-                let boundingInfo = sourceMesh.getBoundingInfo();
-
-                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+            for (let step of this._activeMeshStage) {
+                step.action(sourceMesh, mesh);
             }
 
             if (
@@ -4437,11 +4435,6 @@
             // After Camera Draw
             for (let step of this._afterCameraDrawStage) {
                 step.action(this.activeCamera);
-            }
-
-            // Bounding boxes
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer.render();
             }
             
             // Finalize frame
@@ -5008,6 +5001,9 @@
             this.morphTargetManagers = [];
             this._transientComponents = [];
             this._isReadyForMeshStage.clear();
+            this._beforeEvaluateActiveMeshStage.clear();
+            this._evaluateSubMeshStage.clear();
+            this._activeMeshStage.clear();
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
             this._beforeRenderingGroupDrawStage.clear();
@@ -5045,10 +5041,6 @@
             this._softwareSkinnedMeshes.dispose();
             this._renderTargets.dispose();
             this._registeredForLateAnimationBindings.dispose();
-
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer.dispose();
-            }
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
 
@@ -5746,10 +5738,6 @@
 
             for (let component of this._components) {
                 component.rebuild();
-            }
-
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer._rebuild();
             }
 
             for (var system of this.particleSystems) {
