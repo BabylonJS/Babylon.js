@@ -43,7 +43,7 @@ module BABYLON {
          * Fired when a rotation sphere or scale box drag is needed
          */
         public onDragEndObservable = new Observable<{}>();
-        
+        private _anchorMesh:AbstractMesh;
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -55,6 +55,7 @@ module BABYLON {
             // Do not update the gizmo's scale so it has a fixed size to the object its attached to
             this._updateScale = false;
 
+            this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
             // Create Materials
             var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             coloredMaterial.disableLighting = true;
@@ -122,6 +123,9 @@ module BABYLON {
                         if(!this.attachedMesh.rotationQuaternion){
                             this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y,this.attachedMesh.rotation.x,this.attachedMesh.rotation.z);
                         }
+                        if(!this._anchorMesh.rotationQuaternion){
+                            this._anchorMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._anchorMesh.rotation.y,this._anchorMesh.rotation.x,this._anchorMesh.rotation.z);
+                        }
                        
                         // Do not allow the object to turn more than a full circle
                         totalTurnAmountOfDrag+=projectDist;
@@ -133,7 +137,11 @@ module BABYLON {
                             }else{
                                 Quaternion.RotationYawPitchRollToRef(0,projectDist,0, this._tmpQuaternion);
                             }
-                            this.attachedMesh.rotationQuaternion!.multiplyInPlace(this._tmpQuaternion);
+
+                            // Rotate around center of bounding box
+                            this._anchorMesh.addChild(this.attachedMesh);
+                            this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion,this._anchorMesh.rotationQuaternion!);
+                            this._anchorMesh.removeChild(this.attachedMesh);
                         }
                     }
                 });
@@ -169,25 +177,19 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event)=>{
                             this.onDragObservable.notifyObservers({});
                             if(this.attachedMesh){
-                                // Current boudning box dimensions
-                                var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
-                                var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
-                                
-                                // Get the change in bounding box size/2 and add this to the mesh's position to offset from scaling with center pivot point
                                 var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
-                                var scaleRatio = deltaScale.divide(this.attachedMesh.scaling).scaleInPlace(0.5);
-                                var moveDirection = boundBoxDimensions.multiply(scaleRatio).multiplyInPlace(dragAxis);
-                                var worldMoveDirection = Vector3.TransformCoordinates(moveDirection, this.attachedMesh.getWorldMatrix().getRotationMatrix());
-                                
-                                // Update scale and position
-                                this.attachedMesh.scaling.addInPlace(deltaScale);
-                                if(this.attachedMesh.scaling.x < 0 || this.attachedMesh.scaling.y < 0 || this.attachedMesh.scaling.z < 0){
-                                    this.attachedMesh.scaling.subtractInPlace(deltaScale);
-                                }else{
-                                    this.attachedMesh.getAbsolutePosition().addToRef(worldMoveDirection, this._tmpVector)
-                                    this.attachedMesh.setAbsolutePosition(this._tmpVector);
+                                this._updateBoundingBox(); 
+
+                                 // Scale from the position of the opposite corner                   
+                                box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
+                                this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                this._anchorMesh.addChild(this.attachedMesh);
+                                this._anchorMesh.scaling.addInPlace(deltaScale);
+                                if(this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0){
+                                    this._anchorMesh.scaling.subtractInPlace(deltaScale);
                                 }
+                                this._anchorMesh.removeChild(this.attachedMesh);
                             }
                         })
 
@@ -232,6 +234,42 @@ module BABYLON {
             this._updateBoundingBox();
         }
 
+        // http://www.html5gamedevs.com/topic/23468-get-size-of-mesh-while-taking-its-children-into-account/
+        private getMinMax(mesh:AbstractMesh, min:Vector3, max:Vector3, computeWorldMatrix:boolean) {
+            if (computeWorldMatrix) {
+                mesh.computeWorldMatrix(true);
+            }
+            
+            var bi = mesh.getBoundingInfo();
+            var minimum = bi.boundingBox.minimumWorld;
+            var maximum = bi.boundingBox.maximumWorld;
+            
+            if (minimum.x < min.x) {
+                min.x = minimum.x;
+            }
+            if (minimum.y < min.y) {
+                min.y = minimum.y;
+            }
+            if (minimum.z < min.z) {
+                min.z = minimum.z;
+            }
+        
+            if (maximum.x > max.x) {
+                max.x = maximum.x;
+            }
+            if (maximum.y > max.y) {
+                max.y = maximum.y;
+            }
+            if (maximum.z > max.z) {
+                max.z = maximum.z;
+            }
+
+            var children = mesh.getChildMeshes();
+            for (var i = 0; i < children.length; i++){
+                this.getMinMax(children[i], min, max, computeWorldMatrix);
+            }
+        }
+
         private _selectNode(selectedMesh:Nullable<Mesh>){
             this._rotateSpheresParent.getChildMeshes()
             .concat(this._scaleBoxesParent.getChildMeshes()).forEach((m,i)=>{
@@ -240,12 +278,37 @@ module BABYLON {
         }
 
         private _updateBoundingBox(){
-            if(this.attachedMesh){
-                // Update bounding dimensions/positions
-                var boundingInfo = this.attachedMesh.getBoundingInfo().boundingBox;
-                var boundBoxDimensions = boundingInfo.maximum.subtract(boundingInfo.minimum).multiplyInPlace(this.attachedMesh.scaling);
-                this._boundingDimensions.copyFrom(boundBoxDimensions);
+            if(this.attachedMesh){             
+                // Rotate based on axis
+                if(!this.attachedMesh.rotationQuaternion){
+                    this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y,this.attachedMesh.rotation.x,this.attachedMesh.rotation.z);
+                }
+
+                // Store original position and reset mesh to origin before computing the bounding box
+                this._tmpQuaternion.copyFrom(this.attachedMesh.rotationQuaternion);
+                this._tmpVector.copyFrom(this.attachedMesh.position);
+                this.attachedMesh.rotationQuaternion.set(0,0,0,1);
+                this.attachedMesh.position.set(0,0,0)
+                
+                // Update bounding dimensions/positions   
+                var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                var max = new BABYLON.Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+                this.getMinMax(this.attachedMesh, min, max, true)
+                this._boundingDimensions.x = max.x-min.x
+                this._boundingDimensions.y = max.y-min.y
+                this._boundingDimensions.z = max.z-min.z
+
+                // Update gizmo to match bounding box scaling and rotation
                 this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
+                this._lineBoundingBox.position.set((max.x+min.x)/2,(max.y+min.y)/2,(max.z+min.z)/2);
+                this._rotateSpheresParent.position.copyFrom(this._lineBoundingBox.position);
+                this._scaleBoxesParent.position.copyFrom(this._lineBoundingBox.position);
+                this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
+                
+                // restore position/rotation values
+                this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
+                this.attachedMesh.position.copyFrom(this._tmpVector);
+                this.getMinMax(this.attachedMesh, min, max, true);
             }
 
             // Update rotation sphere locations

@@ -74,7 +74,7 @@ module BABYLON {
             this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState)=>{                
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
-                        pickedMesh = pointerInfo.pickInfo.pickedMesh;
+                        pickedMesh = this._ownerNode;
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
                         // Set position and orientation of the controller
