@@ -4568,8 +4568,7 @@
          * @returns the current matrix  
          */
         public getRotationMatrixToRef(result: Matrix): Matrix {
-            var matrix:Matrix = this;            
-            var m = matrix.m;
+            var m = this.m;
 
             var sx = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
             var sy = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
