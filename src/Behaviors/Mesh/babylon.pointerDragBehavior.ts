@@ -9,6 +9,14 @@ module BABYLON {
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
         private static _planeScene:Scene;
         /**
+         * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
+         */
+        public maxDragAngle = 0;
+        /**
+         * @hidden
+         */
+        public _useAlternatePickedPointAboveMaxDragAngle = false;
+        /**
          * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
          */
         public currentDraggingPointerID = -1;
@@ -95,6 +103,7 @@ module BABYLON {
         public init() {}
 
         private _tmpVector = new Vector3(0,0,0);
+        private _alternatePickedPoint = new Vector3(0,0,0);
         private _worldDragAxis = new Vector3(0,0,0);
         /**
          * Attaches the drag behavior the passed in mesh
@@ -200,6 +209,35 @@ module BABYLON {
             if(!ray){
                 return null;
             }
+
+            // Calculate angle between plane normal and ray
+            var angle = Math.acos(Vector3.Dot(this._dragPlane.forward, ray.direction));
+            // Correct if ray is casted from oposite side
+            if(angle > Math.PI/2){
+                angle = Math.PI - angle;
+            }
+
+            // If the angle is too perpendicular to the plane pick another point on the plane where it is looking
+            if(this.maxDragAngle > 0 && angle > this.maxDragAngle){
+                if(this._useAlternatePickedPointAboveMaxDragAngle){
+                    // Invert ray direction along the towards object axis
+                    this._tmpVector.copyFrom(ray.direction);
+                    (<Mesh>this._attachedNode).absolutePosition.subtractToRef(ray.origin, this._alternatePickedPoint);
+                    this._alternatePickedPoint.normalize();
+                    this._alternatePickedPoint.scaleInPlace(-2*Vector3.Dot(this._alternatePickedPoint, this._tmpVector));
+                    this._tmpVector.addInPlace(this._alternatePickedPoint);
+                    
+                    // Project resulting vector onto the drag plane and add it to the attached nodes absolute position to get a picked point
+                    var dot = Vector3.Dot(this._dragPlane.forward, this._tmpVector);
+                    this._dragPlane.forward.scaleToRef(-dot, this._alternatePickedPoint);
+                    this._alternatePickedPoint.addInPlace(this._tmpVector);
+                    this._alternatePickedPoint.addInPlace((<Mesh>this._attachedNode).absolutePosition);
+                    return this._alternatePickedPoint
+                }else{
+                    return null;
+                }
+            }
+
             var pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m)=>{return m == this._dragPlane})
             if (pickResult && pickResult.hit && pickResult.pickedMesh && pickResult.pickedPoint) {
                 return pickResult.pickedPoint;
