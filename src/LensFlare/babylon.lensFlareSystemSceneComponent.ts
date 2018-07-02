@@ -81,7 +81,7 @@
      * Defines the layer scene component responsible to manage any layers
      * in a given scene.
      */
-    export class LensFlareSystemSceneComponent implements ISceneComponent {
+    export class LensFlareSystemSceneComponent implements ISceneSerializableComponent {
         /**
          * The component name helpfull to identify the component in the list of scene components.
          */

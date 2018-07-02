@@ -20,6 +20,7 @@ declare module BabylonViewer {
     
     
     
+    
     /**
         * BabylonJS Viewer
         *
@@ -402,10 +403,10 @@ declare module BabylonViewer {
                 * Only provided information will be updated, old configuration values will be kept.
                 * If this.configuration was manually changed, you can trigger this function with no parameters,
                 * and the entire configuration will be updated.
-                * @param newConfiguration the partial configuration to update
+                * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
                 *
                 */
-            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>): void;
+            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration> | string): void;
             /**
                 * this is used to register native functions using the configuration object.
                 * This will configure the observers.
@@ -967,6 +968,17 @@ declare module BabylonViewer {
         addHTMLTemplate(template: Template): void;
         protected _generateHTMLElement(template: Template): Element | DocumentFragment;
     }
+}
+
+declare module BabylonViewer {
+    
+    /**
+      *
+      * @param name the name of the custom optimizer configuration
+      * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
+      */
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
 declare module BabylonViewer {
@@ -2270,6 +2282,13 @@ declare module BabylonViewer {
         disableTeleportation?: boolean;
         overrideFloorMeshName?: string;
         vrOptions?: BABYLON.VRExperienceHelperOptions;
+        modelHeightCorrection?: number | boolean;
+        rotateUsingControllers?: boolean;
+        cameraPosition?: {
+            x: number;
+            y: number;
+            z: number;
+        };
     }
 }
 

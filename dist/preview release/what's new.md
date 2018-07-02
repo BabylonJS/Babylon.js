@@ -87,6 +87,7 @@
 - It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
 - The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
 - The extended configuration is now the default when not providing the "extended" parameter ([RaananW](https://github.com/RaananW))
+- viewer.updateConfiguration also accepts a URL to download configuration remotely ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
@@ -133,6 +134,7 @@
 - Viewer is not using Engine.LastCreatedScene anymore, to support multiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 - Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
+- It was not possible to add new custom optimizers, only to use existing ones ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 

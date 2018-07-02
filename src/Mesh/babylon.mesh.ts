@@ -1298,7 +1298,6 @@
             }
 
             var scene = this.getScene();
-
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
 

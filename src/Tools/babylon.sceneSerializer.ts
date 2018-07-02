@@ -300,7 +300,7 @@
             }
 
             // Components
-            for (let component of scene._components) {
+            for (let component of scene._serializableComponents) {
                 component.serialize(serializationObject);
             }
 

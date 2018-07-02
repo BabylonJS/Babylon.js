@@ -20,6 +20,7 @@ declare module 'babylonjs-viewer' {
     import { AnimationPlayMode, AnimationState } from 'babylonjs-viewer/model/modelAnimation';
     import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
     import { AbstractViewerNavbarButton } from 'babylonjs-viewer/templating/viewerTemplatePlugin';
+    import { registerCustomOptimizer } from 'babylonjs-viewer/optimizer/custom';
     /**
         * BabylonJS Viewer
         *
@@ -35,7 +36,7 @@ declare module 'babylonjs-viewer' {
         */
     function disposeAll(): void;
     const Version: string;
-    export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton };
+    export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
     export * from 'babylonjs-viewer/configuration';
 }
 
@@ -402,10 +403,10 @@ declare module 'babylonjs-viewer/viewer/viewer' {
                 * Only provided information will be updated, old configuration values will be kept.
                 * If this.configuration was manually changed, you can trigger this function with no parameters,
                 * and the entire configuration will be updated.
-                * @param newConfiguration the partial configuration to update
+                * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
                 *
                 */
-            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>): void;
+            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration> | string): void;
             /**
                 * this is used to register native functions using the configuration object.
                 * This will configure the observers.
@@ -967,6 +968,17 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
         addHTMLTemplate(template: Template): void;
         protected _generateHTMLElement(template: Template): Element | DocumentFragment;
     }
+}
+
+declare module 'babylonjs-viewer/optimizer/custom' {
+    import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
+    /**
+      *
+      * @param name the name of the custom optimizer configuration
+      * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
+      */
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
 declare module 'babylonjs-viewer/initializer' {
@@ -2270,6 +2282,13 @@ declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
         disableTeleportation?: boolean;
         overrideFloorMeshName?: string;
         vrOptions?: VRExperienceHelperOptions;
+        modelHeightCorrection?: number | boolean;
+        rotateUsingControllers?: boolean;
+        cameraPosition?: {
+            x: number;
+            y: number;
+            z: number;
+        };
     }
 }
 
