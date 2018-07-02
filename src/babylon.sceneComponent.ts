@@ -8,6 +8,7 @@
         public static readonly NAME_LAYER = "Layer";
         public static readonly NAME_LENSFLARESYSTEM = "LensFlareSystem";
         public static readonly NAME_BOUNDINGBOXRENDERER = "BoundingBoxRenderer";
+        public static readonly NAME_PARTICLESYSTEM = "ParticleSystem";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 

@@ -293,21 +293,6 @@
                 }
             }
 
-            // Particles Systems
-            if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                    var parsedParticleSystem = parsedData.particleSystems[index];
-
-                    if (parsedParticleSystem.activeParticleCount) {
-                        let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                        container.particleSystems.push(ps);
-                    } else {
-                        let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                        container.particleSystems.push(ps);
-                    }
-                }
-            }
-
             // Shadows
             if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
                 for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
@@ -384,7 +369,7 @@
 
             return false;
         },
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
