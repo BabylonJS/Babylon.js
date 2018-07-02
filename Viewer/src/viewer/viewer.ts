@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { SceneManager } from '../managers/sceneManager';
 import { ConfigurationLoader } from '../configuration/loader';
-import { Effect, Observable, Engine, Scene, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, RenderingManager, TargetCamera, WebVRFreeCamera } from 'babylonjs';
+import { Effect, Observable, Engine, Scene, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, RenderingManager, TargetCamera, WebVRFreeCamera, Vector3 } from 'babylonjs';
 import { ViewerConfiguration, IObserversConfiguration, IModelConfiguration } from '../configuration/';
 
 import { ViewerModel } from '../model/viewerModel';
@@ -280,13 +280,20 @@ export abstract class AbstractViewer {
 
             // position the vr camera to be in front of the object
             if (this.sceneManager.vrHelper.currentVRCamera) {
-                this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
+                if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
+                    this.sceneManager.vrHelper.currentVRCamera.position.copyFrom(this.configuration.vr.cameraPosition as Vector3);
+                } else {
+                    this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
+                }
                 (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
-                this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
-
-                // enable rotation using the axels
-                // check if the camera is a webvr camera
-                if (this.sceneManager.vrHelper.currentVRCamera.getClassName() === "WebVRFreeCamera") {
+                if (this.configuration.vr && this.configuration.vr.modelHeightCorrection !== undefined) {
+                    if (typeof this.configuration.vr.modelHeightCorrection === 'number') {
+                        this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection
+                    } else if (this.configuration.vr.modelHeightCorrection) {
+                        this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
+                    } else {
+                        this._vrModelRepositioning = 0;
+                    }
                 }
             } else {
                 this._vrModelRepositioning = 0;
