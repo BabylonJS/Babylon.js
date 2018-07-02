@@ -7,4 +7,7 @@ export interface IVRConfiguration {
     disableTeleportation?: boolean;
     overrideFloorMeshName?: string;
     vrOptions?: VRExperienceHelperOptions;
+    modelHeightCorrection?: number | boolean;
+    rotateUsingControllers?: boolean; // experimental feature
+    cameraPosition?: { x: number, y: number, z: number }
 }
