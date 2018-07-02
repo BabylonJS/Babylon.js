@@ -87,6 +87,7 @@
 - It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
 - The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
 - The extended configuration is now the default when not providing the "extended" parameter ([RaananW](https://github.com/RaananW))
+- viewer.updateConfiguration also accepts a URL to download configuration remotely ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
