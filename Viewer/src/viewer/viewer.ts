@@ -362,7 +362,7 @@ export abstract class AbstractViewer {
         if (this.configuration.observers) {
             this._configureObservers(this.configuration.observers);
         }
-        // TODO remove this after testing, as this is done in the updateCOnfiguration as well.
+        // TODO remove this after testing, as this is done in the updateConfiguration as well.
         if (this.configuration.loaderPlugins) {
             Object.keys(this.configuration.loaderPlugins).forEach((name => {
                 if (this.configuration.loaderPlugins && this.configuration.loaderPlugins[name]) {
@@ -433,26 +433,40 @@ export abstract class AbstractViewer {
      * Only provided information will be updated, old configuration values will be kept.
      * If this.configuration was manually changed, you can trigger this function with no parameters, 
      * and the entire configuration will be updated. 
-     * @param newConfiguration the partial configuration to update
+     * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
      * 
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this.configuration) {
-        // update this.configuration with the new data
-        this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
-
-        this.sceneManager.updateConfiguration(newConfiguration);
-
-        // observers in configuration
-        if (newConfiguration.observers) {
-            this._configureObservers(newConfiguration.observers);
-        }
-
-        if (newConfiguration.loaderPlugins) {
-            Object.keys(newConfiguration.loaderPlugins).forEach((name => {
-                if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
-                    this.modelLoader.addPlugin(name);
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> | string = this.configuration) {
+        if (typeof newConfiguration === "string") {
+            Tools.LoadFile(newConfiguration, (data) => {
+                try {
+                    const newData = JSON.parse(data.toString()) as ViewerConfiguration;
+                    return this.updateConfiguration(newData);
+                } catch (e) {
+                    console.log("Error parsing file " + newConfiguration);
                 }
-            }));
+
+            }, undefined, undefined, undefined, (error) => {
+                console.log("Error parsing file " + newConfiguration, error);
+            });
+        } else {
+            // update this.configuration with the new data
+            this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
+
+            this.sceneManager.updateConfiguration(newConfiguration);
+
+            // observers in configuration
+            if (newConfiguration.observers) {
+                this._configureObservers(newConfiguration.observers);
+            }
+
+            if (newConfiguration.loaderPlugins) {
+                Object.keys(newConfiguration.loaderPlugins).forEach((name => {
+                    if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
+                        this.modelLoader.addPlugin(name);
+                    }
+                }));
+            }
         }
     }
 
