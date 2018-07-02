@@ -133,6 +133,7 @@
 - Viewer is not using Engine.LastCreatedScene anymore, to support multiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 - Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
+- It was not possible to add new custom optimizers, only to use existing ones ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
