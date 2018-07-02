@@ -48,7 +48,7 @@ module BABYLON {
          * Please note that the emitter shape is not exported
          * @param system defines the particle systems to export
          */
-        public static ExportSet(systems: ParticleSystem[]): ParticleSystemSet {
+        public static ExportSet(systems: IParticleSystem[]): ParticleSystemSet {
             var set = new ParticleSystemSet();
 
             for (var system of systems) {
