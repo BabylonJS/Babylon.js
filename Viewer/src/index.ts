@@ -9,6 +9,7 @@ import { ViewerModel, ModelState } from './model/viewerModel';
 import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
 import { ILoaderPlugin } from './loader/plugins/loaderPlugin';
 import { AbstractViewerNavbarButton } from './templating/viewerTemplatePlugin';
+import { registerCustomOptimizer } from './optimizer/custom';
 
 /**
  * BabylonJS Viewer
@@ -45,6 +46,6 @@ const Version = viewerGlobals.version;
 console.log("Babylon.js viewer (v" + Version + ")");
 
 // public API for initialization
-export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton };
+export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
 // export publicliy all configuration interfaces
 export * from './configuration';
