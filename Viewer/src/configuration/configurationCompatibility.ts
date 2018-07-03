@@ -7,8 +7,6 @@ import { ViewerConfiguration, getConfigurationKey } from './configuration'
  */
 export function processConfigurationCompatibility(configuration: ViewerConfiguration) {
 
-
-
     if (configuration.camera) {
         // camera contrast -> image processing contrast
         if (configuration.camera.contrast !== undefined) {
@@ -29,6 +27,13 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
             if (enabledProcessing !== false) {
                 setKeyInObject(configuration, "scene.imageProcessingConfiguration.isEnabled", true);
             }
+        }
+    }
+
+    if (configuration.model && typeof configuration.model === 'object') {
+        // castShadows === castShadow
+        if ((<any>configuration.model).castShadows !== undefined && configuration.model.castShadow === undefined) {
+            configuration.model.castShadow = (<any>configuration.model).castShadows;
         }
     }
 }
