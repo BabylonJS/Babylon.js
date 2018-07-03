@@ -271,14 +271,8 @@ export abstract class AbstractViewer {
             }
 
             this.sceneManager.vrHelper.enterVR();
-            // calculate position and vr scale
 
-            if (this.sceneManager.environmentHelper) {
-                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
-                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
-            }
-
-            // position the vr camera to be in front of the object
+            // position the vr camera to be in front of the object or wherever the user has configured it to be
             if (this.sceneManager.vrHelper.currentVRCamera) {
                 if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFrom(this.configuration.vr.cameraPosition as Vector3);
@@ -286,6 +280,7 @@ export abstract class AbstractViewer {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
                 }
                 (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                // set the height of the model to be what the user has configured, or floating by default
                 if (this.configuration.vr && this.configuration.vr.modelHeightCorrection !== undefined) {
                     if (typeof this.configuration.vr.modelHeightCorrection === 'number') {
                         this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection
@@ -299,6 +294,7 @@ export abstract class AbstractViewer {
                 this._vrModelRepositioning = 0;
             }
 
+            // scale the model
             if (this.sceneManager.models.length) {
                 let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
                 let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
@@ -315,6 +311,12 @@ export abstract class AbstractViewer {
                 this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
             }
 
+            // scale the environment to match the model
+            if (this.sceneManager.environmentHelper) {
+                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
+                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
+            }
+
             // post processing
             if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
                 this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
@@ -323,13 +325,14 @@ export abstract class AbstractViewer {
         } else {
             if (this.sceneManager.vrHelper) {
                 this.sceneManager.vrHelper.exitVR();
-                //this.sceneManager.scene.activeCamera = this.sceneManager.camera;
+                
+                // undo the scaling of the model
                 if (this.sceneManager.models.length) {
                     this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
                     this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
-
                 }
 
+                // undo the scaling of the environment
                 if (this.sceneManager.environmentHelper) {
                     this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
                     this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
