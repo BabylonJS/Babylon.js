@@ -210,7 +210,7 @@ module BABYLON {
         /**
          * Gets the list of loaded particle systems
          */
-        public loadedParticleSystems: Array<ParticleSystem>;
+        public loadedParticleSystems: Array<IParticleSystem>;
         /**
          * Gets the list of loaded skeletons
          */
@@ -261,7 +261,7 @@ module BABYLON {
          */
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
-                (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
+                (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[]) => {
                     this.loadedMeshes = meshes;
                     this.loadedParticleSystems = particleSystems;
                     this.loadedSkeletons = skeletons;

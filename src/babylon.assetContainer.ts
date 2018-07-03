@@ -38,9 +38,6 @@ module BABYLON {
             this.skeletons.forEach((o) => {
                 this.scene.addSkeleton(o);
             });
-            this.particleSystems.forEach((o) => {
-                this.scene.addParticleSystem(o);
-            });
             this.animations.forEach((o) => {
                 this.scene.addAnimation(o);
             });
@@ -94,9 +91,6 @@ module BABYLON {
             });
             this.skeletons.forEach((o) => {
                 this.scene.removeSkeleton(o);
-            });
-            this.particleSystems.forEach((o) => {
-                this.scene.removeParticleSystem(o);
             });
             this.animations.forEach((o) => {
                 this.scene.removeAnimation(o);
