@@ -14,9 +14,9 @@ module BABYLON {
         private _moving = false;
         private _startingOrientation = new Quaternion();
         /**
-         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 5)
+         * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
          */
-         private zDragFactor = 5;
+         private zDragFactor = 3;
         /**
          * If the behavior is currently in a dragging state
          */
@@ -121,12 +121,11 @@ module BABYLON {
                         // Calculate controller drag distance in controller space
                         var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(lastSixDofOriginPosition);
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        var localOriginDragDifference = Vector3.TransformCoordinates(originDragDifference, Matrix.Invert(this._virtualOriginMesh.getWorldMatrix().getRotationMatrix()));
+                        var localOriginDragDifference = -Vector3.Dot(originDragDifference, pointerInfo.pickInfo.ray.direction);
 
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
                         // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
-                        var zDragDistance = Vector3.Dot(localOriginDragDifference, this._virtualOriginMesh.position.normalizeToNew());
-                        this._virtualDragMesh.position.z -= this._virtualDragMesh.position.z < 1 ? zDragDistance*this.zDragFactor : zDragDistance*zDragFactor*this._virtualDragMesh.position.z;
+                        this._virtualDragMesh.position.z -= this._virtualDragMesh.position.z < 1 ? localOriginDragDifference*this.zDragFactor : localOriginDragDifference*zDragFactor*this._virtualDragMesh.position.z;
                         if(this._virtualDragMesh.position.z < 0){
                             this._virtualDragMesh.position.z = 0;
                         }
