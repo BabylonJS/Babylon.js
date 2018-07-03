@@ -1,7 +1,7 @@
 {
-  "errors": 4221,
+  "errors": 4224,
   "babylon.typedoc.json": {
-    "errors": 4221,
+    "errors": 4224,
     "AbstractScene": {
       "Property": {
         "effectLayers": {
@@ -580,11 +580,6 @@
         }
       },
       "Method": {
-        "addGamepad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "addKeyboard": {
           "Comments": {
             "MissingText": true
@@ -601,6 +596,14 @@
           }
         },
         "addVRDeviceOrientation": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "addGamepad": {
+          "Naming": {
+            "NotPascalCase": true
+          },
           "Comments": {
             "MissingText": true
           }
@@ -5693,11 +5696,6 @@
             "MissingText": true
           }
         },
-        "addGamepad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "addKeyboard": {
           "Comments": {
             "MissingText": true
@@ -5721,6 +5719,14 @@
           }
         },
         "addVirtualJoystick": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "addGamepad": {
+          "Naming": {
+            "NotPascalCase": true
+          },
           "Comments": {
             "MissingText": true
           }
@@ -15126,6 +15132,11 @@
     "Scene": {
       "Property": {
         "forceShowBoundingBoxes": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "gamepadManager": {
           "Naming": {
             "NotPascalCase": true
           }

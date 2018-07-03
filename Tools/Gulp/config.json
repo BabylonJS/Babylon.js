@@ -99,6 +99,7 @@
             "gizmos",
             "morphTargets",
             "octrees",
+            "anaglyph",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -655,7 +656,8 @@
                 "../../src/Gamepad/Controllers/babylon.genericController.js",
                 "../../src/Gamepad/Controllers/babylon.windowsMotionController.js",
                 "../../src/Gamepad/Controllers/babylon.gearVRController.js",
-                "../../src/Gamepad/Controllers/babylon.daydreamController.js"
+                "../../src/Gamepad/Controllers/babylon.daydreamController.js",
+                "../../src/Gamepad/babylon.gamepadSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -1108,28 +1110,62 @@
                 "core"
             ]
         },
+        "anaglyph": {
+            "files": [
+                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphArcRotateCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphFreeCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphGamepadCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphUniversalCamera.js"
+            ],
+            "dependUpon": [
+                "core",
+                "postProcesses",
+                "freeCamera",
+                "gamepad"
+            ],
+            "shaders": [
+                "anaglyph.fragment"
+            ]
+        },       
+        "stereoscopic": {
+            "files": [
+                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicArcRotateCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicFreeCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicGamepadCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicUniversalCamera.js"
+            ],
+            "dependUpon": [
+                "core",
+                "postProcesses",
+                "freeCamera",
+                "gamepad"
+            ],
+            "shaders": [
+                "stereoscopicInterlace.fragment"
+            ]
+        },           
         "vr": {
             "files": [
                 "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
-                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
-                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
                 "../../src/Cameras/Inputs/babylon.freeCameraDeviceOrientationInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraVRDeviceOrientationInput.js",
                 "../../src/Cameras/VR/babylon.vrCameraMetrics.js",
                 "../../src/Cameras/VR/babylon.webVRCamera.js",
                 "../../src/Cameras/babylon.deviceOrientationCamera.js",
-                "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",
-                "../../src/Cameras/babylon.stereoscopicCameras.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationFreeCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationArcRotateCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationGamepadCamera.js",
                 "../../src/Cameras/VR/babylon.vrExperienceHelper.js"
             ],
             "dependUpon": [
                 "core",
                 "postProcesses",
-                "freeCamera"
+                "freeCamera",
+                "gamepad"
             ],
             "shaders": [
-                "anaglyph.fragment",
-                "stereoscopicInterlace.fragment",
                 "vrDistortionCorrection.fragment"
             ]
         },
