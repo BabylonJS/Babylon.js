@@ -28,7 +28,7 @@
         var minFilter = gl.NEAREST;
 
         switch (samplingMode) {
-            case Texture.BILINEAR_SAMPLINGMODE:
+            case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_NEAREST;
@@ -36,7 +36,7 @@
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Texture.TRILINEAR_SAMPLINGMODE:
+            case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -44,7 +44,7 @@
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Texture.NEAREST_SAMPLINGMODE:
+            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -52,7 +52,7 @@
                     minFilter = gl.NEAREST;
                 }
                 break;
-            case Texture.NEAREST_NEAREST_MIPNEAREST:
+            case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_NEAREST;
@@ -60,7 +60,7 @@
                     minFilter = gl.NEAREST;
                 }
                 break;
-            case Texture.NEAREST_LINEAR_MIPNEAREST:
+            case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_NEAREST;
@@ -68,7 +68,7 @@
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Texture.NEAREST_LINEAR_MIPLINEAR:
+            case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -76,15 +76,15 @@
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Texture.NEAREST_LINEAR:
+            case Engine.TEXTURE_NEAREST_LINEAR:
                 magFilter = gl.NEAREST;
                 minFilter = gl.LINEAR;
                 break;
-            case Texture.NEAREST_NEAREST:
+            case Engine.TEXTURE_NEAREST_NEAREST:
                 magFilter = gl.NEAREST;
                 minFilter = gl.NEAREST;
                 break;
-            case Texture.LINEAR_NEAREST_MIPNEAREST:
+            case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_NEAREST;
@@ -92,7 +92,7 @@
                     minFilter = gl.NEAREST;
                 }
                 break;
-            case Texture.LINEAR_NEAREST_MIPLINEAR:
+            case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -100,11 +100,11 @@
                     minFilter = gl.NEAREST;
                 }
                 break;
-            case Texture.LINEAR_LINEAR:
+            case Engine.TEXTURE_LINEAR_LINEAR:
                 magFilter = gl.LINEAR;
                 minFilter = gl.LINEAR;
                 break;
-            case Texture.LINEAR_NEAREST:
+            case Engine.TEXTURE_LINEAR_NEAREST:
                 magFilter = gl.LINEAR;
                 minFilter = gl.NEAREST;
                 break;
@@ -424,293 +424,172 @@
         }
 
         // Const statics
-        private static _ALPHA_DISABLE = 0;
-        private static _ALPHA_ADD = 1;
-        private static _ALPHA_COMBINE = 2;
-        private static _ALPHA_SUBTRACT = 3;
-        private static _ALPHA_MULTIPLY = 4;
-        private static _ALPHA_MAXIMIZED = 5;
-        private static _ALPHA_ONEONE = 6;
-        private static _ALPHA_PREMULTIPLIED = 7;
-        private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-        private static _ALPHA_INTERPOLATE = 9;
-        private static _ALPHA_SCREENMODE = 10;
-
-        private static _DELAYLOADSTATE_NONE = 0;
-        private static _DELAYLOADSTATE_LOADED = 1;
-        private static _DELAYLOADSTATE_LOADING = 2;
-        private static _DELAYLOADSTATE_NOTLOADED = 4;
-
-        private static _TEXTUREFORMAT_ALPHA = 0;
-        private static _TEXTUREFORMAT_LUMINANCE = 1;
-        private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
-        private static _TEXTUREFORMAT_RGB = 4;
-        private static _TEXTUREFORMAT_RGBA = 5;
-        private static _TEXTUREFORMAT_R = 6;
-        private static _TEXTUREFORMAT_RG = 7;
-
-        private static _TEXTURETYPE_UNSIGNED_INT = 0;
-        private static _TEXTURETYPE_FLOAT = 1;
-        private static _TEXTURETYPE_HALF_FLOAT = 2;
-
-        // Depht or Stencil test Constants.
-        private static _NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
-        private static _ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
-        private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
-        private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
-        private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-        private static _GREATER = 0x0204; // Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
-        private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
-        private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
-        public static get NEVER(): number {
-            return Engine._NEVER;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        public static get ALWAYS(): number {
-            return Engine._ALWAYS;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
-        public static get LESS(): number {
-            return Engine._LESS;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
-        public static get EQUAL(): number {
-            return Engine._EQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
-        public static get LEQUAL(): number {
-            return Engine._LEQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
-        public static get GREATER(): number {
-            return Engine._GREATER;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
-        public static get GEQUAL(): number {
-            return Engine._GEQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
-        public static get NOTEQUAL(): number {
-            return Engine._NOTEQUAL;
-        }
-
-        // Stencil Actions Constants.
-        private static _KEEP = 0x1E00;
-        private static _REPLACE = 0x1E01;
-        private static _INCR = 0x1E02;
-        private static _DECR = 0x1E03;
-        private static _INVERT = 0x150A;
-        private static _INCR_WRAP = 0x8507;
-        private static _DECR_WRAP = 0x8508;
-
-        /** Passed to stencilOperation to specify that stencil value must be kept */
-        public static get KEEP(): number {
-            return Engine._KEEP;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be replaced */
-        public static get REPLACE(): number {
-            return Engine._REPLACE;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be incremented */
-        public static get INCR(): number {
-            return Engine._INCR;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be decremented */
-        public static get DECR(): number {
-            return Engine._DECR;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be inverted */
-        public static get INVERT(): number {
-            return Engine._INVERT;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
-        public static get INCR_WRAP(): number {
-            return Engine._INCR_WRAP;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
-        public static get DECR_WRAP(): number {
-            return Engine._DECR_WRAP;
-        }
-
-        // Alpha
-
         /** Defines that alpha blending is disabled */
-        public static get ALPHA_DISABLE(): number {
-            return Engine._ALPHA_DISABLE;
-        }
-
-        /** Defines that alpha blending to SRC + DEST */
-        public static get ALPHA_ONEONE(): number {
-            return Engine._ALPHA_ONEONE;
-        }
-
+        public static readonly ALPHA_DISABLE = 0;
         /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
-        public static get ALPHA_ADD(): number {
-            return Engine._ALPHA_ADD;
-        }
-
+        public static readonly ALPHA_ADD = 1;
         /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
-        public static get ALPHA_COMBINE(): number {
-            return Engine._ALPHA_COMBINE;
-        }
-
+        public static readonly ALPHA_COMBINE = 2;
         /** Defines that alpha blending to DEST - SRC * DEST */
-        public static get ALPHA_SUBTRACT(): number {
-            return Engine._ALPHA_SUBTRACT;
-        }
-
+        public static readonly ALPHA_SUBTRACT = 3;
         /** Defines that alpha blending to SRC * DEST */
-        public static get ALPHA_MULTIPLY(): number {
-            return Engine._ALPHA_MULTIPLY;
-        }
-
+        public static readonly ALPHA_MULTIPLY = 4;
         /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
-        public static get ALPHA_MAXIMIZED(): number {
-            return Engine._ALPHA_MAXIMIZED;
-        }
-
+        public static readonly ALPHA_MAXIMIZED = 5;
+        /** Defines that alpha blending to SRC + DEST */
+        public static readonly ALPHA_ONEONE = 6;
         /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
-        public static get ALPHA_PREMULTIPLIED(): number {
-            return Engine._ALPHA_PREMULTIPLIED;
-        }
-
+        public static readonly ALPHA_PREMULTIPLIED = 7;
         /** 
          * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
          * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
          */
-        public static get ALPHA_PREMULTIPLIED_PORTERDUFF(): number {
-            return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
-        }
-
+        public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
         /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
-        public static get ALPHA_INTERPOLATE(): number {
-            return Engine._ALPHA_INTERPOLATE;
-        }
-
+        public static readonly ALPHA_INTERPOLATE = 9;
         /** 
          * Defines that alpha blending to SRC + (1 - SRC) * DEST 
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
-        public static get ALPHA_SCREENMODE(): number {
-            return Engine._ALPHA_SCREENMODE;
-        }
-
-        // Delays
+        public static readonly ALPHA_SCREENMODE = 10;
 
         /** Defines that the ressource is not delayed*/
-        public static get DELAYLOADSTATE_NONE(): number {
-            return Engine._DELAYLOADSTATE_NONE;
-        }
-
+        public static readonly DELAYLOADSTATE_NONE = 0;
         /** Defines that the ressource was successfully delay loaded */
-        public static get DELAYLOADSTATE_LOADED(): number {
-            return Engine._DELAYLOADSTATE_LOADED;
-        }
-
+        public static readonly DELAYLOADSTATE_LOADED = 1;
         /** Defines that the ressource is currently delay loading */
-        public static get DELAYLOADSTATE_LOADING(): number {
-            return Engine._DELAYLOADSTATE_LOADING;
-        }
-
+        public static readonly DELAYLOADSTATE_LOADING = 2;
         /** Defines that the ressource is delayed and has not started loading */
-        public static get DELAYLOADSTATE_NOTLOADED(): number {
-            return Engine._DELAYLOADSTATE_NOTLOADED;
-        }
+        public static readonly DELAYLOADSTATE_NOTLOADED = 4;
+
+        // Depht or Stencil test Constants.
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+        public static readonly NEVER = 0x0200;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        public static readonly ALWAYS = 0x0207;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+        public static readonly LESS = 0x0201;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+        public static readonly EQUAL = 0x0202;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+        public static readonly LEQUAL = 0x0203;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+        public static readonly GREATER = 0x0204;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+        public static readonly GEQUAL = 0x0206;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+        public static readonly NOTEQUAL = 0x0205;
+
+        // Stencil Actions Constants.
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        public static readonly KEEP = 0x1E00;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        public static readonly REPLACE = 0x1E01;
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
+        public static readonly INCR = 0x1E02;
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
+        public static readonly DECR = 0x1E03;
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
+        public static readonly INVERT = 0x150A;
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+        public static readonly INCR_WRAP = 0x8507;
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+        public static readonly DECR_WRAP = 0x8508;
+
+        /** Texture is not repeating outside of 0..1 UVs */
+        public static readonly TEXTURE_CLAMP_ADDRESSMODE = 0;
+        /** Texture is repeating outside of 0..1 UVs */
+        public static readonly TEXTURE_WRAP_ADDRESSMODE = 1;
+        /** Texture is repeating and mirrored */
+        public static readonly TEXTURE_MIRROR_ADDRESSMODE = 2;
 
         /** ALPHA */
-        public static get TEXTUREFORMAT_ALPHA(): number {
-            return Engine._TEXTUREFORMAT_ALPHA;
-        }
-
+        public static readonly TEXTUREFORMAT_ALPHA = 0;
         /** LUMINANCE */
-        public static get TEXTUREFORMAT_LUMINANCE(): number {
-            return Engine._TEXTUREFORMAT_LUMINANCE;
-        }
-
-        /**
-         * R
-         */
-        public static get TEXTUREFORMAT_R(): number {
-            return Engine._TEXTUREFORMAT_R;
-        }       
-        
-        /**
-         * RG
-         */
-        public static get TEXTUREFORMAT_RG(): number {
-            return Engine._TEXTUREFORMAT_RG;
-        }
-
+        public static readonly TEXTUREFORMAT_LUMINANCE = 1;
         /** LUMINANCE_ALPHA */
-        public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
-            return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
-        }
-
+        public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         /** RGB */
-        public static get TEXTUREFORMAT_RGB(): number {
-            return Engine._TEXTUREFORMAT_RGB;
-        }
-
+        public static readonly TEXTUREFORMAT_RGB = 4;
         /** RGBA */
-        public static get TEXTUREFORMAT_RGBA(): number {
-            return Engine._TEXTUREFORMAT_RGBA;
-        }
+        public static readonly TEXTUREFORMAT_RGBA = 5;
+        /** R */
+        public static readonly TEXTUREFORMAT_R = 6;
+        /** RG */
+        public static readonly TEXTUREFORMAT_RG = 7;
 
         /** UNSIGNED_INT */
-        public static get TEXTURETYPE_UNSIGNED_INT(): number {
-            return Engine._TEXTURETYPE_UNSIGNED_INT;
-        }
-
+        public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
         /** FLOAT */
-        public static get TEXTURETYPE_FLOAT(): number {
-            return Engine._TEXTURETYPE_FLOAT;
-        }
-
+        public static readonly TEXTURETYPE_FLOAT = 1;
         /** HALF_FLOAT */
-        public static get TEXTURETYPE_HALF_FLOAT(): number {
-            return Engine._TEXTURETYPE_HALF_FLOAT;
-        }
+        public static readonly TEXTURETYPE_HALF_FLOAT = 2;
+
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1; 
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1; 
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
+        /** mag = nearest and min = nearest and mip = nearest */
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
+        /** mag = nearest and min = linear and mip = nearest */
+        public static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST = 5;
+        /** mag = nearest and min = linear and mip = linear */
+        public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = 6;
+        /** mag = nearest and min = linear and mip = none */
+        public static readonly TEXTURE_NEAREST_LINEAR = 7;
+        /** mag = nearest and min = nearest and mip = none */
+        public static readonly TEXTURE_NEAREST_NEAREST = 8;
+        /** mag = linear and min = nearest and mip = nearest */
+        public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = 9;
+        /** mag = linear and min = nearest and mip = linear */
+        public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = 10;
+        /** mag = linear and min = linear and mip = none */
+        public static readonly TEXTURE_LINEAR_LINEAR = 11;
+        /** mag = linear and min = nearest and mip = none */
+        public static readonly TEXTURE_LINEAR_NEAREST = 12;
+
+        /** Explicit coordinates mode */
+        public static readonly TEXTURE_EXPLICIT_MODE = 0;
+        /** Spherical coordinates mode */
+        public static readonly TEXTURE_SPHERICAL_MODE = 1;
+        /** Planar coordinates mode */
+        public static readonly TEXTURE_PLANAR_MODE = 2;
+        /** Cubic coordinates mode */
+        public static readonly TEXTURE_CUBIC_MODE = 3;
+        /** Projection coordinates mode */
+        public static readonly TEXTURE_PROJECTION_MODE = 4;
+        /** Skybox coordinates mode */
+        public static readonly TEXTURE_SKYBOX_MODE = 5;
+        /** Inverse Cubic coordinates mode */
+        public static readonly TEXTURE_INVCUBIC_MODE = 6;
+        /** Equirectangular coordinates mode */
+        public static readonly TEXTURE_EQUIRECTANGULAR_MODE = 7;
+        /** Equirectangular Fixed coordinates mode */
+        public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = 8;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
 
         // Texture rescaling mode
-        private static _SCALEMODE_FLOOR = 1;
-        private static _SCALEMODE_NEAREST = 2;
-        private static _SCALEMODE_CEILING = 3;
-
         /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-        public static get SCALEMODE_FLOOR(): number {
-            return Engine._SCALEMODE_FLOOR;
-        }
-
+        public static readonly SCALEMODE_FLOOR = 1;
         /** Defines that texture rescaling will look for the nearest power of 2 size */
-        public static get SCALEMODE_NEAREST(): number {
-            return Engine._SCALEMODE_NEAREST;
-        }
-
+        public static readonly SCALEMODE_NEAREST = 2;
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-        public static get SCALEMODE_CEILING(): number {
-            return Engine._SCALEMODE_CEILING;
-        }
+        public static readonly SCALEMODE_CEILING = 3;
 
         /**
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.9";
+            return "3.3.0-alpha.10";
         }
 
         // Updatable statics so stick with vars here
@@ -1101,7 +980,7 @@
          */
         public get emptyTexture(): InternalTexture {
             if (!this._emptyTexture) {
-                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture;
@@ -1112,7 +991,7 @@
          */        
         public get emptyTexture3D(): InternalTexture {
             if (!this._emptyTexture3D) {
-                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture3D;
@@ -1125,7 +1004,7 @@
             if (!this._emptyCubeTexture) {
                 var faceData = new Uint8Array(4);
                 var cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyCubeTexture;
@@ -4166,7 +4045,7 @@
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
             buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
@@ -4366,14 +4245,14 @@
             }, {
                     generateMipMaps: false,
                     type: Engine.TEXTURETYPE_UNSIGNED_INT,
-                    samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                    samplingMode: Engine.TEXTURE_BILINEAR_SAMPLINGMODE,
                     generateDepthBuffer: false,
                     generateStencilBuffer: false
                 }
             );
 
             if (!this._rescalePostProcess) {
-                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
@@ -4716,7 +4595,7 @@
             internalTexture.generateMipMaps = false;
             internalTexture._generateDepthBuffer = true;
             internalTexture._generateStencilBuffer = generateStencil;
-            internalTexture.samplingMode = bilinearFiltering ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE;
+            internalTexture.samplingMode = bilinearFiltering ? Engine.TEXTURE_BILINEAR_SAMPLINGMODE : Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             internalTexture._comparisonFunction = comparisonFunction;
             
@@ -4895,24 +4774,24 @@
                 fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
                 fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-                fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
                 fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
                 fullOptions.generateDepthBuffer = true;
                 fullOptions.generateStencilBuffer = false;
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
                 fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
             }
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                 // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                 // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
 
@@ -4988,7 +4867,7 @@
             var textureCount = 1;
 
             var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var defaultSamplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            var defaultSamplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
             var types = new Array<number>();
             var samplingModes = new Array<number>();
@@ -5027,11 +4906,11 @@
 
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
                 else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                     // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
 
                 var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
@@ -5369,7 +5248,7 @@
               generateDepthBuffer: true,
               generateStencilBuffer: false,
               type: Engine.TEXTURETYPE_UNSIGNED_INT,
-              samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+              samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
               format: Engine.TEXTUREFORMAT_RGBA,
               ...options
             };
@@ -5377,11 +5256,11 @@
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
               // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+              fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
               // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+              fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl
 
@@ -5936,7 +5815,7 @@
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void> = null,
             onError: Nullable<(message?: string, exception?: any) => void> = null,
-            samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
+            samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             invertY = false): InternalTexture {
 
             var gl = this._gl;
@@ -6131,7 +6010,7 @@
         }
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
+            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
             var maxTextureSize = this.getCaps().maxTextureSize;    
             var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
             var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
@@ -6519,11 +6398,11 @@
 
         private _getTextureWrapMode(mode: number): number {
             switch(mode) {
-                case Texture.WRAP_ADDRESSMODE:
+                case Engine.TEXTURE_WRAP_ADDRESSMODE:
                     return this._gl.REPEAT;
-                case Texture.CLAMP_ADDRESSMODE:
+                case Engine.TEXTURE_CLAMP_ADDRESSMODE:
                     return this._gl.CLAMP_TO_EDGE;
-                case Texture.MIRROR_ADDRESSMODE:
+                case Engine.TEXTURE_MIRROR_ADDRESSMODE:
                     return this._gl.MIRRORED_REPEAT;
             }
             return this._gl.REPEAT;
@@ -6615,7 +6494,7 @@
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
-                    var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
+                    var textureWrapMode = (texture.coordinatesMode !== Engine.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Engine.TEXTURE_SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
                     this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode, internalTexture);
                     this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
@@ -6677,9 +6556,9 @@
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
 
-            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST
-                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
-                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
+            if (internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR) {
                 value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
 
