@@ -1,7 +1,7 @@
 {
-  "errors": 4234,
+  "errors": 4224,
   "babylon.typedoc.json": {
-    "errors": 4234,
+    "errors": 4224,
     "AbstractScene": {
       "Property": {
         "effectLayers": {
@@ -580,11 +580,6 @@
         }
       },
       "Method": {
-        "addGamepad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "addKeyboard": {
           "Comments": {
             "MissingText": true
@@ -601,6 +596,14 @@
           }
         },
         "addVRDeviceOrientation": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "addGamepad": {
+          "Naming": {
+            "NotPascalCase": true
+          },
           "Comments": {
             "MissingText": true
           }
@@ -4694,53 +4697,6 @@
               }
             }
           }
-        },
-        "UploadDDSLevels": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "gl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "arrayBuffer": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "info": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loadMipmaps": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "faces": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "lodIndex": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "currentFace": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
         }
       }
     },
@@ -5214,6 +5170,15 @@
         "springiness": {
           "Comments": {
             "MissingText": true
+          }
+        }
+      }
+    },
+    "Engine": {
+      "Method": {
+        "createEffectForParticles": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       }
@@ -5731,11 +5696,6 @@
             "MissingText": true
           }
         },
-        "addGamepad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "addKeyboard": {
           "Comments": {
             "MissingText": true
@@ -5759,6 +5719,14 @@
           }
         },
         "addVirtualJoystick": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
+        "addGamepad": {
+          "Naming": {
+            "NotPascalCase": true
+          },
           "Comments": {
             "MissingText": true
           }
@@ -7208,20 +7176,6 @@
           },
           "Parameter": {
             "val": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "uploadLevels": {
-          "Parameter": {
-            "gl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loadMipmaps": {
               "Comments": {
                 "MissingText": true
               }
@@ -15181,6 +15135,11 @@
           "Naming": {
             "NotPascalCase": true
           }
+        },
+        "gamepadManager": {
+          "Naming": {
+            "NotPascalCase": true
+          }
         }
       },
       "Method": {
@@ -18077,23 +18036,6 @@
             "MissingText": true
           },
           "Parameter": {
-            "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "UploadContent": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "gl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
             "data": {
               "Comments": {
                 "MissingText": true

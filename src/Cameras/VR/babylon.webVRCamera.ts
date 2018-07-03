@@ -1,4 +1,12 @@
 module BABYLON {
+    Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
+        return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+    });
+
+    Node.AddNodeConstructor("WebVRGamepadCamera", (name, scene) => {
+        return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+    });
+
     /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.

@@ -1,4 +1,9 @@
 module BABYLON {
+
+    Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
+        return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
+    });
+
     // We're mainly based on the logic defined into the FreeCamera code
     /**
      * This is a camera specifically designed to react to device orientation events such as a modern mobile device
