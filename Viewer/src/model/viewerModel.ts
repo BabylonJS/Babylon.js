@@ -1,4 +1,4 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
@@ -48,7 +48,7 @@ export class ViewerModel implements IDisposable {
     /**
      * ParticleSystems connected to this model
      */
-    public particleSystems: Array<ParticleSystem> = [];
+    public particleSystems: Array<IParticleSystem> = [];
     /**
      * Skeletons defined in this model
      */
