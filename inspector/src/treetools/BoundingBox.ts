@@ -17,7 +17,7 @@ module INSPECTOR{
         constructor(obj:IToolBoundingBox) {
             super (); 
             this._obj = obj;
-            this._elem.classList.add('fa-square-o');
+            this._elem.classList.add('fa-cube');
             this._on = this._obj.isBoxVisible();
             this._check();
         }
