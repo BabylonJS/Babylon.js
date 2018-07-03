@@ -294,10 +294,10 @@
 
                     for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
                         const runtimeAnimation = runtimeAnimations[index];
-                        if (typeof animationName === "string" && runtimeAnimation.animation.name != animationName) {
+                        if (animationName && runtimeAnimation.animation.name != animationName) {
                             continue;
                         }
-                        if (typeof targetMask === "function" && !targetMask(runtimeAnimation.target)) {
+                        if (targetMask && !targetMask(runtimeAnimation.target)) {
                             continue;
                         }
 
