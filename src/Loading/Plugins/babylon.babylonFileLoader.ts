@@ -540,10 +540,13 @@
 
                 // Particles
                 if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                        var parsedParticleSystem = parsedData.particleSystems[index];
-                        if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                            particleSystems.push(ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
+                    let parser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+                    if (parser) {
+                        for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                            var parsedParticleSystem = parsedData.particleSystems[index];
+                            if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
+                                particleSystems.push(parser(parsedParticleSystem, scene, rootUrl));
+                            }
                         }
                     }
                 }
