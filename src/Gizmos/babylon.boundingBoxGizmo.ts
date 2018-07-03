@@ -233,40 +233,14 @@ module BABYLON {
             })
             this._updateBoundingBox();
         }
-
-        // http://www.html5gamedevs.com/topic/23468-get-size-of-mesh-while-taking-its-children-into-account/
-        private getMinMax(mesh:AbstractMesh, min:Vector3, max:Vector3, computeWorldMatrix:boolean) {
-            if (computeWorldMatrix) {
-                mesh.computeWorldMatrix(true);
-            }
-            
-            var bi = mesh.getBoundingInfo();
-            var minimum = bi.boundingBox.minimumWorld;
-            var maximum = bi.boundingBox.maximumWorld;
-            
-            if (minimum.x < min.x) {
-                min.x = minimum.x;
-            }
-            if (minimum.y < min.y) {
-                min.y = minimum.y;
-            }
-            if (minimum.z < min.z) {
-                min.z = minimum.z;
-            }
         
-            if (maximum.x > max.x) {
-                max.x = maximum.x;
-            }
-            if (maximum.y > max.y) {
-                max.y = maximum.y;
-            }
-            if (maximum.z > max.z) {
-                max.z = maximum.z;
-            }
-
-            var children = mesh.getChildMeshes();
-            for (var i = 0; i < children.length; i++){
-                this.getMinMax(children[i], min, max, computeWorldMatrix);
+        protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
+            if(value){
+                // Reset anchor mesh to match attached mesh's scale
+                // This is needed to avoid invalid box/sphere position on first drag
+                this._anchorMesh.addChild(value);
+                this._anchorMesh.removeChild(value);
+                this._updateBoundingBox();
             }
         }
 
@@ -277,38 +251,48 @@ module BABYLON {
             })
         }
 
+        private _recurseComputeWorld(mesh:AbstractMesh){
+            mesh.computeWorldMatrix(true);
+            mesh.getChildMeshes().forEach((m)=>{
+                this._recurseComputeWorld(m);
+            });
+        }
+
         private _updateBoundingBox(){
             if(this.attachedMesh){             
                 // Rotate based on axis
                 if(!this.attachedMesh.rotationQuaternion){
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y,this.attachedMesh.rotation.x,this.attachedMesh.rotation.z);
                 }
+                if(!this._anchorMesh.rotationQuaternion){
+                    this._anchorMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._anchorMesh.rotation.y,this._anchorMesh.rotation.x,this._anchorMesh.rotation.z);
+                }
+                this._anchorMesh.rotationQuaternion.copyFrom(this.attachedMesh.rotationQuaternion);
 
                 // Store original position and reset mesh to origin before computing the bounding box
                 this._tmpQuaternion.copyFrom(this.attachedMesh.rotationQuaternion);
                 this._tmpVector.copyFrom(this.attachedMesh.position);
                 this.attachedMesh.rotationQuaternion.set(0,0,0,1);
-                this.attachedMesh.position.set(0,0,0)
+                this.attachedMesh.position.set(0,0,0);
                 
                 // Update bounding dimensions/positions   
-                var min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-                var max = new BABYLON.Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
-                this.getMinMax(this.attachedMesh, min, max, true)
-                this._boundingDimensions.x = max.x-min.x
-                this._boundingDimensions.y = max.y-min.y
-                this._boundingDimensions.z = max.z-min.z
+                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors();
+                this._boundingDimensions.x = boundingMinMax.max.x-boundingMinMax.min.x;
+                this._boundingDimensions.y = boundingMinMax.max.y-boundingMinMax.min.y;
+                this._boundingDimensions.z = boundingMinMax.max.z-boundingMinMax.min.z;
 
                 // Update gizmo to match bounding box scaling and rotation
                 this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
-                this._lineBoundingBox.position.set((max.x+min.x)/2,(max.y+min.y)/2,(max.z+min.z)/2);
+                this._lineBoundingBox.position.set((boundingMinMax.max.x+boundingMinMax.min.x)/2,(boundingMinMax.max.y+boundingMinMax.min.y)/2,(boundingMinMax.max.z+boundingMinMax.min.z)/2);
                 this._rotateSpheresParent.position.copyFrom(this._lineBoundingBox.position);
                 this._scaleBoxesParent.position.copyFrom(this._lineBoundingBox.position);
+                this._lineBoundingBox.computeWorldMatrix();
                 this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
-                
+
                 // restore position/rotation values
                 this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
                 this.attachedMesh.position.copyFrom(this._tmpVector);
-                this.getMinMax(this.attachedMesh, min, max, true);
+                this._recurseComputeWorld(this.attachedMesh);
             }
 
             // Update rotation sphere locations
@@ -392,5 +376,48 @@ module BABYLON {
             this._scaleBoxesParent.dispose();
             super.dispose();
         } 
+
+        /**
+         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
+         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
+         * @returns the bounding box mesh with the passed in mesh as a child
+         */
+        public static makeNotPickableAndWrapInBoundingBox(mesh:Mesh):Mesh{
+            var makeNotPickable = (root:AbstractMesh) => {
+                root.isPickable = false;
+                root.getChildMeshes().forEach((c) => {
+                    makeNotPickable(c);
+                });
+            }
+            makeNotPickable(mesh);
+
+            // Reset position to get boudning box from origin with no rotation
+            if(!mesh.rotationQuaternion){
+                mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y,mesh.rotation.x,mesh.rotation.z);
+            }
+            var oldPos = mesh.position.clone()
+            var oldRot = mesh.rotationQuaternion.clone();
+            mesh.rotationQuaternion.set(0,0,0,1);
+            mesh.position.set(0,0,0)
+
+            // Update bounding dimensions/positions   
+            var box = BABYLON.MeshBuilder.CreateBox("box", {size: 1}, mesh.getScene());
+            var boundingMinMax = mesh.getHierarchyBoundingVectors();
+            box.scaling.x = boundingMinMax.max.x-boundingMinMax.min.x;
+            box.scaling.y = boundingMinMax.max.y-boundingMinMax.min.y;
+            box.scaling.z = boundingMinMax.max.z-boundingMinMax.min.z;
+            box.position.set((boundingMinMax.max.x+boundingMinMax.min.x)/2,(boundingMinMax.max.y+boundingMinMax.min.y)/2,(boundingMinMax.max.z+boundingMinMax.min.z)/2);
+            
+            // Restore original positions
+            mesh.addChild(box);
+            mesh.rotationQuaternion.copyFrom(oldRot);
+            mesh.position.copyFrom(oldPos);
+
+            // Reverse parenting
+            mesh.removeChild(box);
+            box.addChild(mesh);
+            box.visibility = 0;
+            return box;
+        }
     }
 }
