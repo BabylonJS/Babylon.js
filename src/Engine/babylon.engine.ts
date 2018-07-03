@@ -1,166 +1,7 @@
 ﻿module BABYLON {
-    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader => {
-        return compileRawShader(gl, shaderVersion + (defines ? defines + "\n" : "") + source, type);
-    };
-
-    var compileRawShader = (gl: WebGLRenderingContext, source: string, type: string): WebGLShader => {
-        var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            let log = gl.getShaderInfoLog(shader);
-            if (log) {
-                throw new Error(log);
-            }
-        }
-
-        if (!shader) {
-            throw new Error("Something went wrong while compile the shader.");
-        }
-
-        return shader;
-    };
-
-    var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
-        var magFilter = gl.NEAREST;
-        var minFilter = gl.NEAREST;
-
-        switch (samplingMode) {
-            case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Engine.TEXTURE_NEAREST_LINEAR:
-                magFilter = gl.NEAREST;
-                minFilter = gl.LINEAR;
-                break;
-            case Engine.TEXTURE_NEAREST_NEAREST:
-                magFilter = gl.NEAREST;
-                minFilter = gl.NEAREST;
-                break;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Engine.TEXTURE_LINEAR_LINEAR:
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR;
-                break;
-            case Engine.TEXTURE_LINEAR_NEAREST:
-                magFilter = gl.LINEAR;
-                minFilter = gl.NEAREST;
-                break;
-        }
-
-        return {
-            min: minFilter,
-            mag: magFilter
-        }
-    }
-
-    var partialLoadImg = (url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
-        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var img: HTMLImageElement;
-
-        var onload = () => {
-            loadedImages[index] = img;
-            (<any>loadedImages)._internalCount++;
-
-            if (scene) {
-                scene._removePendingData(img);
-            }
-
-            if ((<any>loadedImages)._internalCount === 6) {
-                onfinish(loadedImages);
-            }
-        };
-
-        var onerror = (message?: string, exception?: any) => {
-            if (scene) {
-                scene._removePendingData(img);
-            }
-
-            if (onErrorCallBack) {
-                onErrorCallBack(message, exception);
-            }
-        };
-
-        img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
-        if (scene) {
-            scene._addPendingData(img);
-        }
-    }
-
-    var cascadeLoadImgs = (rootUrl: string, scene: Nullable<Scene>,
-        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var loadedImages: HTMLImageElement[] = [];
-        (<any>loadedImages)._internalCount = 0;
-
-        for (let index = 0; index < 6; index++) {
-            partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
-        }
-    };
-
+    /**
+     * Keeps track of all the buffer info used in engine.
+     */
     class BufferPointer {
         public active: boolean;
         public index: number;
@@ -3314,6 +3155,31 @@
             return effect;
         }
 
+        private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
+            return this._compileRawShader(shaderVersion + (defines ? defines + "\n" : "") + source, type);
+        };
+    
+        private _compileRawShader(source: string, type: string): WebGLShader {
+            var gl = this._gl;
+            var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
+    
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+    
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                let log = gl.getShaderInfoLog(shader);
+                if (log) {
+                    throw new Error(log);
+                }
+            }
+    
+            if (!shader) {
+                throw new Error("Something went wrong while compile the shader.");
+            }
+    
+            return shader;
+        };
+
         /**
          * Directly creates a webGL program
          * @param vertexCode defines the vertex shader code to use
@@ -3325,8 +3191,8 @@
         public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             context = context || this._gl;
 
-            var vertexShader = compileRawShader(context, vertexCode, "vertex");
-            var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
+            var vertexShader = this._compileRawShader(vertexCode, "vertex");
+            var fragmentShader = this._compileRawShader(fragmentCode, "fragment");
 
             return this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
         }
@@ -3346,8 +3212,8 @@
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-            var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
-            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
+            var vertexShader = this._compileShader(vertexCode, "vertex", defines, shaderVersion);
+            var fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
 
             let program = this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
 
@@ -4016,6 +3882,145 @@
             return null;
         }
 
+        private _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+            var gl = this._gl;
+            var magFilter = gl.NEAREST;
+            var minFilter = gl.NEAREST;
+    
+            switch (samplingMode) {
+                case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR:
+                    magFilter = gl.NEAREST;
+                    minFilter = gl.LINEAR;
+                    break;
+                case Engine.TEXTURE_NEAREST_NEAREST:
+                    magFilter = gl.NEAREST;
+                    minFilter = gl.NEAREST;
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_LINEAR_LINEAR:
+                    magFilter = gl.LINEAR;
+                    minFilter = gl.LINEAR;
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST:
+                    magFilter = gl.LINEAR;
+                    minFilter = gl.NEAREST;
+                    break;
+            }
+    
+            return {
+                min: minFilter,
+                mag: magFilter
+            }
+        }
+    
+        private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
+            onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) {
+    
+            var img: HTMLImageElement;
+    
+            var onload = () => {
+                loadedImages[index] = img;
+                (<any>loadedImages)._internalCount++;
+    
+                if (scene) {
+                    scene._removePendingData(img);
+                }
+    
+                if ((<any>loadedImages)._internalCount === 6) {
+                    onfinish(loadedImages);
+                }
+            };
+    
+            var onerror = (message?: string, exception?: any) => {
+                if (scene) {
+                    scene._removePendingData(img);
+                }
+    
+                if (onErrorCallBack) {
+                    onErrorCallBack(message, exception);
+                }
+            };
+    
+            img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+            if (scene) {
+                scene._addPendingData(img);
+            }
+        }
+
+        private _cascadeLoadImgs(rootUrl: string, scene: Nullable<Scene>,
+            onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
+    
+            var loadedImages: HTMLImageElement[] = [];
+            (<any>loadedImages)._internalCount = 0;
+    
+            for (let index = 0; index < 6; index++) {
+                this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
+            }
+        };
+
         /** @hidden */
         public _createTexture(): WebGLTexture {
             let texture = this._gl.createTexture();
@@ -4359,7 +4364,7 @@
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
 
             // Filters
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -4428,7 +4433,7 @@
          * @param texture defines the texture to update
          */
         public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-            var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
 
             if (texture.isCube) {
                 this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
@@ -4606,7 +4611,7 @@
             
             var gl = this._gl;
             var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
-            var samplingParameters = getSamplingParameters(internalTexture.samplingMode, false, gl);
+            var samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
             gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
             gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
             gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -4806,7 +4811,7 @@
             var width = (<{ width: number, height: number }>size).width || <number>size;
             var height = (<{ width: number, height: number }>size).height || <number>size;
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
+            var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -4918,7 +4923,7 @@
                     samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
 
-                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                     type = Engine.TEXTURETYPE_UNSIGNED_INT;
                     Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
@@ -5304,7 +5309,7 @@
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
               fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -5631,7 +5636,7 @@
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                cascadeLoadImgs(rootUrl, scene, imgs => {
+                this._cascadeLoadImgs(rootUrl, scene, imgs => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
@@ -5819,7 +5824,7 @@
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             }
             else {
-                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
             }
@@ -6004,7 +6009,7 @@
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
 
             // Filters
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -6026,7 +6031,7 @@
                 return;
             }
 
-            var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
+            var filters = this._getSamplingParameters(samplingMode, !noMipmap);
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
