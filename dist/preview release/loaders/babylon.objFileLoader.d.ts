@@ -59,7 +59,7 @@ declare module BABYLON {
         private _loadMTL(url, rootUrl, onSuccess);
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;

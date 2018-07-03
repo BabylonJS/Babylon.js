@@ -590,7 +590,7 @@ declare module BabylonViewer {
             /**
                 * ParticleSystems connected to this model
                 */
-            particleSystems: Array<BABYLON.ParticleSystem>;
+            particleSystems: Array<BABYLON.IParticleSystem>;
             /**
                 * Skeletons defined in this model
                 */

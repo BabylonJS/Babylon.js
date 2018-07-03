@@ -555,7 +555,7 @@ declare module 'babylonjs-viewer/loader/modelLoader' {
 }
 
 declare module 'babylonjs-viewer/model/viewerModel' {
-    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, AbstractMesh, Observable, SceneLoaderProgressEvent, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Material } from "babylonjs";
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, AbstractMesh, Observable, SceneLoaderProgressEvent, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Material } from "babylonjs";
     import { GLTF2 } from "babylonjs-loaders";
     import { IModelConfiguration } from "babylonjs-viewer/configuration/interfaces/modelConfiguration";
     import { IModelAnimation } from "babylonjs-viewer/model/modelAnimation";
@@ -590,7 +590,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
             /**
                 * ParticleSystems connected to this model
                 */
-            particleSystems: Array<ParticleSystem>;
+            particleSystems: Array<IParticleSystem>;
             /**
                 * Skeletons defined in this model
                 */
