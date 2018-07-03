@@ -1,18 +1,18 @@
 ﻿module BABYLON {
     // Adds the parsers to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
+
+        let individualParser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM); 
+
+        if (!individualParser) {
+            return;
+        }
+
         // Particles Systems
         if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
             for (var index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                 var parsedParticleSystem = parsedData.particleSystems[index];
-
-                if (parsedParticleSystem.activeParticleCount) {
-                    let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                    container.particleSystems.push(ps);
-                } else {
-                    let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                    container.particleSystems.push(ps);
-                }
+                container.particleSystems.push(individualParser(parsedParticleSystem, scene, rootUrl));
             }
         }
     });
