@@ -12,11 +12,10 @@ module BABYLON {
 
         private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-        public onPropertyChangedObservable: BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>;
+        public onPropertyChangedObservable = new BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>();
 
         constructor(scene: Scene) {
             this._scene = scene;
-            // load inspector using require, if it doesn't exist on the global namespace.
         }
 
         /** Creates the inspector window. */
@@ -40,8 +39,8 @@ module BABYLON {
             if (!this._inspector) {
                 this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
-            } // else nothing to do,; instance is already existing
+                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);               
+            } // else nothing to do as instance is already created
         }
 
         public isVisible(): boolean {
@@ -105,7 +104,6 @@ module BABYLON {
             } else {
                 // Otherwise creates the inspector
                 this._createInspector(config);
-                this.onPropertyChangedObservable = new BABYLON.Observable<{ object: any, property: string, value: any, initialValue: any }>();
             }
         }
 
