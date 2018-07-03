@@ -567,21 +567,6 @@
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
-        // Gamepads
-        private _gamepadManager: Nullable<GamepadManager>;
-
-        /**
-         * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
-         */
-        public get gamepadManager(): GamepadManager {
-            if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager(this);
-            }
-
-            return this._gamepadManager;
-        }
-
         /**
          * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
          * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
@@ -1195,6 +1180,11 @@
             return null;
         }
 
+
+        /**
+         * Defines the actions happening before camera updates.
+         */
+        public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
         /**
          * Defines the actions happening during the per mesh ready checks.
          */
@@ -4604,9 +4594,9 @@
                 }
             }
 
-            // update gamepad manager
-            if (this._gamepadManager && this._gamepadManager._isMonitoring) {
-                this._gamepadManager._checkGamepadsStatus();
+            // Before camera update steps
+            for (let step of this._beforeCameraUpdateStage) {
+                step.action();
             }
 
             // Update Cameras
@@ -5013,6 +5003,7 @@
             this._beforeRenderingGroupDrawStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
+            this._beforeCameraUpdateStage.clear();
             for (let component of this._components) {
                 component.dispose();
             }
@@ -5025,11 +5016,6 @@
 
             for (var key in this._depthRenderer) {
                 this._depthRenderer[key].dispose();
-            }
-
-            if (this._gamepadManager) {
-                this._gamepadManager.dispose();
-                this._gamepadManager = null;
             }
 
             // Smart arrays

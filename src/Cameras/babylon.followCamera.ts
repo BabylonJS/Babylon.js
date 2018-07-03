@@ -1,4 +1,12 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("FollowCamera", (name, scene) => {
+        return () => new FollowCamera(name, Vector3.Zero(), scene);
+    });
+
+    Node.AddNodeConstructor("ArcFollowCamera", (name, scene) => {
+        return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);
+    });    
+
     export class FollowCamera extends TargetCamera {
         @serialize()
         public radius: number = 12;
