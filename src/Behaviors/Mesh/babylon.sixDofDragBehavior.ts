@@ -74,6 +74,10 @@ module BABYLON {
             this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState)=>{                
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
+                        if(this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE){
+                            pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.position)
+                        }
+                        
                         pickedMesh = this._ownerNode;
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
@@ -108,6 +112,12 @@ module BABYLON {
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh){
+                        var zDragFactor = this.zDragFactor;
+                        if(this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE){
+                            pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.position)
+                            zDragFactor = 0;
+                        }
+
                         // Calculate controller drag distance in controller space
                         var originDragDifference = pointerInfo.pickInfo.ray.origin.subtract(lastSixDofOriginPosition);
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
@@ -116,7 +126,7 @@ module BABYLON {
                         this._virtualOriginMesh.addChild(this._virtualDragMesh);
                         // Determine how much the controller moved to/away towards the dragged object and use this to move the object further when its further away
                         var zDragDistance = Vector3.Dot(localOriginDragDifference, this._virtualOriginMesh.position.normalizeToNew());
-                        this._virtualDragMesh.position.z -= this._virtualDragMesh.position.z < 1 ? zDragDistance*this.zDragFactor : zDragDistance*this.zDragFactor*this._virtualDragMesh.position.z;
+                        this._virtualDragMesh.position.z -= this._virtualDragMesh.position.z < 1 ? zDragDistance*this.zDragFactor : zDragDistance*zDragFactor*this._virtualDragMesh.position.z;
                         if(this._virtualDragMesh.position.z < 0){
                             this._virtualDragMesh.position.z = 0;
                         }
