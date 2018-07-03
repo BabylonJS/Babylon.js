@@ -382,7 +382,7 @@ module BABYLON {
          * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
          * @returns the bounding box mesh with the passed in mesh as a child
          */
-        public static makeNotPickableAndWrapInBoundingBox(mesh:Mesh):Mesh{
+        public static MakeNotPickableAndWrapInBoundingBox(mesh:Mesh):Mesh{
             var makeNotPickable = (root:AbstractMesh) => {
                 root.isPickable = false;
                 root.getChildMeshes().forEach((c) => {
