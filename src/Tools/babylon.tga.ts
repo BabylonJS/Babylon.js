@@ -44,7 +44,7 @@
         }
 
         /**
-         * Uploads TGA content to ta Babylon Texture.
+         * Uploads TGA content to a Babylon Texture
          * @hidden
          */
         public static UploadContent(texture: InternalTexture, data: Uint8Array): void {
