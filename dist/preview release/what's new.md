@@ -64,7 +64,7 @@
 - Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
 - Added `RawCubeTexture` class with RGBD and mipmap support ([bghgary](http://www.github.com/bghgary))
 - Added effect layer per rendering group addressing [Issue 4463](https://github.com/BabylonJS/Babylon.js/issues/4463) ([sebavan](http://www.github.com/sebavan))
-- Added predicate function `targetMask` argument to `scene.beginWeightedAnimation` and `scene.beginAnimation` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
+- Added predicate function `targetMask` argument to `scene.beginWeightedAnimation`,`scene.beginAnimation`, `scene.stopAnimation`, and `animatable.stop` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
 
 ### glTF Loader
 
