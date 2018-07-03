@@ -22,6 +22,12 @@ export class ModelLoader {
 
     private _plugins: Array<ILoaderPlugin>;
 
+    private _baseUrl: string;
+
+    public get baseUrl(): string {
+        return this._baseUrl;
+    }
+
     /**
      * Create a new Model loader
      * @param _viewer the viewer using this model loader
@@ -62,19 +68,17 @@ export class ModelLoader {
 
         model.loadId = this._loadId++;
 
-        let base: string = "";
-
         let filename: any;
         if (modelConfiguration.file) {
-            base = "file:";
+            this._baseUrl = "file:";
             filename = modelConfiguration.file;
         }
         else if (modelConfiguration.url) {
             filename = Tools.GetFilename(modelConfiguration.url) || modelConfiguration.url;
-            base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
+            this._baseUrl = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
         }
 
-        if (!filename || !base) {
+        if (!filename || !this._baseUrl) {
             model.state = ModelState.ERROR;
             Tools.Error("No URL provided");
             return model;
@@ -85,7 +89,7 @@ export class ModelLoader {
 
         let scene = model.rootMesh.getScene();
 
-        model.loader = SceneLoader.ImportMesh(undefined, base, filename, scene, (meshes, particleSystems, skeletons, animationGroups) => {
+        model.loader = SceneLoader.ImportMesh(undefined, this._baseUrl, filename, scene, (meshes, particleSystems, skeletons, animationGroups) => {
             meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, "viewerMesh");
                 model.addMesh(mesh);
