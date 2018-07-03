@@ -43,16 +43,11 @@ export class TelemetryManager {
         let logErrors = true;
 
         while (logErrors) {
-            let gl = (<any>engine)._gl;
-            if (gl && gl.getError) {
-                let error = gl.getError();
-                if (error === gl.NO_ERROR) {
-                    logErrors = false;
-                } else {
-                    this.broadcast("WebGL Error", viewerId, { error: error });
-                }
-            } else {
+            let error = engine.getError();
+            if (error === 0) {
                 logErrors = false;
+            } else {
+                this.broadcast("WebGL Error", viewerId, { error: error });
             }
         }
     }
