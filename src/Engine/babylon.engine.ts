@@ -4119,7 +4119,7 @@
                         var ktx = new KhronosTextureContainer(data, 1);
 
                         this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
-                            ktx.uploadLevels(this._gl, !noMipmap);
+                            ktx.uploadLevels(texture, !noMipmap);
                             return false;
                         }, samplingMode);
                     };
@@ -4130,7 +4130,7 @@
                         var header = TGATools.GetTGAHeader(data);
 
                         this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                            TGATools.UploadContent(this._gl, data);
+                            TGATools.UploadContent(texture, data);
                             return false;
                         }, samplingMode);
                     };
@@ -4141,7 +4141,7 @@
 
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
+                            DDSTools.UploadDDSLevels(this, texture, data, info, loadMipmap, 1);
                             return false;
                         }, samplingMode);
                     };
@@ -4383,6 +4383,11 @@
                 this._unpackFlipYCached = value;
                 this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
             }
+        }
+
+        /** @hidden */
+        public _getUnpackAlignement(): number {
+            return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
         }
 
         /**
@@ -5205,17 +5210,49 @@
         }
 
         /** @hidden */
-        public _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView) {
-            this._gl.texImage2D(target, lod, internalFormat, width, height, 0, format, type, data);
-        }
+        public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+            var gl = this._gl;
 
-        /** @hidden */
-        public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
         /** @hidden */
-        public _uploadImageToTexture(texture: InternalTexture, faceIndex: number, lod: number, image: HTMLImageElement) {
+        public _uploadDataToTextureDirectly(texture: InternalTexture, width: number, height: number, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            var gl = this._gl;
+
+            var textureType = this._getWebGLTextureType(texture.type);
+            var format = this._getInternalFormat(texture.format);
+            var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+
+            this._unpackFlipY(texture.invertY);
+
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
+            gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
+        }
+
+        /** @hidden */
+        public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            var gl = this._gl;
+            var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+            this._bindTextureDirectly(bindTarget, texture, true);
+
+            this._uploadDataToTextureDirectly(texture, texture.width, texture.height, imageData, faceIndex, lod);
+
+            this._bindTextureDirectly(bindTarget, null, true);
+        }
+
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
             var gl = this._gl;
 
             var textureType = this._getWebGLTextureType(texture.type);
@@ -5229,7 +5266,7 @@
 
             var target = gl.TEXTURE_2D;
             if (texture.isCube) {
-                var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
             }
 
             gl.texImage2D(target, lod, internalFormat, format, textureType, image);
@@ -5392,7 +5429,7 @@
                         var data: any = loadData.data;
                         this._unpackFlipY(info.isCompressed);
 
-                        DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
+                        DDSTools.UploadDDSLevels(this, texture, data, info, true, 6, mipmapIndex);
                     }
                     else {
                         Tools.Warn("DDS is the only prefiltered cube map supported so far.")
@@ -5485,7 +5522,7 @@
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                     this._unpackFlipY(true);
 
-                    ktx.uploadLevels(this._gl, !noMipmap);
+                    ktx.uploadLevels(texture, !noMipmap);
 
                     this.setCubeMapTextureParams(gl, loadMipmap);
 
@@ -5532,7 +5569,7 @@
                                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                                 this._unpackFlipY(info.isCompressed);
 
-                                DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
+                                DDSTools.UploadDDSLevels(this, texture, data, info, loadMipmap, 6, -1, index);
 
                                 if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -5567,7 +5604,7 @@
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                             this._unpackFlipY(info.isCompressed);
 
-                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+                            DDSTools.UploadDDSLevels(this, texture, data, info, loadMipmap, 6);
 
                             if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);

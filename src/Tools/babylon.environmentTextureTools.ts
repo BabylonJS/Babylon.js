@@ -477,13 +477,13 @@ module BABYLON {
                                 });
                             }
                             else {
-                                engine._uploadImageToTexture(texture, face, i, image);
+                                engine._uploadImageToTexture(texture, image, face, i);
 
                                 // Upload the face to the none lod texture support
                                 if (generateNonLODTextures) {
                                     let lodTexture = lodTextures![i];
                                     if (lodTexture) {
-                                        engine._uploadImageToTexture(lodTexture._texture!, face, 0, image);
+                                        engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
                                     }
                                 }
                                 resolve();
