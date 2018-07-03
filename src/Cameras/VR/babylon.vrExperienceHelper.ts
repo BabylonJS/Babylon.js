@@ -921,7 +921,7 @@ module BABYLON {
                 }
 
                 this.raySelectionPredicate = (mesh) => {
-                    return mesh.isVisible;
+                    return mesh.isVisible && mesh.isPickable;
                 }
 
                 this.meshSelectionPredicate = (mesh) => {
