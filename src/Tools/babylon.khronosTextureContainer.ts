@@ -102,7 +102,7 @@ module BABYLON {
         }
 
         /**
-         * Uploads KTX content to ta Babylon Texture.
+         * Uploads KTX content to a Babylon Texture.
          * It is assumed that the texture has already been created & is currently bound
          * @hidden
          */

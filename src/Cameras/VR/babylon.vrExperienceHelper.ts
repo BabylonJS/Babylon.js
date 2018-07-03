@@ -906,7 +906,7 @@ module BABYLON {
         }
 
         /**
-         * Enables controllers and user interactions suck as selecting and object or clicking on an object.
+         * Enables controllers and user interactions such as selecting and object or clicking on an object.
          */
         public enableInteractions() {
             if (!this._interactionsEnabled) {

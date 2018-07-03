@@ -1,7 +1,7 @@
 {
-  "errors": 4234,
+  "errors": 4221,
   "babylon.typedoc.json": {
-    "errors": 4234,
+    "errors": 4221,
     "AbstractScene": {
       "Property": {
         "effectLayers": {
@@ -4694,53 +4694,6 @@
               }
             }
           }
-        },
-        "UploadDDSLevels": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "gl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "arrayBuffer": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "info": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loadMipmaps": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "faces": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "lodIndex": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "currentFace": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
         }
       }
     },
@@ -5214,6 +5167,15 @@
         "springiness": {
           "Comments": {
             "MissingText": true
+          }
+        }
+      }
+    },
+    "Engine": {
+      "Method": {
+        "createEffectForParticles": {
+          "Naming": {
+            "NotPascalCase": true
           }
         }
       }
@@ -7208,20 +7170,6 @@
           },
           "Parameter": {
             "val": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "uploadLevels": {
-          "Parameter": {
-            "gl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loadMipmaps": {
               "Comments": {
                 "MissingText": true
               }
@@ -18077,23 +18025,6 @@
             "MissingText": true
           },
           "Parameter": {
-            "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "UploadContent": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "gl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
             "data": {
               "Comments": {
                 "MissingText": true

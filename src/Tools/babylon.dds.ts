@@ -374,7 +374,7 @@
         }
 
         /**
-         * Uploads DDS Levels to ta Babylon Texture.
+         * Uploads DDS Levels to a Babylon Texture
          * @hidden
          */
         public static UploadDDSLevels(engine: Engine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
