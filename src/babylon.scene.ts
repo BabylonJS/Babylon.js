@@ -567,21 +567,6 @@
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
-        // Gamepads
-        private _gamepadManager: Nullable<GamepadManager>;
-
-        /**
-         * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
-         */
-        public get gamepadManager(): GamepadManager {
-            if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager(this);
-            }
-
-            return this._gamepadManager;
-        }
-
         /**
          * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
          * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
@@ -1195,6 +1180,11 @@
             return null;
         }
 
+
+        /**
+         * Defines the actions happening before camera updates.
+         */
+        public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
         /**
          * Defines the actions happening during the per mesh ready checks.
          */
@@ -2523,10 +2513,11 @@
          * @param speedRatio defines the speed in which to run the animation (1.0 by default)
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
          * @returns the animatable object created for this animation
          */
-        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
-            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
+        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean): Animatable { 
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask);
             returnedAnimatable.weight = weight;
 
             return returnedAnimatable;
@@ -2542,24 +2533,26 @@
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
          * @returns the animatable object created for this animation
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true): Animatable {
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable {
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
             if (stopCurrent) {
-                this.stopAnimation(target);
+                this.stopAnimation(target, undefined, targetMask);
             }
 
             if (!animatable) {
                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
             }
 
+            const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
             // Local animations
-            if (target.animations) {
+            if (target.animations && shouldRunTargetAnimations) {
                 animatable.appendAnimations(target, target.animations);
             }
 
@@ -2567,7 +2560,7 @@
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask);
                 }
             }
 
@@ -2662,13 +2655,14 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target
-         * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
          */
-        public stopAnimation(target: any, animationName?: string): void {
+        public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
             var animatables = this.getAllAnimatablesByTarget(target);
 
             for (var animatable of animatables) {
-                animatable.stop(animationName);
+                animatable.stop(animationName, targetMask);
             }
         }
 
@@ -4244,7 +4238,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 
@@ -4600,9 +4594,9 @@
                 }
             }
 
-            // update gamepad manager
-            if (this._gamepadManager && this._gamepadManager._isMonitoring) {
-                this._gamepadManager._checkGamepadsStatus();
+            // Before camera update steps
+            for (let step of this._beforeCameraUpdateStage) {
+                step.action();
             }
 
             // Update Cameras
@@ -5009,6 +5003,7 @@
             this._beforeRenderingGroupDrawStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
+            this._beforeCameraUpdateStage.clear();
             for (let component of this._components) {
                 component.dispose();
             }
@@ -5021,11 +5016,6 @@
 
             for (var key in this._depthRenderer) {
                 this._depthRenderer[key].dispose();
-            }
-
-            if (this._gamepadManager) {
-                this._gamepadManager.dispose();
-                this._gamepadManager = null;
             }
 
             // Smart arrays

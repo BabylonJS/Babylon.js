@@ -64,6 +64,7 @@
 - Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
 - Added `RawCubeTexture` class with RGBD and mipmap support ([bghgary](http://www.github.com/bghgary))
 - Added effect layer per rendering group addressing [Issue 4463](https://github.com/BabylonJS/Babylon.js/issues/4463) ([sebavan](http://www.github.com/sebavan))
+- Added predicate function `targetMask` argument to `scene.beginWeightedAnimation`, `scene.beginAnimation`, `scene.stopAnimation`, and `animatable.stop` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
 
 ### glTF Loader
 
@@ -105,6 +106,7 @@
 - Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev](https://github.com/TrevorDev))
 - Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
 - Removing observers during observable notify should not skip over valid observers ([TrevorDev](https://github.com/TrevorDev))
+- Initializing gamepadManager should register the gamepad update events ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

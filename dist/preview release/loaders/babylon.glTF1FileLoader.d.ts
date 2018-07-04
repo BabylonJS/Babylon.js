@@ -78,7 +78,7 @@ declare module BABYLON {
         readonly state: Nullable<GLTFLoaderState>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
@@ -255,7 +255,7 @@ declare module BABYLON {
          */
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
@@ -730,7 +730,7 @@ declare module BABYLON.GLTF1 {
         */
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;

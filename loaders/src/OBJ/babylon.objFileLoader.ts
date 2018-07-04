@@ -252,7 +252,7 @@ module BABYLON {
                 () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             //get the meshes from OBJ file
             return this._parseSolid(meshesNames, scene, data, rootUrl).then(meshes => {
                 return {

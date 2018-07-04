@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
+        return () => new PointLight(name, Vector3.Zero(), scene);
+    });
+
     /**
      * A point light is a light defined by an unique point in world space. 
      * The light is emitted in every direction from this point.
@@ -165,6 +169,15 @@
 
             this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
             return this;
+        }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["POINTLIGHT" + lightIndex] = true;
         }
     }
 } 

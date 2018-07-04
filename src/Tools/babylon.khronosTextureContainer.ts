@@ -102,12 +102,14 @@ module BABYLON {
         }
 
         /**
+         * Uploads KTX content to a Babylon Texture.
          * It is assumed that the texture has already been created & is currently bound
+         * @hidden
          */
-        public uploadLevels(gl: WebGLRenderingContext, loadMipmaps: boolean): void {
+        public uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void {
             switch (this.loadType) {
                 case KhronosTextureContainer.COMPRESSED_2D:
-                    this._upload2DCompressedLevels(gl, loadMipmaps);
+                    this._upload2DCompressedLevels(texture, loadMipmaps);
                     break;
 
                 case KhronosTextureContainer.TEX_2D:
@@ -116,7 +118,7 @@ module BABYLON {
             }
         }
 
-        private _upload2DCompressedLevels(gl: WebGLRenderingContext, loadMipmaps: boolean): void {
+        private _upload2DCompressedLevels(texture: InternalTexture, loadMipmaps: boolean): void {
             // initialize width & height for level 1
             var dataOffset = KhronosTextureContainer.HEADER_LEN + this.bytesOfKeyValueData;
             var width = this.pixelWidth;
@@ -127,9 +129,10 @@ module BABYLON {
                 var imageSize = new Int32Array(this.arrayBuffer, dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
                 dataOffset += 4;//image data starts from next multiple of 4 offset. Each face refers to same imagesize field above.
                 for (var face = 0; face < this.numberOfFaces; face++) {
-                    var sampler = this.numberOfFaces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
                     var byteArray = new Uint8Array(this.arrayBuffer, dataOffset, imageSize);
-                    gl.compressedTexImage2D(sampler, level, this.glInternalFormat, width, height, 0, byteArray);
+
+                    const engine = texture.getEngine();
+                    engine._uploadCompressedDataToTextureDirectly(texture, this.glInternalFormat, width, height, byteArray, face, level);
 
                     dataOffset += imageSize; // add size of the image for the next face/mipmap
                     dataOffset += 3 - ((imageSize + 3) % 4); // add padding for odd sized image

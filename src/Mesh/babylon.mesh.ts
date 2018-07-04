@@ -1426,7 +1426,7 @@
         }
 
         /**
-         * Returns an array populated with ParticleSystem objects whose the mesh is the emitter. 
+         * Returns an array populated with IParticleSystem objects whose the mesh is the emitter. 
          */
         public getEmittedParticleSystems(): IParticleSystem[] {
             var results = new Array<IParticleSystem>();
@@ -1440,7 +1440,7 @@
         }
 
         /**
-         * Returns an array populated with ParticleSystem objects whose the mesh or its children are the emitter.
+         * Returns an array populated with IParticleSystem objects whose the mesh or its children are the emitter.
          */
         public getHierarchyEmittedParticleSystems(): IParticleSystem[] {
             var results = new Array<IParticleSystem>();

@@ -17,6 +17,7 @@
          * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
          */         
         lensFlareSystems: Array<LensFlareSystem>;
+
         /**
          * Removes the given lens flare system from this scene.
          * @param toRemove The lens flare system to remove
@@ -78,7 +79,7 @@
     }
 
     /**
-     * Defines the layer scene component responsible to manage any layers
+     * Defines the lens flare scene component responsible to manage any lens flares
      * in a given scene.
      */
     export class LensFlareSystemSceneComponent implements ISceneSerializableComponent {
@@ -92,8 +93,6 @@
          */
         public scene: Scene;
 
-        private _lensFlareSystems: Array<LensFlareSystem>;
-
         /**
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
@@ -101,7 +100,7 @@
         constructor(scene: Scene) {
             this.scene = scene;
 
-            this._lensFlareSystems = scene.lensFlareSystems = new Array<LensFlareSystem>();
+            scene.lensFlareSystems = new Array<LensFlareSystem>();
         }
 
         /**
@@ -152,7 +151,8 @@
         public serialize(serializationObject: any): void {
             // Lens flares
             serializationObject.lensFlareSystems = [];
-            for (let lensFlareSystem of this._lensFlareSystems) {
+            let lensFlareSystems = this.scene.lensFlareSystems;
+            for (let lensFlareSystem of lensFlareSystems) {
                 serializationObject.lensFlareSystems.push(lensFlareSystem.serialize());
             }
         }
@@ -161,21 +161,23 @@
          * Disposes the component and the associated ressources.
          */
         public dispose(): void {
-            while (this._lensFlareSystems.length) {
-                this._lensFlareSystems[0].dispose();
+            let lensFlareSystems = this.scene.lensFlareSystems;
+            while (lensFlareSystems.length) {
+                lensFlareSystems[0].dispose();
             }
         }
 
         private _draw(camera: Camera): void {
             // Lens flares
-            if (this.scene.lensFlaresEnabled) {
-                Tools.StartPerformanceCounter("Lens flares", this._lensFlareSystems.length > 0);
-                for (let lensFlareSystem of this._lensFlareSystems) {
+            if (this.scene.lensFlaresEnabled) {                
+                let lensFlareSystems = this.scene.lensFlareSystems;
+                Tools.StartPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
+                for (let lensFlareSystem of lensFlareSystems) {
                     if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
                         lensFlareSystem.render();
                     }
                 }
-                Tools.EndPerformanceCounter("Lens flares", this._lensFlareSystems.length > 0);
+                Tools.EndPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
             }
         }
     }

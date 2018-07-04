@@ -1,4 +1,9 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("FreeCamera", (name, scene) => {
+        // Forcing to use the Universal camera
+        return () => new UniversalCamera(name, Vector3.Zero(), scene);   
+    });
+
     export class FreeCamera extends TargetCamera {
         @serializeAsVector3()
         public ellipsoid = new Vector3(0.5, 1, 0.5);

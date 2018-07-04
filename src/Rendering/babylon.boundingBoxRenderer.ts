@@ -42,6 +42,31 @@
         return this._boundingBoxRenderer;
     }
 
+    export interface AbstractMesh {
+        /** @hidden (Backing field) */
+        _showBoundingBox: boolean;
+
+        /**
+         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
+         */
+        showBoundingBox: boolean;
+    }
+
+    Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
+        get: function (this: AbstractMesh) {
+            return this._showBoundingBox || false;
+        },
+        set: function (this: AbstractMesh, value: boolean) {
+            this._showBoundingBox = value;
+            // Lazyly creates a BB renderer if needed.
+            if (value) {
+                this.getScene().getBoundingBoxRenderer();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+
     export class BoundingBoxRenderer implements ISceneComponent {
         /**
          * The component name helpfull to identify the component in the list of scene components.

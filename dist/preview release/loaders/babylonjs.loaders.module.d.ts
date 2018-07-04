@@ -14,7 +14,7 @@ declare module BABYLON {
         vertexPattern: RegExp;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
         load(scene: Scene, data: any, rootUrl: string): boolean;
         loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
         private isBinary(data);
@@ -84,7 +84,7 @@ declare module BABYLON {
         private _loadMTL(url, rootUrl, onSuccess);
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
@@ -186,7 +186,7 @@ declare module BABYLON {
         readonly state: Nullable<GLTFLoaderState>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
@@ -363,7 +363,7 @@ declare module BABYLON {
          */
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
@@ -838,7 +838,7 @@ declare module BABYLON.GLTF1 {
         */
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
@@ -1141,7 +1141,7 @@ declare module BABYLON.GLTF2 {
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
+            particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
