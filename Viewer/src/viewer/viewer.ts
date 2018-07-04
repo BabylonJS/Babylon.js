@@ -173,9 +173,6 @@ export abstract class AbstractViewer {
 
         this._configurationContainer = new ConfigurationContainer();
 
-        // add this viewer to the viewer manager
-        viewerManager.addViewer(this);
-
         this.observablesManager = new ObservablesManager();
 
         this.modelLoader = new ModelLoader(this.observablesManager, this._configurationContainer);
@@ -198,6 +195,9 @@ export abstract class AbstractViewer {
         });
 
         this._prepareContainerElement();
+
+        // add this viewer to the viewer manager
+        viewerManager.addViewer(this);
 
     }
 
@@ -325,7 +325,7 @@ export abstract class AbstractViewer {
         } else {
             if (this.sceneManager.vrHelper) {
                 this.sceneManager.vrHelper.exitVR();
-                
+
                 // undo the scaling of the model
                 if (this.sceneManager.models.length) {
                     this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
