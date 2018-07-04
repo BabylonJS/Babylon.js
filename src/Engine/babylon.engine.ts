@@ -7117,12 +7117,24 @@
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
-                case Engine.TEXTUREFORMAT_R:
+                case Engine.TEXTUREFORMAT_RED:
                     internalFormat = this._gl.RED;
                     break;       
                 case Engine.TEXTUREFORMAT_RG:
                     internalFormat = this._gl.RG;
-                    break;                                    
+                    break;
+                case Engine.TEXTUREFORMAT_RED_INTEGER:
+                    internalFormat = this._gl.RED_INTEGER;
+                    break;
+                case Engine.TEXTUREFORMAT_RG_INTEGER:
+                    internalFormat = this._gl.RG_INTEGER;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                    internalFormat = this._gl.RGB_INTEGER;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                    internalFormat = this._gl.RGBA_INTEGER;
+                    break;
             }
 
             return internalFormat;
