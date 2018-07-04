@@ -14,11 +14,6 @@ module BABYLON {
             return this;
         }
 
-        addGamepad(): FreeCameraInputsManager {
-            this.add(new FreeCameraGamepadInput());
-            return this;
-        }
-
         addDeviceOrientation(): FreeCameraInputsManager {
             this.add(new FreeCameraDeviceOrientationInput());
             return this;

@@ -112,7 +112,7 @@
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/features/scene
      */
-    export class Scene implements IAnimatable {
+    export class Scene extends AbstractScene implements IAnimatable {
         // Statics
         private static _FOGMODE_NONE = 0;
         private static _FOGMODE_EXP = 1;
@@ -241,11 +241,6 @@
         public get forcePointsCloud(): boolean {
             return this._forcePointsCloud;
         }
-
-        /**
-         * Gets or sets a boolean indicating if all bounding boxes must be rendered
-         */    
-        public forceShowBoundingBoxes = false;
 
         /**
          * Gets or sets the active clipplane
@@ -544,10 +539,6 @@
         public onRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
         // Animations
-        /**
-         * Gets a list of Animations associated with the scene
-         */        
-        public animations: Animation[] = [];
         private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
         // Pointers
@@ -575,21 +566,6 @@
         public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-
-        // Gamepads
-        private _gamepadManager: Nullable<GamepadManager>;
-
-        /**
-         * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
-         */
-        public get gamepadManager(): GamepadManager {
-            if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager(this);
-            }
-
-            return this._gamepadManager;
-        }
 
         /**
          * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
@@ -800,53 +776,11 @@
             return this._lightsEnabled;
         }
 
-        /**
-        * All of the lights added to this scene
-        * @see http://doc.babylonjs.com/babylon101/lights
-        */
-        public lights = new Array<Light>();
-
-        // Cameras
-        /** All of the cameras added to this scene. 
-         * @see http://doc.babylonjs.com/babylon101/cameras
-         */
-        public cameras = new Array<Camera>();
         /** All of the active cameras added to this scene. */
         public activeCameras = new Array<Camera>();
         /** The current active camera */
         public activeCamera: Nullable<Camera>;
 
-        // Meshes
-        /**
-        * All of the tranform nodes added to this scene
-        * @see http://doc.babylonjs.com/how_to/transformnode
-        */
-        public transformNodes = new Array<TransformNode>();
-
-        /**
-        * All of the (abstract) meshes added to this scene
-        */
-        public meshes = new Array<AbstractMesh>();
-
-        /**
-        * All of the animation groups added to this scene
-        * @see http://doc.babylonjs.com/how_to/group
-        */
-        public animationGroups = new Array<AnimationGroup>();
-
-        // Geometries
-        private _geometries = new Array<Geometry>();
-
-        /**
-        * All of the materials added to this scene
-        * @see http://doc.babylonjs.com/babylon101/materials
-        */        
-        public materials = new Array<Material>();
-        /**
-        * All of the multi-materials added to this scene
-        * @see http://doc.babylonjs.com/how_to/multi_materials
-        */        
-        public multiMaterials = new Array<MultiMaterial>();
         private _defaultMaterial: Material;
 
         /** The default material used on meshes when no material is affected */
@@ -880,22 +814,11 @@
             return this._texturesEnabled;
         }
 
-        /**
-        * All of the textures added to this scene
-        */       
-        public textures = new Array<BaseTexture>();
-
         // Particles
         /**
         * Gets or sets a boolean indicating if particles are enabled on this scene
         */           
         public particlesEnabled = true;
-
-        /**
-        * All of the particle systems added to this scene
-        * @see http://doc.babylonjs.com/babylon101/particles
-        */            
-        public particleSystems = new Array<IParticleSystem>();
 
         // Sprites
         /**
@@ -907,18 +830,6 @@
         * @see http://doc.babylonjs.com/babylon101/sprites
         */          
         public spriteManagers = new Array<SpriteManager>();
-
-        /**
-         * The list of layers (background and foreground) of the scene
-         */
-        public layers = new Array<Layer>();
-
-        /**
-         * The list of effect layers (highlights/glow) added to the scene
-         * @see http://doc.babylonjs.com/how_to/highlight_layer
-         * @see http://doc.babylonjs.com/how_to/glow_layer
-         */
-        public effectLayers = new Array<EffectLayer>();
 
         // Skeletons
         private _skeletonsEnabled = true;
@@ -937,29 +848,11 @@
             return this._skeletonsEnabled;
         }
 
-        /**
-         * The list of skeletons added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
-         */        
-        public skeletons = new Array<Skeleton>();
-
-        // Morph targets
-        /**
-         * The list of morph target managers added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
-         */            
-        public morphTargetManagers = new Array<MorphTargetManager>();
-
         // Lens flares
         /**
         * Gets or sets a boolean indicating if lens flares are enabled on this scene
         */          
         public lensFlaresEnabled = true;
-        /**
-         * The list of lens flare system added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
-         */         
-        public lensFlareSystems = new Array<LensFlareSystem>();
 
         // Collisions
         /**
@@ -1052,8 +945,6 @@
         */
         public actionManager: ActionManager;
 
-        /** @hidden */
-        public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
         // Procedural textures
@@ -1169,8 +1060,6 @@
         private _alternateSceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-
-        private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
@@ -1234,10 +1123,111 @@
         private _uid: Nullable<string>;
 
         /**
+         * Backing store of defined scene components.
+         */
+        public _components: ISceneComponent[] = [];
+
+        /**
+         * Backing store of defined scene components.
+         */
+        public _serializableComponents: ISceneSerializableComponent[] = [];
+
+        /**
+         * List of components to register on the next registration step.
+         */
+        private _transientComponents: ISceneComponent[] = [];
+
+        /**
+         * Registers the transient components if needed.
+         */
+        private _registerTransientComponents(): void {
+            // Register components that have been associated lately to the scene.
+            if (this._transientComponents.length > 0) {
+                for (let component of this._transientComponents) {
+                    component.register();
+                }
+                this._transientComponents = [];
+            }
+        }
+
+        /**
+         * Add a component to the scene.
+         * Note that the ccomponent could be registered on th next frame if this is called after 
+         * the register component stage.
+         * @param component Defines the component to add to the scene
+         */
+        public _addComponent(component: ISceneComponent) {
+            this._components.push(component);
+            this._transientComponents.push(component);
+
+            const serializableComponent = component as ISceneSerializableComponent;
+            if (serializableComponent.addFromContainer) {
+                this._serializableComponents.push(serializableComponent);
+            }
+        }
+
+        /**
+         * Gets a component from the scene.
+         * @param name defines the name of the component to retrieve
+         * @returns the component or null if not present
+         */
+        public _getComponent(name: string): Nullable<ISceneComponent> {
+            for (let component of this._components) {
+                if (component.name === name) {
+                    return component;
+                }
+            }
+            return null;
+        }
+
+
+        /**
+         * Defines the actions happening before camera updates.
+         */
+        public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
+        /**
+         * Defines the actions happening during the per mesh ready checks.
+         */
+        public _isReadyForMeshStage = Stage.Create<MeshStageAction>();
+        /**
+         * Defines the actions happening before evaluate active mesh checks.
+         */
+        public _beforeEvaluateActiveMeshStage = Stage.Create<SimpleStageAction>();
+        /**
+         * Defines the actions happening during the evaluate sub mesh checks.
+         */
+        public _evaluateSubMeshStage = Stage.Create<EvaluateSubMeshStageAction>();
+        /**
+         * Defines the actions happening during the active mesh stage.
+         */
+        public _activeMeshStage = Stage.Create<ActiveMeshStageAction>();
+        /**
+         * Defines the actions happening during the per camera render target step.
+         */
+        public _cameraDrawRenderTargetStage = Stage.Create<CameraStageAction>();
+        /**
+         * Defines the actions happening just before the active camera is drawing.
+         */
+        public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
+        /**
+         * Defines the actions happening just before a rendering group is drawing.
+         */
+        public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * Defines the actions happening just after a rendering group has been drawn.
+         */
+        public _afterRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * Defines the actions happening just after the active camera has been drawn.
+         */
+        public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
+       
+        /**
          * Creates a new Scene
          * @param engine defines the engine to use to render this scene
          */
         constructor(engine: Engine) {
+            super();
             this._engine = engine || Engine.LastCreatedEngine;
 
             this._engine.scenes.push(this);
@@ -1372,18 +1362,6 @@
          */
         public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
-        }
-
-        /** 
-         * Gets the bounding box renderer associated with the scene
-         * @returns a BoundingBoxRenderer
-         */
-        public getBoundingBoxRenderer(): BoundingBoxRenderer {
-            if (!this._boundingBoxRenderer) {
-                this._boundingBoxRenderer = new BoundingBoxRenderer(this);
-            }
-
-            return this._boundingBoxRenderer;
         }
 
         /** 
@@ -2322,8 +2300,8 @@
             let engine = this.getEngine();
 
             // Geometries
-            for (index = 0; index < this._geometries.length; index++) {
-                var geometry = this._geometries[index];
+            for (index = 0; index < this.geometries.length; index++) {
+                var geometry = this.geometries[index];
 
                 if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                     return false;
@@ -2346,17 +2324,11 @@
                     return false;
                 }
 
-                // Effect layers
                 let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
-                for (var layer of this.effectLayers) {
-                    if (!layer.hasMesh(mesh)) {
-                        continue;
-                    }
-
-                    for (var subMesh of mesh.subMeshes) {
-                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
-                            return false;
-                        }
+                // Is Ready For Mesh
+                for (let step of this._isReadyForMeshStage) {
+                    if (!step.action(mesh, hardwareInstancedRendering)) {
+                        return false;
                     }
                 }
             }
@@ -2514,6 +2486,8 @@
 
         /** @hidden */
         public _checkIsReady() {
+            this._registerTransientComponents();
+
             if (this.isReady()) {
                 this.onReadyObservable.notifyObservers(this);
 
@@ -2539,10 +2513,11 @@
          * @param speedRatio defines the speed in which to run the animation (1.0 by default)
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
          * @returns the animatable object created for this animation
          */
-        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
-            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
+        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean): Animatable { 
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask);
             returnedAnimatable.weight = weight;
 
             return returnedAnimatable;
@@ -2558,24 +2533,26 @@
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
          * @returns the animatable object created for this animation
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true): Animatable {
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable {
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
             if (stopCurrent) {
-                this.stopAnimation(target);
+                this.stopAnimation(target, undefined, targetMask);
             }
 
             if (!animatable) {
                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
             }
 
+            const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
             // Local animations
-            if (target.animations) {
+            if (target.animations && shouldRunTargetAnimations) {
                 animatable.appendAnimations(target, target.animations);
             }
 
@@ -2583,7 +2560,7 @@
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask);
                 }
             }
 
@@ -2678,13 +2655,14 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target
-         * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
          */
-        public stopAnimation(target: any, animationName?: string): void {
+        public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
             var animatables = this.getAllAnimatablesByTarget(target);
 
             for (var animatable of animatables) {
-                animatable.stop(animationName);
+                animatable.stop(animationName, targetMask);
             }
         }
 
@@ -3258,43 +3236,15 @@
         }
 
         /**
-         * Removes the given lens flare system from this scene.
-         * @param toRemove The lens flare system to remove
-         * @returns The index of the removed lens flare system
-         */          
-        public removeLensFlareSystem(toRemove: LensFlareSystem): number {
-            var index = this.lensFlareSystems.indexOf(toRemove);
-            if (index !== -1) {
-                this.lensFlareSystems.splice(index, 1);
-            }
-            return index;
-        }
-
-        /**
          * Removes the given action manager from this scene.
          * @param toRemove The action manager to remove
          * @returns The index of the removed action manager
          */           
         public removeActionManager(toRemove: ActionManager): number {
-            var index = this._actionManagers.indexOf(toRemove);
+            var index = this.actionManagers.indexOf(toRemove);
             if (index !== -1) {
-                this._actionManagers.splice(index, 1);
+                this.actionManagers.splice(index, 1);
             }
-            return index;
-        }
-
-        
-        /**
-         * Removes the given effect layer from this scene.
-         * @param toRemove defines the effect layer to remove
-         * @returns the index of the removed effect layer
-         */    
-        public removeEffectLayer(toRemove: EffectLayer): number {
-            var index = this.effectLayers.indexOf(toRemove);
-            if (index !== -1) {
-                this.effectLayers.splice(index, 1);
-            }
-
             return index;
         }
 
@@ -3409,23 +3359,7 @@
          * @param newGeometry The geometry to add
          */           
         public addGeometry(newGeometry: Geometry): void {
-            this._geometries.push(newGeometry);
-        }
-
-        /**
-         * Adds the given lens flare system to this scene
-         * @param newLensFlareSystem The lens flare system to add
-         */          
-        public addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void {
-            this.lensFlareSystems.push(newLensFlareSystem);
-        }
-
-        /**
-         * Adds the given effect layer to this scene
-         * @param newEffectLayer defines the effect layer to add
-         */     
-        public addEffectLayer(newEffectLayer: EffectLayer): void {
-            this.effectLayers.push(newEffectLayer);
+            this.geometries.push(newGeometry);
         }
 
         /**
@@ -3433,7 +3367,7 @@
          * @param newActionManager The action manager to add
          */   
         public addActionManager(newActionManager: ActionManager): void {
-            this._actionManagers.push(newActionManager);
+            this.actionManagers.push(newActionManager);
         }
 
         /**
@@ -3536,36 +3470,6 @@
             for (var index = 0; index < this.materials.length; index++) {
                 if (this.materials[index].name === name) {
                     return this.materials[index];
-                }
-            }
-
-            return null;
-        }
-
-        /**
-         * Gets a lens flare system using its name
-         * @param name defines the name to look for
-         * @returns the lens flare system or null if not found
-         */
-        public getLensFlareSystemByName(name: string): Nullable<LensFlareSystem> {
-            for (var index = 0; index < this.lensFlareSystems.length; index++) {
-                if (this.lensFlareSystems[index].name === name) {
-                    return this.lensFlareSystems[index];
-                }
-            }
-
-            return null;
-        }
-
-        /**
-         * Gets a lens flare system using its id
-         * @param id defines the id to look for
-         * @returns the lens flare system or null if not found
-         */        
-        public getLensFlareSystemByID(id: string): Nullable<LensFlareSystem> {
-            for (var index = 0; index < this.lensFlareSystems.length; index++) {
-                if (this.lensFlareSystems[index].id === id) {
-                    return this.lensFlareSystems[index];
                 }
             }
 
@@ -3720,9 +3624,9 @@
          * @return the geometry or null if none found.
          */
         public getGeometryByID(id: string): Nullable<Geometry> {
-            for (var index = 0; index < this._geometries.length; index++) {
-                if (this._geometries[index].id === id) {
-                    return this._geometries[index];
+            for (var index = 0; index < this.geometries.length; index++) {
+                if (this.geometries[index].id === id) {
+                    return this.geometries[index];
                 }
             }
 
@@ -3740,7 +3644,7 @@
                 return false;
             }
 
-            this._geometries.push(geometry);
+            this.geometries.push(geometry);
 
             //notify the collision coordinator
             if (this.collisionCoordinator) {
@@ -3758,10 +3662,10 @@
          * @return a boolean defining if the geometry was removed or not
          */
         public removeGeometry(geometry: Geometry): boolean {
-            var index = this._geometries.indexOf(geometry);
+            var index = this.geometries.indexOf(geometry);
 
             if (index > -1) {
-                this._geometries.splice(index, 1);
+                this.geometries.splice(index, 1);
 
                 //notify the collision coordinator
                 if (this.collisionCoordinator) {
@@ -3779,7 +3683,7 @@
          * @returns an array of Geometry
          */
         public getGeometries(): Geometry[] {
-            return this._geometries;
+            return this.geometries;
         }
 
         /**
@@ -4082,36 +3986,6 @@
         }
 
         /**
-         * Return a the first highlight layer of the scene with a given name.
-         * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null.
-         */
-        public getHighlightLayerByName(name: string): Nullable<HighlightLayer> {
-            for (var index = 0; index < this.effectLayers.length; index++) {
-                if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
-                    return (<any>this.effectLayers[index]) as HighlightLayer;
-                }
-            }
-
-            return null;
-        }
-
-        /**
-         * Return a the first highlight layer of the scene with a given name.
-         * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null.
-         */
-        public getGlowLayerByName(name: string): Nullable<GlowLayer> {
-            for (var index = 0; index < this.effectLayers.length; index++) {
-                if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
-                    return (<any>this.effectLayers[index]) as GlowLayer;
-                }
-            }
-
-            return null;
-        }
-
-        /**
          * Return a unique id as a string which can serve as an identifier for the scene
          */
         public get uid(): string {
@@ -4172,11 +4046,8 @@
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
             if (this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
-                if (mesh.showSubMeshesBoundingBox) {
-                    const boundingInfo = subMesh.getBoundingInfo();
-                    if (boundingInfo !== null && boundingInfo !== undefined) {
-                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
-                    }
+                for (let step of this._evaluateSubMeshStage) {
+                    step.action(mesh, subMesh);
                 }
 
                 const material = subMesh.getMaterial();
@@ -4307,8 +4178,8 @@
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer.reset();
+            for (let step of this._beforeEvaluateActiveMeshStage) {
+                step.action();
             }
 
             // Meshes
@@ -4367,7 +4238,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.alwaysSelectAsActiveMesh || mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && mesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 
@@ -4414,10 +4285,8 @@
                 }
             }
 
-            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
-                let boundingInfo = sourceMesh.getBoundingInfo();
-
-                this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+            for (let step of this._activeMeshStage) {
+                step.action(sourceMesh, mesh);
             }
 
             if (
@@ -4504,7 +4373,6 @@
 
             // Render targets
             this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-            var needsRestoreFrameBuffer = false;
 
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
@@ -4514,57 +4382,31 @@
                 this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
             }
 
-            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
+            if (this.renderTargetsEnabled) {
                 this._intermediateRendering = true;
-                Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
-                for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
-                    let renderTarget = this._renderTargets.data[renderIndex];
-                    if (renderTarget._shouldRender()) {
-                        this._renderId++;
-                        var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
-                        renderTarget.render((<boolean>hasSpecialRenderTargetCamera), this.dumpNextRenderTargets);
-                    }
-                }
-                Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
-
-                this._intermediateRendering = false;
-                this._renderId++;
-
-                needsRestoreFrameBuffer = true; // Restore back buffer
-            }
-
-            // Render EffectLayer Texture
-            var stencilState = this._engine.getStencilBuffer();
-            var renderEffects = false;
-            var needStencil = false;
-            if (this.renderTargetsEnabled && this.effectLayers && this.effectLayers.length > 0) {
-                this._intermediateRendering = true;
-                for (let i = 0; i < this.effectLayers.length; i++) {
-                    let effectLayer = this.effectLayers[i];
-
-                    if (effectLayer.shouldRender() &&
-                        (!effectLayer.camera ||
-                            (effectLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === effectLayer.camera) ||
-                            (effectLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && effectLayer.camera._rigCameras.indexOf(camera) > -1))) {
-
-                        renderEffects = true;
-                        needStencil = needStencil || effectLayer.needStencil();
-
-                        let renderTarget = (<RenderTargetTexture>(<any>effectLayer)._mainTexture);
+                
+                if (this._renderTargets.length > 0) {
+                    Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
+                    for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
+                        let renderTarget = this._renderTargets.data[renderIndex];
                         if (renderTarget._shouldRender()) {
                             this._renderId++;
-                            renderTarget.render(false, false);
-                            needsRestoreFrameBuffer = true;
+                            var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
+                            renderTarget.render((<boolean>hasSpecialRenderTargetCamera), this.dumpNextRenderTargets);
                         }
                     }
+                    Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
+
+                    this._renderId++;
+                }
+
+                for (let step of this._cameraDrawRenderTargetStage) {
+                    step.action(this.activeCamera);
                 }
 
                 this._intermediateRendering = false;
-                this._renderId++;
-            }
 
-            if (needsRestoreFrameBuffer) {
-                engine.restoreDefaultFramebuffer(); // Restore back buffer
+                engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
             }
 
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4574,23 +4416,9 @@
                 this.postProcessManager._prepareFrame();
             }
 
-            // Backgrounds
-            var layerIndex;
-            var layer;
-            if (this.layers.length) {
-                engine.setDepthBuffer(false);
-                for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-                    layer = this.layers[layerIndex];
-                    if (layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
-                        layer.render();
-                    }
-                }
-                engine.setDepthBuffer(true);
-            }
-
-            // Activate effect Layer stencil
-            if (needStencil) {
-                this._engine.setStencilBuffer(true);
+            // Before Camera Draw
+            for (let step of this._beforeCameraDrawStage) {
+                step.action(this.activeCamera);
             }
 
             // Render
@@ -4598,50 +4426,9 @@
             this._renderingManager.render(null, null, true, true);
             this.onAfterDrawPhaseObservable.notifyObservers(this);
 
-            // Restore effect Layer stencil
-            if (needStencil) {
-                this._engine.setStencilBuffer(stencilState);
-            }
-
-            // Bounding boxes
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer.render();
-            }
-
-            // Lens flares
-            if (this.lensFlaresEnabled) {
-                Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
-                for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-
-                    var lensFlareSystem = this.lensFlareSystems[lensFlareSystemIndex];
-                    if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
-                        lensFlareSystem.render();
-                    }
-                }
-                Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
-            }
-
-            // Effect Layer
-            if (renderEffects) {
-                engine.setDepthBuffer(false);
-                for (let i = 0; i < this.effectLayers.length; i++) {
-                    if (this.effectLayers[i].shouldRender()) {
-                        this.effectLayers[i].render();
-                    }
-                }
-                engine.setDepthBuffer(true);
-            }
-
-            // Foregrounds
-            if (this.layers.length) {
-                engine.setDepthBuffer(false);
-                for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-                    layer = this.layers[layerIndex];
-                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
-                        layer.render();
-                    }
-                }
-                engine.setDepthBuffer(true);
+            // After Camera Draw
+            for (let step of this._afterCameraDrawStage) {
+                step.action(this.activeCamera);
             }
             
             // Finalize frame
@@ -4727,6 +4514,9 @@
                 return;
             }
 
+            // Register components that have been associated lately to the scene.
+            this._registerTransientComponents();
+
             this._activeParticles.fetchNewFrame();
             this._totalVertices.fetchNewFrame();
             this._activeIndices.fetchNewFrame();
@@ -4804,9 +4594,9 @@
                 }
             }
 
-            // update gamepad manager
-            if (this._gamepadManager && this._gamepadManager._isMonitoring) {
-                this._gamepadManager._checkGamepadsStatus();
+            // Before camera update steps
+            for (let step of this._beforeCameraUpdateStage) {
+                step.action();
             }
 
             // Update Cameras
@@ -5203,6 +4993,20 @@
 
             this.skeletons = [];
             this.morphTargetManagers = [];
+            this._transientComponents = [];
+            this._isReadyForMeshStage.clear();
+            this._beforeEvaluateActiveMeshStage.clear();
+            this._evaluateSubMeshStage.clear();
+            this._activeMeshStage.clear();
+            this._cameraDrawRenderTargetStage.clear();
+            this._beforeCameraDrawStage.clear();
+            this._beforeRenderingGroupDrawStage.clear();
+            this._afterRenderingGroupDrawStage.clear();
+            this._afterCameraDrawStage.clear();
+            this._beforeCameraUpdateStage.clear();
+            for (let component of this._components) {
+                component.dispose();
+            }
 
             this.importedMeshesFiles = new Array<string>();
 
@@ -5212,11 +5016,6 @@
 
             for (var key in this._depthRenderer) {
                 this._depthRenderer[key].dispose();
-            }
-
-            if (this._gamepadManager) {
-                this._gamepadManager.dispose();
-                this._gamepadManager = null;
             }
 
             // Smart arrays
@@ -5232,10 +5031,6 @@
             this._softwareSkinnedMeshes.dispose();
             this._renderTargets.dispose();
             this._registeredForLateAnimationBindings.dispose();
-
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer.dispose();
-            }
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
 
@@ -5342,14 +5137,6 @@
             // Release postProcesses
             while (this.postProcesses.length) {
                 this.postProcesses[0].dispose();
-            }
-
-            // Release layers
-            while (this.layers.length) {
-                this.layers[0].dispose();
-            }
-            while (this.effectLayers.length) {
-                this.effectLayers[0].dispose();
             }
 
             // Release textures
@@ -5927,7 +5714,7 @@
         // Misc.
         /** @hidden */
         public _rebuildGeometries(): void {
-            for (var geometry of this._geometries) {
+            for (var geometry of this.geometries) {
                 geometry._rebuild();
             }
 
@@ -5939,16 +5726,8 @@
                 this.postProcessManager._rebuild();
             }
 
-            for (var layer of this.layers) {
-                layer._rebuild();
-            }
-
-            for (var effectLayer of this.effectLayers) {
-                effectLayer._rebuild();
-            }
-
-            if (this._boundingBoxRenderer) {
-                this._boundingBoxRenderer._rebuild();
+            for (let component of this._components) {
+                component.rebuild();
             }
 
             for (var system of this.particleSystems) {

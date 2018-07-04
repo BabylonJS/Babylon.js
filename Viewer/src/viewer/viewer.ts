@@ -1,20 +1,18 @@
-import { viewerManager } from './viewerManager';
-import { SceneManager } from '../managers/sceneManager';
-import { ConfigurationLoader } from '../configuration/loader';
-import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools, RenderingManager, VRExperienceHelper, VRExperienceHelperOptions, TargetCamera, WebVRFreeCamera } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/';
-
-import { ViewerModel } from '../model/viewerModel';
-import { GroupModelAnimation } from '../model/modelAnimation';
-import { ModelLoader } from '../loader/modelLoader';
-import { CameraBehavior } from '../interfaces';
-import { viewerGlobals } from '../configuration/globals';
-import { extendClassWithConfig } from '../helper';
-import { telemetryManager } from '../managers/telemetryManager';
-import { deepmerge } from '../helper/';
-import { ObservablesManager } from '../managers/observablesManager';
+import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3 } from 'babylonjs';
+import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
+import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { viewerGlobals } from '../configuration/globals';
+import { ConfigurationLoader } from '../configuration/loader';
+import { deepmerge } from '../helper/';
+import { ModelLoader } from '../loader/modelLoader';
+import { ObservablesManager } from '../managers/observablesManager';
+import { SceneManager } from '../managers/sceneManager';
+import { telemetryManager } from '../managers/telemetryManager';
+import { ViewerModel } from '../model/viewerModel';
 import { TemplateManager } from '../templating/templateManager';
+import { viewerManager } from './viewerManager';
+
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -274,28 +272,30 @@ export abstract class AbstractViewer {
             }
 
             this.sceneManager.vrHelper.enterVR();
-            // calculate position and vr scale
 
-            if (this.sceneManager.environmentHelper) {
-                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
-                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
-            }
-
-            // position the vr camera to be in front of the object
+            // position the vr camera to be in front of the object or wherever the user has configured it to be
             if (this.sceneManager.vrHelper.currentVRCamera) {
-                this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
+                if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
+                    this.sceneManager.vrHelper.currentVRCamera.position.copyFrom(this.configuration.vr.cameraPosition as Vector3);
+                } else {
+                    this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
+                }
                 (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
-                this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
-
-                // enable rotation using the axels
-                // check if the camera is a webvr camera
-                if (this.sceneManager.vrHelper.currentVRCamera.getClassName() === "WebVRFreeCamera") {
-                    let vrCamera: WebVRFreeCamera = (<WebVRFreeCamera>this.sceneManager.vrHelper.currentVRCamera);
+                // set the height of the model to be what the user has configured, or floating by default
+                if (this.configuration.vr && this.configuration.vr.modelHeightCorrection !== undefined) {
+                    if (typeof this.configuration.vr.modelHeightCorrection === 'number') {
+                        this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection
+                    } else if (this.configuration.vr.modelHeightCorrection) {
+                        this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
+                    } else {
+                        this._vrModelRepositioning = 0;
+                    }
                 }
             } else {
                 this._vrModelRepositioning = 0;
             }
 
+            // scale the model
             if (this.sceneManager.models.length) {
                 let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
                 let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
@@ -312,6 +312,12 @@ export abstract class AbstractViewer {
                 this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
             }
 
+            // scale the environment to match the model
+            if (this.sceneManager.environmentHelper) {
+                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
+                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
+            }
+
             // post processing
             if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
                 this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
@@ -320,13 +326,14 @@ export abstract class AbstractViewer {
         } else {
             if (this.sceneManager.vrHelper) {
                 this.sceneManager.vrHelper.exitVR();
-                //this.sceneManager.scene.activeCamera = this.sceneManager.camera;
+
+                // undo the scaling of the model
                 if (this.sceneManager.models.length) {
                     this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
                     this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
-
                 }
 
+                // undo the scaling of the environment
                 if (this.sceneManager.environmentHelper) {
                     this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
                     this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
@@ -366,7 +373,7 @@ export abstract class AbstractViewer {
         if (this.configuration.observers) {
             this._configureObservers(this.configuration.observers);
         }
-        // TODO remove this after testing, as this is done in the updateCOnfiguration as well.
+        // TODO remove this after testing, as this is done in the updateConfiguration as well.
         if (this.configuration.loaderPlugins) {
             Object.keys(this.configuration.loaderPlugins).forEach((name => {
                 if (this.configuration.loaderPlugins && this.configuration.loaderPlugins[name]) {
@@ -376,6 +383,8 @@ export abstract class AbstractViewer {
         }
 
         this.templateManager = new TemplateManager(this.containerElement);
+
+        this.observablesManager.onViewerInitStartedObservable.notifyObservers(this);
     }
 
     /**
@@ -435,26 +444,42 @@ export abstract class AbstractViewer {
      * Only provided information will be updated, old configuration values will be kept.
      * If this.configuration was manually changed, you can trigger this function with no parameters, 
      * and the entire configuration will be updated. 
-     * @param newConfiguration the partial configuration to update
+     * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
      * 
      */
-    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this.configuration) {
-        // update this.configuration with the new data
-        this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
-
-        this.sceneManager.updateConfiguration(newConfiguration);
-
-        // observers in configuration
-        if (newConfiguration.observers) {
-            this._configureObservers(newConfiguration.observers);
-        }
-
-        if (newConfiguration.loaderPlugins) {
-            Object.keys(newConfiguration.loaderPlugins).forEach((name => {
-                if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
-                    this.modelLoader.addPlugin(name);
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> | string = this.configuration) {
+        if (typeof newConfiguration === "string") {
+            Tools.LoadFile(newConfiguration, (data) => {
+                try {
+                    const newData = JSON.parse(data.toString()) as ViewerConfiguration;
+                    return this.updateConfiguration(newData);
+                } catch (e) {
+                    console.log("Error parsing file " + newConfiguration);
                 }
-            }));
+
+            }, undefined, undefined, undefined, (error) => {
+                console.log("Error parsing file " + newConfiguration, error);
+            });
+        } else {
+            //backcompat
+            processConfigurationCompatibility(newConfiguration);
+            // update this.configuration with the new data
+            this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
+
+            this.sceneManager.updateConfiguration(newConfiguration);
+
+            // observers in configuration
+            if (newConfiguration.observers) {
+                this._configureObservers(newConfiguration.observers);
+            }
+
+            if (newConfiguration.loaderPlugins) {
+                Object.keys(newConfiguration.loaderPlugins).forEach((name => {
+                    if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
+                        this.modelLoader.addPlugin(name);
+                    }
+                }));
+            }
         }
     }
 
@@ -551,7 +576,7 @@ export abstract class AbstractViewer {
             }).then(() => {
                 this._initTelemetryEvents();
                 if (autoLoad) {
-                    return this.loadModel(this.configuration.model!).catch(e => { }).then(() => { return this.sceneManager.scene });
+                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene });
                 } else {
                     return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
                 }

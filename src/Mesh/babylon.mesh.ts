@@ -806,16 +806,18 @@
                         var weight: number;
                         for (inf = 0; inf < 4; inf++) {
                             weight = matricesWeightsData[matWeightIdx + inf];
-                            if (weight <= 0) break;
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
-                            finalMatrix.addToSelf(tempMatrix);
+                            if (weight > 0) {
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
                         }
                         if (needExtras) {
                             for (inf = 0; inf < 4; inf++) {
                                 weight = matricesWeightsExtraData![matWeightIdx + inf];
-                                if (weight <= 0) break;
-                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
-                                finalMatrix.addToSelf(tempMatrix);
+                                if (weight > 0) {
+                                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
+                                    finalMatrix.addToSelf(tempMatrix);
+                                }
                             }
                         }
 
@@ -1285,9 +1287,10 @@
         }
 
         /**
-         * Triggers the draw call for the mesh.
-         * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.   
-         * Returns the Mesh.   
+         * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
+         * @param subMesh defines the subMesh to render
+         * @param enableAlphaMode defines if alpha mode can be changed
+         * @returns the current mesh
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
@@ -1297,7 +1300,6 @@
             }
 
             var scene = this.getScene();
-
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
 
@@ -1424,7 +1426,7 @@
         }
 
         /**
-         * Returns an array populated with ParticleSystem objects whose the mesh is the emitter. 
+         * Returns an array populated with IParticleSystem objects whose the mesh is the emitter. 
          */
         public getEmittedParticleSystems(): IParticleSystem[] {
             var results = new Array<IParticleSystem>();
@@ -1438,7 +1440,7 @@
         }
 
         /**
-         * Returns an array populated with ParticleSystem objects whose the mesh or its children are the emitter.
+         * Returns an array populated with IParticleSystem objects whose the mesh or its children are the emitter.
          */
         public getHierarchyEmittedParticleSystems(): IParticleSystem[] {
             var results = new Array<IParticleSystem>();
@@ -1766,14 +1768,6 @@
                 this.instances[0].dispose();
             }
 
-            // Effect layers.
-            let effectLayers = this.getScene().effectLayers;
-            for (let i = 0; i < effectLayers.length; i++) {
-                let effectLayer = effectLayers[i];
-                if (effectLayer) {
-                    effectLayer._disposeMesh(this);
-                }
-            }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
@@ -3293,8 +3287,7 @@
                     if (weight > 0) {
                         Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
-
-                    } else break;
+                    }
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
@@ -3302,8 +3295,7 @@
                         if (weight > 0) {
                             Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
-
-                        } else break;
+                        }
                     }
                 }
 

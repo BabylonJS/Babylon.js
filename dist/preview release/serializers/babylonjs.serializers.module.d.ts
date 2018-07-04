@@ -575,7 +575,7 @@ declare module BABYLON.GLTF2 {
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          * @returns glTF PBR Metallic Roughness factors
          */
-        private _gonvertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords);
+        private _convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords);
         private _getGLTFTextureSampler(texture);
         private _getGLTFTextureWrapMode(wrapMode);
         private _getGLTFTextureWrapModesSampler(texture);
@@ -590,7 +590,7 @@ declare module BABYLON.GLTF2 {
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          * @returns glTF PBR Metallic Roughness factors
          */
-        private _convertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords);
+        private _convertSpecGlossFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasTextureCoords);
         /**
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
          * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
@@ -819,7 +819,7 @@ declare module BABYLON.GLTF2 {
          * @param name name of the buffer view
          * @returns bufferView for glTF
          */
-        static CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView;
+        static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView;
         /**
          * Creates an accessor based on the supplied arguments
          * @param bufferviewIndex The index of the bufferview referenced by this accessor
@@ -832,7 +832,7 @@ declare module BABYLON.GLTF2 {
          * @param max Maximum value of each component in this attribute
          * @returns accessor for glTF
          */
-        static CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor;
+        static _CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor;
         /**
          * Calculates the minimum and maximum values of an array of position floats
          * @param positions Positions array of a mesh
@@ -840,7 +840,7 @@ declare module BABYLON.GLTF2 {
          * @param vertexCount Number of vertices to check for min and max values
          * @returns min number array and max number array
          */
-        static CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): {
+        static _CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): {
             min: number[];
             max: number[];
         };
@@ -849,52 +849,53 @@ declare module BABYLON.GLTF2 {
          * @param vector vector3 array
          * @returns right-handed Vector3
          */
-        static GetRightHandedPositionVector3(vector: Vector3): Vector3;
+        static _GetRightHandedPositionVector3(vector: Vector3): Vector3;
         /**
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
-        static GetRightHandedPositionVector3FromRef(vector: Vector3): void;
+        static _GetRightHandedPositionVector3FromRef(vector: Vector3): void;
         /**
          * Converts a three element number array to right-handed
          * @param vector number array to convert to right-handed
          */
-        static GetRightHandedPositionArray3FromRef(vector: number[]): void;
+        static _GetRightHandedPositionArray3FromRef(vector: number[]): void;
         /**
          * Converts a new right-handed Vector3
          * @param vector vector3 array
          * @returns right-handed Vector3
          */
-        static GetRightHandedNormalVector3(vector: Vector3): Vector3;
+        static _GetRightHandedNormalVector3(vector: Vector3): Vector3;
         /**
          * Converts a Vector3 to right-handed
          * @param vector Vector3 to convert to right-handed
          */
-        static GetRightHandedNormalVector3FromRef(vector: Vector3): void;
+        static _GetRightHandedNormalVector3FromRef(vector: Vector3): void;
         /**
          * Converts a three element number array to right-handed
          * @param vector number array to convert to right-handed
          */
-        static GetRightHandedNormalArray3FromRef(vector: number[]): void;
+        static _GetRightHandedNormalArray3FromRef(vector: number[]): void;
         /**
          * Converts a Vector4 to right-handed
          * @param vector Vector4 to convert to right-handed
          */
-        static GetRightHandedVector4FromRef(vector: Vector4): void;
+        static _GetRightHandedVector4FromRef(vector: Vector4): void;
         /**
          * Converts a Vector4 to right-handed
          * @param vector Vector4 to convert to right-handed
          */
-        static GetRightHandedArray4FromRef(vector: number[]): void;
+        static _GetRightHandedArray4FromRef(vector: number[]): void;
         /**
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */
-        static GetRightHandedQuaternionFromRef(quaternion: Quaternion): void;
+        static _GetRightHandedQuaternionFromRef(quaternion: Quaternion): void;
         /**
          * Converts a Quaternion to right-handed
          * @param quaternion Source quaternion to convert to right-handed
          */
-        static GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
+        static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
+        static _NormalizeTangentFromRef(tangent: Vector4): void;
     }
 }

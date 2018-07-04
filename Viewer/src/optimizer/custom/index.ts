@@ -23,3 +23,7 @@ export function getCustomOptimizerByName(name: string, upgrade?: boolean) {
 
     return cache[name];
 }
+
+export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean) {
+    cache[name] = optimizer;
+}

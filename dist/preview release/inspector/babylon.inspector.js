@@ -5344,7 +5344,7 @@ var INSPECTOR;
         function BoundingBox(obj) {
             var _this = _super.call(this) || this;
             _this._obj = obj;
-            _this._elem.classList.add('fa-square-o');
+            _this._elem.classList.add('fa-cube');
             _this._on = _this._obj.isBoxVisible();
             _this._check();
             return _this;

@@ -269,11 +269,6 @@
          */
         public isPickable = true;
 
-        /**
-         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
-         */
-        public showBoundingBox = false;
-
         /** Gets or sets a boolean indicating that bounding boxes of subMeshes must be rendered as well (false by default) */
         public showSubMeshesBoundingBox = false;
 
@@ -2146,18 +2141,20 @@
                 }
             }
 
+            // Todo. Move into an occlusion query component.
             var scene = this.getScene();
-            var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
+            if (scene.getBoundingBoxRenderer) {
+               var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
 
-            if (!this._occlusionQuery) {
-                this._occlusionQuery = engine.createQuery();
+                if (!this._occlusionQuery) {
+                    this._occlusionQuery = engine.createQuery();
+                }
+
+                engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+                occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
+                engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
+                this._isOcclusionQueryInProgress = true;
             }
-
-            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
-            occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
-            this._isOcclusionQueryInProgress = true;
         }
-
     }
 }

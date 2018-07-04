@@ -1,5 +1,4 @@
 ﻿module BABYLON {
-
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
@@ -294,36 +293,12 @@
                 }
             }
 
-            // Particles Systems
-            if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                    var parsedParticleSystem = parsedData.particleSystems[index];
-
-                    if (parsedParticleSystem.activeParticleCount) {
-                        let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                        container.particleSystems.push(ps);
-                    } else {
-                        let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                        container.particleSystems.push(ps);
-                    }
-                }
-            }
-
-            // Lens flares
-            if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
-                for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
-                    var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                    var lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
-                    container.lensFlareSystems.push(lf);
-                }
-            }
-
             // Shadows
             if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
                 for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                     var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                    var sg = ShadowGenerator.Parse(parsedShadowGenerator, scene);
-                    container.shadowGenerators.push(sg);
+                    ShadowGenerator.Parse(parsedShadowGenerator, scene);
+                    // SG would be available on their associated lights
                 }
             }
 
@@ -357,13 +332,7 @@
                 }
             }
 
-            // Effect layers
-            if (parsedData.effectLayers) {
-                for (index = 0; index < parsedData.effectLayers.length; index++) {
-                    var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
-                    container.effectLayers.push(effectLayer);
-                }
-            }
+            AbstractScene.Parse(parsedData, scene, container, rootUrl);
 
             // Actions (scene)
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
@@ -400,7 +369,7 @@
 
             return false;
         },
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean => {
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -571,10 +540,13 @@
 
                 // Particles
                 if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                        var parsedParticleSystem = parsedData.particleSystems[index];
-                        if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                            particleSystems.push(ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
+                    let parser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+                    if (parser) {
+                        for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                            var parsedParticleSystem = parsedData.particleSystems[index];
+                            if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
+                                particleSystems.push(parser(parsedParticleSystem, scene, rootUrl));
+                            }
                         }
                     }
                 }

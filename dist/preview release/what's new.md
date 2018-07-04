@@ -7,19 +7,24 @@
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
-- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, scale, rotation and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
+- New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
   - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style. [Doc](https://doc.babylonjs.com/How_To/ParticleHelper) ([Deltakosh](https://github.com/deltakosh)) / ([DevChris](https://github.com/yovanoc))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
   - Added support for `isBillboardBased`. [Doc](http://doc.babylonjs.com/babylon101/particles#alignment)
+  - Added support for billboard mode. [Doc](https://doc.babylonjs.com/babylon101/particles#alignment)
   - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
   - Added support for `radiusRange` for sphere emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#sphere-emitter)
+  - Added support for `radiusRange` and `heightRange` for cone emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#cone-emitter)
   - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-blending)
   - Added support for color gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-colors)
   - Added support for pre-warming. [Doc](https://doc.babylonjs.com/babylon101/particles#pre-warming)
   - Added support for `minInitialRotation` and `maxInitialRotation`. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
   - Added support for size gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
   - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
+  - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
+- Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
 
 ## Updates
 
@@ -38,7 +43,6 @@
 - Get a root mesh from an asset container, load a mesh from a file with a single string url ([TrevorDev](https://github.com/TrevorDev))
 - UtilityLayer class to render another scene as a layer on top of an existing scene ([TrevorDev](https://github.com/TrevorDev))
 - AnimationGroup has now onAnimationGroupEnd observable ([RaananW](https://github.com/RaananW))
-- New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh ([TrevorDev](https://github.com/TrevorDev))
 - New `serialize` and `Parse` functions to serialize and parse all procedural textures from the Procedural Textures Library ([julien-moreau](https://github.com/julien-moreau))
 - Added a new `mesh.ignoreNonUniformScaling` to turn off non uniform scaling compensation ([Deltakosh](https://github.com/deltakosh))
 - AssetsManager tasks will only run when their state is INIT. It is now possible to remove a task from the assets manager ([RaananW](https://github.com/RaananW))
@@ -55,9 +59,12 @@
 - `Sound` now accepts `MediaStream` as source to enable easier WebAudio and WebRTC integrations ([menduz](https://github.com/menduz))
 - Vector x, y and z constructor parameters are now optional and default to 0 ([TrevorDev](https://github.com/TrevorDev))
 - New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
-- Added and remove camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
+- Added and removed camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
 - Added internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
+- Added `RawCubeTexture` class with RGBD and mipmap support ([bghgary](http://www.github.com/bghgary))
+- Added effect layer per rendering group addressing [Issue 4463](https://github.com/BabylonJS/Babylon.js/issues/4463) ([sebavan](http://www.github.com/sebavan))
+- Added predicate function `targetMask` argument to `scene.beginWeightedAnimation`, `scene.beginAnimation`, `scene.stopAnimation`, and `animatable.stop` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
 
 ### glTF Loader
 
@@ -65,6 +72,7 @@
 - Added `onNodeLODsLoadedObservable` and `onMaterialLODsLoadedObservable` to MSFT_lod loader extension ([bghgary](http://www.github.com/bghgary))
 - Added glTF loader settings to the GLTF tab in the debug layer ([bghgary](http://www.github.com/bghgary))
 - Added debug logging and performance counters ([bghgary](http://www.github.com/bghgary))
+- Added support for EXT_lights_imageBased ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
@@ -78,6 +86,9 @@
 - A new HD-Toggler button allows setting a better hardware scaling rate ([RaananW](https://github.com/RaananW))
 - An initial support for WebVR is implemented ([RaananW](https://github.com/RaananW))
 - It is now possible to choose the element that goes fullscreen in the default viewer ([RaananW](https://github.com/RaananW))
+- The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
+- The extended configuration is now the default when not providing the "extended" parameter ([RaananW](https://github.com/RaananW))
+- viewer.updateConfiguration also accepts a URL to download configuration remotely ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
@@ -92,7 +103,10 @@
 - VR experience helper's controllers will not fire pointer events when laser's are disabled, instead the camera ray pointer event will be used ([TrevorDev](https://github.com/TrevorDev))
 - Node's setParent(node.parent) will no longer throw an exception when parent is undefined and will behave the same as setParent(null) ([TrevorDev](https://github.com/TrevorDev))
 - Mesh.MergeMeshes flips triangles on meshes with negative scaling ([SvenFrankson](http://svenfrankson.com))
-- Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev]
+- Avoid firing button events multiple times when calling vrController.attachMesh() ([TrevorDev](https://github.com/TrevorDev))
+- Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
+- Removing observers during observable notify should not skip over valid observers ([TrevorDev](https://github.com/TrevorDev))
+- Initializing gamepadManager should register the gamepad update events ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
@@ -121,6 +135,8 @@
 - Removed element IDs from viewer's templates to allow muitiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 - Viewer is not using Engine.LastCreatedScene anymore, to support multiple viewers in a single page [#4500](https://github.com/BabylonJS/Babylon.js/issues/4500) ([RaananW](https://github.com/RaananW))
 - Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
+- Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
+- It was not possible to add new custom optimizers, only to use existing ones ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 

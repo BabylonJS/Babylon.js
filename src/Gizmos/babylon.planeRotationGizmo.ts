@@ -3,7 +3,10 @@ module BABYLON {
      * Single plane rotation gizmo
      */
     export class PlaneRotationGizmo extends Gizmo {
-        private _dragBehavior:PointerDragBehavior;
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        public dragBehavior:PointerDragBehavior;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         
         /**
@@ -47,15 +50,17 @@ module BABYLON {
             
             this._rootMesh.addChild(parentMesh);
             // Add drag behavior to handle events when the gizmo is dragged
-            this._dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
-            this._dragBehavior.moveAttached = false;
-            this._rootMesh.addBehavior(this._dragBehavior);
+            this.dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
+            this.dragBehavior.moveAttached = false;
+            this.dragBehavior.maxDragAngle =  Math.PI*9/20;
+            this.dragBehavior._useAlternatePickedPointAboveMaxDragAngle = true;
+            this._rootMesh.addBehavior(this.dragBehavior);
 
-            var lastDragPosition:Nullable<Vector3> = null;
+            var lastDragPosition = new Vector3();
 
-            this._dragBehavior.onDragStartObservable.add((e)=>{
+            this.dragBehavior.onDragStartObservable.add((e)=>{
                 if(this.attachedMesh){
-                    lastDragPosition = e.dragPlanePoint;
+                    lastDragPosition.copyFrom(e.dragPlanePoint);
                 }
             })
 
@@ -65,10 +70,10 @@ module BABYLON {
 
             var tmpSnapEvent = {snapDistance: 0};
             var currentSnapDragDistance = 0;
-            this._dragBehavior.onDragObservable.add((event)=>{
-                if(this.attachedMesh && lastDragPosition){
+            this.dragBehavior.onDragObservable.add((event)=>{
+                if(this.attachedMesh){
                     if(!this.attachedMesh.rotationQuaternion){
-                        this.attachedMesh.rotationQuaternion = new BABYLON.Quaternion();
+                        this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                     }
                     // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
                     var newVector = event.dragPlanePoint.subtract(this.attachedMesh.position).normalize();
@@ -110,10 +115,16 @@ module BABYLON {
                      var quaternionCoefficient = Math.sin(angle/2)
                      var amountToRotate = new BABYLON.Quaternion(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
 
-                     // Rotate selected mesh quaternion over fixed axis
-                     this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate,this.attachedMesh.rotationQuaternion);
+                     if(this.updateGizmoRotationToMatchAttachedMesh){
+                        // Rotate selected mesh quaternion over fixed axis
+                        this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate,this.attachedMesh.rotationQuaternion);
+                     }else{
+                         // Rotate selected mesh quaternion over rotated axis
+                        amountToRotate.multiplyToRef(this.attachedMesh.rotationQuaternion,this.attachedMesh.rotationQuaternion);
+                     }
+                     
 
-                    lastDragPosition = event.dragPlanePoint;
+                    lastDragPosition.copyFrom(event.dragPlanePoint);
                     if(snapped){
                         tmpSnapEvent.snapDistance = angle;
                         this.onSnapObservable.notifyObservers(tmpSnapEvent);
@@ -135,8 +146,8 @@ module BABYLON {
         }
 
         protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
-            if(this._dragBehavior){
-                this._dragBehavior.enabled = value ? true : false;
+            if(this.dragBehavior){
+                this.dragBehavior.enabled = value ? true : false;
             }
         }
 
@@ -146,7 +157,7 @@ module BABYLON {
         public dispose(){
             this.onSnapObservable.clear();
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-            this._dragBehavior.detach();
+            this.dragBehavior.detach();
             super.dispose();
         } 
     }

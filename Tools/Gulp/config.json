@@ -99,6 +99,7 @@
             "gizmos",
             "morphTargets",
             "octrees",
+            "anaglyph",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -165,6 +166,8 @@
                 "../../src/Cameras/babylon.camera.js",
                 "../../src/Rendering/babylon.renderingManager.js",
                 "../../src/Rendering/babylon.renderingGroup.js",
+                "../../src/babylon.sceneComponent.js",
+                "../../src/babylon.abstractScene.js",
                 "../../src/babylon.scene.js",
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
@@ -252,10 +255,10 @@
             "files": [
                 "../../src/Particles/babylon.particle.js",
                 "../../src/Particles/babylon.particleSystem.js",
-                "../../src/Particles/EmitterTypes/babylon.IParticleEmitterType.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
-                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js"
+                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/babylon.particleSystemComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -539,6 +542,7 @@
         "additionalTextures": {
             "files": [
                 "../../src/Materials/Textures/babylon.cubeTexture.js",
+                "../../src/Materials/Textures/babylon.rawCubeTexture.js",
                 "../../src/Materials/Textures/babylon.renderTargetTexture.js",
                 "../../src/Materials/Textures/babylon.multiRenderTarget.js",
                 "../../src/Materials/Textures/babylon.mirrorTexture.js",
@@ -652,7 +656,8 @@
                 "../../src/Gamepad/Controllers/babylon.genericController.js",
                 "../../src/Gamepad/Controllers/babylon.windowsMotionController.js",
                 "../../src/Gamepad/Controllers/babylon.gearVRController.js",
-                "../../src/Gamepad/Controllers/babylon.daydreamController.js"
+                "../../src/Gamepad/Controllers/babylon.daydreamController.js",
+                "../../src/Gamepad/babylon.gamepadSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -1007,6 +1012,7 @@
         "lensFlares": {
             "files": [
                 "../../src/LensFlare/babylon.lensFlare.js",
+                "../../src/LensFlare/babylon.lensFlareSystemSceneComponent.js",
                 "../../src/LensFlare/babylon.lensFlareSystem.js"
             ],
             "dependUpon": [
@@ -1104,28 +1110,62 @@
                 "core"
             ]
         },
+        "anaglyph": {
+            "files": [
+                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphArcRotateCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphFreeCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphGamepadCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.anaglyphUniversalCamera.js"
+            ],
+            "dependUpon": [
+                "core",
+                "postProcesses",
+                "freeCamera",
+                "gamepad"
+            ],
+            "shaders": [
+                "anaglyph.fragment"
+            ]
+        },       
+        "stereoscopic": {
+            "files": [
+                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicArcRotateCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicFreeCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicGamepadCamera.js",
+                "../../src/Cameras/Stereoscopic/babylon.stereoscopicUniversalCamera.js"
+            ],
+            "dependUpon": [
+                "core",
+                "postProcesses",
+                "freeCamera",
+                "gamepad"
+            ],
+            "shaders": [
+                "stereoscopicInterlace.fragment"
+            ]
+        },           
         "vr": {
             "files": [
                 "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
-                "../../src/PostProcess/babylon.anaglyphPostProcess.js",
-                "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
                 "../../src/Cameras/Inputs/babylon.freeCameraDeviceOrientationInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraVRDeviceOrientationInput.js",
                 "../../src/Cameras/VR/babylon.vrCameraMetrics.js",
                 "../../src/Cameras/VR/babylon.webVRCamera.js",
                 "../../src/Cameras/babylon.deviceOrientationCamera.js",
-                "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",
-                "../../src/Cameras/babylon.stereoscopicCameras.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationFreeCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationArcRotateCamera.js",
+                "../../src/Cameras/VR/babylon.vrDeviceOrientationGamepadCamera.js",
                 "../../src/Cameras/VR/babylon.vrExperienceHelper.js"
             ],
             "dependUpon": [
                 "core",
                 "postProcesses",
-                "freeCamera"
+                "freeCamera",
+                "gamepad"
             ],
             "shaders": [
-                "anaglyph.fragment",
-                "stereoscopicInterlace.fragment",
                 "vrDistortionCorrection.fragment"
             ]
         },
@@ -1153,6 +1193,7 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
+                "../../src/Layer/babylon.effectLayerSceneComponent.js",
                 "../../src/Layer/babylon.effectLayer.js",
                 "../../src/Layer/babylon.highlightLayer.js",
                 "../../src/Layer/babylon.glowLayer.js"
@@ -1198,6 +1239,7 @@
         },
         "layer": {
             "files": [
+                "../../src/Layer/babylon.layerSceneComponent.js",
                 "../../src/Layer/babylon.layer.js"
             ],
             "dependUpon": [
@@ -1633,7 +1675,8 @@
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_imageBased.ts"
                 ],
                 "doNotIncludeInBundle": true,
                 "output": "babylon.glTF2FileLoader.js"
@@ -1657,7 +1700,8 @@
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/EXT_lights_imageBased.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }

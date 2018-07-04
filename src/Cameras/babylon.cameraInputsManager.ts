@@ -29,9 +29,8 @@ module BABYLON {
         }
 
         /**
-         * Add an input method to a camera.
-         * builtin inputs example: camera.inputs.addGamepad();
-         * custom inputs example: camera.inputs.add(new BABYLON.FreeCameraGamepadInput());
+         * Add an input method to a camera
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
          * @param input camera input method
          */
         public add(input: ICameraInput<TCamera>) {
