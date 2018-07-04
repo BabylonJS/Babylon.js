@@ -118,7 +118,7 @@ module BABYLON {
             this._onError = onError;
             this.gammaSpace = gammaSpace;
 
-            this._noMipmap = noMipmap;
+            this._noMipmap = noMipmap || !scene.getEngine()._caps.textureFloatLinearFiltering;
             this._size = size;
 
             this._texture = this._getFromCache(url, this._noMipmap);
