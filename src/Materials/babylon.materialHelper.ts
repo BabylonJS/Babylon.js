@@ -216,20 +216,7 @@ module BABYLON {
                     defines["POINTLIGHT" + lightIndex] = false;
                     defines["DIRLIGHT" + lightIndex] = false;
 
-                    var type;
-                    if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
-                        type = "SPOTLIGHT" + lightIndex;
-                        let spotLight = light as SpotLight;
-                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = spotLight.projectionTexture ? true : false;
-                    } else if (light.getTypeID() === Light.LIGHTTYPEID_HEMISPHERICLIGHT) {
-                        type = "HEMILIGHT" + lightIndex;
-                    } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
-                        type = "POINTLIGHT" + lightIndex;
-                    } else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
-
-                    defines[type] = true;
+                    light.prepareLightSpecificDefines(defines, lightIndex);
 
                     // Specular
                     if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
