@@ -5750,7 +5750,8 @@
 
         /**
          * Creates a default light for the scene.
-         * @param replace Whether to replace the existing lights in the scene.
+         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
+         * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
          */
         public createDefaultLight(replace = false): void {
             // Dispose existing light in replace mode.
@@ -5770,9 +5771,10 @@
 
         /**
          * Creates a default camera for the scene.
-         * @param createArcRotateCamera Whether to create an arc rotate or a free camera.
-         * @param replace Whether to replace the existing active camera in the scene.
-         * @param attachCameraControls Whether to attach camera controls to the canvas.
+         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
+         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
+         * @param replace has default false, when true replaces the active camera in the scene
+         * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
          */
         public createDefaultCamera(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
             // Dispose existing camera in replace mode.
@@ -5820,10 +5822,11 @@
         }
 
         /**
-         * Creates a default camera and a default light 
-         * @param createArcRotateCamera defines that the camera will be an ArcRotateCamera
-         * @param replace defines if the camera and/or light will replace the existing ones
-         * @param attachCameraControls defines if attachControl will be called on the new camera
+         * Creates a default camera and a default light.
+         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
+         * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
+         * @param replace has the default false, when true replaces the active camera/light in the scene
+         * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
          */
         public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
             this.createDefaultLight(replace);
@@ -5832,12 +5835,12 @@
 
         /**
          * Creates a new sky box
-         * @see http://doc.babylonjs.com/babylon101/environment#skybox
+         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
          * @param environmentTexture defines the texture to use as environment texture
-         * @param pbr defines if PBRMaterial must be used instead of StandardMaterial
+         * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used 
          * @param scale defines the overall scale of the skybox
-         * @param blur defines if blurring must be applied to the environment texture (works only with pbr === true)
-         * @param setGlobalEnvTexture defines a boolean indicating that scene.environmentTexture must match the current skybox texture (true by default)
+         * @param blur is only available when pbr is true, default is 0, no blur, maximum value is 1
+         * @param setGlobalEnvTexture has default true indicating that scene.environmentTexture must match the current skybox texture
          * @returns a new mesh holding the sky box
          */
         public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
@@ -5885,7 +5888,7 @@
 
         /**
          * Creates a new environment
-         * @see http://doc.babylonjs.com/babylon101/environment#skybox
+         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
          * @param options defines the options you can use to configure the environment
          * @returns the new EnvironmentHelper
          */
@@ -5894,7 +5897,7 @@
                 return new EnvironmentHelper(options, this);
             }
             return null;
-        }
+}
 
         /**
          * Creates a new VREXperienceHelper
