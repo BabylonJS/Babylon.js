@@ -5912,6 +5912,9 @@
                 }
                 else {
                     texture.generateMipMaps = !noMipmap;
+                    if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                        texture.generateMipMaps = false;
+                    }
                     this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
 
