@@ -7056,12 +7056,51 @@
 
         /** @hidden */
         public _getWebGLTextureType(type: number): number {
-            if (type === Engine.TEXTURETYPE_FLOAT) {
-                return this._gl.FLOAT;
+            if (this._webGLVersion === 1) {
+                switch (type) {
+                    case Engine.TEXTURETYPE_FLOAT:
+                        return this._gl.FLOAT;
+                    case Engine.TEXTURETYPE_HALF_FLOAT:
+                        return this._gl.HALF_FLOAT_OES;
+                    case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                        return this._gl.UNSIGNED_BYTE;
+                }
+                return this._gl.UNSIGNED_BYTE;
             }
-            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                // Add Half Float Constant.
-                return this._gl.HALF_FLOAT_OES;
+
+            switch (type) {
+                case Engine.TEXTURETYPE_BYTE:
+                    return this._gl.BYTE;
+                case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                    return this._gl.UNSIGNED_BYTE;
+                case Engine.TEXTURETYPE_SHORT:
+                    return this._gl.SHORT;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT:
+                    return this._gl.UNSIGNED_SHORT;
+                case Engine.TEXTURETYPE_INT:
+                    return this._gl.INT;
+                case Engine.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                    return this._gl.UNSIGNED_INT;
+                case Engine.TEXTURETYPE_FLOAT:
+                    return this._gl.FLOAT;
+                case Engine.TEXTURETYPE_HALF_FLOAT:
+                    return this._gl.HALF_FLOAT;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.UNSIGNED_SHORT_4_4_4_4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.UNSIGNED_SHORT_5_5_5_1;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.UNSIGNED_SHORT_5_6_5;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                    return this._gl.UNSIGNED_INT_2_10_10_10_REV;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_24_8:
+                    return this._gl.UNSIGNED_INT_24_8;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                    return this._gl.UNSIGNED_INT_10F_11F_11F_REV;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                    return this._gl.UNSIGNED_INT_5_9_9_9_REV;
+                case Engine.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV:
+                    return this._gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
             }
 
             return this._gl.UNSIGNED_BYTE;
