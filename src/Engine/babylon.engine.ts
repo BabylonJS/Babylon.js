@@ -359,17 +359,54 @@
         public static readonly TEXTUREFORMAT_RGB = 4;
         /** RGBA */
         public static readonly TEXTUREFORMAT_RGBA = 5;
-        /** R */
+        /** RED */
+        public static readonly TEXTUREFORMAT_RED = 6;
         public static readonly TEXTUREFORMAT_R = 6;
         /** RG */
         public static readonly TEXTUREFORMAT_RG = 7;
+        /** RED_INTEGER */
+        public static readonly TEXTUREFORMAT_RED_INTEGER = 8;
+        public static readonly TEXTUREFORMAT_R_INTEGER = 8;
+        /** RG_INTEGER */
+        public static readonly TEXTUREFORMAT_RG_INTEGER = 9;
+        /** RGB_INTEGER */
+        public static readonly TEXTUREFORMAT_RGB_INTEGER = 10;
+        /** RGBA_INTEGER */
+        public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
 
-        /** UNSIGNED_INT */
+        /** UNSIGNED_BYTE */
+        public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
         public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
         /** FLOAT */
         public static readonly TEXTURETYPE_FLOAT = 1;
         /** HALF_FLOAT */
         public static readonly TEXTURETYPE_HALF_FLOAT = 2;
+        /** BYTE */
+        public static readonly TEXTURETYPE_BYTE = 3;
+        /** SHORT */
+        public static readonly TEXTURETYPE_SHORT = 4;
+        /** UNSIGNED_SHORT */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT = 5;
+        /** INT */
+        public static readonly TEXTURETYPE_INT = 6;
+        /** UNSIGNED_INT */
+        public static readonly TEXTURETYPE_UNSIGNED_INTEGER = 7;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = 8;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = 9;
+        /** UNSIGNED_SHORT_5_6_5 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = 10;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = 11;
+        /** UNSIGNED_INT_24_8 */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = 12;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = 13;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = 14;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
         /** nearest is mag = nearest and min = nearest and mip = linear */
         public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1; 
