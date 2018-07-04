@@ -1,9 +1,43 @@
 ﻿module BABYLON {
 
     /**
+     * Defines how a node can be built from a string name.
+     */
+    export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
+
+    /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
      */
     export class Node implements IBehaviorAware<Node> {
+        private static _NodeConstructors: {[key: string]: any} = {};
+
+        /**
+         * Add a new node constructor
+         * @param type defines the type name of the node to construct
+         * @param constructorFunc defines the constructor function
+         */
+        public static AddNodeConstructor(type: string, constructorFunc: NodeConstructor) {
+            this._NodeConstructors[type] = constructorFunc;
+        }
+
+        /**
+         * Returns a node constructor based on type name
+         * @param type defines the type name
+         * @param name defines the new node name
+         * @param scene defines the hosting scene
+         * @param options defines optional options to transmit to constructors
+         * @returns the new constructor or null
+         */
+        public static Construct(type: string, name: string, scene: Scene, options?: any): Nullable<() => Node> {
+            let constructorFunc = this._NodeConstructors[type];
+
+            if (!constructorFunc) {
+                return null;
+            }
+
+            return constructorFunc(name, scene, options);
+        }
+
         /**
          * Gets or sets the name of the node
          */

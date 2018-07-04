@@ -1,17 +1,18 @@
-import { viewerManager } from './viewerManager';
-import { SceneManager } from '../managers/sceneManager';
-import { ConfigurationLoader } from '../configuration/loader';
-import { Effect, Observable, Engine, Scene, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Tools, RenderingManager, TargetCamera, WebVRFreeCamera, Vector3 } from 'babylonjs';
-import { ViewerConfiguration, IObserversConfiguration, IModelConfiguration } from '../configuration/';
-
-import { ViewerModel } from '../model/viewerModel';
-import { ModelLoader } from '../loader/modelLoader';
-import { viewerGlobals } from '../configuration/globals';
-import { telemetryManager } from '../managers/telemetryManager';
-import { deepmerge } from '../helper/';
-import { ObservablesManager } from '../managers/observablesManager';
+import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3 } from 'babylonjs';
+import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
+import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { viewerGlobals } from '../configuration/globals';
+import { ConfigurationLoader } from '../configuration/loader';
+import { deepmerge } from '../helper/';
+import { ModelLoader } from '../loader/modelLoader';
+import { ObservablesManager } from '../managers/observablesManager';
+import { SceneManager } from '../managers/sceneManager';
+import { telemetryManager } from '../managers/telemetryManager';
+import { ViewerModel } from '../model/viewerModel';
 import { TemplateManager } from '../templating/templateManager';
+import { viewerManager } from './viewerManager';
+
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
@@ -460,6 +461,8 @@ export abstract class AbstractViewer {
                 console.log("Error parsing file " + newConfiguration, error);
             });
         } else {
+            //backcompat
+            processConfigurationCompatibility(newConfiguration);
             // update this.configuration with the new data
             this._configurationContainer.configuration = deepmerge(this.configuration || {}, newConfiguration);
 

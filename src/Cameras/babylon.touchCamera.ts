@@ -1,4 +1,8 @@
 module BABYLON {
+    Node.AddNodeConstructor("TouchCamera", (name, scene) => {
+        return () => new TouchCamera(name, Vector3.Zero(), scene);
+    });
+
     // We're mainly based on the logic defined into the FreeCamera code
     export class TouchCamera extends FreeCamera {
         //-- Begin properties for backward compatibility for inputs

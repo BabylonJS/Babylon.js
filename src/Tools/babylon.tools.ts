@@ -769,9 +769,15 @@
 
             // Caching all files
             if (database && database.enableSceneOffline) {
-                const noIndexedDB = () => {
-                    if (!aborted) {
-                        requestFile();
+                const noIndexedDB = (request?: any) => {
+                    if(request && request.status > 400){
+                        if(onError){
+                            onError(request);
+                        }
+                    } else {
+                        if (!aborted) {
+                            requestFile();
+                        }
                     }
                 };
 

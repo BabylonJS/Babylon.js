@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
+        return () => new HemisphericLight(name, Vector3.Zero(), scene);
+    });
+
     /**
      * The HemisphericLight simulates the ambient environment light,
      * so the passed direction is the light reflection direction, not the incoming direction.
@@ -104,6 +108,15 @@
          */
         public getTypeID(): number {
             return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
+        }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["HEMILIGHT" + lightIndex] = true;
         }
     }
 } 

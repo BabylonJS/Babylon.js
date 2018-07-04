@@ -1,4 +1,8 @@
 module BABYLON {
+    Node.AddNodeConstructor("GamepadCamera", (name, scene) => {
+        return () => new GamepadCamera(name, Vector3.Zero(), scene);
+    });
+
     // We're mainly based on the logic defined into the FreeCamera code
     export class GamepadCamera extends UniversalCamera {
         //-- Begin properties for backward compatibility for inputs
