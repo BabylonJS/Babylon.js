@@ -40,8 +40,8 @@ export function camelToKebab(str) {
  * @param config the configuration object that will extend the object
  */
 export function extendClassWithConfig(object: any, config: any) {
-    if (!config) return;
-    Object.keys(config).forEach(key => {
+    if (!config || typeof config !== 'object') return;
+    Object.keys(config).forEach(function (key) {
         if (key in object && typeof object[key] !== 'function') {
             // if (typeof object[key] === 'function') return;
             // if it is an object, iterate internally until reaching basic types
