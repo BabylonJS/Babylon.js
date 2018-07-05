@@ -70,19 +70,19 @@ module BABYLON {
          */
         public useObjectOrienationForDragging = true;
 
+        private _options:{dragAxis?:Vector3, dragPlaneNormal?:Vector3};
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
          * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
          */
-        constructor(private options:{dragAxis?:Vector3, dragPlaneNormal?:Vector3}){
+        constructor(options?:{dragAxis?:Vector3, dragPlaneNormal?:Vector3}){
+            this._options = options ? options : {};
+            
             var optionCount = 0;
-            if(options === undefined){
-                options = {}
-            }
-            if(options.dragAxis){
+            if(this._options.dragAxis){
                 optionCount++;
             }
-            if(options.dragPlaneNormal){
+            if(this._options.dragPlaneNormal){
                 optionCount++;
             }
             if(optionCount > 1){
@@ -167,9 +167,9 @@ module BABYLON {
                             }
                             
                             // depending on the drag mode option drag accordingly
-                            if(this.options.dragAxis){
+                            if(this._options.dragAxis){
                                 // Convert local drag axis to world
-                                Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
+                                Vector3.TransformCoordinatesToRef(this._options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
 
                                 // Project delta drag from the drag plane onto the drag axis
                                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
@@ -257,8 +257,8 @@ module BABYLON {
         // Position the drag plane based on the attached mesh position, for single axis rotate the plane along the axis to face the camera
         private _updateDragPlanePosition(ray:Ray, dragPlanePosition:Vector3){
             this._pointA.copyFrom(dragPlanePosition);
-            if(this.options.dragAxis){
-                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this.options.dragAxis);
+            if(this._options.dragAxis){
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragAxis);
 
                 // Calculate plane normal in direction of camera but perpendicular to drag axis
                 this._pointA.addToRef(this._localAxis, this._pointB); // towards drag axis
@@ -275,8 +275,8 @@ module BABYLON {
                 this._dragPlane.position.copyFrom(this._pointA);
                 this._pointA.subtractToRef(this._lookAt, this._lookAt);
                 this._dragPlane.lookAt(this._lookAt);
-            }else if(this.options.dragPlaneNormal){
-                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this.options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix(),this._localAxis) : this._localAxis.copyFrom(this.options.dragPlaneNormal);
+            }else if(this._options.dragPlaneNormal){
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix(),this._localAxis) : this._localAxis.copyFrom(this._options.dragPlaneNormal);
                 this._dragPlane.position.copyFrom(this._pointA);
                 this._pointA.subtractToRef(this._localAxis, this._lookAt);
                 this._dragPlane.lookAt(this._lookAt);
