@@ -7101,6 +7101,7 @@
 
         private _getInternalFormat(format: number): number {
             var internalFormat = this._gl.RGBA;
+
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
                     internalFormat = this._gl.ALPHA;
@@ -7111,30 +7112,35 @@
                 case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
+                case Engine.TEXTUREFORMAT_RED:
+                    internalFormat = this._gl.RED;
+                    break;
+                case Engine.TEXTUREFORMAT_RG:
+                    internalFormat = this._gl.RG;
+                    break;
                 case Engine.TEXTUREFORMAT_RGB:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
-                case Engine.TEXTUREFORMAT_RED:
-                    internalFormat = this._gl.RED;
-                    break;       
-                case Engine.TEXTUREFORMAT_RG:
-                    internalFormat = this._gl.RG;
-                    break;
-                case Engine.TEXTUREFORMAT_RED_INTEGER:
-                    internalFormat = this._gl.RED_INTEGER;
-                    break;
-                case Engine.TEXTUREFORMAT_RG_INTEGER:
-                    internalFormat = this._gl.RG_INTEGER;
-                    break;
-                case Engine.TEXTUREFORMAT_RGB_INTEGER:
-                    internalFormat = this._gl.RGB_INTEGER;
-                    break;
-                case Engine.TEXTUREFORMAT_RGBA_INTEGER:
-                    internalFormat = this._gl.RGBA_INTEGER;
-                    break;
+            }
+
+            if (this._webGLVersion > 1) {
+                switch (format) {
+                    case Engine.TEXTUREFORMAT_RED_INTEGER:
+                        internalFormat = this._gl.RED_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RG_INTEGER:
+                        internalFormat = this._gl.RG_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                        internalFormat = this._gl.RGB_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                        internalFormat = this._gl.RGBA_INTEGER;
+                        break;
+                }
             }
 
             return internalFormat;
@@ -7291,7 +7297,7 @@
                     }
                     break;
                 default:
-                    return this._gl_RGBA;
+                    return this._gl.RGBA;
             }
 
             return this._gl.RGBA;
