@@ -196,7 +196,7 @@
             var imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
 
             const engine = texture.getEngine();
-            engine._uploadArrayBufferViewToTexture(texture, imageData);
+            engine._uploadDataToTextureDirectly(texture, texture.width, texture.height, imageData);
         }
 
         static _getImageData8bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {

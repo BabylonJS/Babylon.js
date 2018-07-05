@@ -475,6 +475,11 @@
       "title": "Local cubemaps",
       "playgroundId": "#RNASML#4",
       "referenceImage": "local cubemaps.png"
+    },
+    {
+      "title": "TGA",
+      "playgroundId": "#ZI77S7#0",
+      "referenceImage": "tga.png"
     }
   ]
 }
