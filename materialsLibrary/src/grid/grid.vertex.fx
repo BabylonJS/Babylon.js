@@ -26,6 +26,7 @@ void main(void) {
     #endif
 
     #include<fogVertex>
+    #include<shadowsVertex>[0..maxSimultaneousLights]
 
     vec4 cameraSpacePosition = worldView * vec4(position, 1.0);
     gl_Position = projection * cameraSpacePosition;
