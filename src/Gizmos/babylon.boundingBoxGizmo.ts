@@ -277,9 +277,7 @@ module BABYLON {
                 
                 // Update bounding dimensions/positions   
                 var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors();
-                this._boundingDimensions.x = boundingMinMax.max.x-boundingMinMax.min.x;
-                this._boundingDimensions.y = boundingMinMax.max.y-boundingMinMax.min.y;
-                this._boundingDimensions.z = boundingMinMax.max.z-boundingMinMax.min.z;
+                boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
                 // Update gizmo to match bounding box scaling and rotation
                 this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
@@ -403,9 +401,7 @@ module BABYLON {
             // Update bounding dimensions/positions   
             var box = BABYLON.MeshBuilder.CreateBox("box", {size: 1}, mesh.getScene());
             var boundingMinMax = mesh.getHierarchyBoundingVectors();
-            box.scaling.x = boundingMinMax.max.x-boundingMinMax.min.x;
-            box.scaling.y = boundingMinMax.max.y-boundingMinMax.min.y;
-            box.scaling.z = boundingMinMax.max.z-boundingMinMax.min.z;
+            boundingMinMax.max.subtractToRef(boundingMinMax.min, box.scaling);
             box.position.set((boundingMinMax.max.x+boundingMinMax.min.x)/2,(boundingMinMax.max.y+boundingMinMax.min.y)/2,(boundingMinMax.max.z+boundingMinMax.min.z)/2);
             
             // Restore original positions
