@@ -563,7 +563,7 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    runSequence("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-validation-virtualscreen", "tests-validation-browserstack", "tests-viewer.validation-browserstack", cb);
+    runSequence("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-validation-virtualscreen", "tests-validation-browserstack", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
