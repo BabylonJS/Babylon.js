@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
+        return () => new DirectionalLight(name, Vector3.Zero(), scene);
+    });
+
     /**
      * A directional light is defined by a direction (what a surprise!). 
      * The light is emitted from everywhere in the specified direction, and has an infinite range. 
@@ -215,6 +219,15 @@
          */
         public getDepthMaxZ(activeCamera: Camera): number {
             return 1;
+        }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["DIRLIGHT" + lightIndex] = true;
         }
     }
 }  
