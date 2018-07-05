@@ -9,6 +9,7 @@ module BABYLON {
         private _attachedMesh:Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
         private _boundingBoxUtilLayer:Nullable<UtilityLayerRenderer> = null;
+        private _dragBehavior = new BABYLON.SixDofDragBehavior();
         /**
          * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
          */
@@ -66,12 +67,18 @@ module BABYLON {
          * @param mesh The mesh the gizmo's should be attached to
          */
         public attachToMesh(mesh:Nullable<AbstractMesh>){
+            if(this._attachedMesh){
+                this._attachedMesh.removeBehavior(this._dragBehavior);
+            }
             this._attachedMesh = mesh;
             for(var key in this._gizmoSet){
                 var gizmo = <Nullable<Gizmo>>((<any>this._gizmoSet)[key]);
                 if(gizmo){
                     gizmo.attachedMesh = mesh;
                 }
+            }
+            if(this.boundingBoxGizmoEnabled && this._attachedMesh){
+                this._attachedMesh.addBehavior(this._dragBehavior);
             }
         }
 
@@ -133,6 +140,10 @@ module BABYLON {
                 }
                 this._gizmoSet.boundingBoxGizmo = this._gizmoSet.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._boundingBoxUtilLayer);
                 this._gizmoSet.boundingBoxGizmo.attachedMesh = this._attachedMesh;
+                if(this._attachedMesh){
+                    this._attachedMesh.removeBehavior(this._dragBehavior);
+                    this._attachedMesh.addBehavior(this._dragBehavior);
+                }
             }else if(this._gizmoSet.boundingBoxGizmo){
                 this._gizmoSet.boundingBoxGizmo.dispose();
                 this._gizmoSet.boundingBoxGizmo = null;
