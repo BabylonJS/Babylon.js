@@ -362,6 +362,10 @@
 
             var mesh = <Mesh>abstractMesh;
 
+            if (mesh.isDisposed()) {
+                return false;
+            }
+
             if (!mesh.isVisible || !mesh.isEnabled()) {
                 return false;
             }
