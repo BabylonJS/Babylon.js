@@ -138,6 +138,8 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
     var renderB64 = saveRenderImage(renderData, currentViewer.canvas);
     renderImage.src = renderB64;
+
+    // save all reference images
     // downloadDataUrlFromJavascript(test.referenceImage, renderB64)
 
     done(testRes, renderB64);
@@ -150,11 +152,6 @@ function runTest(index, done) {
 
 
     var test = Object.assign({}, config.tests[index]);
-
-    //process params
-    /*if (params) {
-        processTest(test, "", params);
-    }*/
 
     var container = document.createElement("div");
     container.id = "container#" + index;
@@ -244,7 +241,7 @@ function runTest(index, done) {
     currentViewer.onInitDoneObservable.add(() => {
 
         var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 0;
+        var waitForFrame = test.waitForFrame || 1;
 
         if (test.model) {
             currentViewer.initModel(test.model);
@@ -284,6 +281,7 @@ function prepareMeshForViewer(viewer, configuration, test) {
         sphereMesh.material = material;
     }
     meshModel.addMesh(sphereMesh, true);
+    meshModel.rootMesh.position.y = 0.5;
 }
 
 function init() {
