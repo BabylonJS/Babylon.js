@@ -5,7 +5,7 @@
             "title": "Control Default",
             "createMesh": true,
             "configuration": {
-                "extends": "default"
+                "extends": "minimal"
             },
             "referenceImage": "ControlDefault.png"
         },
