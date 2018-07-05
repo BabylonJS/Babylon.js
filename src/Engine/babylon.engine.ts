@@ -430,7 +430,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.10";
+            return "3.3.0-alpha.11";
         }
 
         // Updatable statics so stick with vars here
@@ -5252,8 +5252,6 @@
             this._bindTextureDirectly(bindTarget, texture, true);
 
             this._uploadDataToTextureDirectly(texture, texture.width, texture.height, imageData, faceIndex, lod);
-
-            this._bindTextureDirectly(bindTarget, null, true);
         }
 
         /** @hidden */
@@ -5912,6 +5910,9 @@
                 }
                 else {
                     texture.generateMipMaps = !noMipmap;
+                    if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                        texture.generateMipMaps = false;
+                    }
                     this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
 

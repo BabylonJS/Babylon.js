@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
+        return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
+    });
+
     /**
      * A spot light is defined by a position, a direction, an angle, and an exponent. 
      * These values define a cone of light starting from the position, emitting toward the direction.
@@ -322,6 +326,16 @@
             if (this._projectionTexture){
                 this._projectionTexture.dispose();
             }
+        }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["SPOTLIGHT" + lightIndex] = true;
+            defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture ? true : false;
         }
     }
 }
