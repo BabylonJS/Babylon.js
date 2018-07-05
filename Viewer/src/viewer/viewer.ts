@@ -174,9 +174,6 @@ export abstract class AbstractViewer {
 
         this._configurationContainer = new ConfigurationContainer();
 
-        // add this viewer to the viewer manager
-        viewerManager.addViewer(this);
-
         this.observablesManager = new ObservablesManager();
 
         this.modelLoader = new ModelLoader(this.observablesManager, this._configurationContainer);
@@ -199,6 +196,9 @@ export abstract class AbstractViewer {
         });
 
         this._prepareContainerElement();
+
+        // add this viewer to the viewer manager
+        viewerManager.addViewer(this);
 
     }
 
