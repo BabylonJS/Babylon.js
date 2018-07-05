@@ -74,7 +74,11 @@ module BABYLON {
                         this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
                     }
                     if(this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh){
-                        this._rootMesh.position.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, tempVector);
+                        var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.position;
+                        if((<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition){
+                            cameraPosition = (<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition;
+                        }
+                        this._rootMesh.position.subtractToRef(cameraPosition, tempVector);
                         var dist = tempVector.length()/this._scaleFactor;
                         this._rootMesh.scaling.set(dist, dist, dist);
                     }
