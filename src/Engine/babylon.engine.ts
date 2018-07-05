@@ -5252,8 +5252,6 @@
             this._bindTextureDirectly(bindTarget, texture, true);
 
             this._uploadDataToTextureDirectly(texture, texture.width, texture.height, imageData, faceIndex, lod);
-
-            this._bindTextureDirectly(bindTarget, null, true);
         }
 
         /** @hidden */
