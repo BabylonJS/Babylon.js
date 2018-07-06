@@ -5227,7 +5227,7 @@
         }
 
         /** @hidden */
-        public _uploadDataToTextureDirectly(texture: InternalTexture, width: number, height: number, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
             var gl = this._gl;
 
             var textureType = this._getWebGLTextureType(texture.type);
@@ -5241,6 +5241,11 @@
                 target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
             }
 
+            const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
+            const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
+            const width = Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+            const height = Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+
             gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
         }
 
@@ -5251,7 +5256,7 @@
 
             this._bindTextureDirectly(bindTarget, texture, true);
 
-            this._uploadDataToTextureDirectly(texture, texture.width, texture.height, imageData, faceIndex, lod);
+            this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
 
             this._bindTextureDirectly(bindTarget, null, true);
         }
@@ -5569,6 +5574,10 @@
                                 let data = imgs[index];
                                 info = DDSTools.GetDDSInfo(data);
 
+                                texture.width = info.width;
+                                texture.height = info.height;
+                                width = info.width;
+
                                 loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5579,11 +5588,6 @@
                                 if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                                 }
-
-                                texture.width = info.width;
-                                texture.height = info.height;
-                                texture.type = info.textureType;
-                                width = info.width;
                             }
 
                             this.setCubeMapTextureParams(gl, loadMipmap);
@@ -5595,15 +5599,18 @@
                         },
                         files,
                         onError);
-
                 } else {
                     this._loadFile(rootUrl,
                         data => {
                             var info = DDSTools.GetDDSInfo(data);
-                            if(createPolynomials){
+
+                            texture.width = info.width;
+                            texture.height = info.height;
+
+                            if (createPolynomials) {
                                 info.sphericalPolynomial = new SphericalPolynomial();
                             }
-                            
+
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5616,12 +5623,8 @@
                             }
 
                             this.setCubeMapTextureParams(gl, loadMipmap);
-
-                            texture.width = info.width;
-                            texture.height = info.height;
                             texture.isReady = true;
-                            texture.type = info.textureType;
-                            
+
                             if (onLoad) {
                                 onLoad({ isDDS: true, width: info.width, info, data, texture });
                             }
