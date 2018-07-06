@@ -36,6 +36,23 @@
             this._update(Matrix.Identity());            
         }
 
+        /**
+         * Scale the current bounding sphere by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        public scale(factor: number): BoundingSphere {
+            let newRadius = this.radius * factor;
+            let newRadiusVector = new Vector3(newRadius, newRadius, newRadius);
+
+            let min = this.center.subtract(newRadiusVector);
+            let max = this.center.add(newRadiusVector);
+
+            this.reConstruct(min, max);
+
+            return this;
+        }
+
         // Methods
         public _update(world: Matrix): void {
             Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);

@@ -177,10 +177,18 @@ module BABYLON {
          *  Detaches the behavior from the mesh
          */
         public detach(): void {
-            this._scene.onPointerObservable.remove(this._pointerObserver);
-            this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
-            this._virtualOriginMesh.dispose()
-            this._virtualDragMesh.dispose();
+            if(this._scene){
+                this._scene.onPointerObservable.remove(this._pointerObserver);
+            }
+            if(this._ownerNode){
+                this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
+            }
+            if(this._virtualOriginMesh){
+                this._virtualOriginMesh.dispose();
+            }
+            if(this._virtualDragMesh){
+                this._virtualDragMesh.dispose();
+            }
         }
     }
 }
