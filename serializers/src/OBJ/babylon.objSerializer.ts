@@ -2,17 +2,17 @@
 
 module BABYLON {
     export class OBJExport {
-        //Exports the geometrys of a Mesh array in .OBJ file format (text)
+        //Exports the geometry of a Mesh array in .OBJ file format (text)
         public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
-            var output = [];
-            var v = 1;
+            const output:string[] = [];
+            let v = 1;
             if (materials) {
                 if (!matlibname) {
                     matlibname = 'mat';
                 }
                 output.push("mtllib " + matlibname + ".mtl");
             }
-            for (var j = 0; j < mesh.length; j++) {
+            for (let j = 0; j < mesh.length; j++) {
                 output.push("g object" + j);
                 output.push("o object_" + j);
 
@@ -33,19 +33,19 @@ module BABYLON {
                         output.push("usemtl " + mat.id);
                     }
                 }
-                var g = mesh[j].geometry;
+                const g: Nullable<Geometry> = mesh[j].geometry;
 
                 if (!g) {
                     continue;
                 }
 
-                var trunkVerts = g.getVerticesData('position');
-                var trunkNormals = g.getVerticesData('normal');
-                var trunkUV = g.getVerticesData('uv');
-                var trunkFaces = g.getIndices();
+                const trunkVerts = g.getVerticesData('position');
+                const trunkNormals = g.getVerticesData('normal');
+                const trunkUV = g.getVerticesData('uv');
+                const trunkFaces = g.getIndices();
                 var curV = 0;
 
-                if (!trunkVerts || !trunkNormals || !trunkUV || !trunkFaces) {
+                if (!trunkVerts || !trunkFaces) {
                     continue;
                 }
 
@@ -54,19 +54,30 @@ module BABYLON {
                     curV++;
                 }
 
-                for (i = 0; i < trunkNormals.length; i += 3) {
-                    output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                if (trunkNormals != null) {
+                    for (i = 0; i < trunkNormals.length; i += 3) {
+                        output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                    }
                 }
+                if (trunkUV != null) {
 
-                for (i = 0; i < trunkUV.length; i += 2) {
-                    output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    for (i = 0; i < trunkUV.length; i += 2) {
+                        output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    }
                 }
 
                 for (i = 0; i < trunkFaces.length; i += 3) {
+                    const indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
+                    const blanks: string[] = ["","",""];
+
+                    const facePositions = indices;
+                    const faceUVs = trunkUV != null ? indices : blanks;
+                    const faceNormals = trunkNormals != null ? indices : blanks;
+                         
                     output.push(
-                        "f " + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) +
-                        " " + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) +
-                        " " + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v)
+                        "f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
+                        " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +
+                        " " + facePositions[2] + "/" + faceUVs[2] + "/" + faceNormals[2]
                     );
                 }
                 //back de previous matrix, to not change the original mesh in the scene
@@ -75,7 +86,7 @@ module BABYLON {
                 }
                 v += curV;
             }
-            var text = output.join("\n");
+            const text: string = output.join("\n");
             return (text);
         }
         //Exports the material(s) of a mesh in .MTL file format (text)
