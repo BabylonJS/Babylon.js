@@ -114,6 +114,7 @@ module BABYLON {
             if (manifest.specular) {
                 // Extend the header with the position of the payload.
                 manifest.specular.specularDataPosition = pos;
+                // Fallback to 0.8 exactly if lodGenerationScale is not defined for backward compatibility.
                 manifest.specular.lodGenerationScale = manifest.specular.lodGenerationScale || 0.8;
             }
 
