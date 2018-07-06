@@ -8766,13 +8766,12 @@ var BABYLON;
                         mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                         break;
                     case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
+                        mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
                         break;
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
                         break;
                     case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
                         break;
                 }
             };
@@ -8809,14 +8808,18 @@ var BABYLON;
                     return;
                 }
                 control.position = nodePosition.clone();
+                var target = BABYLON.Tmp.Vector3[0];
+                target.copyFrom(nodePosition);
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        target.addInPlace(new BABYLON.Vector3(0, 0, -1));
+                        mesh.lookAt(target);
                         break;
                     case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
                     case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        target.addInPlace(new BABYLON.Vector3(0, 0, 1));
+                        mesh.lookAt(target);
                         break;
                 }
             };
@@ -8983,16 +8986,15 @@ var BABYLON;
                 control.position = newPos;
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
+                        mesh.lookAt(new BABYLON.Vector3(-newPos.x, newPos.y, -newPos.z));
                         break;
                     case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(newPos.x, 0, newPos.z));
+                        mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, newPos.y, 2 * newPos.z));
                         break;
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
                         break;
                     case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
                         break;
                 }
             };

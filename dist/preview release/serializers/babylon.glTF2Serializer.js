@@ -668,7 +668,9 @@ var BABYLON;
                     var glbFile = new Blob(glbData, { type: 'application/octet-stream' });
                     var container = new BABYLON.GLTFData();
                     container.glTFFiles[glbFileName] = glbFile;
-                    _this._localEngine.dispose();
+                    if (_this._localEngine != null) {
+                        _this._localEngine.dispose();
+                    }
                     return container;
                 });
             };
