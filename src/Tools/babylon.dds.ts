@@ -525,7 +525,7 @@
                             }
 
                             if (floatArray) {
-                                engine._uploadDataToTextureDirectly(texture, width, height, floatArray, face, i);
+                                engine._uploadDataToTextureDirectly(texture, floatArray, face, i);
                             }
                         } else if (info.isRGB) {
                             texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -533,12 +533,12 @@
                                 texture.format = Engine.TEXTUREFORMAT_RGB;
                                 dataLength = width * height * 3;
                                 byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset);
-                                engine._uploadDataToTextureDirectly(texture, width, height, byteArray, face, i);
+                                engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                             } else { // 32
                                 texture.format = Engine.TEXTUREFORMAT_RGBA;
                                 dataLength = width * height * 4;
                                 byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset, aOffset);
-                                engine._uploadDataToTextureDirectly(texture, width, height, byteArray, face, i);
+                                engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                             }
                         } else if (info.isLuminance) {
                             var unpackAlignment = engine._getUnpackAlignement();
@@ -550,7 +550,7 @@
                             texture.format = Engine.TEXTUREFORMAT_LUMINANCE;
                             texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
 
-                            engine._uploadDataToTextureDirectly(texture, width, height, byteArray, face, i);
+                            engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         } else {
                             dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
                             byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);

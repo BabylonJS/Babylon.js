@@ -10,6 +10,7 @@ module BABYLON.GLTF2.Extensions {
     interface ILight extends IChildRootProperty {
         intensity: number;
         rotation: number[];
+        specularImageSize: number;
         specularImages: number[][];
         irradianceCoefficients: number[][];
 
@@ -73,8 +74,7 @@ module BABYLON.GLTF2.Extensions {
                 this._loader._parent._logClose();
 
                 light._loaded = Promise.all(promises).then(() => {
-                    const size = Math.pow(2, imageData.length - 1);
-                    const babylonTexture = new RawCubeTexture(this._loader._babylonScene, null, size);
+                    const babylonTexture = new RawCubeTexture(this._loader._babylonScene, null, light.specularImageSize);
                     light._babylonTexture = babylonTexture;
 
                     if (light.intensity != undefined) {
@@ -98,7 +98,9 @@ module BABYLON.GLTF2.Extensions {
                     sphericalHarmonics.convertIrradianceToLambertianRadiance();
                     const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);
 
-                    return babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial);
+                    // Compute the lod generation scale to fit exactly to the number of levels available.
+                    const lodGenerationScale = (imageData.length - 1) / Scalar.Log2(light.specularImageSize);
+                    return babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial, lodGenerationScale);
                 });
             }
 
