@@ -1,0 +1,34 @@
+{
+    "name": "babylonjs-gui",
+    "version": "1.0.0",
+    "description": "The js GUI library is an extension you can use to generate interactive user interface.\r It is build on top of the DynamicTexture.",
+    "scripts": {
+        "start:server": "webpack-dev-server",
+        "build": "webpack",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "keywords": [
+        "3d",
+        "webgl",
+        "viewer"
+    ],
+    "license": "Apache2",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    },
+    "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
+    "devDependencies": {
+        "ts-loader": "^4.0.0",
+        "typescript": "^2.9.2",
+        "webpack": "^4.15.1",
+        "webpack-cli": "^3.0.8",
+        "webpack-dev-server": "^3.1.4"
+    },
+    "peerDependencies": {
+        "babylonjs": ">3.2.0"
+    }
+}
