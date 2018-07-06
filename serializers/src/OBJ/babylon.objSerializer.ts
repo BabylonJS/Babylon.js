@@ -36,6 +36,7 @@ module BABYLON {
                 const g: Nullable<Geometry> = mesh[j].geometry;
 
                 if (!g) {
+                    Tools.Warn("No geometry is present on the mesh");
                     continue;
                 }
 
@@ -46,6 +47,7 @@ module BABYLON {
                 var curV = 0;
 
                 if (!trunkVerts || !trunkFaces) {
+                    Tools.Warn("There are no position vertices or indices on the mesh!");
                     continue;
                 }
 
