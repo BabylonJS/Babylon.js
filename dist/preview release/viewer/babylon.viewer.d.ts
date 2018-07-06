@@ -962,8 +962,10 @@ declare module BabylonViewer {
         readonly templateName: string;
         readonly eventsToAttach: Array<string>;
         protected _prepend: boolean;
-        protected abstract _buttonClass: string;
-        protected abstract _htmlTemplate: string;
+        protected _buttonName: string;
+        protected _buttonClass: string;
+        protected _htmlTemplate: string;
+        constructor(buttonName: string, buttonClass?: string, htmlTemplate?: string);
         interactionPredicate(event: EventCallback): boolean;
         abstract onEvent(event: EventCallback): void;
         addHTMLTemplate(template: Template): void;

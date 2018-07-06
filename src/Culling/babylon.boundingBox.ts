@@ -73,6 +73,25 @@
             this._update(this._worldMatrix || Matrix.Identity());
         }
 
+        /**
+         * Scale the current bounding box by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        public scale(factor: number): BoundingBox {
+            let diff = this.maximum.subtract(this.minimum);
+            let distance = diff.length() * factor;
+            diff.normalize();
+            let newRadius = diff.scale(distance / 2);
+
+            let min = this.center.subtract(newRadius);
+            let max = this.center.add(newRadius);
+
+            this.reConstruct(min, max);
+
+            return this;
+        }
+
         public getWorldMatrix(): Matrix {
             return this._worldMatrix;
         }
