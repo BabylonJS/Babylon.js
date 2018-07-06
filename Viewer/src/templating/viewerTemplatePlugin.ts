@@ -16,8 +16,26 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
     public readonly templateName: string = "navBar";
     public readonly eventsToAttach: Array<string> = ['pointerdown'];
     protected _prepend: boolean = true;
-    protected abstract _buttonClass: string;
-    protected abstract _htmlTemplate: string;
+    protected _buttonName: string;
+    protected _buttonClass: string;
+    protected _htmlTemplate: string;
+
+    constructor(buttonName: string, buttonClass?: string, htmlTemplate?: string) {
+        this._buttonName = buttonName;
+        if (buttonClass) {
+            this._buttonClass = buttonClass;
+        } else {
+            this._buttonClass = buttonName + '-button';
+        }
+        if (htmlTemplate) { this._htmlTemplate = htmlTemplate }
+        else {
+            this._htmlTemplate = `
+<button class="${this._buttonClass}">
+    <span class="icon ${this._buttonName}-icon"></span>
+</button>
+`;
+        }
+    }
 
     interactionPredicate(event: EventCallback): boolean {
         let pointerDown = <PointerEvent>event.event;
