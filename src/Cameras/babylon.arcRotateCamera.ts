@@ -573,17 +573,17 @@
                 }
             }
 
-            if (this.lowerAlphaLimit && this.alpha < this.lowerAlphaLimit) {
+            if (this.lowerAlphaLimit !== null && this.alpha < this.lowerAlphaLimit) {
                 this.alpha = this.lowerAlphaLimit;
             }
-            if (this.upperAlphaLimit && this.alpha > this.upperAlphaLimit) {
+            if (this.upperAlphaLimit !== null && this.alpha > this.upperAlphaLimit) {
                 this.alpha = this.upperAlphaLimit;
             }
 
-            if (this.lowerRadiusLimit && this.radius < this.lowerRadiusLimit) {
+            if (this.lowerRadiusLimit !== null && this.radius < this.lowerRadiusLimit) {
                 this.radius = this.lowerRadiusLimit;
             }
-            if (this.upperRadiusLimit && this.radius > this.upperRadiusLimit) {
+            if (this.upperRadiusLimit !== null && this.radius > this.upperRadiusLimit) {
                 this.radius = this.upperRadiusLimit;
             }
         }
