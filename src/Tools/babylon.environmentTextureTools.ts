@@ -52,6 +52,10 @@ module BABYLON {
          * This contains all the images data needed to reconstruct the cubemap.
          */
         mipmaps: Array<BufferImageData>
+        /**
+         * Defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness.
+         */
+        lodGenerationScale: number
     }
 
     /**
@@ -110,6 +114,8 @@ module BABYLON {
             if (manifest.specular) {
                 // Extend the header with the position of the payload.
                 manifest.specular.specularDataPosition = pos;
+                // Fallback to 0.8 exactly if lodGenerationScale is not defined for backward compatibility.
+                manifest.specular.lodGenerationScale = manifest.specular.lodGenerationScale || 0.8;
             }
 
             return manifest;
@@ -211,7 +217,8 @@ module BABYLON {
                     width: cubeWidth,
                     irradiance: this._CreateEnvTextureIrradiance(texture),
                     specular: {
-                        mipmaps: []
+                        mipmaps: [],
+                        lodGenerationScale: texture.lodGenerationScale
                     }
                 };
 
@@ -303,7 +310,7 @@ module BABYLON {
          */
         public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
             if (info.version !== 1) {
-                Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
+                throw new Error(`Unsupported babylon environment map version "${info.version}"`);
             }
 
             let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
@@ -316,8 +323,10 @@ module BABYLON {
             let mipmapsCount = Scalar.Log2(info.width);
             mipmapsCount = Math.round(mipmapsCount) + 1;
             if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
-                Tools.Warn('Unsupported specular mipmaps number "' + specularInfo.mipmaps.length + '"');
+                throw new Error(`Unsupported specular mipmaps number "${specularInfo.mipmaps.length}"`);
             }
+
+            texture._lodGenerationScale = specularInfo.lodGenerationScale;
 
             const imageData = new Array<Array<ArrayBufferView>>(mipmapsCount);
             for (let i = 0; i < mipmapsCount; i++) {
@@ -338,7 +347,11 @@ module BABYLON {
          * @returns a promise
          */
         public static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void> {
-            const mipmapsCount = imageData.length;
+            if (!Tools.IsExponentOfTwo(texture.width)) {
+                throw new Error("Texture size must be a power of two");
+            }
+
+            const mipmapsCount = Math.round(Scalar.Log2(texture.width)) + 1;
 
             // Gets everything ready.
             let engine = texture.getEngine();
@@ -351,7 +364,8 @@ module BABYLON {
 
             texture.format = Engine.TEXTUREFORMAT_RGBA;
             texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            texture.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            texture.generateMipMaps = true;
+            engine.updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
 
             // Add extra process if texture lod is not supported
             if (!caps.textureLOD) {
@@ -439,8 +453,8 @@ module BABYLON {
             }
 
             let promises: Promise<void>[] = [];
-            // All mipmaps
-            for (let i = 0; i < mipmapsCount; i++) {
+            // All mipmaps up to provided number of images
+            for (let i = 0; i < imageData.length; i++) {
                 // All faces
                 for (let face = 0; face < 6; face++) {
                     // Constructs an image element from image data
@@ -479,7 +493,7 @@ module BABYLON {
                             else {
                                 engine._uploadImageToTexture(texture, image, face, i);
 
-                                // Upload the face to the none lod texture support
+                                // Upload the face to the non lod texture support
                                 if (generateNonLODTextures) {
                                     let lodTexture = lodTextures![i];
                                     if (lodTexture) {
@@ -497,14 +511,40 @@ module BABYLON {
                 }
             }
 
+            // Fill remaining mipmaps with black textures.
+            if (imageData.length < mipmapsCount) {
+                let data: ArrayBufferView;
+                const size = Math.pow(2, mipmapsCount - 1 - imageData.length);
+                const dataLength = size * size * 4;
+                switch (texture.type) {
+                    case Engine.TEXTURETYPE_UNSIGNED_INT: {
+                        data = new Uint8Array(dataLength);
+                        break;
+                    }
+                    case Engine.TEXTURETYPE_HALF_FLOAT: {
+                        data = new Uint16Array(dataLength);
+                        break;
+                    }
+                    case Engine.TEXTURETYPE_FLOAT: {
+                        data = new Float32Array(dataLength);
+                        break;
+                    }
+                }
+                for (let i = imageData.length; i < mipmapsCount; i++) {
+                    for (let face = 0; face < 6; face++) {
+                        engine._uploadArrayBufferViewToTexture(texture, data!, face, i);
+                    }
+                }
+            }
+
             // Once all done, finishes the cleanup and return
             return Promise.all(promises).then(() => {
-                // Relase temp RTT.
+                // Release temp RTT.
                 if (cubeRtt) {
                     engine._releaseFramebufferObjects(cubeRtt);
                     cubeRtt._swapAndDie(texture);
                 }
-                // Relase temp Post Process.
+                // Release temp Post Process.
                 if (rgbdPostProcess) {
                     rgbdPostProcess.dispose();
                 }

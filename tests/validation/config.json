@@ -480,6 +480,11 @@
       "title": "TGA",
       "playgroundId": "#ZI77S7#0",
       "referenceImage": "tga.png"
+    },
+    {
+      "title": "DDS",
+      "playgroundId": "#ZI77S7#2",
+      "referenceImage": "dds.png"
     }
   ]
 }
