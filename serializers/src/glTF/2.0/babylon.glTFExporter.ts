@@ -768,7 +768,11 @@ module BABYLON.GLTF2 {
                 const container = new GLTFData();
                 container.glTFFiles[glbFileName] = glbFile;
 
-                this._localEngine.dispose();
+                if (this._localEngine != null) {
+                    this._localEngine.dispose();
+                }
+
+                
 
                 return container;
             });
