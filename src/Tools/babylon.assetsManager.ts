@@ -73,7 +73,7 @@ module BABYLON {
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _setErrorObject(message?: string, exception?: any) {
             if (this._errorObject) {
@@ -670,6 +670,118 @@ module BABYLON {
     }
 
     /**
+     * Define a task used by {BABYLON.AssetsManager} to load atlas texture
+     */
+    export class AtlasTextureAssetTask extends AbstractAssetTask {
+        private _framesData: any = {};
+        /**
+         * Gets data loaded
+         */
+        public data: any = {};
+        /**
+         * Callback called when the task is successful
+         */
+        public onSuccess: (task: ImageAssetTask) => void;
+        /**
+         * Callback called when the task is successful
+         */
+        public onError: (task: ImageAssetTask, message?: string, exception?: any) => void;
+
+        /**
+         * Creates a new AtlasTextureAssetTask
+         * @param name defines the name of the task
+         * @param url defines the location of the atlas texture to load
+         */
+        constructor(public name: string, public url: string) {
+            super(name);
+        }
+
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
+        public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+            let loadJsonFile = () => {
+                scene._loadFile(this.url, (data) => {
+                    let jsonData = JSON.parse(data as string);
+                    if (jsonData.meta) {
+                        this._framesData = jsonData.frames;
+                        let imageName = jsonData.meta.image;
+                        let parentPath = Tools.GetFolderPath(this.url);
+                        loadImageFile(parentPath + imageName);
+                    } else
+                        Tools.Error('Not found meta tag in JSON file: ' + this.url);
+                }, undefined, false, false, (request, exception) => {
+                    if (request) {
+                        onError(request.status + " " + request.statusText, exception);
+                    }
+                });
+            };
+
+            let loadImageFile = (url: string) => {
+                Tools.LoadImage(url, (img) => {
+                    this._parseData(img);
+                    onSuccess();
+                }, function (message, error) {
+                    onError(message, error);
+                }, null);
+            };
+
+            loadJsonFile();
+        }
+
+        /**
+         * Data parsed when load success JSON and Image file
+         * @param {HTMLImageElement} img
+         * @private
+         */
+        private _parseData(img: HTMLImageElement) {
+            Object.keys(this._framesData).forEach((key) => {
+                let name = key.substring(0, key.lastIndexOf('.'));
+                this.data[name] = new AtlasTexture(name, img, this._framesData[key]);
+            });
+        }
+    }
+
+    /**
+     * Defines the interface used storage information atlas texture
+     */
+    export interface IAtlasTexture {
+        frame: any,
+        pivot: any,
+        rotated: boolean,
+        sourceSize: any,
+        spriteSourceSize: any,
+        trimmed: boolean,
+    }
+
+    /**
+     * The class used for source's GUI.Image
+     */
+    export class AtlasTexture {
+        constructor(public name: string, public source: HTMLImageElement, public data: IAtlasTexture) {
+        }
+
+        public get x(): number {
+            return this.data.frame.x;
+        }
+
+        public get y(): number {
+            return this.data.frame.y;
+        }
+
+        public get w(): number {
+            return this.data.frame.w;
+        }
+
+        public get h(): number {
+            return this.data.frame.h;
+        }
+    }
+
+    /**
      * This class can be used to easily import assets into a scene
      * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
      */
@@ -822,7 +934,7 @@ module BABYLON {
         }
 
         /**
-         * 
+         *
          * Add a {BABYLON.HDRCubeTextureAssetTask} to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
@@ -835,6 +947,19 @@ module BABYLON {
          */
         public addHDRCubeTextureTask(taskName: string, url: string, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, reserved = false): HDRCubeTextureAssetTask {
             var task = new HDRCubeTextureAssetTask(taskName, url, size, noMipmap, generateHarmonics, gammaSpace, reserved);
+            this._tasks.push(task);
+
+            return task;
+        }
+
+        /**
+         * Add a {BABYLON.AtlasTextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new {BABYLON.AtlasTextureAssetTask} object
+         */
+        public addAtlasTextureTask(taskName: string, url: string): AtlasTextureAssetTask {
+            var task = new AtlasTextureAssetTask(taskName, url);
             this._tasks.push(task);
 
             return task;
