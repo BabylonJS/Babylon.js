@@ -148,7 +148,8 @@ module BABYLON {
 
         // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
         private _deviceRoomPosition = Vector3.Zero();
-        private _deviceRoomRotationQuaternion = Quaternion.Identity();
+        /** @hidden */
+        public _deviceRoomRotationQuaternion = Quaternion.Identity();
 
         private _standingMatrix: Nullable<Matrix> = null;
 
