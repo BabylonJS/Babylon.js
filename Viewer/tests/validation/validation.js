@@ -233,21 +233,23 @@ function runTest(index, done) {
 
     // create a new viewer
     currentViewer && currentViewer.dispose();
-    currentViewer = null;
-    currentScene = null;
-    viewerElement.innerHTML = '';
+    currentViewer && currentViewer.engine.dispose();
+
     setTimeout(() => {
+        currentViewer = null;
+        currentScene = null;
+        viewerElement.innerHTML = '';
         currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
         currentViewer.onInitDoneObservable.add(() => {
 
             var currentFrame = 0;
-            var waitForFrame = test.waitForFrame || 1;
+            var waitForFrame = test.waitForFrame || 0;
 
             currentViewer.onModelLoadedObservable.add((model) => {
                 console.log("model loaded");
                 currentViewer.onFrameRenderedObservable.add(() => {
-                    console.log("frame rendered", currentFrame);
+                    console.log("frame rendered", currentFrame, model.meshes.every(m => m.isReady()));
                     if (test.animationTest && !currentFrame) {
                         model.playAnimation(model.getAnimationNames()[0]);
                     }
