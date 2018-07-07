@@ -911,7 +911,7 @@ module BABYLON {
          * @param url defines the url of the file to load
          * @returns a new {BABYLON.AtlasTextureAssetTask} object
          */
-        public addAtlasTextureTask(taskName: string, url: string): JSONAssetTask {
+        public addJSONTask(taskName: string, url: string): JSONAssetTask {
             let task = new JSONAssetTask(taskName, url);
             this._tasks.push(task);
 
