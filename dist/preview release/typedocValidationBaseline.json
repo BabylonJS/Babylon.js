@@ -1,7 +1,7 @@
 {
-  "errors": 4225,
+  "errors": 4233,
   "babylon.typedoc.json": {
-    "errors": 4225,
+    "errors": 4233,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -5185,7 +5185,47 @@
     },
     "Engine": {
       "Method": {
+        "beginOcclusionQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "createEffectForParticles": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "createQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "deleteQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "endOcclusionQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "endTimeQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "getQueryResult": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "isQueryResultAvailable": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "startTimeQuery": {
           "Naming": {
             "NotPascalCase": true
           }
