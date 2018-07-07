@@ -11,7 +11,7 @@ module BABYLON.GUI {
         private _imageHeight: number;
         private _loaded = false;
         private _stretch = Image.STRETCH_FILL;
-        private _source: Nullable<string | AtlasTexture>;
+        private _source: Nullable<string | AtlasSourceImage>;
         private _autoScale = false;
 
         private _sourceLeft = 0;
@@ -164,7 +164,7 @@ module BABYLON.GUI {
         /**
          * Gets or sets image source url
          */
-        public set source(value: Nullable<string | AtlasTexture>) {
+        public set source(value: Nullable<string | AtlasSourceImage>) {
             if (value) {
                 let src = undefined;
                 if (typeof value === 'string') {

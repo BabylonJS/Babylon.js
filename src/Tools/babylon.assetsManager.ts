@@ -672,7 +672,7 @@ module BABYLON {
     /**
      * Define a task used by {BABYLON.AssetsManager} to load atlas texture
      */
-    export class AtlasTextureAssetTask extends AbstractAssetTask {
+    export class JSONAssetTask extends AbstractAssetTask {
         private _framesData: any = {};
         /**
          * Gets data loaded
@@ -681,14 +681,14 @@ module BABYLON {
         /**
          * Callback called when the task is successful
          */
-        public onSuccess: (task: ImageAssetTask) => void;
+        public onSuccess: (task: JSONAssetTask) => void;
         /**
          * Callback called when the task is successful
          */
-        public onError: (task: ImageAssetTask, message?: string, exception?: any) => void;
+        public onError: (task: JSONAssetTask, message?: string, exception?: any) => void;
 
         /**
-         * Creates a new AtlasTextureAssetTask
+         * Creates a new JSONAssetTask
          * @param name defines the name of the task
          * @param url defines the location of the atlas texture to load
          */
@@ -722,7 +722,8 @@ module BABYLON {
 
             let loadImageFile = (url: string) => {
                 Tools.LoadImage(url, (img) => {
-                    this._parseData(img);
+                    this.data['_framesData'] = this._framesData;
+                    this.data['_sourceImage'] = img;
                     onSuccess();
                 }, function (message, error) {
                     onError(message, error);
@@ -730,54 +731,6 @@ module BABYLON {
             };
 
             loadJsonFile();
-        }
-
-        /**
-         * Data parsed when load success JSON and Image file
-         * @param {HTMLImageElement} img
-         * @private
-         */
-        private _parseData(img: HTMLImageElement) {
-            Object.keys(this._framesData).forEach((key) => {
-                let name = key.substring(0, key.lastIndexOf('.'));
-                this.data[name] = new AtlasTexture(name, img, this._framesData[key]);
-            });
-        }
-    }
-
-    /**
-     * Defines the interface used storage information atlas texture
-     */
-    export interface IAtlasTexture {
-        frame: any,
-        pivot: any,
-        rotated: boolean,
-        sourceSize: any,
-        spriteSourceSize: any,
-        trimmed: boolean,
-    }
-
-    /**
-     * The class used for source's GUI.Image
-     */
-    export class AtlasTexture {
-        constructor(public name: string, public source: HTMLImageElement, public data: IAtlasTexture) {
-        }
-
-        public get x(): number {
-            return this.data.frame.x;
-        }
-
-        public get y(): number {
-            return this.data.frame.y;
-        }
-
-        public get w(): number {
-            return this.data.frame.w;
-        }
-
-        public get h(): number {
-            return this.data.frame.h;
         }
     }
 
@@ -958,8 +911,8 @@ module BABYLON {
          * @param url defines the url of the file to load
          * @returns a new {BABYLON.AtlasTextureAssetTask} object
          */
-        public addAtlasTextureTask(taskName: string, url: string): AtlasTextureAssetTask {
-            var task = new AtlasTextureAssetTask(taskName, url);
+        public addAtlasTextureTask(taskName: string, url: string): JSONAssetTask {
+            let task = new JSONAssetTask(taskName, url);
             this._tasks.push(task);
 
             return task;
