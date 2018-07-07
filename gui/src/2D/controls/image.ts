@@ -11,7 +11,7 @@ module BABYLON.GUI {
         private _imageHeight: number;
         private _loaded = false;
         private _stretch = Image.STRETCH_FILL;
-        private _source: Nullable<string | AtlasSourceImage>;
+        private _source: Nullable<string>;
         private _autoScale = false;
 
         private _sourceLeft = 0;
@@ -164,16 +164,20 @@ module BABYLON.GUI {
         /**
          * Gets or sets image source url
          */
-        public set source(value: Nullable<string | AtlasSourceImage>) {
+        public set source(value: Nullable<string | AtlasElementSourceImage>) {
             if (value) {
                 let src = undefined;
-                if (typeof value === 'string') {
-                    this._sourceLeft = 0;
-                    this._sourceTop = 0;
-                    this._sourceWidth = 0;
-                    this._sourceHeight = 0;
+
+                if (value instanceof AtlasElementSourceImage)
+                    src = value.source.src;
+                else
                     src = value;
-                } else {
+
+                if (!src || this._source === src) {
+                    return;
+                }
+
+                if (value instanceof AtlasElementSourceImage) {
                     this._autoScale = false;
                     this._sourceLeft = value.x;
                     this._sourceTop = value.y;
@@ -181,15 +185,10 @@ module BABYLON.GUI {
                     this._sourceHeight = value.h;
                     this.width = this._sourceWidth + 'px';
                     this.height = this._sourceHeight + 'px';
-                    src = value.source.src;
-                }
-
-                if (this._source === src) {
-                    return;
                 }
 
                 this._loaded = false;
-                this._source = value;
+                this._source = src;
 
                 if (!this._domImage)
                     this._domImage = new DOMImage();
@@ -201,10 +200,9 @@ module BABYLON.GUI {
                 this._domImage.onerror = (ev) => {
                     this.onErrorObservable.notifyObservers(ev, -1, this, this);
                 };
-                if (src) {
-                    Tools.SetCorsBehavior(src, this._domImage);
-                    this._domImage.src = src;
-                }
+
+                Tools.SetCorsBehavior(src, this._domImage);
+                this._domImage.src = src;
             }
         }
 

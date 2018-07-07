@@ -1728,8 +1728,6 @@
         "libraries": [
             {
                 "files": [
-                    "../../gui/src/2D/atlasSourceImage.ts",
-                    "../../gui/src/2D/atlasSourceImageManager.ts",
                     "../../gui/src/2D/style.ts",
                     "../../gui/src/2D/valueAndUnit.ts",
                     "../../gui/src/2D/advancedDynamicTexture.ts",
