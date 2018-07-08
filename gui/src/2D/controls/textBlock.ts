@@ -2,11 +2,31 @@
 
 module BABYLON.GUI {
     /**
+     * Enum that determines the text-wrapping mode to use.
+     */
+    export enum TextWrapping {
+        /**
+         * Clip the text when it's larger than Control.width; this is the default mode.
+         */
+        Clip = 0,
+
+        /**
+         * Wrap the text word-wise, i.e. try to add line-breaks at word boundary to fit within Control.width.
+         */
+        WordWrap = 1,
+
+        /**
+         * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
+         */
+        Ellipsis,
+    }
+
+    /**
      * Class used to create text block control
      */
     export class TextBlock extends Control {
         private _text = "";
-        private _textWrapping = false;
+        private _textWrapping = TextWrapping.Clip;
         private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 
@@ -54,18 +74,18 @@ module BABYLON.GUI {
         /**
          * Gets or sets a boolean indicating if text must be wrapped
          */
-        public get textWrapping(): boolean {
+        public get textWrapping(): TextWrapping | boolean {
             return this._textWrapping;
         }
 
         /**
          * Gets or sets a boolean indicating if text must be wrapped
          */        
-        public set textWrapping(value: boolean) {
+        public set textWrapping(value: TextWrapping | boolean) {
             if (this._textWrapping === value) {
                 return;
             }
-            this._textWrapping = value;
+            this._textWrapping = +value;
             this._markAsDirty();
         }
 
@@ -257,9 +277,13 @@ module BABYLON.GUI {
             var lines = [];
             var _lines = this.text.split("\n");
 
-            if (this._textWrapping && !this._resizeToFit) {
+            if (this._textWrapping === TextWrapping.Ellipsis && !this._resizeToFit) {
                 for (var _line of _lines) {
-                    lines.push(...this._parseLineWithTextWrapping(_line, refWidth, context));
+                    lines.push(this._parseLineEllipsis(_line, refWidth, context));
+                }
+            } else if (this._textWrapping === TextWrapping.WordWrap && !this._resizeToFit) {
+                for (var _line of _lines) {
+                    lines.push(...this._parseLineWordWrap(_line, refWidth, context));
                 }
             } else {
                 for (var _line of _lines) {
@@ -274,8 +298,23 @@ module BABYLON.GUI {
             return { text: line, width: context.measureText(line).width };
         }
 
-        protected _parseLineWithTextWrapping(line: string = '', width: number,
-                                             context: CanvasRenderingContext2D): object[] {
+        protected _parseLineEllipsis(line: string = '', width: number,
+                                     context: CanvasRenderingContext2D): object {
+            var lineWidth = context.measureText(line).width;
+
+            if (lineWidth > width) {
+                line += '…';
+            }
+            while (line.length > 2 && lineWidth > width) {
+                line = line.slice(0, -2) + '…';
+                lineWidth = context.measureText(line).width;
+            }
+
+            return { text: line, width: lineWidth };
+        }
+
+        protected _parseLineWordWrap(line: string = '', width: number,
+                                     context: CanvasRenderingContext2D): object[] {
             var lines = [];
             var words = line.split(' ');
             var lineWidth = 0;
