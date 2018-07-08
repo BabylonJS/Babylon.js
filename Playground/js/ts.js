@@ -226,10 +226,10 @@ function transpileModule(input, options) {
                                 } else if (query.indexOf("=") === -1) {
                                     loadScript("scripts/" + query + ".js", query);
                                 } else {
-                                    loadScript("scripts/basic type script scene.txt", "Basic scene");
+                                    loadScript("typescripts/basic scene.txt", "Basic scene");
                                 }
                             } else {
-                                loadScript("scripts/basic type script scene.txt", "Basic scene");
+                                loadScript("typescripts/basic scene.txt", "Basic scene");
                             }
                         }
 
