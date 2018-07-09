@@ -1211,7 +1211,7 @@
             // Update
             this._engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
             this._engine.setRasterizerState(false);
-            this._engine.beginTransformFeedback();
+            this._engine.beginTransformFeedback(true);
             this._engine.drawArraysType(Material.PointListDrawMode, 0, this._currentActiveCount);
             this._engine.endTransformFeedback();
             this._engine.setRasterizerState(true);
