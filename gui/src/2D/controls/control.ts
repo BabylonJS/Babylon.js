@@ -5,8 +5,6 @@ import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, 
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { StackPanel } from "./stackPanel";
-import { TextBlock } from "./textBlock";
 
 /**
  * Root class used for all 2D controls
@@ -1398,6 +1396,8 @@ export class Control {
         return result;
     };
 
+
+
     /**
      * Creates a stack panel that can be used to render headers
      * @param control defines the control to associate with the header
@@ -1406,39 +1406,7 @@ export class Control {
      * @param options defines options used to configure the header
      * @returns a new StackPanel
      */
-    public static AddHeader(control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
-        let panel = new StackPanel("panel");
-        let isHorizontal = options ? options.isHorizontal : true;
-        let controlFirst = options ? options.controlFirst : true;
-
-        panel.isVertical = !isHorizontal;
-
-        let header = new TextBlock("header");
-        header.text = text;
-        header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        if (isHorizontal) {
-            header.width = size;
-        } else {
-            header.height = size;
-        }
-
-        if (controlFirst) {
-            panel.addControl(control);
-            panel.addControl(header);
-            header.paddingLeft = "5px";
-        } else {
-            panel.addControl(header);
-            panel.addControl(control);
-            header.paddingRight = "5px";
-        }
-
-        header.shadowBlur = control.shadowBlur;
-        header.shadowColor = control.shadowColor;
-        header.shadowOffsetX = control.shadowOffsetX;
-        header.shadowOffsetY = control.shadowOffsetY;
-
-        return panel;
-    }
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any;
 
     /** @hidden */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void {
