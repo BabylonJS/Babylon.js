@@ -1,0 +1,60 @@
+class SceneBase {
+    scene : any;
+    constructor() { 
+        this.scene = new BABYLON.Scene(engine); 
+    }
+}
+
+class CameraBase {
+    camera : any; 
+    constructor() { 
+        this.camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene); 
+        this.camera.setTarget(BABYLON.Vector3.Zero());
+        this.camera.attachControl(canvas, true);
+    } 
+}
+
+class SceneTheme {
+    lights : any[]; 
+    constructor() {
+       var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+       light.intensity = 0.7;
+       this.lights = new Array();
+       this.lights.push(light);       
+    } 
+}
+
+class Objects{
+    meshes : any[]; 
+    constructor(){
+
+        this.meshes = new Array();
+
+       var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+              sphere.position.y = 1;
+        this.meshes.push(sphere);
+              
+      var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+       this.meshes.push(ground);
+         
+    }
+
+}
+
+class MainScene { 
+    constructor() { 
+    }
+    CreateScene() {
+
+        var scene = new SceneBase().scene;
+        
+        var camera = new CameraBase().camera;
+
+        var theme = new SceneTheme();
+
+        var objGroup1 = new Objects();
+         
+        return scene;
+    }
+}
+
