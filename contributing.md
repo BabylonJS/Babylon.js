@@ -23,7 +23,7 @@ We will try to enforce these rules as we consider the forum is a better place fo
 
 ## Pull requests
 
-We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
+We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/how_to/approved_naming_conventions)
 Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
 
 Need help contributing, here are some links:
