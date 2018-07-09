@@ -247,4 +247,62 @@ module BABYLON {
     Engine.prototype._getGlAlgorithmType = function(algorithmType: number): number {
         return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
     }
+
+    // We also need to update AbstractMesh as there is a portion of the code there
+    AbstractMesh.prototype._checkOcclusionQuery = function() {
+        var engine = this.getEngine();
+
+        if (!engine.isQueryResultAvailable) { // Occlusion query where not referenced
+            this._isOccluded = false;
+            return;
+        }
+
+        if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
+            this._isOccluded = false;
+            return;
+        }
+
+        if (this.isOcclusionQueryInProgress && this._occlusionQuery) {
+
+            var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
+            if (isOcclusionQueryAvailable) {
+                var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
+
+                this._isOcclusionQueryInProgress = false;
+                this._occlusionInternalRetryCounter = 0;
+                this._isOccluded = occlusionQueryResult === 1 ? false : true;
+            }
+            else {
+
+                this._occlusionInternalRetryCounter++;
+
+                if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
+                    this._isOcclusionQueryInProgress = false;
+                    this._occlusionInternalRetryCounter = 0;
+
+                    // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
+                    // if strict continue the last state of the object.
+                    this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : this._isOccluded;
+                }
+                else {
+                    return;
+                }
+
+            }
+        }
+
+        var scene = this.getScene();
+        if (scene.getBoundingBoxRenderer) {
+        var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
+
+            if (!this._occlusionQuery) {
+                this._occlusionQuery = engine.createQuery();
+            }
+
+            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
+            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
+            this._isOcclusionQueryInProgress = true;
+        }
+    } 
 }
