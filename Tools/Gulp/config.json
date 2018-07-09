@@ -1794,6 +1794,7 @@
                     "../../gui/src/2D/controls/button.ts",
                     "../../gui/src/2D/controls/colorpicker.ts",
                     "../../gui/src/2D/controls/inputText.ts",
+                    "../../gui/src/2D/controls/inputPassword.ts",
                     "../../gui/src/2D/controls/virtualKeyboard.ts",
                     "../../gui/src/2D/controls/multiLine.ts",
                     "../../gui/src/2D/controls/grid.ts",                    
