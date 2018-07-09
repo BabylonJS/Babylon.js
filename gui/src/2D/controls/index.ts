@@ -10,3 +10,10 @@ export * from "./inputText";
 export * from "./line";
 export * from "./multiLine";
 export * from "./radioButton";
+export * from "./stackPanel";
+export * from "./textBlock";
+export * from "./virtualKeyboard";
+export * from "./slider";
+export * from "./rectangle";
+
+export * from "./statics";
