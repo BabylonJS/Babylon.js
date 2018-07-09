@@ -14,9 +14,8 @@ module.exports = {
             amd: "babylonjs-gui",
             commonjs: "babylonjs-gui"
         },
-        //globalObject: "BABYLON",
         umdNamedDefine: true,
-        devtoolModuleFilenameTemplate: '[relative-resource-path]'
+        //devtoolModuleFilenameTemplate: '[relative-resource-path]'
     },
     resolve: {
         extensions: [".js", '.ts']
@@ -30,29 +29,24 @@ module.exports = {
         }
     },
     plugins: [
-        new webpack.WatchIgnorePlugin([
-            /\.d\.ts$/
-        ]),
         // fixing a small issue when root is an array and not a string
         /*new webpack.SourceMapDevToolPlugin({
-            namespace: "BABYLON.GUI"
+            filename: '[name].js.map',
         })*/
     ],
+    devtool: "source-map",
     module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                loader: "ts-loader",
-                exclude: /node_modules/
-            },
-            {
-                test: /\.fx$/,
-                use: [
-                    {
-                        loader: path.resolve('../Tools/WebpackShaderLoader/index.js')
-                    }
-                ]
+        rules: [{
+            test: /\.tsx?$/,
+            loader: "ts-loader",
+            exclude: /node_modules/
+        },
+        {
+            test: /\.fx$/,
+            use: [{
+                loader: path.resolve('../Tools/WebpackShaderLoader/index.js')
             }]
+        }]
     },
     mode: "development",
     devServer: {
