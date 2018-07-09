@@ -1423,6 +1423,16 @@
             return this;
         }
 
+        public RegisterShader(name: string, pixelShader?: string, vertexShader?: string) {
+            if (pixelShader) {
+                Effect.ShadersStore[`${name}PixelShader`] = pixelShader;
+            }
+
+            if (vertexShader) {
+                Effect.ShadersStore[`${name}VertexShader`] = vertexShader;
+            }
+        }
+
         /**
          * Store of each shader (The can be looked up using effect.key)
          */
