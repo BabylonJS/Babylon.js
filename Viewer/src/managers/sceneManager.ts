@@ -796,11 +796,11 @@ export class SceneManager {
             }
             return;
         }
-        let vrOptions: VRExperienceHelperOptions = vrConfig.vrOptions || {
+        let vrOptions: VRExperienceHelperOptions = deepmerge({
             useCustomVRButton: true,
             createDeviceOrientationCamera: false,
             trackPosition: true
-        }
+        }, vrConfig.vrOptions || {});
 
         this._vrHelper = this.scene.createDefaultVRExperience(vrOptions);
         if (!vrConfig.disableInteractions) {
