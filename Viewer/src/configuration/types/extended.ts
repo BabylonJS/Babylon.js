@@ -61,8 +61,8 @@ export let extendedConfiguration: ViewerConfiguration = {
             frustumEdgeFalloff: 0,
             intensity: 7,
             intensityMode: 0,
-            radius: 0.6,
-            range: 0.6,
+            radius: 4.2,
+            range: 4.2,
             spotAngle: 60,
             diffuse: {
                 r: 1,
@@ -100,8 +100,8 @@ export let extendedConfiguration: ViewerConfiguration = {
             frustumEdgeFalloff: 0,
             intensity: 7,
             intensityMode: 0,
-            radius: 0.4,
-            range: 0.4,
+            radius: 5.8,
+            range: 5.8,
             spotAngle: 57,
             diffuse: {
                 r: 1,
@@ -131,8 +131,8 @@ export let extendedConfiguration: ViewerConfiguration = {
             frustumEdgeFalloff: 0,
             intensity: 1,
             intensityMode: 0,
-            radius: 0.5,
-            range: 0.5,
+            radius: 6,
+            range: 6,
             spotAngle: 42.85,
             diffuse: {
                 r: 0.8,
