@@ -1,7 +1,6 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 var DOMImage = Image;
-
 module BABYLON.GUI {
     /**
      * Class used to create 2D images
@@ -24,6 +23,9 @@ module BABYLON.GUI {
         private _cellHeight: number = 0;
         private _cellId: number = -1;
 
+        public onLoadedObservable = new Observable<Image>();
+        public onErrorObservable = new Observable();
+
         /**
          * Gets or sets the left coordinate in the source image
          */
@@ -43,7 +45,7 @@ module BABYLON.GUI {
 
         /**
          * Gets or sets the top coordinate in the source image
-         */        
+         */
         public get sourceTop(): number {
             return this._sourceTop;
         }
@@ -60,7 +62,7 @@ module BABYLON.GUI {
 
         /**
          * Gets or sets the width to capture in the source image
-         */        
+         */
         public get sourceWidth(): number {
             return this._sourceWidth;
         }
@@ -77,7 +79,7 @@ module BABYLON.GUI {
 
         /**
          * Gets or sets the height to capture in the source image
-         */        
+         */
         public get sourceHeight(): number {
             return this._sourceHeight;
         }
@@ -92,8 +94,8 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        /** 
-         * Gets or sets a boolean indicating if the image can force its container to adapt its size 
+        /**
+         * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
         public get autoScale(): boolean {
@@ -162,69 +164,95 @@ module BABYLON.GUI {
         /**
          * Gets or sets image source url
          */
-        public set source(value: Nullable<string>) {
-            if (this._source === value) {
-                return;
-            }
-
-            this._loaded = false;
-            this._source = value;
-
-            this._domImage = new DOMImage();
-
-            this._domImage.onload = () => {
-                this._onImageLoaded();
-            }
+        public set source(value: Nullable<string | AtlasElementSourceImage>) {
             if (value) {
-                Tools.SetCorsBehavior(value, this._domImage);
-                this._domImage.src = value;
+                let src = undefined;
+
+                if (value instanceof AtlasElementSourceImage)
+                    src = value.source.src;
+                else
+                    src = value;
+
+                if (!src || this._source === src) {
+                    return;
+                }
+
+                if (value instanceof AtlasElementSourceImage) {
+                    this._autoScale = false;
+                    this._sourceLeft = value.x;
+                    this._sourceTop = value.y;
+                    this._sourceWidth = value.w;
+                    this._sourceHeight = value.h;
+                    this.width = this._sourceWidth + 'px';
+                    this.height = this._sourceHeight + 'px';
+                }
+
+                this._loaded = false;
+                this._source = src;
+
+                if (!this._domImage)
+                    this._domImage = new DOMImage();
+
+                this._domImage.onload = () => {
+                    this._onImageLoaded();
+                    this.onLoadedObservable.notifyObservers(this);
+                };
+                this._domImage.onerror = (ev) => {
+                    this.onErrorObservable.notifyObservers(ev, -1, this, this);
+                };
+
+                Tools.SetCorsBehavior(src, this._domImage);
+                this._domImage.src = src;
             }
         }
 
-        /** 
-         * Gets or sets the cell width to use when animation sheet is enabled 
+        /**
+         * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
         get cellWidth(): number {
             return this._cellWidth;
         }
+
         set cellWidth(value: number) {
-            if(this._cellWidth === value){
+            if (this._cellWidth === value) {
                 return;
             }
-            
+
             this._cellWidth = value;
             this._markAsDirty();
         }
 
-        /** 
-         * Gets or sets the cell height to use when animation sheet is enabled 
+        /**
+         * Gets or sets the cell height to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
         get cellHeight(): number {
             return this._cellHeight;
         }
+
         set cellHeight(value: number) {
-            if(this._cellHeight === value){
+            if (this._cellHeight === value) {
                 return;
             }
-            
+
             this._cellHeight = value;
             this._markAsDirty();
         }
-    
-        /** 
+
+        /**
          * Gets or sets the cell id to use (this will turn on the animation sheet mode)
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
         get cellId(): number {
             return this._cellId;
         }
+
         set cellId(value: number) {
             if (this._cellId === value) {
-                 return;
-             }
-            
+                return;
+            }
+
             this._cellId = value;
             this._markAsDirty();
         }
@@ -257,7 +285,7 @@ module BABYLON.GUI {
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
-            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
                 context.shadowOffsetX = this.shadowOffsetX;

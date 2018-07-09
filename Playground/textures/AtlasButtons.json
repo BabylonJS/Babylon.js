@@ -1,0 +1,66 @@
+{"frames": {
+
+"img1.png":
+{
+	"frame": {"x":1,"y":1,"w":130,"h":124},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":130,"h":124},
+	"sourceSize": {"w":130,"h":124},
+	"pivot": {"x":0.5,"y":0.5}
+},
+"img2.png":
+{
+	"frame": {"x":133,"y":127,"w":130,"h":123},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":130,"h":123},
+	"sourceSize": {"w":130,"h":123},
+	"pivot": {"x":0.5,"y":0.5}
+},
+"img3.png":
+{
+	"frame": {"x":265,"y":1,"w":130,"h":123},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":130,"h":123},
+	"sourceSize": {"w":130,"h":123},
+	"pivot": {"x":0.5,"y":0.5}
+},
+"img4.png":
+{
+	"frame": {"x":1,"y":127,"w":130,"h":124},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":130,"h":124},
+	"sourceSize": {"w":130,"h":124},
+	"pivot": {"x":0.5,"y":0.5}
+},
+"img5.png":
+{
+	"frame": {"x":265,"y":126,"w":130,"h":123},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":130,"h":123},
+	"sourceSize": {"w":130,"h":123},
+	"pivot": {"x":0.5,"y":0.5}
+},
+"img6.png":
+{
+	"frame": {"x":133,"y":1,"w":130,"h":124},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":130,"h":124},
+	"sourceSize": {"w":130,"h":124},
+	"pivot": {"x":0.5,"y":0.5}
+}},
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "AtlasButtons.png",
+	"format": "RGBA8888",
+	"size": {"w":512,"h":256},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:e2039f13bd63a366f065df4e96275cc2:fdef52dbd511adee65b087a9a558af18:7909e05afd857bc8684a5929783607d3$"
+}
+}

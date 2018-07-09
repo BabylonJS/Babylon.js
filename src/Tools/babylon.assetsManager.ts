@@ -1,4 +1,49 @@
 module BABYLON {
+    /**
+     * Defines the interface used for storing atlas information
+     */
+    export interface IAtlasSourceData {
+        /**
+         * Coordinate of the source image
+         */
+        frame: any,
+        /**
+         * Source image has be rotated?
+         */
+        rotated: boolean,
+        /**
+         * Width & Height of source image.
+         */
+        sourceSize: any,
+        /**
+         * Source image has be trimmed?
+         */
+        trimmed: boolean,
+    }
+
+    /**
+     * The class used to store an element of an Atlas texture
+     */
+    export class AtlasElementSourceImage {
+        constructor(public name: string, public source: HTMLImageElement, public data: IAtlasSourceData) {
+        }
+
+        public get x(): number {
+            return this.data.frame.x;
+        }
+
+        public get y(): number {
+            return this.data.frame.y;
+        }
+
+        public get w(): number {
+            return this.data.frame.w;
+        }
+
+        public get h(): number {
+            return this.data.frame.h;
+        }
+    }
 
     /**
      * Defines the list of states available for a task inside a {BABYLON.AssetsManager}
@@ -73,7 +118,7 @@ module BABYLON {
 
         /**
          * Internal only
-         * @hidden 
+         * @hidden
          */
         public _setErrorObject(message?: string, exception?: any) {
             if (this._errorObject) {
@@ -277,6 +322,11 @@ module BABYLON {
      * Define a task used by {BABYLON.AssetsManager} to load text content
      */
     export class TextFileAssetTask extends AbstractAssetTask {
+        private _framesData: any;
+        /**
+         * Gets data storing element source image if load a Atlas Image
+         */
+        public data: any = {};
         /**
          * Gets the loaded text string
          */
@@ -305,7 +355,11 @@ module BABYLON {
             /**
              * Defines the location of the file to load
              */
-            public url: string) {
+            public url: string,
+            /**
+             * Need load a Atlas Image
+             */
+            public isLoadAtlasImage: boolean = false) {
             super(name);
         }
 
@@ -318,11 +372,46 @@ module BABYLON {
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             scene._loadFile(this.url, (data) => {
                 this.text = data as string;
-                onSuccess();
+                if (this.isLoadAtlasImage)
+                    readJSONData(this.text);
+                else
+                    onSuccess();
             }, undefined, false, false, (request, exception) => {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
+            });
+
+            let readJSONData = (data: string) => {
+                let jsonData = JSON.parse(data);
+                if (jsonData.meta) {
+                    this._framesData = jsonData.frames;
+                    let imageName = jsonData.meta.image;
+                    let parentPath = Tools.GetFolderPath(this.url);
+                    loadImageFile(parentPath + imageName);
+
+                } else
+                    Tools.Error('Not found meta tag in JSON file: ' + this.url);
+            };
+
+            let loadImageFile = (url: string) => {
+                Tools.LoadImage(url, (img) => {
+                    this._parseData(img);
+                    onSuccess();
+                }, function (message, error) {
+                    onError(message, error);
+                }, null);
+            };
+        }
+
+        /**
+         * Parse data when loaded a Atlas Image
+         * @param {HTMLImageElement} img
+         */
+        private _parseData(img: HTMLImageElement) {
+            Object.keys(this._framesData).forEach((key) => {
+                let name = key.substring(0, key.lastIndexOf('.'));
+                this.data[name] = new AtlasElementSourceImage(name, img, this._framesData[key]);
             });
         }
     }
@@ -754,10 +843,11 @@ module BABYLON {
          * Add a {BABYLON.TextFileAssetTask} to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
+         * @param isLoadAtlasImage need load a Atlas Image
          * @returns a new {BABYLON.TextFileAssetTask} object
          */
-        public addTextFileTask(taskName: string, url: string): TextFileAssetTask {
-            var task = new TextFileAssetTask(taskName, url);
+        public addTextFileTask(taskName: string, url: string, isLoadAtlasImage: boolean): TextFileAssetTask {
+            var task = new TextFileAssetTask(taskName, url, isLoadAtlasImage);
             this._tasks.push(task);
 
             return task;
@@ -822,7 +912,7 @@ module BABYLON {
         }
 
         /**
-         * 
+         *
          * Add a {BABYLON.HDRCubeTextureAssetTask} to the list of active tasks
          * @param taskName defines the name of the new task
          * @param url defines the url of the file to load
