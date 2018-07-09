@@ -41,13 +41,12 @@ module BABYLON.GUI {
                     mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                     break;
                 case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                    mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
+                    mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
                     break;
                 case Container3D.FACEFORWARD_ORIENTATION:
-                    mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
                     break;
                 case Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                    mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                    mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
                     break;
             }           
         }

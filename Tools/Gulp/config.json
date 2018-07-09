@@ -120,7 +120,8 @@
             "videoDome",
             "photoDome",
             "behaviors",
-            "imageProcessing"            
+            "imageProcessing",
+            "occlusionQuery"     
         ],
         "minimal": [
             "meshBuilder",
@@ -234,6 +235,14 @@
                 "fogFragment"
             ]
         },
+        "occlusionQuery": {
+            "files": [
+                "../../src/Engine/Extensions/babylon.engine.occlusionQuery.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },          
         "behaviors": {
             "files": [
                 "../../src/Behaviors/babylon.behavior.js"

@@ -472,7 +472,7 @@
         }
 
         /** @hidden */
-        public _uploadDataToTextureDirectly(texture: InternalTexture, width: number, height: number, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
         }
 
         /** @hidden */
