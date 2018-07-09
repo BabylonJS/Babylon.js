@@ -9,7 +9,12 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
         libraryTarget: 'umd',
-        library: 'BABYLON.GUI',
+        library: {
+            root: ["BABYLON", "GUI"],
+            amd: "babylonjs-gui",
+            commonjs: "babylonjs-gui"
+        },
+        //globalObject: "BABYLON",
         umdNamedDefine: true,
         devtoolModuleFilenameTemplate: '[relative-resource-path]'
     },
@@ -22,11 +27,14 @@ module.exports = {
     externals: {
         babylonjs: true
     },
-    devtool: 'source-map',
     plugins: [
         new webpack.WatchIgnorePlugin([
             /\.d\.ts$/
-        ])
+        ]),
+        // fixing a small issue when root is an array and not a string
+        new webpack.SourceMapDevToolPlugin({
+            namespace: "BABYLON.GUI"
+        })
     ],
     module: {
         rules: [{ test: /\.tsx?$/, loader: "ts-loader", exclude: /node_modules/ }]
