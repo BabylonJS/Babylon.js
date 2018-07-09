@@ -441,7 +441,7 @@ export class InputText extends Control implements IFocusableControl {
                 }
 
                 clearTimeout(this._blinkTimeout);
-                this._blinkTimeout = setTimeout(() => {
+                this._blinkTimeout = <any>setTimeout(() => {
                     this._blinkIsEven = !this._blinkIsEven;
                     this._markAsDirty();
                 }, 500);
