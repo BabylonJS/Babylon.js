@@ -240,7 +240,8 @@
                 "../../src/Engine/Extensions/babylon.engine.occlusionQuery.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "debug"
             ]
         },          
         "behaviors": {
