@@ -121,7 +121,8 @@
             "photoDome",
             "behaviors",
             "imageProcessing",
-            "occlusionQuery"     
+            "occlusionQuery",
+            "transformFeedback"     
         ],
         "minimal": [
             "meshBuilder",
@@ -235,6 +236,15 @@
                 "fogFragment"
             ]
         },
+        "transformFeedback": {
+            "files": [
+                "../../src/Engine/Extensions/babylon.engine.transformFeedback.js"
+            ],
+            "dependUpon": [
+                "core",
+                "debug"
+            ]
+        },          
         "occlusionQuery": {
             "files": [
                 "../../src/Engine/Extensions/babylon.engine.occlusionQuery.js"
@@ -285,7 +295,8 @@
             ],
             "dependUpon": [
                 "core",
-                "particles"
+                "particles",
+                "transformFeedback"
             ],
             "shaders": [
                 "gpuRenderParticles.vertex",
