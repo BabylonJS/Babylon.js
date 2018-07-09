@@ -19,25 +19,40 @@ module.exports = {
         devtoolModuleFilenameTemplate: '[relative-resource-path]'
     },
     resolve: {
-        extensions: [".js", '.ts'],
-        /*alias: {
-            "babylonjs": __dirname + '/../dist/preview release/babylon.max.js'
-        }*/
+        extensions: [".js", '.ts']
     },
     externals: {
-        babylonjs: true
+        babylonjs: {
+            root: "BABYLON",
+            commonjs: "babylonjs",
+            commonjs2: "babylonjs",
+            amd: "babylonjs"
+        }
     },
     plugins: [
         new webpack.WatchIgnorePlugin([
             /\.d\.ts$/
         ]),
         // fixing a small issue when root is an array and not a string
-        new webpack.SourceMapDevToolPlugin({
+        /*new webpack.SourceMapDevToolPlugin({
             namespace: "BABYLON.GUI"
-        })
+        })*/
     ],
     module: {
-        rules: [{ test: /\.tsx?$/, loader: "ts-loader", exclude: /node_modules/ }]
+        rules: [
+            {
+                test: /\.tsx?$/,
+                loader: "ts-loader",
+                exclude: /node_modules/
+            },
+            {
+                test: /\.fx$/,
+                use: [
+                    {
+                        loader: path.resolve('../Tools/WebpackShaderLoader/index.js')
+                    }
+                ]
+            }]
     },
     mode: "development",
     devServer: {
