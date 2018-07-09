@@ -183,6 +183,11 @@ module BABYLON {
          */
         public onControllerMeshLoadedObservable = new Observable<WebVRController>();
         /**
+         * Emits an event when the HMD's pose has been updated.
+         */
+        public onPoseUpdatedFromDeviceObservable = new Observable<any>();
+        private _poseSet = false;
+        /**
          * If the rig cameras be used as parent instead of this camera.
          */
         public rigParenting: boolean = true;
@@ -431,6 +436,7 @@ module BABYLON {
                         this._deviceRoomPosition.z *= -1;
                     }
                 }
+                this._poseSet = true;
             }
         }
 
@@ -559,6 +565,9 @@ module BABYLON {
             this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
+            if(this._poseSet){
+                this.onPoseUpdatedFromDeviceObservable.notifyObservers(null);
+            }
             super.update();
         }
 

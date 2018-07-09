@@ -13,15 +13,20 @@ module BABYLON.GUI {
             }
 
             control.position = nodePosition.clone();
+            let target = Tmp.Vector3[0];
+
+            target.copyFrom(nodePosition);
 
             switch (this.orientation) {
                 case Container3D.FACEORIGIN_ORIENTATION:
                 case Container3D.FACEFORWARD_ORIENTATION:
-                    mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                    target.addInPlace(new BABYLON.Vector3(0, 0, -1));
+                    mesh.lookAt(target);
                     break;
                 case Container3D.FACEFORWARDREVERSED_ORIENTATION:
                 case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                    mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                    target.addInPlace(new BABYLON.Vector3(0, 0, 1));
+                    mesh.lookAt(target);
                     break;
             }
             

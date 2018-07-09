@@ -29,7 +29,7 @@ var BABYLON;
     var OBJExport = /** @class */ (function () {
         function OBJExport() {
         }
-        //Exports the geometrys of a Mesh array in .OBJ file format (text)
+        //Exports the geometry of a Mesh array in .OBJ file format (text)
         OBJExport.OBJ = function (mesh, materials, matlibname, globalposition) {
             var output = [];
             var v = 1;
@@ -59,6 +59,7 @@ var BABYLON;
                 }
                 var g = mesh[j].geometry;
                 if (!g) {
+                    BABYLON.Tools.Warn("No geometry is present on the mesh");
                     continue;
                 }
                 var trunkVerts = g.getVerticesData('position');
@@ -66,23 +67,33 @@ var BABYLON;
                 var trunkUV = g.getVerticesData('uv');
                 var trunkFaces = g.getIndices();
                 var curV = 0;
-                if (!trunkVerts || !trunkNormals || !trunkUV || !trunkFaces) {
+                if (!trunkVerts || !trunkFaces) {
+                    BABYLON.Tools.Warn("There are no position vertices or indices on the mesh!");
                     continue;
                 }
                 for (var i = 0; i < trunkVerts.length; i += 3) {
                     output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
                     curV++;
                 }
-                for (i = 0; i < trunkNormals.length; i += 3) {
-                    output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                if (trunkNormals != null) {
+                    for (i = 0; i < trunkNormals.length; i += 3) {
+                        output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                    }
                 }
-                for (i = 0; i < trunkUV.length; i += 2) {
-                    output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                if (trunkUV != null) {
+                    for (i = 0; i < trunkUV.length; i += 2) {
+                        output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    }
                 }
                 for (i = 0; i < trunkFaces.length; i += 3) {
-                    output.push("f " + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) +
-                        " " + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) +
-                        " " + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v));
+                    var indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
+                    var blanks = ["", "", ""];
+                    var facePositions = indices;
+                    var faceUVs = trunkUV != null ? indices : blanks;
+                    var faceNormals = trunkNormals != null ? indices : blanks;
+                    output.push("f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
+                        " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +
+                        " " + facePositions[2] + "/" + faceUVs[2] + "/" + faceNormals[2]);
                 }
                 //back de previous matrix, to not change the original mesh in the scene
                 if (globalposition && lastMatrix) {
@@ -818,7 +829,9 @@ var BABYLON;
                     var glbFile = new Blob(glbData, { type: 'application/octet-stream' });
                     var container = new BABYLON.GLTFData();
                     container.glTFFiles[glbFileName] = glbFile;
-                    _this._localEngine.dispose();
+                    if (_this._localEngine != null) {
+                        _this._localEngine.dispose();
+                    }
                     return container;
                 });
             };
