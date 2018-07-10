@@ -141,6 +141,10 @@ module BABYLON {
                 return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
             }
 
+            if (texture.textureType === Engine.TEXTURETYPE_UNSIGNED_INT) {
+                return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
+            }
+
             let canvas = engine.getRenderingCanvas();
             if (!canvas) {
                 return Promise.reject("Env texture can only be created when the engine is associated to a canvas.");
