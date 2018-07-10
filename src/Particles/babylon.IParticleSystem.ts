@@ -231,9 +231,10 @@ module BABYLON {
         rebuild(): void;
 
         /**
-         * Starts the particle system and begins to emit.
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (0 by default)
          */
-        start(): void;
+        start(delay?: number): void;
 
         /**
          * Stops the particle system.
