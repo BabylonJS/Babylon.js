@@ -10,6 +10,50 @@
             "referenceImage": "ControlDefault.png"
         },
         {
+            "title": "Diffuse",
+            "createMesh": true,
+            "createMaterial": true,
+            "configuration": {
+                "extends": "extended",
+                "castShadow": true,
+                "model": {
+                    "material": {
+                        "albedoColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 1
+                        },
+                        "reflectivityColor": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        },
+                        "microSurface": 0
+                    }
+                }
+            },
+            "referenceImage": "Diffuse.png"
+        },
+        {
+            "title": "BrainStem Environment",
+            "configuration": {
+                "extends": "extended"
+            },
+            "model": "/dist/assets/BrainStem/BrainStem.gltf",
+            "referenceImage": "BrainStemEnv.png",
+            "enableEnvironment": true
+        }
+    ],
+    "allTests": [
+        {
+            "title": "Control Default",
+            "createMesh": true,
+            "configuration": {
+                "extends": "minimal"
+            },
+            "referenceImage": "ControlDefault.png"
+        },
+        {
             "title": "Control",
             "createMesh": true,
             "configuration": {
