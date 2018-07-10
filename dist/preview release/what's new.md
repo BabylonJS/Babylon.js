@@ -25,6 +25,7 @@
   - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
   - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
 - Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
+- New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 
 ## Updates
 
