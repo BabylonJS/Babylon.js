@@ -7,6 +7,7 @@ import { ViewerLabs } from '../labs/viewerLabs';
 import { getCustomOptimizerByName } from '../optimizer/custom/';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { deepmerge } from '../helper';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -796,11 +797,11 @@ export class SceneManager {
             }
             return;
         }
-        let vrOptions: VRExperienceHelperOptions = vrConfig.vrOptions || {
+        let vrOptions: VRExperienceHelperOptions = deepmerge({
             useCustomVRButton: true,
             createDeviceOrientationCamera: false,
             trackPosition: true
-        }
+        }, vrConfig.vrOptions || {});
 
         this._vrHelper = this.scene.createDefaultVRExperience(vrOptions);
         if (!vrConfig.disableInteractions) {

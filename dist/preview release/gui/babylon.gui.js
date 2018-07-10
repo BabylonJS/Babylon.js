@@ -4483,6 +4483,24 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
+         * Enum that determines the text-wrapping mode to use.
+         */
+        var TextWrapping;
+        (function (TextWrapping) {
+            /**
+             * Clip the text when it's larger than Control.width; this is the default mode.
+             */
+            TextWrapping[TextWrapping["Clip"] = 0] = "Clip";
+            /**
+             * Wrap the text word-wise, i.e. try to add line-breaks at word boundary to fit within Control.width.
+             */
+            TextWrapping[TextWrapping["WordWrap"] = 1] = "WordWrap";
+            /**
+             * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
+             */
+            TextWrapping[TextWrapping["Ellipsis"] = 2] = "Ellipsis";
+        })(TextWrapping = GUI.TextWrapping || (GUI.TextWrapping = {}));
+        /**
          * Class used to create text block control
          */
         var TextBlock = /** @class */ (function (_super) {
@@ -4501,7 +4519,7 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._text = "";
-                _this._textWrapping = false;
+                _this._textWrapping = TextWrapping.Clip;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
@@ -4563,7 +4581,7 @@ var BABYLON;
                     if (this._textWrapping === value) {
                         return;
                     }
-                    this._textWrapping = value;
+                    this._textWrapping = +value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -4734,37 +4752,59 @@ var BABYLON;
                 }
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
-                this._lines = [];
+                this._lines = this._breakLines(this._currentMeasure.width, context);
+                this.onLinesReadyObservable.notifyObservers(this);
+            };
+            TextBlock.prototype._breakLines = function (refWidth, context) {
+                var lines = [];
                 var _lines = this.text.split("\n");
-                if (this._textWrapping && !this._resizeToFit) {
+                if (this._textWrapping === TextWrapping.Ellipsis && !this._resizeToFit) {
                     for (var _i = 0, _lines_1 = _lines; _i < _lines_1.length; _i++) {
                         var _line = _lines_1[_i];
-                        this._lines.push(this._parseLineWithTextWrapping(_line, context));
+                        lines.push(this._parseLineEllipsis(_line, refWidth, context));
+                    }
+                }
+                else if (this._textWrapping === TextWrapping.WordWrap && !this._resizeToFit) {
+                    for (var _a = 0, _lines_2 = _lines; _a < _lines_2.length; _a++) {
+                        var _line = _lines_2[_a];
+                        lines.push.apply(lines, this._parseLineWordWrap(_line, refWidth, context));
                     }
                 }
                 else {
-                    for (var _a = 0, _lines_2 = _lines; _a < _lines_2.length; _a++) {
-                        var _line = _lines_2[_a];
-                        this._lines.push(this._parseLine(_line, context));
+                    for (var _b = 0, _lines_3 = _lines; _b < _lines_3.length; _b++) {
+                        var _line = _lines_3[_b];
+                        lines.push(this._parseLine(_line, context));
                     }
                 }
-                this.onLinesReadyObservable.notifyObservers(this);
+                return lines;
             };
             TextBlock.prototype._parseLine = function (line, context) {
                 if (line === void 0) { line = ''; }
                 return { text: line, width: context.measureText(line).width };
             };
-            TextBlock.prototype._parseLineWithTextWrapping = function (line, context) {
+            TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
                 if (line === void 0) { line = ''; }
+                var lineWidth = context.measureText(line).width;
+                if (lineWidth > width) {
+                    line += '…';
+                }
+                while (line.length > 2 && lineWidth > width) {
+                    line = line.slice(0, -2) + '…';
+                    lineWidth = context.measureText(line).width;
+                }
+                return { text: line, width: lineWidth };
+            };
+            TextBlock.prototype._parseLineWordWrap = function (line, width, context) {
+                if (line === void 0) { line = ''; }
+                var lines = [];
                 var words = line.split(' ');
-                var width = this._currentMeasure.width;
                 var lineWidth = 0;
                 for (var n = 0; n < words.length; n++) {
                     var testLine = n > 0 ? line + " " + words[n] : words[0];
                     var metrics = context.measureText(testLine);
                     var testWidth = metrics.width;
                     if (testWidth > width && n > 0) {
-                        this._lines.push({ text: line, width: lineWidth });
+                        lines.push({ text: line, width: lineWidth });
                         line = words[n];
                         lineWidth = context.measureText(line).width;
                     }
@@ -4773,7 +4813,8 @@ var BABYLON;
                         line = testLine;
                     }
                 }
-                return { text: line, width: lineWidth };
+                lines.push({ text: line, width: lineWidth });
+                return lines;
             };
             TextBlock.prototype._renderLines = function (context) {
                 var height = this._currentMeasure.height;
@@ -4813,6 +4854,24 @@ var BABYLON;
                     this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
                     this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
                 }
+            };
+            /**
+             * Given a width constraint applied on the text block, find the expected height
+             * @returns expected height
+             */
+            TextBlock.prototype.computeExpectedHeight = function () {
+                if (this.text && this.widthInPixels) {
+                    var context = document.createElement('canvas').getContext('2d');
+                    if (context) {
+                        this._applyStates(context);
+                        if (!this._fontOffset) {
+                            this._fontOffset = GUI.Control._GetFontOffset(context.font);
+                        }
+                        var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                        return this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+                    }
+                }
+                return 0;
             };
             TextBlock.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
