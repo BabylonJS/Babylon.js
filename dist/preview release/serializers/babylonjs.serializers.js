@@ -1195,6 +1195,18 @@ var BABYLON;
                     }
                 });
             };
+            _Exporter.prototype.getRootNodes = function (babylonScene, nodes, shouldExportTransformNode) {
+                var rootNodes = [];
+                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+                    var babylonTransformNode = nodes_2[_i];
+                    if (shouldExportTransformNode(babylonTransformNode)) {
+                        if (babylonTransformNode.parent == null) {
+                            rootNodes.push(babylonTransformNode);
+                        }
+                    }
+                }
+                return rootNodes;
+            };
             /**
              * Creates a mapping of Node unique id to node index and handles animations
              * @param babylonScene Babylon Scene
@@ -1214,10 +1226,23 @@ var BABYLON;
                 };
                 var idleGLTFAnimations = [];
                 var node;
-                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
-                    var babylonTransformNode = nodes_2[_i];
+                var negScaleRootNode = null;
+                var rootNodes = this.getRootNodes(babylonScene, nodes, shouldExportTransformNode);
+                if (rootNodes.length === 1) {
+                    var node_1 = rootNodes[0];
+                    if (node_1.scaling.equalsToFloats(1, 1, -1)) {
+                        this._convertToRightHandedSystem = !this._convertToRightHandedSystem;
+                        negScaleRootNode = node_1;
+                    }
+                }
+                for (var _i = 0, nodes_3 = nodes; _i < nodes_3.length; _i++) {
+                    var babylonTransformNode = nodes_3[_i];
                     if (shouldExportTransformNode(babylonTransformNode)) {
                         node = this.createNode(babylonTransformNode, binaryWriter);
+                        if (negScaleRootNode && babylonTransformNode === negScaleRootNode) {
+                            node.scale = [1, 1, 1];
+                            node.rotation = [0, 0, 0, 1];
+                        }
                         this._nodes.push(node);
                         nodeIndex = this._nodes.length - 1;
                         nodeMap[babylonTransformNode.uniqueId] = nodeIndex;

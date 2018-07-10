@@ -1738,7 +1738,18 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        protected _beforeRenderText(text: string): string;
         dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a password control
+     */
+    class InputPassword extends InputText {
+        protected _beforeRenderText(text: string): string;
     }
 }
 

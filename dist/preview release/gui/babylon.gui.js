@@ -6026,7 +6026,7 @@ var BABYLON;
                 // Specific cases
                 switch (keyCode) {
                     case 32: //SPACE
-                        key = " "; //ie11 key for space is "Spacebar" 
+                        key = " "; //ie11 key for space is "Spacebar"
                         break;
                     case 8: // BACKSPACE
                         if (this._text && this._text.length > 0) {
@@ -6134,7 +6134,7 @@ var BABYLON;
                     if (this.color) {
                         context.fillStyle = this.color;
                     }
-                    var text = this._text;
+                    var text = this._beforeRenderText(this._text);
                     if (!this._isFocused && !this._text && this._placeholderText) {
                         text = this._placeholderText;
                         if (this._placeholderColor) {
@@ -6237,6 +6237,9 @@ var BABYLON;
             InputText.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
                 _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
             };
+            InputText.prototype._beforeRenderText = function (text) {
+                return text;
+            };
             InputText.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
                 this.onBlurObservable.clear();
@@ -6246,6 +6249,33 @@ var BABYLON;
             return InputText;
         }(GUI.Control));
         GUI.InputText = InputText;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a password control
+         */
+        var InputPassword = /** @class */ (function (_super) {
+            __extends(InputPassword, _super);
+            function InputPassword() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            InputPassword.prototype._beforeRenderText = function (text) {
+                var txt = "";
+                for (var i = 0; i < text.length; i++) {
+                    txt += "\u2022";
+                }
+                return txt;
+            };
+            return InputPassword;
+        }(GUI.InputText));
+        GUI.InputPassword = InputPassword;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
