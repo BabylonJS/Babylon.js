@@ -7219,65 +7219,6 @@
             return this._gl.RGBA8;
         };
 
-        // Transform feedback
-
-        /**
-         * Creates a webGL transform feedback object
-         * Please makes sure to check webGLVersion property to check if you are running webGL 2+
-         * @returns the webGL transform feedback object
-         */
-        public createTransformFeedback(): WebGLTransformFeedback {
-            return this._gl.createTransformFeedback();
-        }
-
-        /**
-         * Delete a webGL transform feedback object 
-         * @param value defines the webGL transform feedback object to delete
-         */
-        public deleteTransformFeedback(value: WebGLTransformFeedback): void {
-            this._gl.deleteTransformFeedback(value);
-        }
-
-        /**
-         * Bind a webGL transform feedback object to the webgl context
-         * @param value defines the webGL transform feedback object to bind
-         */        
-        public bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void {
-            this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
-        }
-
-        /**
-         * Begins a transform feedback operation
-         * @param usePoints defines if points or triangles must be used
-         */              
-        public beginTransformFeedback(usePoints: boolean = true): void {
-            this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
-        }
-
-        /**
-         * Ends a transform feedback operation
-         */           
-        public endTransformFeedback(): void {
-            this._gl.endTransformFeedback();
-        }
-
-        /**
-         * Specify the varyings to use with transform feedback
-         * @param program defines the associated webGL program
-         * @param value defines the list of strings representing the varying names
-         */
-        public setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void {
-            this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
-        }
-
-        /**
-         * Bind a webGL buffer for a transform feedback operation
-         * @param value defines the webGL buffer to bind
-         */          
-        public bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void {
-            this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
-        }
-
         /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);

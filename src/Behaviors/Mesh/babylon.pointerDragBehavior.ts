@@ -7,6 +7,7 @@ module BABYLON {
         private _dragPlane: Mesh;
         private _scene:Scene;
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
+        private _beforeRenderObserver:Nullable<Observer<Scene>>;
         private static _planeScene:Scene;
         /**
          * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
@@ -119,6 +120,7 @@ module BABYLON {
                     PointerDragBehavior._planeScene = this._scene;
                 }else{
                     PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine());
+                    PointerDragBehavior._planeScene.detachControl();
                     this._scene.getEngine().scenes.pop();
                 }
             }
@@ -187,7 +189,7 @@ module BABYLON {
                 }
             });
 
-            this._scene.onBeforeRenderObservable.add(()=>{
+            this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(()=>{
                 if(this._moving && this.moveAttached){
                     // Slowly move mesh to avoid jitter
                     targetPosition.subtractToRef((<Mesh>this._attachedNode).absolutePosition, this._tmpVector);
@@ -293,6 +295,9 @@ module BABYLON {
         public detach(): void {
             if(this._pointerObserver){
                 this._scene.onPointerObservable.remove(this._pointerObserver);
+            }
+            if(this._beforeRenderObserver){
+                this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
             }
         }
     }

@@ -302,6 +302,7 @@ declare module BABYLON.GLTF2 {
          * @param binaryWriter Buffer to write binary data to
          */
         private createSceneAsync(babylonScene, binaryWriter);
+        private getRootNodes(babylonScene, nodes, shouldExportTransformNode);
         /**
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
