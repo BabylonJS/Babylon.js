@@ -1205,7 +1205,7 @@ module BABYLON.GLTF2 {
             if (rootNodes.length === 1) {
                 const node = rootNodes[0];
                 if (node.scaling.equalsToFloats(1,1, -1)) {
-                    this._convertToRightHandedSystem = false;
+                    this._convertToRightHandedSystem = !this._convertToRightHandedSystem;
                     negScaleRootNode = node;
                 }  
             }
