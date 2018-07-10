@@ -71,6 +71,7 @@
 - Added predicate function `targetMask` argument to `scene.beginWeightedAnimation`, `scene.beginAnimation`, `scene.stopAnimation`, and `animatable.stop` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
 - Oculus GO and GearVR 3dof controllers will now rotate with the user's head if they turn around in their room ([TrevorDev](https://github.com/TrevorDev))
 - Added onPoseUpdatedFromDeviceObservable to webVRCamera to detect when the camera's pose has been updated ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 

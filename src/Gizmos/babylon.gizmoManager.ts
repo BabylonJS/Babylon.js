@@ -3,7 +3,11 @@ module BABYLON {
      * Helps setup gizmo's in the scene to rotate/scale/position meshes
      */
     export class GizmoManager implements IDisposable{
-        private _gizmoSet:{positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo>};
+        /**
+         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
+         */
+        public gizmos:{positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo>};
+        private _gizmosEnabled = {positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false};
         private _gizmoLayer:UtilityLayerRenderer;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh:Nullable<AbstractMesh> = null;
@@ -24,7 +28,7 @@ module BABYLON {
          * @param scene the scene to overlay the gizmos on top of
          */
         constructor(private scene:Scene){
-            this._gizmoSet = {positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null};
+            this.gizmos = {positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null};
 
             // Instatiate/dispose gizmos based on pointer actions
             this._pointerObserver = scene.onPointerObservable.add((pointerInfo, state)=>{
@@ -71,9 +75,9 @@ module BABYLON {
                 this._attachedMesh.removeBehavior(this._dragBehavior);
             }
             this._attachedMesh = mesh;
-            for(var key in this._gizmoSet){
-                var gizmo = <Nullable<Gizmo>>((<any>this._gizmoSet)[key]);
-                if(gizmo){
+            for(var key in this.gizmos){
+                var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
+                if(gizmo && (<any>this._gizmosEnabled)[key]){
                     gizmo.attachedMesh = mesh;
                 }
             }
@@ -87,47 +91,47 @@ module BABYLON {
          */
         public set positionGizmoEnabled(value:boolean){
             if(value){
-                this._gizmoSet.positionGizmo = this._gizmoSet.positionGizmo || new PositionGizmo();
-                this._gizmoSet.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-                this._gizmoSet.positionGizmo.attachedMesh = this._attachedMesh;
-            }else if(this._gizmoSet.positionGizmo){
-                this._gizmoSet.positionGizmo.dispose();
-                this._gizmoSet.positionGizmo = null;
+                this.gizmos.positionGizmo = this.gizmos.positionGizmo || new PositionGizmo();
+                this.gizmos.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
+            }else if(this.gizmos.positionGizmo){
+                this.gizmos.positionGizmo.attachedMesh = null;
             }
+            this._gizmosEnabled.positionGizmo = value;
         }
         public get positionGizmoEnabled():boolean{
-            return this._gizmoSet.positionGizmo != null;
+            return this._gizmosEnabled.positionGizmo;
         }
         /**
          * If the rotation gizmo is enabled
          */
         public set rotationGizmoEnabled(value:boolean){
             if(value){
-                this._gizmoSet.rotationGizmo = this._gizmoSet.rotationGizmo || new RotationGizmo();
-                this._gizmoSet.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-                this._gizmoSet.rotationGizmo.attachedMesh = this._attachedMesh;
-            }else if(this._gizmoSet.rotationGizmo){
-                this._gizmoSet.rotationGizmo.dispose();
-                this._gizmoSet.rotationGizmo = null;
+                this.gizmos.rotationGizmo = this.gizmos.rotationGizmo || new RotationGizmo();
+                this.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
+            }else if(this.gizmos.rotationGizmo){
+                this.gizmos.rotationGizmo.attachedMesh = null;
             }
+            this._gizmosEnabled.rotationGizmo = value;
         }
         public get rotationGizmoEnabled():boolean{
-            return this._gizmoSet.rotationGizmo != null;
+            return this._gizmosEnabled.rotationGizmo;
         }
         /**
          * If the scale gizmo is enabled
          */
         public set scaleGizmoEnabled(value:boolean){
             if(value){
-                this._gizmoSet.scaleGizmo = this._gizmoSet.scaleGizmo || new ScaleGizmo();
-                this._gizmoSet.scaleGizmo.attachedMesh = this._attachedMesh;
-            }else if(this._gizmoSet.scaleGizmo){
-                this._gizmoSet.scaleGizmo.dispose();
-                this._gizmoSet.scaleGizmo = null;
+                this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo();
+                this.gizmos.scaleGizmo.attachedMesh = this._attachedMesh;
+            }else if(this.gizmos.scaleGizmo){
+                this.gizmos.scaleGizmo.attachedMesh = null;
             }
+            this._gizmosEnabled.scaleGizmo = value;
         }
         public get scaleGizmoEnabled():boolean{
-            return this._gizmoSet.scaleGizmo != null;
+            return this._gizmosEnabled.scaleGizmo;
         }
         /**
          * If the boundingBox gizmo is enabled
@@ -138,19 +142,19 @@ module BABYLON {
                     this._boundingBoxUtilLayer = new BABYLON.UtilityLayerRenderer(this.scene);
                     this._boundingBoxUtilLayer.utilityLayerScene.autoClearDepthAndStencil = false;
                 }
-                this._gizmoSet.boundingBoxGizmo = this._gizmoSet.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._boundingBoxUtilLayer);
-                this._gizmoSet.boundingBoxGizmo.attachedMesh = this._attachedMesh;
+                this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._boundingBoxUtilLayer);
+                this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
                 if(this._attachedMesh){
                     this._attachedMesh.removeBehavior(this._dragBehavior);
                     this._attachedMesh.addBehavior(this._dragBehavior);
                 }
-            }else if(this._gizmoSet.boundingBoxGizmo){
-                this._gizmoSet.boundingBoxGizmo.dispose();
-                this._gizmoSet.boundingBoxGizmo = null;
+            }else if(this.gizmos.boundingBoxGizmo){
+                this.gizmos.boundingBoxGizmo.attachedMesh = null;
             }
+            this._gizmosEnabled.boundingBoxGizmo = value;
         }
         public get boundingBoxGizmoEnabled():boolean{
-            return this._gizmoSet.boundingBoxGizmo != null;
+            return this._gizmosEnabled.boundingBoxGizmo;
         }
 
         /**
@@ -158,8 +162,8 @@ module BABYLON {
          */
         public dispose(){
             this.scene.onPointerObservable.remove(this._pointerObserver);
-            for(var key in this._gizmoSet){
-                var gizmo = <Nullable<Gizmo>>((<any>this._gizmoSet)[key]);
+            for(var key in this.gizmos){
+                var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
                 if(gizmo){
                     gizmo.dispose();
                 }
