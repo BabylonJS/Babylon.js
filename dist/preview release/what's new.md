@@ -127,6 +127,7 @@
 - Fixed `updatable` parameter setting in the SPS ([jerome](https://github.com/jbousquie))
 - Angular and linear velocity were using the wrong method to copy values to the physics engine ([RaananW](https://github.com/RaananW))
 - Fixed env texture generation in Byte Mode ([sebavan](http://www.github.com/sebavan))
+- Oimo.js now receives quaternion and not euler when a body is being constructed ([RaananW](https://github.com/RaananW))
 
 ### Viewer
 
