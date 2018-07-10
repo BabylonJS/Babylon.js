@@ -1,7 +1,7 @@
 {
-  "errors": 4233,
+  "errors": 4240,
   "babylon.typedoc.json": {
-    "errors": 4233,
+    "errors": 4240,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -5190,6 +5190,21 @@
             "NotPascalCase": true
           }
         },
+        "beginTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "bindTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "bindTransformFeedbackBuffer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "createEffectForParticles": {
           "Naming": {
             "NotPascalCase": true
@@ -5200,7 +5215,17 @@
             "NotPascalCase": true
           }
         },
+        "createTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "deleteQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "deleteTransformFeedback": {
           "Naming": {
             "NotPascalCase": true
           }
@@ -5215,12 +5240,22 @@
             "NotPascalCase": true
           }
         },
+        "endTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "getQueryResult": {
           "Naming": {
             "NotPascalCase": true
           }
         },
         "isQueryResultAvailable": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "setTranformFeedbackVaryings": {
           "Naming": {
             "NotPascalCase": true
           }

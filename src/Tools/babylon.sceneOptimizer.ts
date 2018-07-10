@@ -378,10 +378,6 @@
                 return false;
             }
 
-            if (mesh.parent) {
-                return false;
-            }
-
             return true;
         }
 
