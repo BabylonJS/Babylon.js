@@ -205,9 +205,11 @@
         * @see http://doc.babylonjs.com/features/occlusionquery
         */
         public occlusionRetryCount = -1;
-        private _occlusionInternalRetryCounter = 0;
+        /** @hidden */
+        public _occlusionInternalRetryCounter = 0;
 
-        protected _isOccluded = false;
+        /** @hidden */
+        public _isOccluded = false;
 
         /**
         * Gets or sets whether the mesh is occluded or not, it is used also to set the intial state of the mesh to be occluded or not
@@ -221,7 +223,8 @@
             this._isOccluded = value;
         }
 
-        private _isOcclusionQueryInProgress = false;
+        /** @hidden */
+        public _isOcclusionQueryInProgress = false;
 
         /**
          * Flag to check the progress status of the query
@@ -231,7 +234,8 @@
             return this._isOcclusionQueryInProgress;
         }
 
-        private _occlusionQuery: Nullable<WebGLQuery>;
+        /** @hidden */
+        public _occlusionQuery: Nullable<WebGLQuery>;
 
         private _visibility = 1.0;
 
@@ -2104,57 +2108,8 @@
         }
 
         /** @hidden */
-        protected _checkOcclusionQuery() {
-            var engine = this.getEngine();
-
-            if (engine.webGLVersion < 2 || this.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
-                this._isOccluded = false;
-                return;
-            }
-
-            if (this.isOcclusionQueryInProgress && this._occlusionQuery) {
-
-                var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
-                if (isOcclusionQueryAvailable) {
-                    var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
-
-                    this._isOcclusionQueryInProgress = false;
-                    this._occlusionInternalRetryCounter = 0;
-                    this._isOccluded = occlusionQueryResult === 1 ? false : true;
-                }
-                else {
-
-                    this._occlusionInternalRetryCounter++;
-
-                    if (this.occlusionRetryCount !== -1 && this._occlusionInternalRetryCounter > this.occlusionRetryCount) {
-                        this._isOcclusionQueryInProgress = false;
-                        this._occlusionInternalRetryCounter = 0;
-
-                        // if optimistic set isOccluded to false regardless of the status of isOccluded. (Render in the current render loop)
-                        // if strict continue the last state of the object.
-                        this._isOccluded = this.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : this._isOccluded;
-                    }
-                    else {
-                        return;
-                    }
-
-                }
-            }
-
-            // Todo. Move into an occlusion query component.
-            var scene = this.getScene();
-            if (scene.getBoundingBoxRenderer) {
-               var occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
-
-                if (!this._occlusionQuery) {
-                    this._occlusionQuery = engine.createQuery();
-                }
-
-                engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
-                occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-                engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
-                this._isOcclusionQueryInProgress = true;
-            }
+        public _checkOcclusionQuery() { // Will be replaced by correct code if Occlusion queries are referenced
+            this._isOccluded = false;
         }
     }
 }
