@@ -902,9 +902,17 @@
         }
 
         /**
-         * Starts the particle system and begins to emit.
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (0 by default)
          */
-        public start(): void {
+        public start(delay = 0): void {
+            if (delay) {
+                setTimeout(()=> {
+                    this.start(0);
+                }, delay);
+                return;
+            }
+
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
