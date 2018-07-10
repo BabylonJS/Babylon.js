@@ -2,14 +2,6 @@
     "root": "",
     "tests": [
         {
-            "title": "Control Default",
-            "createMesh": true,
-            "configuration": {
-                "extends": "minimal"
-            },
-            "referenceImage": "ControlDefault.png"
-        },
-        {
             "title": "Diffuse",
             "createMesh": true,
             "createMaterial": true,
