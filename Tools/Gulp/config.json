@@ -121,7 +121,8 @@
             "photoDome",
             "behaviors",
             "imageProcessing",
-            "occlusionQuery"     
+            "occlusionQuery",
+            "transformFeedback"     
         ],
         "minimal": [
             "meshBuilder",
@@ -235,12 +236,22 @@
                 "fogFragment"
             ]
         },
+        "transformFeedback": {
+            "files": [
+                "../../src/Engine/Extensions/babylon.engine.transformFeedback.js"
+            ],
+            "dependUpon": [
+                "core",
+                "debug"
+            ]
+        },          
         "occlusionQuery": {
             "files": [
                 "../../src/Engine/Extensions/babylon.engine.occlusionQuery.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "debug"
             ]
         },          
         "behaviors": {
@@ -284,7 +295,8 @@
             ],
             "dependUpon": [
                 "core",
-                "particles"
+                "particles",
+                "transformFeedback"
             ],
             "shaders": [
                 "gpuRenderParticles.vertex",
@@ -1794,6 +1806,7 @@
                     "../../gui/src/2D/controls/button.ts",
                     "../../gui/src/2D/controls/colorpicker.ts",
                     "../../gui/src/2D/controls/inputText.ts",
+                    "../../gui/src/2D/controls/inputPassword.ts",
                     "../../gui/src/2D/controls/virtualKeyboard.ts",
                     "../../gui/src/2D/controls/multiLine.ts",
                     "../../gui/src/2D/controls/grid.ts",                    

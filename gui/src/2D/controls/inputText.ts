@@ -239,7 +239,7 @@ module BABYLON.GUI {
             // Specific cases
             switch (keyCode) {
                 case 32: //SPACE
-                    key = " "; //ie11 key for space is "Spacebar" 
+                    key = " "; //ie11 key for space is "Spacebar"
                     break;
                 case 8: // BACKSPACE
                     if (this._text && this._text.length > 0) {
@@ -310,7 +310,7 @@ module BABYLON.GUI {
             }
         }
 
-        /** @hidden */       
+        /** @hidden */
         public processKeyboard(evt: KeyboardEvent): void {
             this.processKey(evt.keyCode, evt.key);
         }
@@ -357,7 +357,7 @@ module BABYLON.GUI {
                     context.fillStyle = this.color;
                 }
 
-                let text = this._text;
+                let text = this._beforeRenderText(this._text);
 
                 if (!this._isFocused && !this._text && this._placeholderText) {
                     text = this._placeholderText;
@@ -460,7 +460,7 @@ module BABYLON.GUI {
             context.restore();
         }
 
-        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
             if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }
@@ -477,8 +477,12 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
             super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+        }
+
+        protected _beforeRenderText(text: string): string {
+            return text;
         }
 
         public dispose() {

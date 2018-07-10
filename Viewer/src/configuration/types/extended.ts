@@ -62,7 +62,7 @@ export let extendedConfiguration: ViewerConfiguration = {
             intensity: 7,
             intensityMode: 0,
             radius: 0.6,
-            range: 0.6,
+            range: 4.4,
             spotAngle: 60,
             diffuse: {
                 r: 1,
@@ -101,7 +101,7 @@ export let extendedConfiguration: ViewerConfiguration = {
             intensity: 7,
             intensityMode: 0,
             radius: 0.4,
-            range: 0.4,
+            range: 5.8,
             spotAngle: 57,
             diffuse: {
                 r: 1,
@@ -132,7 +132,7 @@ export let extendedConfiguration: ViewerConfiguration = {
             intensity: 1,
             intensityMode: 0,
             radius: 0.5,
-            range: 0.5,
+            range: 6,
             spotAngle: 42.85,
             diffuse: {
                 r: 0.8,
