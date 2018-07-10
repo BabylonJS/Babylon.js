@@ -167,7 +167,6 @@ module BABYLON {
 
         public _setLaserPointerParent(mesh:AbstractMesh){
             var makeNotPick = (root: AbstractMesh) => {
-                root.name += " laserPointer";
                 root.isPickable = false;
                 root.getChildMeshes().forEach((c) => {
                     makeNotPick(c);
@@ -931,8 +930,7 @@ module BABYLON {
                 this._raySelectionPredicate = (mesh) => {
                     if (this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
                         && mesh.name.indexOf("teleportationTarget") === -1
-                        && mesh.name.indexOf("torusTeleportation") === -1
-                        && mesh.name.indexOf("laserPointer") === -1)) {
+                        && mesh.name.indexOf("torusTeleportation") === -1)) {
                         return this.raySelectionPredicate(mesh);
                     }
                     return false;
