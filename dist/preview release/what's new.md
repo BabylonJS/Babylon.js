@@ -26,6 +26,7 @@
   - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
 - Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl)) 
+- New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 
 ## Updates
 
