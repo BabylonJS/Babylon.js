@@ -236,7 +236,7 @@ module BABYLON {
                     if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (shadowGenerator) {
-                            const shadowMap = shadowGenerator.getShadowMapForRendering();
+                            const shadowMap = shadowGenerator.getShadowMap();
                             if (shadowMap) {
                                 if (shadowMap.renderList && shadowMap.renderList.length > 0) {
                                     shadowEnabled = true;
