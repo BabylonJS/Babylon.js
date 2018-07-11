@@ -4333,7 +4333,8 @@
         public updateAlternateTransformMatrix(alternateCamera: Camera): void {
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
-
+        /** @hidden */
+        public _renderPostProcesses = true;
         private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
@@ -4412,7 +4413,7 @@
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
             // Prepare Frame
-            if (this.postProcessManager) {
+            if (this.postProcessManager && this._renderPostProcesses) {
                 this.postProcessManager._prepareFrame();
             }
 
@@ -4432,7 +4433,7 @@
             }
             
             // Finalize frame
-            if (this.postProcessManager) {
+            if (this.postProcessManager && this._renderPostProcesses) {
                 this.postProcessManager._finalizeFrame(camera.isIntermediate);
             }
 
