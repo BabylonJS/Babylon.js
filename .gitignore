@@ -183,3 +183,4 @@ Viewer/tests/unit/src/**/*.js
 Viewer/tests/Lib/**/*.js
 Viewer/tests/commons/**/*.js
 .sass-cache/
+gui/dist/
