@@ -197,7 +197,7 @@
         }
 
         public static SetImmediate(action: () => void) {
-            if (window.setImmediate) {
+            if (Tools.IsWindowObjectExist() && window.setImmediate) {
                 window.setImmediate(action);
             } else {
                 setTimeout(action, 1);

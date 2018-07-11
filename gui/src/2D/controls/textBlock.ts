@@ -1,14 +1,34 @@
-import { Control } from "./control";
-import { ValueAndUnit } from "../valueAndUnit";
 import { Observable } from "babylonjs";
 import { Measure } from "../measure";
+import { ValueAndUnit } from "../valueAndUnit";
+import { Control } from "./control";
+
+/**
+ * Enum that determines the text-wrapping mode to use.
+ */
+export enum TextWrapping {
+    /**
+     * Clip the text when it's larger than Control.width; this is the default mode.
+     */
+    Clip = 0,
+
+    /**
+     * Wrap the text word-wise, i.e. try to add line-breaks at word boundary to fit within Control.width.
+     */
+    WordWrap = 1,
+
+    /**
+     * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
+     */
+    Ellipsis,
+}
 
 /**
  * Class used to create text block control
  */
 export class TextBlock extends Control {
     private _text = "";
-    private _textWrapping = false;
+    private _textWrapping = TextWrapping.Clip;
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 
@@ -56,18 +76,18 @@ export class TextBlock extends Control {
     /**
      * Gets or sets a boolean indicating if text must be wrapped
      */
-    public get textWrapping(): boolean {
+    public get textWrapping(): TextWrapping | boolean {
         return this._textWrapping;
     }
 
     /**
      * Gets or sets a boolean indicating if text must be wrapped
      */
-    public set textWrapping(value: boolean) {
+    public set textWrapping(value: TextWrapping | boolean) {
         if (this._textWrapping === value) {
             return;
         }
-        this._textWrapping = value;
+        this._textWrapping = +value;
         this._markAsDirty();
     }
 
@@ -92,14 +112,14 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text horizontal alignment (Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+     * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
      */
     public get textHorizontalAlignment(): number {
         return this._textHorizontalAlignment;
     }
 
     /**
-     * Gets or sets text horizontal alignment (Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+     * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
      */
     public set textHorizontalAlignment(value: number) {
         if (this._textHorizontalAlignment === value) {
@@ -111,14 +131,14 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text vertical alignment (Control.VERTICAL_ALIGNMENT_CENTER by default)
+     * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
      */
     public get textVerticalAlignment(): number {
         return this._textVerticalAlignment;
     }
 
     /**
-     * Gets or sets text vertical alignment (Control.VERTICAL_ALIGNMENT_CENTER by default)
+     * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
      */
     public set textVerticalAlignment(value: number) {
         if (this._textVerticalAlignment === value) {
@@ -251,29 +271,54 @@ export class TextBlock extends Control {
     }
 
     protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        this._lines = [];
+        this._lines = this._breakLines(this._currentMeasure.width, context);
+        this.onLinesReadyObservable.notifyObservers(this);
+    }
+
+    protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[] {
+        var lines = [];
         var _lines = this.text.split("\n");
 
-        if (this._textWrapping && !this._resizeToFit) {
+        if (this._textWrapping === TextWrapping.Ellipsis && !this._resizeToFit) {
             for (var _line of _lines) {
-                this._lines.push(this._parseLineWithTextWrapping(_line, context));
+                lines.push(this._parseLineEllipsis(_line, refWidth, context));
+            }
+        } else if (this._textWrapping === TextWrapping.WordWrap && !this._resizeToFit) {
+            for (var _line of _lines) {
+                lines.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
         } else {
             for (var _line of _lines) {
-                this._lines.push(this._parseLine(_line, context));
+                lines.push(this._parseLine(_line, context));
             }
         }
 
-        this.onLinesReadyObservable.notifyObservers(this);
+        return lines;
     }
 
     protected _parseLine(line: string = '', context: CanvasRenderingContext2D): object {
         return { text: line, width: context.measureText(line).width };
     }
 
-    protected _parseLineWithTextWrapping(line: string = '', context: CanvasRenderingContext2D): object {
+    protected _parseLineEllipsis(line: string = '', width: number,
+        context: CanvasRenderingContext2D): object {
+        var lineWidth = context.measureText(line).width;
+
+        if (lineWidth > width) {
+            line += '…';
+        }
+        while (line.length > 2 && lineWidth > width) {
+            line = line.slice(0, -2) + '…';
+            lineWidth = context.measureText(line).width;
+        }
+
+        return { text: line, width: lineWidth };
+    }
+
+    protected _parseLineWordWrap(line: string = '', width: number,
+        context: CanvasRenderingContext2D): object[] {
+        var lines = [];
         var words = line.split(' ');
-        var width = this._currentMeasure.width;
         var lineWidth = 0;
 
         for (var n = 0; n < words.length; n++) {
@@ -281,7 +326,7 @@ export class TextBlock extends Control {
             var metrics = context.measureText(testLine);
             var testWidth = metrics.width;
             if (testWidth > width && n > 0) {
-                this._lines.push({ text: line, width: lineWidth });
+                lines.push({ text: line, width: lineWidth });
                 line = words[n];
                 lineWidth = context.measureText(line).width;
             }
@@ -290,8 +335,9 @@ export class TextBlock extends Control {
                 line = testLine;
             }
         }
+        lines.push({ text: line, width: lineWidth });
 
-        return { text: line, width: lineWidth };
+        return lines;
     }
 
     protected _renderLines(context: CanvasRenderingContext2D): void {
@@ -339,6 +385,26 @@ export class TextBlock extends Control {
             this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
             this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
         }
+    }
+
+    /**
+     * Given a width constraint applied on the text block, find the expected height
+     * @returns expected height
+     */
+    public computeExpectedHeight(): number {
+        if (this.text && this.widthInPixels) {
+            const context = document.createElement('canvas').getContext('2d');
+            if (context) {
+                this._applyStates(context);
+                if (!this._fontOffset) {
+                    this._fontOffset = Control._GetFontOffset(context.font);
+                }
+                const lines = this._lines ? this._lines : this._breakLines(
+                    this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                return this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+            }
+        }
+        return 0;
     }
 
     dispose(): void {

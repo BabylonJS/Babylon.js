@@ -47,6 +47,7 @@
         private _generateMipMaps: boolean;
         private _engine: Engine;
         private _stillImageCaptured = false;
+        private _poster = false;
 
         /**
          * Creates a video texture.
@@ -102,6 +103,11 @@
             if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
                 this._createInternalTexture();
             }
+
+            if (settings.poster) {
+                this._texture = this._engine.createTexture(settings.poster!, false, true, scene);
+                this._poster = true;
+            }
         }
 
         private _getName(src: string | string[] | HTMLVideoElement): string {
@@ -138,13 +144,17 @@
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {
-                return;
+                if (this._poster) {
+                    this._texture.dispose();
+                    this._poster = false;
+                }
+                else {
+                    return;
+                }
             }
 
-            if (
-                !this._engine.needPOTTextures ||
-                (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))
-            ) {
+            if (!this._engine.needPOTTextures ||
+                (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
@@ -209,8 +219,11 @@
             if (this._texture == null) {
                 return;
             }
-            this._texture.dispose();
-            this._texture = null;
+
+            if (!this._poster) {
+                this._texture.dispose();
+                this._texture = null;
+            }
         };
 
         /**

@@ -1321,6 +1321,23 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     /**
+     * Enum that determines the text-wrapping mode to use.
+     */
+    enum TextWrapping {
+        /**
+         * Clip the text when it's larger than Control.width; this is the default mode.
+         */
+        Clip = 0,
+        /**
+         * Wrap the text word-wise, i.e. try to add line-breaks at word boundary to fit within Control.width.
+         */
+        WordWrap = 1,
+        /**
+         * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
+         */
+        Ellipsis = 2,
+    }
+    /**
      * Class used to create text block control
      */
     class TextBlock extends Control {
@@ -1362,7 +1379,7 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets a boolean indicating if text must be wrapped
          */
-        textWrapping: boolean;
+        textWrapping: TextWrapping | boolean;
         /**
          * Gets or sets text to display
          */
@@ -1421,9 +1438,16 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
-        protected _parseLineWithTextWrapping(line: string | undefined, context: CanvasRenderingContext2D): object;
+        protected _parseLineEllipsis(line: string | undefined, width: number, context: CanvasRenderingContext2D): object;
+        protected _parseLineWordWrap(line: string | undefined, width: number, context: CanvasRenderingContext2D): object[];
         protected _renderLines(context: CanvasRenderingContext2D): void;
+        /**
+         * Given a width constraint applied on the text block, find the expected height
+         * @returns expected height
+         */
+        computeExpectedHeight(): number;
         dispose(): void;
     }
 }
@@ -1669,10 +1693,15 @@ declare module BABYLON.GUI {
         private _scrollLeft;
         private _textWidth;
         private _clickedCoordinate;
+        private _deadKey;
+        private _addKey;
+        private _currentKey;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
         /** Observable raised when the text changes */
         onTextChangedObservable: Observable<InputText>;
+        /** Observable raised just before an entered character is to be added */
+        onBeforeKeyAddObservable: Observable<InputText>;
         /** Observable raised when the control gets the focus */
         onFocusObservable: Observable<InputText>;
         /** Observable raised when the control loses the focus */
@@ -1697,6 +1726,12 @@ declare module BABYLON.GUI {
         placeholderColor: string;
         /** Gets or sets the text displayed when the control is empty */
         placeholderText: string;
+        /** Gets or sets the dead key flag */
+        deadKey: boolean;
+        /** Gets or sets if the current key should be added */
+        addKey: boolean;
+        /** Gets or sets the value of the current key being entered */
+        currentKey: string;
         /** Gets or sets the text displayed in the control */
         text: string;
         /** Gets or sets control width */
@@ -1719,7 +1754,18 @@ declare module BABYLON.GUI {
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        protected _beforeRenderText(text: string): string;
         dispose(): void;
+    }
+}
+
+
+declare module BABYLON.GUI {
+    /**
+     * Class used to create a password control
+     */
+    class InputPassword extends InputText {
+        protected _beforeRenderText(text: string): string;
     }
 }
 

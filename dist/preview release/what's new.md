@@ -25,14 +25,19 @@
   - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
   - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
 - Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
+- Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))
+- New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
+- Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
 
 ## Updates
 
 - All NPM packages have `latest`and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
 - Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
+- Added `TextBlock.computeExpectedHeight`, added `TextWrapping.Ellipsis` as `TextBlock.wordWrapping` possible value ([adrientetar](https://github.com/adrientetar))
 
 ### Core Engine
 
+- Added new `BoundingInfo.scale()` function to let users control the size of the bounding info ([Deltakosh](https://github.com/deltakosh))
 - Added new `Animatable.waitAsync` function to use Promises with animations. Demo [Here](https://www.babylonjs-playground.com/#HZBCXR) ([Deltakosh](https://github.com/deltakosh))
 - Added the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catmull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
 - Added support for specifying the center of rotation to textures ([bghgary](http://www.github.com/bghgary))
@@ -65,6 +70,9 @@
 - Added `RawCubeTexture` class with RGBD and mipmap support ([bghgary](http://www.github.com/bghgary))
 - Added effect layer per rendering group addressing [Issue 4463](https://github.com/BabylonJS/Babylon.js/issues/4463) ([sebavan](http://www.github.com/sebavan))
 - Added predicate function `targetMask` argument to `scene.beginWeightedAnimation`, `scene.beginAnimation`, `scene.stopAnimation`, and `animatable.stop` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
+- Oculus GO and GearVR 3dof controllers will now rotate with the user's head if they turn around in their room ([TrevorDev](https://github.com/TrevorDev))
+- Added onPoseUpdatedFromDeviceObservable to webVRCamera to detect when the camera's pose has been updated ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
@@ -120,6 +128,8 @@
 - Fixed support for R and RG texture formats ([sebavan](http://www.github.com/sebavan))
 - Fixed `updatable` parameter setting in the SPS ([jerome](https://github.com/jbousquie))
 - Angular and linear velocity were using the wrong method to copy values to the physics engine ([RaananW](https://github.com/RaananW))
+- Fixed env texture generation in Byte Mode ([sebavan](http://www.github.com/sebavan))
+- Oimo.js now receives quaternion and not euler when a body is being constructed ([RaananW](https://github.com/RaananW))
 
 ### Viewer
 

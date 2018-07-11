@@ -372,9 +372,16 @@
         }
 
         /**
-         * Starts the particle system and begins to emit.
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (0 by default)
          */
-        public start(): void {
+        public start(delay = 0): void {
+            if (delay) {
+                setTimeout(()=> {
+                    this.start(0);
+                }, delay);
+                return;
+            }
             this._started = true;
             this._stopped = false;
             this._preWarmDone = false;
@@ -1211,7 +1218,7 @@
             // Update
             this._engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
             this._engine.setRasterizerState(false);
-            this._engine.beginTransformFeedback();
+            this._engine.beginTransformFeedback(true);
             this._engine.drawArraysType(Material.PointListDrawMode, 0, this._currentActiveCount);
             this._engine.endTransformFeedback();
             this._engine.setRasterizerState(true);

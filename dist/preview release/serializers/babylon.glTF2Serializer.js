@@ -668,7 +668,9 @@ var BABYLON;
                     var glbFile = new Blob(glbData, { type: 'application/octet-stream' });
                     var container = new BABYLON.GLTFData();
                     container.glTFFiles[glbFileName] = glbFile;
-                    _this._localEngine.dispose();
+                    if (_this._localEngine != null) {
+                        _this._localEngine.dispose();
+                    }
                     return container;
                 });
             };
@@ -1016,12 +1018,15 @@ var BABYLON;
                             }
                             directDescendents = babylonTransformNode.getDescendants(true);
                             if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                glTFNode.children = [];
+                                var children = [];
                                 for (var _a = 0, directDescendents_1 = directDescendents; _a < directDescendents_1.length; _a++) {
                                     var descendent = directDescendents_1[_a];
                                     if (_this._nodeMap[descendent.uniqueId] != null) {
-                                        glTFNode.children.push(_this._nodeMap[descendent.uniqueId]);
+                                        children.push(_this._nodeMap[descendent.uniqueId]);
                                     }
+                                }
+                                if (children.length) {
+                                    glTFNode.children = children;
                                 }
                             }
                         }
@@ -1031,6 +1036,18 @@ var BABYLON;
                         _this._scenes.push(scene);
                     }
                 });
+            };
+            _Exporter.prototype.getRootNodes = function (babylonScene, nodes, shouldExportTransformNode) {
+                var rootNodes = [];
+                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+                    var babylonTransformNode = nodes_2[_i];
+                    if (shouldExportTransformNode(babylonTransformNode)) {
+                        if (babylonTransformNode.parent == null) {
+                            rootNodes.push(babylonTransformNode);
+                        }
+                    }
+                }
+                return rootNodes;
             };
             /**
              * Creates a mapping of Node unique id to node index and handles animations
@@ -1051,13 +1068,29 @@ var BABYLON;
                 };
                 var idleGLTFAnimations = [];
                 var node;
-                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
-                    var babylonTransformNode = nodes_2[_i];
+                var negScaleRootNode = null;
+                var rootNodes = this.getRootNodes(babylonScene, nodes, shouldExportTransformNode);
+                if (rootNodes.length === 1) {
+                    var node_1 = rootNodes[0];
+                    if (node_1.scaling.equalsToFloats(1, 1, -1)) {
+                        this._convertToRightHandedSystem = !this._convertToRightHandedSystem;
+                        negScaleRootNode = node_1;
+                    }
+                }
+                for (var _i = 0, nodes_3 = nodes; _i < nodes_3.length; _i++) {
+                    var babylonTransformNode = nodes_3[_i];
                     if (shouldExportTransformNode(babylonTransformNode)) {
                         node = this.createNode(babylonTransformNode, binaryWriter);
-                        this._nodes.push(node);
-                        nodeIndex = this._nodes.length - 1;
-                        nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        if (negScaleRootNode && babylonTransformNode === negScaleRootNode) {
+                            node.scale = [1, 1, 1];
+                            node.rotation = [0, 0, 0, 1];
+                        }
+                        var directDescendents = babylonTransformNode.getDescendants(true, function (node) { return (node instanceof BABYLON.TransformNode); });
+                        if (directDescendents.length || node.mesh != null) {
+                            this._nodes.push(node);
+                            nodeIndex = this._nodes.length - 1;
+                            nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        }
                         if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
                             GLTF2._GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
                         }

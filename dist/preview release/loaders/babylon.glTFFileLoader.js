@@ -5391,8 +5391,7 @@ var BABYLON;
                         }
                         this._loader._parent._logClose();
                         light._loaded = Promise.all(promises).then(function () {
-                            var size = Math.pow(2, imageData_1.length - 1);
-                            var babylonTexture = new BABYLON.RawCubeTexture(_this._loader._babylonScene, null, size);
+                            var babylonTexture = new BABYLON.RawCubeTexture(_this._loader._babylonScene, null, light.specularImageSize);
                             light._babylonTexture = babylonTexture;
                             if (light.intensity != undefined) {
                                 babylonTexture.level = light.intensity;
@@ -5409,7 +5408,9 @@ var BABYLON;
                             sphericalHarmonics.scale(light.intensity);
                             sphericalHarmonics.convertIrradianceToLambertianRadiance();
                             var sphericalPolynomial = BABYLON.SphericalPolynomial.FromHarmonics(sphericalHarmonics);
-                            return babylonTexture.updateRGBDAsync(imageData_1, sphericalPolynomial);
+                            // Compute the lod generation scale to fit exactly to the number of levels available.
+                            var lodGenerationScale = (imageData_1.length - 1) / BABYLON.Scalar.Log2(light.specularImageSize);
+                            return babylonTexture.updateRGBDAsync(imageData_1, sphericalPolynomial, lodGenerationScale);
                         });
                     }
                     return light._loaded.then(function () {

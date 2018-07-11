@@ -1,7 +1,7 @@
 {
-  "errors": 4225,
+  "errors": 4240,
   "babylon.typedoc.json": {
-    "errors": 4225,
+    "errors": 4240,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -5185,7 +5185,82 @@
     },
     "Engine": {
       "Method": {
+        "beginOcclusionQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "beginTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "bindTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "bindTransformFeedbackBuffer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "createEffectForParticles": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "createQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "createTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "deleteQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "deleteTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "endOcclusionQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "endTimeQuery": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "endTransformFeedback": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "getQueryResult": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "isQueryResultAvailable": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "setTranformFeedbackVaryings": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "startTimeQuery": {
           "Naming": {
             "NotPascalCase": true
           }

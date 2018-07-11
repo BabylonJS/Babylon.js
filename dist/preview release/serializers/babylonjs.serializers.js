@@ -29,7 +29,7 @@ var BABYLON;
     var OBJExport = /** @class */ (function () {
         function OBJExport() {
         }
-        //Exports the geometrys of a Mesh array in .OBJ file format (text)
+        //Exports the geometry of a Mesh array in .OBJ file format (text)
         OBJExport.OBJ = function (mesh, materials, matlibname, globalposition) {
             var output = [];
             var v = 1;
@@ -59,6 +59,7 @@ var BABYLON;
                 }
                 var g = mesh[j].geometry;
                 if (!g) {
+                    BABYLON.Tools.Warn("No geometry is present on the mesh");
                     continue;
                 }
                 var trunkVerts = g.getVerticesData('position');
@@ -66,23 +67,33 @@ var BABYLON;
                 var trunkUV = g.getVerticesData('uv');
                 var trunkFaces = g.getIndices();
                 var curV = 0;
-                if (!trunkVerts || !trunkNormals || !trunkUV || !trunkFaces) {
+                if (!trunkVerts || !trunkFaces) {
+                    BABYLON.Tools.Warn("There are no position vertices or indices on the mesh!");
                     continue;
                 }
                 for (var i = 0; i < trunkVerts.length; i += 3) {
                     output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
                     curV++;
                 }
-                for (i = 0; i < trunkNormals.length; i += 3) {
-                    output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                if (trunkNormals != null) {
+                    for (i = 0; i < trunkNormals.length; i += 3) {
+                        output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+                    }
                 }
-                for (i = 0; i < trunkUV.length; i += 2) {
-                    output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                if (trunkUV != null) {
+                    for (i = 0; i < trunkUV.length; i += 2) {
+                        output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    }
                 }
                 for (i = 0; i < trunkFaces.length; i += 3) {
-                    output.push("f " + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) + "/" + (trunkFaces[i + 2] + v) +
-                        " " + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) + "/" + (trunkFaces[i + 1] + v) +
-                        " " + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v) + "/" + (trunkFaces[i] + v));
+                    var indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
+                    var blanks = ["", "", ""];
+                    var facePositions = indices;
+                    var faceUVs = trunkUV != null ? indices : blanks;
+                    var faceNormals = trunkNormals != null ? indices : blanks;
+                    output.push("f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
+                        " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +
+                        " " + facePositions[2] + "/" + faceUVs[2] + "/" + faceNormals[2]);
                 }
                 //back de previous matrix, to not change the original mesh in the scene
                 if (globalposition && lastMatrix) {
@@ -818,7 +829,9 @@ var BABYLON;
                     var glbFile = new Blob(glbData, { type: 'application/octet-stream' });
                     var container = new BABYLON.GLTFData();
                     container.glTFFiles[glbFileName] = glbFile;
-                    _this._localEngine.dispose();
+                    if (_this._localEngine != null) {
+                        _this._localEngine.dispose();
+                    }
                     return container;
                 });
             };
@@ -1166,12 +1179,15 @@ var BABYLON;
                             }
                             directDescendents = babylonTransformNode.getDescendants(true);
                             if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                glTFNode.children = [];
+                                var children = [];
                                 for (var _a = 0, directDescendents_1 = directDescendents; _a < directDescendents_1.length; _a++) {
                                     var descendent = directDescendents_1[_a];
                                     if (_this._nodeMap[descendent.uniqueId] != null) {
-                                        glTFNode.children.push(_this._nodeMap[descendent.uniqueId]);
+                                        children.push(_this._nodeMap[descendent.uniqueId]);
                                     }
+                                }
+                                if (children.length) {
+                                    glTFNode.children = children;
                                 }
                             }
                         }
@@ -1181,6 +1197,18 @@ var BABYLON;
                         _this._scenes.push(scene);
                     }
                 });
+            };
+            _Exporter.prototype.getRootNodes = function (babylonScene, nodes, shouldExportTransformNode) {
+                var rootNodes = [];
+                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+                    var babylonTransformNode = nodes_2[_i];
+                    if (shouldExportTransformNode(babylonTransformNode)) {
+                        if (babylonTransformNode.parent == null) {
+                            rootNodes.push(babylonTransformNode);
+                        }
+                    }
+                }
+                return rootNodes;
             };
             /**
              * Creates a mapping of Node unique id to node index and handles animations
@@ -1201,13 +1229,29 @@ var BABYLON;
                 };
                 var idleGLTFAnimations = [];
                 var node;
-                for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
-                    var babylonTransformNode = nodes_2[_i];
+                var negScaleRootNode = null;
+                var rootNodes = this.getRootNodes(babylonScene, nodes, shouldExportTransformNode);
+                if (rootNodes.length === 1) {
+                    var node_1 = rootNodes[0];
+                    if (node_1.scaling.equalsToFloats(1, 1, -1)) {
+                        this._convertToRightHandedSystem = !this._convertToRightHandedSystem;
+                        negScaleRootNode = node_1;
+                    }
+                }
+                for (var _i = 0, nodes_3 = nodes; _i < nodes_3.length; _i++) {
+                    var babylonTransformNode = nodes_3[_i];
                     if (shouldExportTransformNode(babylonTransformNode)) {
                         node = this.createNode(babylonTransformNode, binaryWriter);
-                        this._nodes.push(node);
-                        nodeIndex = this._nodes.length - 1;
-                        nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        if (negScaleRootNode && babylonTransformNode === negScaleRootNode) {
+                            node.scale = [1, 1, 1];
+                            node.rotation = [0, 0, 0, 1];
+                        }
+                        var directDescendents = babylonTransformNode.getDescendants(true, function (node) { return (node instanceof BABYLON.TransformNode); });
+                        if (directDescendents.length || node.mesh != null) {
+                            this._nodes.push(node);
+                            nodeIndex = this._nodes.length - 1;
+                            nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        }
                         if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
                             GLTF2._GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
                         }

@@ -4483,6 +4483,24 @@ var BABYLON;
     var GUI;
     (function (GUI) {
         /**
+         * Enum that determines the text-wrapping mode to use.
+         */
+        var TextWrapping;
+        (function (TextWrapping) {
+            /**
+             * Clip the text when it's larger than Control.width; this is the default mode.
+             */
+            TextWrapping[TextWrapping["Clip"] = 0] = "Clip";
+            /**
+             * Wrap the text word-wise, i.e. try to add line-breaks at word boundary to fit within Control.width.
+             */
+            TextWrapping[TextWrapping["WordWrap"] = 1] = "WordWrap";
+            /**
+             * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
+             */
+            TextWrapping[TextWrapping["Ellipsis"] = 2] = "Ellipsis";
+        })(TextWrapping = GUI.TextWrapping || (GUI.TextWrapping = {}));
+        /**
          * Class used to create text block control
          */
         var TextBlock = /** @class */ (function (_super) {
@@ -4501,7 +4519,7 @@ var BABYLON;
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._text = "";
-                _this._textWrapping = false;
+                _this._textWrapping = TextWrapping.Clip;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
@@ -4563,7 +4581,7 @@ var BABYLON;
                     if (this._textWrapping === value) {
                         return;
                     }
-                    this._textWrapping = value;
+                    this._textWrapping = +value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -4734,37 +4752,59 @@ var BABYLON;
                 }
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
-                this._lines = [];
+                this._lines = this._breakLines(this._currentMeasure.width, context);
+                this.onLinesReadyObservable.notifyObservers(this);
+            };
+            TextBlock.prototype._breakLines = function (refWidth, context) {
+                var lines = [];
                 var _lines = this.text.split("\n");
-                if (this._textWrapping && !this._resizeToFit) {
+                if (this._textWrapping === TextWrapping.Ellipsis && !this._resizeToFit) {
                     for (var _i = 0, _lines_1 = _lines; _i < _lines_1.length; _i++) {
                         var _line = _lines_1[_i];
-                        this._lines.push(this._parseLineWithTextWrapping(_line, context));
+                        lines.push(this._parseLineEllipsis(_line, refWidth, context));
+                    }
+                }
+                else if (this._textWrapping === TextWrapping.WordWrap && !this._resizeToFit) {
+                    for (var _a = 0, _lines_2 = _lines; _a < _lines_2.length; _a++) {
+                        var _line = _lines_2[_a];
+                        lines.push.apply(lines, this._parseLineWordWrap(_line, refWidth, context));
                     }
                 }
                 else {
-                    for (var _a = 0, _lines_2 = _lines; _a < _lines_2.length; _a++) {
-                        var _line = _lines_2[_a];
-                        this._lines.push(this._parseLine(_line, context));
+                    for (var _b = 0, _lines_3 = _lines; _b < _lines_3.length; _b++) {
+                        var _line = _lines_3[_b];
+                        lines.push(this._parseLine(_line, context));
                     }
                 }
-                this.onLinesReadyObservable.notifyObservers(this);
+                return lines;
             };
             TextBlock.prototype._parseLine = function (line, context) {
                 if (line === void 0) { line = ''; }
                 return { text: line, width: context.measureText(line).width };
             };
-            TextBlock.prototype._parseLineWithTextWrapping = function (line, context) {
+            TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
                 if (line === void 0) { line = ''; }
+                var lineWidth = context.measureText(line).width;
+                if (lineWidth > width) {
+                    line += '…';
+                }
+                while (line.length > 2 && lineWidth > width) {
+                    line = line.slice(0, -2) + '…';
+                    lineWidth = context.measureText(line).width;
+                }
+                return { text: line, width: lineWidth };
+            };
+            TextBlock.prototype._parseLineWordWrap = function (line, width, context) {
+                if (line === void 0) { line = ''; }
+                var lines = [];
                 var words = line.split(' ');
-                var width = this._currentMeasure.width;
                 var lineWidth = 0;
                 for (var n = 0; n < words.length; n++) {
                     var testLine = n > 0 ? line + " " + words[n] : words[0];
                     var metrics = context.measureText(testLine);
                     var testWidth = metrics.width;
                     if (testWidth > width && n > 0) {
-                        this._lines.push({ text: line, width: lineWidth });
+                        lines.push({ text: line, width: lineWidth });
                         line = words[n];
                         lineWidth = context.measureText(line).width;
                     }
@@ -4773,7 +4813,8 @@ var BABYLON;
                         line = testLine;
                     }
                 }
-                return { text: line, width: lineWidth };
+                lines.push({ text: line, width: lineWidth });
+                return lines;
             };
             TextBlock.prototype._renderLines = function (context) {
                 var height = this._currentMeasure.height;
@@ -4813,6 +4854,24 @@ var BABYLON;
                     this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
                     this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
                 }
+            };
+            /**
+             * Given a width constraint applied on the text block, find the expected height
+             * @returns expected height
+             */
+            TextBlock.prototype.computeExpectedHeight = function () {
+                if (this.text && this.widthInPixels) {
+                    var context = document.createElement('canvas').getContext('2d');
+                    if (context) {
+                        this._applyStates(context);
+                        if (!this._fontOffset) {
+                            this._fontOffset = GUI.Control._GetFontOffset(context.font);
+                        }
+                        var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                        return this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+                    }
+                }
+                return 0;
             };
             TextBlock.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
@@ -5751,10 +5810,15 @@ var BABYLON;
                 _this._isFocused = false;
                 _this._blinkIsEven = false;
                 _this._cursorOffset = 0;
+                _this._deadKey = false;
+                _this._addKey = true;
+                _this._currentKey = "";
                 /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
                 _this.promptMessage = "Please enter text:";
                 /** Observable raised when the text changes */
                 _this.onTextChangedObservable = new BABYLON.Observable();
+                /** Observable raised just before an entered character is to be added */
+                _this.onBeforeKeyAddObservable = new BABYLON.Observable();
                 /** Observable raised when the control gets the focus */
                 _this.onFocusObservable = new BABYLON.Observable();
                 /** Observable raised when the control loses the focus */
@@ -5900,6 +5964,39 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "deadKey", {
+                /** Gets or sets the dead key flag */
+                get: function () {
+                    return this._deadKey;
+                },
+                set: function (flag) {
+                    this._deadKey = flag;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "addKey", {
+                /** Gets or sets if the current key should be added */
+                get: function () {
+                    return this._addKey;
+                },
+                set: function (flag) {
+                    this._addKey = flag;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "currentKey", {
+                /** Gets or sets the value of the current key being entered */
+                get: function () {
+                    return this._currentKey;
+                },
+                set: function (key) {
+                    this._currentKey = key;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "text", {
                 /** Gets or sets the text displayed in the control */
                 get: function () {
@@ -5967,7 +6064,7 @@ var BABYLON;
                 // Specific cases
                 switch (keyCode) {
                     case 32: //SPACE
-                        key = " "; //ie11 key for space is "Spacebar" 
+                        key = " "; //ie11 key for space is "Spacebar"
                         break;
                     case 8: // BACKSPACE
                         if (this._text && this._text.length > 0) {
@@ -6018,21 +6115,30 @@ var BABYLON;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
+                    case 222: // Dead
+                        this.deadKey = true;
+                        return;
                 }
                 // Printable characters
-                if ((keyCode === -1) || // Direct access
-                    (keyCode === 32) || // Space
-                    (keyCode > 47 && keyCode < 58) || // Numbers
-                    (keyCode > 64 && keyCode < 91) || // Letters
-                    (keyCode > 185 && keyCode < 193) || // Special characters
-                    (keyCode > 218 && keyCode < 223) || // Special characters
-                    (keyCode > 95 && keyCode < 112)) { // Numpad
-                    if (this._cursorOffset === 0) {
-                        this.text += key;
-                    }
-                    else {
-                        var insertPosition = this._text.length - this._cursorOffset;
-                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                if (key &&
+                    ((keyCode === -1) || // Direct access
+                        (keyCode === 32) || // Space
+                        (keyCode > 47 && keyCode < 58) || // Numbers
+                        (keyCode > 64 && keyCode < 91) || // Letters
+                        (keyCode > 185 && keyCode < 193) || // Special characters
+                        (keyCode > 218 && keyCode < 223) || // Special characters
+                        (keyCode > 95 && keyCode < 112))) { // Numpad
+                    this._currentKey = key;
+                    this.onBeforeKeyAddObservable.notifyObservers(this);
+                    key = this._currentKey;
+                    if (this._addKey) {
+                        if (this._cursorOffset === 0) {
+                            this.text += key;
+                        }
+                        else {
+                            var insertPosition = this._text.length - this._cursorOffset;
+                            this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                        }
                     }
                 }
             };
@@ -6075,7 +6181,7 @@ var BABYLON;
                     if (this.color) {
                         context.fillStyle = this.color;
                     }
-                    var text = this._text;
+                    var text = this._beforeRenderText(this._text);
                     if (!this._isFocused && !this._text && this._placeholderText) {
                         text = this._placeholderText;
                         if (this._placeholderColor) {
@@ -6178,6 +6284,9 @@ var BABYLON;
             InputText.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
                 _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
             };
+            InputText.prototype._beforeRenderText = function (text) {
+                return text;
+            };
             InputText.prototype.dispose = function () {
                 _super.prototype.dispose.call(this);
                 this.onBlurObservable.clear();
@@ -6187,6 +6296,33 @@ var BABYLON;
             return InputText;
         }(GUI.Control));
         GUI.InputText = InputText;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        /**
+         * Class used to create a password control
+         */
+        var InputPassword = /** @class */ (function (_super) {
+            __extends(InputPassword, _super);
+            function InputPassword() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            InputPassword.prototype._beforeRenderText = function (text) {
+                var txt = "";
+                for (var i = 0; i < text.length; i++) {
+                    txt += "\u2022";
+                }
+                return txt;
+            };
+            return InputPassword;
+        }(GUI.InputText));
+        GUI.InputPassword = InputPassword;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
@@ -8766,13 +8902,12 @@ var BABYLON;
                         mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                         break;
                     case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(newPos.x, newPos.y, newPos.z));
+                        mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
                         break;
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
                         break;
                     case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
                         break;
                 }
             };
@@ -8809,14 +8944,18 @@ var BABYLON;
                     return;
                 }
                 control.position = nodePosition.clone();
+                var target = BABYLON.Tmp.Vector3[0];
+                target.copyFrom(nodePosition);
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        target.addInPlace(new BABYLON.Vector3(0, 0, -1));
+                        mesh.lookAt(target);
                         break;
                     case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
                     case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
+                        target.addInPlace(new BABYLON.Vector3(0, 0, 1));
+                        mesh.lookAt(target);
                         break;
                 }
             };
@@ -8983,16 +9122,15 @@ var BABYLON;
                 control.position = newPos;
                 switch (this.orientation) {
                     case GUI.Container3D.FACEORIGIN_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(-newPos.x, 0, -newPos.z));
+                        mesh.lookAt(new BABYLON.Vector3(-newPos.x, newPos.y, -newPos.z));
                         break;
                     case GUI.Container3D.FACEORIGINREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(newPos.x, 0, newPos.z));
+                        mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, newPos.y, 2 * newPos.z));
                         break;
                     case GUI.Container3D.FACEFORWARD_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, 1));
                         break;
                     case GUI.Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                        mesh.lookAt(new BABYLON.Vector3(0, 0, -1));
+                        mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
                         break;
                 }
             };
