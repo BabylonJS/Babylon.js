@@ -1179,12 +1179,15 @@ var BABYLON;
                             }
                             directDescendents = babylonTransformNode.getDescendants(true);
                             if (!glTFNode.children && directDescendents && directDescendents.length) {
-                                glTFNode.children = [];
+                                var children = [];
                                 for (var _a = 0, directDescendents_1 = directDescendents; _a < directDescendents_1.length; _a++) {
                                     var descendent = directDescendents_1[_a];
                                     if (_this._nodeMap[descendent.uniqueId] != null) {
-                                        glTFNode.children.push(_this._nodeMap[descendent.uniqueId]);
+                                        children.push(_this._nodeMap[descendent.uniqueId]);
                                     }
+                                }
+                                if (children.length) {
+                                    glTFNode.children = children;
                                 }
                             }
                         }
@@ -1243,9 +1246,12 @@ var BABYLON;
                             node.scale = [1, 1, 1];
                             node.rotation = [0, 0, 0, 1];
                         }
-                        this._nodes.push(node);
-                        nodeIndex = this._nodes.length - 1;
-                        nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        var directDescendents = babylonTransformNode.getDescendants(true, function (node) { return (node instanceof BABYLON.TransformNode); });
+                        if (directDescendents.length || node.mesh != null) {
+                            this._nodes.push(node);
+                            nodeIndex = this._nodes.length - 1;
+                            nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                        }
                         if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
                             GLTF2._GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
                         }

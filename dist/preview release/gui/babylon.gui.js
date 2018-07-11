@@ -5810,10 +5810,15 @@ var BABYLON;
                 _this._isFocused = false;
                 _this._blinkIsEven = false;
                 _this._cursorOffset = 0;
+                _this._deadKey = false;
+                _this._addKey = true;
+                _this._currentKey = "";
                 /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
                 _this.promptMessage = "Please enter text:";
                 /** Observable raised when the text changes */
                 _this.onTextChangedObservable = new BABYLON.Observable();
+                /** Observable raised just before an entered character is to be added */
+                _this.onBeforeKeyAddObservable = new BABYLON.Observable();
                 /** Observable raised when the control gets the focus */
                 _this.onFocusObservable = new BABYLON.Observable();
                 /** Observable raised when the control loses the focus */
@@ -5959,6 +5964,39 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "deadKey", {
+                /** Gets or sets the dead key flag */
+                get: function () {
+                    return this._deadKey;
+                },
+                set: function (flag) {
+                    this._deadKey = flag;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "addKey", {
+                /** Gets or sets if the current key should be added */
+                get: function () {
+                    return this._addKey;
+                },
+                set: function (flag) {
+                    this._addKey = flag;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "currentKey", {
+                /** Gets or sets the value of the current key being entered */
+                get: function () {
+                    return this._currentKey;
+                },
+                set: function (key) {
+                    this._currentKey = key;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "text", {
                 /** Gets or sets the text displayed in the control */
                 get: function () {
@@ -6077,21 +6115,30 @@ var BABYLON;
                         this._blinkIsEven = false;
                         this._markAsDirty();
                         return;
+                    case 222: // Dead
+                        this.deadKey = true;
+                        return;
                 }
                 // Printable characters
-                if ((keyCode === -1) || // Direct access
-                    (keyCode === 32) || // Space
-                    (keyCode > 47 && keyCode < 58) || // Numbers
-                    (keyCode > 64 && keyCode < 91) || // Letters
-                    (keyCode > 185 && keyCode < 193) || // Special characters
-                    (keyCode > 218 && keyCode < 223) || // Special characters
-                    (keyCode > 95 && keyCode < 112)) { // Numpad
-                    if (this._cursorOffset === 0) {
-                        this.text += key;
-                    }
-                    else {
-                        var insertPosition = this._text.length - this._cursorOffset;
-                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                if (key &&
+                    ((keyCode === -1) || // Direct access
+                        (keyCode === 32) || // Space
+                        (keyCode > 47 && keyCode < 58) || // Numbers
+                        (keyCode > 64 && keyCode < 91) || // Letters
+                        (keyCode > 185 && keyCode < 193) || // Special characters
+                        (keyCode > 218 && keyCode < 223) || // Special characters
+                        (keyCode > 95 && keyCode < 112))) { // Numpad
+                    this._currentKey = key;
+                    this.onBeforeKeyAddObservable.notifyObservers(this);
+                    key = this._currentKey;
+                    if (this._addKey) {
+                        if (this._cursorOffset === 0) {
+                            this.text += key;
+                        }
+                        else {
+                            var insertPosition = this._text.length - this._cursorOffset;
+                            this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                        }
                     }
                 }
             };
