@@ -1,44 +1,49 @@
-module INSPECTOR {
-    
-    export class GUIAdapter 
-        extends Adapter 
-        implements IToolVisible {
+import { Adapter } from "./Adapter";
+import { IToolVisible, Checkbox } from "treetools/Checkbox";
+import { Helpers } from "helpers/Helpers";
+import { PropertyLine } from "details/PropertyLine";
+import { AbstractTreeTool } from "treetools/AbstractTreeTool";
 
-        constructor(obj: BABYLON.GUI.Control) {
-            super(obj);
-        }
+import * as GUI from "babylonjs-gui";
 
-        /** Returns the name displayed in the tree */
-        public id(): string {
-            let str = '';
-            if (this._obj.name) {
-                str = this._obj.name;
-            } // otherwise nothing displayed        
-            return str;
-        }
+export class GUIAdapter
+    extends Adapter
+    implements IToolVisible {
 
-        /** Returns the type of this object - displayed in the tree */
-        public type(): string {
-            return Helpers.GET_TYPE(this._obj);
-        }
+    constructor(obj: GUI.Control) {
+        super(obj);
+    }
 
-        /** Returns the list of properties to be displayed for this adapter */
-        public getProperties(): Array<PropertyLine> {
-            return Helpers.GetAllLinesProperties(this._obj);
-        }
+    /** Returns the name displayed in the tree */
+    public id(): string {
+        let str = '';
+        if (this._obj.name) {
+            str = this._obj.name;
+        } // otherwise nothing displayed        
+        return str;
+    }
 
-        public getTools(): Array<AbstractTreeTool> {
-            let tools = [];
-            tools.push(new Checkbox(this));
-            return tools;
-        }
+    /** Returns the type of this object - displayed in the tree */
+    public type(): string {
+        return Helpers.GET_TYPE(this._obj);
+    }
 
-        public setVisible(b: boolean){
-            (this._obj as BABYLON.GUI.Control).isVisible = b;
-        }
+    /** Returns the list of properties to be displayed for this adapter */
+    public getProperties(): Array<PropertyLine> {
+        return Helpers.GetAllLinesProperties(this._obj);
+    }
 
-        public isVisible(): boolean{
-            return (this._obj as BABYLON.GUI.Control).isVisible;
-        }
+    public getTools(): Array<AbstractTreeTool> {
+        let tools = [];
+        tools.push(new Checkbox(this));
+        return tools;
+    }
+
+    public setVisible(b: boolean) {
+        (this._obj as GUI.Control).isVisible = b;
+    }
+
+    public isVisible(): boolean {
+        return (this._obj as GUI.Control).isVisible;
     }
 }
