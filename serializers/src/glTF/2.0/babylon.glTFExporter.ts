@@ -1153,11 +1153,14 @@ module BABYLON.GLTF2 {
 
                         directDescendents = babylonTransformNode.getDescendants(true);
                         if (!glTFNode.children && directDescendents && directDescendents.length) {
-                            glTFNode.children = [];
+                            const children: number[] = [];
                             for (let descendent of directDescendents) {
                                 if (this._nodeMap[descendent.uniqueId] != null) {
-                                    glTFNode.children.push(this._nodeMap[descendent.uniqueId]);
+                                    children.push(this._nodeMap[descendent.uniqueId]);
                                 }
+                            }
+                            if (children.length) {
+                                glTFNode.children = children;
                             }
                         }
                     }
@@ -1217,10 +1220,13 @@ module BABYLON.GLTF2 {
                         node.scale = [1,1,1];
                         node.rotation = [0,0,0,1];
                     }
-
-                    this._nodes.push(node);
-                    nodeIndex = this._nodes.length - 1;
-                    nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                    
+                    const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => {return (node instanceof TransformNode);});
+                    if (directDescendents.length || node.mesh != null) {
+                        this._nodes.push(node);
+                        nodeIndex = this._nodes.length - 1;
+                        nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                    }
 
                     if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
                         _GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
