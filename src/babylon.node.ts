@@ -96,8 +96,8 @@
 
         /** @hidden */
         public _waitingParentId: Nullable<string>;
-
-        private _scene: Scene;
+        /** @hidden */
+        public _scene: Scene;
         /** @hidden */
         public _cache: any;
 
