@@ -239,11 +239,12 @@ var BABYLONDEVTOOLS;
             else {
                 this.loadScript('/dist/preview release/babylon.max.js');
             }
+            this.loadScript('/dist/preview release/gui/babylon.gui.js');
 
             // Modules
             if (loadModules) {
                 for (var i = 0; i < settings.modules.length; i++) {
-                    if (settings.modules[i] === "viewer") {
+                    if (settings.modules[i] === "viewer" || settings.modules[i] === "gui") {
                         continue;
                     }
                     this.loadModule(settings[settings.modules[i]]);

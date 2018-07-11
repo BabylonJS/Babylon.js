@@ -119,7 +119,7 @@
             "videoDome",
             "photoDome",
             "behaviors",
-            "imageProcessing"            
+            "imageProcessing"
         ],
         "minimal": [
             "meshBuilder",
@@ -132,7 +132,7 @@
             "picking",
             "backgroundMaterial",
             "videoDome"
-        ]      
+        ]
     },
     "workloads": {
         "core": {
@@ -222,7 +222,7 @@
                 "fresnelFunction",
                 "reflectionFunction",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",                
+                "imageProcessingFunctions",
                 "bumpFragmentFunctions",
                 "clipPlaneFragmentDeclaration",
                 "fogFragmentDeclaration",
@@ -240,7 +240,7 @@
             "dependUpon": [
                 "core"
             ]
-        },   
+        },
         "imageProcessing": {
             "files": [
                 "../../src/Materials/babylon.imageProcessingConfiguration.js",
@@ -250,7 +250,7 @@
             "dependUpon": [
                 "core"
             ]
-        },        
+        },
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
@@ -1127,7 +1127,7 @@
             "shaders": [
                 "anaglyph.fragment"
             ]
-        },       
+        },
         "stereoscopic": {
             "files": [
                 "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
@@ -1145,7 +1145,7 @@
             "shaders": [
                 "stereoscopicInterlace.fragment"
             ]
-        },           
+        },
         "vr": {
             "files": [
                 "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
@@ -1763,61 +1763,16 @@
     "gui": {
         "libraries": [
             {
-                "files": [
-                    "../../gui/src/2D/style.ts",
-                    "../../gui/src/2D/valueAndUnit.ts",
-                    "../../gui/src/2D/advancedDynamicTexture.ts",
-                    "../../gui/src/2D/measure.ts",
-                    "../../gui/src/2D/math2D.ts",
-                    "../../gui/src/2D/multiLinePoint.ts",
-                    "../../gui/src/2D/controls/control.ts",
-                    "../../gui/src/2D/controls/container.ts",
-                    "../../gui/src/2D/controls/stackPanel.ts",
-                    "../../gui/src/2D/controls/rectangle.ts",
-                    "../../gui/src/2D/controls/ellipse.ts",
-                    "../../gui/src/2D/controls/line.ts",
-                    "../../gui/src/2D/controls/slider.ts",
-                    "../../gui/src/2D/controls/checkbox.ts",
-                    "../../gui/src/2D/controls/radioButton.ts",
-                    "../../gui/src/2D/controls/textBlock.ts",
-                    "../../gui/src/2D/controls/image.ts",
-                    "../../gui/src/2D/controls/button.ts",
-                    "../../gui/src/2D/controls/colorpicker.ts",
-                    "../../gui/src/2D/controls/inputText.ts",
-                    "../../gui/src/2D/controls/virtualKeyboard.ts",
-                    "../../gui/src/2D/controls/multiLine.ts",
-                    "../../gui/src/2D/controls/grid.ts",                    
-                    "../../gui/src/3D/gui3DManager.ts",
-                    "../../gui/src/3D/materials/fluentMaterial.ts",
-                    "../../gui/src/3D/vector3WithInfo.ts",
-                    "../../gui/src/3D/controls/control3D.ts",
-                    "../../gui/src/3D/controls/container3D.ts",
-                    "../../gui/src/3D/controls/abstractButton3D.ts",
-                    "../../gui/src/3D/controls/button3D.ts",
-                    "../../gui/src/3D/controls/meshButton3D.ts",
-                    "../../gui/src/3D/controls/holographicButton.ts",
-                    "../../gui/src/3D/controls/stackPanel3D.ts",
-                    "../../gui/src/3D/controls/volumeBasedPanel.ts",
-                    "../../gui/src/3D/controls/spherePanel.ts",
-                    "../../gui/src/3D/controls/planePanel.ts",
-                    "../../gui/src/3D/controls/scatterPanel.ts",
-                    "../../gui/src/3D/controls/cylinderPanel.ts"
-                ],
-                "shaderFiles": [
-                    "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
-                    "../../gui/src/3D/materials/shaders/fluent.fragment.fx"
-                ],
+                "files": [],
+                "noBundleInName": true,
                 "output": "babylon.gui.js",
-                "buildAsModule": true,
-                "moduleName": "babylonjs-gui",
-                "moduleDeclaration": {
-                    "name": "GUI",
-                    "module": "babylonjs-gui"
-                }
+                "webpack": "../../gui/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../gui/",
+            "srcOutputDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/"
         }
     },
@@ -1916,7 +1871,8 @@
                     "name": "BabylonViewer",
                     "module": "babylonjs-viewer"
                 },
-                "babylonIncluded": true
+                "babylonIncluded": true,
+                "noWatch": true
             }
         ],
         "build": {
@@ -1974,7 +1930,8 @@
                     "name": "BabylonViewerAssets",
                     "module": "babylonjs-viewer-assets"
                 },
-                "babylonIncluded": true
+                "babylonIncluded": true,
+                "noWatch": true
             }
         ],
         "build": {

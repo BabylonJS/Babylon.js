@@ -1,7 +1,10 @@
+const path = require('path');
+
 module.exports = {
+    //context: __dirname,
     entry: [
-        "../../dist/preview release/inspector/babylon.inspector.css",
-        "../../dist/preview release/inspector/babylon.inspector.js"
+        path.resolve(__dirname, "../dist/preview release/inspector/babylon.inspector.css"),
+        path.resolve(__dirname, "../dist/preview release/inspector/babylon.inspector.js")
     ],
     output: {
         libraryTarget: "var",
@@ -14,7 +17,7 @@ module.exports = {
         }
     },
     module: {
-        loaders: [
+        rules: [
             { test: /\.css$/, use: ['style-loader', 'css-loader'] },
             {
                 test: /babylon.inspector.js/, use: [

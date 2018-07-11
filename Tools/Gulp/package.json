@@ -59,6 +59,7 @@
         "ts-loader": "^2.3.7",
         "typedoc": "^0.9.0",
         "typescript": "~2.8.1",
+        "webpack": "^4.16.0",
         "webpack-stream": "^4.0.1"
     },
     "scripts": {

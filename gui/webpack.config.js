@@ -3,12 +3,13 @@ const webpack = require('webpack');
 const DtsBundleWebpack = require('dts-bundle-webpack')
 
 module.exports = {
+    context: __dirname,
     entry: {
-        'babylonjs-gui': './src/index.ts',
+        'babylonjs-gui': path.resolve(__dirname, './src/index.ts'),
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: '[name].js',
+        path: path.resolve(__dirname, '../dist/preview release/gui'),
+        filename: 'babylon.gui.js',
         libraryTarget: 'umd',
         library: {
             root: ["BABYLON", "GUI"],
@@ -16,7 +17,7 @@ module.exports = {
             commonjs: "babylonjs-gui"
         },
         umdNamedDefine: true,
-        //devtoolModuleFilenameTemplate: '[relative-resource-path]'
+        //devtoolModuleFilenameTemplate: "[absolute-resource-path]"
     },
     resolve: {
         extensions: [".js", '.ts']
@@ -39,11 +40,11 @@ module.exports = {
         {
             test: /\.fx$/,
             use: [{
-                loader: path.resolve('../Tools/WebpackShaderLoader/index.js')
+                loader: path.resolve(__dirname, '../Tools/WebpackShaderLoader/index.js')
             }]
         }]
     },
-    mode: "development",
+    mode: "production",
     devServer: {
         contentBase: path.join(__dirname, "dist"),
         compress: false,
@@ -54,10 +55,16 @@ module.exports = {
         new DtsBundleWebpack({
             name: "babylonjs-gui",
             main: path.resolve(__dirname, './dist/build/index.d.ts'),
-            out: path.resolve(__dirname, './dist/index.d.ts'),
+            out: path.resolve(__dirname, '../dist/preview release/gui/babylon.gui.module.d.ts'),
             baseDir: path.resolve(__dirname, './dist/build/'),
             headerText: "BabylonJS GUI"
-        })
-    ]
+        }),
+        new webpack.WatchIgnorePlugin([
+            /\.js$/,
+            /\.d\.ts$/
+        ])
+    ],
+    watchOptions: {
+        ignored: [path.resolve(__dirname, './dist/**/*.*'), 'node_modules']
+    }
 }
-//]
