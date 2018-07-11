@@ -2349,6 +2349,11 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string);
         /**
+         * Force the container to update the layout. Please note that it will not take blockLayout property in account
+         * @returns the current container
+         */
+        updateLayout(): Container3D;
+        /**
          * Gets a boolean indicating if the given control is in the children of this control
          * @param control defines the control to check
          * @returns true if the control is in the child list
@@ -2594,7 +2599,7 @@ declare module BABYLON.GUI {
          */
         rows: int;
         /**
-         * Creates new SpherePanel
+         * Creates new VolumeBasedPanel
          */
         constructor();
         protected _arrangeChildren(): void;

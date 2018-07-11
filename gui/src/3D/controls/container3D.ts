@@ -48,6 +48,15 @@ module BABYLON.GUI {
         }
 
         /**
+         * Force the container to update the layout. Please note that it will not take blockLayout property in account
+         * @returns the current container
+         */
+        public updateLayout(): Container3D {
+            this._arrangeChildren();
+            return this;
+        }
+
+        /**
          * Gets a boolean indicating if the given control is in the children of this control
          * @param control defines the control to check
          * @returns true if the control is in the child list

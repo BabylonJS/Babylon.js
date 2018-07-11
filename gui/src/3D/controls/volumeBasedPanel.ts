@@ -88,7 +88,7 @@ module BABYLON.GUI {
         }           
 
         /**
-         * Creates new SpherePanel
+         * Creates new VolumeBasedPanel
          */
         public constructor() {
             super();
@@ -111,10 +111,17 @@ module BABYLON.GUI {
 
                 controlCount++;
                 child.mesh.computeWorldMatrix(true);
-                child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
+             //   child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
 
-                let boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
+                let boundingBox = child.mesh.getHierarchyBoundingVectors();
+                let extendSize = Tmp.Vector3[0];
+                let diff = Tmp.Vector3[1];
+
+                boundingBox.max.subtractToRef(boundingBox.min, diff);
+
+                diff.scaleInPlace(0.5);
+
+                Vector3.TransformNormalToRef(diff, currentInverseWorld, extendSize);
 
                 this._cellWidth = Math.max(this._cellWidth, extendSize.x * 2);
                 this._cellHeight = Math.max(this._cellHeight, extendSize.y * 2);
