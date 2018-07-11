@@ -768,7 +768,11 @@ module BABYLON.GLTF2 {
                 const container = new GLTFData();
                 container.glTFFiles[glbFileName] = glbFile;
 
-                this._localEngine.dispose();
+                if (this._localEngine != null) {
+                    this._localEngine.dispose();
+                }
+
+                
 
                 return container;
             });
@@ -1149,11 +1153,14 @@ module BABYLON.GLTF2 {
 
                         directDescendents = babylonTransformNode.getDescendants(true);
                         if (!glTFNode.children && directDescendents && directDescendents.length) {
-                            glTFNode.children = [];
+                            const children: number[] = [];
                             for (let descendent of directDescendents) {
                                 if (this._nodeMap[descendent.uniqueId] != null) {
-                                    glTFNode.children.push(this._nodeMap[descendent.uniqueId]);
+                                    children.push(this._nodeMap[descendent.uniqueId]);
                                 }
+                            }
+                            if (children.length) {
+                                glTFNode.children = children;
                             }
                         }
                     }
@@ -1162,6 +1169,18 @@ module BABYLON.GLTF2 {
                     this._scenes.push(scene);
                 }
             });
+        }
+
+        private getRootNodes(babylonScene: Scene, nodes: TransformNode[], shouldExportTransformNode: (babylonTransformNode: TransformNode) => boolean): TransformNode[] {
+            const rootNodes: TransformNode[] = [];
+            for (let babylonTransformNode of nodes) {
+                if (shouldExportTransformNode(babylonTransformNode)) {
+                    if (babylonTransformNode.parent == null) {
+                        rootNodes.push(babylonTransformNode);
+                    }
+                }
+            }
+            return rootNodes;
         }
 
         /**
@@ -1183,13 +1202,31 @@ module BABYLON.GLTF2 {
             let idleGLTFAnimations: IAnimation[] = [];
             let node: INode;
 
+            let negScaleRootNode: Nullable<TransformNode> = null;
+
+            const rootNodes = this.getRootNodes(babylonScene, nodes, shouldExportTransformNode);
+            if (rootNodes.length === 1) {
+                const node = rootNodes[0];
+                if (node.scaling.equalsToFloats(1,1, -1)) {
+                    this._convertToRightHandedSystem = !this._convertToRightHandedSystem;
+                    negScaleRootNode = node;
+                }  
+            }
+
             for (let babylonTransformNode of nodes) {
                 if (shouldExportTransformNode(babylonTransformNode)) {
                     node = this.createNode(babylonTransformNode, binaryWriter);
-
-                    this._nodes.push(node);
-                    nodeIndex = this._nodes.length - 1;
-                    nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                    if (negScaleRootNode && babylonTransformNode === negScaleRootNode) {
+                        node.scale = [1,1,1];
+                        node.rotation = [0,0,0,1];
+                    }
+                    
+                    const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => {return (node instanceof TransformNode);});
+                    if (directDescendents.length || node.mesh != null) {
+                        this._nodes.push(node);
+                        nodeIndex = this._nodes.length - 1;
+                        nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                    }
 
                     if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
                         _GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);

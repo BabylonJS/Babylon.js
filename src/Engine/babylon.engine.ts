@@ -589,7 +589,9 @@
         public onAfterShaderCompilationObservable = new Observable<Engine>();
 
         // Private Members
-        private _gl: WebGLRenderingContext;
+
+        /** @hidden */
+        public _gl: WebGLRenderingContext;
         private _renderingCanvas: Nullable<HTMLCanvasElement>;
         private _windowIsBackground = false;
         private _webGLVersion = 1.0;
@@ -5227,7 +5229,7 @@
         }
 
         /** @hidden */
-        public _uploadDataToTextureDirectly(texture: InternalTexture, width: number, height: number, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
             var gl = this._gl;
 
             var textureType = this._getWebGLTextureType(texture.type);
@@ -5241,6 +5243,11 @@
                 target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
             }
 
+            const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
+            const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
+            const width = Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+            const height = Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+
             gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
         }
 
@@ -5251,7 +5258,7 @@
 
             this._bindTextureDirectly(bindTarget, texture, true);
 
-            this._uploadDataToTextureDirectly(texture, texture.width, texture.height, imageData, faceIndex, lod);
+            this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
 
             this._bindTextureDirectly(bindTarget, null, true);
         }
@@ -5569,6 +5576,10 @@
                                 let data = imgs[index];
                                 info = DDSTools.GetDDSInfo(data);
 
+                                texture.width = info.width;
+                                texture.height = info.height;
+                                width = info.width;
+
                                 loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5579,11 +5590,6 @@
                                 if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                                 }
-
-                                texture.width = info.width;
-                                texture.height = info.height;
-                                texture.type = info.textureType;
-                                width = info.width;
                             }
 
                             this.setCubeMapTextureParams(gl, loadMipmap);
@@ -5595,15 +5601,18 @@
                         },
                         files,
                         onError);
-
                 } else {
                     this._loadFile(rootUrl,
                         data => {
                             var info = DDSTools.GetDDSInfo(data);
-                            if(createPolynomials){
+
+                            texture.width = info.width;
+                            texture.height = info.height;
+
+                            if (createPolynomials) {
                                 info.sphericalPolynomial = new SphericalPolynomial();
                             }
-                            
+
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -5616,12 +5625,8 @@
                             }
 
                             this.setCubeMapTextureParams(gl, loadMipmap);
-
-                            texture.width = info.width;
-                            texture.height = info.height;
                             texture.isReady = true;
-                            texture.type = info.textureType;
-                            
+
                             if (onLoad) {
                                 onLoad({ isDDS: true, width: info.width, info, data, texture });
                             }
@@ -7213,280 +7218,6 @@
 
             return this._gl.RGBA8;
         };
-
-        /**
-         * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @return the new query
-         */
-        public createQuery(): WebGLQuery {
-            return this._gl.createQuery();
-        }
-
-        /**
-         * Delete and release a webGL query
-         * @param query defines the query to delete
-         * @return the current engine
-         */
-        public deleteQuery(query: WebGLQuery): Engine {
-            this._gl.deleteQuery(query);
-
-            return this;
-        }
-
-        /**
-         * Check if a given query has resolved and got its value
-         * @param query defines the query to check
-         * @returns true if the query got its value
-         */
-        public isQueryResultAvailable(query: WebGLQuery): boolean {
-            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
-        }
-
-        /**
-         * Gets the value of a given query
-         * @param query defines the query to check
-         * @returns the value of the query
-         */
-        public getQueryResult(query: WebGLQuery): number {
-            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
-        }
-
-        /**
-         * Initiates an occlusion query
-         * @param algorithmType defines the algorithm to use
-         * @param query defines the query to use
-         * @returns the current engine
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         */
-        public beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine {
-            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
-            this._gl.beginQuery(glAlgorithm, query);
-
-            return this;
-        }
-
-        /**
-         * Ends an occlusion query
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         * @param algorithmType defines the algorithm to use
-         * @returns the current engine
-         */
-        public endOcclusionQuery(algorithmType: number): Engine {
-            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
-            this._gl.endQuery(glAlgorithm);
-
-            return this;
-        }
-
-        /* Time queries */
-
-        private _createTimeQuery(): WebGLQuery {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.createQueryEXT) {
-                return timerQuery.createQueryEXT();
-            }
-
-            return this.createQuery();
-        }
-
-        private _deleteTimeQuery(query: WebGLQuery): void {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.deleteQueryEXT) {
-                timerQuery.deleteQueryEXT(query);
-                return;
-            }
-
-            this.deleteQuery(query);
-        }
-
-        private _getTimeQueryResult(query: WebGLQuery): any {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.getQueryObjectEXT) {
-                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_EXT);
-            }
-            return this.getQueryResult(query);
-        }
-
-        private _getTimeQueryAvailability(query: WebGLQuery): any {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.getQueryObjectEXT) {
-                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_AVAILABLE_EXT);
-            }
-            return this.isQueryResultAvailable(query);
-        }
-
-        private _currentNonTimestampToken: Nullable<_TimeToken>;
-
-        /**
-         * Starts a time query (used to measure time spent by the GPU on a specific frame)
-         * Please note that only one query can be issued at a time
-         * @returns a time token used to track the time span
-         */
-        public startTimeQuery(): Nullable<_TimeToken> {
-            let timerQuery = this._caps.timerQuery;
-            if (!timerQuery) {
-                return null;
-            }
-
-            let token = new _TimeToken();
-            this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
-            if (this._caps.canUseTimestampForTimerQuery) {
-                token._startTimeQuery = this._createTimeQuery();
-
-                timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
-            } else {
-                if (this._currentNonTimestampToken) {
-                    return this._currentNonTimestampToken;
-                }
-
-                token._timeElapsedQuery = this._createTimeQuery();
-                if (timerQuery.beginQueryEXT) {
-                    timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-                } else {
-                    this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-                }
-
-                this._currentNonTimestampToken = token;
-            }
-            return token;
-        }
-
-        /**
-         * Ends a time query
-         * @param token defines the token used to measure the time span
-         * @returns the time spent (in ns)
-         */
-        public endTimeQuery(token: _TimeToken): int {
-            let timerQuery = this._caps.timerQuery;
-            if (!timerQuery || !token) {
-                return -1;
-            }
-
-            if (this._caps.canUseTimestampForTimerQuery) {
-                if (!token._startTimeQuery) {
-                    return -1;
-                }
-                if (!token._endTimeQuery) {
-                    token._endTimeQuery = this._createTimeQuery();
-                    timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
-                }
-            } else if (!token._timeElapsedQueryEnded) {
-                if (!token._timeElapsedQuery) {
-                    return -1;
-                }
-                if (timerQuery.endQueryEXT) {
-                    timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
-                } else {
-                    this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
-                }
-                token._timeElapsedQueryEnded = true;
-            }
-
-            let disjoint = this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
-            let available: boolean = false;
-            if (token._endTimeQuery) {
-                available = this._getTimeQueryAvailability(token._endTimeQuery);
-            } else if (token._timeElapsedQuery) {
-                available = this._getTimeQueryAvailability(token._timeElapsedQuery);
-            }
-
-            if (available && !disjoint) {
-                let result = 0;
-                if (this._caps.canUseTimestampForTimerQuery) {
-                    if (!token._startTimeQuery || !token._endTimeQuery) {
-                        return -1;
-                    }
-                    let timeStart = this._getTimeQueryResult(token._startTimeQuery);
-                    let timeEnd = this._getTimeQueryResult(token._endTimeQuery);
-
-                    result = timeEnd - timeStart;
-                    this._deleteTimeQuery(token._startTimeQuery);
-                    this._deleteTimeQuery(token._endTimeQuery);
-                    token._startTimeQuery = null;
-                    token._endTimeQuery = null;
-                } else {
-                    if (!token._timeElapsedQuery) {
-                        return -1;
-                    }
-
-                    result = this._getTimeQueryResult(token._timeElapsedQuery);
-                    this._deleteTimeQuery(token._timeElapsedQuery);
-                    token._timeElapsedQuery = null;
-                    token._timeElapsedQueryEnded = false;
-                    this._currentNonTimestampToken = null;
-                }
-                return result;
-            }
-
-            return -1;
-        }
-
-        private getGlAlgorithmType(algorithmType: number): number {
-            return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
-        }
-
-        // Transform feedback
-
-        /**
-         * Creates a webGL transform feedback object
-         * Please makes sure to check webGLVersion property to check if you are running webGL 2+
-         * @returns the webGL transform feedback object
-         */
-        public createTransformFeedback(): WebGLTransformFeedback {
-            return this._gl.createTransformFeedback();
-        }
-
-        /**
-         * Delete a webGL transform feedback object 
-         * @param value defines the webGL transform feedback object to delete
-         */
-        public deleteTransformFeedback(value: WebGLTransformFeedback): void {
-            this._gl.deleteTransformFeedback(value);
-        }
-
-        /**
-         * Bind a webGL transform feedback object to the webgl context
-         * @param value defines the webGL transform feedback object to bind
-         */        
-        public bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void {
-            this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
-        }
-
-        /**
-         * Begins a transform feedback operation
-         * @param usePoints defines if points or triangles must be used
-         */              
-        public beginTransformFeedback(usePoints: boolean = true): void {
-            this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
-        }
-
-        /**
-         * Ends a transform feedback operation
-         */           
-        public endTransformFeedback(): void {
-            this._gl.endTransformFeedback();
-        }
-
-        /**
-         * Specify the varyings to use with transform feedback
-         * @param program defines the associated webGL program
-         * @param value defines the list of strings representing the varying names
-         */
-        public setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void {
-            this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
-        }
-
-        /**
-         * Bind a webGL buffer for a transform feedback operation
-         * @param value defines the webGL buffer to bind
-         */          
-        public bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void {
-            this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
-        }
 
         /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {

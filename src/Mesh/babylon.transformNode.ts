@@ -792,7 +792,7 @@ module BABYLON {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, Tmp.Matrix[0]);
                 this._cache.rotation.copyFrom(this.rotation);
             }
-
+          
             // Translation
             let camera = (<Camera>this.getScene().activeCamera);
 
@@ -809,7 +809,7 @@ module BABYLON {
             }
 
             // Composing transformations
-            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
+            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);           
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
 
             // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
@@ -856,6 +856,11 @@ module BABYLON {
                 Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
             }
 
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                Tmp.Matrix[5].multiplyToRef(this._pivotMatrixInverse, Tmp.Matrix[5]);
+            }           
+
             // Local world
             Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
 
@@ -887,10 +892,6 @@ module BABYLON {
                 this._worldMatrix.copyFrom(this._localWorld);
             }
 
-            // Post multiply inverse of pivotMatrix
-            if (this._postMultiplyPivotMatrix) {
-                this._worldMatrix.multiplyToRef(this._pivotMatrixInverse, this._worldMatrix);
-            }
 
             // Normal matrix
             if (!this.ignoreNonUniformScaling) {

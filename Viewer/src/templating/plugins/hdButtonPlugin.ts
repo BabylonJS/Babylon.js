@@ -4,10 +4,8 @@ import { EventCallback, Template } from "../templateManager";
 
 export class HDButtonPlugin extends AbstractViewerNavbarButton {
 
-    protected _buttonClass = "hd-button";
-
     constructor(private _viewer: DefaultViewer) {
-        super();
+        super("hd", "hd-button", HDButtonPlugin.HtmlTemplate);
     }
 
     onEvent(event: EventCallback): void {
@@ -18,7 +16,7 @@ export class HDButtonPlugin extends AbstractViewerNavbarButton {
         this._viewer.toggleHD();
     }
 
-    protected _htmlTemplate: string = `
+    protected static HtmlTemplate: string = `
 {{#unless hideHd}}
 <style>
 .hd-icon:after {

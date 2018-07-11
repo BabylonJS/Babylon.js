@@ -12,11 +12,14 @@ module BABYLON {
          */
         public static MODEL_FILENAME:string = 'generic.babylon';
 
+        private _maxRotationDistFromHeadset = Math.PI/5;
+        private _draggedRoomRotation = 0;
+        private _tmpVector = new BABYLON.Vector3();
         /**
          * Gamepad Id prefix used to identify this controller.
          */
         public static readonly GAMEPAD_ID_PREFIX: string = 'Gear VR'; // id is 'Gear VR Controller'
-
+        
         private readonly _buttonIndexToObservableNameMap = [
             'onTrackpadChangedObservable', // Trackpad
             'onTriggerStateChangedObservable' // Trigger
@@ -30,7 +33,35 @@ module BABYLON {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.GEAR_VR;
             // Initial starting position defaults to where hand would be (incase of only 3dof controller)
-            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15,-0.5, 0.4)
+            this._calculatedPosition = new Vector3(this.hand == "left" ? -0.15 : 0.15,-0.5, 0.25)
+        }
+
+        /**
+         * Updates the state of the pose enbaled controller based on the raw pose data from the device
+         * @param poseData raw pose fromthe device
+         */
+        public updateFromDevice(poseData: DevicePose) {
+            super.updateFromDevice(poseData);
+            if(BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.activeCamera){
+                if((<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera).deviceRotationQuaternion){
+                    var camera = (<WebVRFreeCamera>BABYLON.Engine.LastCreatedScene.activeCamera);
+                    camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(this._tmpVector);
+                    
+                    // Find the radian distance away that the headset is from the controllers rotation
+                    var distanceAway = Math.atan2(Math.sin(this._tmpVector.y - this._draggedRoomRotation), Math.cos(this._tmpVector.y - this._draggedRoomRotation))
+                    if(Math.abs(distanceAway) > this._maxRotationDistFromHeadset){
+                        // Only rotate enouph to be within the _maxRotationDistFromHeadset
+                        var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
+                        this._draggedRoomRotation += rotationAmount;
+                        
+                        // Rotate controller around headset
+                        var sin = Math.sin(-rotationAmount);
+                        var cos = Math.cos(-rotationAmount);
+                        this._calculatedPosition.x = this._calculatedPosition.x * cos - this._calculatedPosition.z * sin;
+                        this._calculatedPosition.z = this._calculatedPosition.x * sin + this._calculatedPosition.z * cos;
+                    }                  
+                }
+            }
         }
 
         /**
@@ -40,7 +71,11 @@ module BABYLON {
          */
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
             SceneLoader.ImportMesh("", GearVRController.MODEL_BASE_URL, GearVRController.MODEL_FILENAME, scene, (newMeshes) => {
-                this._defaultModel = newMeshes[1];
+                // Offset the controller so it will rotate around the users wrist
+                var mesh = new BABYLON.Mesh("", scene);
+                newMeshes[1].parent = mesh;
+                newMeshes[1].position.z = -0.15;
+                this._defaultModel = mesh;
                 this.attachToMesh(this._defaultModel);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);

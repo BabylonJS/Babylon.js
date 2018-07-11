@@ -236,8 +236,13 @@ module BABYLON {
                     if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (shadowGenerator) {
-                            shadowEnabled = true;
-                            shadowGenerator.prepareDefines(defines, lightIndex);
+                            const shadowMap = shadowGenerator.getShadowMap();
+                            if (shadowMap) {
+                                if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+                                    shadowEnabled = true;
+                                    shadowGenerator.prepareDefines(defines, lightIndex);
+                                }
+                            }
                         }
                     }
 

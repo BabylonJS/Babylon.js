@@ -362,6 +362,10 @@
 
             var mesh = <Mesh>abstractMesh;
 
+            if (mesh.isDisposed()) {
+                return false;
+            }
+
             if (!mesh.isVisible || !mesh.isEnabled()) {
                 return false;
             }
@@ -371,10 +375,6 @@
             }
 
             if (mesh.skeleton || mesh.hasLODLevels) {
-                return false;
-            }
-
-            if (mesh.parent) {
                 return false;
             }
 

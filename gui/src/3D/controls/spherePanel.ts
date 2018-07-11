@@ -1,5 +1,5 @@
 import { VolumeBasedPanel } from "./volumeBasedPanel";
-import { Tools, Vector3, Matrix, Tmp } from "babylonjs";
+import { float, Tools, Vector3, Matrix, Tmp } from "babylonjs";
 import { Control3D } from "./control3D";
 import { Container3D } from "./container3D";
 
@@ -12,11 +12,11 @@ export class SpherePanel extends VolumeBasedPanel {
     /**
      * Gets or sets the radius of the sphere where to project controls (5 by default)
      */
-    public get radius(): number {
+    public get radius(): float {
         return this._radius;
     }
 
-    public set radius(value: number) {
+    public set radius(value: float) {
         if (this._radius === value) {
             return;
         }
@@ -40,16 +40,15 @@ export class SpherePanel extends VolumeBasedPanel {
 
         switch (this.orientation) {
             case Container3D.FACEORIGIN_ORIENTATION:
-                mesh.lookAt(new Vector3(-newPos.x, -newPos.y, -newPos.z));
+                mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                 break;
             case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                mesh.lookAt(new Vector3(newPos.x, newPos.y, newPos.z));
+                mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
                 break;
             case Container3D.FACEFORWARD_ORIENTATION:
-                mesh.lookAt(new Vector3(0, 0, 1));
                 break;
             case Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                mesh.lookAt(new Vector3(0, 0, -1));
+                mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
                 break;
         }
     }

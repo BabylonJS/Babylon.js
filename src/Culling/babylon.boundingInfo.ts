@@ -70,6 +70,18 @@
             return this;
         }
 
+        /**
+         * Scale the current bounding info by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding info
+         */
+        public scale(factor: number): BoundingInfo {
+            this.boundingBox.scale(factor);
+            this.boundingSphere.scale(factor);
+
+            return this;
+        }
+
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (!this.boundingSphere.isInFrustum(frustumPlanes))
                 return false;
