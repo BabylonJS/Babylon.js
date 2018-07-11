@@ -4333,7 +4333,8 @@
         public updateAlternateTransformMatrix(alternateCamera: Camera): void {
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
-
+        /** @hidden */
+        public _allowPostProcessClear = true;
         private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;

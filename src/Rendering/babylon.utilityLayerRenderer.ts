@@ -53,6 +53,7 @@ module BABYLON {
         constructor(/** the original scene that will be rendered on top of */ public originalScene:Scene){
             // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
             this.utilityLayerScene = new BABYLON.Scene(originalScene.getEngine());
+            this.utilityLayerScene._allowPostProcessClear = false;
             originalScene.getEngine().scenes.pop();
 
             // Detach controls on utility scene, events will be fired by logic below to handle picking priority
@@ -171,7 +172,30 @@ module BABYLON {
          */
         public render(){
             this._updateCamera();
-            this.utilityLayerScene.render(false);
+            if(this.utilityLayerScene.activeCamera){
+                // Set the camera's scene to utility layers scene
+                var oldScene = this.utilityLayerScene.activeCamera.getScene();
+                var camera = this.utilityLayerScene.activeCamera;
+                camera._scene = this.utilityLayerScene;
+                if(camera.leftCamera){
+                    camera.leftCamera._scene = this.utilityLayerScene;
+                }
+                if(camera.rightCamera){
+                    camera.rightCamera._scene = this.utilityLayerScene;
+                }
+
+                this.utilityLayerScene.render(false);
+
+                // Reset camera's scene back to original
+                camera._scene = oldScene;
+                if(camera.leftCamera){
+                    camera.leftCamera._scene = oldScene;
+                }
+                if(camera.rightCamera){
+                    camera.rightCamera._scene = oldScene;
+                }
+            }
+            
         }
 
         /**
