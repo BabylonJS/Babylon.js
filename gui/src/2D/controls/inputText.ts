@@ -21,12 +21,17 @@ module BABYLON.GUI {
         private _scrollLeft: Nullable<number>;
         private _textWidth: number;
         private _clickedCoordinate: Nullable<number>;
+        private _deadKey = false;
+        private _addKey = true;
+        private _currentKey = "";
 
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         public promptMessage = "Please enter text:";
 
         /** Observable raised when the text changes */
         public onTextChangedObservable = new Observable<InputText>();
+        /** Observable raised just before an entered character is to be added */
+        public onBeforeKeyAddObservable = new Observable<InputText>();
         /** Observable raised when the control gets the focus */
         public onFocusObservable = new Observable<InputText>();
         /** Observable raised when the control loses the focus */
@@ -153,6 +158,33 @@ module BABYLON.GUI {
             }
             this._placeholderText = value;
             this._markAsDirty();
+        }
+
+        /** Gets or sets the dead key flag */
+        public get deadKey(): boolean {
+            return this._deadKey;
+        }
+
+        public set deadKey(flag: boolean) {
+            this._deadKey = flag;
+        }
+
+        /** Gets or sets if the current key should be added */
+        public get addKey(): boolean {
+            return this._addKey;
+        }
+
+        public set addKey(flag: boolean) {
+            this._addKey = flag;
+        }
+
+        /** Gets or sets the value of the current key being entered */
+        public get currentKey(): string {
+            return this._currentKey;
+        }
+
+        public set currentKey(key: string) {
+            this._currentKey = key;
         }
 
         /** Gets or sets the text displayed in the control */
@@ -289,23 +321,31 @@ module BABYLON.GUI {
                     this._blinkIsEven = false;
                     this._markAsDirty();
                     return;
+                case 222: // Dead
+                    this.deadKey = true;
+                    return;
             }
 
             // Printable characters
-            if (
-                (keyCode === -1) ||                     // Direct access
-                (keyCode === 32) ||                     // Space
-                (keyCode > 47 && keyCode < 58) ||       // Numbers
-                (keyCode > 64 && keyCode < 91) ||       // Letters
-                (keyCode > 185 && keyCode < 193) ||     // Special characters
-                (keyCode > 218 && keyCode < 223) ||    // Special characters
-                (keyCode > 95 && keyCode < 112)) {      // Numpad
-                if (this._cursorOffset === 0) {
-                    this.text += key;
-                } else {
-                    let insertPosition = this._text.length - this._cursorOffset;
+            if (key &&
+                ((keyCode === -1) ||                     // Direct access
+                 (keyCode === 32) ||                     // Space
+                 (keyCode > 47 && keyCode < 58) ||       // Numbers
+                 (keyCode > 64 && keyCode < 91) ||       // Letters
+                 (keyCode > 185 && keyCode < 193) ||     // Special characters
+                 (keyCode > 218 && keyCode < 223) ||     // Special characters
+                 (keyCode > 95 && keyCode < 112))) {     // Numpad
+                this._currentKey = key;
+                this.onBeforeKeyAddObservable.notifyObservers(this);
+                key = this._currentKey;
+                if (this._addKey) {
+                    if (this._cursorOffset === 0) {
+                        this.text += key;
+                    } else {
+                        let insertPosition = this._text.length - this._cursorOffset;
 
-                    this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                    }
                 }
             }
         }
