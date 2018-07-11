@@ -16,7 +16,6 @@ var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
 var cleants = require("gulp-clean-ts-extends");
-var changedInPlace = require("gulp-changed-in-place");
 var runSequence = require("run-sequence");
 var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
@@ -25,10 +24,10 @@ var optimisejs = require("gulp-optimize-js");
 var webserver = require("gulp-webserver");
 var path = require("path");
 var sass = require("gulp-sass");
-var webpack = require("webpack-stream");
+const webpack = require('webpack');
+var webpackStream = require("webpack-stream");
 var typedoc = require("gulp-typedoc");
 var validateTypedoc = require("./gulp-validateTypedoc");
-var request = require('request');
 var fs = require("fs");
 var dtsBundle = require('dts-bundle');
 const through = require('through2');
@@ -448,7 +447,7 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.webpack) {
             let sequence = [waitAll];
-            let wpBuild = webpack(require(library.webpack));
+            let wpBuild = webpackStream(require(library.webpack), webpack);
             if (settings.build.outputs) {
                 //shoud dtsBundle create the declaration?
                 if (settings.build.dtsBundle) {
@@ -543,10 +542,10 @@ var buildExternalLibrary = function (library, settings, watch) {
             } else {
                 sequence.push(
                     wpBuild
-                        .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                        .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: library.extendsRoot, externalUsingBabylon: true }))
-                        .pipe(uglify())
-                        .pipe(optimisejs())
+                        //.pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                        //.pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: library.extendsRoot, externalUsingBabylon: true }))
+                        //.pipe(uglify())
+                        //.pipe(optimisejs())
                         .pipe(gulp.dest(outputDirectory))
                 )
             }
@@ -623,22 +622,35 @@ gulp.task("watch", ["srcTscWatch"], function () {
     var tasks = [];
 
     config.modules.map(function (module) {
+
         config[module].libraries.map(function (library) {
-            tasks.push(gulp.watch(library.files, { interval: interval }, function () {
-                console.log(library.output);
-                return buildExternalLibrary(library, config[module], true)
-                    .pipe(debug());
-            }));
-            tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function () {
-                console.log(library.output);
-                return buildExternalLibrary(library, config[module], true)
-                    .pipe(debug())
-            }));
-            tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function () {
-                console.log(library.output);
-                return buildExternalLibrary(library, config[module], true)
-                    .pipe(debug())
-            }));
+            if (library.webpack) {
+                if (library.noWatch) return;
+                var outputDirectory = config.build.outputDirectory + config[module].build.distOutputDirectory;
+                let wpconfig = require(library.webpack);
+                wpconfig.watch = true;
+                // dev mode and absolute path sourcemaps for debugging
+                wpconfig.mode = "development";
+                wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
+                //config.stats = "minimal";
+                tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
+            } else {
+                tasks.push(gulp.watch(library.files, { interval: interval }, function () {
+                    console.log(library.output);
+                    return buildExternalLibrary(library, config[module], true)
+                        .pipe(debug());
+                }));
+                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function () {
+                    console.log(library.output);
+                    return buildExternalLibrary(library, config[module], true)
+                        .pipe(debug())
+                }));
+                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function () {
+                    console.log(library.output);
+                    return buildExternalLibrary(library, config[module], true)
+                        .pipe(debug())
+                }));
+            }
         });
     });
 
@@ -1096,7 +1108,7 @@ gulp.task("tests-viewer-validation-karma", ["tests-viewer-validation-transpile"]
  */
 gulp.task("tests-viewer-validation-transpile", function (done) {
 
-    let wpBuild = webpack(require('../../Viewer//webpack.gulp.config.js'));
+    let wpBuild = webpackStream(require('../../Viewer//webpack.gulp.config.js'));
 
     // clean the built directory
     rmDir("../../Viewer/tests/build/");
@@ -1115,7 +1127,7 @@ gulp.task("tests-viewer-validation-transpile", function (done) {
  */
 gulp.task("tests-viewer-transpile", function (done) {
 
-    let wpBuild = webpack(require('../../Viewer/tests/unit/webpack.config.js'));
+    let wpBuild = webpackStream(require('../../Viewer/tests/unit/webpack.config.js'));
 
     // clean the built directory
     rmDir("../../Viewer/tests/build/");
