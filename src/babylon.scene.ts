@@ -4334,7 +4334,7 @@
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
         /** @hidden */
-        public _renderPostProcesses = true;
+        public _allowPostProcessClear = true;
         private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
@@ -4413,7 +4413,7 @@
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
             // Prepare Frame
-            if (this.postProcessManager && this._renderPostProcesses) {
+            if (this.postProcessManager) {
                 this.postProcessManager._prepareFrame();
             }
 
@@ -4433,7 +4433,7 @@
             }
             
             // Finalize frame
-            if (this.postProcessManager && this._renderPostProcesses) {
+            if (this.postProcessManager) {
                 this.postProcessManager._finalizeFrame(camera.isIntermediate);
             }
 

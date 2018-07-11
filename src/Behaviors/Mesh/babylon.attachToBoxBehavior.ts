@@ -26,17 +26,24 @@ module BABYLON {
         private _target:Mesh;
         private _scene:Scene;
         private _onRenderObserver:Nullable<Observer<Scene>>;
+        private _tmpMatrix = new Matrix();
+        private _tmpVector = new Vector3();
+
         /**
          * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
          * @param ui The transform node that should be attched to the mesh
          */
-        constructor(private ui: BABYLON.TransformNode){}
-         /**
+        constructor(private ui: BABYLON.TransformNode){
+            /* Does nothing */
+        }
+
+        /**
          *  Initializes the behavior
          */
-        init(){}
-        private _tmpMatrix = new Matrix();
-        private _tmpVector = new Vector3();
+        public init(){
+            /* Does nothing */
+        }
+        
         private _closestFace(targetDirection:Vector3){
             // Go over each face and calculate the angle between the face's normal and targetDirection
             this._faceVectors.forEach((v)=>{
@@ -58,6 +65,7 @@ module BABYLON {
                 }
             }, this._faceVectors[0]);
         }
+        
         private _zeroVector = Vector3.Zero();
         private _lookAtTmpMatrix = new Matrix();
         private _lookAtToRef(pos:Vector3, up = new BABYLON.Vector3(0,1,0), ref:Quaternion){
@@ -65,6 +73,7 @@ module BABYLON {
             this._lookAtTmpMatrix.invert();
             BABYLON.Quaternion.FromRotationMatrixToRef(this._lookAtTmpMatrix, ref);
         }
+
         /**
          * Attaches the AttachToBoxBehavior to the passed in mesh
          * @param target The mesh that the specified node will be attached to
@@ -146,6 +155,7 @@ module BABYLON {
                 this.ui.position.addInPlace(this._tmpVector);
             })
         }
+
         /**
          *  Detaches the behavior from the mesh
          */
