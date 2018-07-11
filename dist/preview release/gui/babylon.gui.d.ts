@@ -1688,10 +1688,15 @@ declare module BABYLON.GUI {
         private _scrollLeft;
         private _textWidth;
         private _clickedCoordinate;
+        private _deadKey;
+        private _addKey;
+        private _currentKey;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
         /** Observable raised when the text changes */
         onTextChangedObservable: Observable<InputText>;
+        /** Observable raised just before an entered character is to be added */
+        onBeforeKeyAddObservable: Observable<InputText>;
         /** Observable raised when the control gets the focus */
         onFocusObservable: Observable<InputText>;
         /** Observable raised when the control loses the focus */
@@ -1716,6 +1721,12 @@ declare module BABYLON.GUI {
         placeholderColor: string;
         /** Gets or sets the text displayed when the control is empty */
         placeholderText: string;
+        /** Gets or sets the dead key flag */
+        deadKey: boolean;
+        /** Gets or sets if the current key should be added */
+        addKey: boolean;
+        /** Gets or sets the value of the current key being entered */
+        currentKey: string;
         /** Gets or sets the text displayed in the control */
         text: string;
         /** Gets or sets control width */
