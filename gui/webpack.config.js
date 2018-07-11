@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const DtsBundleWebpack = require('dts-bundle-webpack')
 
 module.exports = {
     entry: {
@@ -28,12 +29,6 @@ module.exports = {
             amd: "babylonjs"
         }
     },
-    plugins: [
-        // fixing a small issue when root is an array and not a string
-        /*new webpack.SourceMapDevToolPlugin({
-            filename: '[name].js.map',
-        })*/
-    ],
     devtool: "source-map",
     module: {
         rules: [{
@@ -54,6 +49,15 @@ module.exports = {
         compress: false,
         //open: true,
         port: 9000
-    }
+    },
+    plugins: [
+        new DtsBundleWebpack({
+            name: "babylonjs-gui",
+            main: path.resolve(__dirname, './dist/build/index.d.ts'),
+            out: path.resolve(__dirname, './dist/index.d.ts'),
+            baseDir: path.resolve(__dirname, './dist/build/'),
+            headerText: "BabylonJS GUI"
+        })
+    ]
 }
 //]
