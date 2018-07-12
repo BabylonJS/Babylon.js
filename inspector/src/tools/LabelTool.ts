@@ -1,9 +1,9 @@
-import { AbstractTool } from "./AbstractTool";
-import { Nullable, Scene, AbstractMesh } from "babylonjs";
-import { Inspector } from "../Inspector";
-
+import { AbstractMesh, Nullable, Scene } from "babylonjs";
 import * as GUI from "babylonjs-gui";
 import { Helpers } from "../helpers/Helpers";
+import { Inspector } from "../Inspector";
+import { AbstractTool } from "./AbstractTool";
+
 
 export class LabelTool extends AbstractTool {
 

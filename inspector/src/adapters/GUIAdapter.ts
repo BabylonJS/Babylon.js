@@ -1,10 +1,10 @@
-import { Adapter } from "./Adapter";
-import { IToolVisible, Checkbox } from "treetools/Checkbox";
-import { Helpers } from "helpers/Helpers";
-import { PropertyLine } from "details/PropertyLine";
-import { AbstractTreeTool } from "treetools/AbstractTreeTool";
-
 import * as GUI from "babylonjs-gui";
+import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
+import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
+import { Checkbox, IToolVisible } from "../treetools/Checkbox";
+import { Adapter } from "./Adapter";
+
 
 export class GUIAdapter
     extends Adapter

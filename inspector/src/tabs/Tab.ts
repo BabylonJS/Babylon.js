@@ -1,7 +1,7 @@
 import { BasicElement } from "../gui/BasicElement";
-import { TabBar } from "./TabBar";
 import { Inspector } from "../Inspector";
 import { TreeItem } from "../tree/TreeItem";
+import { TabBar } from "./TabBar";
 
 
 export abstract class Tab extends BasicElement {

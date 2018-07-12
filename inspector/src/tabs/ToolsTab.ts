@@ -1,8 +1,8 @@
-import { Tab } from "./Tab";
-import { Inspector } from "../Inspector";
-import { Scene, Engine, Nullable, Tools, CubeTexture, EnvironmentTextureTools } from "babylonjs";
-import { TabBar } from "./TabBar";
+import { CubeTexture, Engine, EnvironmentTextureTools, Nullable, Scene, Tools } from "babylonjs";
 import { Helpers } from "../helpers/Helpers";
+import { Inspector } from "../Inspector";
+import { Tab } from "./Tab";
+import { TabBar } from "./TabBar";
 
 export class ToolsTab extends Tab {
 

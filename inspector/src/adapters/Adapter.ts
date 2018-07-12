@@ -1,7 +1,7 @@
-import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
-import { PropertyLine } from "../details/PropertyLine";
-
 import { Geometry } from "babylonjs";
+import { PropertyLine } from "../details/PropertyLine";
+import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
+
 
 export abstract class Adapter {
 

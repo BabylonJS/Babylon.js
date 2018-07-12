@@ -1,8 +1,8 @@
-import { PropertyTab } from "./PropertyTab";
-import { TabBar } from "./TabBar";
+import { MaterialAdapter } from "../adapters/MaterialAdapter";
 import { Inspector } from "../Inspector";
 import { TreeItem } from "../tree/TreeItem";
-import { MaterialAdapter } from "../adapters/MaterialAdapter";
+import { PropertyTab } from "./PropertyTab";
+import { TabBar } from "./TabBar";
 
 export class MaterialTab extends PropertyTab {
 

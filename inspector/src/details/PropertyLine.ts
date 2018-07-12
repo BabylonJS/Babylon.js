@@ -1,13 +1,13 @@
-import { Property } from "./Property";
-import { BasicElement } from "../gui/BasicElement";
 import { Nullable } from "babylonjs";
-import { Helpers } from "../helpers/Helpers";
-import { Scheduler } from "../scheduler/Scheduler";
-import { TextureElement } from "../gui/TextureElement";
-import { HDRCubeTextureElement } from "../gui/HDRCubeTextureElement";
-import { CubeTextureElement } from "../gui/CubeTextureElement";
-import { PROPERTIES } from "../properties";
+import { BasicElement } from "../gui/BasicElement";
 import { ColorPickerElement } from "../gui/ColorPickerElement";
+import { CubeTextureElement } from "../gui/CubeTextureElement";
+import { HDRCubeTextureElement } from "../gui/HDRCubeTextureElement";
+import { TextureElement } from "../gui/TextureElement";
+import { Helpers } from "../helpers/Helpers";
+import { PROPERTIES } from "../properties";
+import { Scheduler } from "../scheduler/Scheduler";
+import { Property } from "./Property";
 
 export class PropertyFormatter {
 

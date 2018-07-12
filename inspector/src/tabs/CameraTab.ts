@@ -1,8 +1,8 @@
-import { PropertyTab } from "./PropertyTab";
-import { Inspector } from "../Inspector";
-import { TabBar } from "./TabBar";
-import { TreeItem } from "../tree/TreeItem";
 import { CameraAdapter } from "../adapters/CameraAdapter";
+import { Inspector } from "../Inspector";
+import { TreeItem } from "../tree/TreeItem";
+import { PropertyTab } from "./PropertyTab";
+import { TabBar } from "./TabBar";
 
 
 export class CameraTab extends PropertyTab {

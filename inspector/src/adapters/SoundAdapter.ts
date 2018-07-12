@@ -1,9 +1,9 @@
-import { Adapter } from "./Adapter";
-import { ISoundInteractions, SoundInteractions } from "treetools/SoundInteractions";
 import { Sound } from "babylonjs";
-import { Helpers } from "helpers/Helpers";
 import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
 import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
+import { ISoundInteractions, SoundInteractions } from "../treetools/SoundInteractions";
+import { Adapter } from "./Adapter";
 
 
 export class SoundAdapter

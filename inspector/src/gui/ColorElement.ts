@@ -1,5 +1,5 @@
+import { Color3, Color4 } from "babylonjs";
 import { BasicElement } from "./BasicElement";
-import { Color4, Color3 } from "babylonjs";
 
 /**
 * Display a very small div corresponding to the given color

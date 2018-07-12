@@ -1,7 +1,7 @@
-import { BasicElement } from "./BasicElement";
-import { PropertyTab } from "../tabs/PropertyTab";
-import { Inspector } from "../Inspector";
 import { DetailPanel } from "../details/DetailPanel";
+import { Inspector } from "../Inspector";
+import { PropertyTab } from "../tabs/PropertyTab";
+import { BasicElement } from "./BasicElement";
 
 
 /**

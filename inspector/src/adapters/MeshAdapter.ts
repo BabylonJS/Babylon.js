@@ -1,12 +1,12 @@
+import { AbstractMesh, Debug, Node, Nullable, Observer, Scene, TransformNode, Vector3 } from "babylonjs";
+import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
+import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
+import { BoundingBox, IToolBoundingBox } from "../treetools/BoundingBox";
+import { Checkbox, IToolVisible } from "../treetools/Checkbox";
+import { DebugArea, IToolDebug } from "../treetools/DebugArea";
+import { Info, IToolInfo } from "../treetools/Info";
 import { Adapter } from "./Adapter";
-import { IToolVisible, Checkbox } from "treetools/Checkbox";
-import { IToolDebug, DebugArea } from "treetools/DebugArea";
-import { IToolBoundingBox, BoundingBox } from "treetools/BoundingBox";
-import { IToolInfo, Info } from "treetools/Info";
-import { Nullable, Observer, Scene, AbstractMesh, Vector3, Debug, TransformNode, Node } from "babylonjs";
-import { Helpers } from "helpers/Helpers";
-import { PropertyLine } from "details/PropertyLine";
-import { AbstractTreeTool } from "treetools/AbstractTreeTool";
 
 
 export class MeshAdapter

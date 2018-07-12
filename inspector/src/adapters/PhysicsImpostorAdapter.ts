@@ -1,9 +1,9 @@
-import { Adapter } from "./Adapter";
-import { IToolVisible, Checkbox } from "treetools/Checkbox";
-import { PhysicsImpostor, AbstractMesh } from "babylonjs";
-import { Helpers } from "helpers/Helpers";
+import { AbstractMesh, PhysicsImpostor } from "babylonjs";
 import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
 import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
+import { Checkbox, IToolVisible } from "../treetools/Checkbox";
+import { Adapter } from "./Adapter";
 
 
 export class PhysicsImpostorAdapter

@@ -1,9 +1,9 @@
-import { Adapter } from "./Adapter";
-import { ICameraPOV, CameraPOV } from "../treetools/CameraPOV";
 import { Camera } from "babylonjs";
-import { Helpers } from "../helpers/Helpers";
+import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
 import { PropertyLine } from "../details/PropertyLine";
-import { AbstractTreeTool } from "treetools/AbstractTreeTool";
+import { Helpers } from "../helpers/Helpers";
+import { CameraPOV, ICameraPOV } from "../treetools/CameraPOV";
+import { Adapter } from "./Adapter";
 
 
 export class CameraAdapter

@@ -1,6 +1,6 @@
-import { BasicElement } from "./BasicElement";
 import { Texture } from "babylonjs";
 import { Helpers } from "../helpers/Helpers";
+import { BasicElement } from "./BasicElement";
 
 /**
 * Display a very small div corresponding to the given texture. On mouse over, display the full image

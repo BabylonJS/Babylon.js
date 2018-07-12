@@ -1,8 +1,8 @@
-import { BasicElement } from "./BasicElement";
+import { Color3, Color4 } from "babylonjs";
 import { PropertyLine } from "../details/PropertyLine";
-import { Color4, Color3 } from "babylonjs";
-import { Scheduler } from "../scheduler/Scheduler";
 import { Helpers } from "../helpers/Helpers";
+import { Scheduler } from "../scheduler/Scheduler";
+import { BasicElement } from "./BasicElement";
 
 /**
  * Represents a html div element. 
