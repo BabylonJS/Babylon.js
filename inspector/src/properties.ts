@@ -1,11 +1,12 @@
 import { Helpers } from "./helpers/Helpers";
 import { Vector2, Vector3, Color3, Color4, Quaternion, Size, Texture, RenderTargetTexture, DynamicTexture, BaseTexture, CubeTexture, HDRCubeTexture, Sound, ArcRotateCamera, FreeCamera, Scene, TransformNode, AbstractMesh, Mesh, StandardMaterial, PBRMaterial, PhysicsImpostor, ImageProcessingConfiguration, ColorCurves } from "babylonjs";
 
+export const PROPERTIES = {
 
-export var PROPERTIES = {
     /** Format the given object : 
      * If a format function exists, returns the result of this function.
-     * If this function doesn't exists, return the object type instead */
+     * If this function doesn't exists, return the object type instead
+     */
     format: (obj: any): any => {
         let type = Helpers.GET_TYPE(obj) || 'type_not_defined';
         if ((<any>PROPERTIES)[type] && (<any>PROPERTIES)[type].format) {

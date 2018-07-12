@@ -48,8 +48,7 @@ module.exports = {
             root: "BABYLON",
             commonjs: "babylonjs-serializers",
             commonjs2: "babylonjs-serializers",
-            amd: "babylonjs-serializers",
-            optional: true
+            amd: "babylonjs-serializers"
         }
     },
     devtool: "source-map",
