@@ -126,6 +126,11 @@ module BABYLON {
                     PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine());
                     PointerDragBehavior._planeScene.detachControl();
                     this._scene.getEngine().scenes.pop();
+                    var sceneDisposeObserver = this._scene.onDisposeObservable.add(()=>{
+                        PointerDragBehavior._planeScene.dispose();
+                        (<any>PointerDragBehavior._planeScene) = null;
+                        this._scene.onDisposeObservable.remove(sceneDisposeObserver);
+                    })
                 }
             }
             this._dragPlane = BABYLON.Mesh.CreatePlane("pointerDragPlane", this._debugMode ? 1 : 10000, PointerDragBehavior._planeScene, false, BABYLON.Mesh.DOUBLESIDE);
