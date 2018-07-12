@@ -197,6 +197,7 @@
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
+            this._renderingManager._useSceneAutoClearSetup = true;
 
             if (isMulti) {
                 return;
@@ -671,6 +672,7 @@
          */
         public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+            this._renderingManager._useSceneAutoClearSetup = false;
         }
 
         public clone(): RenderTargetTexture {

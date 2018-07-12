@@ -138,6 +138,8 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
     var renderB64 = saveRenderImage(renderData, currentViewer.canvas);
     renderImage.src = renderB64;
+
+    // save all reference images
     // downloadDataUrlFromJavascript(test.referenceImage, renderB64)
 
     done(testRes, renderB64);
@@ -150,11 +152,6 @@ function runTest(index, done) {
 
 
     var test = Object.assign({}, config.tests[index]);
-
-    //process params
-    /*if (params) {
-        processTest(test, "", params);
-    }*/
 
     var container = document.createElement("div");
     container.id = "container#" + index;
@@ -236,35 +233,42 @@ function runTest(index, done) {
 
     // create a new viewer
     currentViewer && currentViewer.dispose();
-    currentViewer = null;
-    currentScene = null;
-    viewerElement.innerHTML = '';
-    currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
+    currentViewer && currentViewer.engine.dispose();
 
-    currentViewer.onInitDoneObservable.add(() => {
+    setTimeout(() => {
+        currentViewer = null;
+        currentScene = null;
+        viewerElement.innerHTML = '';
+        currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
-        var currentFrame = 0;
-        var waitForFrame = test.waitForFrame || 0;
+        currentViewer.onInitDoneObservable.add(() => {
 
-        if (test.model) {
-            currentViewer.initModel(test.model);
-        } else if (test.createMesh) {
-            prepareMeshForViewer(currentViewer, configuration, test);
-        }
+            var currentFrame = 0;
+            var waitForFrame = test.waitForFrame || 0;
 
-        currentViewer.onModelLoadedObservable.add((model) => {
-            currentViewer.onFrameRenderedObservable.add(() => {
-                if (test.animationTest && !currentFrame) {
-                    model.playAnimation(model.getAnimationNames()[0]);
-                }
-                if (currentFrame === waitForFrame) {
-                    currentViewer.sceneManager.scene.executeWhenReady(() => {
-                        evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
-                    });
-                }
-                currentFrame++;
+            currentViewer.onModelLoadedObservable.add((model) => {
+                console.log("model loaded");
+                currentViewer.onFrameRenderedObservable.add(() => {
+                    console.log("frame rendered", currentFrame, model.meshes.every(m => m.isReady()));
+                    if (test.animationTest && !currentFrame) {
+                        model.playAnimation(model.getAnimationNames()[0]);
+                    }
+                    if (currentFrame === waitForFrame) {
+                        currentViewer.onFrameRenderedObservable.clear();
+                        currentViewer.sceneManager.scene.executeWhenReady(() => {
+                            evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                        });
+                    }
+                    currentFrame++;
+                });
             });
-        })
+
+            if (test.model) {
+                currentViewer.initModel(test.model);
+            } else if (test.createMesh) {
+                prepareMeshForViewer(currentViewer, configuration, test);
+            }
+        });
     });
 }
 
@@ -274,16 +278,11 @@ function prepareMeshForViewer(viewer, configuration, test) {
     let sphereMesh = BABYLON.Mesh.CreateSphere('sphere-' + test.title, 20, 1.0, viewer.sceneManager.scene);
     if (test.createMaterial) {
         let material = new BABYLON.PBRMaterial("sphereMat", viewer.sceneManager.scene);
-        /* material.useAlphaFresnel = material.needAlphaBlending();
-         material.backFaceCulling = material.forceDepthWrite;
-         material.twoSidedLighting = true;
-         material.useSpecularOverAlpha = false;
-         material.useRadianceOverAlpha = false;
-         material.usePhysicalLightFalloff = true;
-         material.forceNormalForward = true;*/
         sphereMesh.material = material;
     }
     meshModel.addMesh(sphereMesh, true);
+    meshModel.rootMesh.position.y = 0.5;
+    console.log("sphere created");
 }
 
 function init() {

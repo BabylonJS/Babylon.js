@@ -77,35 +77,6 @@
          * The ID of the renderingGroup being processed
          */
         renderingGroupId: number;
-
-        /**
-         * The rendering stage, can be either STAGE_PRECLEAR, STAGE_PREOPAQUE, STAGE_PRETRANSPARENT, STAGE_POSTTRANSPARENT
-         */
-        renderStage: number;
-
-        /**
-         * Stage corresponding to the very first hook in the renderingGroup phase: before the render buffer may be cleared
-         * This stage will be fired no matter what
-         */
-        static STAGE_PRECLEAR = 1;
-
-        /**
-         * Called before opaque object are rendered.
-         * This stage will be fired only if there's 3D Opaque content to render
-         */
-        static STAGE_PREOPAQUE = 2;
-
-        /**
-         * Called after the opaque objects are rendered and before the transparent ones
-         * This stage will be fired only if there's 3D transparent content to render
-         */
-        static STAGE_PRETRANSPARENT = 3;
-
-        /**
-         * Called after the transparent object are rendered, last hook of the renderingGroup phase
-         * This stage will be fired no matter what
-         */
-        static STAGE_POSTTRANSPARENT = 4;
     }
 
     /**
@@ -532,11 +503,18 @@
         public onAfterStepObservable = new Observable<Scene>();
 
         /**
-         * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
+         * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
          * The RenderinGroupInfo class contains all the information about the context in which the observable is called
          * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
          */
-        public onRenderingGroupObservable = new Observable<RenderingGroupInfo>();
+        public onBeforeRenderingGroupObservable = new Observable<RenderingGroupInfo>();
+
+        /**
+         * This Observable will be triggered after rendering each renderingGroup of each rendered camera.
+         * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+         * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+         */
+        public onAfterRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
         // Animations
         private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
@@ -4333,7 +4311,8 @@
         public updateAlternateTransformMatrix(alternateCamera: Camera): void {
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
-
+        /** @hidden */
+        public _allowPostProcessClear = true;
         private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
@@ -5067,6 +5046,8 @@
             this.onBeforeAnimationsObservable.clear();
             this.onAfterAnimationsObservable.clear();
             this.onDataLoadedObservable.clear();
+            this.onBeforeRenderingGroupObservable.clear();
+            this.onAfterRenderingGroupObservable.clear();
 
             this.detachControl();
 
@@ -6003,6 +5984,16 @@
             depth = true,
             stencil = true): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
+        }
+
+        /**
+         * Gets the current auto clear configuration for one rendering group of the rendering
+         * manager.
+         * @param index the rendering group index to get the information for
+         * @returns The auto clear setup for the requested rendering group
+         */
+        public getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup {
+            return this._renderingManager.getAutoClearDepthStencilSetup(index);
         }
 
         /**

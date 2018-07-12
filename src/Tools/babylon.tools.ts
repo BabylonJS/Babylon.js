@@ -1121,6 +1121,11 @@
          * @param fileName defines the name of the downloaded file
          */
         public static Download(blob: Blob, fileName: string): void {
+            if (navigator && navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, fileName);
+                return;
+            }
+
             var url = window.URL.createObjectURL(blob);
             var a = document.createElement("a");
             document.body.appendChild(a);

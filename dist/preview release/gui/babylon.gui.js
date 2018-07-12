@@ -7988,6 +7988,14 @@ var BABYLON;
                 configurable: true
             });
             /**
+             * Force the container to update the layout. Please note that it will not take blockLayout property in account
+             * @returns the current container
+             */
+            Container3D.prototype.updateLayout = function () {
+                this._arrangeChildren();
+                return this;
+            };
+            /**
              * Gets a boolean indicating if the given control is in the children of this control
              * @param control defines the control to check
              * @returns true if the control is in the child list
@@ -8691,7 +8699,7 @@ var BABYLON;
         var VolumeBasedPanel = /** @class */ (function (_super) {
             __extends(VolumeBasedPanel, _super);
             /**
-             * Creates new SpherePanel
+             * Creates new VolumeBasedPanel
              */
             function VolumeBasedPanel() {
                 var _this = _super.call(this) || this;
@@ -8791,9 +8799,13 @@ var BABYLON;
                     }
                     controlCount++;
                     child.mesh.computeWorldMatrix(true);
-                    child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, BABYLON.Tmp.Matrix[0]);
-                    var boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                    var extendSize = BABYLON.Vector3.TransformNormal(boundingBox.extendSize, BABYLON.Tmp.Matrix[0]);
+                    //   child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
+                    var boundingBox = child.mesh.getHierarchyBoundingVectors();
+                    var extendSize = BABYLON.Tmp.Vector3[0];
+                    var diff = BABYLON.Tmp.Vector3[1];
+                    boundingBox.max.subtractToRef(boundingBox.min, diff);
+                    diff.scaleInPlace(0.5);
+                    BABYLON.Vector3.TransformNormalToRef(diff, currentInverseWorld, extendSize);
                     this._cellWidth = Math.max(this._cellWidth, extendSize.x * 2);
                     this._cellHeight = Math.max(this._cellHeight, extendSize.y * 2);
                 }
