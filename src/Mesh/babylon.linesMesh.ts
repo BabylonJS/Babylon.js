@@ -74,14 +74,23 @@
             return "LinesMesh";
         }
 
+        /**
+         * @hidden
+         */
         public get material(): Material {
             return this._colorShader;
         }
 
+        /**
+         * @hidden
+         */
         public set material(value: Material) {
             // Do nothing
         }
 
+        /**
+         * @hidden
+         */
         public get checkCollisions(): boolean {
             return false;
         }
