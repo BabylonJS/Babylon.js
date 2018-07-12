@@ -4,9 +4,18 @@
      * Interface describing the different options available in the rendering manager
      * regarding Auto Clear between groups.
      */
-    interface RenderingManageAutoClearOptions {
+    export interface IRenderingManagerAutoClearSetup {
+        /**
+         * Defines whether or not autoclear is enable.
+         */
         autoClear: boolean;
+        /**
+         * Defines whether or not to autoclear the depth buffer.
+         */
         depth: boolean;
+        /**
+         * Defines whether or not to autoclear the stencil buffer.
+         */
         stencil: boolean;
     }
 
@@ -26,15 +35,20 @@
          */
         public static AUTOCLEAR = true;
 
+        /**
+         * Hidden
+         */
+        public _useSceneAutoClearSetup = false;
+
         private _scene: Scene;
         private _renderingGroups = new Array<RenderingGroup>();
         private _depthStencilBufferAlreadyCleaned: boolean;
-
-        private _autoClearDepthStencil: { [id: number]: RenderingManageAutoClearOptions } = {};
+        
+        private _autoClearDepthStencil: { [id: number]: IRenderingManagerAutoClearSetup } = {};
         private _customOpaqueSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
         private _customAlphaTestSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
         private _customTransparentSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
-        private _renderinGroupInfo: Nullable<RenderingGroupInfo> = null;
+        private _renderingGroupInfo: Nullable<RenderingGroupInfo> = new RenderingGroupInfo();
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -56,17 +70,10 @@
         public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>,
             activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void {
 
-            // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
-            let observable = this._scene.onRenderingGroupObservable.hasObservers() ? this._scene.onRenderingGroupObservable : null;
-            let info: Nullable<RenderingGroupInfo> = null;
-            if (observable) {
-                if (!this._renderinGroupInfo) {
-                    this._renderinGroupInfo = new RenderingGroupInfo();
-                }
-                info = this._renderinGroupInfo;
-                info.scene = this._scene;
-                info.camera = this._scene.activeCamera;
-            }
+            // Update the observable context (not null as it only goes away on dispose)
+            const info = this._renderingGroupInfo!;
+            info.scene = this._scene;
+            info.camera = this._scene.activeCamera;
 
             // Dispatch sprites
             if (renderSprites) {
@@ -80,51 +87,37 @@
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
-                if (!renderingGroup && !observable)
+                if (!renderingGroup)
                     continue;
 
-                let renderingGroupMask = 0;
+                let renderingGroupMask = Math.pow(2, index);
+                info.renderingGroupId = index;
 
-                // Fire PRECLEAR stage
-                if (observable && info) {
-                    renderingGroupMask = Math.pow(2, index);
-                    info.renderStage = RenderingGroupInfo.STAGE_PRECLEAR;
-                    info.renderingGroupId = index;
-                    observable.notifyObservers(info, renderingGroupMask);
-                }
+                // Before Observable
+                this._scene.onBeforeRenderingGroupObservable.notifyObservers(info, renderingGroupMask);
 
                 // Clear depth/stencil if needed
                 if (RenderingManager.AUTOCLEAR) {
-                    let autoClear = this._autoClearDepthStencil[index];
+                    const autoClear = this._useSceneAutoClearSetup ? 
+                        this._scene.getAutoClearDepthStencilSetup(index) :
+                        this._autoClearDepthStencil[index];
+
                     if (autoClear && autoClear.autoClear) {
                         this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
                     }
                 }
 
-                if (observable && info) {
-                    // Fire PREOPAQUE stage
-                    info.renderStage = RenderingGroupInfo.STAGE_PREOPAQUE;
-                    observable.notifyObservers(info, renderingGroupMask);
-                    // Fire PRETRANSPARENT stage
-                    info.renderStage = RenderingGroupInfo.STAGE_PRETRANSPARENT;
-                    observable.notifyObservers(info, renderingGroupMask);
+                // Render
+                for (let step of this._scene._beforeRenderingGroupDrawStage) {
+                    step.action(index);
+                }
+                renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
+                for (let step of this._scene._afterRenderingGroupDrawStage) {
+                    step.action(index);
                 }
 
-                if (renderingGroup) {
-                    for (let step of this._scene._beforeRenderingGroupDrawStage) {
-                        step.action(index);
-                    }
-                    renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
-                    for (let step of this._scene._afterRenderingGroupDrawStage) {
-                        step.action(index);
-                    }
-                }
-
-                // Fire POSTTRANSPARENT stage
-                if (observable && info) {
-                    info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
-                    observable.notifyObservers(info, renderingGroupMask);
-                }
+                // After Observable
+                this._scene.onAfterRenderingGroupObservable.notifyObservers(info, renderingGroupMask);
             }
         }
 
@@ -140,6 +133,7 @@
         public dispose(): void {
             this.freeRenderingGroups();
             this._renderingGroups.length = 0;
+            this._renderingGroupInfo = null;
         }
 
         /**
@@ -238,6 +232,16 @@
                 depth: depth,
                 stencil: stencil
             };
+        }
+
+        /**
+         * Gets the current auto clear configuration for one rendering group of the rendering
+         * manager.
+         * @param index the rendering group index to get the information for
+         * @returns The auto clear setup for the requested rendering group
+         */
+        public getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup {
+            return this._autoClearDepthStencil[index];
         }
     }
 } 
