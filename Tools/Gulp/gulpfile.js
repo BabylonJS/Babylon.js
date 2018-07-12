@@ -34,7 +34,7 @@ const through = require('through2');
 var karmaServer = require('karma').Server;
 
 //viewer declaration
-var processViewerDeclaration = require('./processViewerDeclaration');
+var processDeclaration = require('./processViewerDeclaration');
 
 var config = require("./config.json");
 
@@ -470,8 +470,8 @@ var buildExternalLibrary = function (library, settings, watch) {
                             if (err) throw err;
                             data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
                             fs.writeFile(fileLocation, data);
-                            if (settings.build.dtsBundle.legacyDeclaration) {
-                                var newData = processViewerDeclaration(data);
+                            if (settings.build.processDeclaration) {
+                                var newData = processDeclaration(data, settings.build.processDeclaration);
                                 fs.writeFile(fileLocation.replace('.module', ''), newData);
                             }
                         });
@@ -528,9 +528,9 @@ var buildExternalLibrary = function (library, settings, watch) {
                 });
 
                 if (minifiedOutputs.length) {
-                    build = build
-                        .pipe(uglify())
-                        .pipe(optimisejs())
+                    //build = build
+                    //.pipe(uglify())
+                    //.pipe(optimisejs())
                 }
 
                 minifiedOutputs.forEach(dest => {
@@ -540,14 +540,43 @@ var buildExternalLibrary = function (library, settings, watch) {
                 sequence.push(build);
 
             } else {
+
+                let buildEvent = wpBuild
+                    .pipe(gulp.dest(outputDirectory))
+                    //back-compat
+                    .pipe(through.obj(function (file, enc, cb) {
+                        // only js files
+                        const isjs = /\.js$/.test(file.path);
+                        if (isjs) this.push(file);
+                        cb();
+                    }))
+                    .pipe(rename(library.output.replace(".js", ".max.js")))
+                    .pipe(gulp.dest(outputDirectory));
                 sequence.push(
-                    wpBuild
-                        //.pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                        //.pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: library.extendsRoot, externalUsingBabylon: true }))
-                        //.pipe(uglify())
-                        //.pipe(optimisejs())
-                        .pipe(gulp.dest(outputDirectory))
-                )
+                    buildEvent
+                );
+                if (settings.build.processDeclaration) {
+                    buildEvent.on("end", function () {
+                        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
+                        fs.readFile(fileLocation, function (err, data) {
+                            var newData = processDeclaration(data, settings.build.processDeclaration);
+                            fs.writeFile(fileLocation.replace('.module', ''), newData);
+                        });
+                    });
+                }
+                /*if (settings.build.processDeclaration) {
+                    sequence.push(
+                        wpBuild
+                            .pipe(through.obj(function (file, enc, cb) {
+                                // only js files
+                                const isDts = /\.d.ts$/.test(file.path);
+                                file.contents = new Buffer(processDeclaration(file.contents, settings.build.processDeclaration));
+                                if (isDts) this.push(file);
+                                cb();
+                            }))
+                            .pipe(gulp.dest(outputDirectory))
+                    )
+                }*/
             }
 
             return merge2(sequence);
@@ -1108,7 +1137,7 @@ gulp.task("tests-viewer-validation-karma", ["tests-viewer-validation-transpile"]
  */
 gulp.task("tests-viewer-validation-transpile", function (done) {
 
-    let wpBuild = webpackStream(require('../../Viewer//webpack.gulp.config.js'));
+    let wpBuild = webpackStream(require('../../Viewer/webpack.gulp.config.js'));
 
     // clean the built directory
     rmDir("../../Viewer/tests/build/");
