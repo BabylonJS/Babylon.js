@@ -2446,7 +2446,7 @@
             }
         }
 
-        /** @hidden */            
+        /** @hidden */
         public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
@@ -2491,9 +2491,9 @@
                 return;
             }
 
-            this._executeWhenReadyTimeoutId = setTimeout(() => {
+            //this._executeWhenReadyTimeoutId = setTimeout(() => {
                 this._checkIsReady();
-            }, 150);
+            //}, 150);
         }
 
         /**

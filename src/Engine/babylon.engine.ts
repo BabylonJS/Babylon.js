@@ -2076,10 +2076,18 @@
                 var requester = null;
                 if (this._vrDisplay && this._vrDisplay.isPresenting)
                     requester = this._vrDisplay;
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, requester);
+                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, requester);
             } else {
                 this._renderingQueueLaunched = false;
             }
+        }
+
+        /**
+         * Can be used to override the current requestAnimationFrame requester.
+         * @hidden
+         */
+        protected _queueNewFrame(bindedRenderFunction: any, requester: any): number {
+            return Tools.QueueNewFrame(bindedRenderFunction, requester);
         }
 
         /**
@@ -2096,7 +2104,7 @@
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
                 this._bindedRenderFunction = this._renderLoop.bind(this);
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, undefined);
             }
         }
 
