@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
-const DtsBundleWebpack = require('dts-bundle-webpack')
+const DtsBundleWebpack = require('dts-bundle-webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
     context: __dirname,
@@ -52,6 +53,10 @@ module.exports = {
         port: 9000
     },
     plugins: [
+        new CleanWebpackPlugin([
+            path.resolve(__dirname, './src/**/*.js'),
+            path.resolve(__dirname, './src/**/*.map')
+        ]),
         new DtsBundleWebpack({
             name: "babylonjs-gui",
             main: path.resolve(__dirname, '../dist/preview release/gui/build/index.d.ts'),

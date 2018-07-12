@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const DtsBundleWebpack = require('dts-bundle-webpack')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
     context: __dirname,
@@ -10,7 +11,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/inspector'),
-        filename: 'babylon.inspector.js',
+        filename: 'babylon.inspector.min.js',
         libraryTarget: 'umd',
         library: {
             root: "INSPECTOR",
@@ -76,6 +77,10 @@ module.exports = {
         port: 9000
     },
     plugins: [
+        new CleanWebpackPlugin([
+            path.resolve(__dirname, './src/**/*.js'),
+            path.resolve(__dirname, './src/**/*.map')
+        ]),
         new DtsBundleWebpack({
             name: "babylonjs-inspector",
             main: path.resolve(__dirname, '../dist/preview release/inspector/build/index.d.ts'),

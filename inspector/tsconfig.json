@@ -33,6 +33,9 @@
             ],
             "babylonjs-serializers": [
                 "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
+            ],
+            "Split": [
+                "./helpers/ISplit.d.ts"
             ]
         },
         "outDir": "./build"
