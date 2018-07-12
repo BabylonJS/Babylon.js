@@ -8,7 +8,6 @@ import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
-import Split from "Split";
 
 interface ILoaderDefaults {
     [extensionName: string]: {

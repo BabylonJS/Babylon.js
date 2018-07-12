@@ -1,5 +1,4 @@
 import { AbstractMesh, Nullable } from "babylonjs";
-import Split from "Split";
 import { DetailPanel } from "../details/DetailPanel";
 import { SearchBar } from "../gui/SearchBar";
 import { Helpers } from "../helpers/Helpers";

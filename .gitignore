@@ -13,6 +13,7 @@ TestResults
 *.user
 *.sln.docstates
 *.map
+!dist/**/*.map
 
 # javascript files
 src/**/*.js
@@ -161,7 +162,11 @@ node_modules
 *.js.fx
 *.d.ts
 !dist/**/*.d.ts
+!dist/**/*.js.map
 !lib.d.ts
+
+# Split declaration file
+!ISplit.d.ts
 
 # local dev
 localDev/src/*

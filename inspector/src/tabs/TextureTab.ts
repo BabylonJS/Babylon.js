@@ -1,5 +1,4 @@
 import { CubeTexture, RenderTargetTexture, Tools } from "babylonjs";
-import Split from "Split";
 import { TextureAdapter } from "../adapters/TextureAdapter";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
