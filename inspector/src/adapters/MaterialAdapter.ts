@@ -1,8 +1,8 @@
-import { Adapter } from "./Adapter";
 import { Material } from "babylonjs";
-import { Helpers } from "helpers/Helpers";
-import { PropertyLine } from "details/PropertyLine";
-import { AbstractTreeTool } from "treetools/AbstractTreeTool";
+import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
+import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
+import { Adapter } from "./Adapter";
 
 export class MaterialAdapter
     extends Adapter {

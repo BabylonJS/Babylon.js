@@ -1,9 +1,9 @@
-import { PropertyTab } from "./PropertyTab";
-import { TabBar } from "./TabBar";
-import { Inspector } from "../Inspector";
-import { TreeItem } from "../tree/TreeItem";
 import { Debug } from "babylonjs";
 import { PhysicsImpostorAdapter } from "../adapters/PhysicsImpostorAdapter";
+import { Inspector } from "../Inspector";
+import { TreeItem } from "../tree/TreeItem";
+import { PropertyTab } from "./PropertyTab";
+import { TabBar } from "./TabBar";
 
 export class PhysicsTab extends PropertyTab {
 

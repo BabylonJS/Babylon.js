@@ -1,8 +1,8 @@
 import { BasicElement } from "../gui/BasicElement";
-import { PropertyLine } from "./PropertyLine";
 import { SearchBarDetails } from "../gui/SearchBar";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
+import { PropertyLine } from "./PropertyLine";
 
 export interface SortDirection {
     [property: string]: number;
@@ -18,7 +18,7 @@ export class DetailPanel extends BasicElement {
     private _sortDirection: SortDirection = {};
     // The search bar
     private _searchDetails: SearchBarDetails;
-    private _details: HTMLElement;
+    private _details: HTMLDivElement;
 
     constructor(dr?: Array<PropertyLine>) {
         super();

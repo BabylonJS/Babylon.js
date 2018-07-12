@@ -1,10 +1,10 @@
-import { PropertyTab } from "./PropertyTab";
-import { Inspector } from "../Inspector";
-import { TabBar } from "./TabBar";
-import { TreeItem } from "../tree/TreeItem";
 import { Node, TransformNode } from "babylonjs";
 import { MeshAdapter } from "../adapters/MeshAdapter";
 import { Helpers } from "../helpers/Helpers";
+import { Inspector } from "../Inspector";
+import { TreeItem } from "../tree/TreeItem";
+import { PropertyTab } from "./PropertyTab";
+import { TabBar } from "./TabBar";
 
 
 export class MeshTab extends PropertyTab {

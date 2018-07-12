@@ -1,3 +1,5 @@
+import { AbstractMesh, Nullable } from "babylonjs";
+import Split from "Split";
 import { DetailPanel } from "../details/DetailPanel";
 import { SearchBar } from "../gui/SearchBar";
 import { Helpers } from "../helpers/Helpers";
@@ -5,9 +7,6 @@ import { Inspector } from "../Inspector";
 import { TreeItem } from "../tree/TreeItem";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
-import { Nullable, AbstractMesh } from "babylonjs";
-
-declare function Split(elements: HTMLDivElement[], options: any): void;
 
 /**
  * A Property tab can creates two panels: 
@@ -19,7 +18,7 @@ export abstract class PropertyTab extends Tab {
 
     protected _inspector: Inspector;
     /** The panel containing a list of items */
-    protected _treePanel: HTMLElement;
+    protected _treePanel: HTMLDivElement;
     /** The panel containing a list if properties corresponding to an item */
     protected _detailsPanel: DetailPanel;
     protected _treeItems: Array<TreeItem> = [];

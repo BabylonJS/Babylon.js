@@ -1,6 +1,6 @@
-import { BasicElement } from "./BasicElement";
-import { Engine, Scene, Mesh, Texture, CubeTexture, StandardMaterial, Color4 } from "babylonjs";
+import { Color4, CubeTexture, Engine, Mesh, Scene, StandardMaterial, Texture } from "babylonjs";
 import { Helpers } from "../helpers/Helpers";
+import { BasicElement } from "./BasicElement";
 
 /**
 * Display a very small div. A new canvas is created, with a new js scene, containing only the 

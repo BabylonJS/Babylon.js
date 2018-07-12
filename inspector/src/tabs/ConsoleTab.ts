@@ -1,10 +1,9 @@
-import { Tab } from "./Tab";
-import { Inspector } from "../Inspector";
-import { TabBar } from "./TabBar";
-import { Helpers } from "../helpers/Helpers";
 import { Tools } from "babylonjs";
-
-declare function Split(elements: HTMLDivElement[], options: any): void;
+import Split from "Split";
+import { Helpers } from "../helpers/Helpers";
+import { Inspector } from "../Inspector";
+import { Tab } from "./Tab";
+import { TabBar } from "./TabBar";
 
 /** 
  * The console tab will have two features : 

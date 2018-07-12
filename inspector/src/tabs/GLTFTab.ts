@@ -1,14 +1,14 @@
-import { Tab } from "./Tab";
-import { Inspector } from "../Inspector";
+import { Mesh, NullEngine, PBRMaterial, Scene, SceneLoader, StandardMaterial, Texture, TransformNode } from "babylonjs";
+import { GLTF2, GLTFFileLoader } from "babylonjs-loaders";
+import { GLTF2Export } from "babylonjs-serializers";
 import { DetailPanel } from "../details/DetailPanel";
-import { SceneLoader, NullEngine, Scene, TransformNode, Mesh, PBRMaterial, StandardMaterial, Texture } from "babylonjs";
-import { TabBar } from "./TabBar";
-import { Helpers } from "../helpers/Helpers";
-import { PropertyLine } from "../details/PropertyLine";
 import { Property } from "../details/Property";
-
-
-declare function Split(elements: HTMLElement[], options: any): any;
+import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
+import { Inspector } from "../Inspector";
+import { Tab } from "./Tab";
+import { TabBar } from "./TabBar";
+import Split from "Split";
 
 interface ILoaderDefaults {
     [extensionName: string]: {

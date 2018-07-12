@@ -1,8 +1,8 @@
-import { Tools, Nullable } from "babylonjs";
-import { PROPERTIES } from "../properties";
-import { Inspector } from "../Inspector";
-import { PropertyLine } from "../details/PropertyLine";
+import { Nullable, Tools } from "babylonjs";
 import { Property } from "../details/Property";
+import { PropertyLine } from "../details/PropertyLine";
+import { Inspector } from "../Inspector";
+import { PROPERTIES } from "../properties";
 
 export class Helpers {
 
@@ -114,8 +114,8 @@ export class Helpers {
     /**
      * Useful function used to create a div
      */
-    public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement): HTMLElement {
-        return Helpers.CreateElement('div', className, parent);
+    public static CreateDiv(className: Nullable<string> = null, parent?: HTMLElement): HTMLDivElement {
+        return <HTMLDivElement>Helpers.CreateElement('div', className, parent);
     }
 
     /**

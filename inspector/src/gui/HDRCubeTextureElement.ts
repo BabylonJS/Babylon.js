@@ -1,5 +1,5 @@
+import { HDRCubeTexture, Mesh, PBRMaterial, Texture } from "babylonjs";
 import { CubeTextureElement } from "./CubeTextureElement";
-import { Texture, HDRCubeTexture, Mesh, PBRMaterial } from "babylonjs";
 
 /**
 * Display a very small div. A new canvas is created, with a new js scene, containing only the 

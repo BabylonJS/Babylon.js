@@ -1,24 +1,24 @@
+import { AbstractMesh, Nullable } from "babylonjs";
+import * as GUI from "babylonjs-gui";
 import { BasicElement } from "../gui/BasicElement";
-import { Tab } from "./Tab";
+import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
-import { MeshTab } from "./MeshTab";
 import { Toolbar } from "../tools/Toolbar";
-import { SceneTab } from "./SceneTab";
+import { CameraTab } from "./CameraTab";
 import { ConsoleTab } from "./ConsoleTab";
-import { StatsTab } from "./StatsTab";
-import { TextureTab } from "./TextureTab";
+import { GLTFTab } from "./GLTFTab";
+import { GUITab } from "./GUITab";
 import { LightTab } from "./LightTab";
 import { MaterialTab } from "./MaterialTab";
-import { GLTFTab } from "./GLTFTab";
-
-import * as GUI from "babylonjs-gui";
-import { GUITab } from "./GUITab";
+import { MeshTab } from "./MeshTab";
 import { PhysicsTab } from "./PhysicsTab";
-import { CameraTab } from "./CameraTab";
+import { SceneTab } from "./SceneTab";
 import { SoundTab } from "./SoundTab";
+import { StatsTab } from "./StatsTab";
+import { Tab } from "./Tab";
+import { TextureTab } from "./TextureTab";
 import { ToolsTab } from "./ToolsTab";
-import { Helpers } from "../helpers/Helpers";
-import { AbstractMesh, Nullable } from "babylonjs";
+
 
 /**
  * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...

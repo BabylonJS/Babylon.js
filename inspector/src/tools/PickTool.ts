@@ -1,6 +1,6 @@
-import { AbstractTool } from "./AbstractTool";
-import { Inspector } from "../Inspector";
 import { AbstractMesh } from "babylonjs";
+import { Inspector } from "../Inspector";
+import { AbstractTool } from "./AbstractTool";
 
 
 export class PickTool extends AbstractTool {

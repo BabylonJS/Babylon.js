@@ -1,9 +1,12 @@
-import { Scene, Nullable, Tools, AbstractMesh } from "babylonjs";
-import { TabBar } from "./tabs/TabBar";
-import { Helpers } from "./helpers/Helpers";
-import { Scheduler } from "./scheduler/Scheduler";
-
+import { AbstractMesh, Nullable, Scene, Tools } from "babylonjs";
 import * as GUI from "babylonjs-gui";
+import Split from "Split";
+import { Helpers } from "./helpers/Helpers";
+import { loadGUIProperties } from "./properties_gui";
+import { Scheduler } from "./scheduler/Scheduler";
+import { TabBar } from "./tabs/TabBar";
+
+import "../sass/main.scss";
 
 export class Inspector {
 

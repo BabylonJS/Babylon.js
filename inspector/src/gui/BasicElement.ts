@@ -6,7 +6,7 @@ import { Helpers } from "../helpers/Helpers";
  */
 export abstract class BasicElement {
 
-    protected _div: HTMLElement;
+    protected _div: HTMLDivElement;
 
     constructor() {
         this._div = Helpers.CreateDiv();
@@ -15,7 +15,7 @@ export abstract class BasicElement {
     /**
      * Returns the div element
      */
-    public toHtml(): HTMLElement {
+    public toHtml(): HTMLDivElement {
         return this._div;
     }
 

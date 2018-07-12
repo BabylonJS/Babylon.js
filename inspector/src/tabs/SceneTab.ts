@@ -1,14 +1,12 @@
-import { Tab } from "./Tab";
-import { Inspector } from "../Inspector";
+import { Debug, StandardMaterial } from "babylonjs";
+import Split from "Split";
 import { DetailPanel } from "../details/DetailPanel";
-import { TabBar } from "./TabBar";
-import { Helpers } from "../helpers/Helpers";
-import { PropertyLine } from "../details/PropertyLine";
 import { Property } from "../details/Property";
-import { StandardMaterial, Debug } from "babylonjs";
-
-declare function Split(elements: HTMLElement[], options: any): void;
-
+import { PropertyLine } from "../details/PropertyLine";
+import { Helpers } from "../helpers/Helpers";
+import { Inspector } from "../Inspector";
+import { Tab } from "./Tab";
+import { TabBar } from "./TabBar";
 
 export class SceneTab extends Tab {
 
