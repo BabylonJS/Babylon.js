@@ -163,7 +163,7 @@ module BABYLON {
                             targetPosition.copyFrom((<Mesh>this._attachedNode).absolutePosition)
 
                             // Detatch camera controls
-                            if(this.detachCameraControls && this._scene.activeCamera){
+                            if(this.detachCameraControls && this._scene.activeCamera && !this._scene.activeCamera.leftCamera){
                                 if(this._scene.activeCamera.inputs.attachedElement){
                                     attachedElement = this._scene.activeCamera.inputs.attachedElement;
                                     this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
@@ -178,7 +178,7 @@ module BABYLON {
                         this.releaseDrag();
 
                         // Reattach camera controls
-                        if(this.detachCameraControls && attachedElement && this._scene.activeCamera){
+                        if(this.detachCameraControls && attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera){
                             this._scene.activeCamera.attachControl(attachedElement, true);
                         }
                     }
