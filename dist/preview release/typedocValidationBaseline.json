@@ -1,7 +1,7 @@
 {
-  "errors": 4240,
+  "errors": 4239,
   "babylon.typedoc.json": {
-    "errors": 4240,
+    "errors": 4239,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -20633,15 +20633,6 @@
           }
         },
         "gamepadMoveSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "UtilityLayerRenderer": {
-      "Property": {
-        "DefaultUtilityLayer": {
           "Comments": {
             "MissingText": true
           }

@@ -280,6 +280,9 @@
             "dependUpon": [
                 "core",
                 "procedural"
+            ],
+            "shaders": [
+                "noise.fragment"
             ]
         },      
         "particles": {
