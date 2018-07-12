@@ -170,8 +170,8 @@ module BABYLON.GLTF2 {
          * @param quaternion Source quaternion to convert to right-handed
          */
         public static _GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
-             quaternion.x *= -1;
-             quaternion.y *= -1;
+            quaternion.x *= -1;
+            quaternion.y *= -1;
         }
 
         /**
@@ -179,15 +179,17 @@ module BABYLON.GLTF2 {
          * @param quaternion Source quaternion to convert to right-handed
          */
         public static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
-             quaternion[0] *= -1;
-             quaternion[1] *= -1;
+            quaternion[0] *= -1;
+            quaternion[1] *= -1;
         }
 
         public static _NormalizeTangentFromRef(tangent: Vector4) {
-            const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z + tangent.z);
-            tangent.x /= length;
-            tangent.y /= length;
-            tangent.z /= length;
+            const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
+            if (length > 0) {
+                tangent.x /= length;
+                tangent.y /= length;
+                tangent.z /= length;
+            }
         }
     }
 }
