@@ -68,7 +68,7 @@ module BABYLON {
         /**
          * If camera controls should be detached during the drag
          */
-        public detatchCameraControls = true;
+        public detachCameraControls = true;
         
         /**
          * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
@@ -126,10 +126,9 @@ module BABYLON {
                     PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine());
                     PointerDragBehavior._planeScene.detachControl();
                     this._scene.getEngine().scenes.pop();
-                    var sceneDisposeObserver = this._scene.onDisposeObservable.add(()=>{
+                    this._scene.onDisposeObservable.addOnce(()=>{
                         PointerDragBehavior._planeScene.dispose();
                         (<any>PointerDragBehavior._planeScene) = null;
-                        this._scene.onDisposeObservable.remove(sceneDisposeObserver);
                     })
                 }
             }
@@ -164,7 +163,7 @@ module BABYLON {
                             targetPosition.copyFrom((<Mesh>this._attachedNode).absolutePosition)
 
                             // Detatch camera controls
-                            if(this.detatchCameraControls && this._scene.activeCamera){
+                            if(this.detachCameraControls && this._scene.activeCamera){
                                 if(this._scene.activeCamera.inputs.attachedElement){
                                     attachedElement = this._scene.activeCamera.inputs.attachedElement;
                                     this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
@@ -179,7 +178,7 @@ module BABYLON {
                         this.releaseDrag();
 
                         // Reattach camera controls
-                        if(this.detatchCameraControls && attachedElement && this._scene.activeCamera){
+                        if(this.detachCameraControls && attachedElement && this._scene.activeCamera){
                             this._scene.activeCamera.attachControl(attachedElement, true);
                         }
                     }

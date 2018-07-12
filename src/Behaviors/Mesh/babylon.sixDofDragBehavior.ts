@@ -32,7 +32,7 @@ module BABYLON {
         /**
          * If camera controls should be detached during the drag
          */
-        public detatchCameraControls = true;
+        public detachCameraControls = true;
 
 
         constructor(){
@@ -107,7 +107,7 @@ module BABYLON {
                         this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
 
                         // Detatch camera controls
-                        if(this.detatchCameraControls && this._scene.activeCamera){
+                        if(this.detachCameraControls && this._scene.activeCamera){
                             if(this._scene.activeCamera.inputs.attachedElement){
                                 attachedElement = this._scene.activeCamera.inputs.attachedElement;
                                 this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
@@ -125,7 +125,7 @@ module BABYLON {
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
                         
                         // Reattach camera controls
-                        if(this.detatchCameraControls && attachedElement && this._scene.activeCamera){
+                        if(this.detachCameraControls && attachedElement && this._scene.activeCamera){
                             this._scene.activeCamera.attachControl(attachedElement, true);
                         }
                     }
