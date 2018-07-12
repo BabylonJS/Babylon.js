@@ -25,6 +25,7 @@
     "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
     "devDependencies": {
         "@types/node": "^10.5.2",
+        "clean-webpack-plugin": "^0.1.19",
         "ts-loader": "^4.0.0",
         "typescript": "^2.9.2",
         "webpack": "^4.16.0",
