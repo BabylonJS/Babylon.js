@@ -54,9 +54,9 @@ module.exports = {
     plugins: [
         new DtsBundleWebpack({
             name: "babylonjs-gui",
-            main: path.resolve(__dirname, './dist/build/index.d.ts'),
+            main: path.resolve(__dirname, '../dist/preview release/gui/build/index.d.ts'),
             out: path.resolve(__dirname, '../dist/preview release/gui/babylon.gui.module.d.ts'),
-            baseDir: path.resolve(__dirname, './dist/build/'),
+            baseDir: path.resolve(__dirname, '../dist/preview release/gui/build/'),
             headerText: "BabylonJS GUI"
         }),
         new webpack.WatchIgnorePlugin([
