@@ -1513,7 +1513,7 @@
          * @returns a number
          */
         public getAnimationRatio(): number {
-            return this._animationRatio;
+            return this._animationRatio !== undefined ? this._animationRatio : 1;
         }
 
         /** 
