@@ -3276,10 +3276,12 @@ var BABYLON;
                 quaternion[1] *= -1;
             };
             _GLTFUtilities._NormalizeTangentFromRef = function (tangent) {
-                var length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z + tangent.z);
-                tangent.x /= length;
-                tangent.y /= length;
-                tangent.z /= length;
+                var length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
+                if (length > 0) {
+                    tangent.x /= length;
+                    tangent.y /= length;
+                    tangent.z /= length;
+                }
             };
             return _GLTFUtilities;
         }());

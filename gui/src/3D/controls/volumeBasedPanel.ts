@@ -1,6 +1,6 @@
-import { Control3D } from "./control3D";
-import { Vector3, Tools, Matrix, Tmp } from "babylonjs";
 import { Container3D } from "./container3D";
+import { Tools, int, Matrix, Tmp, Vector3 } from "babylonjs";
+import { Control3D } from "./control3D";
 
 /**
  * Abstract class used to create a container panel deployed on the surface of a volume
@@ -21,7 +21,7 @@ export abstract class VolumeBasedPanel extends Container3D {
     public margin = 0;
 
     /**
-     * Gets or sets the orientation to apply to all controls (Container3D.FaceOriginReversedOrientation by default)
+     * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
     * | Value | Type                                | Description |
     * | ----- | ----------------------------------- | ----------- |
     * | 0     | UNSET_ORIENTATION                   |  Control rotation will remain unchanged |
@@ -50,11 +50,11 @@ export abstract class VolumeBasedPanel extends Container3D {
      * Gets or sets the number of columns requested (10 by default). 
      * The panel will automatically compute the number of rows based on number of child controls. 
      */
-    public get columns(): number {
+    public get columns(): int {
         return this._columns;
     }
 
-    public set columns(value: number) {
+    public set columns(value: int) {
         if (this._columns === value) {
             return;
         }
@@ -71,11 +71,11 @@ export abstract class VolumeBasedPanel extends Container3D {
      * Gets or sets a the number of rows requested. 
      * The panel will automatically compute the number of columns based on number of child controls. 
      */
-    public get rows(): number {
+    public get rows(): int {
         return this._rows;
     }
 
-    public set rows(value: number) {
+    public set rows(value: int) {
         if (this._rows === value) {
             return;
         }
@@ -89,7 +89,7 @@ export abstract class VolumeBasedPanel extends Container3D {
     }
 
     /**
-     * Creates new SpherePanel
+     * Creates new VolumeBasedPanel
      */
     public constructor() {
         super();
@@ -112,10 +112,17 @@ export abstract class VolumeBasedPanel extends Container3D {
 
             controlCount++;
             child.mesh.computeWorldMatrix(true);
-            child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
+            //   child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
 
-            let boundingBox = child.mesh.getBoundingInfo().boundingBox;
-            let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
+            let boundingBox = child.mesh.getHierarchyBoundingVectors();
+            let extendSize = Tmp.Vector3[0];
+            let diff = Tmp.Vector3[1];
+
+            boundingBox.max.subtractToRef(boundingBox.min, diff);
+
+            diff.scaleInPlace(0.5);
+
+            Vector3.TransformNormalToRef(diff, currentInverseWorld, extendSize);
 
             this._cellWidth = Math.max(this._cellWidth, extendSize.x * 2);
             this._cellHeight = Math.max(this._cellHeight, extendSize.y * 2);

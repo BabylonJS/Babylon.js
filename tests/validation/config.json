@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [  
     {
+      "title": "GUI3D SpherePanel",
+      "playgroundId": "#HB4C01#9",
+      "renderCount": 50,
+      "referenceImage": "spherepanel.png"
+    },        
+    {
       "title": "Particle Helper",
       "playgroundId": "#1VGT5D#2",
       "renderCount": 50,
