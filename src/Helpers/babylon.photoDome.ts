@@ -82,6 +82,8 @@ module BABYLON {
                 this._useDirectMapping = options.useDirectMapping;            
             }
 
+            this._setReady(false);
+
             // create
             let material = this._material = new BackgroundMaterial(name + "_material", scene);
             this._mesh = BABYLON.Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, BABYLON.Mesh.BACKSIDE);
@@ -92,6 +94,10 @@ module BABYLON {
             material.fovMultiplier = 1.0;
 
             this.photoTexture = new Texture(urlOfPhoto, scene, true, !this._useDirectMapping);
+
+            this.photoTexture.onLoadObservable.addOnce(()=> {
+                this._setReady(true);
+            }) ;             
            
             // configure mesh
             this._mesh.material = material;
