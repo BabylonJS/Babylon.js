@@ -10,12 +10,20 @@ uniform vec3 lineColor;
 uniform vec4 gridControl;
 uniform vec3 gridOffset;
 
+uniform vec3 vEyePosition;
+uniform float alpha;
+
 // Varying
 #ifdef TRANSPARENT
 varying vec4 vCameraSpacePosition;
 #endif
 varying vec3 vPosition;
 varying vec3 vNormal;
+
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<lightsFragmentFunctions>
+#include<shadowsFragmentFunctions>
+#include<clipPlaneFragmentDeclaration>
 
 #include<fogFragmentDeclaration>
 
@@ -68,7 +76,15 @@ float normalImpactOnAxis(float x) {
 }
 
 void main(void) {
+    #include<clipPlaneFragment>
+    vec3 viewDirectionW=normalize(vEyePosition-vPositionW);
     
+    #ifdef NORMAL
+        vec3 normalW=normalize(vNormalW);
+    #else
+        vec3 normalW=vec3(1.0,1.0,1.0);
+    #endif
+
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
     vec3 gridPos = (vPosition + gridOffset) / gridRatio;
@@ -99,8 +115,16 @@ void main(void) {
     float cameraPassThrough = clamp(distanceToFragment - 0.25, 0.0, 1.0);
 
     float opacity = clamp(grid, 0.08, cameraPassThrough * gridControl.w * grid);
+   
+    vec3 diffuseBase=vec3(0.,0.,0.);
+    lightingInfo info;
+    float shadow=1.;
+    float glossiness=0.;
+    #include<lightFragment>[0..1];
+    
+    float sVal = (1.0-clamp(shadow,0.,1.))*alpha;    
 
-    gl_FragColor = vec4(color.rgb, opacity);
+    gl_FragColor = vec4(mix(color.rgb, vec3(0.), sVal), opacity);
 
     #ifdef PREMULTIPLYALPHA
         gl_FragColor.rgb *= opacity;
