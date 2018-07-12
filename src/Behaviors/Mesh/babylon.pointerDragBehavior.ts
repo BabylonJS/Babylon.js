@@ -65,6 +65,10 @@ module BABYLON {
          *  If the drag behavior will react to drag events (Default: true)
          */
         public enabled = true;
+        /**
+         * If camera controls should be detached during the drag
+         */
+        public detatchCameraControls = true;
         
         /**
          * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
@@ -122,6 +126,11 @@ module BABYLON {
                     PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine());
                     PointerDragBehavior._planeScene.detachControl();
                     this._scene.getEngine().scenes.pop();
+                    var sceneDisposeObserver = this._scene.onDisposeObservable.add(()=>{
+                        PointerDragBehavior._planeScene.dispose();
+                        (<any>PointerDragBehavior._planeScene) = null;
+                        this._scene.onDisposeObservable.remove(sceneDisposeObserver);
+                    })
                 }
             }
             this._dragPlane = BABYLON.Mesh.CreatePlane("pointerDragPlane", this._debugMode ? 1 : 10000, PointerDragBehavior._planeScene, false, BABYLON.Mesh.DOUBLESIDE);
@@ -136,6 +145,7 @@ module BABYLON {
                 return this._attachedNode == m || m.isDescendantOf(this._attachedNode)
             }
 
+            var attachedElement:Nullable<HTMLElement> = null;
             this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState)=>{
                 if(!this.enabled){
                     return;
@@ -152,11 +162,26 @@ module BABYLON {
                             this.lastDragPosition.copyFrom(pickedPoint);
                             this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID});
                             targetPosition.copyFrom((<Mesh>this._attachedNode).absolutePosition)
+
+                            // Detatch camera controls
+                            if(this.detatchCameraControls && this._scene.activeCamera){
+                                if(this._scene.activeCamera.inputs.attachedElement){
+                                    attachedElement = this._scene.activeCamera.inputs.attachedElement;
+                                    this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
+                                }else{
+                                    attachedElement = null;
+                                }
+                            }
                         }
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId){
                         this.releaseDrag();
+
+                        // Reattach camera controls
+                        if(this.detatchCameraControls && attachedElement && this._scene.activeCamera){
+                            this._scene.activeCamera.attachControl(attachedElement, true);
+                        }
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray){
