@@ -1,5 +1,4 @@
 import { Tools } from "babylonjs";
-import Split from "Split";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";

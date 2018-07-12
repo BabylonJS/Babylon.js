@@ -1,5 +1,4 @@
 import { Debug, StandardMaterial } from "babylonjs";
-import Split from "Split";
 import { DetailPanel } from "../details/DetailPanel";
 import { Property } from "../details/Property";
 import { PropertyLine } from "../details/PropertyLine";
