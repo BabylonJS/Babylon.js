@@ -67,7 +67,7 @@ window.onload = function () {
                                 }
                                 catch (e) {
                                     if (screenshot) {
-                                        console.error(screenshot);
+                                        //console.error(screenshot);
                                     }
                                     deferredDone(e);
                                 }
