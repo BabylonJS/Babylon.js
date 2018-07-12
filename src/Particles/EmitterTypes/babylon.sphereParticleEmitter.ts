@@ -4,13 +4,7 @@ module BABYLON {
      * It emits the particles alongside the sphere radius. The emission direction might be randomized.
      */
     export class SphereParticleEmitter implements IParticleEmitterType {
-
-        /**
-         * Gets or sets a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
-         */
-        public radiusRange = 1;
-
-        /**
+         /**
          * Creates a new instance SphereParticleEmitter
          * @param radius the radius of the emission sphere (1 by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
@@ -20,6 +14,7 @@ module BABYLON {
              * The radius of the emission sphere.
              */
             public radius = 1, 
+            public radiusRange = 1,
             /**
              * How much to randomize the particle direction [0-1].
              */
