@@ -1514,8 +1514,8 @@
          * @param radius The radius of the sphere to emit from
          * @returns the emitter
          */
-        public createSphereEmitter(radius = 1): SphereParticleEmitter {
-            var particleEmitter = new SphereParticleEmitter(radius);
+        public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
+            var particleEmitter = new SphereParticleEmitter(radius, radiusRange);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
