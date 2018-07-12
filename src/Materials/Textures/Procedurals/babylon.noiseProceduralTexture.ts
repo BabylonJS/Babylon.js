@@ -17,7 +17,10 @@ module BABYLON {
         /** Defines the level of persistence (0.8 by default) */
         public persistence = 0.8;
 
+        /** Gets or sets animation speed factor for X axis (default is 1) */
         public animationSpeedFactorX = 1;
+
+        /** Gets or sets animation speed factor for Y axis (default is 1) */
         public animationSpeedFactorY = 1;
 
         /**

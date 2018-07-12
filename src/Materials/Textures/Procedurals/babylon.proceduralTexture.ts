@@ -235,7 +235,12 @@
             return this;
         }
 
-        
+        /**
+         * Set the value of an uniform to an integer value
+         * @param name defines the name of the uniform
+         * @param value defines the value to set
+         * @returns the current procedural texture
+         */
         public setInt(name: string, value: number): ProceduralTexture {
             this._checkUniform(name);
             this._ints[name] = value;
