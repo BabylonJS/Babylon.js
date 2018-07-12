@@ -1,16 +1,17 @@
-import * as GUI from "babylonjs-gui";
+
 import { PropertyLine } from "../details/PropertyLine";
 import { Helpers } from "../helpers/Helpers";
 import { AbstractTreeTool } from "../treetools/AbstractTreeTool";
 import { Checkbox, IToolVisible } from "../treetools/Checkbox";
 import { Adapter } from "./Adapter";
+import { Control } from "babylonjs-gui";
 
 
 export class GUIAdapter
     extends Adapter
     implements IToolVisible {
 
-    constructor(obj: GUI.Control) {
+    constructor(obj: Control) {
         super(obj);
     }
 
@@ -40,10 +41,10 @@ export class GUIAdapter
     }
 
     public setVisible(b: boolean) {
-        (this._obj as GUI.Control).isVisible = b;
+        (this._obj as Control).isVisible = b;
     }
 
     public isVisible(): boolean {
-        return (this._obj as GUI.Control).isVisible;
+        return (this._obj as Control).isVisible;
     }
 }
