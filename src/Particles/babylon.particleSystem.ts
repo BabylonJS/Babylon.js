@@ -192,6 +192,8 @@
          */
         public gravity = Vector3.Zero();
 
+        private _emitterWorldMatrix: Matrix;
+
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
         private _sizeGradients: Nullable<Array<FactorGradient>> = null;
         private _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
@@ -590,9 +592,15 @@
 
                         // Noise
                         if (noiseTextureData && noiseTextureSize) {
-                            let fetchedColorR = Tools.FetchR(particle.position.y, particle.position.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                            let fetchedColorG = Tools.FetchR(particle.position.x + 0.33, particle.position.z + 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                            let fetchedColorB = Tools.FetchR(particle.position.x - 0.33, particle.position.y - 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let localPosition = Tmp.Vector3[0];
+                            let emitterPosition = Tmp.Vector3[1];
+
+                            this._emitterWorldMatrix.getTranslationToRef(emitterPosition);
+                            particle.position.subtractToRef(emitterPosition, localPosition);
+
+                            let fetchedColorR = this._fetchR(localPosition.y, localPosition.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorG = this._fetchR(localPosition.x + 0.33, localPosition.z + 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorB = this._fetchR(localPosition.x - 0.33, localPosition.y - 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
                             
                             let force = Tmp.Vector3[0];
                             let scaledForce = Tmp.Vector3[1];
@@ -626,6 +634,17 @@
                 }
             }
         }
+
+        private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
+            u = Math.abs(u) * 0.5 + 0.5;
+            v = Math.abs(v) * 0.5 + 0.5;
+
+            let wrappedU = ((u * width) % width) | 0;
+            let wrappedV = ((v * height) % height) | 0;
+
+            let position = (wrappedU + wrappedV * width) * 4;
+            return pixels[position] / 255;
+        }          
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
             let newGradient = new FactorGradient();
@@ -1102,19 +1121,17 @@
             // Update current
             this._alive = this._particles.length > 0;
 
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
+            } else {
+                var emitterPosition = (<Vector3>this.emitter);
+                this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+            }
+
             this.updateFunction(this._particles);
 
             // Add new ones
-            var worldMatrix;
-
-            if ((<AbstractMesh>this.emitter).position) {
-                var emitterMesh = (<AbstractMesh>this.emitter);
-                worldMatrix = emitterMesh.getWorldMatrix();
-            } else {
-                var emitterPosition = (<Vector3>this.emitter);
-                worldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
-            }
-
             var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this._particles.length === this._capacity) {
@@ -1129,17 +1146,17 @@
                 let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
-                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                    this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
                 }
                 else {
-                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                    this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
                 }
 
                 if (this.startDirectionFunction) {
-                    this.startDirectionFunction(worldMatrix, particle.direction, particle);
+                    this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
                 }
                 else {
-                    this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
+                    this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
                 }
 
                 if (emitPower === 0) {
