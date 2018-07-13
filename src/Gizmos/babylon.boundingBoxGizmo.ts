@@ -426,5 +426,12 @@ module BABYLON {
             box.visibility = 0;
             return box;
         }
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        public setCustomMesh(mesh:Mesh){
+            Tools.Error("Custom meshes are not supported on this gizmo");
+        }
     }
 }
