@@ -528,7 +528,6 @@ var buildExternalLibrary = function (library, settings, watch) {
                 });
 
                 if (minifiedOutputs.length) {
-                    console.log("minifying");
                     build = build
                         .pipe(uglify())
                         .pipe(optimisejs())

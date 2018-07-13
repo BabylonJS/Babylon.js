@@ -25,7 +25,7 @@ module.exports = {
             "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
         }
     },
-    mode: "development",
+    mode: "production",
     module: {
         rules: [{
             test: /\.tsx?$/,
