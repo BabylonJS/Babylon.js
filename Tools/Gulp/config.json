@@ -122,7 +122,8 @@
             "behaviors",
             "imageProcessing",
             "occlusionQuery",
-            "transformFeedback"     
+            "transformFeedback",
+            "noise"
         ],
         "minimal": [
             "meshBuilder",
@@ -272,7 +273,19 @@
             "dependUpon": [
                 "core"
             ]
-        },        
+        },  
+        "noise" : {
+            "files": [
+                "../../src/Materials/Textures/Procedurals/babylon.noiseProceduralTexture.js"
+            ],
+            "dependUpon": [
+                "core",
+                "procedural"
+            ],
+            "shaders": [
+                "noise.fragment"
+            ]
+        },      
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",

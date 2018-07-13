@@ -6,14 +6,31 @@ module BABYLON {
         private _pointerCaptures: {[pointerId:number]: boolean} = {};
         private _lastPointerEvents: {[pointerId:number]: number} = {};
         private static _DefaultUtilityLayer:Nullable<UtilityLayerRenderer> = null;
+        private static _DefaultKeepDepthUtilityLayer:Nullable<UtilityLayerRenderer> = null;
+        /** 
+         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+         */ 
         public static get DefaultUtilityLayer():UtilityLayerRenderer{
             if(UtilityLayerRenderer._DefaultUtilityLayer == null){
                 UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(BABYLON.Engine.LastCreatedScene!);
-                UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.add(()=>{
+                UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(()=>{
                     UtilityLayerRenderer._DefaultUtilityLayer = null;
                 });
             }
             return UtilityLayerRenderer._DefaultUtilityLayer;
+        }
+        /** 
+         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
+         */ 
+        public static get DefaultKeepDepthUtilityLayer():UtilityLayerRenderer{
+            if(UtilityLayerRenderer._DefaultKeepDepthUtilityLayer == null){
+                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(BABYLON.Engine.LastCreatedScene!);
+                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(()=>{
+                    UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;
+                });
+            }
+            return UtilityLayerRenderer._DefaultKeepDepthUtilityLayer;
         }
 
         /** 
