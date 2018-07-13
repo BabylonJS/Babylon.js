@@ -36,6 +36,15 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
             configuration.model.castShadow = (<any>configuration.model).castShadows;
         }
     }
+
+    if (configuration.lab) {
+        if (configuration.lab.assetsRootURL) {
+            setKeyInObject(configuration, "scene.assetsRootURL", configuration.lab.assetsRootURL);
+        }
+        if (configuration.lab.environmentMap) {
+            setKeyInObject(configuration, "scene.environmentMap", configuration.lab.environmentMap);
+        }
+    }
 }
 
 function setKeyInObject(object: any, keys: string, value: any, shouldOverwrite?: boolean) {

@@ -36,5 +36,6 @@ export interface ISceneConfiguration {
         spritesEnabled?: boolean;
         skeletonsEnabled?: boolean;
         audioEnabled?: boolean;
-    }
+    };
+    assetsRootURL?: string;
 }
