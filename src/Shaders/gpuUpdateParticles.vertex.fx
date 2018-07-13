@@ -274,9 +274,11 @@ void main() {
     outDirection = direction + gravity * timeDelta;
 
 #ifdef NOISE
-    float fetchedR = texture(noiseSampler, vec2(outPosition.y, outPosition.z)).r;
-    float fetchedG = texture(noiseSampler, vec2(outPosition.x + 0.33, outPosition.z + 0.33)).r;
-    float fetchedB = texture(noiseSampler, vec2(outPosition.z - 0.33, outPosition.y - 0.33)).r;
+    vec3 localPosition = outPosition - emitterWM[3].xyz;
+
+    float fetchedR = texture(noiseSampler, vec2(localPosition.y, localPosition.z) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedG = texture(noiseSampler, vec2(localPosition.x + 0.33, localPosition.z + 0.33) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedB = texture(noiseSampler, vec2(localPosition.z - 0.33, localPosition.y - 0.33) * vec2(0.5) + vec2(0.5)).r;
 
     vec3 force = vec3(2. * fetchedR - 1., 2. * fetchedG - 1., 2. * fetchedB - 1.) * noiseStrength;
 
