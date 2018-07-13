@@ -257,7 +257,10 @@ function publish(version, packageName, basePath) {
 
     //publish the respected package
     console.log("executing " + 'npm publish \"' + basePath + "\"" + ' ' + tagDef);
-    shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tagDef);
+    if (process.argv.indexOf('--no-publish') === -1) {
+        shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tagDef);
+    }
+
 }
 
 function getFiles(dir, files_) {
