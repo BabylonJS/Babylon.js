@@ -179,7 +179,11 @@ function showError(errorMessage, errorEvent) {
         var checkTypescriptSupport = function(xhr) {
             var filename = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
             if (xhr.responseText.indexOf("class Playground") !== -1) {// Typescript content
-                if (filename !== "ts.html") {
+                if(!filename) {
+                    window.location.href = location.protocol + "//" + location.host + "/ts.html" + window.location.hash;
+                    return false;
+                }
+                else if (filename !== "ts.html") {
                     window.location.href = location.protocol + "//" + location.host + location.pathname.replace(filename, "ts.html") + window.location.hash;
                     return false;
                 }
