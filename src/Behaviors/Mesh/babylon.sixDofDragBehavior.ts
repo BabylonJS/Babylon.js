@@ -29,6 +29,10 @@ module BABYLON {
          * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
          */
         public currentDraggingPointerID = -1;
+        /**
+         * If camera controls should be detached during the drag
+         */
+        public detachCameraControls = true;
 
 
         constructor(){
@@ -70,7 +74,7 @@ module BABYLON {
             var pickPredicate = (m:AbstractMesh)=>{
                 return this._ownerNode == m || m.isDescendantOf(this._ownerNode);
             }
-            
+            var attachedElement:Nullable<HTMLElement> = null;
             this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState)=>{                
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)){
@@ -101,6 +105,16 @@ module BABYLON {
                         this._targetPosition.copyFrom(this._virtualDragMesh.absolutePosition);
                         this.dragging = true;
                         this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
+
+                        // Detatch camera controls
+                        if(this.detachCameraControls && this._scene.activeCamera && !this._scene.activeCamera.leftCamera){
+                            if(this._scene.activeCamera.inputs.attachedElement){
+                                attachedElement = this._scene.activeCamera.inputs.attachedElement;
+                                this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
+                            }else{
+                                attachedElement = null;
+                            }
+                        }
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId){
@@ -109,6 +123,11 @@ module BABYLON {
                         this.currentDraggingPointerID = -1;
                         pickedMesh = null;
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
+                        
+                        // Reattach camera controls
+                        if(this.detachCameraControls && attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera){
+                            this._scene.activeCamera.attachControl(attachedElement, true);
+                        }
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh){
