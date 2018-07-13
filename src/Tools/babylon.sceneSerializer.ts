@@ -67,10 +67,17 @@
             if (mesh.material) {
                 if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
+                    serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.multiMaterials.push(mesh.material.serialize());
+                        for (let submaterial of mesh.material.subMaterials) {
+                            if (submaterial instanceof Material) {
+                                if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>submaterial).id))) {
+                                    serializationObject.materials.push(submaterial.serialize());
+                                }
+                            }
+                        }
                     }
-
                 } else {
                     serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
