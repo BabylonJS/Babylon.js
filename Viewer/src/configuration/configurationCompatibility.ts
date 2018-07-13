@@ -42,7 +42,7 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
             setKeyInObject(configuration, "scene.assetsRootURL", configuration.lab.assetsRootURL);
         }
         if (configuration.lab.environmentMap) {
-            setKeyInObject(configuration, "scene.environmentMap", configuration.lab.environmentMap);
+            setKeyInObject(configuration, "environmentMap", configuration.lab.environmentMap, true);
         }
     }
 }
