@@ -1940,18 +1940,18 @@
         ],
         "build": {
             "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",
-                "baseDir": "../../Viewer/dist/build/src/assets/",
-                "main": "../../Viewer/dist/build/src/assets/index.d.ts",
-                "out": "../../../build/assets/babylon.viewer.assets.module.d.ts"
+                "main": "../../dist/preview release/viewer/build/src/assets/index.d.ts",
+                "out": "../../../../../../Viewer/build/assets/babylon.viewer.assets.module.d.ts"
             },
             "outputs": [
                 {
                     "destination": [
                         {
                             "filename": "babylon.viewer.assets.js",
-                            "outputDirectory": "/../../Viewer/dist/build/assets/"
+                            "outputDirectory": "/../../Viewer/build/assets/"
                         }
                     ],
                     "minified": true
