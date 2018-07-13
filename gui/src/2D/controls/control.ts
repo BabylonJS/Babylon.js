@@ -707,6 +707,7 @@ module BABYLON.GUI {
         /** @hidden */
         public _resetFontCache(): void {
             this._fontSet = true;
+            this._markAsDirty();
         }
 
         /** 
