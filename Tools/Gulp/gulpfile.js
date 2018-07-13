@@ -552,6 +552,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                     }))
                     .pipe(rename(library.output.replace(".js", ".max.js")))
                     .pipe(rename(library.output.replace(".min.max.", ".")))
+                    .pipe(rename(library.output.replace(".bundle.max.", ".")))
                     .pipe(gulp.dest(outputDirectory));
                 sequence.push(
                     buildEvent

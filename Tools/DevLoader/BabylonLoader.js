@@ -240,7 +240,7 @@ var BABYLONDEVTOOLS;
                 this.loadScript('/dist/preview release/babylon.max.js');
             }
             this.loadScript('/dist/preview release/gui/babylon.gui.js');
-            this.loadScript('/dist/preview release/inspector/babylon.inspector.min.js');
+            this.loadScript('/dist/preview release/inspector/babylon.inspector.bundle.js');
 
             // Modules
             if (loadModules) {

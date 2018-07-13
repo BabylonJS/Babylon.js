@@ -10,7 +10,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/gui'),
-        filename: 'babylon.gui.js',
+        filename: 'babylon.gui.min.js',
         libraryTarget: 'umd',
         library: {
             root: ["BABYLON", "GUI"],
