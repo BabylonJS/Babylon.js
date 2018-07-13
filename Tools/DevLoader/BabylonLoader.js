@@ -245,7 +245,8 @@ var BABYLONDEVTOOLS;
             // Modules
             if (loadModules) {
                 for (var i = 0; i < settings.modules.length; i++) {
-                    if (settings.modules[i] === "viewer" || settings.modules[i] === "gui") {
+                    if (settings.modules[i] === "viewer" || settings.modules[i] === "gui" ||
+                        settings.modules[i] === "viewer-assets" || settings.modules[i] === "inspector") {
                         continue;
                     }
                     this.loadModule(settings[settings.modules[i]]);
