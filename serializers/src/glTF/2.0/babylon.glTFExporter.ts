@@ -142,7 +142,6 @@ module BABYLON.GLTF2 {
             this._shouldExportTransformNode = _options.shouldExportTransformNode ? _options.shouldExportTransformNode : (babylonTransformNode: TransformNode) => true;
             this._animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
 
-
             this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
         }
 
@@ -1000,8 +999,8 @@ module BABYLON.GLTF2 {
                     // go through all mesh primitives (submeshes)
                     for (const submesh of bufferMesh.subMeshes) {
                         uvCoordsPresent = false;
-                        let babylonMaterial = submesh.getMaterial();
-
+                        let babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
+                        
                         let materialIndex: Nullable<number> = null;
                         if (babylonMaterial) {
                             if (bufferMesh instanceof LinesMesh) {
@@ -1018,8 +1017,9 @@ module BABYLON.GLTF2 {
                                 materialIndex = this._materials.length - 1;
                             }
                             else if (babylonMaterial instanceof MultiMaterial) {
-                                babylonMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
-                                if (babylonMaterial) {
+                                const subMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
+                                if (subMaterial) {
+                                    babylonMaterial = subMaterial;
                                     materialIndex = this._materialMap[babylonMaterial.uniqueId];
                                 }
                             }
@@ -1068,7 +1068,7 @@ module BABYLON.GLTF2 {
                             meshPrimitive.indices = this._accessors.length - 1;
                         }
                         if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
-                            let sideOrientation = this._babylonScene.materials[materialIndex].sideOrientation;
+                            let sideOrientation = babylonMaterial.sideOrientation;
 
                             if (this._convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
                                 //Overwrite the indices to be counter-clockwise
@@ -1171,18 +1171,6 @@ module BABYLON.GLTF2 {
             });
         }
 
-        private getRootNodes(babylonScene: Scene, nodes: TransformNode[], shouldExportTransformNode: (babylonTransformNode: TransformNode) => boolean): TransformNode[] {
-            const rootNodes: TransformNode[] = [];
-            for (let babylonTransformNode of nodes) {
-                if (shouldExportTransformNode(babylonTransformNode)) {
-                    if (babylonTransformNode.parent == null) {
-                        rootNodes.push(babylonTransformNode);
-                    }
-                }
-            }
-            return rootNodes;
-        }
-
         /**
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
@@ -1202,25 +1190,10 @@ module BABYLON.GLTF2 {
             let idleGLTFAnimations: IAnimation[] = [];
             let node: INode;
 
-            let negScaleRootNode: Nullable<TransformNode> = null;
-
-            const rootNodes = this.getRootNodes(babylonScene, nodes, shouldExportTransformNode);
-            if (rootNodes.length === 1) {
-                const node = rootNodes[0];
-                if (node.scaling.equalsToFloats(1,1, -1)) {
-                    this._convertToRightHandedSystem = !this._convertToRightHandedSystem;
-                    negScaleRootNode = node;
-                }  
-            }
-
             for (let babylonTransformNode of nodes) {
                 if (shouldExportTransformNode(babylonTransformNode)) {
                     node = this.createNode(babylonTransformNode, binaryWriter);
-                    if (negScaleRootNode && babylonTransformNode === negScaleRootNode) {
-                        node.scale = [1,1,1];
-                        node.rotation = [0,0,0,1];
-                    }
-                    
+
                     const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => {return (node instanceof TransformNode);});
                     if (directDescendents.length || node.mesh != null) {
                         this._nodes.push(node);
