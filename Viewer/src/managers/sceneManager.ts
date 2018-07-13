@@ -8,6 +8,7 @@ import { getCustomOptimizerByName } from '../optimizer/custom/';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { deepmerge } from '../helper';
+import { IEnvironmentMapConfiguration } from '../configuration/interfaces/environmentMapConfiguration';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -441,6 +442,10 @@ export class SceneManager {
         // camera
         this._configureCamera(newConfiguration.camera);
 
+        if (newConfiguration.environmentMap !== undefined) {
+            this._configureEnvironmentMap(newConfiguration.environmentMap);
+        }
+
         if (newConfiguration.vr !== undefined) {
             this._configureVR(newConfiguration.vr);
         }
@@ -845,6 +850,17 @@ export class SceneManager {
             object: this._vrHelper,
             newConfiguration: vrConfig
         });
+    }
+
+    protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
+        let rot = environmentMapConfiguration.rotationY;
+        this.labs.loadEnvironment(environmentMapConfiguration.texture, () => {
+            this.labs.applyEnvironmentMapConfiguration(rot);
+        });
+
+        if (!environmentMapConfiguration.texture && environmentMapConfiguration.rotationY) {
+            this.labs.applyEnvironmentMapConfiguration(environmentMapConfiguration.rotationY);
+        }
     }
 
     /**
