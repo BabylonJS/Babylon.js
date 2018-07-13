@@ -211,19 +211,14 @@ function runTest(index, done) {
     configuration.camera.behaviors = null;
 
     // make sure we use only local assets
-    /*configuration.skybox = {
-        cubeTexture: {
-            url: "DefaultSkybox_cube_radiance_256.dds"
-        }
-    }*/
 
     //envirnonment directory
-    configuration.lab = configuration.lab || {};
-    configuration.lab.assetsRootURL = "/dist/assets/environment/";
+    configuration.scene = configuration.scene || {};
+    configuration.scene.assetsRootURL = "http://localhost:3000/dist/assets/environment/";
     if (!test.enableEnvironment) {
-        configuration.lab.environmentMap = false;
+        configuration.environmentMap = false;
     } else {
-        console.log(configuration.lab.environmentMap)
+        console.log(configuration.environmentMap)
     }
 
     //model config
