@@ -264,10 +264,10 @@ module BABYLON {
         }
 
         /**
-         * Update the bounding box of the gizmo
+         * Updates the bounding box information for the Gizmo
          */
-        public updateBoundingBox() {
-            if (this.attachedMesh) {
+        public updateBoundingBox(){
+            if(this.attachedMesh){
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
