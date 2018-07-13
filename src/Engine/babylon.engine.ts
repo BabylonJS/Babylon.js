@@ -264,6 +264,11 @@
             }
         }
 
+        /**
+         * Hidden
+         */
+        public static _TextureLoaders: IInternalTextureLoader[] = [];
+
         // Const statics
         /** Defines that alpha blending is disabled */
         public static readonly ALPHA_DISABLE = 0;
@@ -4050,11 +4055,13 @@
          * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+         * @param forcedExtension defines the extension to use to pick the right loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
+            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+            forcedExtension: Nullable<string> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -4064,15 +4071,18 @@
 
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
-            var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
-            var isTGA = (extension.indexOf(".tga") === 0);
+            var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
 
-            // determine if a ktx file should be substituted
-            var isKTX = false;
-            if (this._textureFormatInUse && !isBase64 && !fallback && !buffer) {
-                url = url.substring(0, lastDot) + this._textureFormatInUse;
-                isKTX = true;
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+                    loader = availableLoader;
+                    break;
+                }
+            }
+
+            if (loader) {
+                url = loader.transformUrl(url, this._textureFormatInUse);
             }
 
             if (scene) {
@@ -4095,79 +4105,54 @@
 
             if (!fallback) this._internalTexturesCache.push(texture);
 
-            var onerror = (message?: string, exception?: any) => {
+            let onInternalError = (message?: string, exception?: any) => {
                 if (scene) {
                     scene._removePendingData(texture);
                 }
 
-                if (onLoadObserver && !isKTX) {
-                    //dont remove the observer if its a ktx file, since the fallback createTexture call will require it.
-                    texture.onLoadedObservable.remove(onLoadObserver);
+                let customFallback = false;
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(url, this._textureFormatInUse);
+                    if (fallbackUrl) {
+                        // Add Back
+                        customFallback = true;
+                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
                 }
 
-                // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
-                if (isKTX) {
-                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                if (!customFallback) {
+                    if (onLoadObserver) {
+                        texture.onLoadedObservable.remove(onLoadObserver);
+                    }
+                    if (Tools.UseFallbackTexture) {
+                        this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
                 }
 
                 if (onError) {
                     onError(message || "Unknown error", exception);
                 }
-            };
-
-            var callback: Nullable<(arrayBuffer: any) => void> = null;
+            }
 
             // processing for non-image formats
-            if (isKTX || isTGA || isDDS) {
-                if (isKTX) {
-                    callback = (data) => {
-                        var ktx = new KhronosTextureContainer(data, 1);
-
-                        this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
-                            ktx.uploadLevels(texture, !noMipmap);
-                            return false;
-                        }, samplingMode);
-                    };
-                } else if (isTGA) {
-                    callback = (arrayBuffer) => {
-                        var data = new Uint8Array(arrayBuffer);
-
-                        var header = TGATools.GetTGAHeader(data);
-
-                        this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                            TGATools.UploadContent(texture, data);
-                            return false;
-                        }, samplingMode);
-                    };
-
-                } else if (isDDS) {
-                    callback = (data) => {
-                        var info = DDSTools.GetDDSInfo(data);
-
-                        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                        this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                            DDSTools.UploadDDSLevels(this, texture, data, info, loadMipmap, 1);
-                            return false;
-                        }, samplingMode);
-                    };
+            if (loader) {
+                var callback = (data: string | ArrayBuffer) => {
+                    loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
+                        this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                                done();
+                                return false;
+                            }, 
+                            samplingMode);
+                    });
                 }
 
                 if (!buffer) {
-                    this._loadFile(url, data => {
-                        if (callback) {
-                            callback(data);
-                        }
-                    }, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
-                        onerror("Unable to load " + (request ? request.responseURL : url, exception));
+                    this._loadFile(url, callback, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                        onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                     });
                 } else {
-                    if (callback) {
-                        callback(buffer);
-                    }
+                    callback(buffer as ArrayBuffer);
                 }
-                // image format processing
             } else {
                 var onload = (img: HTMLImageElement) => {
                     if (fromBlob && !this._doNotHandleContextLost) {
@@ -4231,11 +4216,11 @@
                     if (buffer instanceof HTMLImageElement) {
                         onload(buffer);
                     } else {
-                        Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+                        Tools.LoadImage(url, onload, onInternalError, scene ? scene.database : null);
                     }
                 }
                 else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
-                    Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
+                    Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.database : null);
                 }
                 else {
                     onload(<HTMLImageElement>buffer);
@@ -5501,142 +5486,50 @@
                 texture._files = files;
             }
 
-            var isKTX = false;
-            var isDDS = false;
-            var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-            if (this._textureFormatInUse && !fallback) {
-                rootUrl = (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + this._textureFormatInUse;
-                isKTX = true;
-            } else {
-                isDDS = (extension === ".dds");
-                isEnv = (extension === ".env");
+
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
+                    loader = availableLoader;
+                    break;
+                }
             }
 
-            let onerror = (request?: XMLHttpRequest, exception?: any) => {
-                if(isKTX){
-                    //remove the format appended to the rootUrl in the original createCubeTexture call.
-                    var exp = new RegExp("" + this._textureFormatInUse + "$");
-                    this.createCubeTexture(rootUrl.replace(exp, ""), scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+            let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(rootUrl, this._textureFormatInUse);
+                    if (fallbackUrl) {
+                        this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                    }
                 }
+
                 if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             }
 
-            if (isKTX) {
-                this._loadFile(rootUrl, data => {
-                    var ktx = new KhronosTextureContainer(data, 6);
+            if (loader) {
+                rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
 
-                    var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
-
+                const onloaddata = (data: any) => {
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    this._unpackFlipY(true);
-
-                    ktx.uploadLevels(texture, !noMipmap);
-
-                    this.setCubeMapTextureParams(gl, loadMipmap);
-
-                    texture.width = ktx.pixelWidth;
-                    texture.height = ktx.pixelHeight;
-                    texture.isReady = true;
-                }, undefined, undefined, true, onerror);
-            }
-            else if (isEnv) {
-                this._loadFile(rootUrl, (data) => {
-                    data = data as ArrayBuffer;
-                    var info = EnvironmentTextureTools.GetEnvInfo(data);
-                    if (info) {
-                        texture.width = info.width;
-                        texture.height = info.width;
-
-                        EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-                        EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
-                            texture.isReady = true;
-                            if (onLoad) {
-                                onLoad();
-                            }
-                        });
+                    loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
+                };
+                if (files && files.length === 6) {
+                    if (loader.supportCascades) {
+                        this._cascadeLoadFiles(scene, onloaddata, files, onError);
                     }
                     else if (onError) {
-                        onError("Can not parse the environment file", null);
+                        onError("Textures type does not support cascades.");
                     }
-                }, undefined, undefined, true, onerror);
-            }
-            else if (isDDS) {
-                if (files && files.length === 6) {
-                    this._cascadeLoadFiles(
-                        scene,
-                        imgs => {
-                            var info: DDSInfo | undefined;
-                            var loadMipmap: boolean = false;
-                            var width: number = 0;
-                            for (let index = 0; index < imgs.length; index++) {
-                                let data = imgs[index];
-                                info = DDSTools.GetDDSInfo(data);
-
-                                texture.width = info.width;
-                                texture.height = info.height;
-                                width = info.width;
-
-                                loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-
-                                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                                this._unpackFlipY(info.isCompressed);
-
-                                DDSTools.UploadDDSLevels(this, texture, data, info, loadMipmap, 6, -1, index);
-
-                                if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                                }
-                            }
-
-                            this.setCubeMapTextureParams(gl, loadMipmap);
-                            texture.isReady = true;
-
-                            if (onLoad) {
-                                onLoad({ isDDS: true, width: width, info, imgs, texture });
-                            }
-                        },
-                        files,
-                        onError);
-                } else {
-                    this._loadFile(rootUrl,
-                        data => {
-                            var info = DDSTools.GetDDSInfo(data);
-
-                            texture.width = info.width;
-                            texture.height = info.height;
-
-                            if (createPolynomials) {
-                                info.sphericalPolynomial = new SphericalPolynomial();
-                            }
-
-                            var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-
-                            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                            this._unpackFlipY(info.isCompressed);
-
-                            DDSTools.UploadDDSLevels(this, texture, data, info, loadMipmap, 6);
-
-                            if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                            }
-
-                            this.setCubeMapTextureParams(gl, loadMipmap);
-                            texture.isReady = true;
-
-                            if (onLoad) {
-                                onLoad({ isDDS: true, width: info.width, info, data, texture });
-                            }
-                        },
-                        undefined,
-                        undefined,
-                        true,
-                        onerror);
                 }
-            } else {
+                else {
+                    this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
+                }
+            }
+            else {
                 if (!files) {
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
@@ -5671,7 +5564,7 @@
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
 
-                    this.setCubeMapTextureParams(gl, !noMipmap);
+                    this._setCubeMapTextureParams(!noMipmap);
 
                     texture.width = width;
                     texture.height = height;
@@ -5694,7 +5587,11 @@
             return texture;
         }
 
-        private setCubeMapTextureParams(gl: WebGLRenderingContext, loadMipmap: boolean) {
+        /**
+         * @hidden
+         */
+        public _setCubeMapTextureParams(loadMipmap: boolean): void {
+            var gl = this._gl;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
