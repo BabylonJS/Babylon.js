@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix } from 'babylonjs';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
@@ -108,6 +108,8 @@ export class SceneManager {
     public labs: ViewerLabs;
 
     private _defaultRenderingPipeline: Nullable<DefaultRenderingPipeline>;
+
+    private _assetsRootURL: string;
 
     public get defaultRenderingPipeline() {
         return this._defaultRenderingPipeline;
@@ -410,12 +412,6 @@ export class SceneManager {
             this._globalConfiguration = newConfiguration;
         }
 
-        if (newConfiguration.lab) {
-            if (newConfiguration.lab.assetsRootURL) {
-                this.labs.assetsRootURL = newConfiguration.lab.assetsRootURL;
-            }
-        }
-
         // update scene configuration
         if (newConfiguration.scene) {
             this._configureScene(newConfiguration.scene);
@@ -451,16 +447,6 @@ export class SceneManager {
         }
 
         if (newConfiguration.lab) {
-            if (newConfiguration.lab.environmentMap) {
-                let rot = newConfiguration.lab.environmentMap.rotationY;
-                this.labs.loadEnvironment(newConfiguration.lab.environmentMap.texture, () => {
-                    this.labs.applyEnvironmentMapConfiguration(rot);
-                });
-
-                if (!newConfiguration.lab.environmentMap.texture && newConfiguration.lab.environmentMap.rotationY) {
-                    this.labs.applyEnvironmentMapConfiguration(newConfiguration.lab.environmentMap.rotationY);
-                }
-            }
 
             // rendering piplines
             if (newConfiguration.lab.defaultRenderingPipelines) {
@@ -608,6 +594,10 @@ export class SceneManager {
             if (cc.a !== undefined) {
                 oldcc.a = cc.a
             }
+        }
+
+        if (sceneConfig.assetsRootURL) {
+            this._assetsRootURL = sceneConfig.assetsRootURL;
         }
 
         // image processing configuration - optional.
@@ -853,13 +843,14 @@ export class SceneManager {
     }
 
     protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
-        let rot = environmentMapConfiguration.rotationY;
-        this.labs.loadEnvironment(environmentMapConfiguration.texture, () => {
-            this.labs.applyEnvironmentMapConfiguration(rot);
-        });
+        let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
+        if (environmentMapConfiguration.texture) {
+            this.scene.environmentTexture = new BABYLON.CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
+        }
 
-        if (!environmentMapConfiguration.texture && environmentMapConfiguration.rotationY) {
-            this.labs.applyEnvironmentMapConfiguration(environmentMapConfiguration.rotationY);
+        //sanity check
+        if (this.scene.environmentTexture) {
+            Matrix.FromQuaternionToRef(rotatquatRotationionY, this.scene.environmentTexture.getReflectionTextureMatrix());
         }
     }
 
@@ -992,7 +983,7 @@ export class SceneManager {
                 }
                 options.enableGroundMirror = !!groundConfig.mirror && this.groundMirrorEnabled;
                 if (groundConfig.texture) {
-                    options.groundTexture = this.labs.getAssetUrl(groundConfig.texture);
+                    options.groundTexture = this._getAssetUrl(groundConfig.texture);
                 }
                 if (groundConfig.color) {
                     options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
@@ -1038,7 +1029,7 @@ export class SceneManager {
                 }
                 if (conf.cubeTexture && conf.cubeTexture.url) {
                     if (typeof conf.cubeTexture.url === "string") {
-                        options.skyboxTexture = this.labs.getAssetUrl(conf.cubeTexture.url);
+                        options.skyboxTexture = this._getAssetUrl(conf.cubeTexture.url);
                     } else {
                         // init later!
                         postInitSkyboxMaterial = true;
@@ -1451,6 +1442,25 @@ export class SceneManager {
         if (this.scene) {
             this.scene.dispose();
         }
+    }
+
+    /**
+     * Get an environment asset url by using the configuration if the path is not absolute.
+     * @param url Asset url
+     * @returns The Asset url using the `environmentAssetsRootURL` if the url is not an absolute path.
+     */
+    private _getAssetUrl(url: string): string {
+        let returnUrl = url;
+        if (url && url.toLowerCase().indexOf("//") === -1) {
+            if (!this._assetsRootURL) {
+                // Tools.Warn("Please, specify the root url of your assets before loading the configuration (labs.environmentAssetsRootURL) or disable the background through the viewer options.");
+                return url;
+            }
+
+            returnUrl = this._assetsRootURL + returnUrl;
+        }
+
+        return returnUrl;
     }
 
     private _cameraBehaviorMapping: { [name: string]: number } = {};
