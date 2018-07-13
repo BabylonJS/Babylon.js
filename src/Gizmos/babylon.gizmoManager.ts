@@ -12,7 +12,6 @@ module BABYLON {
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh:Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
-        private _boundingBoxUtilLayer:Nullable<UtilityLayerRenderer> = null;
         private _dragBehavior = new BABYLON.SixDofDragBehavior();
         /**
          * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
@@ -138,11 +137,7 @@ module BABYLON {
          */
         public set boundingBoxGizmoEnabled(value:boolean){
             if(value){
-                if(!this._boundingBoxUtilLayer){
-                    this._boundingBoxUtilLayer = new BABYLON.UtilityLayerRenderer(this.scene);
-                    this._boundingBoxUtilLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-                }
-                this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._boundingBoxUtilLayer);
+                this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor);
                 this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
                 if(this._attachedMesh){
                     this._attachedMesh.removeBehavior(this._dragBehavior);

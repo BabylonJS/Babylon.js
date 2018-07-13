@@ -44,12 +44,13 @@ module BABYLON {
          */
         public onDragEndObservable = new Observable<{}>();
         private _anchorMesh:AbstractMesh;
+        private _existingMeshScale = new Vector3();
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param color The color of the gizmo
          */
-        constructor(color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer){
+        constructor(color:Color3 = Color3.Gray(), gizmoLayer:UtilityLayerRenderer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer){
             super(gizmoLayer);
 
             // Do not update the gizmo's scale so it has a fixed size to the object its attached to
@@ -143,6 +144,7 @@ module BABYLON {
                             this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion,this._anchorMesh.rotationQuaternion!);
                             this._anchorMesh.removeChild(this.attachedMesh);
                         }
+                        this.updateBoundingBox(); 
                     }
                 });
 
@@ -179,7 +181,7 @@ module BABYLON {
                             if(this.attachedMesh){
                                 var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
-                                this._updateBoundingBox(); 
+                                this.updateBoundingBox(); 
 
                                  // Scale from the position of the opposite corner                   
                                 box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
@@ -229,9 +231,12 @@ module BABYLON {
 
             // Update bounding box positions
             this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(()=>{
-                this._updateBoundingBox();
+                // Only update the bouding box if scaling has changed
+                if(this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)){
+                    this.updateBoundingBox();
+                }
             })
-            this._updateBoundingBox();
+            this.updateBoundingBox();
         }
         
         protected _attachedMeshChanged(value:Nullable<AbstractMesh>){
@@ -240,7 +245,7 @@ module BABYLON {
                 // This is needed to avoid invalid box/sphere position on first drag
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
-                this._updateBoundingBox();
+                this.updateBoundingBox();
             }
         }
 
@@ -258,7 +263,7 @@ module BABYLON {
             });
         }
 
-        private _updateBoundingBox(){
+        public updateBoundingBox(){
             if(this.attachedMesh){             
                 // Rotate based on axis
                 if(!this.attachedMesh.rotationQuaternion){
@@ -344,6 +349,9 @@ module BABYLON {
                         }
                     }
                 }
+            }
+            if(this.attachedMesh){
+                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
             }
         }
 
