@@ -1512,6 +1512,7 @@
         /**
          * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
          * @param radius The radius of the sphere to emit from
+         * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
          * @returns the emitter
          */
         public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
