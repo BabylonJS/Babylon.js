@@ -71,7 +71,7 @@
                     if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.multiMaterials.push(mesh.material.serialize());
                         for (let submaterial of mesh.material.subMaterials) {
-                            if (submaterial instanceof Material) {
+                            if (submaterial) {
                                 if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>submaterial).id))) {
                                     serializationObject.materials.push(submaterial.serialize());
                                 }
