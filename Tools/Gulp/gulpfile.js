@@ -458,7 +458,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                             if (isdts) this.push(file);
                             cb();
                         }))
-                        .pipe(gulp.dest('.'));
+                        .pipe(gulp.dest(outputDirectory));
                     // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
                     // until I fix it
                     event.on("end", function () {
@@ -528,9 +528,10 @@ var buildExternalLibrary = function (library, settings, watch) {
                 });
 
                 if (minifiedOutputs.length) {
-                    //build = build
-                    //.pipe(uglify())
-                    //.pipe(optimisejs())
+                    console.log("minifying");
+                    build = build
+                        .pipe(uglify())
+                        .pipe(optimisejs())
                 }
 
                 minifiedOutputs.forEach(dest => {
