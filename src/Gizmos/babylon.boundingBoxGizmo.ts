@@ -263,6 +263,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * Updates the bounding box information for the Gizmo
+         */
         public updateBoundingBox(){
             if(this.attachedMesh){             
                 // Rotate based on axis
