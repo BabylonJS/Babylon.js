@@ -181,8 +181,16 @@
          * @returns the R value
          */
         public static FetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
-            let wrappedU = ((Math.abs(u) * width) % width) | 0;
-            let wrappedV = ((Math.abs(v) * height) % height) | 0;
+
+            u = Math.abs(u) + 0.5;
+            v = Math.abs(v) + 0.5;
+
+            let wrappedU = ((u * width) % width) | 0;
+            let wrappedV = ((v * height) % height) | 0;
+
+            // let wrappedU =  (Math.abs(u) - Math.floor(Math.abs(u))) * width | 0;
+            // let wrappedV =  (Math.abs(v) - Math.floor(Math.abs(v))) * height | 0;
+            
 
             let position = (wrappedU + wrappedV * width) * 4;
             return pixels[position] / 255;
