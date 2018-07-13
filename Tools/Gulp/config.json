@@ -1905,8 +1905,7 @@
                                 "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
                         }
-                    ],
-                    "minified": true
+                    ]
                 },
                 {
                     "destination": [
