@@ -157,6 +157,15 @@
         public preventAutoStart: boolean = false;
 
         /**
+         * Gets or sets a texture used to add random noise to particle positions
+         */
+        public noiseTexture: Texture;
+
+        public noiseGridSize = new Vector2(1, 1);
+
+        public noiseStrength = 50;
+
+        /**
          * This function can be defined to provide custom update for active particles.
          * This function will be called instead of regular update (age, position, color, etc.).
          * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
@@ -511,6 +520,14 @@
             this.particleEmitterType = new BoxParticleEmitter();
 
             this.updateFunction = (particles: Particle[]): void => {
+                let noiseTextureData: Nullable<Uint8Array> = null;
+                let noiseTextureSize: Nullable<ISize> = null;
+
+                if (this.noiseTexture) { // We need to get texture data back to CPU
+                    noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.readPixels());
+                    noiseTextureSize = this.noiseTexture.getSize();
+                }
+
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
                     particle.age += this._scaledUpdateSpeed;
@@ -569,6 +586,20 @@
                         }                          
                         particle.direction.scaleToRef(directionScale, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
+
+                        if (noiseTextureData && noiseTextureSize) {
+                            let fetchedColorR = Tools.FetchR(particle.position.x / this.noiseGridSize.x, particle.position.y / this.noiseGridSize.y, noiseTextureSize.width, noiseTextureSize.height,  noiseTextureData);
+                            let fetchedColorG = Tools.FetchR(particle.position.x / this.noiseGridSize.x + 0.33, particle.position.y / this.noiseGridSize.y + 0.66, noiseTextureSize.width, noiseTextureSize.height,  noiseTextureData);
+                            let fetchedColorB = Tools.FetchR(particle.position.x / this.noiseGridSize.x + 0.66, particle.position.y / this.noiseGridSize.y + 0.33, noiseTextureSize.width, noiseTextureSize.height,  noiseTextureData);
+                            
+                            let force = Tmp.Vector3[0];
+                            let scaledForce = Tmp.Vector3[1];
+
+                            force.copyFromFloats(2 * fetchedColorR - 1, 2 * fetchedColorG - 1, 2 * fetchedColorB - 1);
+
+                            force.scaleToRef(this._scaledUpdateSpeed * this.noiseStrength, scaledForce);
+                            particle.direction.addInPlace(scaledForce);
+                        }
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
