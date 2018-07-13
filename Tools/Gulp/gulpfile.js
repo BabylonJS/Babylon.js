@@ -1192,7 +1192,7 @@ gulp.task("tests-viewer-validation-browserstack", ["tests-viewer-validation-tran
  */
 gulp.task("tests-viewer-validation-transpile", function (done) {
 
-    let wpBuild = webpackStream(require('../../Viewer/webpack.gulp.config.js'));
+    let wpBuild = webpackStream(require('../../Viewer/webpack.gulp.config.js'), webpack);
 
     // clean the built directory
     rmDir("../../Viewer/tests/build/");
@@ -1211,7 +1211,7 @@ gulp.task("tests-viewer-validation-transpile", function (done) {
  */
 gulp.task("tests-viewer-transpile", function (done) {
 
-    let wpBuild = webpackStream(require('../../Viewer/tests/unit/webpack.config.js'));
+    let wpBuild = webpackStream(require('../../Viewer/tests/unit/webpack.config.js'), webpack);
 
     // clean the built directory
     rmDir("../../Viewer/tests/build/");
