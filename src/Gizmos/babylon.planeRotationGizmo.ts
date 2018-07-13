@@ -133,6 +133,9 @@ module BABYLON {
             })
 
             this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo, eventState)=>{
+                if(this._customMeshSet){
+                    return;
+                }
                 if(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1)){
                     this._rootMesh.getChildMeshes().forEach((m)=>{
                         m.material = hoverMaterial;
@@ -159,6 +162,6 @@ module BABYLON {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
             this.dragBehavior.detach();
             super.dispose();
-        } 
+        }
     }
 }

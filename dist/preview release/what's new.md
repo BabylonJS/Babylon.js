@@ -74,6 +74,7 @@
 - Added onPoseUpdatedFromDeviceObservable to webVRCamera to detect when the camera's pose has been updated ([TrevorDev](https://github.com/TrevorDev))
 - Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
+- Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
