@@ -161,9 +161,11 @@
          */
         public noiseTexture: Texture;
 
+        /** Gets or sets the estimated area used by the system. It will be used to normalize the projection onto the noise texture (default is (1, 1)) */
         public noiseGridSize = new Vector2(1, 1);
 
-        public noiseStrength = 50;
+        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+        public noiseStrength = new Vector3(10, 10, 10);
 
         /**
          * This function can be defined to provide custom update for active particles.
@@ -595,9 +597,9 @@
                             let force = Tmp.Vector3[0];
                             let scaledForce = Tmp.Vector3[1];
 
-                            force.copyFromFloats(2 * fetchedColorR - 1, 2 * fetchedColorG - 1, 2 * fetchedColorB - 1);
+                            force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.x, (2 * fetchedColorB - 1) * this.noiseStrength.x);
 
-                            force.scaleToRef(this._scaledUpdateSpeed * this.noiseStrength, scaledForce);
+                            force.scaleToRef(this._scaledUpdateSpeed, scaledForce);
                             particle.direction.addInPlace(scaledForce);
                         }
 
