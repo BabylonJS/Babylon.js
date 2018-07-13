@@ -1797,6 +1797,13 @@
         "build": {
             "srcOutputDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/",
+            "dtsBundle": {
+                "name": "babylonjs-gui",
+                "main": "../../dist/preview release/gui/build/index.d.ts",
+                "out": "../babylon.gui.module.d.ts",
+                "baseDir": "../../dist/preview release/gui/build/",
+                "headerText": "BabylonJS GUI"
+            },
             "processDeclaration": {
                 "filename": "babylon.gui.module.d.ts",
                 "packageName": "babylonjs-gui",
@@ -1824,6 +1831,13 @@
         "build": {
             "srcOutputDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
+            "dtsBundle": {
+                "name": "babylonjs-inspector",
+                "main": "../../dist/preview release/inspector/build/index.d.ts",
+                "out": "../babylon.inspector.module.d.ts",
+                "baseDir": "../../dist/preview release/inspector/build/",
+                "headerText": "BabylonJS Inspector"
+            },
             "processDeclaration": {
                 "filename": "babylon.inspector.module.d.ts",
                 "packageName": "babylonjs-inspector",

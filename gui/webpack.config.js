@@ -57,13 +57,14 @@ module.exports = {
             path.resolve(__dirname, './src/**/*.js'),
             path.resolve(__dirname, './src/**/*.map')
         ]),
-        new DtsBundleWebpack({
+        // moved out of here due to the way gulp works...
+        /*new DtsBundleWebpack({
             name: "babylonjs-gui",
             main: path.resolve(__dirname, '../dist/preview release/gui/build/index.d.ts'),
             out: path.resolve(__dirname, '../dist/preview release/gui/babylon.gui.module.d.ts'),
             baseDir: path.resolve(__dirname, '../dist/preview release/gui/build/'),
             headerText: "BabylonJS GUI"
-        }),
+        }),*/
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/

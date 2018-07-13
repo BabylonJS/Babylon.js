@@ -1423,7 +1423,13 @@
             return this;
         }
 
-        public RegisterShader(name: string, pixelShader?: string, vertexShader?: string) {
+        /**
+         * This function will add a new shader to the shader store
+         * @param name the name of the shader
+         * @param pixelShader optional pixel shader content
+         * @param vertexShader optional vertex shader content
+         */
+        public static RegisterShader(name: string, pixelShader?: string, vertexShader?: string) {
             if (pixelShader) {
                 Effect.ShadersStore[`${name}PixelShader`] = pixelShader;
             }

@@ -1405,8 +1405,10 @@ export class Control {
      * @param size defines the size of the header
      * @param options defines options used to configure the header
      * @returns a new StackPanel
+     * @ignore
+     * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any;
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void {

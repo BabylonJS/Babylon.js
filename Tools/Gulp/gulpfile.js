@@ -556,13 +556,18 @@ var buildExternalLibrary = function (library, settings, watch) {
                 sequence.push(
                     buildEvent
                 );
-                if (settings.build.processDeclaration) {
+                if (settings.build.dtsBundle || settings.build.processDeclaration) {
                     buildEvent.on("end", function () {
-                        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-                        fs.readFile(fileLocation, function (err, data) {
-                            var newData = processDeclaration(data, settings.build.processDeclaration);
-                            fs.writeFile(fileLocation.replace('.module', ''), newData);
-                        });
+                        if (settings.build.dtsBundle) {
+                            dtsBundle.bundle(settings.build.dtsBundle);
+                        } if (settings.build.processDeclaration) {
+                            let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
+                            fs.readFile(fileLocation, function (err, data) {
+                                if (err) throw err;
+                                var newData = processDeclaration(data, settings.build.processDeclaration);
+                                fs.writeFile(fileLocation.replace('.module', ''), newData);
+                            });
+                        }
                     });
                 }
                 /*if (settings.build.processDeclaration) {
