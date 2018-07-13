@@ -159,10 +159,7 @@
         /**
          * Gets or sets a texture used to add random noise to particle positions
          */
-        public noiseTexture: Texture;
-
-        /** Gets or sets the estimated area used by the system. It will be used to normalize the projection onto the noise texture (default is (1, 1)) */
-        public noiseGridSize = new Vector2(1, 1);
+        public noiseTexture: Nullable<BaseTexture>;
 
         /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
         public noiseStrength = new Vector3(10, 10, 10);
@@ -563,6 +560,7 @@
                             }
                         }
 
+                        // Angular speed
                         if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
                                 if (currentGradient !== particle._currentAngularSpeedGradient) {
@@ -575,6 +573,7 @@
                         }                        
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
+                        // Direction
                         let directionScale = this._scaledUpdateSpeed;
                         if (this._velocityGradients && this._velocityGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
@@ -589,20 +588,22 @@
                         particle.direction.scaleToRef(directionScale, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
+                        // Noise
                         if (noiseTextureData && noiseTextureSize) {
-                            let fetchedColorR = Tools.FetchR(particle.position.x / this.noiseGridSize.x, particle.position.y / this.noiseGridSize.y, noiseTextureSize.width, noiseTextureSize.height,  noiseTextureData);
-                            let fetchedColorG = Tools.FetchR(particle.position.x / this.noiseGridSize.x + 0.33, particle.position.y / this.noiseGridSize.y + 0.66, noiseTextureSize.width, noiseTextureSize.height,  noiseTextureData);
-                            let fetchedColorB = Tools.FetchR(particle.position.x / this.noiseGridSize.x + 0.66, particle.position.y / this.noiseGridSize.y + 0.33, noiseTextureSize.width, noiseTextureSize.height,  noiseTextureData);
+                            let fetchedColorR = Tools.FetchR(particle.position.y, particle.position.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorG = Tools.FetchR(particle.position.x + 0.33, particle.position.z + 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorB = Tools.FetchR(particle.position.x - 0.33, particle.position.y - 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
                             
                             let force = Tmp.Vector3[0];
                             let scaledForce = Tmp.Vector3[1];
 
-                            force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.x, (2 * fetchedColorB - 1) * this.noiseStrength.x);
+                            force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
 
                             force.scaleToRef(this._scaledUpdateSpeed, scaledForce);
                             particle.direction.addInPlace(scaledForce);
                         }
 
+                        // Gravity
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
@@ -1529,6 +1530,11 @@
                 this.particleTexture = null;
             }
 
+            if (disposeTexture && this.noiseTexture) {
+                this.noiseTexture.dispose();
+                this.noiseTexture = null;
+            }
+
             this._removeFromRoot();
 
             // Remove from scene
@@ -1678,7 +1684,7 @@
             if (particleSystem.particleTexture) {
                 serializationObject.textureName = particleSystem.particleTexture.name;
             }
-            
+           
             // Animations
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
 
@@ -1699,6 +1705,7 @@
             serializationObject.maxLifeTime = particleSystem.maxLifeTime;
             serializationObject.emitRate = particleSystem.emitRate;
             serializationObject.gravity = particleSystem.gravity.asArray();
+            serializationObject.noiseStrength = particleSystem.noiseStrength.asArray();
             serializationObject.color1 = particleSystem.color1.asArray();
             serializationObject.color2 = particleSystem.color2.asArray();
             serializationObject.colorDead = particleSystem.colorDead.asArray();
@@ -1784,7 +1791,12 @@
 
                     serializationObject.velocityGradients.push(serializedGradient);
                 }
-            }              
+            }    
+            
+            if (particleSystem.noiseTexture && particleSystem.noiseTexture instanceof ProceduralTexture) {
+                const noiseTexture = particleSystem.noiseTexture as ProceduralTexture;
+                serializationObject.noiseTexture = noiseTexture.serialize();
+            }
         }
 
         /** @hidden */
@@ -1855,6 +1867,9 @@
             particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            if (parsedParticleSystem.noiseStrength) {
+                particleSystem.noiseStrength = Vector3.FromArray(parsedParticleSystem.noiseStrength);
+            }
             particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
             particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
             particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
@@ -1885,7 +1900,11 @@
                 for (var velocityGradient of parsedParticleSystem.velocityGradients) {
                     particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
                 }
-            }              
+            }     
+            
+            if (parsedParticleSystem.noiseTexture) {
+                particleSystem.noiseTexture = ProceduralTexture.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
+            }
             
             // Emitter
             let emitterType: IParticleEmitterType;

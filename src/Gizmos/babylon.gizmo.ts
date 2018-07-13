@@ -11,6 +11,10 @@ module BABYLON {
         private _scaleFactor = 3;
         private _tmpMatrix = new Matrix();
         /**
+         * If a custom mesh has been set (Default: false)
+         */
+        protected _customMeshSet = false;
+        /**
          * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
          * * When set, interactions will be enabled
          */
@@ -22,6 +26,22 @@ module BABYLON {
             this._rootMesh.setEnabled(value?true:false);
             this._attachedMeshChanged(value);
         }
+
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        public setCustomMesh(mesh:Mesh){
+            if(mesh.getScene() != this.gizmoLayer.utilityLayerScene){
+                throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
+            }
+            this._rootMesh.getChildMeshes().forEach((c)=>{
+                c.dispose();
+            })
+            mesh.parent = this._rootMesh;
+            this._customMeshSet = true;
+        }
+
         /**
          * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
          */
