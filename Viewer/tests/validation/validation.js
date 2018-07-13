@@ -214,7 +214,7 @@ function runTest(index, done) {
 
     //envirnonment directory
     configuration.scene = configuration.scene || {};
-    configuration.scene.assetsRootURL = "http://localhost:3000/dist/assets/environment/";
+    configuration.scene.assetsRootURL = "https://viewer.babylonjs.com/assets/environment/";
     if (!test.enableEnvironment) {
         configuration.environmentMap = false;
     } else {
