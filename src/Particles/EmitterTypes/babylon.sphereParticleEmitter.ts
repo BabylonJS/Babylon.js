@@ -7,14 +7,17 @@ module BABYLON {
          /**
          * Creates a new instance SphereParticleEmitter
          * @param radius the radius of the emission sphere (1 by default)
-         * @param radiusRange the ramge of the emission sphere [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param radiusRange the range of the emission sphere [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
          */
         constructor(
             /**
              * The radius of the emission sphere.
              */
-            public radius = 1, 
+            public radius = 1,
+            /**
+             * The range of emission [0-1] 0 Surface only, 1 Entire Radius.
+             */
             public radiusRange = 1,
             /**
              * How much to randomize the particle direction [0-1].
