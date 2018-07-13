@@ -56,7 +56,7 @@ let packages = [
     },
     {
         name: 'viewer-assets',
-        path: basePath + '/../../Viewer/dist/build/assets/',
+        path: basePath + '/../../Viewer/build/assets/',
         required: [
             basePath + '/../../Viewer/assets/readme.md',
             basePath + '/../../Viewer/assets/package.json',
@@ -215,7 +215,7 @@ function processCore(package, version) {
 
 function processViewer(package, version) {
 
-    let buildPath = package.path + "dist/build/src/";
+    let buildPath = package.path + "build/src/";
     let projectPath = '../../Viewer';
 
     if (package.required) {

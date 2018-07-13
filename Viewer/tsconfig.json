@@ -44,6 +44,6 @@
                 "./assets/*"
             ]
         },
-        "outDir": "./dist/build"
+        "outDir": "./build"
     }
 }
