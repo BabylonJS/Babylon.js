@@ -635,7 +635,7 @@ gulp.task("build-custom", function (cb) {
  * Do it all.
  */
 gulp.task("typescript-all", function (cb) {
-    runSequence("typescript", "typescript-libraries", cb);
+    runSequence("typescript", "typescript-libraries", "netlify-cleanup", cb);
 });
 
 /**
@@ -743,6 +743,19 @@ gulp.task("clean-JS-MAP", function () {
         "../../src/**/*.js.map", "../../src/**/*.js"
     ], { force: true });
 });
+
+gulp.task("netlify-cleanup", function () {
+    //set by netlify
+    if (process.env.REPOSITORY_URL) {
+        return del([
+            "../../inspector/node_modules/**/*", "../../gui/node_modules/**/*",
+            "../../Viewer/node_modules/**/*"
+        ], { force: true });
+    }
+    else {
+        return true;
+    }
+})
 
 // this is needed for the modules for the declaration files.
 gulp.task("modules-compile", function () {
