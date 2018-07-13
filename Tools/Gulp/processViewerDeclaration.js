@@ -59,7 +59,7 @@ module.exports = function (data, options) {
 
     str = str.replace(/export {(.*)};/g, '');
 
-    str = str.split("\n").filter(line => line.trim()).join("\n");
+    str = str.split("\n").filter(line => line.trim()).filter(line => line.indexOf("export * from") === -1).join("\n");
 
     return str;
 }

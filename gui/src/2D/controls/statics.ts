@@ -2,10 +2,22 @@ import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
 
-let name = "Statics";
+/**
+ * Forcing an export so that this code will execute
+ * @ignore
+ */
+const name = "Statics";
 
 export { name };
 
+/**
+ * Creates a stack panel that can be used to render headers
+ * @param control defines the control to associate with the header
+ * @param text defines the text of the header
+ * @param size defines the size of the header
+ * @param options defines options used to configure the header
+ * @returns a new StackPanel
+ */
 Control.AddHeader = function (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }): StackPanel {
     let panel = new StackPanel("panel");
     let isHorizontal = options ? options.isHorizontal : true;

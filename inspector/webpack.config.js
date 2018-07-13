@@ -81,13 +81,14 @@ module.exports = {
             path.resolve(__dirname, './src/**/*.js'),
             path.resolve(__dirname, './src/**/*.map')
         ]),
-        new DtsBundleWebpack({
+        // removed due to the way gulp=webpack works
+        /*new DtsBundleWebpack({
             name: "babylonjs-inspector",
             main: path.resolve(__dirname, '../dist/preview release/inspector/build/index.d.ts'),
             out: path.resolve(__dirname, '../dist/preview release/inspector/babylon.inspector.module.d.ts'),
             baseDir: path.resolve(__dirname, '../dist/preview release/inspector/build/'),
             headerText: "BabylonJS Inspector"
-        }),
+        }),*/
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/
