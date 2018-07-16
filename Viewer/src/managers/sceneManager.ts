@@ -646,43 +646,6 @@ export class SceneManager {
             }
         }
 
-        // process mainColor changes:
-        if (sceneConfig.mainColor) {
-            this._configurationContainer.mainColor = this.mainColor || Color3.White();
-            let mc = sceneConfig.mainColor;
-            if (mc.r !== undefined) {
-                this.mainColor.r = mc.r;
-            }
-            if (mc.g !== undefined) {
-                this.mainColor.g = mc.g
-            }
-            if (mc.b !== undefined) {
-                this.mainColor.b = mc.b
-            }
-
-            this.reflectionColor.copyFrom(this.mainColor);
-
-
-            let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._globalConfiguration) || 0;
-
-            // reflection color
-            this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
-            this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
-            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
-            this.reflectionColor.copyFrom(tmpColor3);
-
-            //update the environment, if exists
-            if (this.environmentHelper) {
-                if (this.environmentHelper.groundMaterial) {
-                    this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
-                }
-
-                if (this.environmentHelper.skyboxMaterial) {
-                    this.environmentHelper.skyboxMaterial._perceptualColor = this.mainColor;
-                }
-            }
-        }
-
         if (sceneConfig.defaultMaterial) {
             let conf = sceneConfig.defaultMaterial;
             if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
@@ -851,6 +814,43 @@ export class SceneManager {
         //sanity check
         if (this.scene.environmentTexture) {
             Matrix.FromQuaternionToRef(rotatquatRotationionY, this.scene.environmentTexture.getReflectionTextureMatrix());
+        }
+
+        // process mainColor changes:
+        if (environmentMapConfiguration.mainColor) {
+            this._configurationContainer.mainColor = this.mainColor || Color3.White();
+            let mc = environmentMapConfiguration.mainColor;
+            if (mc.r !== undefined) {
+                this.mainColor.r = mc.r;
+            }
+            if (mc.g !== undefined) {
+                this.mainColor.g = mc.g
+            }
+            if (mc.b !== undefined) {
+                this.mainColor.b = mc.b
+            }
+
+            this.reflectionColor.copyFrom(this.mainColor);
+
+
+            let environmentTint = getConfigurationKey("environmentMap.tintLevel", this._globalConfiguration) || 0;
+
+            // reflection color
+            this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
+            this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
+            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
+            this.reflectionColor.copyFrom(tmpColor3);
+
+            //update the environment, if exists
+            if (this.environmentHelper) {
+                if (this.environmentHelper.groundMaterial) {
+                    this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
+                }
+
+                if (this.environmentHelper.skyboxMaterial) {
+                    this.environmentHelper.skyboxMaterial._perceptualColor = this.mainColor;
+                }
+            }
         }
     }
 
