@@ -28,12 +28,25 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
                 setKeyInObject(configuration, "scene.imageProcessingConfiguration.isEnabled", true);
             }
         }
+
+        if (configuration.scene.mainColor) {
+            setKeyInObject(configuration, "environmentMap.mainColor", configuration.scene.mainColor, true);
+        }
     }
 
     if (configuration.model && typeof configuration.model === 'object') {
         // castShadows === castShadow
         if ((<any>configuration.model).castShadows !== undefined && configuration.model.castShadow === undefined) {
             configuration.model.castShadow = (<any>configuration.model).castShadows;
+        }
+    }
+
+    if (configuration.lab) {
+        if (configuration.lab.assetsRootURL) {
+            setKeyInObject(configuration, "scene.assetsRootURL", configuration.lab.assetsRootURL);
+        }
+        if (configuration.lab.environmentMap) {
+            setKeyInObject(configuration, "environmentMap", configuration.lab.environmentMap, true);
         }
     }
 }
