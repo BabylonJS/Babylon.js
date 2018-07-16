@@ -141,7 +141,13 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadLibrary = function (library, module) {
-            if (!useDist) {
+            if (library.preventLoadLibrary) {
+                return;
+            }
+
+            if (library.useOutputForDebugging) {
+                this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
+            } else if (!useDist) {
                 var i = 0;
                 for (; i < library.files.length; i++) {
                     var file = library.files[i];
@@ -239,16 +245,11 @@ var BABYLONDEVTOOLS;
             else {
                 this.loadScript('/dist/preview release/babylon.max.js');
             }
-            this.loadScript('/dist/preview release/gui/babylon.gui.js');
-            this.loadScript('/dist/preview release/inspector/babylon.inspector.bundle.js');
 
             // Modules
             if (loadModules) {
+
                 for (var i = 0; i < settings.modules.length; i++) {
-                    if (settings.modules[i] === "viewer" || settings.modules[i] === "gui" ||
-                        settings.modules[i] === "viewer-assets" || settings.modules[i] === "inspector") {
-                        continue;
-                    }
                     this.loadModule(settings[settings.modules[i]]);
                 }
             }
