@@ -328,6 +328,14 @@
 
         /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
         public translationPivot = new Vector2(0, 0);     
+
+        /**
+         * Gets or sets a texture used to add random noise to particle positions
+         */
+        public noiseTexture: Nullable<BaseTexture>;
+
+        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+        public noiseStrength = new Vector3(10, 10, 10);        
         
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
@@ -718,9 +726,9 @@
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
-                                "angleRange", "radiusRange", "cellInfos"],
+                                "angleRange", "radiusRange", "cellInfos", "noiseStrength"],
                 uniformBuffersNames: [],
-                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler"],
+                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "noiseSampler"],
                 defines: "",
                 fallbacks: null,  
                 onCompiled: null,
@@ -972,7 +980,11 @@
             
             if (this.isAnimationSheetEnabled) {
                 defines += "\n#define ANIMATESHEET";
-            }             
+            }   
+            
+            if (this.noiseTexture) {
+                defines += "\n#define NOISE";
+            }
 
             if (this._updateEffect && this._updateEffectOptions.defines === defines) {
                 return;
@@ -1200,7 +1212,12 @@
             }
             if (this._isAnimationSheetEnabled) {
                 this._updateEffect.setFloat3("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed);
-            }            
+            }        
+            
+            if (this.noiseTexture) {
+                this._updateEffect.setTexture("noiseSampler", this.noiseTexture);  
+                this._updateEffect.setVector3("noiseStrength", this.noiseStrength);    
+            }
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
@@ -1379,7 +1396,12 @@
             if (disposeTexture && this.particleTexture) {
                 this.particleTexture.dispose();
                 this.particleTexture = null;
-            }            
+            }    
+            
+            if (disposeTexture && this.noiseTexture) {
+                this.noiseTexture.dispose();
+                this.noiseTexture = null;
+            }
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);

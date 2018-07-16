@@ -100,6 +100,10 @@ uniform sampler2D angularSpeedGradientSampler;
 uniform sampler2D velocityGradientSampler;
 #endif
 
+#ifdef NOISE
+uniform vec3 noiseStrength;
+uniform sampler2D noiseSampler;
+#endif
 
 #ifdef ANIMATESHEET
 uniform vec3 cellInfos;
@@ -267,7 +271,19 @@ void main() {
 #ifndef BILLBOARD    
     outInitialDirection = initialDirection;
 #endif
-    outDirection = direction;// + gravity * timeDelta;
+    outDirection = direction + gravity * timeDelta;
+
+#ifdef NOISE
+    vec3 localPosition = outPosition - emitterWM[3].xyz;
+
+    float fetchedR = texture(noiseSampler, vec2(localPosition.y, localPosition.z) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedG = texture(noiseSampler, vec2(localPosition.x + 0.33, localPosition.z + 0.33) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedB = texture(noiseSampler, vec2(localPosition.z - 0.33, localPosition.y - 0.33) * vec2(0.5) + vec2(0.5)).r;
+
+    vec3 force = vec3(2. * fetchedR - 1., 2. * fetchedG - 1., 2. * fetchedB - 1.) * noiseStrength;
+
+    outDirection = outDirection + force * timeDelta;
+#endif    
 
 #ifdef ANGULARSPEEDGRADIENTS
     float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).r;

@@ -157,6 +157,14 @@
         public preventAutoStart: boolean = false;
 
         /**
+         * Gets or sets a texture used to add random noise to particle positions
+         */
+        public noiseTexture: Nullable<BaseTexture>;
+
+        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+        public noiseStrength = new Vector3(10, 10, 10);
+
+        /**
          * This function can be defined to provide custom update for active particles.
          * This function will be called instead of regular update (age, position, color, etc.).
          * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
@@ -183,6 +191,8 @@
          * You can use gravity if you want to give an orientation to your particles.
          */
         public gravity = Vector3.Zero();
+
+        private _emitterWorldMatrix: Matrix;
 
         private _colorGradients: Nullable<Array<ColorGradient>> = null;
         private _sizeGradients: Nullable<Array<FactorGradient>> = null;
@@ -511,6 +521,14 @@
             this.particleEmitterType = new BoxParticleEmitter();
 
             this.updateFunction = (particles: Particle[]): void => {
+                let noiseTextureData: Nullable<Uint8Array> = null;
+                let noiseTextureSize: Nullable<ISize> = null;
+
+                if (this.noiseTexture) { // We need to get texture data back to CPU
+                    noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.readPixels());
+                    noiseTextureSize = this.noiseTexture.getSize();
+                }
+
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
                     particle.age += this._scaledUpdateSpeed;
@@ -544,6 +562,7 @@
                             }
                         }
 
+                        // Angular speed
                         if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
                                 if (currentGradient !== particle._currentAngularSpeedGradient) {
@@ -556,6 +575,7 @@
                         }                        
                         particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
 
+                        // Direction
                         let directionScale = this._scaledUpdateSpeed;
                         if (this._velocityGradients && this._velocityGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
@@ -570,6 +590,28 @@
                         particle.direction.scaleToRef(directionScale, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
+                        // Noise
+                        if (noiseTextureData && noiseTextureSize) {
+                            let localPosition = Tmp.Vector3[0];
+                            let emitterPosition = Tmp.Vector3[1];
+
+                            this._emitterWorldMatrix.getTranslationToRef(emitterPosition);
+                            particle.position.subtractToRef(emitterPosition, localPosition);
+
+                            let fetchedColorR = this._fetchR(localPosition.y, localPosition.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorG = this._fetchR(localPosition.x + 0.33, localPosition.z + 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            let fetchedColorB = this._fetchR(localPosition.x - 0.33, localPosition.y - 0.33, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                            
+                            let force = Tmp.Vector3[0];
+                            let scaledForce = Tmp.Vector3[1];
+
+                            force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
+
+                            force.scaleToRef(this._scaledUpdateSpeed, scaledForce);
+                            particle.direction.addInPlace(scaledForce);
+                        }
+
+                        // Gravity
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
@@ -592,6 +634,17 @@
                 }
             }
         }
+
+        private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
+            u = Math.abs(u) * 0.5 + 0.5;
+            v = Math.abs(v) * 0.5 + 0.5;
+
+            let wrappedU = ((u * width) % width) | 0;
+            let wrappedV = ((v * height) % height) | 0;
+
+            let position = (wrappedU + wrappedV * width) * 4;
+            return pixels[position] / 255;
+        }          
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
             let newGradient = new FactorGradient();
@@ -1068,19 +1121,17 @@
             // Update current
             this._alive = this._particles.length > 0;
 
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
+            } else {
+                var emitterPosition = (<Vector3>this.emitter);
+                this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+            }
+
             this.updateFunction(this._particles);
 
             // Add new ones
-            var worldMatrix;
-
-            if ((<AbstractMesh>this.emitter).position) {
-                var emitterMesh = (<AbstractMesh>this.emitter);
-                worldMatrix = emitterMesh.getWorldMatrix();
-            } else {
-                var emitterPosition = (<Vector3>this.emitter);
-                worldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
-            }
-
             var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this._particles.length === this._capacity) {
@@ -1095,17 +1146,17 @@
                 let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
                 if (this.startPositionFunction) {
-                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                    this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
                 }
                 else {
-                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                    this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
                 }
 
                 if (this.startDirectionFunction) {
-                    this.startDirectionFunction(worldMatrix, particle.direction, particle);
+                    this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
                 }
                 else {
-                    this.particleEmitterType.startDirectionFunction(worldMatrix, particle.direction, particle);
+                    this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
                 }
 
                 if (emitPower === 0) {
@@ -1496,6 +1547,11 @@
                 this.particleTexture = null;
             }
 
+            if (disposeTexture && this.noiseTexture) {
+                this.noiseTexture.dispose();
+                this.noiseTexture = null;
+            }
+
             this._removeFromRoot();
 
             // Remove from scene
@@ -1512,10 +1568,11 @@
         /**
          * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
          * @param radius The radius of the sphere to emit from
+         * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
          * @returns the emitter
          */
-        public createSphereEmitter(radius = 1): SphereParticleEmitter {
-            var particleEmitter = new SphereParticleEmitter(radius);
+        public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
+            var particleEmitter = new SphereParticleEmitter(radius, radiusRange);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
@@ -1644,7 +1701,7 @@
             if (particleSystem.particleTexture) {
                 serializationObject.textureName = particleSystem.particleTexture.name;
             }
-            
+           
             // Animations
             Animation.AppendSerializedAnimations(particleSystem, serializationObject);
 
@@ -1665,6 +1722,7 @@
             serializationObject.maxLifeTime = particleSystem.maxLifeTime;
             serializationObject.emitRate = particleSystem.emitRate;
             serializationObject.gravity = particleSystem.gravity.asArray();
+            serializationObject.noiseStrength = particleSystem.noiseStrength.asArray();
             serializationObject.color1 = particleSystem.color1.asArray();
             serializationObject.color2 = particleSystem.color2.asArray();
             serializationObject.colorDead = particleSystem.colorDead.asArray();
@@ -1750,7 +1808,12 @@
 
                     serializationObject.velocityGradients.push(serializedGradient);
                 }
-            }              
+            }    
+            
+            if (particleSystem.noiseTexture && particleSystem.noiseTexture instanceof ProceduralTexture) {
+                const noiseTexture = particleSystem.noiseTexture as ProceduralTexture;
+                serializationObject.noiseTexture = noiseTexture.serialize();
+            }
         }
 
         /** @hidden */
@@ -1821,6 +1884,9 @@
             particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            if (parsedParticleSystem.noiseStrength) {
+                particleSystem.noiseStrength = Vector3.FromArray(parsedParticleSystem.noiseStrength);
+            }
             particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
             particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
             particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
@@ -1851,7 +1917,11 @@
                 for (var velocityGradient of parsedParticleSystem.velocityGradients) {
                     particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
                 }
-            }              
+            }     
+            
+            if (parsedParticleSystem.noiseTexture) {
+                particleSystem.noiseTexture = ProceduralTexture.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
+            }
             
             // Emitter
             let emitterType: IParticleEmitterType;

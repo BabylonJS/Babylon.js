@@ -8,6 +8,7 @@ uniform vec4 vDiffuseColor;
 uniform vec4 topColor;
 uniform vec4 bottomColor;
 uniform float offset;
+uniform float scale;
 uniform float smoothness;
 
 // Input
@@ -52,7 +53,7 @@ void main(void) {
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
-    float h = normalize(vPosition).y + offset;
+    float h = vPosition.y * scale + offset;
     float mysmoothness = clamp(smoothness, 0.01, max(smoothness, 10.));
 
     vec4 baseColor = mix(bottomColor, topColor, max(pow(max(h, 0.0), mysmoothness), 0.0));

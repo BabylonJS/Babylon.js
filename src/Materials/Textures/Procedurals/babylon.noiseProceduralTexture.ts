@@ -3,25 +3,19 @@ module BABYLON {
      * Class used to generate noise procedural textures
      */
     export class NoiseProceduralTexture extends ProceduralTexture {
-        private _time = new Vector2();
+        private _time = 0;
 
         /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
         public brightness = 0.2;
 
-        /** Defines the first octave to start from (default is 3) */
-        public firstOctave = 3;
-
         /** Defines the number of octaves to process */
-        public octaves = 8;
+        public octaves = 3;
 
         /** Defines the level of persistence (0.8 by default) */
         public persistence = 0.8;
 
-        /** Gets or sets animation speed factor for X axis (default is 1) */
-        public animationSpeedFactorX = 1;
-
-        /** Gets or sets animation speed factor for Y axis (default is 1) */
-        public animationSpeedFactorY = 1;
+        /** Gets or sets animation speed factor (default is 1) */
+        public animationSpeedFactor = 1;
 
         /**
          * Creates a new NoiseProceduralTexture
@@ -43,14 +37,12 @@ module BABYLON {
                 return;
             }
 
-            this._time.x += scene.getAnimationRatio() * this.animationSpeedFactorX * 0.001;
-            this._time.y += scene.getAnimationRatio() * this.animationSpeedFactorY * 0.001;
+            this._time += scene.getAnimationRatio() * this.animationSpeedFactor * 0.01;
 
             this.setFloat("brightness", this.brightness);
-            this.setInt("firstOctave", this.firstOctave);
             this.setInt("octaves", this.octaves);
             this.setFloat("persistence", this.persistence);
-            this.setVector2("timeScale", this._time);
+            this.setFloat("timeScale", this._time);
         }
 
         /** Generate the current state of the procedural texture */
