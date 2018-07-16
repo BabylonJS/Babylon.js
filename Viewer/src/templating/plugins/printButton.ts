@@ -16,9 +16,16 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
                 let filename = Tools.GetFilename(model.configuration.url) || model.configuration.url;
                 let baseUrl = model.configuration.root || Tools.GetFolderPath(model.configuration.url);
 
-                //gltf-only
+                //gltf, obj, stl
                 let extension = model.configuration.loader || filename.split(".").pop() || "";
-                if (extension.indexOf("gltf") !== -1 || extension.indexOf("glb") !== -1) {
+                let printable = false;
+                // not using .some sue to IE11
+                ["gltf", "glb", "obj", "stl"].forEach(ext => {
+                    if (extension.indexOf(ext) !== -1) {
+                        printable = true;
+                    }
+                })
+                if (printable) {
                     this._currentModelUrl = baseUrl + filename;
                 }
             }
@@ -26,8 +33,10 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
     }
 
     onEvent(event: EventCallback): void {
-        let printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.print3d\://");
-        window.open(printUrl);
+        if (this._currentModelUrl) {
+            let printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.print3d://");
+            window.open(printUrl);
+        }
     }
 
     protected static HtmlTemplate: string = `
