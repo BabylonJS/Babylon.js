@@ -176,6 +176,7 @@
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
+                "../../src/Materials/Textures/babylon.internalTextureLoader.js",
                 "../../src/Materials/Textures/babylon.internalTextureTracker.js",
                 "../../src/Materials/Textures/babylon.internalTexture.js",
                 "../../src/Materials/Textures/babylon.baseTexture.js",
@@ -480,7 +481,8 @@
                 "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "harmonics"
             ],
             "shaders": [
                 "pbr.vertex",
@@ -1018,15 +1020,13 @@
         },
         "hdr": {
             "files": [
-                "../../src/Math/babylon.sphericalPolynomial.js",
-                "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js",
-                "../../src/Tools/HDR/babylon.panoramaToCubemap.js",
                 "../../src/Tools/HDR/babylon.hdr.js",
-                "../../src/Tools/babylon.environmentTextureTools.js",
-                "../../src/Materials/Textures/babylon.hdrCubeTexture.js"
+                "../../src/Materials/Textures/babylon.hdrCubeTexture.js",
+                "../../src/Tools/HDR/babylon.panoramaToCubemap.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "harmonics"
             ]
         },
         "csg": {
@@ -1073,14 +1073,59 @@
                 "picking"
             ]
         },
-        "textureFormats": {
+        "harmonics": {
             "files": [
-                "../../src/Tools/babylon.tga.js",
-                "../../src/Tools/babylon.dds.js",
-                "../../src/Tools/babylon.khronosTextureContainer.js"
+                "../../src/Math/babylon.sphericalPolynomial.js",
+                "../../src/Tools/HDR/babylon.cubemapToSphericalPolynomial.js"
             ],
             "dependUpon": [
                 "core"
+            ]
+        },
+        "textureFormats": {
+            "files": [ ],
+            "dependUpon": [
+                "dds",
+                "tga",
+                "ktx",
+                "env"
+            ]
+        },
+        "dds": {
+            "files": [
+                "../../src/Tools/babylon.dds.js",
+                "../../src/Materials/Textures/Loaders/babylon.ddsTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "tga": {
+            "files": [
+                "../../src/Tools/babylon.tga.js",
+                "../../src/Materials/Textures/Loaders/babylon.tgaTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "ktx": {
+            "files": [
+                "../../src/Tools/babylon.khronosTextureContainer.js",
+                "../../src/Materials/Textures/Loaders/babylon.ktxTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
+        "env": {
+            "files": [
+                "../../src/Tools/babylon.environmentTextureTools.js",
+                "../../src/Materials/Textures/Loaders/babylon.envTextureLoader.js"
+            ],
+            "dependUpon": [
+                "core",
+                "harmonics"
             ]
         },
         "debug": {

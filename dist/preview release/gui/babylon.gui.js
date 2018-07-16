@@ -2149,6 +2149,7 @@ var BABYLON;
             /** @hidden */
             Control.prototype._resetFontCache = function () {
                 this._fontSet = true;
+                this._markAsDirty();
             };
             /**
              * Gets coordinates in local control space
