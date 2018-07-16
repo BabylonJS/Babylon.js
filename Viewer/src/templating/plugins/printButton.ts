@@ -11,13 +11,16 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
         super("print", "print-button", PrintButtonPlugin.HtmlTemplate);
 
         this._viewer.onModelLoadedObservable.add((model) => {
-            if (!model.configuration.url) {
-                this._currentModelUrl = "";
-            } else {
+            this._currentModelUrl = "";
+            if (model.configuration.url) {
                 let filename = Tools.GetFilename(model.configuration.url) || model.configuration.url;
                 let baseUrl = model.configuration.root || Tools.GetFolderPath(model.configuration.url);
 
-                this._currentModelUrl = baseUrl + filename;
+                //gltf-only
+                let extension = model.configuration.loader || filename.split(".").pop() || "";
+                if (extension.indexOf("gltf") !== -1 || extension.indexOf("glb") !== -1) {
+                    this._currentModelUrl = baseUrl + filename;
+                }
             }
         })
     }
