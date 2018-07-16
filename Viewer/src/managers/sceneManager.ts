@@ -806,13 +806,13 @@ export class SceneManager {
     }
 
     protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
-        let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
         if (environmentMapConfiguration.texture) {
             this.scene.environmentTexture = new BABYLON.CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
         }
 
         //sanity check
         if (this.scene.environmentTexture) {
+            let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
             Matrix.FromQuaternionToRef(rotatquatRotationionY, this.scene.environmentTexture.getReflectionTextureMatrix());
         }
 
