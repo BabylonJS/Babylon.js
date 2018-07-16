@@ -1083,7 +1083,7 @@
             ]
         },
         "textureFormats": {
-            "files": [ ],
+            "files": [],
             "dependUpon": [
                 "dds",
                 "tga",
@@ -1846,10 +1846,11 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.gui.js",
+                "output": "babylon.gui.min.js",
                 "webpack": "../../gui/webpack.config.js",
                 "bundle": "true",
-                "babylonIncluded": false
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
@@ -1880,10 +1881,11 @@
             {
                 "files": [],
                 "sassFiles": [],
-                "output": "babylon.inspector.js",
+                "output": "babylon.inspector.bundle.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
-                "extendsRoot": true
+                "extendsRoot": true,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
@@ -1923,7 +1925,8 @@
                     "module": "babylonjs-viewer"
                 },
                 "babylonIncluded": true,
-                "noWatch": true
+                "noWatch": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
@@ -1993,7 +1996,8 @@
                     "module": "babylonjs-viewer-assets"
                 },
                 "babylonIncluded": true,
-                "noWatch": true
+                "noWatch": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
