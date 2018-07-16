@@ -252,11 +252,6 @@ export let extendedConfiguration: ViewerConfiguration = {
                 highlightsSaturation: 0
             }
         },
-        mainColor: {
-            r: 0.8823529411764706,
-            g: 0.8823529411764706,
-            b: 0.8823529411764706
-        },
         assetsRootURL: 'https://viewer.babylonjs.com/assets/environment/'
     },
     loaderPlugins: {
@@ -305,7 +300,12 @@ export let extendedConfiguration: ViewerConfiguration = {
     environmentMap: {
         texture: "EnvMap_3.0-256.env",
         rotationY: 3,
-        tintLevel: 0.4
+        tintLevel: 0.4,
+        mainColor: {
+            r: 0.8823529411764706,
+            g: 0.8823529411764706,
+            b: 0.8823529411764706
+        }
     },
     lab: {
         defaultRenderingPipelines: {

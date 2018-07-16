@@ -28,6 +28,10 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
                 setKeyInObject(configuration, "scene.imageProcessingConfiguration.isEnabled", true);
             }
         }
+
+        if (configuration.scene.mainColor) {
+            setKeyInObject(configuration, "environmentMap.mainColor", configuration.scene.mainColor, true);
+        }
     }
 
     if (configuration.model && typeof configuration.model === 'object') {
