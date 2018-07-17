@@ -37,8 +37,9 @@ module BABYLON {
 
             // Build mesh on root node
             var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene)
-            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.5}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameter:0.015, height: 0.3, tessellation: 96}, gizmoLayer.utilityLayerScene);
+            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.4}, gizmoLayer.utilityLayerScene);
+            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.5, 0)]}, gizmoLayer.utilityLayerScene);
+            arrowTail.color = coloredMaterial.emissiveColor;
             arrow.addChild(arrowMesh);
             arrow.addChild(arrowTail);
 
@@ -47,9 +48,9 @@ module BABYLON {
             arrowMesh.material = coloredMaterial;
             arrowMesh.rotation.x = Math.PI/2;
             arrowMesh.position.z+=0.3;
+            arrowTail.scaling.scaleInPlace(0.2);
             arrowTail.rotation.x = Math.PI/2;
             arrowTail.material = coloredMaterial;
-            arrowTail.position.z+=0.15;
             arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
             this._rootMesh.addChild(arrow);
 
@@ -93,15 +94,14 @@ module BABYLON {
                 if(this._customMeshSet){
                     return;
                 }
-                if(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1)){
-                    this._rootMesh.getChildMeshes().forEach((m)=>{
-                        m.material = hoverMaterial;
-                    });
-                }else{
-                    this._rootMesh.getChildMeshes().forEach((m)=>{
-                        m.material = coloredMaterial;
-                    });
-                }
+                var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
+                var material = isHovered ? hoverMaterial : coloredMaterial;
+                this._rootMesh.getChildMeshes().forEach((m)=>{
+                    m.material = material;
+                    if((<LinesMesh>m).color){
+                        (<LinesMesh>m).color = material.emissiveColor
+                    }
+                });
             });
         }
         
