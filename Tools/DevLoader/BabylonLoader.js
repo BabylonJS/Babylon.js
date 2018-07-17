@@ -145,38 +145,40 @@ var BABYLONDEVTOOLS;
                 return;
             }
 
-            if (library.useOutputForDebugging) {
-                this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
-            } else if (!useDist) {
-                var i = 0;
-                for (; i < library.files.length; i++) {
-                    var file = library.files[i];
-                    if (file.indexOf('lib.d.ts') > 0) {
-                        continue;
+            if (!useDist) {
+                if (library.useOutputForDebugging) {
+                    this.loadScript(babylonJSPath + '/.temp' + module.build.distOutputDirectory + library.output);
+                } else {
+                    var i = 0;
+                    for (; i < library.files.length; i++) {
+                        var file = library.files[i];
+                        if (file.indexOf('lib.d.ts') > 0) {
+                            continue;
+                        }
+
+                        file = file.replace('.ts', '.js');
+                        file = file.replace('../', '');
+                        file = babylonJSPath + '/' + file;
+                        this.loadScript(file);
                     }
 
-                    file = file.replace('.ts', '.js');
-                    file = file.replace('../', '');
-                    file = babylonJSPath + '/' + file;
-                    this.loadScript(file);
-                }
-
-                if (library.shaderFiles && library.shaderFiles.length > 0) {
-                    var shaderFile = library.shaderFiles[0];
-                    var endDirectoryIndex = shaderFile.lastIndexOf('/');
-                    shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
-                    shaderFile += library.output.replace('.js', '.js.fx');
-                    this.loadScript(shaderFile);
-                    if (library.shadersIncludeFiles) {
-                        var includeShaderFile = shaderFile.replace('.js.fx', '.js.include.fx');
-                        this.loadScript(includeShaderFile);
+                    if (library.shaderFiles && library.shaderFiles.length > 0) {
+                        var shaderFile = library.shaderFiles[0];
+                        var endDirectoryIndex = shaderFile.lastIndexOf('/');
+                        shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
+                        shaderFile += library.output.replace('.js', '.js.fx');
+                        this.loadScript(shaderFile);
+                        if (library.shadersIncludeFiles) {
+                            var includeShaderFile = shaderFile.replace('.js.fx', '.js.include.fx');
+                            this.loadScript(includeShaderFile);
+                        }
                     }
                 }
             }
             else if (min) {
                 if (library.webpack) {
                     if (module.build.distOutputDirectory)
-                        this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.bundle.js'));
+                        this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
                 }
                 else {
                     this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
@@ -187,6 +189,7 @@ var BABYLONDEVTOOLS;
                     this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
             }
 
+            // Currently not being used
             if (!min && library.sassFiles && library.sassFiles.length > 0) {
                 var cssFile = library.output.replace('.js', '.css');
                 cssFile = babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + cssFile;
