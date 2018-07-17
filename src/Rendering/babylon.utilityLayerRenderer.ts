@@ -72,11 +72,11 @@ module BABYLON {
             this.utilityLayerScene = new BABYLON.Scene(originalScene.getEngine());
             this.utilityLayerScene._allowPostProcessClear = false;
             originalScene.getEngine().scenes.pop();
-
+      
             // Detach controls on utility scene, events will be fired by logic below to handle picking priority
             this.utilityLayerScene.detachControl();
             this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState) => {
-
+                
                 if (!this.processAllEvents) {
                     if (prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE
                         && prePointerInfo.type !== BABYLON.PointerEventTypes.POINTERUP
@@ -109,7 +109,7 @@ module BABYLON {
                     }
                     return;
                 }
-
+                
                 if(this.utilityLayerScene.autoClearDepthAndStencil){
                     // If this layer is an overlay, check if this layer was hit and if so, skip pointer events for the main scene
                     if(utilityScenePick && utilityScenePick.hit){
@@ -135,10 +135,13 @@ module BABYLON {
                             } else if (prePointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                                 this._pointerCaptures[pointerEvent.pointerId] = true;
                             } 
-                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){
+                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)){  
                             // We pick something in utility scene or the pick in utility is closer than the one in main scene
                             this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
-                            prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
+                            // If a previous utility layer set this, do not unset this
+                            if(!prePointerInfo.skipOnPointerObservable){
+                                prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
+                            }
                         } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance > originalScenePick.distance)) {
                             // We have a pick in both scenes but main is closer than utility
 
