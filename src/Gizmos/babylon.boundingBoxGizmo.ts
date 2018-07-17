@@ -119,6 +119,9 @@ module BABYLON {
 
                         // project drag delta on to the resulting drag axis and rotate based on that
                         var projectDist = -Vector3.Dot(dragAxis, event.delta);
+                        
+                        // Make rotation relative to size of mesh.
+                        projectDist = (projectDist / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
 
                         // Rotate based on axis
                         if (!this.attachedMesh.rotationQuaternion) {
@@ -178,8 +181,9 @@ module BABYLON {
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onDragObservable.notifyObservers({});
-                            if (this.attachedMesh) {
-                                var deltaScale = new Vector3(event.dragDistance, event.dragDistance, event.dragDistance);
+                            if(this.attachedMesh){
+                                var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
+                                var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 this.updateBoundingBox();
 
@@ -266,8 +270,9 @@ module BABYLON {
         /**
          * Updates the bounding box information for the Gizmo
          */
-        public updateBoundingBox() {
-            if (this.attachedMesh) {
+        public updateBoundingBox(){
+            this._update();
+            if(this.attachedMesh){             
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
@@ -300,7 +305,7 @@ module BABYLON {
                 this.attachedMesh.position.copyFrom(this._tmpVector);
                 this._recurseComputeWorld(this.attachedMesh);
             }
-
+            
             // Update rotation sphere locations
             var rotateSpheres = this._rotateSpheresParent.getChildMeshes();
             for (var i = 0; i < 3; i++) {
@@ -322,7 +327,10 @@ module BABYLON {
                             rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
-                        if (this.fixedDragMeshScreenSize) {
+                        if(this.fixedDragMeshScreenSize){
+                            this._rootMesh.computeWorldMatrix();
+                            this._rotateSpheresParent.computeWorldMatrix();
+                            rotateSpheres[index].computeWorldMatrix();
                             rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
                             var distanceFromCamera = this.rotationSphereSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                             rotateSpheres[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
@@ -332,17 +340,20 @@ module BABYLON {
                     }
                 }
             }
-
+            
             // Update scale box locations
             var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
-            for (var i = 0; i < 2; i++) {
-                for (var j = 0; j < 2; j++) {
-                    for (var k = 0; k < 2; k++) {
-                        var index = ((i * 4) + (j * 2)) + k;
-                        if (scaleBoxes[index]) {
-                            scaleBoxes[index].position.set(this._boundingDimensions.x * i, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
-                            scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            if (this.fixedDragMeshScreenSize) {
+            for(var i=0;i<2;i++){
+                for(var j=0;j<2;j++){
+                    for(var k=0;k<2;k++){
+                        var index= ((i*4)+(j*2))+k;
+                        if(scaleBoxes[index]){
+                            scaleBoxes[index].position.set(this._boundingDimensions.x*i,this._boundingDimensions.y*j,this._boundingDimensions.z*k);
+                            scaleBoxes[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x/2,-this._boundingDimensions.y/2,-this._boundingDimensions.z/2));
+                            if(this.fixedDragMeshScreenSize){
+                                this._rootMesh.computeWorldMatrix();
+                                this._scaleBoxesParent.computeWorldMatrix();
+                                scaleBoxes[index].computeWorldMatrix();
                                 scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
                                 var distanceFromCamera = this.scaleBoxSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                                 scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
