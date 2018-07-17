@@ -51,12 +51,14 @@ export let defaultConfiguration: ViewerConfiguration = {
                 hideHelp: true,
                 hideHd: true,
                 hideVr: true,
+                hidePrint: true,
                 disableOnFullscreen: false,
                 text: {
                     hdButton: "Toggle HD",
                     fullscreenButton: "Fullscreen",
                     helpButton: "Help",
-                    vrButton: "Toggle VR"
+                    vrButton: "Toggle VR",
+                    printButton: "Print model in 3D"
                 }
             },
             events: {
