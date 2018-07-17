@@ -169,32 +169,7 @@
             color.g = pixels[position + 1] / 255;
             color.b = pixels[position + 2] / 255;
             color.a = pixels[position + 3] / 255;
-        } 
-
-         /**
-         * Read the R component of a byte array at a specified coordinates (taking in account wrapping)
-         * @param u defines the coordinate on X axis
-         * @param v defines the coordinate on Y axis 
-         * @param width defines the width of the source data
-         * @param height defines the height of the source data
-         * @param pixels defines the source byte array
-         * @returns the R value
-         */
-        public static FetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
-
-            u = Math.abs(u) + 0.5;
-            v = Math.abs(v) + 0.5;
-
-            let wrappedU = ((u * width) % width) | 0;
-            let wrappedV = ((v * height) % height) | 0;
-
-            // let wrappedU =  (Math.abs(u) - Math.floor(Math.abs(u))) * width | 0;
-            // let wrappedV =  (Math.abs(v) - Math.floor(Math.abs(v))) * height | 0;
-            
-
-            let position = (wrappedU + wrappedV * width) * 4;
-            return pixels[position] / 255;
-        }         
+        }       
 
         /**
 		 * Interpolates between a and b via alpha
