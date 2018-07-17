@@ -1,42 +1,46 @@
-module INSPECTOR{
-    
-    export class GUITab extends PropertyTab {
-                
-        constructor(tabbar:TabBar, inspector:Inspector) {
-            super(tabbar, 'GUI', inspector); 
-        }
+import { AdvancedDynamicTexture, Container, Control } from "babylonjs-gui";
+import { GUIAdapter } from "../adapters/GUIAdapter";
+import { Inspector } from "../Inspector";
+import { TreeItem } from "../tree/TreeItem";
+import { PropertyTab } from "./PropertyTab";
+import { TabBar } from "./TabBar";
 
-        /* Overrides super */
-        protected _getTree() : Array<TreeItem> {
-            let arr = [];
+export class GUITab extends PropertyTab {
 
-            // Recursive method building the tree panel
-            let createNode = (obj: BABYLON.GUI.Control) => {
-                let descendants = (obj as BABYLON.GUI.Container).children;
+    constructor(tabbar: TabBar, inspector: Inspector) {
+        super(tabbar, 'GUI', inspector);
+    }
 
-                if (descendants && descendants.length > 0) {
-                    let node = new TreeItem(this, new GUIAdapter(obj));
-                    for (let child of descendants) {     
-                        let n = createNode(child);
-                        node.add(n); 
-                    }
-                    node.update();
-                    return node;
-                } else {
-                    return new TreeItem(this, new GUIAdapter(obj));
+    /* Overrides super */
+    protected _getTree(): Array<TreeItem> {
+        let arr = [];
+
+        // Recursive method building the tree panel
+        let createNode = (obj: Control) => {
+            let descendants = (obj as Container).children;
+
+            if (descendants && descendants.length > 0) {
+                let node = new TreeItem(this, new GUIAdapter(obj));
+                for (let child of descendants) {
+                    let n = createNode(child);
+                    node.add(n);
                 }
-            };
-            
-            // get all textures from the first scene
-            let instances = this._inspector.scene;
-            for (let tex of instances.textures) {
-                //only get GUI's textures
-                if (tex instanceof BABYLON.GUI.AdvancedDynamicTexture) {
-                    let node = createNode(tex._rootContainer);
-                    arr.push(node);
-                }
+                node.update();
+                return node;
+            } else {
+                return new TreeItem(this, new GUIAdapter(obj));
             }
-            return arr;
+        };
+
+        // get all textures from the first scene
+        let instances = this._inspector.scene;
+        for (let tex of instances.textures) {
+            //only get GUI's textures
+            if (tex instanceof AdvancedDynamicTexture) {
+                let node = createNode(tex._rootContainer);
+                arr.push(node);
+            }
         }
+        return arr;
     }
 }

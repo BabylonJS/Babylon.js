@@ -163,6 +163,7 @@ module BABYLON {
                     gizmo.dispose();
                 }
             }
+            this._dragBehavior.detach();
             this._gizmoLayer.dispose();
         }
     }

@@ -41,7 +41,7 @@
                 "./assets/"
             ]
         },
-        "outDir": "./dist/build"
+        "outDir": "./build"
     },
     "exclude": [
         "node_modules",

@@ -97,7 +97,7 @@ module BABYLON {
             texture.isReady = true;
 
             if (onLoad) {
-                onLoad({ isDDS: true, width: texture.width, info, imgs, texture });
+                onLoad({ isDDS: true, width: texture.width, info, data: imgs, texture });
             }
         }
 
