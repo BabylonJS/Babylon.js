@@ -59,10 +59,11 @@
         "ts-loader": "^2.3.7",
         "typedoc": "^0.9.0",
         "typescript": "~2.8.1",
+        "webpack": "^4.16.0",
         "webpack-stream": "^4.0.1"
     },
     "scripts": {
-        "install": "npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && npm --prefix ../../Viewer/tests/ install ../../Viewer/tests/ && cd ../../Viewer && npm install && cd ../Tools/Gulp/ && gulp deployLocalDev"
+        "install": "cd ../../gui && npm install && cd ../Tools/Gulp/ &&  cd ../../inspector && npm install && cd ../Tools/Gulp/ && npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && npm --prefix ../../Viewer/tests/ install ../../Viewer/tests/ && cd ../../Viewer && npm install && cd ../Tools/Gulp/ && gulp deployLocalDev"
     },
     "dependencies": {
         "dts-bundle": "^0.7.3",

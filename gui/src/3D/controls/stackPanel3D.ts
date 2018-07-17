@@ -1,109 +1,108 @@
-/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+import { Container3D } from "./container3D";
+import { Tools, Matrix, Tmp, Vector3 } from "babylonjs";
 
-module BABYLON.GUI {
+/**
+ * Class used to create a stack panel in 3D on XY plane
+ */
+export class StackPanel3D extends Container3D {
+    private _isVertical = false;
+
     /**
-     * Class used to create a stack panel in 3D on XY plane
+     * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
      */
-    export class StackPanel3D extends Container3D {
-        private _isVertical = false;
+    public get isVertical(): boolean {
+        return this._isVertical;
+    }
 
-        /**
-         * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
-         */
-        public get isVertical(): boolean {
-            return this._isVertical;
+    public set isVertical(value: boolean) {
+        if (this._isVertical === value) {
+            return;
         }
 
-        public set isVertical(value: boolean) {
-            if (this._isVertical === value) {
-                return;
+        this._isVertical = value;
+
+        Tools.SetImmediate(() => {
+            this._arrangeChildren();
+        });
+    }
+
+    /**
+     * Gets or sets the distance between elements
+     */
+    public margin = 0.1;
+
+    /**
+     * Creates new StackPanel
+     * @param isVertical 
+     */
+    public constructor(isVertical = false) {
+        super();
+
+        this._isVertical = isVertical;
+    }
+
+    protected _arrangeChildren() {
+        let width = 0;
+        let height = 0;
+        let controlCount = 0;
+        let extendSizes = [];
+
+        let currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
+
+        // Measure
+        for (var child of this._children) {
+            if (!child.mesh) {
+                continue;
             }
 
-            this._isVertical = value;
+            controlCount++;
+            child.mesh.computeWorldMatrix(true);
+            child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
 
-            Tools.SetImmediate(() => {
-                this._arrangeChildren();               
-            });
-        }
-
-        /**
-         * Gets or sets the distance between elements
-         */
-        public margin = 0.1;
-        
-        /**
-         * Creates new StackPanel
-         * @param isVertical 
-         */
-        public constructor(isVertical = false) {
-            super();
-
-            this._isVertical = isVertical;
-        }
-
-        protected _arrangeChildren() {
-            let width = 0;
-            let height = 0;
-            let controlCount = 0;
-            let extendSizes = [];
-
-            let currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
-
-            // Measure
-            for (var child of this._children) {
-                if (!child.mesh) {
-                    continue;
-                }
-
-                controlCount++;
-                child.mesh.computeWorldMatrix(true);
-                child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
-
-                let boundingBox = child.mesh.getBoundingInfo().boundingBox;
-                let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
-                extendSizes.push(extendSize);
-
-                if (this._isVertical) {
-                    height += extendSize.y;
-                } else {
-                    width += extendSize.x;
-                }
-            }
+            let boundingBox = child.mesh.getBoundingInfo().boundingBox;
+            let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
+            extendSizes.push(extendSize);
 
             if (this._isVertical) {
-                height += (controlCount - 1) * this.margin / 2;
+                height += extendSize.y;
             } else {
-                width += (controlCount - 1) * this.margin / 2;
+                width += extendSize.x;
             }
+        }
 
-            // Arrange
-            let offset: number;
+        if (this._isVertical) {
+            height += (controlCount - 1) * this.margin / 2;
+        } else {
+            width += (controlCount - 1) * this.margin / 2;
+        }
+
+        // Arrange
+        let offset: number;
+        if (this._isVertical) {
+            offset = -height;
+        } else {
+            offset = -width;
+        }
+
+        let index = 0;
+        for (var child of this._children) {
+            if (!child.mesh) {
+                continue;
+            }
+            controlCount--;
+            let extendSize = extendSizes[index++];
+
             if (this._isVertical) {
-                offset = -height;
+                child.position.y = offset + extendSize.y;
+                child.position.x = 0;
+                offset += extendSize.y * 2;
             } else {
-                offset = -width;
+                child.position.x = offset + extendSize.x;
+                child.position.y = 0;
+                offset += extendSize.x * 2;
             }
 
-            let index = 0;
-            for (var child of this._children) {
-                if (!child.mesh) {
-                    continue;
-                }                
-                controlCount--;
-                let extendSize = extendSizes[index++];
-
-                if (this._isVertical) {
-                    child.position.y = offset + extendSize.y;
-                    child.position.x = 0;
-                    offset += extendSize.y * 2;
-                } else {
-                    child.position.x = offset + extendSize.x;
-                    child.position.y = 0;
-                    offset += extendSize.x * 2;
-                }
-
-                offset += (controlCount > 0 ? this.margin : 0)
-            }
+            offset += (controlCount > 0 ? this.margin : 0)
         }
     }
 }
