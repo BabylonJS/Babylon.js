@@ -118,7 +118,7 @@
 - Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
 - Removing observers during observable notify should not skip over valid observers ([TrevorDev](https://github.com/TrevorDev))
 - Initializing gamepadManager should register the gamepad update events ([TrevorDev](https://github.com/TrevorDev))
-- Do not generate mipmaps for HDRCubeTexture if OES_texture_float_linear isn't supported ([PeapBoy](https://github.com/NicolasBuecher))
+- Do not generate mipmaps for RawCubeTexture if OES_texture_float_linear and/or EXT_color_buffer_float extensions are not supported ([PeapBoy](https://github.com/NicolasBuecher))
 
 ### Core Engine
 

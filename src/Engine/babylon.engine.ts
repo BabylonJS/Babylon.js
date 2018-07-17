@@ -5679,7 +5679,6 @@
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
-            texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
             if (!this._doNotHandleContextLost) {
@@ -5691,6 +5690,26 @@
 
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
+            }
+
+            // Mipmap generation needs a sized internal format that is both color-renderable and texture-filterable
+            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                generateMipMaps = false;
+                samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                BABYLON.Tools.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+            }
+            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+                generateMipMaps = false;
+                samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                BABYLON.Tools.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+            }
+            else if (textureType === gl.FLOAT && !this._caps.textureFloatRender) {
+                generateMipMaps = false;
+                BABYLON.Tools.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
+            }
+            else if (textureType === gl.HALF_FLOAT && !this._caps.colorBufferFloat) {
+                generateMipMaps = false;
+                BABYLON.Tools.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
             }
 
             var width = size;
@@ -5717,23 +5736,15 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
             }
 
-            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            }
-            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            }
-            else {
-                var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
-            }
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            texture.generateMipMaps = generateMipMaps;
 
             return texture;
         }
@@ -5813,10 +5824,6 @@
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                 }
                 else {
-                    texture.generateMipMaps = !noMipmap;
-                    if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-                        texture.generateMipMaps = false;
-                    }
                     this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
 
