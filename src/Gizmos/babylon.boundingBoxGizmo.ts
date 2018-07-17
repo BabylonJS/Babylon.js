@@ -119,6 +119,9 @@ module BABYLON {
 
                         // project drag delta on to the resulting drag axis and rotate based on that
                         var projectDist = -Vector3.Dot(dragAxis, event.delta);
+                        
+                        // Make rotation relative to size of mesh.
+                        projectDist = (projectDist / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
 
                         // Rotate based on axis
                         if(!this.attachedMesh.rotationQuaternion){
@@ -179,7 +182,8 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event)=>{
                             this.onDragObservable.notifyObservers({});
                             if(this.attachedMesh){
-                                var deltaScale = new Vector3(event.dragDistance,event.dragDistance,event.dragDistance);
+                                var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
+                                var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 this.updateBoundingBox(); 
 
