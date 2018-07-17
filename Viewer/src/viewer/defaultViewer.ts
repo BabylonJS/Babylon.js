@@ -8,6 +8,7 @@ import { ViewerModel } from '../model/viewerModel';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
 import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
+import { PrintButtonPlugin } from '../templating/plugins/printButton';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -148,6 +149,7 @@ export class DefaultViewer extends AbstractViewer {
             }
 
             this.registerTemplatePlugin(new HDButtonPlugin(this));
+            this.registerTemplatePlugin(new PrintButtonPlugin(this));
         }
     }
 

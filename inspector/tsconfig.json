@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": true,
+        "declaration": true,
+        "sourceMap": true,
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise",
+            "es2015.collection",
+            "es2015.iterable"
+        ],
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true,
+        "baseUrl": "./src/",
+        "rootDir": "./src/",
+        "paths": {
+            "babylonjs": [
+                "../../dist/preview release/babylon.d.ts"
+            ],
+            "babylonjs-gui": [
+                "../../dist/preview release/gui/babylon.gui.module.d.ts"
+            ],
+            "babylonjs-loaders": [
+                "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
+            ],
+            "babylonjs-serializers": [
+                "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
+            ],
+            "Split": [
+                "./helpers/ISplit.d.ts"
+            ]
+        },
+        "outDir": "./build"
+    }
+}

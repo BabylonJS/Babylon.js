@@ -241,9 +241,17 @@ function showError(errorMessage, errorEvent) {
         };
 
         var loadScriptsList = function () {
-            var xhr = new XMLHttpRequest();
 
-            xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
+            var exampleList = document.getElementById("exampleList");
+           
+            var xhr = new XMLHttpRequest();
+            //Open Typescript or Javascript examples
+            if(exampleList.className != 'typescript') {
+                xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
+            }
+            else {
+                xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json', true);
+            }
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
@@ -257,7 +265,7 @@ function showError(errorMessage, errorEvent) {
                         }
                         scripts.sort(sortScriptsList);
 
-                        var exampleList = document.getElementById("exampleList");
+                                                
 
                         if (exampleList) {
                             for (var i = 0; i < scripts.length; i++) {
