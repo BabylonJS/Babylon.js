@@ -24,11 +24,13 @@
   - Added support for size gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
   - Added support for life time gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#lifetime)
   - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
+  - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
 - Added SceneComponent to help decoupling Scene from its components ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))
 - New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 - Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
 - GUI and Inspector are now ES-Modules ([RaananW](https://github.com/RaananW))
+- Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
@@ -100,6 +102,8 @@
 - The default viewer has a plugin system with which new buttons can be added externally ([RaananW](https://github.com/RaananW))
 - The extended configuration is now the default when not providing the "extended" parameter ([RaananW](https://github.com/RaananW))
 - viewer.updateConfiguration also accepts a URL to download configuration remotely ([RaananW](https://github.com/RaananW))
+- Viewer supports 3D printing on windows 10 ([RaananW](https://github.com/RaananW))
+- The viewer's environment map is using the new .env feature ([RaananW](https://github.com/RaananW))
 
 ### Documentation
 
@@ -118,7 +122,7 @@
 - Parse geometry when load binary mesh ([SinhNQ](https://github.com/quocsinh))
 - Removing observers during observable notify should not skip over valid observers ([TrevorDev](https://github.com/TrevorDev))
 - Initializing gamepadManager should register the gamepad update events ([TrevorDev](https://github.com/TrevorDev))
-- Do not generate mipmaps for HDRCubeTexture if OES_texture_float_linear isn't supported ([PeapBoy](https://github.com/NicolasBuecher))
+- Do not generate mipmaps for RawCubeTexture if OES_texture_float_linear and/or EXT_color_buffer_float extensions are not supported ([PeapBoy](https://github.com/NicolasBuecher))
 
 ### Core Engine
 
