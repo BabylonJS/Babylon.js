@@ -155,18 +155,14 @@ describe(name + " scene", () => {
             assert.equal(viewer.sceneManager.reflectionColor.b, 1);
 
             viewer.updateConfiguration({
-                scene: {
+                environmentMap: {
+                    tintLevel: 1,
+                    texture: "",
+                    rotationY: 0,
                     mainColor: {
                         r: 0.5,
                         g: 0.5,
                         b: 0.5
-                    }
-                },
-                lab: {
-                    environmentMap: {
-                        tintLevel: 1,
-                        texture: "",
-                        rotationY: 0
                     }
                 }
             });
