@@ -63,6 +63,7 @@ declare module BABYLON {
         facePattern2: RegExp;
         facePattern3: RegExp;
         facePattern4: RegExp;
+        facePattern5: RegExp;
         /**
          * Calls synchronously the MTL file attached to this obj.
          * Load function or importMesh function don't enable to load 2 files in the same time asynchronously.

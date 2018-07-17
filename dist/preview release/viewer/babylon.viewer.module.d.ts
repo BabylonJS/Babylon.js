@@ -1006,6 +1006,7 @@ declare module 'babylonjs-viewer/configuration' {
 declare module 'babylonjs-viewer/configuration/configuration' {
     import { EngineOptions } from 'babylonjs';
     import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
+    import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;
@@ -1054,6 +1055,7 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                     minecraft?: boolean;
                     [propName: string]: boolean | undefined;
             };
+            environmentMap?: IEnvironmentMapConfiguration;
             vr?: IVRConfiguration;
             lab?: {
                     flashlight?: boolean | {
@@ -1072,12 +1074,14 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                             };
                     };
                     hideLoadingDelay?: number;
+                    /** Deprecated */
                     assetsRootURL?: string;
                     environmentMainColor?: {
                             r: number;
                             g: number;
                             b: number;
                     };
+                    /** Deprecated */
                     environmentMap?: {
                             /**
                                 * Environment map texture path in relative to the asset folder.
@@ -1369,6 +1373,7 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
     import { ViewerLabs } from 'babylonjs-viewer/labs/viewerLabs';
     import { ObservablesManager } from 'babylonjs-viewer/managers/observablesManager';
     import { ConfigurationContainer } from 'babylonjs-viewer/configuration/configurationContainer';
+    import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
     /**
         * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
         * O - the type of object we are dealing with (Light, ArcRotateCamera, Scene, etc')
@@ -1514,6 +1519,7 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
                 * @param modelConfiguration the configuration to use to reconfigure the models
                 */
             protected _configureVR(vrConfig: IVRConfiguration): void;
+            protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any;
             /**
                 * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
                 * @param cameraConfig the new camera configuration
@@ -1652,6 +1658,32 @@ declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/templateConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/vrConfiguration';
+    export * from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration' {
+    export interface IEnvironmentMapConfiguration {
+            /**
+                * Environment map texture path in relative to the asset folder.
+                */
+            texture: string;
+            /**
+                * Default rotation to apply to the environment map.
+                */
+            rotationY: number;
+            /**
+                * Tint level of the main color on the environment map.
+                */
+            tintLevel: number;
+            /**
+                * The environment's main color.
+                */
+            mainColor?: {
+                    r?: number;
+                    g?: number;
+                    b?: number;
+            };
+    }
 }
 
 declare module 'babylonjs-viewer/templating/eventManager' {
@@ -2110,49 +2142,51 @@ declare module 'babylonjs-viewer/configuration/interfaces/sceneConfiguration' {
     import { IColorGradingConfiguration } from "babylonjs-viewer/configuration/interfaces/colorGradingConfiguration";
     import { IGlowLayerOptions } from "babylonjs";
     export interface ISceneConfiguration {
-        debug?: boolean;
-        clearColor?: {
-            r: number;
-            g: number;
-            b: number;
-            a: number;
-        };
-        mainColor?: {
-            r?: number;
-            g?: number;
-            b?: number;
-        };
-        imageProcessingConfiguration?: IImageProcessingConfiguration;
-        environmentTexture?: string;
-        colorGrading?: IColorGradingConfiguration;
-        environmentRotationY?: number;
-        /**
-          * Deprecated, please use default rendering pipeline
-          */
-        glow?: boolean | IGlowLayerOptions;
-        disableHdr?: boolean;
-        renderInBackground?: boolean;
-        disableCameraControl?: boolean;
-        animationPropertiesOverride?: {
-            [propName: string]: any;
-        };
-        defaultMaterial?: {
-            materialType: "standard" | "pbr";
-            [propName: string]: any;
-        };
-        flags?: {
-            shadowsEnabled?: boolean;
-            particlesEnabled?: boolean;
-            collisionsEnabled?: boolean;
-            lightsEnabled?: boolean;
-            texturesEnabled?: boolean;
-            lensFlaresEnabled?: boolean;
-            proceduralTexturesEnabled?: boolean;
-            renderTargetsEnabled?: boolean;
-            spritesEnabled?: boolean;
-            skeletonsEnabled?: boolean;
-            audioEnabled?: boolean;
-        };
+            debug?: boolean;
+            clearColor?: {
+                    r: number;
+                    g: number;
+                    b: number;
+                    a: number;
+            };
+            /** Deprecated, use environmentMap.mainColor instead. */
+            mainColor?: {
+                    r?: number;
+                    g?: number;
+                    b?: number;
+            };
+            imageProcessingConfiguration?: IImageProcessingConfiguration;
+            environmentTexture?: string;
+            colorGrading?: IColorGradingConfiguration;
+            environmentRotationY?: number;
+            /**
+                * Deprecated, please use default rendering pipeline
+                */
+            glow?: boolean | IGlowLayerOptions;
+            disableHdr?: boolean;
+            renderInBackground?: boolean;
+            disableCameraControl?: boolean;
+            animationPropertiesOverride?: {
+                    [propName: string]: any;
+            };
+            defaultMaterial?: {
+                    materialType: "standard" | "pbr";
+                    [propName: string]: any;
+            };
+            flags?: {
+                    shadowsEnabled?: boolean;
+                    particlesEnabled?: boolean;
+                    collisionsEnabled?: boolean;
+                    lightsEnabled?: boolean;
+                    texturesEnabled?: boolean;
+                    lensFlaresEnabled?: boolean;
+                    proceduralTexturesEnabled?: boolean;
+                    renderTargetsEnabled?: boolean;
+                    spritesEnabled?: boolean;
+                    skeletonsEnabled?: boolean;
+                    audioEnabled?: boolean;
+            };
+            assetsRootURL?: string;
     }
 }
 

@@ -1,87 +1,87 @@
-/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+import { Container } from "./container";
+import { Control } from "./control";
+import { Measure } from "../measure";
 
-module BABYLON.GUI {
-    /** Class used to create 2D ellipse containers */
-    export class Ellipse extends Container {
-        private _thickness = 1;       
-        
-        /** Gets or sets border thickness */
-        public get thickness(): number {
-            return this._thickness;
+/** Class used to create 2D ellipse containers */
+export class Ellipse extends Container {
+    private _thickness = 1;
+
+    /** Gets or sets border thickness */
+    public get thickness(): number {
+        return this._thickness;
+    }
+
+    public set thickness(value: number) {
+        if (this._thickness === value) {
+            return;
         }
 
-        public set thickness(value: number) {
-            if (this._thickness === value) {
-                return;
-            }
+        this._thickness = value;
+        this._markAsDirty();
+    }
 
-            this._thickness = value;
-            this._markAsDirty();
-        }                
-     
-        /**
-         * Creates a new Ellipse
-         * @param name defines the control name
-         */
-        constructor(public name?: string) {
-            super(name);
+    /**
+     * Creates a new Ellipse
+     * @param name defines the control name
+     */
+    constructor(public name?: string) {
+        super(name);
+    }
+
+    protected _getTypeName(): string {
+        return "Ellipse";
+    }
+
+    protected _localDraw(context: CanvasRenderingContext2D): void {
+        context.save();
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
         }
 
-        protected _getTypeName(): string {
-            return "Ellipse";
-        }              
+        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
+            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
 
-        protected _localDraw(context: CanvasRenderingContext2D): void {
-            context.save();
+        if (this._background) {
+            context.fillStyle = this._background;
 
-            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
-            }
-
-            Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
-                            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
-
-            if (this._background) {
-                context.fillStyle = this._background;
-
-                context.fill();
-            }
-
-            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
-
-            if (this._thickness) {
-                if (this.color) {
-                    context.strokeStyle = this.color;
-                }
-                context.lineWidth = this._thickness;
-
-                context.stroke();
-            }
-        
-            context.restore();
+            context.fill();
         }
 
-        protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {  
-            super._additionalProcessing(parentMeasure, context);
-
-            this._measureForChildren.width -= 2 * this._thickness;
-            this._measureForChildren.height -= 2 * this._thickness;
-            this._measureForChildren.left += this._thickness;
-            this._measureForChildren.top += this._thickness;            
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
         }
 
-       protected _clipForChildren(context: CanvasRenderingContext2D) {
+        if (this._thickness) {
+            if (this.color) {
+                context.strokeStyle = this.color;
+            }
+            context.lineWidth = this._thickness;
 
-            Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
-            
-            context.clip();
+            context.stroke();
         }
-    }    
-}
+
+        context.restore();
+    }
+
+    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        super._additionalProcessing(parentMeasure, context);
+
+        this._measureForChildren.width -= 2 * this._thickness;
+        this._measureForChildren.height -= 2 * this._thickness;
+        this._measureForChildren.left += this._thickness;
+        this._measureForChildren.top += this._thickness;
+    }
+
+    protected _clipForChildren(context: CanvasRenderingContext2D) {
+
+        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
+
+        context.clip();
+    }
+}   
