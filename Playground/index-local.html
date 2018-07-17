@@ -18,7 +18,7 @@
         <script src="../dist/preview%20release/Oimo.js"></script>
         <script src="../dist/preview%20release/earcut.min.js"></script>
         <!-- Monaco -->
-        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+
         <!-- Babylon.js -->
         <script src="../tools/DevLoader/BabylonLoader.js"></script>
 
@@ -454,6 +454,10 @@
                         wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
                         fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
                     };
+                    var script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = "node_modules/monaco-editor/min/vs/loader.js";
+                    document.head.appendChild(script);
                 });
         </script>
     </body>

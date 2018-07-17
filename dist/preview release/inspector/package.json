@@ -12,9 +12,12 @@
     "main": "babylon.inspector.bundle.js",
     "files": [
         "babylon.inspector.bundle.js",
+        "babylon.inspector.bundle.js.map",
+        "babylon.inspector.module.d.ts",
         "readme.md",
         "package.json"
     ],
+    "typings": "babylon.inspector.module.d.ts",
     "keywords": [
         "3D",
         "javascript",
