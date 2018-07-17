@@ -1,207 +1,209 @@
-/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
+import { Rectangle } from "./rectangle";
+import { Control } from "./control";
+import { TextBlock } from "./textBlock";
+import { Image } from "./image";
+import { Vector2 } from "babylonjs";
 
-module BABYLON.GUI {
+/**
+ * Class used to create 2D buttons
+ */
+export class Button extends Rectangle {
     /**
-     * Class used to create 2D buttons
+     * Function called to generate a pointer enter animation
      */
-    export class Button extends Rectangle {    
-        /**
-         * Function called to generate a pointer enter animation
-         */
-        public pointerEnterAnimation: () => void;
-        /**
-         * Function called to generate a pointer out animation
-         */        
-        public pointerOutAnimation: () => void;
-        /**
-         * Function called to generate a pointer down animation
-         */        
-        public pointerDownAnimation: () => void;
-        /**
-         * Function called to generate a pointer up animation
-         */        
-        public pointerUpAnimation: () => void;
+    public pointerEnterAnimation: () => void;
+    /**
+     * Function called to generate a pointer out animation
+     */
+    public pointerOutAnimation: () => void;
+    /**
+     * Function called to generate a pointer down animation
+     */
+    public pointerDownAnimation: () => void;
+    /**
+     * Function called to generate a pointer up animation
+     */
+    public pointerUpAnimation: () => void;
 
-        /**
-         * Creates a new Button
-         * @param name defines the name of the button
-         */
-        constructor(public name?: string) {
-            super(name);
-          
-            this.thickness = 1;
-            this.isPointerBlocker = true;
+    /**
+     * Creates a new Button
+     * @param name defines the name of the button
+     */
+    constructor(public name?: string) {
+        super(name);
 
-            this.pointerEnterAnimation = () => {
-                this.alpha -= 0.1;
-            }
+        this.thickness = 1;
+        this.isPointerBlocker = true;
 
-            this.pointerOutAnimation = () => {
-                this.alpha += 0.1;
-            }    
-
-            this.pointerDownAnimation = () => {
-                this.scaleX -= 0.05;
-                this.scaleY -= 0.05;
-            }
-
-            this.pointerUpAnimation = () => {
-                this.scaleX += 0.05;
-                this.scaleY += 0.05;
-            }                      
+        this.pointerEnterAnimation = () => {
+            this.alpha -= 0.1;
         }
 
-        protected _getTypeName(): string {
-            return "Button";
+        this.pointerOutAnimation = () => {
+            this.alpha += 0.1;
         }
 
-        // While being a container, the button behaves like a control.
-        /** @hidden */
-        public _processPicking(x: number, y: number, type: number, pointerId:number, buttonIndex: number): boolean {
-            if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
-                return false;
-            }
-
-            if (!super.contains(x, y)) {
-                return false;
-            }
-
-            this._processObservables(type, x, y, pointerId, buttonIndex);
-
-            return true;
+        this.pointerDownAnimation = () => {
+            this.scaleX -= 0.05;
+            this.scaleY -= 0.05;
         }
 
-        /** @hidden */
-        public _onPointerEnter(target: Control): boolean {
-            if (!super._onPointerEnter(target)) {
-                return false;
-            }
+        this.pointerUpAnimation = () => {
+            this.scaleX += 0.05;
+            this.scaleY += 0.05;
+        }
+    }
 
-            if (this.pointerEnterAnimation) {
-                this.pointerEnterAnimation();
-            }
+    protected _getTypeName(): string {
+        return "Button";
+    }
 
-            return true;
+    // While being a container, the button behaves like a control.
+    /** @hidden */
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+        if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+            return false;
         }
 
-        /** @hidden */
-        public _onPointerOut(target: Control): void {
-            if (this.pointerOutAnimation) {
-                this.pointerOutAnimation();
-            }
-
-            super._onPointerOut(target);
+        if (!super.contains(x, y)) {
+            return false;
         }
 
-        /** @hidden */
-        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
-            if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
-                return false;
-            }
+        this._processObservables(type, x, y, pointerId, buttonIndex);
 
+        return true;
+    }
 
-            if (this.pointerDownAnimation) {
-                this.pointerDownAnimation();
-            }
-
-            return true;
+    /** @hidden */
+    public _onPointerEnter(target: Control): boolean {
+        if (!super._onPointerEnter(target)) {
+            return false;
         }
 
-        /** @hidden */
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
-            if (this.pointerUpAnimation) {
-                this.pointerUpAnimation();
-            }
-
-            super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
-        }        
-
-        // Statics
-        /**
-         * Creates a new button made with an image and a text
-         * @param name defines the name of the button
-         * @param text defines the text of the button
-         * @param imageUrl defines the url of the image
-         * @returns a new Button
-         */
-        public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
-            var result = new Button(name);
-
-            // Adding text
-            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
-            textBlock.textWrapping = true;
-            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            textBlock.paddingLeft = "20%";
-            result.addControl(textBlock);   
-
-            // Adding image
-            var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
-            iconImage.width = "20%";
-            iconImage.stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
-            iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-            result.addControl(iconImage);            
-
-            return result;
+        if (this.pointerEnterAnimation) {
+            this.pointerEnterAnimation();
         }
 
-        /**
-         * Creates a new button made with an image
-         * @param name defines the name of the button
-         * @param imageUrl defines the url of the image
-         * @returns a new Button
-         */
-        public static CreateImageOnlyButton(name: string, imageUrl: string): Button {
-            var result = new Button(name);
+        return true;
+    }
 
-            // Adding image
-            var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
-            iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
-            iconImage.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-            result.addControl(iconImage);            
-
-            return result;
+    /** @hidden */
+    public _onPointerOut(target: Control): void {
+        if (this.pointerOutAnimation) {
+            this.pointerOutAnimation();
         }
 
-        /**
-         * Creates a new button made with a text
-         * @param name defines the name of the button
-         * @param text defines the text of the button
-         * @returns a new Button
-         */        
-        public static CreateSimpleButton(name: string, text: string): Button {
-            var result = new Button(name);
+        super._onPointerOut(target);
+    }
 
-            // Adding text
-            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
-            textBlock.textWrapping = true;
-            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            result.addControl(textBlock);           
-
-            return result;
+    /** @hidden */
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+            return false;
         }
-        
-        /**
-         * Creates a new button made with an image and a centered text
-         * @param name defines the name of the button
-         * @param text defines the text of the button
-         * @param imageUrl defines the url of the image
-         * @returns a new Button
-         */        
-        public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
-            var result = new Button(name);
 
-            // Adding image
-            var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
-            iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
-            result.addControl(iconImage);         
-            
-            // Adding text
-            var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
-            textBlock.textWrapping = true;
-            textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            result.addControl(textBlock);   
 
-            return result;
+        if (this.pointerDownAnimation) {
+            this.pointerDownAnimation();
         }
-    }    
-}
+
+        return true;
+    }
+
+    /** @hidden */
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+        if (this.pointerUpAnimation) {
+            this.pointerUpAnimation();
+        }
+
+        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+    }
+
+    // Statics
+    /**
+     * Creates a new button made with an image and a text
+     * @param name defines the name of the button
+     * @param text defines the text of the button
+     * @param imageUrl defines the url of the image
+     * @returns a new Button
+     */
+    public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
+        var result = new Button(name);
+
+        // Adding text
+        var textBlock = new TextBlock(name + "_button", text);
+        textBlock.textWrapping = true;
+        textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        textBlock.paddingLeft = "20%";
+        result.addControl(textBlock);
+
+        // Adding image
+        var iconImage = new Image(name + "_icon", imageUrl);
+        iconImage.width = "20%";
+        iconImage.stretch = Image.STRETCH_UNIFORM;
+        iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        result.addControl(iconImage);
+
+        return result;
+    }
+
+    /**
+     * Creates a new button made with an image
+     * @param name defines the name of the button
+     * @param imageUrl defines the url of the image
+     * @returns a new Button
+     */
+    public static CreateImageOnlyButton(name: string, imageUrl: string): Button {
+        var result = new Button(name);
+
+        // Adding image
+        var iconImage = new Image(name + "_icon", imageUrl);
+        iconImage.stretch = Image.STRETCH_FILL;
+        iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        result.addControl(iconImage);
+
+        return result;
+    }
+
+    /**
+     * Creates a new button made with a text
+     * @param name defines the name of the button
+     * @param text defines the text of the button
+     * @returns a new Button
+     */
+    public static CreateSimpleButton(name: string, text: string): Button {
+        var result = new Button(name);
+
+        // Adding text
+        var textBlock = new TextBlock(name + "_button", text);
+        textBlock.textWrapping = true;
+        textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        result.addControl(textBlock);
+
+        return result;
+    }
+
+    /**
+     * Creates a new button made with an image and a centered text
+     * @param name defines the name of the button
+     * @param text defines the text of the button
+     * @param imageUrl defines the url of the image
+     * @returns a new Button
+     */
+    public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
+        var result = new Button(name);
+
+        // Adding image
+        var iconImage = new Image(name + "_icon", imageUrl);
+        iconImage.stretch = Image.STRETCH_FILL;
+        result.addControl(iconImage);
+
+        // Adding text
+        var textBlock = new TextBlock(name + "_button", text);
+        textBlock.textWrapping = true;
+        textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        result.addControl(textBlock);
+
+        return result;
+    }
+}    

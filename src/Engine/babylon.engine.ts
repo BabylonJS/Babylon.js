@@ -5413,6 +5413,10 @@
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
                     var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                    glTextureFromLod.type = texture.type;
+                    glTextureFromLod.format = texture.format;
+                    glTextureFromLod.width = Math.pow(2, Math.max( Scalar.Log2(width) - mipmapIndex, 0));
+                    glTextureFromLod.height = glTextureFromLod.width;
                     glTextureFromLod.isCube = true;
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
 
@@ -5426,7 +5430,7 @@
                         var data: any = loadData.data;
                         this._unpackFlipY(info.isCompressed);
 
-                        DDSTools.UploadDDSLevels(this, texture, data, info, true, 6, mipmapIndex);
+                        DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
                     }
                     else {
                         Tools.Warn("DDS is the only prefiltered cube map supported so far.")
