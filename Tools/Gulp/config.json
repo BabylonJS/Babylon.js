@@ -8,6 +8,7 @@
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
         "playgroundDirectory": "../../Playground/",
+        "tempDirectory": "../../.temp/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
@@ -1409,8 +1410,8 @@
         "proceduralTexturesLibrary",
         "loaders",
         "serializers",
-        "inspector",
         "gui",
+        "inspector",
         "viewer",
         "viewer-assets"
     ],

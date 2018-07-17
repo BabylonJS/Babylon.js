@@ -662,7 +662,7 @@ gulp.task("watch", ["srcTscWatch"], function () {
         config[module].libraries.map(function (library) {
             if (library.webpack) {
                 if (library.noWatch) return;
-                var outputDirectory = config.build.outputDirectory + config[module].build.distOutputDirectory;
+                var outputDirectory = config.build.tempDirectory + config[module].build.distOutputDirectory;
                 let wpconfig = require(library.webpack);
                 wpconfig.watch = true;
                 // dev mode and absolute path sourcemaps for debugging
