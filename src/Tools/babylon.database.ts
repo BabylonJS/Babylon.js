@@ -570,7 +570,7 @@ module BABYLON {
                 // Create XHR
                 var xhr = new XMLHttpRequest();
                 var fileData: any;
-                xhr.open("GET", url, true);
+                xhr.open("GET", url + "?" + Date.now(), true);
 
                 if (useArrayBuffer) {
                     xhr.responseType = "arraybuffer";
