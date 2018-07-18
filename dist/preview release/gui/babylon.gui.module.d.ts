@@ -34,6 +34,7 @@ declare module 'babylonjs-gui/2D/controls' {
     export * from "babylonjs-gui/2D/controls/grid";
     export * from "babylonjs-gui/2D/controls/image";
     export * from "babylonjs-gui/2D/controls/inputText";
+    export * from "babylonjs-gui/2D/controls/inputPassword";
     export * from "babylonjs-gui/2D/controls/line";
     export * from "babylonjs-gui/2D/controls/multiLine";
     export * from "babylonjs-gui/2D/controls/radioButton";
@@ -1518,6 +1519,16 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
             protected _beforeRenderText(text: string): string;
             dispose(): void;
+    }
+}
+
+declare module 'babylonjs-gui/2D/controls/inputPassword' {
+    import { InputText } from "babylonjs-gui/2D/controls/inputText";
+    /**
+      * Class used to create a password control
+      */
+    export class InputPassword extends InputText {
+        protected _beforeRenderText(text: string): string;
     }
 }
 
