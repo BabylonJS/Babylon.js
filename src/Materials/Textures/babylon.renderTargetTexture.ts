@@ -22,10 +22,46 @@
         */
         public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
+        private _renderList: Nullable<Array<AbstractMesh>>;
         /**
         * Use this list to define the list of mesh you want to render.
         */
-        public renderList: Nullable<Array<AbstractMesh>> = new Array<AbstractMesh>();
+        public get renderList(): Nullable<Array<AbstractMesh>> {
+            return this._renderList;
+        }
+ 
+        public set renderList(value: Nullable<Array<AbstractMesh>>) {
+            this._renderList = value;
+
+            if (this._renderList) {
+                this._hookArray(this._renderList);
+            }
+        }
+
+        private _hookArray(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+                
+                this.getScene()!.meshes.forEach(mesh => {
+                    mesh._markSubMeshesAsLightDirty();
+                })
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                this.getScene()!.meshes.forEach(mesh => {
+                    mesh._markSubMeshesAsLightDirty();
+                })
+
+                return deleted;
+            }
+        }
+
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
@@ -182,6 +218,7 @@
                 return;
             }
 
+            this.renderList = new Array<AbstractMesh>();
             this._engine = scene.getEngine();
             this.name = name;
             this.isRenderTarget = true;
