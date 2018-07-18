@@ -1177,7 +1177,7 @@
          * Gets a new Vector2 from current Vector2 floored values
          * @returns a new Vector2 
          */
-        public floor(): boolean {
+        public floor(): Vector2 {
             return new Vector2(Math.floor(this.x), Math.floor(this.y));
         }
         
@@ -1185,7 +1185,7 @@
          * Gets a new Vector2 from current Vector2 floored values
          * @returns a new Vector2 
          */
-        public fract(): boolean {
+        public fract(): Vector2 {
             return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y));
         }
 
@@ -1889,16 +1889,16 @@
          * Gets a new Vector3 from current Vector3 floored values
          * @returns a new Vector3 
          */
-        public floor(): boolean {
-            return new Vector2(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
+        public floor(): Vector3 {
+            return new Vector3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
         }
         
         /**
          * Gets a new Vector3 from current Vector3 floored values
          * @returns a new Vector3
          */
-        public fract(): boolean {
-            return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z));
+        public fract(): Vector3 {
+            return new Vector3(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z));
         }
 
         // Properties
@@ -2924,16 +2924,16 @@
          * Gets a new Vector4 from current Vector4 floored values
          * @returns a new Vector4 
          */
-        public floor(): boolean {
-            return new Vector2(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+        public floor(): Vector4 {
+            return new Vector4(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
         }
         
         /**
          * Gets a new Vector4 from current Vector3 floored values
          * @returns a new Vector4
          */
-        public fract(): boolean {
-            return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z), this.w-Math.floor(this.w));
+        public fract(): Vector4 {
+            return new Vector4(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z), this.w-Math.floor(this.w));
         }
 
         // Properties
