@@ -4876,6 +4876,7 @@
             texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
+            texture.format = fullOptions.format;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
@@ -5379,6 +5380,7 @@
             texture.generateMipMaps = fullOptions.generateMipMaps;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
+            texture.format = fullOptions.format;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
