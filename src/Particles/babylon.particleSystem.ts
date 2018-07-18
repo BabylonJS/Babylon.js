@@ -510,7 +510,7 @@
 
             this._customEffect = customEffect;
 
-            scene.particleSystems.push(this);
+            this._scene.particleSystems.push(this);
 
             this._useInstancing = this._scene.getEngine().getCaps().instancedArrays;
 
