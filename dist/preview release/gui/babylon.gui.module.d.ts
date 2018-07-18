@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../tools/Gulp/babylonjs
 
 declare module 'babylonjs-gui' {
     export * from "babylonjs-gui/2D";

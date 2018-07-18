@@ -1,7 +1,7 @@
 /*BabylonJS Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
-//   ../../../../Tools/Gulp/babylonjs-gui
+//   ../../../../tools/Gulp/babylonjs
+//   ../../../../tools/Gulp/babylonjs-gui
 
 declare module 'babylonjs-inspector' {
     export * from 'babylonjs-inspector/adapters';
