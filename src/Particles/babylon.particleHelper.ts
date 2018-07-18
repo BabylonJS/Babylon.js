@@ -11,10 +11,11 @@ module BABYLON {
         /**
          * Create a default particle system that you can tweak
          * @param emitter defines the emitter to use
+         * @param capacity defines the system capacity (default is 500 particles)
          * @param scene defines the hosting scene
          * @returns the new Particle system
          */
-        public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>,  capacity = 500, scene?: Scene): ParticleSystem {
+        public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity = 500, scene?: Scene): ParticleSystem {
             var system = new ParticleSystem("default system", capacity, scene!);
         
             system.emitter = emitter;
