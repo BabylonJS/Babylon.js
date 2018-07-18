@@ -1092,7 +1092,7 @@
         }
 
         /**
-         * Divides the current Vector3 coordinates by the given ones
+         * Divides the current Vector2 coordinates by the given ones
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
@@ -1171,6 +1171,22 @@
          */
         public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
+        }
+        
+        /**
+         * Gets a new Vector2 from current Vector2 floored values
+         * @returns a new Vector2 
+         */
+        public floor(): boolean {
+            return new Vector2(Math.floor(this.x), Math.floor(this.y));
+        }
+        
+        /**
+         * Gets a new Vector2 from current Vector2 floored values
+         * @returns a new Vector2 
+         */
+        public fract(): boolean {
+            return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y));
         }
 
         // Properties
@@ -1867,6 +1883,22 @@
             }
 
             return false;
+        }     
+                
+        /**
+         * Gets a new Vector3 from current Vector3 floored values
+         * @returns a new Vector3 
+         */
+        public floor(): boolean {
+            return new Vector2(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
+        }
+        
+        /**
+         * Gets a new Vector3 from current Vector3 floored values
+         * @returns a new Vector3
+         */
+        public fract(): boolean {
+            return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z));
         }
 
         // Properties
@@ -2886,6 +2918,22 @@
             if (other.z > this.z) this.z = other.z;
             if (other.w > this.w) this.w = other.w;
             return this;
+        }
+        
+        /**
+         * Gets a new Vector4 from current Vector4 floored values
+         * @returns a new Vector4 
+         */
+        public floor(): boolean {
+            return new Vector2(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+        }
+        
+        /**
+         * Gets a new Vector4 from current Vector3 floored values
+         * @returns a new Vector4
+         */
+        public fract(): boolean {
+            return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z), this.w-Math.floor(this.w));
         }
 
         // Properties
