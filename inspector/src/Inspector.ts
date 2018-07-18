@@ -48,11 +48,11 @@ export class Inspector {
 
         // Load GUI library if not already done
         if (!GUI) {
-            Tools.LoadScript("https://preview.babylonjs.com/gui/gui.js", () => {
+            Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.min.js", () => {
                 //Load properties of GUI objects now as GUI has to be declared before 
                 loadGUIProperties();
             }, () => {
-                console.warn('Error : loading "gui.js". Please add script https://preview.babylonjs.com/gui/gui.js to the HTML file.');
+                console.warn('Error : loading "babylon.gui.min.js". Please add script https://preview.babylonjs.com/gui/babylon.min.gui.js to the HTML file.');
             });
         }
         else {
