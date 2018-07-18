@@ -420,6 +420,14 @@
             this._isBillboardBased = value;
             this._resetEffect();
         }     
+
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        public getScene(): Scene {
+            return this._scene;
+        }
         
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
