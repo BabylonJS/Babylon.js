@@ -9,6 +9,24 @@ module BABYLON {
         public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
         /**
+         * Create a default particle system that you can tweak
+         * @param emitter defines the emitter to use
+         * @param scene defines the hosting scene
+         * @returns the new Particle system
+         */
+        public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, scene?: Scene): ParticleSystem {
+            var system = new ParticleSystem("default system", 1000, scene!);
+        
+            system.emitter = emitter;
+            system.particleTexture = new Texture("https://www.babylonjs.com/assets/Flare.png", system._scene);
+            system.minSize = 0.1;
+            system.maxSize = 0.5;
+            system.emitRate = 200;
+
+            return system;
+        }
+
+        /**
          * This is the main static method (one-liner) of this helper to create different particle systems
          * @param type This string represents the type to the particle system to create
          * @param scene The scene where the particle system should live
