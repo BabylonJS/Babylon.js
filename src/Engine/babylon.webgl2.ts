@@ -70,6 +70,11 @@ interface WebGLRenderingContext {
     beginTransformFeedback(primitiveMode: number): void;
     endTransformFeedback(): void;
     transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
+
+    clearBufferfv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
+    clearBufferiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
+    clearBufferuiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
+    clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
 }
 
 interface ImageBitmap {
