@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [  
     {
+      "title": "ShadowOnlyMaterial",
+      "playgroundId": "#1KF7V1#18",
+      "referenceImage": "shadowOnlyMaterial.png"
+    },     
+    {
       "title": "Gizmos",
       "playgroundId": "#8GY6J8#48",
       "renderCount": 50,

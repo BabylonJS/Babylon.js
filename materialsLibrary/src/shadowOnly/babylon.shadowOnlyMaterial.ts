@@ -24,6 +24,8 @@ module BABYLON {
             super(name, scene);
         }
 
+        public shadowColor = BABYLON.Color3.Black();
+
         public needAlphaBlending(): boolean {
             return true;
         }
@@ -126,7 +128,7 @@ module BABYLON {
                 var shaderName = "shadowOnly";
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                    "vFogInfos", "vFogColor", "pointSize", "alpha",
+                    "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor",
                     "mBones",
                     "vClipPlane"
                 ];
@@ -196,6 +198,7 @@ module BABYLON {
                 }
 
                 this._activeEffect.setFloat("alpha", this.alpha);
+                this._activeEffect.setColor3("shadowColor", this.shadowColor);
 
                 MaterialHelper.BindEyePosition(effect, scene);
             }
