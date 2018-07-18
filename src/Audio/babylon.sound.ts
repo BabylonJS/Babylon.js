@@ -12,11 +12,17 @@ module BABYLON {
         public distanceModel: string = "linear";
         private _panningModel: string = "equalpower";
         public onended: () => any;
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        public onEndedObservable = new Observable<Sound>();
         private _playbackRate: number = 1;
         private _streaming: boolean = false;
         private _startTime: number = 0;
         private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
+        /** @hidden */ 
+        public _positionInEmitterSpace: boolean = false;
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
         private _isReadyToPlay: boolean = false;
@@ -30,7 +36,7 @@ module BABYLON {
         private _soundPanner: Nullable<PannerNode>;
         private _soundGain: Nullable<GainNode>;
         private _inputAudioNode: AudioNode;
-        private _ouputAudioNode: AudioNode;
+        private _outputAudioNode: AudioNode;
         // Used if you'd like to create a directional sound.
         // If not set, the sound will be omnidirectional
         private _coneInnerAngle: number = 360;
@@ -85,7 +91,7 @@ module BABYLON {
                 this._soundGain = Engine.audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
                 this._inputAudioNode = this._soundGain;
-                this._ouputAudioNode = this._soundGain;
+                this._outputAudioNode = this._soundGain;
                 if (this.spatialSound) {
                     this._createSpatialParameters();
                 }
@@ -324,7 +330,7 @@ module BABYLON {
                 }
                 this._soundPanner = Engine.audioEngine.audioContext.createPanner();
                 this._updateSpatialParameters();
-                this._soundPanner.connect(this._ouputAudioNode);
+                this._soundPanner.connect(this._outputAudioNode);
                 this._inputAudioNode = this._soundPanner;
             }
         }
@@ -368,9 +374,9 @@ module BABYLON {
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
             if (Engine.audioEngine.canUseWebAudio) {
                 if (this._isOutputConnected) {
-                    this._ouputAudioNode.disconnect();
+                    this._outputAudioNode.disconnect();
                 }
-                this._ouputAudioNode.connect(soundTrackAudioNode);
+                this._outputAudioNode.connect(soundTrackAudioNode);
                 this._isOutputConnected = true;
             }
         }
@@ -397,10 +403,58 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        public get directionalConeInnerAngle(): number {
+            return this._coneInnerAngle;
+        }
+
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        public set directionalConeInnerAngle(value: number) {
+            if (value != this._coneInnerAngle) {
+                if (this._coneOuterAngle < value) {
+                    Tools.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    return;
+                }
+
+                this._coneInnerAngle = value;
+                if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+                    this._soundPanner.coneInnerAngle = this._coneInnerAngle;
+                }
+            }
+        }
+
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        public get directionalConeOuterAngle(): number {
+            return this._coneOuterAngle;
+        }
+
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        public set directionalConeOuterAngle(value: number) {
+            if (value != this._coneOuterAngle) {
+                if (value < this._coneInnerAngle) {
+                    Tools.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    return;
+                }
+
+                this._coneOuterAngle = value;
+                if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+                    this._soundPanner.coneOuterAngle = this._coneOuterAngle;
+                }
+            }
+        }
+
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -450,7 +504,9 @@ module BABYLON {
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound && this._soundPanner) {
-                            this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                            if (!isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
+                                this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                            }
                             if (this._isDirectional) {
                                 this._soundPanner.coneInnerAngle = this._coneInnerAngle;
                                 this._soundPanner.coneOuterAngle = this._coneOuterAngle;
@@ -502,6 +558,7 @@ module BABYLON {
             if (this.onended) {
                 this.onended();
             }
+            this.onEndedObservable.notifyObservers(this);
         }
 
         /**
@@ -576,10 +633,6 @@ module BABYLON {
             }
         }
 
-        public getVolume(): number {
-            return this._volume;
-        }
-
         public attachToMesh(meshToConnectTo: AbstractMesh) {
             if (this._connectedMesh && this._registerFunc) {
                 this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
@@ -612,8 +665,15 @@ module BABYLON {
                 return;
             }
             let mesh = node as AbstractMesh;
-            let boundingInfo = mesh.getBoundingInfo();
-            this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            if (this._positionInEmitterSpace) {
+                mesh.worldMatrixFromCache.invertToRef(Tmp.Matrix[0]);
+                this.setPosition(Tmp.Matrix[0].getTranslation());
+            }
+            else 
+            {
+                let boundingInfo = mesh.getBoundingInfo();
+                this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            }
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }

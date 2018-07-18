@@ -39,6 +39,7 @@ export class SoundAdapter
         return tools;
     }
 
+
     public setPlaying(callback: Function) {
         if ((this._obj as Sound).isPlaying) {
             (this._obj as Sound).pause();
@@ -46,8 +47,8 @@ export class SoundAdapter
         else {
             (this._obj as Sound).play();
         }
-        (this._obj as Sound).onended = () => {
-            callback();
-        }
+        (this._obj as Sound).onEndedObservable.add(() => { 
+            callback(); 
+        }, -1, false, null, true); 
     }
 }

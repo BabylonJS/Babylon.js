@@ -16,6 +16,7 @@ describe('Babylon Scene Loader', function () {
             .load(function () {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
+                BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
                 done();
             });
     });
@@ -490,6 +491,18 @@ describe('Babylon Scene Loader', function () {
                     createTextureSpy.restore();
                     expect(called, "createTextureSpyCalled").to.be.false;
                 });
+            });
+        });
+
+        it('Load UFO with MSFT_audio_emitter', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/", "ufo.glb", scene).then(result => {
+                expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
+                expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
+                expect(result.animationGroups.length, "animationGroups.length").to.equal(3);
+                expect(scene.soundTracks.length, "scene.soundTracks.length").to.equal(1);
+                expect(scene.soundTracks[0].soundCollection.length, "scene.soundTracks[0].soundCollection.length").to.equal(3);
+                expect(scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers(), "scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers()").to.equal(true);
             });
         });
 
