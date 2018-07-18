@@ -58,7 +58,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                     fullscreenButton: "Fullscreen",
                     helpButton: "Help",
                     vrButton: "Toggle VR",
-                    printButton: "Print model in 3D"
+                    printButton: "Print 3D Object"
                 }
             },
             events: {
