@@ -807,7 +807,7 @@ export class Control {
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._linkedMesh = mesh;
-        this._onlyMeasureMode = true;
+        this._onlyMeasureMode = this._currentMeasure.width === 0 || this._currentMeasure.height === 0;
         this._host._linkedControls.push(this);
     }
 
