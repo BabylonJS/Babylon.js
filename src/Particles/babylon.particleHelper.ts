@@ -18,7 +18,7 @@ module BABYLON {
             var system = new ParticleSystem("default system", 1000, scene!);
         
             system.emitter = emitter;
-            system.particleTexture = new Texture("https://www.babylonjs.com/assets/Flare.png", system._scene);
+            system.particleTexture = new Texture("https://www.babylonjs.com/assets/Flare.png", system.getScene());
             system.minSize = 0.1;
             system.maxSize = 0.5;
             system.emitRate = 200;
