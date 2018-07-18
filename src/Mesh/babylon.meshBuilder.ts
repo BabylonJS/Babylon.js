@@ -619,6 +619,7 @@
          * * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
          * * The parameter `radius` (positive float, default 1) is the radius value of the lathe
          * * The parameter `tessellation` (positive integer, default 64) is the side number of the lathe
+	 * * The parameter `clip` (positive integer, default 0) is the number of sides to not create without effecting the general shape of the sides 
          * * The parameter `arc` (positive float, default 1) is the ratio of the lathe. 0.5 builds for instance half a lathe, so an opened shape
          * * The parameter `closed` (boolean, default true) opens/closes the lathe circumference. This should be set to false when used with the parameter "arc"
          * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL          
@@ -632,12 +633,13 @@
          * @returns the lathe mesh
          * @see http://doc.babylonjs.com/how_to/parametric_shapes#lathe 
          */
-        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
+        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
             var arc: number = options.arc ? ((options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc) : 1.0;
             var closed: boolean = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
+	    var clip = options.clip || 0;
             var updatable = options.updatable;
             var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
             var cap = options.cap || Mesh.NO_CAP;
@@ -650,7 +652,7 @@
             var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array<Vector3>();
-            for (i = 0; i <= tessellation; i++) {
+            for (i = 0; i <= tessellation-clip; i++) {
                 var path: Vector3[] = [];
                 if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
                     path.push(new Vector3(0, shape[0].y, 0));
