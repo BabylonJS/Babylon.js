@@ -1405,6 +1405,14 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /**
+      * Class used to create a password control
+      */
+    export class InputPassword extends InputText {
+        protected _beforeRenderText(text: string): string;
+    }
+}
+declare module BABYLON.GUI {
     /** Class used to render 2D lines */
     export class Line extends Control {
             name?: string | undefined;

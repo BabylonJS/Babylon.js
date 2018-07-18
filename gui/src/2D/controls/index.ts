@@ -7,6 +7,7 @@ export * from "./ellipse";
 export * from "./grid";
 export * from "./image";
 export * from "./inputText";
+export * from "./inputPassword";
 export * from "./line";
 export * from "./multiLine";
 export * from "./radioButton";
