@@ -1,11 +1,13 @@
 
 import { PROPERTIES } from "./properties";
 
+export type GUITyping = typeof import("babylonjs-gui");
+
 export let guiLoaded: boolean = false;
 /**
   * Function that add gui objects properties to the variable PROPERTIES
   */
-export function loadGUIProperties(GUI: typeof import("babylonjs-gui")) {
+export function loadGUIProperties(GUI: GUITyping) {
 
     guiLoaded = !!GUI;
 
