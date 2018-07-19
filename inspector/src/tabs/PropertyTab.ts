@@ -7,6 +7,8 @@ import { TreeItem } from "../tree/TreeItem";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
 
+import * as Split from "Split";
+
 /**
  * A Property tab can creates two panels: 
  * a tree panel and a detail panel, 
