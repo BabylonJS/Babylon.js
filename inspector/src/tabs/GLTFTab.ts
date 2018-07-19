@@ -9,6 +9,8 @@ import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
 
+import * as Split from "Split";
+
 interface ILoaderDefaults {
     [extensionName: string]: {
         [key: string]: any

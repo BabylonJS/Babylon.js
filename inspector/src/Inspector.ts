@@ -1,11 +1,11 @@
-import { AbstractMesh, Nullable, Scene, Tools } from "babylonjs";
-import * as GUI from "babylonjs-gui";
+import { AbstractMesh, Nullable, Scene, Tools, Observable } from "babylonjs";
 import "../sass/main.scss";
 import { Helpers } from "./helpers/Helpers";
 import { loadGUIProperties } from "./properties_gui";
 import { Scheduler } from "./scheduler/Scheduler";
 import { TabBar } from "./tabs/TabBar";
 
+import * as Split from "Split";
 
 export class Inspector {
 
@@ -32,6 +32,10 @@ export class Inspector {
 
     private _parentElement: Nullable<HTMLElement>;
 
+    public onGUILoaded: Observable<typeof import("babylonjs-gui")>;
+
+    public static GUIObject: typeof import("babylonjs-gui"); // should be typeof "babylonjs-gui";
+
     /** The inspector is created with the given engine.
      * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
      * If the parameter 'popup' is true, the inspector is created in another popup.
@@ -46,20 +50,27 @@ export class Inspector {
         colorBot?: string
     }) {
 
-        // Load GUI library if not already done
-        if (!GUI) {
-            Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.min.js", () => {
-                //Load properties of GUI objects now as GUI has to be declared before 
-                loadGUIProperties();
-            }, () => {
-                console.warn('Error : loading "babylon.gui.min.js". Please add script https://preview.babylonjs.com/gui/babylon.min.gui.js to the HTML file.');
-            });
-        }
-        else {
-            //Load properties of GUI objects now as GUI has to be declared before 
-            loadGUIProperties();
-        }
+        this.onGUILoaded = new Observable();
 
+        import("babylonjs-gui").then(GUI => {
+            // Load GUI library if not already done
+            if (!GUI || (<Object>GUI).hasOwnProperty("default")) {
+                Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.min.js", () => {
+                    Inspector.GUIObject = (<any>BABYLON).GUI;
+                    this.onGUILoaded.notifyObservers(Inspector.GUIObject);
+                    //Load properties of GUI objects now as GUI has to be declared before 
+                    loadGUIProperties(Inspector.GUIObject);
+                }, () => {
+                    console.warn('Error : loading "babylon.gui.min.js". Please add script https://preview.babylonjs.com/gui/babylon.min.gui.js to the HTML file.');
+                });
+            }
+            else {
+                Inspector.GUIObject = GUI;
+                this.onGUILoaded.notifyObservers(Inspector.GUIObject);
+                //Load properties of GUI objects now as GUI has to be declared before 
+                loadGUIProperties(Inspector.GUIObject);
+            }
+        })
         //get Tabbar initialTab
         this._initialTab = initialTab;
 

@@ -7,6 +7,8 @@ import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
 
+import * as Split from "Split";
+
 export class SceneTab extends Tab {
 
     private _inspector: Inspector;
