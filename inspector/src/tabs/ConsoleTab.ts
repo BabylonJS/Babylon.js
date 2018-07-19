@@ -4,6 +4,8 @@ import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
 
+import * as Split from "Split";
+
 /** 
  * The console tab will have two features : 
  * - hook all console.log call and display them in this panel (and in the browser console as well)

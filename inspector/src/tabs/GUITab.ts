@@ -1,4 +1,3 @@
-import { AdvancedDynamicTexture, Container, Control } from "babylonjs-gui";
 import { GUIAdapter } from "../adapters/GUIAdapter";
 import { Inspector } from "../Inspector";
 import { TreeItem } from "../tree/TreeItem";
@@ -13,11 +12,13 @@ export class GUITab extends PropertyTab {
 
     /* Overrides super */
     protected _getTree(): Array<TreeItem> {
-        let arr = [];
+        let arr: Array<TreeItem> = [];
+
+        if (!Inspector.GUIObject) return arr;
 
         // Recursive method building the tree panel
-        let createNode = (obj: Control) => {
-            let descendants = (obj as Container).children;
+        let createNode = (obj: import("babylonjs-gui").Control) => {
+            let descendants = (obj as import("babylonjs-gui").Container).children;
 
             if (descendants && descendants.length > 0) {
                 let node = new TreeItem(this, new GUIAdapter(obj));
@@ -36,8 +37,8 @@ export class GUITab extends PropertyTab {
         let instances = this._inspector.scene;
         for (let tex of instances.textures) {
             //only get GUI's textures
-            if (tex instanceof AdvancedDynamicTexture) {
-                let node = createNode(tex._rootContainer);
+            if (tex instanceof Inspector.GUIObject.AdvancedDynamicTexture) {
+                let node = createNode((<import("babylonjs-gui").AdvancedDynamicTexture>tex)._rootContainer);
                 arr.push(node);
             }
         }
