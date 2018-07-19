@@ -6,6 +6,7 @@ import { TreeItem } from "../tree/TreeItem";
 import { Tab } from "./Tab";
 import { TabBar } from "./TabBar";
 
+import * as Split from "Split";
 
 export class TextureTab extends Tab {
 

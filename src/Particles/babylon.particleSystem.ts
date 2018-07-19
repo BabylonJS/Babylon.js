@@ -399,10 +399,20 @@
         }
 
         /**
-         * Gets whether an animation sprite sheet is enabled or not on the particle system
+         * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
         public get isAnimationSheetEnabled(): boolean {
             return this._isAnimationSheetEnabled;
+        }
+
+        public set isAnimationSheetEnabled(value: boolean) {
+            if (this._isAnimationSheetEnabled == value) {
+                return;
+            }
+
+            this._isAnimationSheetEnabled = value;
+
+            this._resetEffect();
         }
 
         /**
