@@ -1,18 +1,16 @@
 import { AbstractMesh, Nullable, Scene } from "babylonjs";
-import * as GUI from "babylonjs-gui";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
 import { AbstractTool } from "./AbstractTool";
-
+import { guiLoaded } from "../properties_gui";
 
 export class LabelTool extends AbstractTool {
 
     /** True if label are displayed, false otherwise */
     private _isDisplayed: boolean = false;
-    private _advancedTexture: Nullable<GUI.AdvancedDynamicTexture> = null;
+    private _advancedTexture: Nullable<any/*AdvancedDynamicTexture*/> = null;
     private _labelInitialized: boolean = false;
     private _scene: Nullable<Scene> = null;
-    private _guiLoaded: boolean = false;
 
     constructor(parent: HTMLElement, inspector: Inspector) {
         super('fa', 'fa-tags', parent, inspector, 'Display mesh names on the canvas');
@@ -28,48 +26,45 @@ export class LabelTool extends AbstractTool {
     }
 
     private _checkGUILoaded(): boolean {
-        if (this._guiLoaded === true) {
-            return true;
-        }
-        if (GUI) {
-            this._guiLoaded = true;
-        }
-        return this._guiLoaded;
+        return guiLoaded;
     }
 
     private _initializeLabels() {
-        // Check if the label are already initialized and quit if it's the case
-        if (this._labelInitialized || !this._scene) {
-            return;
-        }
 
         // Can't initialize them if the GUI lib is not loaded yet
         if (!this._checkGUILoaded()) {
             return;
         }
 
+
+        // Check if the label are already initialized and quit if it's the case
+        if (this._labelInitialized || !this._scene) {
+            return false;
+        }
         // Create the canvas that will be used to display the labels
-        this._advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this._advancedTexture = Inspector.GUIObject.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
         // Create label for all the Meshes, Lights and Cameras
         // Those that will be created/removed after this method is called will be taken care by the event handlers added below
 
         for (let m of this._scene.meshes) {
-            this._createLabel(m);
+            this._createLabel(m, Inspector.GUIObject);
         }
 
-        this._scene.onNewMeshAddedObservable.add((m, s) => {
-            this._createLabel(m);
+        this._scene.onNewMeshAddedObservable.add((m) => {
+            this._createLabel(m, Inspector.GUIObject);
         });
 
-        this._scene.onMeshRemovedObservable.add((m, s) => {
+        this._scene.onMeshRemovedObservable.add((m) => {
             this._removeLabel(m);
         });
 
         this._labelInitialized = true;
+
+        return true;
     }
 
-    private _createLabel(mesh: AbstractMesh) {
+    private _createLabel(mesh: AbstractMesh, GUI: typeof import("babylonjs-gui")) {
         // Don't create label for "system nodes" (starting and ending with ###)
         let name = mesh.name;
 
@@ -78,14 +73,14 @@ export class LabelTool extends AbstractTool {
         }
 
         if (mesh && this._advancedTexture) {
-            let rect1 = new GUI.Rectangle();
+            let rect1: import("babylonjs-gui").Rectangle = new GUI.Rectangle();
             rect1.width = 4 + 10 * name.length + "px";
             rect1.height = "22px";
             rect1.background = "rgba(0,0,0,0.6)";
             rect1.color = "black";
             this._advancedTexture.addControl(rect1);
 
-            let label = new GUI.TextBlock();
+            let label: import("babylonjs-gui").TextBlock = new GUI.TextBlock();
             label.text = name;
             label.fontSize = 12;
             rect1.addControl(label);
@@ -110,7 +105,7 @@ export class LabelTool extends AbstractTool {
     // Action : Display/hide mesh names on the canvas
     public action() {
         // Don't toggle if the script is not loaded
-        if (!this._checkGUILoaded() || !this._advancedTexture) {
+        if (!this._checkGUILoaded()) {
             return;
         }
 
@@ -120,12 +115,15 @@ export class LabelTool extends AbstractTool {
         // Check if we have to display the labels
         if (this._isDisplayed) {
             this._initializeLabels();
-            this._advancedTexture._rootContainer.isVisible = true;
+            if (this._advancedTexture)
+                this._advancedTexture._rootContainer.isVisible = true;
+
         }
 
         // Or to hide them
         else {
-            this._advancedTexture._rootContainer.isVisible = false;
+            if (this._advancedTexture)
+                this._advancedTexture._rootContainer.isVisible = false;
         }
     }
 }
