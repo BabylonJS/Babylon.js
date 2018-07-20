@@ -1953,7 +1953,7 @@
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
@@ -1967,10 +1967,11 @@
                                 "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
                         }
-                    ]
+                    ],
+                    "minified": true
                 },
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "viewer.max.js",
                             "outputDirectory": "/../../Viewer/dist/"
@@ -2011,7 +2012,7 @@
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "babylon.viewer.assets.js",
                             "outputDirectory": "/../../Viewer/build/assets/"
