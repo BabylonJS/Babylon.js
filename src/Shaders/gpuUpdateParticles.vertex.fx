@@ -217,10 +217,16 @@ void main() {
     vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
-    float h = randoms2.y * height.y;
-    
-    // Better distribution in a cone at normal angles.
-    h = 1. - h * h;
+
+    #ifdef CONEEMITTERSPAWNPOINT
+        float h = 0.00001;
+    #else
+        float h = randoms2.y * height.y;
+        
+        // Better distribution in a cone at normal angles.
+        h = 1. - h * h;        
+    #endif
+
     float lRadius = radius.x - radius.x * randoms2.z * radius.y;
     lRadius = lRadius * h;
 

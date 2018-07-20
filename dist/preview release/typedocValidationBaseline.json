@@ -1,7 +1,7 @@
 {
-  "errors": 4239,
+  "errors": 4238,
   "babylon.typedoc.json": {
-    "errors": 4239,
+    "errors": 4238,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -2926,11 +2926,6 @@
           }
         },
         "getRightTarget": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getTranformationMatrix": {
           "Comments": {
             "MissingText": true
           }

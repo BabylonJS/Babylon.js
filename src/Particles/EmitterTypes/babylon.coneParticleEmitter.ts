@@ -20,6 +20,11 @@ module BABYLON {
         public heightRange = 1;   
 
         /**
+         * Gets or sets a value indicating if all the particles should be emitted from the spawn point only (the base of the cone)
+         */
+        public emitFromSpawnPointOnly = false;
+
+        /**
          * Gets or sets the radius of the emission cone
          */
         public get radius(): number {
@@ -98,9 +103,15 @@ module BABYLON {
          */
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var s = Scalar.RandomRange(0, Math.PI * 2);
-            var h = Scalar.RandomRange(0, this.heightRange);
-            // Better distribution in a cone at normal angles.
-            h = 1 - h * h;
+            var h: number;
+            
+            if (!this.emitFromSpawnPointOnly) {
+                h = Scalar.RandomRange(0, this.heightRange);
+                // Better distribution in a cone at normal angles.
+                h = 1 - h * h;
+            } else {
+                h = 0.0001;
+            }
             var radius = this._radius - Scalar.RandomRange(0, this._radius * this.radiusRange);
             radius = radius * h;
 
@@ -139,7 +150,13 @@ module BABYLON {
          * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
-            return "#define CONEEMITTER"
+            let defines = "#define CONEEMITTER";
+
+            if (this.emitFromSpawnPointOnly) {
+                defines += "\n#define CONEEMITTERSPAWNPOINT"
+            }
+
+            return defines;
         }     
         
         /**
