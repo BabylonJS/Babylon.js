@@ -173,7 +173,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * This will be executed when the templates initialize.
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
-            toggleVR(): void;
+            protected _initVR(): void;
             /**
                 * Toggle fullscreen of the entire viewer
                 */
@@ -376,7 +376,9 @@ declare module 'babylonjs-viewer/viewer/viewer' {
             toggleHD(): void;
             protected _vrToggled: boolean;
             protected _vrScale: number;
+            protected _vrInit: boolean;
             toggleVR(): void;
+            protected _initVR(): void;
             /**
                 * The resize function that will be registered with the window object
                 */
