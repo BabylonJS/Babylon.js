@@ -2012,7 +2012,7 @@
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "babylon.viewer.assets.js",
                             "outputDirectory": "/../../Viewer/build/assets/"
