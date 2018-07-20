@@ -1599,6 +1599,18 @@
         }
 
         /**
+         * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
+         * @param radius The radius of the hemisphere to emit from
+         * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+         * @returns the emitter
+         */
+        public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
+            var particleEmitter = new HemisphericParticleEmitter(radius, radiusRange);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
          * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
          * @param radius The radius of the sphere to emit from
          * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
