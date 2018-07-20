@@ -685,7 +685,7 @@ module BABYLON.GLTF2 {
                         baseColorBuffer[offset] = metallicRoughness.baseColor.r * 255;
                         baseColorBuffer[offset + 1] = metallicRoughness.baseColor.g * 255;
                         baseColorBuffer[offset + 2] = metallicRoughness.baseColor.b * 255;
-                        baseColorBuffer[offset + 3] = resizedTextures.texture1.hasAlpha ? diffuseBuffer[offset + 3] : 255;
+                        baseColorBuffer[offset + 3] = resizedTextures.texture1.hasAlpha ? diffuseBuffer[offset + 3] * 255 : 255;
 
                         metallicRoughnessBuffer[offset] = 0;
                         metallicRoughnessBuffer[offset + 1] = metallicRoughness.roughness * 255;
