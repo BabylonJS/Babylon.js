@@ -294,6 +294,7 @@
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.hemisphericParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.pointParticleEmitter.js",
                 "../../src/Particles/babylon.particleSystemComponent.js"
             ],
