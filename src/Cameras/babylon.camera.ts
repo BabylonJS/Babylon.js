@@ -557,6 +557,10 @@
             return this._projectionMatrix;
         }
 
+        /**
+         * Gets the transformation matrix (ie. the multiplication of view by projection matrices)
+         * @returns a Matrix
+         */
         public getTransformationMatrix(): Matrix {
             this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             return this._transformMatrix;
