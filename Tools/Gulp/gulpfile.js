@@ -447,99 +447,90 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.webpack) {
             let sequence = [waitAll];
-            let wpBuild = webpackStream(require(library.webpack), webpack);
+
             if (settings.build.outputs) {
-                //shoud dtsBundle create the declaration?
-                if (settings.build.dtsBundle) {
-                    let event = wpBuild
+
+                settings.build.outputs.forEach(out => {
+                    let wpConfig = require(library.webpack);
+                    if (!out.minified) {
+                        wpConfig.mode = "development";
+                    }
+                    console.log(wpConfig)
+                    let wpBuild = webpackStream(wpConfig, webpack);
+
+                    //shoud dtsBundle create the declaration?
+                    if (settings.build.dtsBundle) {
+                        let event = wpBuild
+                            .pipe(through.obj(function (file, enc, cb) {
+                                // only declaration files
+                                const isdts = /\.d\.ts$/.test(file.path);
+                                if (isdts) this.push(file);
+                                cb();
+                            }))
+                            .pipe(gulp.dest(outputDirectory));
+                        // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
+                        // until I fix it
+                        event.on("end", function () {
+                            // create the file
+                            dtsBundle.bundle(settings.build.dtsBundle);
+                            // prepend the needed reference
+                            let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
+                            fs.readFile(fileLocation, function (err, data) {
+                                if (err) throw err;
+                                data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
+                                fs.writeFile(fileLocation, data);
+                                if (settings.build.processDeclaration) {
+                                    var newData = processDeclaration(data, settings.build.processDeclaration);
+                                    fs.writeFile(fileLocation.replace('.module', ''), newData);
+                                }
+                            });
+                        });
+                    }
+
+                    let build = wpBuild
                         .pipe(through.obj(function (file, enc, cb) {
-                            // only declaration files
-                            const isdts = /\.d\.ts$/.test(file.path);
-                            if (isdts) this.push(file);
+                            // only pipe js files
+                            const isJs = /\.js$/.test(file.path);
+                            if (isJs) this.push(file);
                             cb();
                         }))
-                        .pipe(gulp.dest(outputDirectory));
-                    // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
-                    // until I fix it
-                    event.on("end", function () {
-                        // create the file
-                        dtsBundle.bundle(settings.build.dtsBundle);
-                        // prepend the needed reference
-                        let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
-                        fs.readFile(fileLocation, function (err, data) {
-                            if (err) throw err;
-                            data = (settings.build.dtsBundle.prependText || "") + '\n' + data.toString();
-                            fs.writeFile(fileLocation, data);
-                            if (settings.build.processDeclaration) {
-                                var newData = processDeclaration(data, settings.build.processDeclaration);
-                                fs.writeFile(fileLocation.replace('.module', ''), newData);
+                        .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: library.babylonIncluded }));
+
+                    function processDestination(dest) {
+                        var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
+                        build = build
+                            .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                            .pipe(gulp.dest(outputDirectory));
+
+                        if (library.babylonIncluded && dest.addBabylonDeclaration) {
+                            // include the babylon declaration
+                            if (dest.addBabylonDeclaration === true) {
+                                dest.addBabylonDeclaration = [config.build.declarationFilename];
                             }
-                        });
-                    });
-                }
-
-                let build = wpBuild
-                    .pipe(through.obj(function (file, enc, cb) {
-                        // only pipe js files
-                        const isJs = /\.js$/.test(file.path);
-                        if (isJs) this.push(file);
-                        cb();
-                    }))
-                    .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: library.babylonIncluded }));
-
-                let unminifiedOutpus = [];
-                let minifiedOutputs = [];
-                settings.build.outputs.forEach(out => {
-                    if (out.minified) {
-                        out.destination.forEach(dest => {
-                            minifiedOutputs.push(dest);
-                        });
-                    } else {
-                        out.destination.forEach(dest => {
-                            unminifiedOutpus.push(dest);
-                        });
-                    }
-                });
-
-                function processDestination(dest) {
-                    var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
-                    build = build
-                        .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                        .pipe(gulp.dest(outputDirectory));
-
-                    if (library.babylonIncluded && dest.addBabylonDeclaration) {
-                        // include the babylon declaration
-                        if (dest.addBabylonDeclaration === true) {
-                            dest.addBabylonDeclaration = [config.build.declarationFilename];
+                            var decsToAdd = dest.addBabylonDeclaration.map(function (dec) {
+                                return config.build.outputDirectory + '/' + dec;
+                            });
+                            sequence.unshift(gulp.src(decsToAdd)
+                                .pipe(rename(function (path) {
+                                    path.dirname = '';
+                                }))
+                                .pipe(gulp.dest(outputDirectory)))
                         }
-                        var decsToAdd = dest.addBabylonDeclaration.map(function (dec) {
-                            return config.build.outputDirectory + '/' + dec;
-                        });
-                        sequence.unshift(gulp.src(decsToAdd)
-                            .pipe(rename(function (path) {
-                                path.dirname = '';
-                            }))
-                            .pipe(gulp.dest(outputDirectory)))
                     }
-                }
 
-                unminifiedOutpus.forEach(dest => {
-                    processDestination(dest);
+                    out.destinations.forEach(dest => {
+                        processDestination(dest);
+                    });
+
+                    sequence.push(build);
+
                 });
 
-                if (minifiedOutputs.length) {
-                    build = build
-                        .pipe(uglify())
-                        .pipe(optimisejs())
-                }
 
-                minifiedOutputs.forEach(dest => {
-                    processDestination(dest);
-                });
-
-                sequence.push(build);
 
             } else {
+
+                let wpBuild = webpackStream(require(library.webpack), webpack);
 
                 let buildEvent = wpBuild
                     .pipe(gulp.dest(outputDirectory))
