@@ -155,6 +155,7 @@
 - Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
 - It was not possible to add new custom optimizers, only use existing ones ([RaananW](https://github.com/RaananW))
+- Button texts were truncated incorrectly ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
