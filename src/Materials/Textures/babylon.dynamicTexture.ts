@@ -178,6 +178,20 @@
             return newTexture;
         }
 
+        /**
+         * Serializes the dynamic texture
+         * @returns a serialized dynamic texture object
+         */
+        public serialize(): any {
+            const serializationObject = super.serialize();
+            serializationObject.base64String = this._canvas.toDataURL();
+
+            serializationObject.invertY = this._invertY;
+            serializationObject.samplingMode = this.samplingMode;
+
+            return serializationObject;
+        }
+
         /** @hidden */
         public _rebuild(): void {
             this.update();
