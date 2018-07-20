@@ -103,11 +103,6 @@ export class TextureTab extends Tab {
             //Create a canvas to load babylon
             let previewCanvas = Helpers.CreateElement('canvas', '', this._imagePanel);
 
-            previewCanvas.style.width = (<HTMLElement>previewCanvas.parentElement).style.width;
-            previewCanvas.style.height = "auto";
-            previewCanvas.style.position = "relative";
-            previewCanvas.style.top = "50%";
-            previewCanvas.style.transform = "translateY(-50%)";
             previewCanvas.style.outline = "none";
             previewCanvas.style.webkitTapHighlightColor = "rgba(255,255,255,0)";
 
