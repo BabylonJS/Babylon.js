@@ -55,7 +55,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                 disableOnFullscreen: false,
                 text: {
                     hdButton: "Toggle HD",
-                    fullscreenButton: "Fullscreen",
+                    fullscreenButton: "Toggle Fullscreen",
                     helpButton: "Help",
                     vrButton: "Toggle VR",
                     printButton: "Print model in 3D"
