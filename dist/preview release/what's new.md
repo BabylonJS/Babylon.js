@@ -18,6 +18,7 @@
   - Added support for `radiusRange` for sphere emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#sphere-emitter)
   - Added support for `radiusRange` and `heightRange` for cone emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#cone-emitter)
   - Added new point emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#point-emitter)
+  - Added new hemispheric emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#hemispheric-emitter)
   - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-blending)
   - Added support for color gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-colors)
   - Added support for pre-warming. [Doc](https://doc.babylonjs.com/babylon101/particles#pre-warming)
