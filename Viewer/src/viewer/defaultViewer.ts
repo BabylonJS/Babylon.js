@@ -328,19 +328,31 @@ export class DefaultViewer extends AbstractViewer {
         this._updateAnimationSpeed("1.0", paramsObject);
     }
 
-    public toggleVR() {
-        super.toggleVR();
+    protected _initVR() {
+        this.engine.onVRDisplayChangedObservable.add(() => {
+            let viewerTemplate = this.templateManager.getTemplate('viewer');
+            let viewerElement = viewerTemplate && viewerTemplate.parent;
 
-        let viewerTemplate = this.templateManager.getTemplate('viewer');
-        let viewerElement = viewerTemplate && viewerTemplate.parent;
-
-        if (viewerElement) {
-            if (this._vrToggled) {
-                viewerElement.classList.add("in-vr");
-            } else {
-                viewerElement.classList.remove("in-vr");
+            if (viewerElement) {
+                if (this.sceneManager.vrHelper!.isInVRMode) {
+                    viewerElement.classList.add("in-vr");
+                } else {
+                    viewerElement.classList.remove("in-vr");
+                }
             }
+        });
+        if (this.sceneManager.vrHelper) {
+            // due to the way the experience helper is exisintg VR, this must be added.
+            this.sceneManager.vrHelper.onExitingVR.add(() => {
+                let viewerTemplate = this.templateManager.getTemplate('viewer');
+                let viewerElement = viewerTemplate && viewerTemplate.parent;
+
+                if (viewerElement) {
+                    viewerElement.classList.remove("in-vr");
+                }
+            });
         }
+        super._initVR();
     }
 
     /**
