@@ -179,10 +179,15 @@
         }
 
         /**
-         * Serializes the dynamic texture
+         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
          * @returns a serialized dynamic texture object
          */
         public serialize(): any {
+            const scene = this.getScene();
+            if (scene && !scene.isReady()) {
+                Tools.Warn("The scene must be ready before serializing the dynamic texture");
+            }
+
             const serializationObject = super.serialize();
             serializationObject.base64String = this._canvas.toDataURL();
 
