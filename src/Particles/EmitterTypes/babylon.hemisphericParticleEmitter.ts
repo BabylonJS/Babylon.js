@@ -53,12 +53,12 @@ module BABYLON {
         public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
             var v = Scalar.RandomRange(0, 1.0); 
-            var phi = Scalar.RandomRange(0, Math.PI);
+            var phi = Scalar.RandomRange(0, 2 * Math.PI);
             var theta = Math.acos(2 * v - 1);
             var randX = randRadius * Math.cos(phi) * Math.sin(theta);
             var randY = randRadius * Math.cos(theta);
             var randZ = randRadius * Math.sin(phi) * Math.sin(theta);
-            Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+            Vector3.TransformCoordinatesFromFloatsToRef(randX, Math.abs(randY), randZ, worldMatrix, positionToUpdate);
         }
 
         /**
