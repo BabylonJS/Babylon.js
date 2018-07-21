@@ -264,12 +264,31 @@ module BABYLON {
 
         /**
          * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
+         * For assets with LODs, raised when all of the LODs are complete.
+         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
         public set onComplete(callback: () => void) {
             if (this._onCompleteObserver) {
                 this.onCompleteObservable.remove(this._onCompleteObserver);
             }
             this._onCompleteObserver = this.onCompleteObservable.add(callback);
+        }
+
+        /**
+         * Observable raised when an error occurs.
+         */
+        public readonly onErrorObservable = new Observable<any>();
+
+        private _onErrorObserver: Nullable<Observer<any>>;
+
+        /**
+         * Callback raised when an error occurs.
+         */
+        public set onError(callback: (reason: any) => void) {
+            if (this._onErrorObserver) {
+                this.onErrorObservable.remove(this._onErrorObserver);
+            }
+            this._onErrorObserver = this.onErrorObservable.add(callback);
         }
 
         /**
@@ -312,9 +331,12 @@ module BABYLON {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         public whenCompleteAsync(): Promise<void> {
-            return new Promise(resolve => {
+            return new Promise((resolve, reject) => {
                 this.onCompleteObservable.addOnce(() => {
                     resolve();
+                });
+                this.onErrorObservable.addOnce(reason => {
+                    reject(reason);
                 });
             });
         }
