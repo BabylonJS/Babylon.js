@@ -632,6 +632,10 @@ module BABYLON {
                 }
             }
         }
+         
+        public getVolume(): number { 
+            return this._volume; 
+        } 
 
         public attachToMesh(meshToConnectTo: AbstractMesh) {
             if (this._connectedMesh && this._registerFunc) {

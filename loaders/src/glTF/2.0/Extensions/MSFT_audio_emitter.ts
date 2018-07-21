@@ -80,181 +80,6 @@ module BABYLON.GLTF2.Extensions {
     }
 
     /**
-     * Wraps one or more Sound objects and selects one with random weight for playback.
-     */
-    export class WeightedSound {
-        /** When true a Sound will be selected and played when the current playing Sound completes. */
-        public loop: boolean = false;
-        private _coneInnerAngle: number = Math.PI;
-        private _coneOuterAngle: number = Math.PI;
-        private _volume: number = 1;
-        /** A Sound is currently playing. */
-        public isPlaying: boolean = false;
-        /** A Sound is currently paused. */
-        public isPaused: boolean = false;
-
-        private _sounds: Sound[] = [];
-        private _weights: number[] = [];
-        private _currentIndex: number;
-
-        /**
-         * Creates a new WeightedSound from the list of sounds given.
-         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
-         * @param sounds Array of Sounds that will be selected from.
-         * @param weights Array of number values for selection weights; length must equal sounds, and sum must equal 1.
-         */
-        constructor(loop: boolean, sounds: Sound[], weights: number[]) {
-            if (sounds.length != weights.length) {
-                throw new Error('Sounds length does not equal weights length');
-            }
-
-            this.loop = loop;
-            this._weights = weights;
-            // Normalize the weights
-            let weightSum = 0;
-            for (const weight of weights) {
-                weightSum += weight;
-            }
-            const invWeightSum = weightSum > 0 ? 1 / weightSum : 0;
-            for (let i = 0; i < this._weights.length; i++) {
-                this._weights[i] *= invWeightSum;
-            }
-            this._sounds = sounds;
-            for (let sound of this._sounds) {
-                sound.onEndedObservable.add(() => { this._onended() });
-            }
-        }
-
-        /**
-         * The size of cone in radians for a directional sound in which there will be no attenuation.
-         */
-        public get directionalConeInnerAngle(): number {
-            return this._coneInnerAngle;
-        }
-
-        /**
-         * The size of cone in radians for a directional sound in which there will be no attenuation.
-         */
-        public set directionalConeInnerAngle(value: number) {
-            if (value != this._coneInnerAngle) {
-                if (this._coneOuterAngle < value) {
-                    Tools.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
-                    return;
-                }
-
-                this._coneInnerAngle = value;
-                const degrees = 2 * Tools.ToDegrees(value);
-                for (let sound of this._sounds) {
-                    sound.directionalConeInnerAngle = degrees;
-                }
-            }
-        }
-
-        /**
-         * Size of cone in radians for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        public get directionalConeOuterAngle(): number {
-            return this._coneOuterAngle;
-        }
-
-        /**
-         * Size of cone in radians for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        public set directionalConeOuterAngle(value: number) {
-            if (value != this._coneOuterAngle) {
-                if (value < this._coneInnerAngle) {
-                    Tools.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
-                    return;
-                }
-
-                this._coneOuterAngle = value;
-                const degrees = 2 * Tools.ToDegrees(value)
-                for (let sound of this._sounds) {
-                    sound.directionalConeOuterAngle = degrees;
-                }
-            }
-        }
-
-        /**
-         * Playback volume.
-         */
-        public get volume(): number {
-            return this._volume;
-        }
-
-        /**
-         * Playback volume.
-         */
-        public set volume(value: number) {
-            if (value != this._volume) {
-                for (let sound of this._sounds) {
-                    sound.setVolume(value);
-                }
-            }
-        }
-
-        private _onended() {
-            if (this._currentIndex !== undefined) {
-                this._sounds[this._currentIndex].autoplay = false;
-            }
-            if (this.loop && this.isPlaying) {
-                this.play();
-            } else {
-                this.isPlaying = false;
-            }
-        }
-
-        /**
-         * Suspend playback
-         */
-        public pause() {
-            this.isPaused = true;
-            if (this._currentIndex !== undefined) {
-                this._sounds[this._currentIndex].pause();
-            }
-        }
-
-        /**
-         * Stop playback
-         */
-        public stop() {
-            this.isPlaying = false;
-            if (this._currentIndex !== undefined) {
-                this._sounds[this._currentIndex].stop();
-            }
-        }
-
-        /**
-         * Start playback.
-         * @param startOffset Position the clip head at a specific time in seconds.
-         */
-        public play(startOffset?: number) {
-            if (!this.isPaused) {
-                this.stop();
-                let randomValue = Math.random();
-                let total = 0;
-                for (let i = 0; i < this._weights.length; i++) {
-                    total += this._weights[i];
-                    if (randomValue <= total) {
-                        this._currentIndex = i;
-                        break;
-                    }
-                }
-            }
-            const sound = this._sounds[this._currentIndex];
-            if (sound.isReady()) {
-                sound.play(0, this.isPaused ? undefined : startOffset);
-            } else {
-                sound.autoplay = true;
-            }
-            this.isPlaying = true;
-            this.isPaused = false;
-        }
-    }
-
-    /**
      * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
      */
     export class MSFT_audio_emitter extends GLTFLoaderExtension {
@@ -291,28 +116,26 @@ module BABYLON.GLTF2.Extensions {
                     autoplay: false,
                     volume: emitter.volume == undefined ? 1 : emitter.volume,
                 };
-                let innerAngle = emitter.innerAngle;
-                let outerAngle = emitter.outerAngle;
 
                 _ArrayItem.Assign(this._clips);
                 for (let i = 0; i < emitter.clips.length; i++) {
-                    const clip = GLTFLoader._GetProperty(`#/extensions/${this.name}/clips`, this._clips, emitter.clips[i].clip);
-                    clipPromises.push(this._loadClipAsync(`#/extensions/${NAME}/clips/${emitter.clips[i].clip}`, clip).then((objectURL: string) => {
+                    const clipContext = `#/extensions/${NAME}/clips`;
+                    const clip = GLTFLoader._GetProperty(clipContext, this._clips, emitter.clips[i].clip);
+                    clipPromises.push(this._loadClipAsync(`${clipContext}/${emitter.clips[i].clip}`, clip).then((objectURL: string) => {
                         const sound = emitter._babylonSounds[i] = new Sound(name, objectURL, this._loader._babylonScene, null, options);
                         sound.refDistance = emitter.refDistance || 1;
                         sound.maxDistance = emitter.maxDistance || 256;
                         sound.rolloffFactor = emitter.rolloffFactor || 1;
                         sound.distanceModel = emitter.distanceModel || 'exponential';
                         sound._positionInEmitterSpace = true;
-                        return Promise.resolve();
                     }));
                 }
 
                 const promise = Promise.all(clipPromises).then(() => {
-                    let weights = emitter.clips.map(clip => { return clip.weight || 1; });
-                    let weightedSound = new WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
-                    if (innerAngle) weightedSound.directionalConeInnerAngle = innerAngle;
-                    if (outerAngle) weightedSound.directionalConeOuterAngle = outerAngle;
+                    const weights = emitter.clips.map(clip => { return clip.weight || 1; });
+                    const weightedSound = new WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
+                    if (emitter.innerAngle) weightedSound.directionalConeInnerAngle = 2 * Tools.ToDegrees(emitter.innerAngle);
+                    if (emitter.outerAngle) weightedSound.directionalConeOuterAngle = 2 * Tools.ToDegrees(emitter.outerAngle);
                     if (emitter.volume) weightedSound.volume = emitter.volume;
                     emitter._babylonData!.sound = weightedSound;
                 });
@@ -327,18 +150,18 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadSceneAsync(context: string, scene: _ILoaderScene): Nullable<Promise<void>> { 
             return this._loadExtensionAsync<_IEmittersReference>(context, scene, (extensionContext, extension) => {
-                return this._loader._loadSceneAsync(extensionContext, scene).then(() => {
+                return this._loader._loadSceneAsync(context, scene).then(() => {
 
                     const promises = new Array<Promise<void>>();
                     _ArrayItem.Assign(this._emitters);
                     for (const emitterIndex of extension.emitters) {
-                        const emitter = GLTFLoader._GetProperty(extensionContext, this._emitters, emitterIndex);
+                        const emitter = GLTFLoader._GetProperty(`${extensionContext}/emitters`, this._emitters, emitterIndex);
                         if (emitter.refDistance != undefined || emitter.maxDistance != undefined || emitter.rolloffFactor != undefined ||
                             emitter.distanceModel != undefined || emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
                             throw new Error(`${extensionContext}: Direction or Distance properties are not allowed on emitters attached to a scene`);
                         }
 
-                        promises.push(this._loadEmitterAsync(`#/extensions/${this.name}/emitter/${emitter._index}`, emitter));
+                        promises.push(this._loadEmitterAsync(`${extensionContext}/emitters/${emitter._index}`, emitter));
                     }
 
                     return Promise.all(promises).then(() => {});
@@ -353,8 +176,8 @@ module BABYLON.GLTF2.Extensions {
                     const promises = new Array<Promise<void>>();
                     _ArrayItem.Assign(this._emitters);
                     for (const emitterIndex of extension.emitters) {
-                        const emitter = GLTFLoader._GetProperty(extensionContext, this._emitters, emitterIndex);
-                        promises.push(this._loadEmitterAsync(`#/extensions/${this.name}/emitter/${emitter._index}`, emitter).then(() => {
+                        const emitter = GLTFLoader._GetProperty(`${extensionContext}/emitters`, this._emitters, emitterIndex);
+                        promises.push(this._loadEmitterAsync(`${extensionContext}/emitters/${emitter._index}`, emitter).then(() => {
                             if (node._babylonMesh) {
                                 for (const sound of emitter._babylonSounds) {
                                     sound.attachToMesh(node._babylonMesh);
@@ -377,47 +200,55 @@ module BABYLON.GLTF2.Extensions {
             return this._loadExtensionAsync<_ILoaderAnimationEvents>(context, animation, (extensionContext, extension) => {
                 return this._loader._loadAnimationAsync(extensionContext, animation).then(() => {
                     const promises = new Array<Promise<void>>();
-                    let babylonAnimationGroup = animation._babylonAnimationGroup;
+                    const babylonAnimationGroup = animation._babylonAnimationGroup!;
 
                     _ArrayItem.Assign(extension.events);
                     for (const event of extension.events) {
-                        promises.push(this._loadAnimationEventAsync(`${context}/extension/${NAME}/events/${event._index}`, context, animation, event, babylonAnimationGroup!));
+                        promises.push(this._loadAnimationEventAsync(`${extensionContext}/events/${event._index}`, context, animation, event, babylonAnimationGroup));
                     }
 
                     return Promise.all(promises).then(() => {
                         // Make sure all audio stops when the animation is terminated.
                         const getCallback = (pause: Boolean) => {
                             const emitterList = this._emitters;
-                            return () => { 
-                                for (const emitter of emitterList) {
-                                    if (pause) {
+                            if (pause) {
+                                return () => { 
+                                    for (const emitter of emitterList) {
                                         emitter._babylonData!.sound!.pause();
-                                    } else {
+                                    }
+                                };
+                            } else {
+                                return () => { 
+                                    for (const emitter of emitterList) {
                                         emitter._babylonData!.sound!.stop();
                                     }
                                 }
                             };
                         }
-                        babylonAnimationGroup!.onAnimationGroupEndObservable.add(getCallback(false));
-                        babylonAnimationGroup!.onAnimationGroupPauseObservable.add(getCallback(true));
-    
-                        babylonAnimationGroup!.normalize();
+                        babylonAnimationGroup.onAnimationGroupEndObservable.add(getCallback(false));
+                        babylonAnimationGroup.onAnimationGroupPauseObservable.add(getCallback(true));
                     });
                 });
             });
         }
 
-        private _getEventAction(sound: WeightedSound, action: _AnimationEventAction, time: number, startOffset?: number): (currentFrame: number) => void {
-            return (currentFrame: number) => {
-                if (action == _AnimationEventAction.play) {
-                    const frameOffset = (startOffset == undefined ? 0 : startOffset) + (currentFrame - time);
+        private _getEventAction(context:string, sound: WeightedSound, action: _AnimationEventAction, time: number, startOffset?: number): (currentFrame: number) => void {
+            if (action == _AnimationEventAction.play) {
+                return (currentFrame: number) => {            
+                    const frameOffset = (startOffset || 0) + (currentFrame - time);
                     sound.play(frameOffset);
-                } else if (action == _AnimationEventAction.stop) {
+                };
+            } else if (action == _AnimationEventAction.stop) {
+                return (currentFrame: number) => {
                     sound.stop();
-                } else if (action == _AnimationEventAction.pause) {
+                };
+            } else if (action == _AnimationEventAction.pause) {
+                return (currentFrame: number) => {   
                     sound.pause();
-                }
-            };
+                };
+            } else {
+                throw new Error(`${context}: Unsupported action ${action}`);
+            }
         }
 
         private _loadAnimationEventAsync(context: string, animationContext: string, animation: _ILoaderAnimation, event: _ILoaderAnimationEvent, babylonAnimationGroup: AnimationGroup): Promise<void> {
@@ -426,14 +257,13 @@ module BABYLON.GLTF2.Extensions {
             }
             const babylonAnimation = babylonAnimationGroup.targetedAnimations[0];
             const emitterIndex = event.emitter;
-            const emitter = GLTFLoader._GetProperty(`#/extensions/${this.name}/emitter`, this._emitters, emitterIndex);
+            const emitter = GLTFLoader._GetProperty(`#/extensions/${NAME}/emitters`, this._emitters, emitterIndex);
             return this._loadEmitterAsync(context, emitter).then(()=> {
                 const sound = emitter._babylonData!.sound;
                 if (sound) {
-                    var babylonAnimationEvent = new AnimationEvent(event.time, this._getEventAction(sound, event.action, event.time, event.startOffset));
+                    var babylonAnimationEvent = new AnimationEvent(event.time, this._getEventAction(context, sound, event.action, event.time, event.startOffset));
                     babylonAnimation.animation.addEvent(babylonAnimationEvent);
                 }
-                return Promise.resolve();
             });
         }
 
