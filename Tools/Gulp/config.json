@@ -572,7 +572,8 @@
                 "../../src/Audio/babylon.audioEngine.js",
                 "../../src/Audio/babylon.sound.js",
                 "../../src/Audio/babylon.soundtrack.js",
-                "../../src/Audio/babylon.analyser.js"
+                "../../src/Audio/babylon.analyser.js",
+                "../../src/Audio/babylon.weightedsound.js"
             ],
             "dependUpon": [
                 "core"

@@ -47,8 +47,8 @@ export class SoundAdapter
         else {
             (this._obj as Sound).play();
         }
-        (this._obj as Sound).onEndedObservable.add(() => { 
+        (this._obj as Sound).onEndedObservable.addOnce(() => { 
             callback(); 
-        }, -1, false, null, true); 
+        });
     }
 }
