@@ -28,6 +28,16 @@ module BABYLON.GLTF2.Extensions {
     export class EXT_lights_imageBased extends GLTFLoaderExtension {
         public readonly name = NAME;
 
+        private _lights?: ILight[];
+
+        protected _onLoading(): void {
+            const extensions = this._loader._gltf.extensions;
+            if (extensions && extensions[this.name]) {
+                const extension = extensions[this.name] as ILights;
+                this._lights = extension.lights;
+            }
+        }
+
         protected _loadSceneAsync(context: string, scene: _ILoaderScene): Nullable<Promise<void>> { 
             return this._loadExtensionAsync<ILightReference>(context, scene, (extensionContext, extension) => {
                 const promises = new Array<Promise<void>>();
@@ -107,16 +117,6 @@ module BABYLON.GLTF2.Extensions {
             return light._loaded.then(() => {
                 return light._babylonTexture!;
             });
-        }
-
-        private get _lights(): Array<ILight> {
-            const extensions = this._loader._gltf.extensions;
-            if (!extensions || !extensions[this.name]) {
-                throw new Error(`#/extensions: '${this.name}' not found`);
-            }
-
-            const extension = extensions[this.name] as ILights;
-            return extension.lights;
         }
     }
 
