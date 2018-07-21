@@ -78,6 +78,7 @@
 - Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
 - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
+- Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 
 ### glTF Loader
 
@@ -86,6 +87,7 @@
 - Added glTF loader settings to the GLTF tab in the debug layer ([bghgary](http://www.github.com/bghgary))
 - Added debug logging and performance counters ([bghgary](http://www.github.com/bghgary))
 - Added support for EXT_lights_imageBased ([bghgary](http://www.github.com/bghgary))
+- Added support for MSFT_audio_emitters ([najadojo](http://www.github.com/najadojo))
 
 ### Viewer
 
