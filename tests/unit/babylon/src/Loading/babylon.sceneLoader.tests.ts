@@ -74,7 +74,7 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
-        it('Load TwoQuads with ImporMesh and two node names', () => {
+        it('Load TwoQuads with ImportMesh and two node names', () => {
             const scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.ImportMeshAsync(["node0", "node1"], "http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
                 expect(scene.getMeshByName("node0"), "node0").to.exist;
@@ -393,6 +393,20 @@ describe('Babylon Scene Loader', function () {
             promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
                 // do nothing
             }));
+
+            return Promise.all(promises);
+        });
+
+        it('Load TwoQuadsNoTextures with LODs', () => {
+            const scene = new BABYLON.Scene(subject);
+
+            const promises = new Array<Promise<any>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
+                promises.push(loader.whenCompleteAsync());
+            });
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuadsNoTextures.gltf", scene));
 
             return Promise.all(promises);
         });
