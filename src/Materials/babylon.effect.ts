@@ -202,10 +202,21 @@
          * Observable that will be called if an error occurs during shader compilation.
          */
         public onErrorObservable = new Observable<Effect>();
+
+
+        /** @hidden */
+        public _onBindObservable: Nullable<Observable<Effect>>;
+
         /**
          * Observable that will be called when effect is bound.
          */
-        public onBindObservable = new Observable<Effect>();
+        public get onBindObservable(): Observable<Effect> {
+            if (!this._onBindObservable) {
+                this._onBindObservable = new Observable<Effect>();
+            }
+
+            return this._onBindObservable;
+        }
 
 
         /** @hidden */
