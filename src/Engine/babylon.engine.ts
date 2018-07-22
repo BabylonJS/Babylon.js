@@ -3321,9 +3321,10 @@
          * @param effect defines the effect to activate
          */
         public enableEffect(effect: Nullable<Effect>): void {
-            if (!effect) {
+            if (!effect || effect === this._currentEffect) {
                 return;
             }
+
             // Use program
             this.bindSamplers(effect);
 
@@ -3332,7 +3333,9 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
-            effect.onBindObservable.notifyObservers(effect);
+            if (effect._onBindObservable) {
+                effect._onBindObservable.notifyObservers(effect);
+            }
         }
 
         /**

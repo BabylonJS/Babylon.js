@@ -507,7 +507,9 @@ module BABYLON {
          * @param scene The scene the VRExperienceHelper belongs to.
          * @param webVROptions Options to modify the vr experience helper's behavior.
          */
-        constructor(scene: Scene, /** Options to modify the vr experience helper's behavior. */public webVROptions: VRExperienceHelperOptions = {}) {
+        constructor(scene: Scene, 
+            /** Options to modify the vr experience helper's behavior. */
+            public webVROptions: VRExperienceHelperOptions = {}) {
             this._scene = scene;
             this._canvas = scene.getEngine().getRenderingCanvas();
 
