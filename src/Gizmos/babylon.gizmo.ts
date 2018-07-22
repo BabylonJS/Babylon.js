@@ -64,7 +64,9 @@ module BABYLON {
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          */
-        constructor(/** The utility layer the gizmo will be added to */ public gizmoLayer:UtilityLayerRenderer=UtilityLayerRenderer.DefaultUtilityLayer){
+        constructor(
+            /** The utility layer the gizmo will be added to */ 
+            public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer){
             this._rootMesh = new BABYLON.Mesh("gizmoRootNode",gizmoLayer.utilityLayerScene);
             this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(()=>{
                 this._update();

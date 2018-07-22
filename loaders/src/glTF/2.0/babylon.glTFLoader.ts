@@ -26,7 +26,6 @@ module BABYLON.GLTF2 {
         public _parent: GLTFFileLoader;
         public _gltf: _ILoaderGLTF;
         public _babylonScene: Scene;
-        public _readyPromise: Promise<void>;
         public _completePromises = new Array<Promise<void>>();
 
         private _disposed = false;
@@ -54,9 +53,6 @@ module BABYLON.GLTF2 {
             GLTFLoader._ExtensionNames.push(name);
         }
 
-        /**
-         * Loader state or null if the loader is not active.
-         */
         public get state(): Nullable<GLTFLoaderState> {
             return this._state;
         }
@@ -80,7 +76,6 @@ module BABYLON.GLTF2 {
 
             delete this._gltf;
             delete this._babylonScene;
-            delete this._readyPromise;
             this._completePromises.length = 0;
 
             for (const name in this._extensions) {
@@ -148,17 +143,17 @@ module BABYLON.GLTF2 {
 
         private _loadAsync(nodes: Nullable<Array<number>>): Promise<void> {
             return Promise.resolve().then(() => {
-                this._parent._startPerformanceCounter("Loading => Ready");
-                this._parent._startPerformanceCounter("Loading => Complete");
-
-                this._state = GLTFLoaderState.LOADING;
-                this._parent._log("Loading");
-
-                const readyDeferred = new Deferred<void>();
-                this._readyPromise = readyDeferred.promise;
-
                 this._loadExtensions();
                 this._checkExtensions();
+
+                const loadingToReadyCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.READY]}`;
+                const loadingToCompleteCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.COMPLETE]}`;
+
+                this._parent._startPerformanceCounter(loadingToReadyCounterName);
+                this._parent._startPerformanceCounter(loadingToCompleteCounterName);
+
+                this._setState(GLTFLoaderState.LOADING);
+                GLTFLoaderExtension._OnLoading(this);
 
                 const promises = new Array<Promise<void>>();
 
@@ -179,30 +174,30 @@ module BABYLON.GLTF2 {
                 }
 
                 const resultPromise = Promise.all(promises).then(() => {
-                    this._state = GLTFLoaderState.READY;
-                    this._parent._log("Ready");
-
-                    readyDeferred.resolve();
+                    this._setState(GLTFLoaderState.READY);
+                    GLTFLoaderExtension._OnReady(this);
 
                     this._startAnimations();
                 });
 
                 resultPromise.then(() => {
-                    this._parent._endPerformanceCounter("Loading => Ready");
+                    this._parent._endPerformanceCounter(loadingToReadyCounterName);
 
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
                             Promise.all(this._completePromises).then(() => {
-                                this._parent._endPerformanceCounter("Loading => Complete");
+                                this._parent._endPerformanceCounter(loadingToCompleteCounterName);
 
-                                this._state = GLTFLoaderState.COMPLETE;
-                                this._parent._log("Complete");
+                                this._setState(GLTFLoaderState.COMPLETE);
 
                                 this._parent.onCompleteObservable.notifyObservers(undefined);
                                 this._parent.onCompleteObservable.clear();
+
                                 this.dispose();
-                            }).catch(error => {
-                                Tools.Error(`glTF Loader: ${error.message}`);
+                            }, error => {
+                                this._parent.onErrorObservable.notifyObservers(error);
+                                this._parent.onErrorObservable.clear();
+
                                 this.dispose();
                             });
                         }
@@ -210,10 +205,13 @@ module BABYLON.GLTF2 {
                 });
 
                 return resultPromise;
-            }).catch(error => {
+            }, error => {
                 if (!this._disposed) {
-                    Tools.Error(`glTF Loader: ${error.message}`);
+                    this._parent.onErrorObservable.notifyObservers(error);
+                    this._parent.onErrorObservable.clear();
+
                     this.dispose();
+
                     throw error;
                 }
             });
@@ -292,6 +290,11 @@ module BABYLON.GLTF2 {
                     }
                 }
             }
+        }
+
+        private _setState(state: GLTFLoaderState): void {
+            this._state = state;
+            this._parent._log(GLTFLoaderState[this._state]);
         }
 
         private _createRootNode(): _ILoaderNode {
@@ -1752,6 +1755,15 @@ module BABYLON.GLTF2 {
             }
 
             return null;
+        }
+
+        public _forEachExtensions(action: (extension: GLTFLoaderExtension) => void): void {
+            for (const name of GLTFLoader._ExtensionNames) {
+                const extension = this._extensions[name];
+                if (extension.enabled) {
+                    action(extension);
+                }
+            }
         }
     }
 
