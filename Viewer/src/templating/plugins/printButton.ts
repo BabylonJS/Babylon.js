@@ -34,8 +34,8 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
 
     onEvent(event: EventCallback): void {
         if (this._currentModelUrl) {
-            let printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.print3d://");
-            window.open(printUrl);
+            let printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.builder3d://");
+            window.open(printUrl, "_self");
         }
     }
 

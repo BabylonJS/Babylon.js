@@ -12,6 +12,7 @@ declare module BabylonViewer {
         *
         * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
         */
+    import 'babylonjs-loaders';
     import 'pepjs';
     let disableInit: boolean;
     /**
@@ -142,7 +143,7 @@ declare module BabylonViewer {
                 * This will be executed when the templates initialize.
                 */
             protected _onTemplatesLoaded(): Promise<AbstractViewer>;
-            toggleVR(): void;
+            protected _initVR(): void;
             /**
                 * Toggle fullscreen of the entire viewer
                 */
@@ -335,7 +336,9 @@ declare module BabylonViewer {
             toggleHD(): void;
             protected _vrToggled: boolean;
             protected _vrScale: number;
+            protected _vrInit: boolean;
             toggleVR(): void;
+            protected _initVR(): void;
             /**
                 * The resize function that will be registered with the window object
                 */
