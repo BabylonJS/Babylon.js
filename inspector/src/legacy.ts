@@ -11,3 +11,5 @@ var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !=
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).INSPECTOR = INSPECTOR;
 }
+
+export * from "./index";

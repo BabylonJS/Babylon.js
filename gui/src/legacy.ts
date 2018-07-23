@@ -11,3 +11,5 @@ if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
     (<any>globalObject).BABYLON.GUI = GUI;
 }
+
+export * from "./index";
