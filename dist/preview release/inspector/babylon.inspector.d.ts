@@ -22,7 +22,6 @@ declare module INSPECTOR {
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
-    import "../sass/main.scss";
     export class Inspector {
             /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
             static DOCUMENT: HTMLDocument;
