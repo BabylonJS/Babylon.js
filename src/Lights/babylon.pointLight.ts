@@ -145,6 +145,7 @@
             this._uniformBuffer.addUniform("vLightData", 4);
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
             this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("vLightFalloff", 4);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
             this._uniformBuffer.addUniform("depthValues", 2);
             this._uniformBuffer.create();
@@ -163,11 +164,19 @@
                     this.transformedPosition.y,
                     this.transformedPosition.z,
                     0.0,
-                    lightIndex); 
-                return this;
+                    lightIndex);
+            }
+            else {
+                this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
             }
 
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightFalloff",
+                this.range,
+                this._inverseSquaredRange,
+                0,
+                0,
+                lightIndex
+            );
             return this;
         }
 

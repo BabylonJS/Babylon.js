@@ -2,12 +2,15 @@
 	uniform Light{X}
 	{
 		vec4 vLightData;
+
 		vec4 vLightDiffuse;
 		vec3 vLightSpecular;
 		#ifdef SPOTLIGHT{X}
 			vec4 vLightDirection;
-		#endif
-		#ifdef HEMILIGHT{X}
+			vec4 vLightFalloff;
+		#elif defined(POINTLIGHT{X})
+			vec4 vLightFalloff;
+		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
 		#endif
 		vec4 shadowsInfo;
