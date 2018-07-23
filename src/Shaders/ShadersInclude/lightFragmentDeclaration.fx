@@ -30,9 +30,9 @@
 	#ifdef SPOTLIGHT{X}
 		uniform vec4 vLightDirection{X};
 		uniform vec4 vLightFalloff{X};
-	#elif POINTLIGHT{X}
+	#elif defined(POINTLIGHT{X})
 		uniform vec4 vLightFalloff{X};
-	#elif HEMILIGHT{X}
+	#elif defined(HEMILIGHT{X})
 		uniform vec3 vLightGround{X};
 	#endif
 	#ifdef PROJECTEDLIGHTTEXTURE{X}
