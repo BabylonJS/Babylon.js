@@ -37,6 +37,11 @@
                 "name": "earcut",
                 "module": "earcut",
                 "optional": true
+            },
+            {
+                "name": "INSPECTOR",
+                "module": "babylonjs-inspector",
+                "optional": true
             }
         ]
     },
