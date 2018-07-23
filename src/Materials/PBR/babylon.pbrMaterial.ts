@@ -7,51 +7,26 @@
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
-        private static _PBRMATERIAL_OPAQUE = 0;
         /**
          * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
          */
-        public static get PBRMATERIAL_OPAQUE(): number {
-            return this._PBRMATERIAL_OPAQUE;
-        }
-
-        /**
-         * Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
-         */
-        private static _PBRMATERIAL_ALPHATEST = 1;
+        public static readonly PBRMATERIAL_OPAQUE = 0;
 
         /**
          * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
          */
-        public static get PBRMATERIAL_ALPHATEST(): number {
-            return this._PBRMATERIAL_ALPHATEST;
-        }
-
-        /**
-         * Represents the value for Alpha Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         */
-        private static _PBRMATERIAL_ALPHABLEND = 2;
+        public static readonly PBRMATERIAL_ALPHATEST = 1;
 
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          */
-        public static get PBRMATERIAL_ALPHABLEND(): number {
-            return this._PBRMATERIAL_ALPHABLEND;
-        }
-
-        /**
-         * Represents the value for Alpha Test and Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         * They are also discarded below the alpha cutoff threshold to improve performances.
-         */
-        private static _PBRMATERIAL_ALPHATESTANDBLEND = 3;
+        public static readonly PBRMATERIAL_ALPHABLEND = 2;
 
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          * They are also discarded below the alpha cutoff threshold to improve performances.
          */
-        public static get PBRMATERIAL_ALPHATESTANDBLEND(): number {
-            return this._PBRMATERIAL_ALPHATESTANDBLEND;
-        }
+        public static readonly PBRMATERIAL_ALPHATESTANDBLEND = 3;
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -346,8 +321,55 @@
          * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public usePhysicalLightFalloff = true;
+        public get usePhysicalLightFalloff(): boolean {
+            return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+        }
+
+        /**
+         * BJS is using an harcoded light falloff based on a manually sets up range.
+         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+         */
+        public set usePhysicalLightFalloff(value: boolean) {
+            if (value !== this.usePhysicalLightFalloff) {
+                // Ensure the effect will be rebuilt.
+                this._markAllSubMeshesAsTexturesDirty();
+
+                if (value) {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+                }
+                else {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
+                }
+            }
+        }
+
+        /**
+         * In order to support the falloff compatibility with gltf, a special mode has been added 
+         * to reproduce the gltf light falloff.
+         */
+        @serialize()
+        public get useGLTFLightFalloff(): boolean {
+            return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF;
+        }
+
+        /**
+         * In order to support the falloff compatibility with gltf, a special mode has been added 
+         * to reproduce the gltf light falloff.
+         */
+        public set useGLTFLightFalloff(value: boolean) {
+            if (value !== this.useGLTFLightFalloff) {
+                // Ensure the effect will be rebuilt.
+                this._markAllSubMeshesAsTexturesDirty();
+
+                if (value) {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_GLTF;
+                }
+                else {
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
+                }
+            }
+        }
 
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
