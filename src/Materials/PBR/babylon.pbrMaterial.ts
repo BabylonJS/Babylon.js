@@ -346,24 +346,24 @@
 
         /**
          * In order to support the falloff compatibility with gltf, a special mode has been added 
-         * to reproduce the frostbite light falloff.
+         * to reproduce the gltf light falloff.
          */
         @serialize()
-        public get useFrostbiteLightFalloff(): boolean {
-            return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_FROSTBITE;
+        public get useGLTFLightFalloff(): boolean {
+            return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF;
         }
 
         /**
          * In order to support the falloff compatibility with gltf, a special mode has been added 
-         * to reproduce the frostbite light falloff.
+         * to reproduce the gltf light falloff.
          */
-        public set useFrostbiteLightFalloff(value: boolean) {
-            if (value !== this.useFrostbiteLightFalloff) {
+        public set useGLTFLightFalloff(value: boolean) {
+            if (value !== this.useGLTFLightFalloff) {
                 // Ensure the effect will be rebuilt.
                 this._markAllSubMeshesAsTexturesDirty();
 
                 if (value) {
-                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_FROSTBITE;
+                    this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_GLTF;
                 }
                 else {
                     this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
