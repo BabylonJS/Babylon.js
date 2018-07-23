@@ -80,6 +80,7 @@
 - Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
 - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
+- Added gltf light falloff [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 
