@@ -11,7 +11,7 @@ declare module BABYLON {
         /**
          * Sets the useRightHandedSystem flag on the scene.
          */
-        FORCE_RIGHT_HANDED = 1
+        FORCE_RIGHT_HANDED = 1,
     }
     /**
      * Mode that determines what animations will start.
@@ -28,7 +28,7 @@ declare module BABYLON {
         /**
          * All animations will start.
          */
-        ALL = 2
+        ALL = 2,
     }
     /**
      * Interface that contains the data for the glTF asset.
@@ -71,7 +71,7 @@ declare module BABYLON {
         /**
          * The asset is completely loaded.
          */
-        COMPLETE = 2
+        COMPLETE = 2,
     }
     /** @hidden */
     interface IGLTFLoader extends IDisposable {
@@ -303,14 +303,14 @@ declare module BABYLON {
          * @returns the created plugin
          */
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        private _parse;
-        private _getLoader;
-        private _parseBinary;
-        private _parseV1;
-        private _parseV2;
-        private static _parseVersion;
-        private static _compareVersion;
-        private static _decodeBufferToText;
+        private _parse(data);
+        private _getLoader(loaderData);
+        private _parseBinary(data);
+        private _parseV1(binaryReader);
+        private _parseV2(binaryReader);
+        private static _parseVersion(version);
+        private static _compareVersion(a, b);
+        private static _decodeBufferToText(buffer);
         private static readonly _logSpaces;
         private _logIndentLevel;
         private _loggingEnabled;
@@ -320,17 +320,17 @@ declare module BABYLON {
         _logOpen(message: string): void;
         /** @hidden */
         _logClose(): void;
-        private _logEnabled;
-        private _logDisabled;
+        private _logEnabled(message);
+        private _logDisabled(message);
         private _capturePerformanceCounters;
         /** @hidden */
         _startPerformanceCounter: (counterName: string) => void;
         /** @hidden */
         _endPerformanceCounter: (counterName: string) => void;
-        private _startPerformanceCounterEnabled;
-        private _startPerformanceCounterDisabled;
-        private _endPerformanceCounterEnabled;
-        private _endPerformanceCounterDisabled;
+        private _startPerformanceCounterEnabled(counterName);
+        private _startPerformanceCounterDisabled(counterName);
+        private _endPerformanceCounterEnabled(counterName);
+        private _endPerformanceCounterDisabled(counterName);
     }
 }
 
@@ -344,11 +344,11 @@ declare module BABYLON.GLTF1 {
         UNSIGNED_BYTE = 5121,
         SHORT = 5122,
         UNSIGNED_SHORT = 5123,
-        FLOAT = 5126
+        FLOAT = 5126,
     }
     enum EShaderType {
         FRAGMENT = 35632,
-        VERTEX = 35633
+        VERTEX = 35633,
     }
     enum EParameterType {
         BYTE = 5120,
@@ -371,12 +371,12 @@ declare module BABYLON.GLTF1 {
         FLOAT_MAT2 = 35674,
         FLOAT_MAT3 = 35675,
         FLOAT_MAT4 = 35676,
-        SAMPLER_2D = 35678
+        SAMPLER_2D = 35678,
     }
     enum ETextureWrapMode {
         CLAMP_TO_EDGE = 33071,
         MIRRORED_REPEAT = 33648,
-        REPEAT = 10497
+        REPEAT = 10497,
     }
     enum ETextureFilterType {
         NEAREST = 9728,
@@ -384,19 +384,19 @@ declare module BABYLON.GLTF1 {
         NEAREST_MIPMAP_NEAREST = 9984,
         LINEAR_MIPMAP_NEAREST = 9985,
         NEAREST_MIPMAP_LINEAR = 9986,
-        LINEAR_MIPMAP_LINEAR = 9987
+        LINEAR_MIPMAP_LINEAR = 9987,
     }
     enum ETextureFormat {
         ALPHA = 6406,
         RGB = 6407,
         RGBA = 6408,
         LUMINANCE = 6409,
-        LUMINANCE_ALPHA = 6410
+        LUMINANCE_ALPHA = 6410,
     }
     enum ECullingType {
         FRONT = 1028,
         BACK = 1029,
-        FRONT_AND_BACK = 1032
+        FRONT_AND_BACK = 1032,
     }
     enum EBlendingFunction {
         ZERO = 0,
@@ -413,7 +413,7 @@ declare module BABYLON.GLTF1 {
         ONE_MINUS_CONSTANT_COLOR = 32770,
         CONSTANT_ALPHA = 32771,
         ONE_MINUS_CONSTANT_ALPHA = 32772,
-        SRC_ALPHA_SATURATE = 776
+        SRC_ALPHA_SATURATE = 776,
     }
     /**
     * Interfaces
@@ -729,7 +729,7 @@ declare module BABYLON.GLTF1 {
         static RegisterExtension(extension: GLTFLoaderExtension): void;
         state: Nullable<GLTFLoaderState>;
         dispose(): void;
-        private _importMeshAsync;
+        private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress?, onError?);
         /**
         * Imports one or more meshes from a loaded gltf file and adds them to the scene
         * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
@@ -745,7 +745,7 @@ declare module BABYLON.GLTF1 {
             skeletons: Skeleton[];
             animationGroups: AnimationGroup[];
         }>;
-        private _loadAsync;
+        private _loadAsync(scene, data, rootUrl, onSuccess, onProgress?, onError?);
         /**
         * Imports all objects from a loaded gltf file and adds them to the scene
         * @param scene the scene the objects should be added to
@@ -755,9 +755,9 @@ declare module BABYLON.GLTF1 {
         * @returns a promise which completes when objects have been loaded to the scene
         */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
-        private _loadShadersAsync;
-        private _loadBuffersAsync;
-        private _createNodes;
+        private _loadShadersAsync(gltfRuntime, onload);
+        private _loadBuffersAsync(gltfRuntime, onLoad, onProgress?);
+        private _createNodes(gltfRuntime);
     }
 }
 
@@ -868,9 +868,9 @@ declare module BABYLON.GLTF1 {
         static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
         static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string | ArrayBuffer) => void, onError: (message: string) => void): void;
         static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void;
-        private static LoadTextureBufferAsync;
-        private static CreateTextureAsync;
-        private static ApplyExtensions;
+        private static LoadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
+        private static CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
+        private static ApplyExtensions(func, defaultFunc);
     }
 }
 
@@ -892,6 +892,6 @@ declare module BABYLON.GLTF1 {
         constructor();
         loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean;
         loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean;
-        private _loadTexture;
+        private _loadTexture(gltfRuntime, id, material, propertyPath, onError);
     }
 }

@@ -26,7 +26,7 @@ declare module BABYLON {
          * @param value The value stored in the mtl
          * @return The Texture
          */
-        private static _getTexture;
+        private static _getTexture(rootUrl, value, scene);
     }
     class OBJFileLoader implements ISceneLoaderPluginAsync {
         static OPTIMIZE_WITH_UV: boolean;
@@ -57,7 +57,7 @@ declare module BABYLON {
          * @param onSuccess Callback function to be called when the MTL file is loaded
          * @private
          */
-        private _loadMTL;
+        private _loadMTL(url, rootUrl, onSuccess);
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
             particleSystems: IParticleSystem[];
@@ -78,6 +78,6 @@ declare module BABYLON {
          * @returns Array<AbstractMesh>
          * @private
          */
-        private _parseSolid;
+        private _parseSolid(meshesNames, scene, data, rootUrl);
     }
 }

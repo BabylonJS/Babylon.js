@@ -12,8 +12,6 @@ declare module BabylonViewer {
         *
         * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
         */
-    import 'babylonjs-loaders';
-    import 'pepjs';
     let disableInit: boolean;
     /**
         * Dispose all viewers currently registered

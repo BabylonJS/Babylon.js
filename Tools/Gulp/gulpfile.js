@@ -455,7 +455,6 @@ var buildExternalLibrary = function (library, settings, watch) {
                     if (!out.minified) {
                         wpConfig.mode = "development";
                     }
-                    console.log(wpConfig)
                     let wpBuild = webpackStream(wpConfig, webpack);
 
                     //shoud dtsBundle create the declaration?
@@ -558,6 +557,8 @@ var buildExternalLibrary = function (library, settings, watch) {
                                 if (err) throw err;
                                 var newData = processDeclaration(data, settings.build.processDeclaration);
                                 fs.writeFile(fileLocation.replace('.module', ''), newData);
+                                //legacy module support
+                                fs.writeFile(fileLocation, data + "\n" + newData);
                             });
                         }
                     });
