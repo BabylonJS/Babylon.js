@@ -1241,8 +1241,8 @@
                     defines.USEGLTFLIGHTFALLOFF = true;
                 }
                 else {
-                    defines.USEPHYSICALLIGHTFALLOFF = false;
-                    defines.USEGLTFLIGHTFALLOFF = true;
+                    defines.USEPHYSICALLIGHTFALLOFF = true;
+                    defines.USEGLTFLIGHTFALLOFF = false;
                 }
 
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
