@@ -5,17 +5,17 @@
         #ifdef PBR
             #ifdef SPOTLIGHT{X}
                 info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, light{X}.vLightFalloff, NdotL);
-            #elif HEMILIGHT{X}
+            #elif defined(HEMILIGHT{X})
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
-            #elif POINTLIGHT{X}
+            #elif defined(POINTLIGHT{X})
                 info = computePointLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, light{X}.vLightFalloff, NdotL);
-            #elif DIRLIGHT{X}
+            #elif defined(DIRLIGHT{X})
                 info = computeDirectionalLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
             #endif
         #else
             #ifdef SPOTLIGHT{X}
                 info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
-            #elif HEMILIGHT{X}
+            #elif defined(HEMILIGHT{X})
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, glossiness);
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);

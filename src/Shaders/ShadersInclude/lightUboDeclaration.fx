@@ -8,9 +8,9 @@
 		#ifdef SPOTLIGHT{X}
 			vec4 vLightDirection;
 			vec4 vLightFalloff;
-		#elif POINTLIGHT{X}
+		#elif defined(POINTLIGHT{X})
 			vec4 vLightFalloff;
-		#elif HEMILIGHT{X}
+		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
 		#endif
 		vec4 shadowsInfo;

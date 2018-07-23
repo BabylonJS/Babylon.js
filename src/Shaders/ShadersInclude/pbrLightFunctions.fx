@@ -11,7 +11,7 @@ float computeDistanceLightFalloff(vec3 lightOffset, float lightDistanceSquared, 
 {   
     #ifdef USEPHYSICALLIGHTFALLOFF
         float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.001));
-    #elif USEGLTFLIGHTFALLOFF
+    #elif defined(USEGLTFLIGHTFALLOFF)
         // Prevents infinity issues at 0.
         const float minDistanceSquared = 0.01*0.01;
         float lightDistanceFalloff = 1.0 / (max(lightDistanceSquared, minDistanceSquared));
@@ -47,13 +47,13 @@ float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightC
         // not directional light type)
         vec4 lightDirectionSpreadSG = vec4(-lightDirection * concentrationKappa, -concentrationKappa);
         falloff = exp2(dot(vec4(directionToLightCenterW, 1.0), lightDirectionSpreadSG));
-    #elif USEGLTFLIGHTFALLOFF
+    #elif defined(USEGLTFLIGHTFALLOFF)
         // On the CPU
         // float lightAngleScale = 1.0 f / max (0.001f, ( cosInner - cosOuter ));
         // float lightAngleOffset = -cosOuter * angleScale;
 
         float cd = dot(-lightDirection, directionToLightCenterW);
-        float falloff = clamp(cd * lightAngleScale + lightAngleOffset, 0., 1.);
+        falloff = clamp(cd * lightAngleScale + lightAngleOffset, 0., 1.);
         // smooth the transition
         falloff *= falloff;
     #else
