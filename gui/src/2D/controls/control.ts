@@ -915,7 +915,7 @@ export class Control {
         }
 
         if (this._alphaSet) {
-            context.globalAlpha = this._alpha;
+            context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
 
