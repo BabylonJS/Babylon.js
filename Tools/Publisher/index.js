@@ -51,7 +51,8 @@ let packages = [
         required: [
             basePath + '/viewer/readme.md',
             basePath + '/viewer/package.json',
-            basePath + '/viewer/babylon.viewer.js'
+            basePath + '/viewer/babylon.viewer.js',
+            basePath + '/viewer/babylon.viewer.max.js'
         ]
     },
     {
