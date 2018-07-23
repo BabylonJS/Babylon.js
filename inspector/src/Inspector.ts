@@ -54,7 +54,7 @@ export class Inspector {
 
         import("babylonjs-gui").then(GUI => {
             // Load GUI library if not already done
-            if (!GUI || (<Object>GUI).hasOwnProperty("default")) {
+            if (!GUI || (typeof GUI !== "undefined" && Object.keys(GUI).indexOf("default") !== -1)) {
                 Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.min.js", () => {
                     Inspector.GUIObject = (<any>BABYLON).GUI;
                     this.onGUILoaded.notifyObservers(Inspector.GUIObject);
