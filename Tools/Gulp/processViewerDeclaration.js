@@ -59,7 +59,14 @@ module.exports = function (data, options) {
 
     str = str.replace(/export {(.*)};/g, '');
 
+    str = str.replace(/import (.*);/g, "");
+
     str = str.split("\n").filter(line => line.trim()).filter(line => line.indexOf("export * from") === -1).join("\n");
+
+    //empty declare regex
+    let emptyDeclareRegexp = new RegExp("declare module " + options.moduleName + " {\n}", "g");
+
+    str = str.replace(emptyDeclareRegexp, "");
 
     return str;
 }

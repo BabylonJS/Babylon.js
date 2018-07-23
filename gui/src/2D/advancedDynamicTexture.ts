@@ -282,6 +282,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             container = this._rootContainer;
         }
 
+        func(container);
+
         for (var child of container.children) {
             if ((<any>child).children) {
                 this.executeOnAllControls(func, (<Container>child));

@@ -43,7 +43,7 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
 
     if (configuration.lab) {
         if (configuration.lab.assetsRootURL) {
-            setKeyInObject(configuration, "scene.assetsRootURL", configuration.lab.assetsRootURL);
+            setKeyInObject(configuration, "scene.assetsRootURL", configuration.lab.assetsRootURL, true);
         }
         if (configuration.lab.environmentMap) {
             setKeyInObject(configuration, "environmentMap", configuration.lab.environmentMap, true);
