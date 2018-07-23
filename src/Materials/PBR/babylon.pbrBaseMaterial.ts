@@ -125,7 +125,7 @@
         public EXPOSURE = false;
 
         public USEPHYSICALLIGHTFALLOFF = false;
-        public USEFROSTBITELIGHTFALLOFF = false;
+        public USEGLTFLIGHTFALLOFF = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
         public CLIPPLANE = false;
@@ -166,18 +166,18 @@
      */
     export abstract class PBRBaseMaterial extends PushMaterial {
         /**
-         * PBRMaterialLightFalloff Physical: light is falling off folliwing the inverse squared distance law.
+         * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
          */
         public static readonly LIGHTFALLOFF_PHYSICAL = 0;
 
         /**
-         * PBRMaterialLightFalloff Frostbite: light is falling off as described in the frostbite moving to PBR document 
+         * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document 
          * to enhance interoperability with other engines.
          */
-        public static readonly LIGHTFALLOFF_FROSTBITE = 1;
+        public static readonly LIGHTFALLOFF_GLTF = 1;
 
         /**
-         * PBRMaterialLightFalloff Frostbite: light is falling off like in the standard material 
+         * PBRMaterialLightFalloff Standard: light is falling off like in the standard material 
          * to enhance interoperability with other materials.
          */
         public static readonly LIGHTFALLOFF_STANDARD = 2;
@@ -1234,15 +1234,15 @@
 
                 if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
                     defines.USEPHYSICALLIGHTFALLOFF = false;
-                    defines.USEFROSTBITELIGHTFALLOFF = false;
+                    defines.USEGLTFLIGHTFALLOFF = false;
                 }
-                else if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_FROSTBITE) {
+                else if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF) {
                     defines.USEPHYSICALLIGHTFALLOFF = false;
-                    defines.USEFROSTBITELIGHTFALLOFF = true;
+                    defines.USEGLTFLIGHTFALLOFF = true;
                 }
                 else {
                     defines.USEPHYSICALLIGHTFALLOFF = false;
-                    defines.USEFROSTBITELIGHTFALLOFF = true;
+                    defines.USEGLTFLIGHTFALLOFF = true;
                 }
 
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;

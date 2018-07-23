@@ -50,7 +50,7 @@
         }
 
         /**
-         * Only used in Frostbite falloff mode, this defines the angle where 
+         * Only used in gltf falloff mode, this defines the angle where 
          * the directional falloff will start before cutting at angle which could be seen
          * as outer angle.
          */
@@ -59,7 +59,7 @@
             return this._angle
         }
         /**
-         * Only used in Frostbite falloff mode, this defines the angle where 
+         * Only used in gltf falloff mode, this defines the angle where 
          * the directional falloff will start before cutting at angle which could be seen
          * as outer angle.
          */
