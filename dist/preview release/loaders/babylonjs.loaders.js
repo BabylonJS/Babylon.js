@@ -4669,6 +4669,10 @@ var BABYLON;
             };
             GLTFLoader.prototype._loadAnimationAsync = function (context, animation) {
                 var _this = this;
+                var promise = GLTF2.GLTFLoaderExtension._LoadAnimationAsync(this, context, animation);
+                if (promise) {
+                    return promise;
+                }
                 var babylonAnimationGroup = new BABYLON.AnimationGroup(animation.name || "animation" + animation._index, this._babylonScene);
                 animation._babylonAnimationGroup = babylonAnimationGroup;
                 var promises = new Array();
@@ -5528,6 +5532,8 @@ var BABYLON;
              * @hidden
              */
             GLTFLoaderExtension.prototype._loadUriAsync = function (context, uri) { return null; };
+            /** Override this method to modify the default behavior for loading animations. */
+            GLTFLoaderExtension.prototype._loadAnimationAsync = function (context, animation) { return null; };
             // #endregion
             /**
              * Helper method called by a loader extension to load an glTF extension.
@@ -5645,6 +5651,13 @@ var BABYLON;
             GLTFLoaderExtension._LoadUriAsync = function (loader, context, uri) {
                 return loader._applyExtensions(function (extension) { return extension._loadUriAsync(context, uri); });
             };
+            /**
+             * Helper method called by the loader to allow extensions to override loading animations.
+             * @hidden
+             */
+            GLTFLoaderExtension._LoadAnimationAsync = function (loader, context, animation) {
+                return loader._applyExtensions(function (extension) { return extension._loadAnimationAsync(context, animation); });
+            };
             return GLTFLoaderExtension;
         }());
         GLTF2.GLTFLoaderExtension = GLTFLoaderExtension;
@@ -5652,6 +5665,229 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.glTFLoaderExtension.js.map
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var GLTF2;
+    (function (GLTF2) {
+        var Extensions;
+        (function (Extensions) {
+            var NAME = "MSFT_audio_emitter";
+            /**
+             * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
+             */
+            var MSFT_audio_emitter = /** @class */ (function (_super) {
+                __extends(MSFT_audio_emitter, _super);
+                function MSFT_audio_emitter() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.name = NAME;
+                    return _this;
+                }
+                MSFT_audio_emitter.prototype._loadClipAsync = function (context, clip) {
+                    if (clip._objectURL) {
+                        return clip._objectURL;
+                    }
+                    var promise;
+                    if (clip.uri) {
+                        promise = this._loader._loadUriAsync(context, clip.uri);
+                    }
+                    else {
+                        var bufferView = GLTF2.GLTFLoader._GetProperty(context + "/bufferView", this._loader._gltf.bufferViews, clip.bufferView);
+                        promise = this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView);
+                    }
+                    clip._objectURL = promise.then(function (data) {
+                        return URL.createObjectURL(new Blob([data], { type: clip.mimeType }));
+                    });
+                    return clip._objectURL;
+                };
+                MSFT_audio_emitter.prototype._loadEmitterAsync = function (context, emitter) {
+                    var _this = this;
+                    emitter._babylonSounds = emitter._babylonSounds || [];
+                    if (!emitter._babylonData) {
+                        var clipPromises = new Array();
+                        var name_1 = emitter.name || "emitter" + emitter._index;
+                        var options_1 = {
+                            loop: false,
+                            autoplay: false,
+                            volume: emitter.volume == undefined ? 1 : emitter.volume,
+                        };
+                        GLTF2._ArrayItem.Assign(this._clips);
+                        var _loop_1 = function (i) {
+                            var clipContext = "#/extensions/" + NAME + "/clips";
+                            var clip = GLTF2.GLTFLoader._GetProperty(clipContext, this_1._clips, emitter.clips[i].clip);
+                            clipPromises.push(this_1._loadClipAsync(clipContext + "/" + emitter.clips[i].clip, clip).then(function (objectURL) {
+                                var sound = emitter._babylonSounds[i] = new BABYLON.Sound(name_1, objectURL, _this._loader._babylonScene, null, options_1);
+                                sound.refDistance = emitter.refDistance || 1;
+                                sound.maxDistance = emitter.maxDistance || 256;
+                                sound.rolloffFactor = emitter.rolloffFactor || 1;
+                                sound.distanceModel = emitter.distanceModel || 'exponential';
+                                sound._positionInEmitterSpace = true;
+                            }));
+                        };
+                        var this_1 = this;
+                        for (var i = 0; i < emitter.clips.length; i++) {
+                            _loop_1(i);
+                        }
+                        var promise = Promise.all(clipPromises).then(function () {
+                            var weights = emitter.clips.map(function (clip) { return clip.weight || 1; });
+                            var weightedSound = new BABYLON.WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
+                            if (emitter.innerAngle)
+                                weightedSound.directionalConeInnerAngle = 2 * BABYLON.Tools.ToDegrees(emitter.innerAngle);
+                            if (emitter.outerAngle)
+                                weightedSound.directionalConeOuterAngle = 2 * BABYLON.Tools.ToDegrees(emitter.outerAngle);
+                            if (emitter.volume)
+                                weightedSound.volume = emitter.volume;
+                            emitter._babylonData.sound = weightedSound;
+                        });
+                        emitter._babylonData = {
+                            loaded: promise
+                        };
+                    }
+                    return emitter._babylonData.loaded;
+                };
+                MSFT_audio_emitter.prototype._loadSceneAsync = function (context, scene) {
+                    var _this = this;
+                    return this._loadExtensionAsync(context, scene, function (extensionContext, extension) {
+                        return _this._loader._loadSceneAsync(context, scene).then(function () {
+                            var promises = new Array();
+                            GLTF2._ArrayItem.Assign(_this._emitters);
+                            for (var _i = 0, _a = extension.emitters; _i < _a.length; _i++) {
+                                var emitterIndex = _a[_i];
+                                var emitter = GLTF2.GLTFLoader._GetProperty(extensionContext + "/emitters", _this._emitters, emitterIndex);
+                                if (emitter.refDistance != undefined || emitter.maxDistance != undefined || emitter.rolloffFactor != undefined ||
+                                    emitter.distanceModel != undefined || emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
+                                    throw new Error(extensionContext + ": Direction or Distance properties are not allowed on emitters attached to a scene");
+                                }
+                                promises.push(_this._loadEmitterAsync(extensionContext + "/emitters/" + emitter._index, emitter));
+                            }
+                            return Promise.all(promises).then(function () { });
+                        });
+                    });
+                };
+                MSFT_audio_emitter.prototype._loadNodeAsync = function (context, node) {
+                    var _this = this;
+                    return this._loadExtensionAsync(context, node, function (extensionContext, extension) {
+                        return _this._loader._loadNodeAsync(extensionContext, node).then(function () {
+                            var promises = new Array();
+                            GLTF2._ArrayItem.Assign(_this._emitters);
+                            var _loop_2 = function (emitterIndex) {
+                                var emitter = GLTF2.GLTFLoader._GetProperty(extensionContext + "/emitters", _this._emitters, emitterIndex);
+                                promises.push(_this._loadEmitterAsync(extensionContext + "/emitters/" + emitter._index, emitter).then(function () {
+                                    if (node._babylonMesh) {
+                                        for (var _i = 0, _a = emitter._babylonSounds; _i < _a.length; _i++) {
+                                            var sound = _a[_i];
+                                            sound.attachToMesh(node._babylonMesh);
+                                            if (emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
+                                                sound.setLocalDirectionToMesh(new BABYLON.Vector3(0, 0, 1));
+                                                sound.setDirectionalCone(2 * BABYLON.Tools.ToDegrees(emitter.innerAngle == undefined ? Math.PI : emitter.innerAngle), 2 * BABYLON.Tools.ToDegrees(emitter.outerAngle == undefined ? Math.PI : emitter.outerAngle), 0);
+                                            }
+                                        }
+                                    }
+                                }));
+                            };
+                            for (var _i = 0, _a = extension.emitters; _i < _a.length; _i++) {
+                                var emitterIndex = _a[_i];
+                                _loop_2(emitterIndex);
+                            }
+                            return Promise.all(promises).then(function () { });
+                        });
+                    });
+                };
+                MSFT_audio_emitter.prototype._loadAnimationAsync = function (context, animation) {
+                    var _this = this;
+                    return this._loadExtensionAsync(context, animation, function (extensionContext, extension) {
+                        return _this._loader._loadAnimationAsync(extensionContext, animation).then(function () {
+                            var promises = new Array();
+                            var babylonAnimationGroup = animation._babylonAnimationGroup;
+                            GLTF2._ArrayItem.Assign(extension.events);
+                            for (var _i = 0, _a = extension.events; _i < _a.length; _i++) {
+                                var event_1 = _a[_i];
+                                promises.push(_this._loadAnimationEventAsync(extensionContext + "/events/" + event_1._index, context, animation, event_1, babylonAnimationGroup));
+                            }
+                            return Promise.all(promises).then(function () { });
+                        });
+                    });
+                };
+                MSFT_audio_emitter.prototype._getEventAction = function (context, sound, action, time, startOffset) {
+                    if (action == "play" /* play */) {
+                        return function (currentFrame) {
+                            var frameOffset = (startOffset || 0) + (currentFrame - time);
+                            sound.play(frameOffset);
+                        };
+                    }
+                    else if (action == "stop" /* stop */) {
+                        return function (currentFrame) {
+                            sound.stop();
+                        };
+                    }
+                    else if (action == "pause" /* pause */) {
+                        return function (currentFrame) {
+                            sound.pause();
+                        };
+                    }
+                    else {
+                        throw new Error(context + ": Unsupported action " + action);
+                    }
+                };
+                MSFT_audio_emitter.prototype._loadAnimationEventAsync = function (context, animationContext, animation, event, babylonAnimationGroup) {
+                    var _this = this;
+                    if (babylonAnimationGroup.targetedAnimations.length == 0) {
+                        return Promise.resolve();
+                    }
+                    var babylonAnimation = babylonAnimationGroup.targetedAnimations[0];
+                    var emitterIndex = event.emitter;
+                    var emitter = GLTF2.GLTFLoader._GetProperty("#/extensions/" + NAME + "/emitters", this._emitters, emitterIndex);
+                    return this._loadEmitterAsync(context, emitter).then(function () {
+                        var sound = emitter._babylonData.sound;
+                        if (sound) {
+                            var babylonAnimationEvent = new BABYLON.AnimationEvent(event.time, _this._getEventAction(context, sound, event.action, event.time, event.startOffset));
+                            babylonAnimation.animation.addEvent(babylonAnimationEvent);
+                            // Make sure all started audio stops when this animation is terminated.
+                            babylonAnimationGroup.onAnimationGroupEndObservable.add(function () {
+                                sound.stop();
+                            });
+                            babylonAnimationGroup.onAnimationGroupPauseObservable.add(function () {
+                                sound.pause();
+                            });
+                        }
+                    });
+                };
+                Object.defineProperty(MSFT_audio_emitter.prototype, "_extension", {
+                    get: function () {
+                        var extensions = this._loader._gltf.extensions;
+                        if (!extensions || !extensions[this.name]) {
+                            throw new Error("#/extensions: '" + this.name + "' not found");
+                        }
+                        return extensions[this.name];
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(MSFT_audio_emitter.prototype, "_clips", {
+                    get: function () {
+                        return this._extension.clips;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(MSFT_audio_emitter.prototype, "_emitters", {
+                    get: function () {
+                        return this._extension.emitters;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return MSFT_audio_emitter;
+            }(GLTF2.GLTFLoaderExtension));
+            Extensions.MSFT_audio_emitter = MSFT_audio_emitter;
+            GLTF2.GLTFLoader._Register(NAME, function (loader) { return new MSFT_audio_emitter(loader); });
+        })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
+    })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=MSFT_audio_emitter.js.map
 
 
 
@@ -6198,8 +6434,6 @@ var BABYLON;
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=KHR_materials_unlit.js.map
 
 
 
