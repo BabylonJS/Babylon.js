@@ -150,6 +150,10 @@
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
+            if (this.position.z === target.z) {
+                this.position.z += Epsilon;
+            }
+
             Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
             this._camMatrix.invert();
 
@@ -303,10 +307,6 @@
                 Vector3.TransformNormalToRef(up, parentWorldMatrix, this._globalCurrentUpVector);
                 this._markSyncedWithParent();
             } else {
-                if (Scalar.WithinEpsilon(position.y, target.y, BABYLON.Epsilon) && Scalar.WithinEpsilon(position.z, target.z, BABYLON.Epsilon)) {
-                    position.z += BABYLON.Epsilon;
-                }
-
                 this._globalPosition.copyFrom(position);
                 this._globalCurrentTarget.copyFrom(target);
                 this._globalCurrentUpVector.copyFrom(up);
