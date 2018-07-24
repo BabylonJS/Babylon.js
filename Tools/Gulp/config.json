@@ -290,6 +290,7 @@
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
+                "../../src/Particles/babylon.baseParticleSystem.js",
                 "../../src/Particles/babylon.particleSystem.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
