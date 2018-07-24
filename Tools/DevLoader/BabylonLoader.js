@@ -130,7 +130,7 @@ var BABYLONDEVTOOLS;
             var style = document.createElement('link');
             style.href = url;
             style.rel = "stylesheet";
-            style.type = "text/css"
+            style.type = "text/css";
             document.head.appendChild(style);
         }
 

@@ -82,7 +82,7 @@ module BABYLON {
         }
 
         /**
-         * Gets a string idenfifying the name of the class
+         * Gets a string identifying the name of the class
          * @returns "TransformNode" string
          */
         public getClassName(): string {
@@ -190,7 +190,7 @@ module BABYLON {
         }
 
         /**
-         * Copies the paramater passed Matrix into the mesh Pose matrix.  
+         * Copies the parameter passed Matrix into the mesh Pose matrix.  
          * Returns the TransformNode.  
          */
         public updatePoseMatrix(matrix: Matrix): TransformNode {
@@ -261,7 +261,7 @@ module BABYLON {
 
         /**
          * Returns the current mesh absolute position.
-         * Retuns a Vector3.
+         * Returns a Vector3.
          */
         public get absolutePosition(): Vector3 {
             return this._absolutePosition;

@@ -31,6 +31,12 @@ uniform vec3 direction1;
 uniform vec3 direction2;
 #endif
 
+#ifdef HEMISPHERICEMITTER
+uniform float radius;
+uniform float radiusRange;
+uniform float directionRandomizer;
+#endif
+
 #ifdef SPHEREEMITTER
 uniform float radius;
 uniform float radiusRange;
@@ -194,6 +200,19 @@ void main() {
     position = minEmitBox + (maxEmitBox - minEmitBox) * randoms2;
 
     direction = direction1 + (direction2 - direction1) * randoms3;    
+#elif defined(HEMISPHERICEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Position on the sphere surface
+    float phi = 2.0 * PI * randoms2.x;
+    float theta = acos(2.0 * randoms2.y - 1.0);
+    float randX = cos(phi) * sin(theta);
+    float randY = cos(theta);
+    float randZ = sin(phi) * sin(theta);
+
+    position = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, abs(randY), randZ);
+    direction = position + directionRandomizer * randoms3;    
 #elif defined(SPHEREEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
     vec3 randoms3 = getRandomVec3(seed.z);
