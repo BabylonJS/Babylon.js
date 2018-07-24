@@ -93,7 +93,14 @@
         /** @hidden */
         public _currentVelocity1 = 0;
         /** @hidden */
-        public _currentVelocity2 = 0;             
+        public _currentVelocity2 = 0;           
+        
+        /** @hidden */
+        public _currentLimitVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentLimitVelocity1 = 0;
+        /** @hidden */
+        public _currentLimitVelocity2 = 0;            
 
         /**
          * Creates a new instance Particle
@@ -170,7 +177,12 @@
                 other._currentVelocityGradient = this._currentVelocityGradient;
                 other._currentVelocity1 = this._currentVelocity1;
                 other._currentVelocity2 = this._currentVelocity2;
-            }                  
+            }     
+            if (this._currentLimitVelocityGradient) {
+                other._currentLimitVelocityGradient = this._currentLimitVelocityGradient;
+                other._currentLimitVelocity1 = this._currentLimitVelocity1;
+                other._currentLimitVelocity2 = this._currentLimitVelocity2;
+            }                           
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;

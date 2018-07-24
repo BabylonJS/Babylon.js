@@ -35,6 +35,9 @@ module BABYLON {
             system.minEmitPower = 2;
             system.maxEmitPower = 2;
 
+            // Update speed
+            system.updateSpeed = 1 / 60;
+
             system.emitRate = 30;
 
             return system;

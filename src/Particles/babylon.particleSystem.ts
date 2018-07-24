@@ -200,6 +200,8 @@
 
                         // Direction
                         let directionScale = this._scaledUpdateSpeed;
+
+                        /// Velocity
                         if (this._velocityGradients && this._velocityGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
                                 if (currentGradient !== particle._currentVelocityGradient) {
@@ -209,7 +211,24 @@
                                 }                                
                                 directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
                             });
-                        }                          
+                        }                  
+                        
+                        /// Limit velocity
+                        if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {                  
+                            Tools.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
+                                if (currentGradient !== particle._currentLimitVelocityGradient) {
+                                    particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
+                                    particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentLimitVelocityGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                let limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+
+                                if (directionScale / this._scaledUpdateSpeed > limitVelocity) {
+                                    directionScale *= this.limitVelocityDamping;
+                                }
+                            });
+                        }   
+
                         particle.direction.scaleToRef(directionScale, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
@@ -351,7 +370,7 @@
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor defines the angular speed  to affect to the specified gradient         
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -379,7 +398,7 @@
         /**
          * Adds a new velocity gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient         
+         * @param factor defines the velocity to affect to the specified gradient         
          * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
          * @returns the current particle system
          */
@@ -402,7 +421,35 @@
             this._removeFactorGradient(this._velocityGradients, gradient);
 
             return this;
-        }         
+        }     
+        
+        /**
+         * Adds a new limit velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the limit velocity value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._limitVelocityGradients) {
+                this._limitVelocityGradients = [];
+            }
+
+            this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific limit velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeLimitVelocityGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._limitVelocityGradients, gradient);
+
+            return this;
+        }            
 
         /**
          * Adds a new color gradient
@@ -858,7 +905,19 @@
                     } else {
                         particle._currentVelocity2 = particle._currentVelocity1;
                     }
-                }                
+                }        
+                
+                // Limit velocity
+                if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
+                    particle._currentLimitVelocityGradient = this._limitVelocityGradients[0];
+                    particle._currentLimitVelocity1 = particle._currentLimitVelocityGradient.getFactor();
+
+                    if (this._limitVelocityGradients.length > 1) {
+                        particle._currentLimitVelocity2 = this._limitVelocityGradients[1].getFactor();
+                    } else {
+                        particle._currentLimitVelocity2 = particle._currentLimitVelocity1;
+                    }
+                }                   
 
                 // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
@@ -1382,6 +1441,26 @@
                     serializationObject.velocityGradients.push(serializedGradient);
                 }
             }    
+
+            let limitVelocityGradients = particleSystem.getLimitVelocityGradients();
+            if (limitVelocityGradients) {
+                serializationObject.limitVelocityGradients = [];
+                for (var limitVelocityGradient of limitVelocityGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: limitVelocityGradient.gradient,
+                        factor1: limitVelocityGradient.factor1
+                    };
+
+                    if (limitVelocityGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = limitVelocityGradient.factor2;
+                    }
+
+                    serializationObject.limitVelocityGradients.push(serializedGradient);
+                }
+
+                serializationObject.limitVelocityDamping = particleSystem.limitVelocityDamping;
+            }   
             
             if (particleSystem.noiseTexture && particleSystem.noiseTexture instanceof ProceduralTexture) {
                 const noiseTexture = particleSystem.noiseTexture as ProceduralTexture;
@@ -1491,6 +1570,13 @@
                     particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
                 }
             }     
+
+            if (parsedParticleSystem.limitVelocityGradients) {
+                for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
+                    particleSystem.addLimitVelocityGradient(limitVelocityGradient.gradient, limitVelocityGradient.factor1 !== undefined ?  limitVelocityGradient.factor1 : limitVelocityGradient.factor, limitVelocityGradient.factor2);
+                }
+                particleSystem.limitVelocityDamping = parsedParticleSystem.limitVelocityDamping;
+            }               
             
             if (parsedParticleSystem.noiseTexture) {
                 particleSystem.noiseTexture = ProceduralTexture.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
