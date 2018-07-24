@@ -90,12 +90,25 @@ module BABYLON {
         @serialize()
         public intensity = 1.0;
 
+        private _range = Number.MAX_VALUE;
+        protected _inverseSquaredRange = 0;
+
         /**
          * Defines how far from the source the light is impacting in scene units.
          * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
          */
         @serialize()
-        public range = Number.MAX_VALUE;
+        public get range(): number {
+            return this._range
+        }
+        /**
+         * Defines how far from the source the light is impacting in scene units.
+         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
+         */
+        public set range(value: number) {
+            this._range = value;
+            this._inverseSquaredRange = 1.0 / (this.range * this.range);
+        }
 
         /**
          * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type

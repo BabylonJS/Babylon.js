@@ -529,6 +529,13 @@ declare module BABYLON.GLTF2 {
          */
         private _resizeTexturesToSameDimensions(texture1, texture2, scene);
         /**
+         * Converts an array of pixels to a Float32Array
+         * Throws an error if the pixel format is not supported
+         * @param pixels - array buffer containing pixel values
+         * @returns Float32 of pixels
+         */
+        private _convertPixelArrayToFloat32(pixels);
+        /**
          * Convert Specular Glossiness Textures to Metallic Roughness
          * See link below for info on the material conversions from PBR Metallic/Roughness and Specular/Glossiness
          * @link https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows-bjs/js/babylon.pbrUtilities.js

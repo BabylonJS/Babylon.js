@@ -517,6 +517,7 @@
          * An observer which watches for dispose events
          */
         private _onDisposeObserver: Nullable<Observer<Material>>;
+        private _onUnBindObservable: Nullable<Observable<Material>>;
 
         /**
          * Called during a dispose event
@@ -527,11 +528,19 @@
             }
             this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
+        
+        private _onBindObservable: Nullable<Observable<AbstractMesh>>;
 
         /**
         * An event triggered when the material is bound
         */
-        public onBindObservable = new Observable<AbstractMesh>();
+        public get onBindObservable(): Observable<AbstractMesh> {
+            if (!this._onBindObservable) {
+                this._onBindObservable = new Observable<AbstractMesh>();
+            }
+
+            return this._onBindObservable;
+        }
 
         /**
          * An observer which watches for bind events
@@ -551,7 +560,13 @@
         /**
         * An event triggered when the material is unbound
         */
-        public onUnBindObservable = new Observable<Material>();
+        public get onUnBindObservable(): Observable<Material> {
+            if (!this._onUnBindObservable) {
+                this._onUnBindObservable = new Observable<Material>();
+            }
+
+            return this._onUnBindObservable;
+        }
 
         /**
          * Stores the value of the alpha mode
@@ -1006,8 +1021,8 @@
                 this._scene._cachedVisibility = 1;
             }
 
-            if (mesh) {
-                this.onBindObservable.notifyObservers(mesh);
+            if (this._onBindObservable && mesh) {
+                this._onBindObservable.notifyObservers(mesh);
             }
 
             if (this.disableDepthWrite) {
@@ -1021,8 +1036,9 @@
          * Unbinds the material from the mesh
          */
         public unbind(): void {
-
-            this.onUnBindObservable.notifyObservers(this);
+            if (this._onUnBindObservable) {
+                this._onUnBindObservable.notifyObservers(this);
+            }
 
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
@@ -1314,8 +1330,13 @@
             this.onDisposeObservable.notifyObservers(this);
 
             this.onDisposeObservable.clear();
-            this.onBindObservable.clear();
-            this.onUnBindObservable.clear();
+            if (this._onBindObservable) {
+                this._onBindObservable.clear();
+            }
+            
+            if (this._onUnBindObservable) {
+                this._onUnBindObservable.clear();
+            }
         }
 
         /**

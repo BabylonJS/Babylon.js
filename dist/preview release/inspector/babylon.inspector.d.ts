@@ -1,7 +1,6 @@
 /*BabylonJS Inspector*/
 // Dependencies for this module:
-//   ../../../../tools/Gulp/babylonjs
-//   ../../../../tools/Gulp/babylonjs-gui
+//   ../../../../Tools/Gulp/babylonjs
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
@@ -23,12 +22,13 @@ declare module INSPECTOR {
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
-    import "../sass/main.scss";
     export class Inspector {
             /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
             static DOCUMENT: HTMLDocument;
             /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
             static WINDOW: Window;
+            onGUILoaded: BABYLON.Observable<typeof import("babylonjs-gui")>;
+            static GUIObject: typeof import("babylonjs-gui");
             /** The inspector is created with the given engine.
                 * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
                 * If the parameter 'popup' is true, the inspector is created in another popup.
@@ -239,10 +239,12 @@ declare module INSPECTOR {
     };
 }
 declare module INSPECTOR {
+    export type GUITyping = typeof import("babylonjs-gui");
+    export let guiLoaded: boolean;
     /**
        * Function that add gui objects properties to the variable PROPERTIES
        */
-    export function loadGUIProperties(): void;
+    export function loadGUIProperties(GUI: GUITyping): void;
 }
 declare module INSPECTOR {
     export abstract class Adapter {
@@ -282,7 +284,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class GUIAdapter extends Adapter implements IToolVisible {
-        constructor(obj: BABYLON.GUI.Control);
+        constructor(obj: import("babylonjs-gui").Control);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */

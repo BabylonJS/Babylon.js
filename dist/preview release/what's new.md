@@ -17,6 +17,8 @@
   - Added support for `minScaleX`, `minScaleY`, `maxScaleX`, `maxScaleY`. [Doc](https://doc.babylonjs.com/babylon101/particles#size)
   - Added support for `radiusRange` for sphere emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#sphere-emitter)
   - Added support for `radiusRange` and `heightRange` for cone emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#cone-emitter)
+  - Added new point emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#point-emitter)
+  - Added new hemispheric emitter. [Doc](https://doc.babylonjs.com/babylon101/particles#hemispheric-emitter)
   - Added support for `ParticleSystem.BLENDMODE_ADD` alpha mode. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-blending)
   - Added support for color gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#particle-colors)
   - Added support for pre-warming. [Doc](https://doc.babylonjs.com/babylon101/particles#pre-warming)
@@ -78,6 +80,7 @@
 - Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
 - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
+- Added gltf light falloff [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 
 ### glTF Loader
@@ -157,6 +160,7 @@
 - Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
 - It was not possible to add new custom optimizers, only use existing ones ([RaananW](https://github.com/RaananW))
+- Button texts were truncated incorrectly ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 

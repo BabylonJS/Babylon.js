@@ -1,5 +1,4 @@
 import { AbstractMesh, Nullable } from "babylonjs";
-import * as GUI from "babylonjs-gui";
 import { BasicElement } from "../gui/BasicElement";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
@@ -56,7 +55,7 @@ export class TabBar extends BasicElement {
         if (GLTFTab.IsSupported) {
             this._tabs.push(new GLTFTab(this, this._inspector));
         }
-        if (GUI) {
+        if (Inspector.GUIObject) {
             this._tabs.push(new GUITab(this, this._inspector));
         }
         this._tabs.push(new PhysicsTab(this, this._inspector));

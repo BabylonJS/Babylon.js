@@ -118,6 +118,10 @@ var BABYLON;
              */
             this.onCompleteObservable = new BABYLON.Observable();
             /**
+             * Observable raised when an error occurs.
+             */
+            this.onErrorObservable = new BABYLON.Observable();
+            /**
              * Observable raised after the loader is disposed.
              */
             this.onDisposeObservable = new BABYLON.Observable();
@@ -217,12 +221,27 @@ var BABYLON;
         Object.defineProperty(GLTFFileLoader.prototype, "onComplete", {
             /**
              * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
+             * For assets with LODs, raised when all of the LODs are complete.
+             * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
              */
             set: function (callback) {
                 if (this._onCompleteObserver) {
                     this.onCompleteObservable.remove(this._onCompleteObserver);
                 }
                 this._onCompleteObserver = this.onCompleteObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GLTFFileLoader.prototype, "onError", {
+            /**
+             * Callback raised when an error occurs.
+             */
+            set: function (callback) {
+                if (this._onErrorObserver) {
+                    this.onErrorObservable.remove(this._onErrorObserver);
+                }
+                this._onErrorObserver = this.onErrorObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -259,9 +278,12 @@ var BABYLON;
          */
         GLTFFileLoader.prototype.whenCompleteAsync = function () {
             var _this = this;
-            return new Promise(function (resolve) {
+            return new Promise(function (resolve, reject) {
                 _this.onCompleteObservable.addOnce(function () {
                     resolve();
+                });
+                _this.onErrorObservable.addOnce(function (reason) {
+                    reject(reason);
                 });
             });
         };

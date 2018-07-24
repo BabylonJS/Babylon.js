@@ -330,6 +330,7 @@ module BABYLON {
                     "vLightDiffuse" + lightIndex,
                     "vLightSpecular" + lightIndex,
                     "vLightDirection" + lightIndex,
+                    "vLightFalloff" + lightIndex,
                     "vLightGround" + lightIndex,
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex,

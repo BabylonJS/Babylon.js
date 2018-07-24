@@ -166,7 +166,9 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
-            effect.onBindObservable.notifyObservers(effect);
+            if (effect._onBindObservable) {
+                effect._onBindObservable.notifyObservers(effect);
+            }
         }
 
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {

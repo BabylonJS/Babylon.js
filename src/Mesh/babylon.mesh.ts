@@ -68,21 +68,42 @@
         }
 
         // Events 
+        private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
+        private _onAfterRenderObservable: Nullable<Observable<Mesh>>;
+        private _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
 
         /**
          * An event triggered before rendering the mesh
          */
-        public onBeforeRenderObservable = new Observable<Mesh>();
+        public get onBeforeRenderObservable(): Observable<Mesh> {
+            if (!this._onBeforeRenderObservable) {
+                this._onBeforeRenderObservable = new Observable<Mesh>();
+            }
+
+            return this._onBeforeRenderObservable;
+        }
 
         /**
         * An event triggered after rendering the mesh
         */
-        public onAfterRenderObservable = new Observable<Mesh>();
+        public get onAfterRenderObservable(): Observable<Mesh> {
+            if (!this._onAfterRenderObservable) {
+                this._onAfterRenderObservable = new Observable<Mesh>();
+            }
+
+            return this._onAfterRenderObservable;
+        }
 
         /**
         * An event triggered before drawing the mesh
         */
-        public onBeforeDrawObservable = new Observable<Mesh>();
+        public get onBeforeDrawObservable(): Observable<Mesh> {
+            if (!this._onBeforeDrawObservable) {
+                this._onBeforeDrawObservable = new Observable<Mesh>();
+            }
+
+            return this._onBeforeDrawObservable;
+        }
 
         private _onBeforeDrawObserver: Nullable<Observer<Mesh>>;
         public set onBeforeDraw(callback: () => void) {
@@ -184,7 +205,9 @@
 
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", 
-                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen"], 
+                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
+                                              "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw"
+                                            ], 
                                               ["_poseMatrix"]);
 
                 // Source mesh
@@ -1076,7 +1099,9 @@
                 return this;
             }
 
-            this.onBeforeDrawObservable.notifyObservers(this);
+            if (this._onBeforeDrawObservable) {
+                this._onBeforeDrawObservable.notifyObservers(this);
+            }
 
             let scene = this.getScene();
             let engine = scene.getEngine();
@@ -1294,10 +1319,10 @@
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
-            this._checkOcclusionQuery();
-            if (this._isOccluded) {
-                return this;
-            }
+            // this._checkOcclusionQuery();
+            // if (this._isOccluded) {
+            //     return this;
+            // }
 
             var scene = this.getScene();
             // Managing instances
@@ -1312,7 +1337,9 @@
                 return this;
             }
 
-            this.onBeforeRenderObservable.notifyObservers(this);
+            if (this._onBeforeRenderObservable) {
+                this._onBeforeRenderObservable.notifyObservers(this);
+            }
 
             var engine = scene.getEngine();
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
@@ -1415,7 +1442,9 @@
                 engine.setAlphaMode(currentMode);
             }
 
-            this.onAfterRenderObservable.notifyObservers(this);
+            if (this._onAfterRenderObservable) {
+                this._onAfterRenderObservable.notifyObservers(this);
+            }
             return this;
         }
 
@@ -1747,6 +1776,18 @@
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
             }
+
+            if (this._onBeforeDrawObservable) {
+                this._onBeforeDrawObservable.clear();
+            }
+
+            if (this._onBeforeRenderObservable) {
+                this._onBeforeRenderObservable.clear();
+            }
+
+            if (this._onAfterRenderObservable) {
+                this._onAfterRenderObservable.clear();
+            }            
 
             // Sources
             var meshes = this.getScene().meshes;

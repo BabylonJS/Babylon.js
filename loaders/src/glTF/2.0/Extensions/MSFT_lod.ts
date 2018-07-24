@@ -40,48 +40,6 @@ module BABYLON.GLTF2.Extensions {
         private _materialSignalLODs = new Array<Deferred<void>>();
         private _materialPromiseLODs = new Array<Array<Promise<void>>>();
 
-        constructor(loader: GLTFLoader) {
-            super(loader);
-
-            this._loader._readyPromise.then(() => {
-                for (let indexLOD = 0; indexLOD < this._nodePromiseLODs.length; indexLOD++) {
-                    const promise = Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
-                        if (indexLOD !== 0) {
-                            this._loader._parent._endPerformanceCounter(`Node LOD ${indexLOD}`);
-                        }
-
-                        this._loader._parent._log(`Loaded node LOD ${indexLOD}`);
-                        this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
-
-                        if (indexLOD !== this._nodePromiseLODs.length - 1) {
-                            this._loader._parent._startPerformanceCounter(`Node LOD ${indexLOD + 1}`);
-                            this._nodeSignalLODs[indexLOD].resolve();
-                        }
-                    });
-
-                    this._loader._completePromises.push(promise);
-                }
-
-                for (let indexLOD = 0; indexLOD < this._materialPromiseLODs.length; indexLOD++) {
-                    const promise = Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
-                        if (indexLOD !== 0) {
-                            this._loader._parent._endPerformanceCounter(`Material LOD ${indexLOD}`);
-                        }
-
-                        this._loader._parent._log(`Loaded material LOD ${indexLOD}`);
-                        this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
-
-                        if (indexLOD !== this._materialPromiseLODs.length - 1) {
-                            this._loader._parent._startPerformanceCounter(`Material LOD ${indexLOD + 1}`);
-                            this._materialSignalLODs[indexLOD].resolve();
-                        }
-                    });
-
-                    this._loader._completePromises.push(promise);
-                }
-            });
-        }
-
         public dispose() {
             super.dispose();
 
@@ -95,6 +53,48 @@ module BABYLON.GLTF2.Extensions {
 
             this.onMaterialLODsLoadedObservable.clear();
             this.onNodeLODsLoadedObservable.clear();
+        }
+
+        protected _onReady(): void {
+            for (let indexLOD = 0; indexLOD < this._nodePromiseLODs.length; indexLOD++) {
+                const promise = Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
+                    if (indexLOD !== 0) {
+                        this._loader._parent._endPerformanceCounter(`Node LOD ${indexLOD}`);
+                    }
+
+                    this._loader._parent._log(`Loaded node LOD ${indexLOD}`);
+                    this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
+
+                    if (indexLOD !== this._nodePromiseLODs.length - 1) {
+                        this._loader._parent._startPerformanceCounter(`Node LOD ${indexLOD + 1}`);
+                        if (this._nodeSignalLODs[indexLOD]) {
+                            this._nodeSignalLODs[indexLOD].resolve();
+                        }
+                    }
+                });
+
+                this._loader._completePromises.push(promise);
+            }
+
+            for (let indexLOD = 0; indexLOD < this._materialPromiseLODs.length; indexLOD++) {
+                const promise = Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
+                    if (indexLOD !== 0) {
+                        this._loader._parent._endPerformanceCounter(`Material LOD ${indexLOD}`);
+                    }
+
+                    this._loader._parent._log(`Loaded material LOD ${indexLOD}`);
+                    this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
+
+                    if (indexLOD !== this._materialPromiseLODs.length - 1) {
+                        this._loader._parent._startPerformanceCounter(`Material LOD ${indexLOD + 1}`);
+                        if (this._materialSignalLODs[indexLOD]) {
+                            this._materialSignalLODs[indexLOD].resolve();
+                        }
+                    }
+                });
+
+                this._loader._completePromises.push(promise);
+            }
         }
 
         protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> {

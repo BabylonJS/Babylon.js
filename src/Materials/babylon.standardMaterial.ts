@@ -544,7 +544,7 @@ module BABYLON {
          */
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
             if (subMesh.effect && this.isFrozen) {
-                if (this._wasPreviouslyReady && subMesh.effect) {
+                if (this._wasPreviouslyReady) {
                     return true;
                 }
             }

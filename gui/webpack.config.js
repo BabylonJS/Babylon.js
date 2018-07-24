@@ -6,7 +6,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
     context: __dirname,
     entry: {
-        'babylonjs-gui': path.resolve(__dirname, './src/index.ts'),
+        'babylonjs-gui': path.resolve(__dirname, './src/legacy.ts'),
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/gui'),
