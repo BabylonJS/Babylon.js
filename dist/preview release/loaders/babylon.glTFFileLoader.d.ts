@@ -1074,7 +1074,7 @@ declare module BABYLON.GLTF2 {
         private _getNodeMatrix(node);
         private _loadCamera(context, camera, babylonMesh);
         private _loadAnimationsAsync();
-        private _loadAnimationAsync(context, animation);
+        _loadAnimationAsync(context: string, animation: _ILoaderAnimation): Promise<void>;
         private _loadAnimationChannelAsync(context, animationContext, animation, channel, babylonAnimationGroup);
         private _loadAnimationSamplerAsync(context, sampler);
         private _loadBufferAsync(context, buffer);
@@ -1182,6 +1182,8 @@ declare module BABYLON.GLTF2 {
          * @hidden
          */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /** Override this method to modify the default behavior for loading animations. */
+        protected _loadAnimationAsync(context: string, animation: _ILoaderAnimation): Nullable<Promise<void>>;
         /**
          * Helper method called by a loader extension to load an glTF extension.
          * @hidden
@@ -1242,12 +1244,37 @@ declare module BABYLON.GLTF2 {
          * @hidden
          */
         static _LoadUriAsync(loader: GLTFLoader, context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Helper method called by the loader to allow extensions to override loading animations.
+         * @hidden
+         */
+        static _LoadAnimationAsync(loader: GLTFLoader, context: string, animation: _ILoaderAnimation): Nullable<Promise<void>>;
     }
 }
 /**
  * Defines the module of the glTF 2.0 loader extensions.
  */
 declare module BABYLON.GLTF2.Extensions {
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    /**
+     * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
+     */
+    class MSFT_audio_emitter extends GLTFLoaderExtension {
+        readonly name: string;
+        private _loadClipAsync(context, clip);
+        private _loadEmitterAsync(context, emitter);
+        protected _loadSceneAsync(context: string, scene: _ILoaderScene): Nullable<Promise<void>>;
+        protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>>;
+        protected _loadAnimationAsync(context: string, animation: _ILoaderAnimation): Nullable<Promise<void>>;
+        private _getEventAction(context, sound, action, time, startOffset?);
+        private _loadAnimationEventAsync(context, animationContext, animation, event, babylonAnimationGroup);
+        private readonly _extension;
+        private readonly _clips;
+        private readonly _emitters;
+    }
 }
 
 
