@@ -1,3 +1,4 @@
 export * from "./dataSeries";
-export * from "./IGraph";
+export * from "./chart";
 export * from "./barGraph";
+export * from "./glassBarGraph";
