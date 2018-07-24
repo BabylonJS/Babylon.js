@@ -234,6 +234,7 @@
         private _angularSpeedGradientsTexture: RawTexture;           
         private _sizeGradientsTexture: RawTexture;             
         private _velocityGradientsTexture: RawTexture;    
+        private _limitVelocityGradientsTexture: RawTexture;    
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
             let valueGradient = new FactorGradient();
@@ -292,7 +293,7 @@
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient    
+         * @param factor defines the angular speed to affect to the specified gradient    
          * @returns the current particle system     
          */
         public addAngularSpeedGradient(gradient: number, factor: number): GPUParticleSystem {
@@ -327,7 +328,7 @@
         /**
          * Adds a new velocity gradient
          * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient    
+         * @param factor defines the velocity to affect to the specified gradient    
          * @returns the current particle system     
          */
         public addVelocityGradient(gradient: number, factor: number): GPUParticleSystem {
@@ -357,7 +358,42 @@
             (<any>this._velocityGradientsTexture) = null;
 
             return this;           
-        }          
+        }       
+        
+        /**
+         * Adds a new limit velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the limit velocity value to affect to the specified gradient    
+         * @returns the current particle system     
+         */
+        public addLimitVelocityGradient(gradient: number, factor: number): GPUParticleSystem {
+            if (!this._limitVelocityGradients) {
+                this._limitVelocityGradients = [];
+            }
+
+            this._addFactorGradient(this._limitVelocityGradients, gradient, factor);
+
+            if (this._limitVelocityGradientsTexture) {
+                this._limitVelocityGradientsTexture.dispose();
+                (<any>this._limitVelocityGradientsTexture) = null;
+            }
+
+            this._releaseBuffers();   
+
+            return this;
+        }
+
+        /**
+         * Remove a specific limit velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeLimitVelocityGradient(gradient: number): GPUParticleSystem {
+            this._removeGradient(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
+            (<any>this._limitVelocityGradientsTexture) = null;
+
+            return this;           
+        }           
 
         /**
          * Instantiates a GPU particle system.
@@ -1060,7 +1096,12 @@
             if (this._velocityGradientsTexture) {
                 this._velocityGradientsTexture.dispose();
                 (<any>this._velocityGradientsTexture) = null;
-            }                
+            }  
+
+            if (this._limitVelocityGradientsTexture) {
+                this._limitVelocityGradientsTexture.dispose();
+                (<any>this._limitVelocityGradientsTexture) = null;
+            }         
          
             if (this._randomTexture) {
                 this._randomTexture.dispose();
