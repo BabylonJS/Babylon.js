@@ -1,9 +1,9 @@
 module BABYLON {
     /**
-     * Particle emitter emitting particles from the inside of a box.
+     * Particle emitter emitting particles from a point.
      * It emits the particles randomly between 2 given directions. 
      */
-    export class BoxParticleEmitter implements IParticleEmitterType {
+    export class PointParticleEmitter implements IParticleEmitterType {
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -13,18 +13,9 @@ module BABYLON {
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          */
         public direction2 = new Vector3(0, 1.0, 0);
-
+             
         /**
-         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         */
-        public minEmitBox = new Vector3(-0.5, -0.5, -0.5);
-        /**
-         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         */
-        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);  
-               
-        /**
-         * Creates a new instance BoxParticleEmitter
+         * Creates a new instance PointParticleEmitter
          */
         constructor() {
 
@@ -51,20 +42,16 @@ module BABYLON {
          * @param particle is the particle we are computed the position for
          */
         public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
-            var randX = Scalar.RandomRange(this.minEmitBox.x, this.maxEmitBox.x);
-            var randY = Scalar.RandomRange(this.minEmitBox.y, this.maxEmitBox.y);
-            var randZ = Scalar.RandomRange(this.minEmitBox.z, this.maxEmitBox.z);
-
-            Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+            Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, worldMatrix, positionToUpdate);
         }
 
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
          */
-        public clone(): BoxParticleEmitter
+        public clone(): PointParticleEmitter
         {
-            let newOne = new BoxParticleEmitter();
+            let newOne = new PointParticleEmitter();
 
             Tools.DeepCopy(this, newOne);
 
@@ -78,8 +65,6 @@ module BABYLON {
         public applyToShader(effect: Effect): void {            
             effect.setVector3("direction1", this.direction1);
             effect.setVector3("direction2", this.direction2);
-            effect.setVector3("minEmitBox", this.minEmitBox);
-            effect.setVector3("maxEmitBox", this.maxEmitBox);
         }
 
         /**
@@ -87,15 +72,15 @@ module BABYLON {
          * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
-            return "#define BOXEMITTER"
+            return "#define POINTEMITTER"
         }
 
         /**
-         * Returns the string "BoxParticleEmitter"
+         * Returns the string "PointParticleEmitter"
          * @returns a string containing the class name
          */
         public getClassName(): string {
-            return "BoxParticleEmitter";
+            return "PointParticleEmitter";
         }   
         
         /**
@@ -108,8 +93,6 @@ module BABYLON {
             serializationObject.type = this.getClassName();
             serializationObject.direction1  = this.direction1.asArray();
             serializationObject.direction2  = this.direction2.asArray();
-            serializationObject.minEmitBox  = this.minEmitBox.asArray();
-            serializationObject.maxEmitBox  = this.maxEmitBox.asArray();
 
             return serializationObject;
         }
@@ -121,8 +104,6 @@ module BABYLON {
         public parse(serializationObject: any): void {
             Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
             Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
-            Vector3.FromArrayToRef(serializationObject.minEmitBox, 0, this.minEmitBox);
-            Vector3.FromArrayToRef(serializationObject.maxEmitBox, 0, this.maxEmitBox);
         }
     }
 }

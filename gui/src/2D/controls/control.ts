@@ -915,7 +915,7 @@ export class Control {
         }
 
         if (this._alphaSet) {
-            context.globalAlpha = this._alpha;
+            context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
 
@@ -1283,9 +1283,9 @@ export class Control {
         }
 
         if (this._style) {
-            this._font = (this._style.fontWeight ? this._style.fontWeight : this._style.fontStyle) + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
+            this._font = this._style.fontStyle + " " + this._style.fontWeight + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
         } else {
-            this._font = (this._fontWeight ? this._fontWeight : this._fontStyle) + " " + this.fontSizeInPixels + "px " + this._fontFamily;
+            this._font = this._fontStyle + " " + this._fontWeight + " " + this.fontSizeInPixels + "px " + this._fontFamily;
         }
 
         this._fontOffset = Control._GetFontOffset(this._font);

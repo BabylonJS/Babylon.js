@@ -399,10 +399,20 @@
         }
 
         /**
-         * Gets whether an animation sprite sheet is enabled or not on the particle system
+         * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
         public get isAnimationSheetEnabled(): boolean {
             return this._isAnimationSheetEnabled;
+        }
+
+        public set isAnimationSheetEnabled(value: boolean) {
+            if (this._isAnimationSheetEnabled == value) {
+                return;
+            }
+
+            this._isAnimationSheetEnabled = value;
+
+            this._resetEffect();
         }
 
         /**
@@ -420,6 +430,14 @@
             this._isBillboardBased = value;
             this._resetEffect();
         }     
+
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        public getScene(): Scene {
+            return this._scene;
+        }
         
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
@@ -510,7 +528,7 @@
 
             this._customEffect = customEffect;
 
-            scene.particleSystems.push(this);
+            this._scene.particleSystems.push(this);
 
             this._useInstancing = this._scene.getEngine().getCaps().instancedArrays;
 
@@ -1566,7 +1584,34 @@
         }
 
         /**
-         * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
+         * Creates a Point Emitter for the particle system (emits directly from the emitter position)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @returns the emitter
+         */
+        public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
+            var particleEmitter = new PointParticleEmitter();
+            particleEmitter.direction1 = direction1;
+            particleEmitter.direction2 = direction2;
+
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
+         * @param radius The radius of the hemisphere to emit from
+         * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+         * @returns the emitter
+         */
+        public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
+            var particleEmitter = new HemisphericParticleEmitter(radius, radiusRange);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
          * @param radius The radius of the sphere to emit from
          * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
          * @returns the emitter
@@ -1578,7 +1623,7 @@
         }
 
         /**
-         * Creates a Directed Sphere Emitter for the particle system. (emits between direction1 and direction2)
+         * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
          * @param radius The radius of the sphere to emit from
          * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
          * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
@@ -1591,7 +1636,7 @@
         }
 
         /**
-         * Creates a Cone Emitter for the particle system. (emits from the cone to the particle position)
+         * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
          * @param radius The radius of the cone to emit from
          * @param angle The base angle of the cone
          * @returns the emitter
@@ -1602,7 +1647,6 @@
             return particleEmitter;
         }
 
-        // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
         /**
          * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
          * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
