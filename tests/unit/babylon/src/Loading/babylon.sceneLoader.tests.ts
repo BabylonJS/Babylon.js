@@ -16,6 +16,7 @@ describe('Babylon Scene Loader', function () {
             .load(function () {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
+                BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
                 done();
             });
     });
@@ -349,8 +350,9 @@ describe('Babylon Scene Loader', function () {
             const promises = new Array<Promise<void>>();
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                loader.onExtensionLoadedObservable.addOnce(extension => {
+                const observer = loader.onExtensionLoadedObservable.add(extension => {
                     if (extension instanceof BABYLON.GLTF2.Extensions.MSFT_lod) {
+                        loader.onExtensionLoadedObservable.remove(observer);
                         extension.onMaterialLODsLoadedObservable.add(indexLOD => {
                             const expectedMaterialName = `LOD${2 - indexLOD}`;
                             expect(scene.getMeshByName("node0").material.name, "Material for node 0").to.equal(expectedMaterialName);
@@ -374,8 +376,9 @@ describe('Babylon Scene Loader', function () {
             const promises = new Array<Promise<void>>();
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                loader.onExtensionLoadedObservable.addOnce(extension => {
+                const observer = loader.onExtensionLoadedObservable.add(extension => {
                     if (extension instanceof BABYLON.GLTF2.Extensions.MSFT_lod) {
+                        loader.onExtensionLoadedObservable.remove(observer);
                         extension.onMaterialLODsLoadedObservable.add(indexLOD => {
                             expect(indexLOD, "indexLOD").to.equal(0);
                             loader.dispose();
@@ -504,6 +507,18 @@ describe('Babylon Scene Loader', function () {
                     createTextureSpy.restore();
                     expect(called, "createTextureSpyCalled").to.be.false;
                 });
+            });
+        });
+
+        it('Load UFO with MSFT_audio_emitter', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/", "ufo.glb", scene).then(result => {
+                expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
+                expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
+                expect(result.animationGroups.length, "animationGroups.length").to.equal(3);
+                expect(scene.soundTracks.length, "scene.soundTracks.length").to.equal(1);
+                expect(scene.soundTracks[0].soundCollection.length, "scene.soundTracks[0].soundCollection.length").to.equal(3);
+                expect(scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers(), "scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers()").to.be.true;
             });
         });
 
