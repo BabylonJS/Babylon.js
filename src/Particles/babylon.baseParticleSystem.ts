@@ -239,6 +239,19 @@ module BABYLON {
         protected _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
         protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
         protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
+        protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+
+        /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
+        public limitVelocityDamping = 0.4;
+
+        /**
+         * Gets the current list of limit velocity gradients.
+         * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
+         * @returns the list of limit velocity gradients
+         */
+        public getLimitVelocityGradients(): Nullable<Array<FactorGradient>> {
+            return this._limitVelocityGradients;
+        }        
 
         /**
          * Gets the current list of color gradients.
