@@ -1,10 +1,17 @@
 
 
-function runTests(testType, BABYLON, GUI, INSPECTOR, LOADERS, SERIALIZERS, POSTPROCESS) {
+function runTests(testType, BABYLON, GUI, INSPECTOR) {
 
     console.log("running tests");
 
     describe(testType + ' module tests', function () {
+
+        it("should have the dependencies loaded", function () {
+            assert.isDefined(BABYLON);
+            assert.isDefined(GUI);
+            assert.isDefined(INSPECTOR);
+            assert.isDefined(BABYLON.GLTF2);
+        })
 
         var subject;
 
