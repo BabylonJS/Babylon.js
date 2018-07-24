@@ -207,27 +207,7 @@ module BABYLON.GLTF2.Extensions {
                         promises.push(this._loadAnimationEventAsync(`${extensionContext}/events/${event._index}`, context, animation, event, babylonAnimationGroup));
                     }
 
-                    return Promise.all(promises).then(() => {
-                        // Make sure all audio stops when the animation is terminated.
-                        const getCallback = (pause: Boolean) => {
-                            const emitterList = this._emitters;
-                            if (pause) {
-                                return () => { 
-                                    for (const emitter of emitterList) {
-                                        emitter._babylonData!.sound!.pause();
-                                    }
-                                };
-                            } else {
-                                return () => { 
-                                    for (const emitter of emitterList) {
-                                        emitter._babylonData!.sound!.stop();
-                                    }
-                                }
-                            };
-                        }
-                        babylonAnimationGroup.onAnimationGroupEndObservable.add(getCallback(false));
-                        babylonAnimationGroup.onAnimationGroupPauseObservable.add(getCallback(true));
-                    });
+                    return Promise.all(promises).then(() => {});
                 });
             });
         }
@@ -263,6 +243,13 @@ module BABYLON.GLTF2.Extensions {
                 if (sound) {
                     var babylonAnimationEvent = new AnimationEvent(event.time, this._getEventAction(context, sound, event.action, event.time, event.startOffset));
                     babylonAnimation.animation.addEvent(babylonAnimationEvent);
+                    // Make sure all started audio stops when this animation is terminated.
+                    babylonAnimationGroup.onAnimationGroupEndObservable.add(() => { 
+                        sound.stop();
+                    });
+                    babylonAnimationGroup.onAnimationGroupPauseObservable.add(() => { 
+                        sound.pause();
+                    });
                 }
             });
         }
