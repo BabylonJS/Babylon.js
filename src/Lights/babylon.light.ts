@@ -6,6 +6,29 @@ module BABYLON {
      */
     export abstract class Light extends Node {
 
+        /**
+         * Falloff Default: light is falling off following the material specification: 
+         * standard material is using standard falloff whereas pbr material can request special falloff per materials.
+         */
+        public static readonly FALLOFF_DEFAULT = 0;
+
+        /**
+         * Falloff Physical: light is falling off following the inverse squared distance law.
+         */
+        public static readonly FALLOFF_PHYSICAL = 1;
+
+        /**
+         * Falloff gltf: light is falling off as described in the gltf moving to PBR document 
+         * to enhance interoperability with other engines.
+         */
+        public static readonly FALLOFF_GLTF = 2;
+
+        /**
+         * Falloff Standard: light is falling off like in the standard material 
+         * to enhance interoperability with other materials.
+         */
+        public static readonly FALLOFF_STANDARD = 3;
+
         //lightmapMode Consts
         /**
          * If every light affecting the material is in this lightmapMode,
@@ -81,6 +104,17 @@ module BABYLON {
          */
         @serializeAsColor3()
         public specular = new Color3(1.0, 1.0, 1.0);
+
+        /**
+         * Defines the falloff type for this light. This lets overrriding how punctual light are 
+         * falling off base on range or angle.
+         * This can be set to any values in Light.FALLOFF_x.
+         * 
+         * Note: This is only usefull for PBR Materials at the moment. This could be extended if required to 
+         * other types of materials.
+         */
+        @serialize()
+        public falloffType = Light.FALLOFF_DEFAULT;
 
         /**
          * Strength of the light.
