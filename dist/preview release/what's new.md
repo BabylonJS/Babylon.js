@@ -90,7 +90,7 @@
 - Added glTF loader settings to the GLTF tab in the debug layer ([bghgary](http://www.github.com/bghgary))
 - Added debug logging and performance counters ([bghgary](http://www.github.com/bghgary))
 - Added support for EXT_lights_imageBased ([bghgary](http://www.github.com/bghgary))
-- Added support for MSFT_audio_emitters ([najadojo](http://www.github.com/najadojo))
+- Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 
 ### Viewer
 
