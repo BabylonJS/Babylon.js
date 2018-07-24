@@ -1,39 +1,15 @@
-import { DataSeries } from "./dataSeries";
-import { Nullable, TransformNode, Scene, Mesh, Observable, PBRMaterial, CubeTexture } from "babylonjs";
+import { Nullable, Scene, Mesh, Observable, StandardMaterial, Material, Color3, Animation, Animatable } from "babylonjs";
+import { Chart } from ".";
 
 /** Class used to render bar graphs */
-export class BarGraph {
-    private _dataSource: Nullable<DataSeries>;
-    private _rootNode: TransformNode;
+export class BarGraph extends Chart {
     private _margin = 1;
     private _barWidth = 2
     private _maxBarHeight = 10;
-    private _defaultMaterial: PBRMaterial;
+    private _defaultMaterial: Nullable<Material>;
+    protected _ownDefaultMaterial = false;
 
     public onElementCreated = new Observable<Mesh>();
-
-    /** Gets or sets the data source used by the graph */
-    public get dataSource(): Nullable<DataSeries> {
-        return this._dataSource;
-    }
-
-    public set dataSource(value: Nullable<DataSeries>) {
-        if (this._dataSource === value) {
-            return;
-        }
-
-        this._dataSource = value;
-
-        this.refresh();
-    }
-
-    /** Gets the root node associated with this graph */
-    public get rootNode(): TransformNode {
-        return this._rootNode;
-    }
-
-    /** Gets or sets the name of the graph */
-    public name: string; 
 
     /** Gets or sets the margin between bars */
     public get margin(): number {
@@ -81,11 +57,11 @@ export class BarGraph {
     }
 
     /** Gets or sets the material used by bar meshes */
-    public get defaultMaterial(): PBRMaterial {
+    public get defaultMaterial(): Nullable<Material> {
         return this._defaultMaterial;
     }
 
-    public set defaultMaterial(value: PBRMaterial) {
+    public set defaultMaterial(value: Nullable<Material>) {
         if (this._defaultMaterial === value) {
             return;
         }
@@ -100,13 +76,36 @@ export class BarGraph {
      * @param name defines the name of the graph
      */
     constructor(name: string, scene?: Scene) {
-        this.name = name;
-        this._rootNode = new TransformNode(name, scene);
+        super(name, scene);
+    }
+
+    protected _createDefaultMaterial(scene: Scene): Material {
+        var result = new StandardMaterial("Plastic", scene);
+
+        result.diffuseColor = this._dataSource!.color;
+        result.specularColor = Color3.Black();
+
+        return result;
+    }
+
+    /**
+     * Children class can override this function to provide a new mesh (as long as it stays inside a 1x1x1 box)
+     * @param name defines the mesh name
+     * @param scene defines the hosting scene
+     * @returns a new mesh used to represent the current bar
+     */
+    protected _createBarMesh(name: string, scene: Scene): Mesh {
+        var box = Mesh.CreateBox(name, 1, scene);
+        box.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
+
+        return box;
     }
 
     /** Force the graph to redraw itself */
     public refresh(): BarGraph {
-        // TODO: clean current meshes
+        // Cleanup
+        var descendants = this._rootNode.getDescendants();
+        descendants.forEach(n => n.dispose());
 
         if (!this._dataSource) {
             return this;
@@ -116,11 +115,7 @@ export class BarGraph {
 
         // Default material
         if (!this._defaultMaterial) {
-            this._defaultMaterial = new BABYLON.PBRMaterial("plastic", scene);
-            this._defaultMaterial.microSurface = 0.96;
-            this._defaultMaterial.alpha = 0.8;
-            this._defaultMaterial.albedoColor = this._dataSource.color;
-            this._defaultMaterial.reflectivityColor = new BABYLON.Color3(0.003, 0.003, 0.003);
+            this._defaultMaterial = this._createDefaultMaterial(scene);
         }
 
         // Scan data
@@ -143,21 +138,31 @@ export class BarGraph {
         let index = 0;
         this._dataSource.data.forEach(entry => {
 
-            var box = Mesh.CreateBox(this.name + "_box_" + index++, 1, scene);
-            box.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
+            var barMesh = this._createBarMesh(this.name + "_box_" + index++, scene);
 
-            box.parent = this._rootNode;
-            box.position.x += left;
-            box.scaling.set(this.barWidth, entry.value * ratio, this._barWidth);
+            barMesh.parent = this._rootNode;
+            barMesh.position.x += left;
+            barMesh.scaling.set(this.barWidth, 0, this._barWidth);
 
-            box.material = this._defaultMaterial;
+            Animation.CreateAndStartAnimation("entryScale", barMesh, "scaling.y", 30, 30, 0, entry.value * ratio, 0);
 
-            this.onElementCreated.notifyObservers(box);
+            barMesh.material = this._defaultMaterial;
+
+            this.onElementCreated.notifyObservers(barMesh);
 
             left += this.barWidth + this.margin;
         });
 
 
         return this;
+    }
+
+    public dispose() {
+        if (this._ownDefaultMaterial && this._defaultMaterial) {
+            this._defaultMaterial.dispose();
+            this._defaultMaterial = null;
+        }
+
+        this._rootNode.dispose();
     }
 }
