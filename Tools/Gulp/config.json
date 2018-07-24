@@ -574,7 +574,8 @@
                 "../../src/Audio/babylon.audioEngine.js",
                 "../../src/Audio/babylon.sound.js",
                 "../../src/Audio/babylon.soundtrack.js",
-                "../../src/Audio/babylon.analyser.js"
+                "../../src/Audio/babylon.analyser.js",
+                "../../src/Audio/babylon.weightedsound.js"
             ],
             "dependUpon": [
                 "core"
@@ -1752,6 +1753,7 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
@@ -1777,6 +1779,7 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",

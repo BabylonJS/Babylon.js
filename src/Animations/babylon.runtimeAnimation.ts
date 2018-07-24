@@ -560,7 +560,7 @@
                             index--;
                         }
                         event.isDone = true;
-                        event.action();
+                        event.action(currentFrame);
                     } // Don't do anything if the event has already be done.
                 }
             }
