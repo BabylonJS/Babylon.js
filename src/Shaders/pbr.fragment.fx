@@ -639,6 +639,11 @@ void main(void) {
     #endif
 
         lightingInfo info;
+
+        pointLightingInfo pointInfo;
+
+        spotLightingInfo spotInfo;
+
         float shadow = 1.; // 1 - shadowLevel
         float NdotL = -1.;
 

@@ -218,6 +218,23 @@ module BABYLON {
 
                     light.prepareLightSpecificDefines(defines, lightIndex);
 
+                    // FallOff.
+                    defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
+                    defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
+                    defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
+
+                    switch (light.falloffType) {
+                        case Light.FALLOFF_GLTF:
+                        defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
+                        break;
+                        case Light.FALLOFF_PHYSICAL:
+                        defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
+                        break;
+                        case Light.FALLOFF_STANDARD:
+                        defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
+                        break;
+                    }
+
                     // Specular
                     if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
                         specularEnabled = true;
