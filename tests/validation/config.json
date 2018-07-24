@@ -502,6 +502,11 @@
       "title": "DDS",
       "playgroundId": "#ZI77S7#3",
       "referenceImage": "dds.png"
+    },
+    {
+      "title": "LightFalloff",
+      "playgroundId": "#20OAV9#201",
+      "referenceImage": "lightFalloff.png"
     }
   ]
 }
