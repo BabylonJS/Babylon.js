@@ -213,6 +213,8 @@
                             });
                         }                  
                         
+                        particle.direction.scaleToRef(directionScale, this._scaledDirection);
+
                         /// Limit velocity
                         if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
@@ -221,15 +223,16 @@
                                     particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();    
                                     particle._currentLimitVelocityGradient = (<FactorGradient>currentGradient);
                                 }                                
+                                
                                 let limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+                                let currentVelocity = particle.direction.length();
 
-                                if (directionScale / this._scaledUpdateSpeed > limitVelocity) {
-                                    directionScale *= this.limitVelocityDamping;
+                                if (currentVelocity > limitVelocity) {
+                                    particle.direction.scaleInPlace(this.limitVelocityDamping);
                                 }
                             });
                         }   
 
-                        particle.direction.scaleToRef(directionScale, this._scaledDirection);
                         particle.position.addInPlace(this._scaledDirection);
 
                         // Noise
