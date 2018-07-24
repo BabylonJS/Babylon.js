@@ -28,6 +28,11 @@ module BABYLON {
         public onAnimationGroupEndObservable = new Observable<AnimationGroup>();
 
         /**
+         * This observable will notify when all animations have paused.
+         */
+        public onAnimationGroupPauseObservable = new Observable<AnimationGroup>();
+
+        /**
          * Gets the first frame
          */
         public get from(): number {
@@ -203,6 +208,8 @@ module BABYLON {
                 let animatable = this._animatables[index];
                 animatable.pause();
             }
+
+            this.onAnimationGroupPauseObservable.notifyObservers(this);
 
             return this;
         }

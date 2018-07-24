@@ -82,6 +82,7 @@
 - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added gltf light falloff [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added falloff type per light to prevent material only inconsistencies [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
+- Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 
 ### glTF Loader
 
@@ -90,6 +91,7 @@
 - Added glTF loader settings to the GLTF tab in the debug layer ([bghgary](http://www.github.com/bghgary))
 - Added debug logging and performance counters ([bghgary](http://www.github.com/bghgary))
 - Added support for EXT_lights_imageBased ([bghgary](http://www.github.com/bghgary))
+- Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 
 ### Viewer
 
