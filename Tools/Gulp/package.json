@@ -28,7 +28,7 @@
         "gulp-sass": "^4.0.1",
         "gulp-sourcemaps": "~2.6.4",
         "gulp-typedoc": "^2.2.0",
-        "gulp-typescript": "^5.0.0-alpha.3",
+        "gulp-typescript": "4.0.2",
         "gulp-uglify": "^3.0.1",
         "gulp-webserver": "^0.9.1",
         "handlebars": "^4.0.11",
