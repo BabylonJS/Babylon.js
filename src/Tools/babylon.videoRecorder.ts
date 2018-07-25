@@ -66,7 +66,7 @@ module BABYLON {
      * This can helps recording videos from BabylonJS.
      * This is based on the available WebRTC functionalities of the browser.
      * 
-     * @see http://doc.babylonjs.com/...
+     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_video
      */
     export class VideoRecorder {
 
