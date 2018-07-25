@@ -558,7 +558,8 @@ function showError(errorMessage, errorEvent) {
                     }
     
                     var scene;
-    
+                    var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
+
                     if (code.indexOf("createEngine") !== -1) {
                         createEngineFunction = "createEngine";
                     }
@@ -581,7 +582,7 @@ function showError(errorMessage, errorEvent) {
                         eval("runScript = function(scene, canvas) {" + code + "}");
                         runScript(scene, canvas);
     
-                        zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                        zipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
                     } else {
                         //execute the code
                         eval(code);
@@ -600,8 +601,15 @@ function showError(errorMessage, errorEvent) {
                             return;
                         }
     
-                        // update the scene code for the zip file
-                        zipCode = code + "\r\n\r\nvar scene = " + createSceneFunction + "()";
+                        var createEngineZip = (createEngineFunction === "createEngine")
+                            ? "createEngine()"
+                            : defaultEngineZip
+
+                        zipCode = 
+                            code + "\r\n\r\n" +
+                            "var engine = " + createEngineZip + ";\r\n" +
+                            "var scene = " + createSceneFunction + "();"
+
                     }
     
                     engine.runRenderLoop(function () {
