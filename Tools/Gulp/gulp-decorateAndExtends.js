@@ -27,7 +27,7 @@ module.exports = function (varName, config) {
         }
 
         try {
-            file.contents = new Buffer(decorateAddition.concat(extendsAddition).concat(file.contents));
+            file.contents = Buffer.from(decorateAddition.concat(extendsAddition).concat(file.contents));
             this.push(file);
         } catch (err) {
             this.emit('error', new gutil.PluginError('gulp-decorate-and-extends', err, { fileName: file.path }));
