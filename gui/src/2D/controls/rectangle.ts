@@ -49,10 +49,7 @@ export class Rectangle extends Container {
     protected _getTypeName(): string {
         return "Rectangle";
     }
-
-    protected _drawAdditionalBackground(context: CanvasRenderingContext2D): void {
-    }
-
+    
     protected _localDraw(context: CanvasRenderingContext2D): void {
         context.save();
 
@@ -73,8 +70,6 @@ export class Rectangle extends Container {
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
         }
-
-        this._drawAdditionalBackground(context);
 
         if (this._thickness) {
 
