@@ -1,4 +1,4 @@
-import { CubeTexture, Engine, EnvironmentTextureTools, Nullable, Scene, Tools } from "babylonjs";
+import { CubeTexture, Engine, EnvironmentTextureTools, Nullable, Scene, Tools, VideoRecorder } from "babylonjs";
 import { Helpers } from "../helpers/Helpers";
 import { Inspector } from "../Inspector";
 import { Tab } from "./Tab";
@@ -9,6 +9,8 @@ export class ToolsTab extends Tab {
     private _inspector: Inspector;
 
     private _scene: Scene;
+
+    private _videoRecorder: Nullable<VideoRecorder> = null;
 
     constructor(tabbar: TabBar, insp: Inspector) {
         super(tabbar, 'Tools');
@@ -138,6 +140,29 @@ export class ToolsTab extends Tab {
                 }
             };
             elemValue.appendChild(inputElement);
+
+            if (VideoRecorder.IsSupported(this._scene.getEngine())) {
+                let videoRecorderElement = Inspector.DOCUMENT.createElement('input');
+                videoRecorderElement.value = "Start Recording Video";
+                videoRecorderElement.type = "button";
+                videoRecorderElement.className = "tool-input";
+                videoRecorderElement.onclick = () => {
+                    if (!this._videoRecorder) {
+                        this._videoRecorder = new VideoRecorder(this._scene.getEngine());
+                    }
+
+                    if (this._videoRecorder.isRecording) {
+                        this._videoRecorder.stopRecording();
+                    }
+                    else {
+                        videoRecorderElement.value = "Stop Recording Video";
+                        this._videoRecorder.startRecording().then(() => {
+                            videoRecorderElement.value = "Start Recording Video";
+                        });
+                    }
+                };
+                elemValue.appendChild(inputElement);
+            }
         }
     }
 
