@@ -100,12 +100,21 @@ export class GridDisplay extends Control {
                 context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
                 context.stroke();
             }
+
+            const top = this._currentMeasure.top + this._currentMeasure.height / 2;
+
+            for (var y = -cellCountY / 2; y < cellCountY / y; x++) {
+                const cellY = top + y * this.cellHeight;
+                context.moveTo(this._currentMeasure.left, cellY);
+                context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);
+                context.stroke();
+            }            
         }
 
         context.restore();
     }
 
     protected _getTypeName(): string {
-        return "GridDisplayRectangle";
+        return "GridDisplay";
     }
 }    
