@@ -151,17 +151,17 @@ export class ToolsTab extends Tab {
                         this._videoRecorder = new VideoRecorder(this._scene.getEngine());
                     }
 
-                    if (this._videoRecorder.isRecording) {
-                        this._videoRecorder.stopRecording();
+                    if (this._videoRecorder!.isRecording) {
+                        this._videoRecorder!.stopRecording();
                     }
                     else {
                         videoRecorderElement.value = "Stop Recording Video";
-                        this._videoRecorder.startRecording().then(() => {
+                        this._videoRecorder!.startRecording().then(() => {
                             videoRecorderElement.value = "Start Recording Video";
                         });
                     }
                 };
-                elemValue.appendChild(inputElement);
+                elemValue.appendChild(videoRecorderElement);
             }
         }
     }
