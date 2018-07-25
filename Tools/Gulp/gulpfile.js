@@ -686,12 +686,13 @@ gulp.task("srcTscWatch", function () {
     process.argv[3] = "-p";
     process.argv[4] = "../../src/tsconfig.json";
     require("./node_modules/typescript/lib/tsc.js");
+    return Promise.resolve();
 });
 
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watch", gulp.series("srcTscWatch", function () {
+gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
     var interval = 1000;
 
     var tasks = [];
@@ -729,7 +730,9 @@ gulp.task("watch", gulp.series("srcTscWatch", function () {
         });
     });
 
-    return tasks;
+    console.log(tasks.length);
+
+    return Promise.resolve();
 }));
 
 gulp.task("intellisense", function () {
