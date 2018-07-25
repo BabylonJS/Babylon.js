@@ -49,7 +49,7 @@ export class Rectangle extends Container {
     protected _getTypeName(): string {
         return "Rectangle";
     }
-
+    
     protected _localDraw(context: CanvasRenderingContext2D): void {
         context.save();
 

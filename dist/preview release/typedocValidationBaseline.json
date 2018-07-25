@@ -1,7 +1,7 @@
 {
-  "errors": 4238,
+  "errors": 4222,
   "babylon.typedoc.json": {
-    "errors": 4238,
+    "errors": 4222,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -14136,98 +14136,6 @@
           }
         },
         "vertexId": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "ReflectionProbe": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new ReflectionProbe": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "size": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "generateMipMaps": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "cubeTexture": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "position": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "refreshRate": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "renderList": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samples": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachToMesh": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "mesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getScene": {
           "Comments": {
             "MissingText": true
           }

@@ -85,6 +85,7 @@
 - Added gltf light falloff [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added falloff type per light to prevent material only inconsistencies [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
+- Added HDR support to ReflectionProbe ([Deltakosh](https://github.com/deltakosh))
 
 ### glTF Loader
 
