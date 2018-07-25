@@ -124,7 +124,8 @@
             "imageProcessing",
             "occlusionQuery",
             "transformFeedback",
-            "noise"
+            "noise",
+            "videoRecorder"
         ],
         "minimal": [
             "meshBuilder",
@@ -1391,7 +1392,16 @@
                 "meshBuilder",
                 "additionalTextures"
             ]
+        },
+        "videoRecorder": {
+            "files": [
+                "../../src/Tools/babylon.videoRecorder.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
         }
+
     },
     "typescript": [
         "../../src/**/*.ts",
