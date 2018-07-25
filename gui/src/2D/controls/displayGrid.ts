@@ -123,8 +123,10 @@ export class DisplayGrid extends Control {
 
         if (this._processMeasures(parentMeasure, context)) {
 
-            context.fillStyle = this._background;
-            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            if (this._background) {
+                context.fillStyle = this._background;
+                context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
 
             let cellCountX = this._currentMeasure.width / this._cellWidth;
             let cellCountY = this._currentMeasure.height / this._cellHeight;
