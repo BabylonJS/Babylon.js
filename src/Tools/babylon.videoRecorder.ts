@@ -154,10 +154,10 @@ module BABYLON {
          * Starts recording the canvas for a max duration specified in parameters.
          * @param fileName Defines the name of the file to be downloaded when the recording stop. If null no automatic download will start and you can rely on the promise to get the data back.
          * @param maxDuration Defines the maximum recording time in seconds. 
-         * It default to 5 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
+         * It default to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
          * @return a promise callback at the end of the recording with the video data in Blob.
          */
-        public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 5): Promise<Blob> {
+        public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 7): Promise<Blob> {
             if (!this._canvas || !this._mediaRecorder) {
                 throw "Recorder has already been disposed";
             }
