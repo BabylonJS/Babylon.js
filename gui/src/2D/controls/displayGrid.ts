@@ -11,7 +11,7 @@ export class DisplayGrid extends Control {
     private _minorLineColor = "DarkGray";
 
     private _majorLineTickness = 2;
-    private _majorLineColor = "Red";
+    private _majorLineColor = "White";
 
     private _majorLineFrequency = 5;
 
