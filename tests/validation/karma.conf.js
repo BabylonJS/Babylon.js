@@ -21,6 +21,7 @@ module.exports = function (config) {
             './tests/validation/integration.js',
             './favicon.ico',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
+            { pattern: 'dist/preview release/**/*.wasm', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             { pattern: 'tests/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
