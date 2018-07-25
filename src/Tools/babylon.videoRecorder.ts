@@ -1,6 +1,6 @@
 ﻿interface HTMLCanvasElement {
     /** Track wether a record is in progress */
-    recording: boolean;
+    isRecording: boolean;
     /** Capture Stream method defined by some browsers */
     captureStream(fps?: number): MediaStream;
 }
@@ -96,6 +96,13 @@ module BABYLON {
         private _reject: Nullable<(error: any) => void>;
 
         /**
+         * True wether a recording is already in progress.
+         */
+        public get isRecording(): boolean {
+            return !!this._canvas && this._canvas.isRecording;
+        }
+
+        /**
          * Create a new VideoCapture object which can help converting what you see in Babylon to
          * a video file.
          * @param engine Defines the BabylonJS Engine you wish to record
@@ -112,7 +119,7 @@ module BABYLON {
             }
 
             this._canvas = canvas;
-            this._canvas.recording = false;
+            this._canvas.isRecording = false;
 
             this._options = {
                 ...VideoRecorder._defaultOptions,
@@ -135,11 +142,11 @@ module BABYLON {
                 return;
             }
 
-            if (!this._canvas.recording) {
+            if (!this.isRecording) {
                 return;
             }
 
-            this._canvas.recording = false;
+            this._canvas.isRecording = false;
             this._mediaRecorder.stop();
         }
 
@@ -155,7 +162,7 @@ module BABYLON {
                 throw "Recorder has already been disposed";
             }
 
-            if (this._canvas.recording) {
+            if (this.isRecording) {
                 throw "Recording already in progress";
             }
 
@@ -170,7 +177,7 @@ module BABYLON {
             this._resolve = null;
             this._reject = null;
             
-            this._canvas.recording = true;
+            this._canvas.isRecording = true;
             this._mediaRecorder.start(this._options.recordChunckSize);
 
             return new Promise<Blob>((resolve, reject) => {
