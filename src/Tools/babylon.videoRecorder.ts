@@ -11,8 +11,11 @@ interface MediaRecorder {
     /** Stops recording */
     stop(): void;
 
+    /** Event raised when an error arised. */
     onerror: (event: ErrorEvent) => void;
+    /** Event raised when the recording stops. */
     onstop: (event:Event) => void;
+    /** Event raised when a new chunk  of data is available and should be tracked. */
     ondataavailable: (event: Event) => void;
 }
 
@@ -41,6 +44,9 @@ interface MediaRecorderConstructor {
     new(stream: MediaStream, options?: MediaRecorderOptions): MediaRecorder;
 }
 
+/**
+ * MediaRecoreder object available in some browsers.
+ */
 declare var MediaRecorder: MediaRecorderConstructor;
 
 module BABYLON {
@@ -63,15 +69,26 @@ module BABYLON {
      * @see http://doc.babylonjs.com/...
      */
     export class VideoRecorder {
+
         private static readonly _defaultOptions = {
             mimeType: "video/webm",
             fps: 25,
             recordChunckSize: 3000
         };
 
-        private readonly _canvas: HTMLCanvasElement;
+        /**
+         * Returns wehther or not the VideoRecorder is available in your browser.
+         * @param engine Defines the Babylon Engine to check the support for
+         * @returns true if supported otherwise false
+         */
+        public static IsSupported(engine: Engine): boolean {
+            const canvas = engine.getRenderingCanvas();
+            return (!!canvas && typeof canvas.captureStream === "function");
+        }
+
         private readonly _options: VideoRecorderOptions;
-        private readonly _mediaRecorder: MediaRecorder;
+        private _canvas: Nullable<HTMLCanvasElement>;
+        private _mediaRecorder: Nullable<MediaRecorder>;
 
         private _recordedChunks: any[];
         private _fileName: Nullable<string>;
@@ -85,6 +102,10 @@ module BABYLON {
          * @param options Defines options that can be used to customized the capture
          */
         constructor(engine: Engine, options: Nullable<VideoRecorderOptions>) {
+            if (!VideoRecorder.IsSupported(engine)) {
+                throw "Your browser does not support recording so far.";
+            }
+
             const canvas = engine.getRenderingCanvas();
             if (!canvas) {
                 throw "The babylon engine must have a canvas to be recorded";
@@ -92,9 +113,6 @@ module BABYLON {
 
             this._canvas = canvas;
             this._canvas.recording = false;
-            if (typeof this._canvas.captureStream !== "function") {
-                throw "Your browser does not support recording so far.";
-            }
 
             this._options = {
                 ...VideoRecorder._defaultOptions,
@@ -113,14 +131,16 @@ module BABYLON {
          * functions.
          */
         public stopRecording(): void {
+            if (!this._canvas || !this._mediaRecorder) {
+                return;
+            }
+
             if (!this._canvas.recording) {
                 return;
             }
 
             this._canvas.recording = false;
-            if (this._mediaRecorder) {
-                this._mediaRecorder.stop();
-            }
+            this._mediaRecorder.stop();
         }
 
         /**
@@ -131,6 +151,10 @@ module BABYLON {
          * @return a promise callback at the end of the recording with the video data in Blob.
          */
         public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 5): Promise<Blob> {
+            if (!this._canvas || !this._mediaRecorder) {
+                throw "Recorder has already been disposed";
+            }
+
             if (this._canvas.recording) {
                 throw "Recording already in progress";
             }
@@ -138,21 +162,34 @@ module BABYLON {
             if (maxDuration > 0) {
                 setTimeout(() => {
                     this.stopRecording();
-                }, maxDuration);
+                }, maxDuration * 1000);
             }
 
-            this._canvas.recording = true;
             this._fileName = fileName;
             this._recordedChunks = [];
             this._resolve = null;
             this._reject = null;
-
+            
+            this._canvas.recording = true;
             this._mediaRecorder.start(this._options.recordChunckSize);
 
             return new Promise<Blob>((resolve, reject) => {
                 this._resolve = resolve;
                 this._reject = reject;
             });
+        }
+
+        /**
+         * Releases internal resources used during the recording.
+         */
+        public dispose() {
+            this._canvas = null;
+            this._mediaRecorder = null;
+
+            this._recordedChunks = [];
+            this._fileName = null;
+            this._resolve = null;
+            this._reject = null;
         }
 
         private _handleDataAvailable(event: any): void {
