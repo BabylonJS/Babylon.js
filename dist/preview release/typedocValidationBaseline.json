@@ -1,7 +1,7 @@
 {
-  "errors": 4222,
+  "errors": 4220,
   "babylon.typedoc.json": {
-    "errors": 4222,
+    "errors": 4220,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -9728,11 +9728,6 @@
           "Comments": {
             "MissingText": true
           }
-        },
-        "unbindFrameBuffer": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
         }
       }
     },
@@ -14392,11 +14387,6 @@
                 "MissingText": true
               }
             }
-          }
-        },
-        "unbindFrameBuffer": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
           }
         }
       }

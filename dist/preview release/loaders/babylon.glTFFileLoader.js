@@ -5461,6 +5461,8 @@ var BABYLON;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
+//# sourceMappingURL=KHR_materials_unlit.js.map
+
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -5559,6 +5561,8 @@ var BABYLON;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
+//# sourceMappingURL=KHR_lights.js.map
+
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -5619,6 +5623,8 @@ var BABYLON;
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=KHR_texture_transform.js.map
 
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
@@ -5731,3 +5737,5 @@ var BABYLON;
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=EXT_lights_imageBased.js.map
