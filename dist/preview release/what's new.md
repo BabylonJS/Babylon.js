@@ -166,6 +166,7 @@
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
 - It was not possible to add new custom optimizers, only use existing ones ([RaananW](https://github.com/RaananW))
 - Button texts were truncated incorrectly ([RaananW](https://github.com/RaananW))
+- Animation names with more than one word didn't work correctly ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
