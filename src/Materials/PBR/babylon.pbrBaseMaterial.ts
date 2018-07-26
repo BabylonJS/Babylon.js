@@ -125,6 +125,7 @@
         public EXPOSURE = false;
 
         public USEPHYSICALLIGHTFALLOFF = false;
+        public USEGLTFLIGHTFALLOFF = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
         public CLIPPLANE = false;
@@ -164,6 +165,22 @@
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export abstract class PBRBaseMaterial extends PushMaterial {
+        /**
+         * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
+         */
+        public static readonly LIGHTFALLOFF_PHYSICAL = 0;
+
+        /**
+         * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document 
+         * to enhance interoperability with other engines.
+         */
+        public static readonly LIGHTFALLOFF_GLTF = 1;
+
+        /**
+         * PBRMaterialLightFalloff Standard: light is falling off like in the standard material 
+         * to enhance interoperability with other materials.
+         */
+        public static readonly LIGHTFALLOFF_STANDARD = 2;
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -383,11 +400,10 @@
         protected _useAutoMicroSurfaceFromReflectivityMap = false;
 
         /**
-         * BJS is using an harcoded light falloff based on a manually sets up range.
-         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
-         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+         * Defines the  falloff type used in this material.
+         * It by default is Physical.
          */
-        protected _usePhysicalLightFalloff = true;
+        protected _lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
 
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
@@ -1216,7 +1232,18 @@
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
-                defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
+                if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
+                    defines.USEPHYSICALLIGHTFALLOFF = false;
+                    defines.USEGLTFLIGHTFALLOFF = false;
+                }
+                else if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF) {
+                    defines.USEPHYSICALLIGHTFALLOFF = false;
+                    defines.USEGLTFLIGHTFALLOFF = true;
+                }
+                else {
+                    defines.USEPHYSICALLIGHTFALLOFF = true;
+                    defines.USEGLTFLIGHTFALLOFF = false;
+                }
 
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
 
@@ -1606,7 +1633,7 @@
             if (mustRebind || !this.isFrozen) {
                 // Lights
                 if (scene.lightsEnabled && !this._disableLighting) {
-                    MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._usePhysicalLightFalloff);
+                    MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._lightFalloff !== PBRBaseMaterial.LIGHTFALLOFF_STANDARD);
                 }
 
                 // View

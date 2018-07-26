@@ -8,6 +8,7 @@ import { ViewerModel } from '../model/viewerModel';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
 import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
+import { PrintButtonPlugin } from '../templating/plugins/printButton';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -148,6 +149,7 @@ export class DefaultViewer extends AbstractViewer {
             }
 
             this.registerTemplatePlugin(new HDButtonPlugin(this));
+            this.registerTemplatePlugin(new PrintButtonPlugin(this));
         }
     }
 
@@ -196,7 +198,7 @@ export class DefaultViewer extends AbstractViewer {
                 var value = element.dataset["value"];
                 var label = element.querySelector("span.animation-label");
                 if (label && value) {
-                    this._updateAnimationType({ value, label: label.innerHTML });
+                    this._updateAnimationType({ value: value.trim(), label: label.innerHTML });
                 }
                 break;
             case "speed-option-button":
@@ -326,19 +328,31 @@ export class DefaultViewer extends AbstractViewer {
         this._updateAnimationSpeed("1.0", paramsObject);
     }
 
-    public toggleVR() {
-        super.toggleVR();
+    protected _initVR() {
+        this.engine.onVRDisplayChangedObservable.add(() => {
+            let viewerTemplate = this.templateManager.getTemplate('viewer');
+            let viewerElement = viewerTemplate && viewerTemplate.parent;
 
-        let viewerTemplate = this.templateManager.getTemplate('viewer');
-        let viewerElement = viewerTemplate && viewerTemplate.parent;
-
-        if (viewerElement) {
-            if (this._vrToggled) {
-                viewerElement.classList.add("in-vr");
-            } else {
-                viewerElement.classList.remove("in-vr");
+            if (viewerElement) {
+                if (this.sceneManager.vrHelper!.isInVRMode) {
+                    viewerElement.classList.add("in-vr");
+                } else {
+                    viewerElement.classList.remove("in-vr");
+                }
             }
+        });
+        if (this.sceneManager.vrHelper) {
+            // due to the way the experience helper is exisintg VR, this must be added.
+            this.sceneManager.vrHelper.onExitingVR.add(() => {
+                let viewerTemplate = this.templateManager.getTemplate('viewer');
+                let viewerElement = viewerTemplate && viewerTemplate.parent;
+
+                if (viewerElement) {
+                    viewerElement.classList.remove("in-vr");
+                }
+            });
         }
+        super._initVR();
     }
 
     /**

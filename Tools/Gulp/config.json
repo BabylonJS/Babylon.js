@@ -8,6 +8,7 @@
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
         "playgroundDirectory": "../../Playground/",
+        "tempDirectory": "../../.temp/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
@@ -123,7 +124,8 @@
             "imageProcessing",
             "occlusionQuery",
             "transformFeedback",
-            "noise"
+            "noise",
+            "videoRecorder"
         ],
         "minimal": [
             "meshBuilder",
@@ -136,7 +138,7 @@
             "picking",
             "backgroundMaterial",
             "videoDome"
-        ]      
+        ]
     },
     "workloads": {
         "core": {
@@ -227,7 +229,7 @@
                 "fresnelFunction",
                 "reflectionFunction",
                 "imageProcessingDeclaration",
-                "imageProcessingFunctions",                
+                "imageProcessingFunctions",
                 "bumpFragmentFunctions",
                 "clipPlaneFragmentDeclaration",
                 "fogFragmentDeclaration",
@@ -246,7 +248,7 @@
                 "core",
                 "debug"
             ]
-        },          
+        },
         "occlusionQuery": {
             "files": [
                 "../../src/Engine/Extensions/babylon.engine.occlusionQuery.js"
@@ -255,7 +257,7 @@
                 "core",
                 "debug"
             ]
-        },          
+        },
         "behaviors": {
             "files": [
                 "../../src/Behaviors/babylon.behavior.js"
@@ -263,7 +265,7 @@
             "dependUpon": [
                 "core"
             ]
-        },   
+        },
         "imageProcessing": {
             "files": [
                 "../../src/Materials/babylon.imageProcessingConfiguration.js",
@@ -273,8 +275,8 @@
             "dependUpon": [
                 "core"
             ]
-        },  
-        "noise" : {
+        },
+        "noise": {
             "files": [
                 "../../src/Materials/Textures/Procedurals/babylon.noiseProceduralTexture.js"
             ],
@@ -285,14 +287,17 @@
             "shaders": [
                 "noise.fragment"
             ]
-        },      
+        },
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
+                "../../src/Particles/babylon.baseParticleSystem.js",
                 "../../src/Particles/babylon.particleSystem.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.hemisphericParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.pointParticleEmitter.js",
                 "../../src/Particles/babylon.particleSystemComponent.js"
             ],
             "dependUpon": [
@@ -571,7 +576,8 @@
                 "../../src/Audio/babylon.audioEngine.js",
                 "../../src/Audio/babylon.sound.js",
                 "../../src/Audio/babylon.soundtrack.js",
-                "../../src/Audio/babylon.analyser.js"
+                "../../src/Audio/babylon.analyser.js",
+                "../../src/Audio/babylon.weightedsound.js"
             ],
             "dependUpon": [
                 "core"
@@ -1083,7 +1089,7 @@
             ]
         },
         "textureFormats": {
-            "files": [ ],
+            "files": [],
             "dependUpon": [
                 "dds",
                 "tga",
@@ -1208,7 +1214,7 @@
             "shaders": [
                 "anaglyph.fragment"
             ]
-        },       
+        },
         "stereoscopic": {
             "files": [
                 "../../src/PostProcess/babylon.stereoscopicInterlacePostProcess.js",
@@ -1226,7 +1232,7 @@
             "shaders": [
                 "stereoscopicInterlace.fragment"
             ]
-        },           
+        },
         "vr": {
             "files": [
                 "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
@@ -1386,7 +1392,16 @@
                 "meshBuilder",
                 "additionalTextures"
             ]
+        },
+        "videoRecorder": {
+            "files": [
+                "../../src/Tools/babylon.videoRecorder.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
         }
+
     },
     "typescript": [
         "../../src/**/*.ts",
@@ -1409,8 +1424,8 @@
         "proceduralTexturesLibrary",
         "loaders",
         "serializers",
-        "inspector",
         "gui",
+        "inspector",
         "viewer",
         "viewer-assets"
     ],
@@ -1749,6 +1764,7 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
@@ -1774,6 +1790,7 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
@@ -1844,146 +1861,72 @@
     "gui": {
         "libraries": [
             {
-                "files": [
-                    "../../gui/src/2D/style.ts",
-                    "../../gui/src/2D/valueAndUnit.ts",
-                    "../../gui/src/2D/advancedDynamicTexture.ts",
-                    "../../gui/src/2D/measure.ts",
-                    "../../gui/src/2D/math2D.ts",
-                    "../../gui/src/2D/multiLinePoint.ts",
-                    "../../gui/src/2D/controls/control.ts",
-                    "../../gui/src/2D/controls/container.ts",
-                    "../../gui/src/2D/controls/stackPanel.ts",
-                    "../../gui/src/2D/controls/rectangle.ts",
-                    "../../gui/src/2D/controls/ellipse.ts",
-                    "../../gui/src/2D/controls/line.ts",
-                    "../../gui/src/2D/controls/slider.ts",
-                    "../../gui/src/2D/controls/checkbox.ts",
-                    "../../gui/src/2D/controls/radioButton.ts",
-                    "../../gui/src/2D/controls/textBlock.ts",
-                    "../../gui/src/2D/controls/image.ts",
-                    "../../gui/src/2D/controls/button.ts",
-                    "../../gui/src/2D/controls/colorpicker.ts",
-                    "../../gui/src/2D/controls/inputText.ts",
-                    "../../gui/src/2D/controls/inputPassword.ts",
-                    "../../gui/src/2D/controls/virtualKeyboard.ts",
-                    "../../gui/src/2D/controls/multiLine.ts",
-                    "../../gui/src/2D/controls/grid.ts",                    
-                    "../../gui/src/3D/gui3DManager.ts",
-                    "../../gui/src/3D/materials/fluentMaterial.ts",
-                    "../../gui/src/3D/vector3WithInfo.ts",
-                    "../../gui/src/3D/controls/control3D.ts",
-                    "../../gui/src/3D/controls/container3D.ts",
-                    "../../gui/src/3D/controls/abstractButton3D.ts",
-                    "../../gui/src/3D/controls/button3D.ts",
-                    "../../gui/src/3D/controls/meshButton3D.ts",
-                    "../../gui/src/3D/controls/holographicButton.ts",
-                    "../../gui/src/3D/controls/stackPanel3D.ts",
-                    "../../gui/src/3D/controls/volumeBasedPanel.ts",
-                    "../../gui/src/3D/controls/spherePanel.ts",
-                    "../../gui/src/3D/controls/planePanel.ts",
-                    "../../gui/src/3D/controls/scatterPanel.ts",
-                    "../../gui/src/3D/controls/cylinderPanel.ts"
-                ],
-                "shaderFiles": [
-                    "../../gui/src/3D/materials/shaders/fluent.vertex.fx",
-                    "../../gui/src/3D/materials/shaders/fluent.fragment.fx"
-                ],
-                "output": "babylon.gui.js",
-                "buildAsModule": true,
-                "moduleName": "babylonjs-gui",
-                "moduleDeclaration": {
-                    "name": "GUI",
-                    "module": "babylonjs-gui"
-                }
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.gui.min.js",
+                "webpack": "../../gui/webpack.config.js",
+                "bundle": "true",
+                "babylonIncluded": false,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../gui/",
-            "distOutputDirectory": "/gui/"
+            "srcOutputDirectory": "../../gui/src/",
+            "distOutputDirectory": "/gui/",
+            "dtsBundle": {
+                "name": "babylonjs-gui",
+                "main": "../../dist/preview release/gui/build/index.d.ts",
+                "out": "../babylon.gui.module.d.ts",
+                "baseDir": "../../dist/preview release/gui/build/",
+                "headerText": "BabylonJS GUI"
+            },
+            "processDeclaration": {
+                "filename": "babylon.gui.module.d.ts",
+                "packageName": "babylonjs-gui",
+                "moduleName": "BABYLON.GUI",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON"
+                }
+            }
         }
     },
     "inspector": {
         "libraries": [
             {
-                "files": [
-                    "../../inspector/src/Inspector.ts",
-                    "../../inspector/src/properties.ts",
-                    "../../inspector/src/properties_gui.ts",
-                    "../../inspector/src/gui/BasicElement.ts",
-                    "../../inspector/src/adapters/Adapter.ts",
-                    "../../inspector/src/adapters/CameraAdapter.ts",
-                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",
-                    "../../inspector/src/adapters/GUIAdapter.ts",
-                    "../../inspector/src/adapters/SoundAdapter.ts",
-                    "../../inspector/src/adapters/TextureAdapter.ts",
-                    "../../inspector/src/adapters/LightAdapter.ts",
-                    "../../inspector/src/adapters/MaterialAdapter.ts",
-                    "../../inspector/src/adapters/MeshAdapter.ts",
-                    "../../inspector/src/adapters/PhysicsImpostorAdapter.ts",
-                    "../../inspector/src/details/DetailPanel.ts",
-                    "../../inspector/src/details/Property.ts",
-                    "../../inspector/src/details/PropertyLine.ts",
-                    "../../inspector/src/gui/ColorElement.ts",
-                    "../../inspector/src/gui/ColorPickerElement.ts",
-                    "../../inspector/src/gui/CubeTextureElement.ts",
-                    "../../inspector/src/gui/HDRCubeTextureElement.ts",
-                    "../../inspector/src/gui/SearchBar.ts",
-                    "../../inspector/src/gui/TextureElement.ts",
-                    "../../inspector/src/gui/Tooltip.ts",
-                    "../../inspector/src/helpers/Helpers.ts",
-                    "../../inspector/src/scheduler/Scheduler.ts",
-                    "../../inspector/src/tabs/Tab.ts",
-                    "../../inspector/src/tabs/PropertyTab.ts",
-                    "../../inspector/src/tabs/CameraTab.ts",
-                    "../../inspector/src/tabs/GUITab.ts",
-                    "../../inspector/src/tabs/PhysicsTab.ts",
-                    "../../inspector/src/tabs/SoundTab.ts",
-                    "../../inspector/src/tabs/TextureTab.ts",
-                    "../../inspector/src/tabs/LightTab.ts",
-                    "../../inspector/src/tabs/MaterialTab.ts",
-                    "../../inspector/src/tabs/MeshTab.ts",
-                    "../../inspector/src/tabs/SceneTab.ts",
-                    "../../inspector/src/tabs/ConsoleTab.ts",
-                    "../../inspector/src/tabs/StatsTab.ts",
-                    "../../inspector/src/tabs/GLTFTab.ts",
-                    "../../inspector/src/tabs/ToolsTab.ts",
-                    "../../inspector/src/tabs/TabBar.ts",
-                    "../../inspector/src/tools/AbstractTool.ts",
-                    "../../inspector/src/tools/PauseScheduleTool.ts",
-                    "../../inspector/src/tools/PickTool.ts",
-                    "../../inspector/src/tools/PopupTool.ts",
-                    "../../inspector/src/tools/RefreshTool.ts",
-                    "../../inspector/src/tools/LabelTool.ts",
-                    "../../inspector/src/tools/Toolbar.ts",
-                    "../../inspector/src/tools/DisposeTool.ts",
-                    "../../inspector/src/tools/FullscreenTool.ts",
-                    "../../inspector/src/tree/TreeItem.ts",
-                    "../../inspector/src/treetools/AbstractTreeTool.ts",
-                    "../../inspector/src/treetools/BoundingBox.ts",
-                    "../../inspector/src/treetools/CameraPOV.ts",
-                    "../../inspector/src/treetools/SoundInteractions.ts",
-                    "../../inspector/src/treetools/Checkbox.ts",
-                    "../../inspector/src/treetools/DebugArea.ts",
-                    "../../inspector/src/treetools/Info.ts",
-                    "../../inspector/src/lib.d.ts"
-                ],
-                "sassFiles": [
-                    "../../inspector/sass/**/*.scss"
-                ],
-                "output": "babylon.inspector.js",
+                "files": [],
+                "sassFiles": [],
+                "output": "babylon.inspector.bundle.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
-                "moduleDeclaration": {
-                    "name": "INSPECTOR",
-                    "module": "babylonjs-inspector"
-                },
-                "extendsRoot": true
+                "extendsRoot": true,
+                "useOutputForDebugging": true
             }
         ],
         "build": {
-            "srcOutputDirectory": "../../inspector/",
-            "distOutputDirectory": "/inspector/"
+            "srcOutputDirectory": "../../inspector/src/",
+            "distOutputDirectory": "/inspector/",
+            "dtsBundle": {
+                "name": "babylonjs-inspector",
+                "main": "../../dist/preview release/inspector/build/index.d.ts",
+                "out": "../babylon.inspector.module.d.ts",
+                "baseDir": "../../dist/preview release/inspector/build/",
+                "headerText": "BabylonJS Inspector"
+            },
+            "processDeclaration": {
+                "filename": "babylon.inspector.module.d.ts",
+                "packageName": "babylonjs-inspector",
+                "moduleName": "INSPECTOR",
+                "importsToRemove": [],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON",
+                    "babylonjs-serializers": "BABYLON",
+                    "babylonjs-gui": "BABYLON.GUI"
+                }
+            }
         }
     },
     "viewer": {
@@ -1998,21 +1941,35 @@
                     "name": "BabylonViewer",
                     "module": "babylonjs-viewer"
                 },
-                "babylonIncluded": true
+                "babylonIncluded": true,
+                "noWatch": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
             "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer",
-                "main": "../../Viewer/dist/build/src/index.d.ts",
-                "out": "../../../../dist/preview release/viewer/babylon.viewer.module.d.ts",
-                "legacyDeclaration": true,
+                "main": "../../dist/preview release/viewer/build/src/index.d.ts",
+                "out": "../../babylon.viewer.module.d.ts",
                 "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
+            },
+            "processDeclaration": {
+                "packageName": "babylonjs-viewer",
+                "moduleName": "BabylonViewer",
+                "importsToRemove": [
+                    "pep",
+                    "babylonjs-loaders"
+                ],
+                "classMap": {
+                    "babylonjs": "BABYLON",
+                    "babylonjs-loaders": "BABYLON"
+                }
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
@@ -2030,7 +1987,7 @@
                     "minified": true
                 },
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "viewer.max.js",
                             "outputDirectory": "/../../Viewer/dist/"
@@ -2056,23 +2013,25 @@
                     "name": "BabylonViewerAssets",
                     "module": "babylonjs-viewer-assets"
                 },
-                "babylonIncluded": true
+                "babylonIncluded": true,
+                "noWatch": true,
+                "preventLoadLibrary": true
             }
         ],
         "build": {
             "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",
-                "baseDir": "../../Viewer/dist/build/src/assets/",
-                "main": "../../Viewer/dist/build/src/assets/index.d.ts",
-                "out": "../../../build/assets/babylon.viewer.assets.module.d.ts"
+                "main": "../../dist/preview release/viewer/build/src/assets/index.d.ts",
+                "out": "../../../../../../Viewer/build/assets/babylon.viewer.assets.module.d.ts"
             },
             "outputs": [
                 {
-                    "destination": [
+                    "destinations": [
                         {
                             "filename": "babylon.viewer.assets.js",
-                            "outputDirectory": "/../../Viewer/dist/build/assets/"
+                            "outputDirectory": "/../../Viewer/build/assets/"
                         }
                     ],
                     "minified": true

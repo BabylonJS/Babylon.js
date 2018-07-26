@@ -35,6 +35,16 @@ module BABYLON.GLTF2 {
         // #region Overridable Methods
 
         /**
+         * Override this method to do work after the state changes to LOADING.
+         */
+        protected _onLoading(): void {}
+
+        /**
+         * Override this method to do work after the state changes to READY.
+         */
+        protected _onReady(): void {}
+
+        /**
          * Override this method to modify the default behavior for loading scenes.
          * @hidden
          */
@@ -81,6 +91,9 @@ module BABYLON.GLTF2 {
          * @hidden
          */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> { return null; }
+
+        /** Override this method to modify the default behavior for loading animations. */
+        protected _loadAnimationAsync(context: string, animation: _ILoaderAnimation): Nullable<Promise<void>> { return null; }
 
         // #endregion
 
@@ -138,6 +151,22 @@ module BABYLON.GLTF2 {
                 // Restore the extras value after executing the action.
                 extras[this.name] = value;
             }
+        }
+
+        /**
+         * Helper method called by the loader after the state changes to LOADING.
+         * @hidden
+         */
+        public static _OnLoading(loader: GLTFLoader): void {
+            loader._forEachExtensions(extension => extension._onLoading());
+        }
+
+        /**
+         * Helper method called by the loader after the state changes to READY.
+         * @hidden
+         */
+        public static _OnReady(loader: GLTFLoader): void {
+            loader._forEachExtensions(extension => extension._onReady());
         }
 
         /**
@@ -202,6 +231,14 @@ module BABYLON.GLTF2 {
          */
         public static _LoadUriAsync(loader: GLTFLoader, context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
             return loader._applyExtensions(extension => extension._loadUriAsync(context, uri));
+        }
+
+        /** 
+         * Helper method called by the loader to allow extensions to override loading animations.
+         * @hidden
+         */
+        public static _LoadAnimationAsync(loader: GLTFLoader, context: string, animation: _ILoaderAnimation): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadAnimationAsync(context, animation));
         }
     }
 }

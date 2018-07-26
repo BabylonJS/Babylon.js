@@ -26,6 +26,17 @@ uniform vec3 minEmitBox;
 uniform vec3 maxEmitBox;
 #endif
 
+#ifdef POINTEMITTER
+uniform vec3 direction1;
+uniform vec3 direction2;
+#endif
+
+#ifdef HEMISPHERICEMITTER
+uniform float radius;
+uniform float radiusRange;
+uniform float directionRandomizer;
+#endif
+
 #ifdef SPHEREEMITTER
 uniform float radius;
 uniform float radiusRange;
@@ -175,13 +186,33 @@ void main() {
 #endif        
 
     // Position / Direction (based on emitter type)
-#ifdef BOXEMITTER
+#ifdef POINTEMITTER
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    position = vec3(0, 0, 0);
+
+    direction = direction1 + (direction2 - direction1) * randoms3;
+#elif defined(BOXEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
     vec3 randoms3 = getRandomVec3(seed.z);
 
     position = minEmitBox + (maxEmitBox - minEmitBox) * randoms2;
 
-    direction = direction1 + (direction2 - direction1) * randoms3;
+    direction = direction1 + (direction2 - direction1) * randoms3;    
+#elif defined(HEMISPHERICEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Position on the sphere surface
+    float phi = 2.0 * PI * randoms2.x;
+    float theta = acos(2.0 * randoms2.y - 1.0);
+    float randX = cos(phi) * sin(theta);
+    float randY = cos(theta);
+    float randZ = sin(phi) * sin(theta);
+
+    position = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, abs(randY), randZ);
+    direction = position + directionRandomizer * randoms3;    
 #elif defined(SPHEREEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
     vec3 randoms3 = getRandomVec3(seed.z);
@@ -205,10 +236,16 @@ void main() {
     vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
-    float h = randoms2.y * height.y;
-    
-    // Better distribution in a cone at normal angles.
-    h = 1. - h * h;
+
+    #ifdef CONEEMITTERSPAWNPOINT
+        float h = 0.00001;
+    #else
+        float h = randoms2.y * height.y;
+        
+        // Better distribution in a cone at normal angles.
+        h = 1. - h * h;        
+    #endif
+
     float lRadius = radius.x - radius.x * randoms2.z * radius.y;
     lRadius = lRadius * h;
 

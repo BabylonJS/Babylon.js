@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-inspector",
     "description": "The Babylon.js inspector.",
-    "version": "3.3.0-alpha.12",
+    "version": "3.3.0-alpha.13",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -12,9 +12,12 @@
     "main": "babylon.inspector.bundle.js",
     "files": [
         "babylon.inspector.bundle.js",
+        "babylon.inspector.bundle.js.map",
+        "babylon.inspector.module.d.ts",
         "readme.md",
         "package.json"
     ],
+    "typings": "babylon.inspector.module.d.ts",
     "keywords": [
         "3D",
         "javascript",

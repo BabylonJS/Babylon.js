@@ -191,8 +191,19 @@ declare module BABYLON {
         private _onCompleteObserver;
         /**
          * Callback raised when the asset is completely loaded, immediately before the loader is disposed.
+         * For assets with LODs, raised when all of the LODs are complete.
+         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
         onComplete: () => void;
+        /**
+         * Observable raised when an error occurs.
+         */
+        readonly onErrorObservable: Observable<any>;
+        private _onErrorObserver;
+        /**
+         * Callback raised when an error occurs.
+         */
+        onError: (reason: any) => void;
         /**
          * Observable raised after the loader is disposed.
          */

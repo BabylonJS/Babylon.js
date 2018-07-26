@@ -231,6 +231,8 @@ var BABYLON;
             this.facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
             // f vertex//normal vertex//normal vertex//normal ...
             this.facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
+            // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
+            this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
         }
         /**
          * Calls synchronously the MTL file attached to this obj.
@@ -413,11 +415,12 @@ var BABYLON;
              * Create triangles from polygons by recursion
              * The best to understand how it works is to draw it in the same time you get the recursion.
              * It is important to notice that a triangle is a polygon
-             * We get 4 patterns of face defined in OBJ File :
+             * We get 5 patterns of face defined in OBJ File :
              * facePattern1 = ["1","2","3","4","5","6"]
              * facePattern2 = ["1/1","2/2","3/3","4/4","5/5","6/6"]
              * facePattern3 = ["1/1/1","2/2/2","3/3/3","4/4/4","5/5/5","6/6/6"]
              * facePattern4 = ["1//1","2//2","3//3","4//4","5//5","6//6"]
+             * facePattern5 = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-4/-4/-4","-5/-5/-5","-6/-6/-6"]
              * Each pattern is divided by the same method
              * @param face Array[String] The indices of elements
              * @param v Integer The variable to increment
@@ -437,6 +440,7 @@ var BABYLON;
                 //Pattern2 => triangle = ["1/1","2/2","3/3","1/1","3/3","4/4"];
                 //Pattern3 => triangle = ["1/1/1","2/2/2","3/3/3","1/1/1","3/3/3","4/4/4"];
                 //Pattern4 => triangle = ["1//1","2//2","3//3","1//1","3//3","4//4"];
+                //Pattern5 => triangle = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-1/-1/-1","-3/-3/-3","-4/-4/-4"];
             };
             /**
              * Create triangles and push the data for each polygon for the pattern 1
@@ -532,6 +536,31 @@ var BABYLON;
                 //Reset variable for the next line
                 triangles = [];
             };
+            /**
+             * Create triangles and push the data for each polygon for the pattern 3
+             * In this pattern we get vertice positions, uvs and normals
+             * @param face
+             * @param v
+             */
+            var setDataForCurrentFaceWithPattern5 = function (face, v) {
+                //Get the indices of triangles for each polygon
+                getTriangles(face, v);
+                for (var k = 0; k < triangles.length; k++) {
+                    //triangle[k] = "-1/-1/-1"
+                    //Split the data for getting position, uv, and normals
+                    var point = triangles[k].split("/"); // ["-1", "-1", "-1"]
+                    // Set position indice
+                    var indicePositionFromObj = positions.length + parseInt(point[0]);
+                    // Set uv indice
+                    var indiceUvsFromObj = uvs.length + parseInt(point[1]);
+                    // Set normal indice
+                    var indiceNormalFromObj = normals.length + parseInt(point[2]);
+                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
+                    );
+                }
+                //Reset variable for the next line
+                triangles = [];
+            };
             var addPreviousObjMesh = function () {
                 //Check if it is not the first mesh. Otherwise we don't have data.
                 if (meshesFromObj.length > 0) {
@@ -602,6 +631,13 @@ var BABYLON;
                     //["f 1//1 2//2 3//3", "1//1 2//2 3//3"...]
                     //Set the data for this face
                     setDataForCurrentFaceWithPattern4(result[1].trim().split(" "), // ["1//1", "2//2", "3//3"]
+                    1);
+                }
+                else if ((result = this.facePattern5.exec(line)) !== null) {
+                    //Value of result:
+                    //["f -1/-1/-1 -2/-2/-2 -3/-3/-3", "-1/-1/-1 -2/-2/-2 -3/-3/-3"...]
+                    //Set the data for this face
+                    setDataForCurrentFaceWithPattern5(result[1].trim().split(" "), // ["-1/-1/-1", "-2/-2/-2", "-3/-3/-3"]
                     1);
                 }
                 else if ((result = this.facePattern2.exec(line)) !== null) {
