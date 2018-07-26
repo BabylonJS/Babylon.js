@@ -16,5 +16,6 @@ export * from "./textBlock";
 export * from "./virtualKeyboard";
 export * from "./slider";
 export * from "./rectangle";
+export * from "./displayGrid";
 
 export * from "./statics";
