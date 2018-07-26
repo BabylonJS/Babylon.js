@@ -56,7 +56,6 @@
         private _particles = new Array<Particle>();
         private _epsilon: number;
         private _capacity: number;
-        private _scene: Scene;
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
         private _vertexData: Float32Array;
@@ -109,7 +108,7 @@
          */
         public getClassName(): string {
             return "ParticleSystem";
-        }        
+        }
 
         /**
          * Instantiates a particle system.
@@ -130,6 +129,9 @@
             this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
             this._scene = scene || Engine.LastCreatedScene;
+
+            // Setup the default processing configuration to the scene.
+            this._attachImageProcessingConfiguration(null);
 
             this._customEffect = customEffect;
 
@@ -1003,6 +1005,11 @@
                 }
             }
 
+            if (this._imageProcessingConfiguration) {
+                this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
+                defines.push(this._imageProcessingConfigurationDefines.toString());
+            }
+
             // Effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
@@ -1010,6 +1017,13 @@
 
                 var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased);
                 var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
+
+                var samplers = ["diffuseSampler"];
+
+                if (ImageProcessingConfiguration) {
+                    ImageProcessingConfiguration.PrepareUniforms(effectCreationOption, this._imageProcessingConfigurationDefines);
+                    ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+                }
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
@@ -1033,7 +1047,7 @@
                 var effect = this._getEffect();
 
                 // Check
-                if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
+                if (!this.emitter || !this._imageProcessingConfiguration.isReady() || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady())
                     return;
 
                 if (this._currentRenderId === this._scene.getRenderId()) {
@@ -1131,7 +1145,7 @@
          */
         public isReady(): boolean {
             var effect = this._getEffect();
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+            if (!this.emitter || !this._imageProcessingConfiguration.isReady() || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
                 return false;
             }
 
@@ -1183,6 +1197,11 @@
             }
 
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+
+            // image processing
+            if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
+                this._imageProcessingConfiguration.bind(effect);
+            }
 
             // Draw order
             switch(this.blendMode)
