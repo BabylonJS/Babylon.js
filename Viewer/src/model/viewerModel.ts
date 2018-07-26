@@ -354,7 +354,7 @@ export class ViewerModel implements IDisposable {
      */
     protected _getAnimationByName(name: string): Nullable<IModelAnimation> {
         // can't use .find, noe available on IE
-        let filtered = this._animations.filter(a => a.name === name);
+        let filtered = this._animations.filter(a => a.name === name.trim());
         // what the next line means - if two animations have the same name, they will not be returned!
         if (filtered.length === 1) {
             return filtered[0];
@@ -377,7 +377,7 @@ export class ViewerModel implements IDisposable {
     }
 
     public setCurrentAnimationByName(name: string) {
-        let animation = this._getAnimationByName(name);
+        let animation = this._getAnimationByName(name.trim());
         if (animation) {
             if (this.currentAnimation && this.currentAnimation.state !== AnimationState.STOPPED) {
                 this.currentAnimation.stop();
