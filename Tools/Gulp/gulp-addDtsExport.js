@@ -46,7 +46,7 @@ declare module '${moduleName}' {
         }
 
         try {
-            file.contents = new Buffer(moduleExportsAddition + String(file.contents));
+            file.contents = Buffer.from(moduleExportsAddition + String(file.contents));
             this.push(file);
 
         } catch (err) {
