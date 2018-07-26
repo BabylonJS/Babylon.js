@@ -6435,6 +6435,8 @@ var BABYLON;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
+//# sourceMappingURL=KHR_materials_unlit.js.map
+
 
 
 var BABYLON;
@@ -6524,6 +6526,8 @@ var BABYLON;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
+//# sourceMappingURL=KHR_lights.js.map
+
 
 
 var BABYLON;
@@ -6575,6 +6579,8 @@ var BABYLON;
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=KHR_texture_transform.js.map
 
 
 
@@ -6678,6 +6684,8 @@ var BABYLON;
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=EXT_lights_imageBased.js.map
 
     
 
