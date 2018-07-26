@@ -87,6 +87,7 @@
 - Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 - Added HDR support to ReflectionProbe ([Deltakosh](https://github.com/deltakosh))
 - Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
+- Added support for main WebGL2 texture formats ([PeapBoy](https://github.com/NicolasBuecher))
 
 ### glTF Loader
 
