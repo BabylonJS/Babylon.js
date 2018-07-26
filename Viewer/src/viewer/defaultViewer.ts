@@ -198,7 +198,7 @@ export class DefaultViewer extends AbstractViewer {
                 var value = element.dataset["value"];
                 var label = element.querySelector("span.animation-label");
                 if (label && value) {
-                    this._updateAnimationType({ value, label: label.innerHTML });
+                    this._updateAnimationType({ value: value.trim(), label: label.innerHTML });
                 }
                 break;
             case "speed-option-button":
