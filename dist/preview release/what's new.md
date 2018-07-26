@@ -86,6 +86,7 @@
 - Added falloff type per light to prevent material only inconsistencies [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 - Added HDR support to ReflectionProbe ([Deltakosh](https://github.com/deltakosh))
+- Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 
@@ -165,6 +166,7 @@
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))
 - It was not possible to add new custom optimizers, only use existing ones ([RaananW](https://github.com/RaananW))
 - Button texts were truncated incorrectly ([RaananW](https://github.com/RaananW))
+- Animation names with more than one word didn't work correctly ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
