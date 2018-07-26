@@ -1061,6 +1061,56 @@
             this._geometry.toLeftHanded();
             return this;
         }
+        
+        /**
+         * Update the current Mesh UV coords by sampling rays fired from its vertices to a sampling mesh.
+         * If the ray does not hit the mesh, in a positive or negitive direction from the 'direction' param the UV for that point is left alone.
+         * @param {target} Mesh that the current mesh will sample for UV coords.
+         * @param {direction} Vector3 representing the direction and length of the rays cast.
+         * @param {disposeRef} Disposes of 'target' mesh after sampling.
+         * @param {showRays} A helper toggle to display the rays being cast for debuging the projection.
+         */
+        
+        public projectUVfromMesh(target: Mesh, direction: Vector3, disposeRef: boolean = true, showRays: boolean = false): Mesh{
+            if(!direction || !target)return this;
+            var scene = this.getScene();
+            var rayLength = direction.length();
+            direction = direction.normalize();    
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var uvs = this.getVerticesData(BABYLON.VertexBuffer.UVKind);
+
+            function predicate(mesh){
+                if (mesh == target)return true;
+                return false;
+            }
+            
+            var origin, ray, hit;
+            for(var i=0; i<positions.length; i+=3){     
+                origin = new BABYLON.Vector3(positions[i], positions[i+1], positions[i+2]);
+                ray =  new BABYLON.Ray(origin, direction, rayLength);  
+                
+                hit = scene.pickWithRay(ray, predicate);   
+                
+                if(!hit.pickedMesh){
+                    ray = new BABYLON.Ray(origin, direction.scale(-1), rayLength);
+                    hit = scene.pickWithRay(ray, predicate);
+                }             
+
+                if(showRays)BABYLON.RayHelper.CreateAndShow(ray, scene, new BABYLON.Color3(1, 1, 0.1));
+
+                if(!hit.pickedMesh){continue;}
+
+                var uvh = hit.getTextureCoordinates();  
+                uvs[id] = uvh.x;
+                uvs[id+1] = uvh.y;      
+            }
+            
+            this.updateVerticesData(BABYLON.VertexBuffer.UVKind, uvs);
+            
+            if(disposeRef){target.dispose();}   
+            
+            return this
+        }
 
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
             if (!this._geometry) {
