@@ -56,7 +56,6 @@
         private _particles = new Array<Particle>();
         private _epsilon: number;
         private _capacity: number;
-        private _scene: Scene;
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
         private _vertexData: Float32Array;
@@ -109,47 +108,6 @@
          */
         public getClassName(): string {
             return "ParticleSystem";
-        }
-
-        private _imageProcessingConfigurationDefines = new ImageProcessingConfigurationDefines();
-
-        /**
-         * Default configuration related to image processing available in the standard Material.
-         */
-        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
-            return this._imageProcessingConfiguration;
-        }
-
-        /**
-         * Sets the Default image processing configuration used either in the this material.
-         * 
-         * If sets to null, the scene one is in use.
-         */
-        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
-            this._attachImageProcessingConfiguration(value);
-        }
-
-        /**
-         * Attaches a new image processing configuration to the Standard Material.
-         * @param configuration 
-         */
-        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
-            if (configuration === this._imageProcessingConfiguration) {
-                return;
-            }
-
-            // Pick the scene configuration if needed.
-            if (!configuration) {
-                this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-            }
-            else {
-                this._imageProcessingConfiguration = configuration;
-            }
         }
 
         /**
