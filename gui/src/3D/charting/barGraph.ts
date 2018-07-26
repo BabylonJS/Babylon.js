@@ -1,4 +1,4 @@
-import { Nullable, Scene, Mesh, Observable, StandardMaterial, Material, Color3, Animation, Animatable } from "babylonjs";
+import { Nullable, Scene, Mesh, Observable, StandardMaterial, Material, Color3, Animation } from "babylonjs";
 import { Chart } from ".";
 
 /** Class used to render bar graphs */
@@ -8,6 +8,7 @@ export class BarGraph extends Chart {
     private _maxBarHeight = 10;
     private _defaultMaterial: Nullable<Material>;
     protected _ownDefaultMaterial = false;
+    private _barMeshes: Nullable<Array<Mesh>>;
 
     public onElementCreated = new Observable<Mesh>();
 
@@ -103,11 +104,8 @@ export class BarGraph extends Chart {
 
     /** Force the graph to redraw itself */
     public refresh(): BarGraph {
-        // Cleanup
-        var descendants = this._rootNode.getDescendants();
-        descendants.forEach(n => n.dispose());
-
         if (!this._dataSource) {
+            this._clean();
             return this;
         }
 
@@ -119,12 +117,13 @@ export class BarGraph extends Chart {
         }
 
         // Scan data
-        let min = Number.MAX_VALUE;
+        let min = 0;
         let max = Number.MIN_VALUE;
 
         const data = this._dataFilters ? this._dataSource.getFilteredData(this._dataFilters) : this._dataSource.data;
 
-        data.forEach(entry => {
+        // Check the limit of the entire series
+        this._dataSource.data.forEach(entry => {
             if (min > entry.value) {
                 min = entry.value;
             }
@@ -135,19 +134,35 @@ export class BarGraph extends Chart {
         });
 
         let ratio = this.maxBarHeight / (max - min);
+        let createMesh = false;
+
+        // Do we need to create new graph or animate the current one
+        if (!this._barMeshes || this._barMeshes.length !== data.length) {
+            this._clean();
+            createMesh = true;
+            this._barMeshes = [];
+        }
 
         // We will generate one bar per entry
         let left = -(data.length / 2) * (this.barWidth + this.margin) + 1.5 * this._margin;
         let index = 0;
         data.forEach(entry => {
 
-            var barMesh = this._createBarMesh(this.name + "_box_" + index++, scene);
+            var barMesh: Mesh;
+            if (createMesh) {
+                barMesh = this._createBarMesh(this.name + "_box_" + index++, scene);
+                this._barMeshes!.push(barMesh);
+            } else {
+                barMesh = this._barMeshes![index++];
+            }
 
             barMesh.parent = this._rootNode;
-            barMesh.position.x += left;
+            barMesh.position.x = left;
+            let currentScalingYState = barMesh.scaling.y;
             barMesh.scaling.set(this.barWidth, 0, this._barWidth);
 
-            Animation.CreateAndStartAnimation("entryScale", barMesh, "scaling.y", 30, 30, 0, entry.value * ratio, 0);
+            var easing = new BABYLON.CircleEase();
+            Animation.CreateAndStartAnimation("entryScale", barMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
 
             barMesh.material = this._defaultMaterial;
 
@@ -167,5 +182,10 @@ export class BarGraph extends Chart {
         }
 
         this._rootNode.dispose();
+    }
+
+    protected _clean(): void {
+        super._clean();
+        this._barMeshes = null;
     }
 }
