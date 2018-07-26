@@ -78,6 +78,7 @@
 
         /**
          * Restored camera state. You must call storeState() first
+         * @returns whether it was successful or not
          */
         public _restoreStateValues(): boolean {
             if (!super._restoreStateValues()) {
