@@ -10,6 +10,7 @@ export class BarGraph extends Chart {
     protected _ownDefaultMaterial = false;
     private _barMeshes: Nullable<Array<Mesh>>;
 
+    /** Observable raised when a new element is created (one per bar) */
     public onElementCreated = new Observable<Mesh>();
 
     /** Gets or sets the margin between bars */
@@ -102,7 +103,10 @@ export class BarGraph extends Chart {
         return box;
     }
 
-    /** Force the graph to redraw itself */
+    /** 
+     * Force the graph to redraw itself 
+     * @returns the current BarGraph
+    */
     public refresh(): BarGraph {
         if (!this._dataSource) {
             this._clean();
@@ -175,6 +179,7 @@ export class BarGraph extends Chart {
         return this;
     }
 
+    /** Clean associated resources */
     public dispose() {
         if (this._ownDefaultMaterial && this._defaultMaterial) {
             this._defaultMaterial.dispose();

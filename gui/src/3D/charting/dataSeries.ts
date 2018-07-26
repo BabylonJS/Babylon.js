@@ -45,6 +45,27 @@ export class DataSeries {
         return filteredData;
     }
 
+    /**
+     * Get the different values of a dimension
+     * @param key defines the dimension name
+     * @returns An array of values
+     */
+    public getDimensionValues(key: string): Array<any> {
+        var result = new Array<any>();
+
+        this.data.forEach((entry) => {
+            var value = entry[key];
+            if (result.indexOf(value) === -1) {
+                result.push(value);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Create a new DataSeries containing testing values
+     */
     public static CreateFakeData(): DataSeries {
         var series = new DataSeries();
         series.label = "Product #1";
