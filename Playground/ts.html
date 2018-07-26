@@ -37,17 +37,18 @@
         <script src="https://preview.babylonjs.com/cannon.js"></script>
         <script src="https://preview.babylonjs.com/Oimo.js"></script>
         <script src="https://preview.babylonjs.com/earcut.min.js"></script>
-        <!-- Monaco -->
-        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
         <!-- Babylon.js -->
         <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
         <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
         <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
         <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
         <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
         <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
-        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+
+        <!-- Monaco -->
+        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
 
         <!-- Extensions -->
         <script src="https://rawgit.com/BabylonJS/Extensions/master/ClonerSystem/src/babylonx.cloner.js" async></script>
@@ -56,6 +57,7 @@
         <script src="https://www.babylontoolkit.com/playground/scripts/babylon.manager.js"></script>
                                
         <link href="css/index.css" rel="stylesheet" />
+        <link href="css/color_ts.css" rel="stylesheet" />
     </head>
 
     <body>
@@ -144,6 +146,9 @@
                         <div class="option" onclick="setVersion('stable');">Stable</div>
                     </div>
                 </div>
+                <div class="button select">
+                    <span class="examplesButton">Examples</span>
+                </div>
             </div>
         </div>
 
@@ -228,6 +233,12 @@
                     </div>
                 </div>
             </div>
+
+            <div class="category right">
+                <div class="button select">
+                    <span class="examplesButton">Examples</span>
+                </div>
+            </div>
         </div>
 
         <div class="navbar navBar1030">
@@ -303,6 +314,12 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="category right">
+                <div class="button select">
+                    <span class="examplesButton">Examples</span>
                 </div>
             </div>
         </div>
@@ -386,6 +403,14 @@
             <div id="canvasZone">
                 <canvas touch-action="none" id="renderCanvas"></canvas>
             </div>
+        </div>
+        <div id="exampleList" class = "typescript">
+            <div id="exampleBanner">
+                <h1>Examples</h1>
+            </div>
+            <div class="horizontalSeparator"></div>
+            <input id="filterBar" type="text" placeholder="Filter examples...">
+            <img id="filterBarClear" src="https://d33wubrfki0l68.cloudfront.net/17ca450bae302631f4857cd8c3992234ec5dd9a7/057f9/img/ui/clear_button.png">
         </div>
 
         <span class="label" id="fpsLabel">FPS</span>

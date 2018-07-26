@@ -262,10 +262,14 @@ export abstract class AbstractViewer {
     private _vrModelRepositioning: number = 0;
     protected _vrScale: number = 1;
 
-    public toggleVR() {
-        this._vrToggled = !this._vrToggled;
+    protected _vrInit: boolean = false;
 
-        if (this._vrToggled && this.sceneManager.vrHelper) {
+    public toggleVR() {
+        if (!this._vrInit) {
+            this._initVR();
+        }
+
+        if (this.sceneManager.vrHelper && !this.sceneManager.vrHelper.isInVRMode) {
             // make sure the floor is set
             if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
                 this.sceneManager.vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
@@ -274,7 +278,7 @@ export abstract class AbstractViewer {
             this.sceneManager.vrHelper.enterVR();
 
             // position the vr camera to be in front of the object or wherever the user has configured it to be
-            if (this.sceneManager.vrHelper.currentVRCamera) {
+            if (this.sceneManager.vrHelper.currentVRCamera && this.sceneManager.vrHelper.currentVRCamera !== this.sceneManager.camera) {
                 if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFrom(this.configuration.vr.cameraPosition as Vector3);
                 } else {
@@ -291,42 +295,49 @@ export abstract class AbstractViewer {
                         this._vrModelRepositioning = 0;
                     }
                 }
-            } else {
-                this._vrModelRepositioning = 0;
-            }
 
-            // scale the model
-            if (this.sceneManager.models.length) {
-                let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
-                let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
-                let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-                this._vrScale = (1 / maxDimension);
-                if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
-                    this._vrScale *= this.configuration.vr.objectScaleFactor;
+                // scale the model
+                if (this.sceneManager.models.length) {
+                    let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
+                    let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+                    let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+                    this._vrScale = (1 / maxDimension);
+                    if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
+                        this._vrScale *= this.configuration.vr.objectScaleFactor;
+                    }
+
+                    this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
+
+                    // reposition the object to "float" in front of the user
+                    this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
+                    this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
                 }
 
-                this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
+                // scale the environment to match the model
+                if (this.sceneManager.environmentHelper) {
+                    this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
+                    this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
+                }
 
-                // reposition the object to "float" in front of the user
-                this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
-                this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
-            }
-
-            // scale the environment to match the model
-            if (this.sceneManager.environmentHelper) {
-                this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
-                this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
-            }
-
-            // post processing
-            if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
-                this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
-                this.sceneManager.defaultRenderingPipeline.prepare();
+                // post processing
+                if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
+                    this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = false;
+                    this.sceneManager.defaultRenderingPipeline.prepare();
+                }
+            } else {
+                this._vrModelRepositioning = 0;
             }
         } else {
             if (this.sceneManager.vrHelper) {
                 this.sceneManager.vrHelper.exitVR();
+            }
+        }
+    }
 
+    protected _initVR() {
+
+        if (this.sceneManager.vrHelper) {
+            this.sceneManager.vrHelper.onExitingVR.add(() => {
                 // undo the scaling of the model
                 if (this.sceneManager.models.length) {
                     this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
@@ -344,8 +355,15 @@ export abstract class AbstractViewer {
                     this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
                     this.sceneManager.defaultRenderingPipeline.prepare();
                 }
-            }
+
+                // clear set height and eidth
+                this.canvas.removeAttribute("height");
+                this.canvas.removeAttribute("width");
+                this.engine.resize();
+            })
         }
+
+        this._vrInit = true;
     }
 
     /**

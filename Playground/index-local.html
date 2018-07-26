@@ -18,7 +18,7 @@
         <script src="../dist/preview%20release/Oimo.js"></script>
         <script src="../dist/preview%20release/earcut.min.js"></script>
         <!-- Monaco -->
-        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+
         <!-- Babylon.js -->
         <script src="../tools/DevLoader/BabylonLoader.js"></script>
 
@@ -447,6 +447,7 @@
         <script src="js/pbt.js"></script>
         <script>
             BABYLONDEVTOOLS.Loader
+                .require('node_modules/monaco-editor/min/vs/loader.js')
                 .require('js/index.js')
                 .load(function () {
                     BABYLON.DracoCompression.Configuration.decoder = {

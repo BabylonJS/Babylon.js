@@ -9,6 +9,41 @@ module BABYLON {
         public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
         /**
+         * Create a default particle system that you can tweak
+         * @param emitter defines the emitter to use
+         * @param capacity defines the system capacity (default is 500 particles)
+         * @param scene defines the hosting scene
+         * @returns the new Particle system
+         */
+        public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity = 500, scene?: Scene): ParticleSystem {
+            var system = new ParticleSystem("default system", capacity, scene!);
+        
+            system.emitter = emitter;
+            system.particleTexture = new Texture("https://www.babylonjs.com/assets/Flare.png", system.getScene());
+            system.createConeEmitter(0.1, Math.PI / 4);
+
+            // Particle color
+            system.color1 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            system.color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            system.colorDead = new BABYLON.Color4(1.0, 1.0, 1.0, 0.0);
+            
+            // Particle Size
+            system.minSize = 0.1;
+            system.maxSize = 0.1;
+
+            // Emission speed
+            system.minEmitPower = 2;
+            system.maxEmitPower = 2;
+
+            // Update speed
+            system.updateSpeed = 1 / 60;
+
+            system.emitRate = 30;
+
+            return system;
+        }
+
+        /**
          * This is the main static method (one-liner) of this helper to create different particle systems
          * @param type This string represents the type to the particle system to create
          * @param scene The scene where the particle system should live

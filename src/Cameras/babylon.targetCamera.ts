@@ -150,6 +150,10 @@
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
+            if (this.position.z === target.z) {
+                this.position.z += Epsilon;
+            }
+
             Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
             this._camMatrix.invert();
 
@@ -298,12 +302,12 @@
         protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void {
             if (this.parent) {
                 const parentWorldMatrix = this.parent.getWorldMatrix();
-                Vector3.TransformCoordinatesToRef(this.position, parentWorldMatrix, this._globalPosition);
+                Vector3.TransformCoordinatesToRef(position, parentWorldMatrix, this._globalPosition);
                 Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._globalCurrentTarget);
                 Vector3.TransformNormalToRef(up, parentWorldMatrix, this._globalCurrentUpVector);
                 this._markSyncedWithParent();
             } else {
-                this._globalPosition.copyFrom(this.position);
+                this._globalPosition.copyFrom(position);
                 this._globalCurrentTarget.copyFrom(target);
                 this._globalCurrentUpVector.copyFrom(up);
             }
