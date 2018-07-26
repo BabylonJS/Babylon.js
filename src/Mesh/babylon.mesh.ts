@@ -1319,10 +1319,10 @@
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
-            // this._checkOcclusionQuery();
-            // if (this._isOccluded) {
-            //     return this;
-            // }
+            this._checkOcclusionQuery();
+            if (this._isOccluded) {
+                return this;
+            }
 
             var scene = this.getScene();
             // Managing instances
