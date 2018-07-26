@@ -123,7 +123,7 @@ if(typeof require !== 'undefined'){
         }
 
         try {
-            file.contents = new Buffer(dependenciesText.concat(new Buffer(String(content).concat(exportsText))));
+            file.contents = Buffer.from(dependenciesText.concat(Buffer.from(String(content).concat(exportsText))));
             this.push(file);
         } catch (err) {
             this.emit('error', new gutil.PluginError('gulp-add-babylon-module', err, { fileName: file.path }));

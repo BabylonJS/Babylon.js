@@ -1,0 +1,20 @@
+{
+    "tests": [
+        {
+            "name": "typescript-webpack",
+            "typescript": true,
+            "bundler": "webpack"
+        },
+        {
+            "name": "typescript-vanilla",
+            "typescript": true,
+            "tsconfig": "tsconfig.json",
+            "dependencies": [
+                "babylon.js",
+                "gui/babylon.gui.min.js",
+                "inspector/babylon.inspector.bundle.js",
+                "loaders/babylonjs.loaders.min.js"
+            ]
+        }
+    ]
+}
