@@ -77,7 +77,10 @@ export abstract class Chart {
         this._rootNode = new TransformNode(name, scene);
     }
 
-    /** Force the graph to redraw itself */
+    /** 
+     * Force the graph to redraw itself 
+     * @returns the current BarGraph
+    */
     public abstract refresh(): Chart;
 
     protected _clean(): void {

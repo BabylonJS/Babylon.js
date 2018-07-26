@@ -65,6 +65,7 @@ export class DataSeries {
 
     /**
      * Create a new DataSeries containing testing values
+     * @returns the new DataSeries
      */
     public static CreateFakeData(): DataSeries {
         var series = new DataSeries();
