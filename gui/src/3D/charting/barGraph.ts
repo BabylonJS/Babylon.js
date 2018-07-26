@@ -121,7 +121,10 @@ export class BarGraph extends Chart {
         // Scan data
         let min = Number.MAX_VALUE;
         let max = Number.MIN_VALUE;
-        this._dataSource.data.forEach(entry => {
+
+        const data = this._dataFilters ? this._dataSource.getFilteredData(this._dataFilters) : this._dataSource.data;
+
+        data.forEach(entry => {
             if (min > entry.value) {
                 min = entry.value;
             }
@@ -134,9 +137,9 @@ export class BarGraph extends Chart {
         let ratio = this.maxBarHeight / (max - min);
 
         // We will generate one bar per entry
-        let left = -(this._dataSource.data.length / 2) * (this.barWidth + this.margin) + 1.5 * this._margin;
+        let left = -(data.length / 2) * (this.barWidth + this.margin) + 1.5 * this._margin;
         let index = 0;
-        this._dataSource.data.forEach(entry => {
+        data.forEach(entry => {
 
             var barMesh = this._createBarMesh(this.name + "_box_" + index++, scene);
 

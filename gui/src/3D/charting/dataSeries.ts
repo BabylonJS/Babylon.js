@@ -14,6 +14,37 @@ export class DataSeries {
     /** Gets or sets the list of values (data to display) */
     public data: Array<any>;  
 
+    /**
+     * Apply a list of filters to the data and return a list
+     * @param filters defines the filters to apply
+     * @returns an array containing the filtered data
+     */
+    public getFilteredData(filters: {[key: string]: string}): Array<any> {
+        let filteredData = new Array<any>();
+
+        this.data.forEach(element => {
+            let isValid = false;
+            for (var filter in filters) {
+                if (!filters.hasOwnProperty(filter)) {
+                    continue;
+                }
+
+                var filterValue = filters[filter];
+                isValid = (element[filter] === filterValue);
+
+                if (!isValid) {
+                    break;
+                }
+            }
+
+            if (isValid) {
+                filteredData.push(element);
+            }
+        });
+
+        return filteredData;
+    }
+
     public static CreateFakeData(): DataSeries {
         var series = new DataSeries();
         series.label = "Product #1";

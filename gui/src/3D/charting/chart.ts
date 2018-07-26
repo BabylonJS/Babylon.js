@@ -1,10 +1,11 @@
-import { DataSeries } from ".";
 import { Nullable, TransformNode, Scene } from "babylonjs";
+import { DataSeries } from ".";
 
 /** base class for all chart controls*/
 export abstract class Chart {
     protected _dataSource: Nullable<DataSeries>;
     protected _rootNode: TransformNode;
+    protected _dataFilters: {[key: string]: string};
 
     /** Gets or sets the data source used by the graph */
     public get dataSource(): Nullable<DataSeries> {
@@ -21,6 +22,17 @@ export abstract class Chart {
         this.refresh();
     }
 
+    /** Gets the filters applied to data source */
+    public get dataFilters(): {[key: string]: string} {
+        return this._dataFilters;
+    }
+
+    public set dataFilters(filters: {[key: string]: string}) {
+        this._dataFilters = filters;
+
+        this.refresh();
+    }
+
     /** Gets the root node associated with this graph */
     public get rootNode(): TransformNode {
         return this._rootNode;
@@ -30,7 +42,7 @@ export abstract class Chart {
     public name: string; 
 
     /**
-     * Creates a new BarGraph
+     * Creates a new Chart
      * @param name defines the name of the graph
      */
     constructor(name: string, scene?: Scene) {
