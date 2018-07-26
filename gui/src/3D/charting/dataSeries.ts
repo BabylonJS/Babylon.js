@@ -67,11 +67,31 @@ export class DataSeries {
                 "Year": 2014,
                 "Country": "India",
                 "value": 400
-            }, 
+            },
             {
                 "Year": 2014,
                 "Country": "UK",
                 "value": 180
+            },
+            {
+                "Year": 2014,
+                "Country": "Germany",
+                "value": 400
+            }, 
+            {
+                "Year": 2014,
+                "Country": "Australia",
+                "value": 24
+            }, 
+            {
+                "Year": 2014,
+                "Country": "China",
+                "value": 540
+            }, 
+            {
+                "Year": 2014,
+                "Country": "Japan",
+                "value": 150
             },
             {
                 "Year": 2015,
@@ -92,6 +112,26 @@ export class DataSeries {
                 "Year": 2015,
                 "Country": "UK",
                 "value": 10
+            },
+            {
+                "Year": 2015,
+                "Country": "Germany",
+                "value": 80
+            }, 
+            {
+                "Year": 2015,
+                "Country": "Australia",
+                "value": 230
+            }, 
+            {
+                "Year": 2015,
+                "Country": "China",
+                "value": 490
+            }, 
+            {
+                "Year": 2015,
+                "Country": "Japan",
+                "value": 120
             }
         ];
         
