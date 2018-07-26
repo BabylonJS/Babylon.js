@@ -84,7 +84,7 @@ module.exports = function (moduleName, inject, declarations, perFile, dependency
         }
 
         try {
-            file.contents = new Buffer(String(file.contents) + '\n' + importsString);
+            file.contents = Buffer.from(String(file.contents) + '\n' + importsString);
             this.push(file);
 
         } catch (err) {
