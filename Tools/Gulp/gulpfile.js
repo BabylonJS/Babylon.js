@@ -1288,6 +1288,92 @@ gulp.task("tests-viewer-unit", gulp.series("tests-viewer-transpile", function (d
  */
 gulp.task("tests-unit", gulp.series("tests-babylon-unit", "tests-viewer-unit"));
 
+gulp.task("tests-modules", function () {
+    let testsToRun = require('../../tests/modules/tests.json');
+
+    let sequencePromise = Promise.resolve();
+
+    testsToRun.tests.forEach(test => {
+        sequencePromise = sequencePromise.then(() => {
+            console.log("Running " + test.name);
+            let basePath = '../../tests/modules/' + test.name + '/';
+            rmDir("../../tests/modules/build/");
+            let compilePromise = Promise.resolve();
+
+            if (test.dependencies) {
+                compilePromise = new Promise(function (resolve, reject) {
+                    let counter = 0;
+                    let copyTask = gulp.src(test.dependencies.map(dep => config.build.outputDirectory + '/' + dep)).pipe(rename(function (path) {
+                        path.basename = (counter++) + '';
+                    })).pipe(gulp.dest("../../tests/modules/build/dependencies/"))
+                    copyTask.once("finish", resolve);
+                })
+            }
+            // any compilation needed?
+            if (test.typescript || test.bundler) {
+                //typescript only
+                if (test.typescript && !test.bundler) {
+                    compilePromise = compilePromise.then(() => {
+                        return new Promise(function (resolve, reject) {
+                            var tsProject = typescript.createProject(basePath + (test.tsconfig || 'tsconfig.json'));
+
+                            var tsResult = gulp.src(basePath + '/src/**/*.ts', { base: basePath })
+                                .pipe(tsProject());
+
+                            let error = false;
+                            tsResult.once("error", function () {
+                                error = true;
+                            });
+
+                            let jsPipe = tsResult.js.pipe(gulp.dest("../../tests/modules/"));
+
+                            jsPipe.once("finish", function () {
+                                if (error)
+                                    reject('error compiling test');
+                                else
+                                    resolve();
+                            });
+                        });
+                    });
+                } else {
+                    if (test.bundler === 'webpack') {
+                        console.log("webpack");
+                        compilePromise = compilePromise.then(() => {
+                            return new Promise(function (resolve, reject) {
+                                let wpBuild = webpackStream(require(basePath + '/webpack.config.js'), webpack);
+
+                                wpBuild = wpBuild
+                                    .pipe(rename(function (path) {
+                                        if (path.extname === '.js') {
+                                            path.basename = "tests-loader";
+                                        }
+                                    }))
+                                    .pipe(gulp.dest("../../tests/modules/build/"));
+
+                                wpBuild.once("finish", resolve);
+                            })
+                        });
+                    }
+                }
+            }
+
+            return compilePromise.then(() => {
+                return new Promise(function (resolve, reject) {
+                    var kamaServerOptions = {
+                        configFile: __dirname + "/../../tests/modules/karma.conf.js",
+                        singleRun: true
+                    };
+
+                    var server = new karmaServer(kamaServerOptions, resolve);
+                    server.start();
+                });
+            })
+        })
+    });
+
+    return sequencePromise;
+});
+
 gulp.task("tests-whatsnew", function (done) {
     // Only checks on Travis
     if (!process.env.TRAVIS) {
