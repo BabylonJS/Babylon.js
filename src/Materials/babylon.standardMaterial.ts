@@ -80,6 +80,7 @@ module BABYLON {
         public VIGNETTEBLENDMODEMULTIPLY = false;
         public VIGNETTEBLENDMODEOPAQUE = false;
         public TONEMAPPING = false;
+        public TONEMAPPING_ACES = false;
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;

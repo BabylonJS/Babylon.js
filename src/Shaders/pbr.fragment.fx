@@ -836,7 +836,7 @@ void main(void) {
     // this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
     finalColor.rgb = clamp(finalColor.rgb, 0., 30.0);
 #else
-    // Alway run even to ensure going back to gamma space.
+    // Alway run to ensure we are going back to gamma space.
     finalColor = applyImageProcessing(finalColor);
 #endif
 
