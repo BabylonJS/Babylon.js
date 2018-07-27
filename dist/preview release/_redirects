@@ -1,6 +1,6 @@
 /babylon.max.js                                     /babylon.js
 /inspector/babylon.inspector.bundle.js              /inspector/inspector.min.js
-/gui/babylon.gui.js                                 /gui/gui.js
+/gui/babylon.gui.js                                 /gui/gui.min.js
 /gui/babylon.gui.min.js                             /gui/gui.min.js
 /loaders/babylonjs.loaders.js                       /loaders/loaders.js  
 /loaders/babylonjs.loaders.min.js                   /loaders/loaders.min.js

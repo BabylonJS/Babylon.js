@@ -11,7 +11,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/inspector'),
-        filename: 'babylon.inspector.bundle.js',
+        filename: 'inspector.min.js',
         libraryTarget: 'umd',
         library: {
             root: "INSPECTOR",
