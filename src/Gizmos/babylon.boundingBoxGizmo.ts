@@ -13,6 +13,10 @@ module BABYLON {
 
         private _tmpQuaternion = new Quaternion();
         private _tmpVector = new Vector3(0, 0, 0);
+        /**
+         * If child meshes should be ignored
+         */
+        public ignoreChildrenWorldMatrix = false;
 
         /**
          * The size of the rotation spheres attached to the bounding box (Default: 0.1)
@@ -36,13 +40,21 @@ module BABYLON {
          */
         public onDragStartObservable = new Observable<{}>();
         /**
-         * Fired when a rotation sphere or scale box drag is started
+         * Fired when a scale box is dragged
          */
-        public onDragObservable = new Observable<{}>();
+        public onScaleBoxDragObservable = new Observable<{}>();
         /**
-         * Fired when a rotation sphere or scale box drag is needed
+          * Fired when a scale box drag is ended
          */
-        public onDragEndObservable = new Observable<{}>();
+        public onScaleBoxDragEndObservable = new Observable<{}>();
+        /**
+         * Fired when a rotation sphere is dragged
+         */
+        public onRotationSphereDragObservable = new Observable<{}>();
+        /**
+         * Fired when a rotation sphere drag is ended
+         */
+        public onRotationSphereDragEndObservable = new Observable<{}>();
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
         /**
@@ -109,7 +121,7 @@ module BABYLON {
                     totalTurnAmountOfDrag = 0;
                 })
                 _dragBehavior.onDragObservable.add((event) => {
-                    this.onDragObservable.notifyObservers({});
+                    this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
                         var worldDragDirection = startingTurnDirection;
 
@@ -157,7 +169,7 @@ module BABYLON {
                     this._selectNode(sphere)
                 })
                 _dragBehavior.onDragEndObservable.add(() => {
-                    this.onDragEndObservable.notifyObservers({});
+                    this.onRotationSphereDragEndObservable.notifyObservers({});
                     this._selectNode(null)
                 })
 
@@ -180,7 +192,7 @@ module BABYLON {
                         _dragBehavior.moveAttached = false;
                         box.addBehavior(_dragBehavior);
                         _dragBehavior.onDragObservable.add((event) => {
-                            this.onDragObservable.notifyObservers({});
+                            this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
@@ -205,7 +217,7 @@ module BABYLON {
                             this._selectNode(box)
                         })
                         _dragBehavior.onDragEndObservable.add(() => {
-                            this.onDragEndObservable.notifyObservers({});
+                            this.onScaleBoxDragEndObservable.notifyObservers({});
                             this._selectNode(null)
                         })
 
@@ -262,9 +274,11 @@ module BABYLON {
 
         private _recurseComputeWorld(mesh: AbstractMesh) {
             mesh.computeWorldMatrix(true);
-            mesh.getChildMeshes().forEach((m) => {
-                this._recurseComputeWorld(m);
-            });
+            if(!this.ignoreChildrenWorldMatrix){
+                mesh.getChildMeshes().forEach((m) => {
+                    this._recurseComputeWorld(m);
+                });
+            }
         }
 
         /**
