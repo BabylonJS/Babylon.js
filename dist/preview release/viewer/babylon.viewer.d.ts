@@ -934,99 +934,6 @@ declare module BabylonViewer {
 declare module BabylonViewer {
 }
 declare module BabylonViewer {
-    export function getConfigurationKey(key: string, configObject: any): any;
-    export interface ViewerConfiguration {
-            version?: string;
-            extends?: string;
-            pageUrl?: string;
-            configuration?: string | {
-                    url?: string;
-                    payload?: any;
-                    mapper?: string;
-            };
-            observers?: IObserversConfiguration;
-            canvasElement?: string;
-            model?: IModelConfiguration | string;
-            scene?: ISceneConfiguration;
-            optimizer?: ISceneOptimizerConfiguration | boolean;
-            camera?: ICameraConfiguration;
-            skybox?: boolean | ISkyboxConfiguration;
-            ground?: boolean | IGroundConfiguration;
-            lights?: {
-                    [name: string]: number | boolean | ILightConfiguration;
-            };
-            engine?: {
-                    renderInBackground?: boolean;
-                    antialiasing?: boolean;
-                    disableResize?: boolean;
-                    engineOptions?: BABYLON.EngineOptions;
-                    adaptiveQuality?: boolean;
-                    hdEnabled?: boolean;
-            };
-            templates?: {
-                    main: ITemplateConfiguration;
-                    [key: string]: ITemplateConfiguration;
-            };
-            customShaders?: {
-                    shaders?: {
-                            [key: string]: string;
-                    };
-                    includes?: {
-                            [key: string]: string;
-                    };
-            };
-            loaderPlugins?: {
-                    extendedMaterial?: boolean;
-                    msftLod?: boolean;
-                    telemetry?: boolean;
-                    minecraft?: boolean;
-                    [propName: string]: boolean | undefined;
-            };
-            environmentMap?: IEnvironmentMapConfiguration;
-            vr?: IVRConfiguration;
-            lab?: {
-                    flashlight?: boolean | {
-                            exponent?: number;
-                            angle?: number;
-                            intensity?: number;
-                            diffuse?: {
-                                    r: number;
-                                    g: number;
-                                    b: number;
-                            };
-                            specular?: {
-                                    r: number;
-                                    g: number;
-                                    b: number;
-                            };
-                    };
-                    hideLoadingDelay?: number;
-                    /** Deprecated */
-                    assetsRootURL?: string;
-                    environmentMainColor?: {
-                            r: number;
-                            g: number;
-                            b: number;
-                    };
-                    /** Deprecated */
-                    environmentMap?: {
-                            /**
-                                * Environment map texture path in relative to the asset folder.
-                                */
-                            texture: string;
-                            /**
-                                * Default rotation to apply to the environment map.
-                                */
-                            rotationY: number;
-                            /**
-                                * Tint level of the main color on the environment map.
-                                */
-                            tintLevel: number;
-                    };
-                    defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
-                    globalLightRotation?: number;
-            };
-    }
 }
 declare module BabylonViewer {
     /**
@@ -1543,30 +1450,6 @@ declare module BabylonViewer {
 declare module BabylonViewer {
 }
 declare module BabylonViewer {
-    export interface IEnvironmentMapConfiguration {
-            /**
-                * Environment map texture path in relative to the asset folder.
-                */
-            texture: string;
-            /**
-                * Default rotation to apply to the environment map.
-                */
-            rotationY: number;
-            /**
-                * Tint level of the main color on the environment map.
-                */
-            tintLevel: number;
-            /**
-                * The environment's main color.
-                */
-            mainColor?: {
-                    r?: number;
-                    g?: number;
-                    b?: number;
-            };
-    }
-}
-declare module BabylonViewer {
     /**
         * The EventManager is in charge of registering user interctions with the viewer.
         * It is used in the TemplateManager
@@ -1648,6 +1531,30 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface IEnvironmentMapConfiguration {
+            /**
+                * Environment map texture path in relative to the asset folder.
+                */
+            texture: string;
+            /**
+                * Default rotation to apply to the environment map.
+                */
+            rotationY: number;
+            /**
+                * Tint level of the main color on the environment map.
+                */
+            tintLevel: number;
+            /**
+                * The environment's main color.
+                */
+            mainColor?: {
+                    r?: number;
+                    g?: number;
+                    b?: number;
+            };
+    }
+}
+declare module BabylonViewer {
     /**
         * Defines an animation to be applied to a model (translation, scale or rotation).
         */
@@ -1711,6 +1618,37 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface ICameraConfiguration {
+        position?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        rotation?: {
+            x: number;
+            y: number;
+            z: number;
+            w: number;
+        };
+        fov?: number;
+        fovMode?: number;
+        minZ?: number;
+        maxZ?: number;
+        inertia?: number;
+        exposure?: number;
+        pinchPrecision?: number;
+        behaviors?: {
+            [name: string]: boolean | number | ICameraBehaviorConfiguration;
+        };
+        disableCameraControl?: boolean;
+        disableCtrlForPanning?: boolean;
+        disableAutoFocus?: boolean;
+        [propName: string]: any;
+    }
+    export interface ICameraBehaviorConfiguration {
+        type: number;
+        [propName: string]: any;
+    }
 }
 declare module BabylonViewer {
     /**
