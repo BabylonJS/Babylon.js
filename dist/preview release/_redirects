@@ -16,4 +16,4 @@
 /serializers/babylonjs.serializers.js                       /serializers/serializers.js  
 /serializers/babylonjs.serializers.min.js                   /serializers/serializers.min.js
 /serializers/babylonjs.serializers.js                       /serializers/serializers.js  
-/viewer/babylon.viewer.max.js                       /viewer/babylon.viewer.js 
+/viewer/babylon.viewer.max.js                               /viewer/babylon.viewer.js 
