@@ -1,4 +1,4 @@
-/// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/glTF2Interface/glTF2Interface.d.ts"/>
 
 module BABYLON.GLTF2 {
     /** 
@@ -447,8 +447,8 @@ module BABYLON.GLTF2 {
                         }
                     }
                     else {
-                        
-                        _GLTFUtilities._GetRightHandedVector4FromRef(vertex);   
+
+                        _GLTFUtilities._GetRightHandedVector4FromRef(vertex);
                     }
                 }
                 if (vertexAttributeKind === VertexBuffer.NormalKind) {
@@ -771,7 +771,7 @@ module BABYLON.GLTF2 {
                     this._localEngine.dispose();
                 }
 
-                
+
 
                 return container;
             });
@@ -1000,7 +1000,7 @@ module BABYLON.GLTF2 {
                     for (const submesh of bufferMesh.subMeshes) {
                         uvCoordsPresent = false;
                         let babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
-                        
+
                         let materialIndex: Nullable<number> = null;
                         if (babylonMaterial) {
                             if (bufferMesh instanceof LinesMesh) {
@@ -1194,7 +1194,7 @@ module BABYLON.GLTF2 {
                 if (shouldExportTransformNode(babylonTransformNode)) {
                     node = this.createNode(babylonTransformNode, binaryWriter);
 
-                    const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => {return (node instanceof TransformNode);});
+                    const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => { return (node instanceof TransformNode); });
                     if (directDescendents.length || node.mesh != null) {
                         this._nodes.push(node);
                         nodeIndex = this._nodes.length - 1;

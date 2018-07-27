@@ -55,13 +55,13 @@ export class Inspector {
         import("babylonjs-gui").then(GUI => {
             // Load GUI library if not already done
             if (!GUI || (typeof GUI !== "undefined" && Object.keys(GUI).indexOf("default") !== -1)) {
-                Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.min.js", () => {
+                Tools.LoadScript("https://preview.babylonjs.com/gui/gui.min.js", () => {
                     Inspector.GUIObject = (<any>BABYLON).GUI;
                     this.onGUILoaded.notifyObservers(Inspector.GUIObject);
                     //Load properties of GUI objects now as GUI has to be declared before 
                     loadGUIProperties(Inspector.GUIObject);
                 }, () => {
-                    console.warn('Error : loading "babylon.gui.min.js". Please add script https://preview.babylonjs.com/gui/babylon.min.gui.js to the HTML file.');
+                    console.warn('Error : loading "babylon.gui.min.js". Please add script https://preview.babylonjs.com/gui/gui.min.js to the HTML file.');
                 });
             }
             else {

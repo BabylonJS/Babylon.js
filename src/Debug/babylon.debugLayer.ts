@@ -6,7 +6,7 @@ module BABYLON {
 
     export class DebugLayer {
         private _scene: Scene;
-        public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
+        public static InspectorURL = 'https://preview.babylonjs.com/inspector/inspector.min.js';
         // The inspector instance
         private _inspector: any;
 
@@ -39,7 +39,7 @@ module BABYLON {
             if (!this._inspector) {
                 this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);               
+                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
             } // else nothing to do as instance is already created
         }
 
@@ -61,7 +61,7 @@ module BABYLON {
                 this._inspector = null;
             }
         }
-        
+
         /**
         *
         * Launch the debugLayer.

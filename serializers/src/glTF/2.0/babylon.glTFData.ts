@@ -1,4 +1,4 @@
-/// <reference path="../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../../../dist/preview release/gltf2interface/gltf2interface.d.ts"/>
 
 module BABYLON {
     /**
@@ -49,10 +49,10 @@ module BABYLON {
                     mimeType = { type: "model/gltf+json" };
                 }
                 else if (endsWith(key, ".jpeg" || ".jpg")) {
-                    mimeType = {type: GLTF2.ImageMimeType.JPEG};
+                    mimeType = { type: GLTF2.ImageMimeType.JPEG };
                 }
                 else if (endsWith(key, ".png")) {
-                    mimeType = {type: GLTF2.ImageMimeType.PNG};
+                    mimeType = { type: GLTF2.ImageMimeType.PNG };
                 }
 
                 link.href = window.URL.createObjectURL(new Blob([blob], mimeType));
