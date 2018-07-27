@@ -25,33 +25,51 @@ module BABYLON.GLTF2.Extensions {
     /**
      * [Specification](TODO) (Experimental)
      */
-    export class EXT_lights_imageBased extends GLTFLoaderExtension {
+    export class EXT_lights_imageBased implements IGLTFLoaderExtension {
+        /** The name of this extension. */
         public readonly name = NAME;
 
+        /** Defines whether this extension is enabled. */
+        public enabled = true;
+
+        private _loader: GLTFLoader;
         private _lights?: ILight[];
 
-        protected _onLoading(): void {
-            const extensions = this._loader._gltf.extensions;
+        /** @hidden */
+        constructor(loader: GLTFLoader) {
+            this._loader = loader;
+        }
+
+        /** @hidden */
+        public dispose() {
+            delete this._loader;
+            delete this._lights;
+        }
+
+        /** @hidden */
+        public onLoading(): void {
+            const extensions = this._loader.gltf.extensions;
             if (extensions && extensions[this.name]) {
                 const extension = extensions[this.name] as ILights;
                 this._lights = extension.lights;
             }
         }
 
-        protected _loadSceneAsync(context: string, scene: _ILoaderScene): Nullable<Promise<void>> { 
-            return this._loadExtensionAsync<ILightReference>(context, scene, (extensionContext, extension) => {
-                const promises = new Array<Promise<void>>();
+        /** @hidden */
+        public loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> { 
+            return GLTFLoader.LoadExtensionAsync<ILightReference>(context, scene, this.name, (extensionContext, extension) => {
+                const promises = new Array<Promise<any>>();
 
-                promises.push(this._loader._loadSceneAsync(context, scene));
+                promises.push(this._loader.loadSceneAsync(context, scene));
 
-                this._loader._parent._logOpen(`${extensionContext}`);
+                this._loader.logOpen(`${extensionContext}`);
 
-                const light = GLTFLoader._GetProperty(`${extensionContext}/light`, this._lights, extension.light);
+                const light = ArrayItem.Get(`${extensionContext}/light`, this._lights, extension.light);
                 promises.push(this._loadLightAsync(`#/extensions/${this.name}/lights/${extension.light}`, light).then(texture => {
-                    this._loader._babylonScene.environmentTexture = texture;
+                    this._loader.babylonScene.environmentTexture = texture;
                 }));
 
-                this._loader._parent._logClose();
+                this._loader.logClose();
 
                 return Promise.all(promises).then(() => {});
             });
@@ -59,9 +77,9 @@ module BABYLON.GLTF2.Extensions {
 
         private _loadLightAsync(context: string, light: ILight): Promise<BaseTexture> {
             if (!light._loaded) {
-                const promises = new Array<Promise<void>>();
+                const promises = new Array<Promise<any>>();
 
-                this._loader._parent._logOpen(`${context}`);
+                this._loader.logOpen(`${context}`);
 
                 const imageData = new Array<Array<ArrayBufferView>>(light.specularImages.length);
                 for (let mipmap = 0; mipmap < light.specularImages.length; mipmap++) {
@@ -69,22 +87,22 @@ module BABYLON.GLTF2.Extensions {
                     imageData[mipmap] = new Array<ArrayBufferView>(faces.length);
                     for (let face = 0; face < faces.length; face++) {
                         const specularImageContext = `${context}/specularImages/${mipmap}/${face}`;
-                        this._loader._parent._logOpen(`${specularImageContext}`);
+                        this._loader.logOpen(`${specularImageContext}`);
 
                         const index = faces[face];
-                        const image = GLTFLoader._GetProperty(specularImageContext, this._loader._gltf.images, index);
-                        promises.push(this._loader._loadImageAsync(`#/images/${index}`, image).then(data => {
+                        const image = ArrayItem.Get(specularImageContext, this._loader.gltf.images, index);
+                        promises.push(this._loader.loadImageAsync(`#/images/${index}`, image).then(data => {
                             imageData[mipmap][face] = data;
                         }));
 
-                        this._loader._parent._logClose();
+                        this._loader.logClose();
                     }
                 }
 
-                this._loader._parent._logClose();
+                this._loader.logClose();
 
                 light._loaded = Promise.all(promises).then(() => {
-                    const babylonTexture = new RawCubeTexture(this._loader._babylonScene, null, light.specularImageSize);
+                    const babylonTexture = new RawCubeTexture(this._loader.babylonScene, null, light.specularImageSize);
                     light._babylonTexture = babylonTexture;
 
                     if (light.intensity != undefined) {
@@ -95,7 +113,7 @@ module BABYLON.GLTF2.Extensions {
                         let rotation = Quaternion.FromArray(light.rotation);
 
                         // Invert the rotation so that positive rotation is counter-clockwise.
-                        if (!this._loader._babylonScene.useRightHandedSystem) {
+                        if (!this._loader.babylonScene.useRightHandedSystem) {
                             rotation = Quaternion.Inverse(rotation);
                         }
 
@@ -120,5 +138,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader._Register(NAME, loader => new EXT_lights_imageBased(loader));
+    GLTFLoader.RegisterExtension(NAME, loader => new EXT_lights_imageBased(loader));
 }
