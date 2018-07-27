@@ -8,6 +8,8 @@ let basePath = '../../dist/preview release';
 // This can be changed when we have a new major release.
 let minimumDependency = '>=3.2.0-alpha';
 
+process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin'));
+
 let packages = [
     {
         name: 'core',
@@ -229,7 +231,11 @@ function processViewer(package, version) {
 
     // build the viewer
     console.log("executing " + 'tsc -p ' + projectPath);
-    shelljs.exec('tsc -p ' + projectPath);
+
+    let tscCompile = shelljs.exec('tsc -p ' + projectPath);
+    if (tscCompile.code !== 0) {
+        throw new Error("tsc compilation failed");
+    }
 
     let packageJson = require(buildPath + '/package.json');
 
