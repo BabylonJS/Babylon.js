@@ -19,11 +19,11 @@ let packages = [
     },
     {
         name: 'materials',
-        path: basePath + '/materialsLibrary/'
+        path: basePath + '/materials/'
     },
     {
         name: 'postProcess',
-        path: basePath + '/postProcessesLibrary/'
+        path: basePath + '/postprocess/'
     },
     {
         name: 'gltf2interface',
@@ -39,7 +39,7 @@ let packages = [
     },
     {
         name: 'proceduralTextures',
-        path: basePath + '/proceduralTexturesLibrary/'
+        path: basePath + '/proceduraltextures/'
     },
     {
         name: 'inspector',
@@ -51,8 +51,8 @@ let packages = [
         required: [
             basePath + '/viewer/readme.md',
             basePath + '/viewer/package.json',
-            basePath + '/viewer/babylon.viewer.js',
-            basePath + '/viewer/babylon.viewer.max.js'
+            basePath + '/viewer/viewer.js',
+            basePath + '/viewer/viewer.max.js'
         ]
     },
     {
@@ -150,11 +150,11 @@ function processCore(package, version) {
             objectName: "es6.js"
         },
         {
-            path: basePath + "/babylon.js",
+            path: basePath + "/babylon.min.js",
             objectName: "babylon.js"
         },
         {
-            path: basePath + "/babylon.max.js",
+            path: basePath + "/babylon.js",
             objectName: "babylon.max.js"
         },
         {
@@ -208,7 +208,7 @@ function processCore(package, version) {
             return file;
         }
     });
-    packageJson.main = "dist/preview release/babylon.js";
+    packageJson.main = "dist/preview release/babylon.min.js";
     packageJson.typings = "dist/preview release/babylon.d.ts";
 
     fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));

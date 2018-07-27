@@ -59,9 +59,9 @@ module.exports = /*[
         resolve: {
             extensions: ['.ts', '.js'],
             alias: {
-                "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
-                "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
-                "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
+                "babylonjs": __dirname + '/../dist/preview release/babylon.js',
+                "babylonjs-materials": __dirname + '/../dist/preview release/materials/materials.js',
+                "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/loaders.js',
                 "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
             }
         },
