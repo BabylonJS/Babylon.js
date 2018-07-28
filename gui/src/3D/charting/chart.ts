@@ -1,11 +1,35 @@
-import { Nullable, TransformNode, Scene, Vector3 } from "babylonjs";
+import { Nullable, TransformNode, Scene, Vector3, Engine, Observer, PointerInfo, Observable, Mesh, AbstractMesh } from "babylonjs";
 import { DataSeries } from ".";
+import { AdvancedDynamicTexture, TextBlock } from "../../2D";
 
 /** base class for all chart controls*/
 export abstract class Chart {
     protected _dataSource: Nullable<DataSeries>;
     protected _rootNode: TransformNode;
     protected _dataFilters: {[key: string]: string};
+    private _pointerObserver: Nullable<Observer<PointerInfo>>;
+    protected _scene: Scene;
+    private _lastElementOver: Nullable<AbstractMesh>;
+    private _labelMeshes = new Array<Mesh>();
+    protected _blockRefresh = false;
+
+    /** Observable raised when a new element is created */
+    public onElementCreated = new Observable<Mesh>();
+
+    /**
+     * Observable raised when the point picked by the pointer events changed
+     */
+    public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
+
+    /**
+     * Observable raised when the pointer enters an element of the chart
+    */
+    public onElementEnterObservable = new Observable<AbstractMesh>();
+
+    /**
+     * Observable raised when the pointer leaves an element of the chart
+     */
+    public onElementOutObservable = new Observable<AbstractMesh>();
 
     /** Gets or sets the rotation of the entire chart */
     public set rotation(value: Vector3) {
@@ -65,16 +89,85 @@ export abstract class Chart {
         return this._rootNode;
     }
 
+    /** Gets or sets a value indicating if refresh function should be executed (useful when multiple changes will happen and you want to run refresh only at the end) */
+    public get blockRefresh(): boolean {
+        return this._blockRefresh;
+    }
+
+    public set blockRefresh(value: boolean) {
+        if (this._blockRefresh === value) {
+            return;
+        }
+
+        this._blockRefresh = value;
+
+        if (value) {
+            this.refresh();
+        }
+    }
+
     /** Gets or sets the name of the graph */
     public name: string; 
 
     /**
      * Creates a new Chart
      * @param name defines the name of the graph
+     * @param scene defines the hosting scene
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene: Nullable<Scene> = Engine.LastCreatedScene) {
         this.name = name;
         this._rootNode = new TransformNode(name, scene);
+
+        this._scene = scene!;
+
+        this._pointerObserver = this._scene.onPointerObservable.add((pi, state) => {
+            if (!pi.pickInfo || !pi.pickInfo.hit) {
+                if (this._lastElementOver) {
+                    this.onElementOutObservable.notifyObservers(this._lastElementOver);
+                    this._lastElementOver = null;
+                }
+
+                this.onPickedPointChangedObservable.notifyObservers(null);
+                return;
+            }
+
+            if (pi.pickInfo.pickedMesh!.metadata === "chart") {
+                if (this._lastElementOver !== pi.pickInfo.pickedMesh) {
+                    this._lastElementOver = pi.pickInfo.pickedMesh;
+                    this.onElementEnterObservable.notifyObservers(this._lastElementOver!);
+                }
+            }
+
+            this.onPickedPointChangedObservable.notifyObservers(pi.pickInfo.pickedPoint);
+        });
+    }
+
+    public addLabel(label: string): Mesh {
+        let plane = Mesh.CreatePlane(label, 1, this._scene);
+
+        this._labelMeshes.push(plane);
+
+        plane.parent = this._rootNode;
+        plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
+        plane.renderingGroupId = 1;
+
+        let adt = AdvancedDynamicTexture.CreateForMesh(plane, 512, 128, false);
+        let textBlock = new TextBlock(label, label);
+        textBlock.color = "White";
+        textBlock.fontWeight = "Bold";
+        textBlock.fontSize = 80;
+
+        adt.addControl(textBlock);
+
+        return plane;
+    }
+
+    public removeLabels() {
+        this._labelMeshes.forEach(label => {
+            label.dispose(false, true);
+        });
+
+        this._labelMeshes = [];
     }
 
     /** 
@@ -82,6 +175,15 @@ export abstract class Chart {
      * @returns the current BarGraph
     */
     public abstract refresh(): Chart;
+
+    public dispose() {
+        if (this._pointerObserver) {
+            this._scene.onPointerObservable.remove(this._pointerObserver);
+            this._pointerObserver = null;
+        }
+
+        this._rootNode.dispose();
+    }
 
     protected _clean(): void {
         // Cleanup

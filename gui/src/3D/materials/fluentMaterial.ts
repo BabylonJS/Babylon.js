@@ -80,7 +80,7 @@ export class FluentMaterial extends PushMaterial {
     public renderHoverLight = false;
 
     /**
-     * Gets or sets the radius used to render the hover light (default is 0.15)
+     * Gets or sets the radius used to render the hover light (default is 1.0)
      */
     @serialize()
     public hoverRadius = 1.0;
