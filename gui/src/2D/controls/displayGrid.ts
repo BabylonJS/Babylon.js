@@ -17,6 +17,37 @@ export class DisplayGrid extends Control {
 
     private _background = "Black";
 
+    private _displayMajorLines = true;
+    private _displayMinorLines = true;
+
+    /** Gets or sets a boolean indicating if minor lines must be rendered (true by default)) */
+    public get displayMinorLines(): boolean {
+        return this._displayMinorLines;
+    }
+
+    public set displayMinorLines(value: boolean) {
+        if (this._displayMinorLines === value) {
+            return;
+        }
+
+        this._displayMinorLines = value;
+        this._markAsDirty();
+    }  
+
+    /** Gets or sets a boolean indicating if major lines must be rendered (true by default)) */
+    public get displayMajorLines(): boolean {
+        return this._displayMajorLines;
+    }
+
+    public set displayMajorLines(value: boolean) {
+        if (this._displayMajorLines === value) {
+            return;
+        }
+
+        this._displayMajorLines = value;
+        this._markAsDirty();
+    }  
+
     /** Gets or sets background color (Black by default) */
     public get background(): string {
         return this._background;
@@ -131,52 +162,55 @@ export class DisplayGrid extends Control {
             let cellCountX = this._currentMeasure.width / this._cellWidth;
             let cellCountY = this._currentMeasure.height / this._cellHeight;
 
-            // Minor lines
-            context.strokeStyle = this._minorLineColor;
-            context.lineWidth = this._minorLineTickness;        
-
+            // Minor lines    
             const left = this._currentMeasure.left + this._currentMeasure.width / 2;
-
-            for (var x = -cellCountX / 2; x < cellCountX / 2; x++) {
-                const cellX = left + x * this.cellWidth;
-
-                context.beginPath();
-                context.moveTo(cellX, this._currentMeasure.top);
-                context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
-                
-                context.stroke();                
-            }
-
             const top = this._currentMeasure.top + this._currentMeasure.height / 2;
 
-            for (var y = -cellCountY / 2; y < cellCountY / 2; y++) {
-                const cellY = top + y * this.cellHeight;
+            if (this._displayMinorLines) {
+                context.strokeStyle = this._minorLineColor;
+                context.lineWidth = this._minorLineTickness;    
 
-                context.beginPath();
-                context.moveTo(this._currentMeasure.left, cellY);
-                context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);
-                context.stroke();
+                for (var x = -cellCountX / 2; x < cellCountX / 2; x++) {
+                    const cellX = left + x * this.cellWidth;
+
+                    context.beginPath();
+                    context.moveTo(cellX, this._currentMeasure.top);
+                    context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
+                    
+                    context.stroke();                
+                }
+
+                for (var y = -cellCountY / 2; y < cellCountY / 2; y++) {
+                    const cellY = top + y * this.cellHeight;
+
+                    context.beginPath();
+                    context.moveTo(this._currentMeasure.left, cellY);
+                    context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);
+                    context.stroke();
+                }
             }
 
             // Major lines
-            context.strokeStyle = this._majorLineColor;
-            context.lineWidth = this._majorLineTickness;        
+            if (this._displayMajorLines) {
+                context.strokeStyle = this._majorLineColor;
+                context.lineWidth = this._majorLineTickness;        
 
-            for (var x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
-                let cellX = left + x * this.cellWidth;
+                for (var x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
+                    let cellX = left + x * this.cellWidth;
 
-                context.beginPath();    
-                context.moveTo(cellX, this._currentMeasure.top);
-                context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
-                context.stroke();
-            }
+                    context.beginPath();    
+                    context.moveTo(cellX, this._currentMeasure.top);
+                    context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
+                    context.stroke();
+                }
 
-            for (var y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
-                let cellY = top + y * this.cellHeight;
-                context.moveTo(this._currentMeasure.left, cellY);
-                context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);
-                context.closePath();
-                context.stroke();
+                for (var y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
+                    let cellY = top + y * this.cellHeight;
+                    context.moveTo(this._currentMeasure.left, cellY);
+                    context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);
+                    context.closePath();
+                    context.stroke();
+                }
             }
         }
 

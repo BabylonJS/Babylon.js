@@ -70,7 +70,7 @@ export class DataSeries {
     public static CreateFakeData(): DataSeries {
         var series = new DataSeries();
         series.label = "Product #1";
-        series.color = Color3.Red();
+        series.color = new Color3(1.0, 0, 0);
 
         series.dimensions = ["Year", "Country"];
 
