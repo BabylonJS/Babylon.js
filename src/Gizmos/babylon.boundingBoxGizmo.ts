@@ -14,9 +14,9 @@ module BABYLON {
         private _tmpQuaternion = new Quaternion();
         private _tmpVector = new Vector3(0, 0, 0);
         /**
-         * If child meshes should be ignored
+         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
          */
-        public ignoreChildrenWorldMatrix = false;
+        public ignoreChildren = false;
 
         /**
          * The size of the rotation spheres attached to the bounding box (Default: 0.1)
@@ -274,7 +274,7 @@ module BABYLON {
 
         private _recurseComputeWorld(mesh: AbstractMesh) {
             mesh.computeWorldMatrix(true);
-            if(!this.ignoreChildrenWorldMatrix){
+            if(!this.ignoreChildren){
                 mesh.getChildMeshes().forEach((m) => {
                     this._recurseComputeWorld(m);
                 });
@@ -303,7 +303,7 @@ module BABYLON {
                 this.attachedMesh.position.set(0, 0, 0);
 
                 // Update bounding dimensions/positions   
-                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors();
+                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren);
                 boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
                 // Update gizmo to match bounding box scaling and rotation
