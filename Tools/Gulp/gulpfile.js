@@ -608,11 +608,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                         if (isjs) this.push(file);
                         cb();
                     }))
-                    .pipe(rename(function (path) {
-                        console.log(path.basename);
-                        //path.extname === ".js"
-                        path.basename = path.basename.replace(".min", "")
-                    })).pipe(gulp.dest(outputDirectory));
+                    .pipe(gulp.dest(outputDirectory));
                 sequence.push(
                     buildEvent
                 );
@@ -1006,10 +1002,10 @@ gulp.task("typedoc-generate", function () {
     return gulp
         .src([
             "../../dist/preview release/babylon.d.ts",
-            "../../dist/preview release/gui/babylon.gui.d.ts",
+            "../../dist/preview release/gui/gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
             "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
-            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"])
+            "../../dist/preview release/gltf2interface/gltf2interface.d.ts"])
         .pipe(typedoc({
             // TypeScript options (see typescript docs)
             mode: "modules",

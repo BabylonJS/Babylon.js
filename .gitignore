@@ -180,8 +180,8 @@ dist/preview release/package/
 /Viewer/dist/viewer.js
 /Viewer/dist/viewer.min.js
 dist/preview release/viewer/babylon.d.ts
-dist/preview release/viewer/babylonjs.loaders.d.ts
-dist/preview release/viewer/babylon.glTF2Interface.d.ts
+dist/preview release/viewer/loaders.d.ts
+dist/preview release/viewer/glTF2Interface.d.ts
 Viewer/dist/viewer.max.js
 !Viewer/src/**/*.d.ts
 Viewer/tests/unit/src/**/*.js

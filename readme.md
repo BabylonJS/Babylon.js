@@ -17,10 +17,10 @@ Additional references can be found on https://cdn.babylonjs.com/xxx where xxx is
 For preview release you can use the following ones:
 
 - https://preview.babylonjs.com/babylon.js
-- https://preview.babylonjs.com/babylon.max.js
+- https://preview.babylonjs.com/babylon.min.js
 - https://preview.babylonjs.com/babylon.worker.js
 
-Additional references can be found on https://preview.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist/preview release folder like https://preview.babylonjs.com/gui/babylon.gui.min.js
+Additional references can be found on https://preview.babylonjs.com/xxx where xxx is the folder structure you can find in the /dist/preview release folder like https://preview.babylonjs.com/gui/gui.min.js
 
 ## NPM
 

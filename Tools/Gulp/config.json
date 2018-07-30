@@ -1,9 +1,9 @@
 {
     "build": {
-        "filename": "babylon.max.js",
-        "minFilename": "babylon.js",
-        "minWorkerFilename": "babylon.worker.js",
-        "noModuleFilename": "babylon.no-module.max.js",
+        "filename": "babylon.js",
+        "minFilename": "babylon.min.js",
+        "minWorkerFilename": "babylon.worker.min.js",
+        "noModuleFilename": "babylon.no-module.js",
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",
@@ -12,10 +12,10 @@
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
-            "../../dist/preview release/gui/babylon.gui.d.ts",
+            "../../dist/preview release/gui/gui.d.ts",
             "../../dist/preview release/loaders/babylon.glTF2FileLoader.d.ts",
             "../../dist/preview release/serializers/babylon.glTF2Serializer.d.ts",
-            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
+            "../../dist/preview release/gltf2interface/gltf2interface.d.ts"
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
@@ -1401,7 +1401,6 @@
                 "core"
             ]
         }
-
     },
     "typescript": [
         "../../src/**/*.ts",
@@ -1580,10 +1579,10 @@
         ],
         "build": {
             "srcOutputDirectory": "../../materialsLibrary/",
-            "distOutputDirectory": "/materialsLibrary/",
+            "distOutputDirectory": "/materials/",
             "buildAsModule": true,
             "moduleName": "babylonjs-materials",
-            "outputFilename": "babylonjs.materials",
+            "outputFilename": "materials",
             "moduleDeclaration": {
                 "name": "BJSMaterials",
                 "module": "babylonjs-materials"
@@ -1614,10 +1613,10 @@
         ],
         "build": {
             "srcOutputDirectory": "../../postProcessLibrary/",
-            "distOutputDirectory": "/postProcessesLibrary/",
+            "distOutputDirectory": "/postprocess/",
             "buildAsModule": true,
             "moduleName": "babylonjs-post-process",
-            "outputFilename": "babylonjs.postProcess",
+            "outputFilename": "postprocess",
             "moduleDeclaration": {
                 "name": "PostProcesses",
                 "module": "babylonjs-post-process"
@@ -1720,10 +1719,10 @@
         ],
         "build": {
             "srcOutputDirectory": "../../proceduralTexturesLibrary/",
-            "distOutputDirectory": "/proceduralTexturesLibrary/",
+            "distOutputDirectory": "/proceduraltextures/",
             "buildAsModule": true,
             "moduleName": "babylonjs-procedural-textures",
-            "outputFilename": "babylonjs.proceduralTextures",
+            "outputFilename": "proceduraltextures",
             "moduleDeclaration": {
                 "name": "ProceduralTextures",
                 "module": "babylonjs-procedural-textures"
@@ -1809,7 +1808,7 @@
             "distOutputDirectory": "/loaders/",
             "buildAsModule": true,
             "moduleName": "babylonjs-loaders",
-            "outputFilename": "babylonjs.loaders",
+            "outputFilename": "loaders",
             "moduleDeclaration": {
                 "name": "Loaders",
                 "module": "babylonjs-loaders"
@@ -1850,7 +1849,7 @@
                 "babylonjs",
                 "babylonjs-gltf2interface"
             ],
-            "outputFilename": "babylonjs.serializers",
+            "outputFilename": "serializers",
             "moduleDeclaration": {
                 "name": "Serializers",
                 "module": "babylonjs-serializers"
@@ -1863,7 +1862,7 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.gui.min.js",
+                "output": "gui.min.js",
                 "webpack": "../../gui/webpack.config.js",
                 "bundle": "true",
                 "babylonIncluded": false,
@@ -1876,12 +1875,12 @@
             "dtsBundle": {
                 "name": "babylonjs-gui",
                 "main": "../../dist/preview release/gui/build/index.d.ts",
-                "out": "../babylon.gui.module.d.ts",
+                "out": "../gui.module.d.ts",
                 "baseDir": "../../dist/preview release/gui/build/",
                 "headerText": "BabylonJS GUI"
             },
             "processDeclaration": {
-                "filename": "babylon.gui.module.d.ts",
+                "filename": "gui.module.d.ts",
                 "packageName": "babylonjs-gui",
                 "moduleName": "BABYLON.GUI",
                 "importsToRemove": [],
@@ -1898,7 +1897,7 @@
             {
                 "files": [],
                 "sassFiles": [],
-                "output": "babylon.inspector.bundle.js",
+                "output": "inspector.min.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
                 "extendsRoot": true,
@@ -1911,12 +1910,12 @@
             "dtsBundle": {
                 "name": "babylonjs-inspector",
                 "main": "../../dist/preview release/inspector/build/index.d.ts",
-                "out": "../babylon.inspector.module.d.ts",
+                "out": "../inspector.module.d.ts",
                 "baseDir": "../../dist/preview release/inspector/build/",
                 "headerText": "BabylonJS Inspector"
             },
             "processDeclaration": {
-                "filename": "babylon.inspector.module.d.ts",
+                "filename": "inspector.module.d.ts",
                 "packageName": "babylonjs-inspector",
                 "moduleName": "INSPECTOR",
                 "importsToRemove": [],
@@ -1934,7 +1933,7 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.viewer.js",
+                "output": "viewer.min.js",
                 "webpack": "../../Viewer/webpack.gulp.config.js",
                 "bundle": "true",
                 "moduleDeclaration": {
@@ -1952,8 +1951,8 @@
             "dtsBundle": {
                 "name": "babylonjs-viewer",
                 "main": "../../dist/preview release/viewer/build/src/index.d.ts",
-                "out": "../../babylon.viewer.module.d.ts",
-                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
+                "out": "../../viewer.module.d.ts",
+                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./gltf2interface.d.ts\"/>\n/// <reference path=\"./loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n"
             },
             "processDeclaration": {
                 "packageName": "babylonjs-viewer",
@@ -1971,16 +1970,16 @@
                 {
                     "destinations": [
                         {
-                            "filename": "viewer.js",
+                            "filename": "viewer.min.js",
                             "outputDirectory": "/../../Viewer/dist/"
                         },
                         {
-                            "filename": "babylon.viewer.js",
+                            "filename": "viewer.min.js",
                             "outputDirectory": "/viewer/",
                             "addBabylonDeclaration": [
                                 "babylon.d.ts",
-                                "loaders/babylonjs.loaders.d.ts",
-                                "glTF2Interface/babylon.glTF2Interface.d.ts"
+                                "loaders/loaders.d.ts",
+                                "gltf2interface/gltf2interface.d.ts"
                             ]
                         }
                     ],
@@ -1989,11 +1988,11 @@
                 {
                     "destinations": [
                         {
-                            "filename": "viewer.max.js",
+                            "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
                         },
                         {
-                            "filename": "babylon.viewer.max.js",
+                            "filename": "viewer.js",
                             "outputDirectory": "/viewer/"
                         }
                     ]
@@ -2006,7 +2005,7 @@
             {
                 "files": [],
                 "noBundleInName": true,
-                "output": "babylon.viewer.assets.js",
+                "output": "viewerassets.min.js",
                 "webpack": "../../Viewer/webpack.assets.config.js",
                 "bundle": "true",
                 "moduleDeclaration": {
@@ -2024,13 +2023,13 @@
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",
                 "main": "../../dist/preview release/viewer/build/src/assets/index.d.ts",
-                "out": "../../../../../../Viewer/build/assets/babylon.viewer.assets.module.d.ts"
+                "out": "../../../../../../Viewer/build/assets/viewer.assets.module.d.ts"
             },
             "outputs": [
                 {
                     "destinations": [
                         {
-                            "filename": "babylon.viewer.assets.js",
+                            "filename": "viewer.assets.min.js",
                             "outputDirectory": "/../../Viewer/build/assets/"
                         }
                     ],

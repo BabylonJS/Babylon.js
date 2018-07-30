@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
+        "moduleResolution": "node",
         "module": "esnext",
         "target": "es5",
         "noImplicitAny": true,
@@ -26,13 +27,13 @@
                 "../../dist/preview release/babylon.d.ts"
             ],
             "babylonjs-gui": [
-                "../../dist/preview release/gui/babylon.gui.module.d.ts"
+                "../../dist/preview release/gui/gui.module.d.ts"
             ],
             "babylonjs-loaders": [
-                "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
+                "../../dist/preview release/loaders/loaders.module.d.ts"
             ],
             "babylonjs-serializers": [
-                "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
+                "../../dist/preview release/serializers/serializers.module.d.ts"
             ],
             "Split": [
                 "./helpers/ISplit.d.ts"

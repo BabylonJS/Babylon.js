@@ -11,9 +11,9 @@
             "tsconfig": "tsconfig.json",
             "dependencies": [
                 "babylon.js",
-                "gui/babylon.gui.min.js",
-                "inspector/babylon.inspector.bundle.js",
-                "loaders/babylonjs.loaders.min.js"
+                "gui/gui.min.js",
+                "inspector/inspector.bundle.js",
+                "loaders/loaders.min.js"
             ]
         }
     ]

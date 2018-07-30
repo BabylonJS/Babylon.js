@@ -21,7 +21,7 @@
         "outDir": "../build/",
         "paths": {
             "babylonjs-gui": [
-                "../../../../dist/preview release/gui/babylon.gui.modules.d.ts"
+                "../../../../dist/preview release/gui/gui.modules.d.ts"
             ]
         }
     },
