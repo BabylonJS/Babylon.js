@@ -1,6 +1,6 @@
 import { Nullable, TransformNode, Scene, Vector3, Engine, Observer, PointerInfo, Observable, Mesh, AbstractMesh } from "babylonjs";
 import { DataSeries } from ".";
-import { AdvancedDynamicTexture, TextBlock } from "../../2D";
+import { AdvancedDynamicTexture, TextBlock, Rectangle, TextWrapping } from "../../2D";
 
 /** base class for all chart controls*/
 export abstract class Chart {
@@ -15,6 +15,9 @@ export abstract class Chart {
 
     /** Observable raised when a new element is created */
     public onElementCreated = new Observable<Mesh>();
+
+    /** User defined callback used to create labels */
+    public labelCreationFunction: (label: string, width: number, includeBackground: boolean) => Mesh;
 
     /**
      * Observable raised when the point picked by the pointer events changed
@@ -131,10 +134,20 @@ export abstract class Chart {
                 return;
             }
 
-            if (pi.pickInfo.pickedMesh!.metadata === "chart") {
+            let metadata = pi.pickInfo.pickedMesh!.metadata;
+            if (metadata && metadata.value) {
                 if (this._lastElementOver !== pi.pickInfo.pickedMesh) {
+                    if (this._lastElementOver) {
+                        this.onElementOutObservable.notifyObservers(this._lastElementOver);
+                        this._lastElementOver = null;
+                    }
                     this._lastElementOver = pi.pickInfo.pickedMesh;
                     this.onElementEnterObservable.notifyObservers(this._lastElementOver!);
+                }
+            } else {
+                if (this._lastElementOver) {
+                    this.onElementOutObservable.notifyObservers(this._lastElementOver);
+                    this._lastElementOver = null;
                 }
             }
 
@@ -142,27 +155,70 @@ export abstract class Chart {
         });
     }
 
-    public addLabel(label: string): Mesh {
+    /**
+     * Function called by the chart objects when they need a label. Could be user defined if you set this.labelCreationFunction to a custom callback
+     * @param label defines the text of the label
+     * @param width defines the expected width (height is supposed to be 1)
+     * @param includeBackground defines if a background rectangle must be added (default is true)
+     * @returns a mesh used to host the label
+     */
+    public addLabel(label: string, width: number, includeBackground = true): Mesh {
+        if (this.labelCreationFunction) {
+            let labelMesh = this.labelCreationFunction(label, width, includeBackground);
+            labelMesh.parent = this._rootNode;
+
+            this._labelMeshes.push(labelMesh);
+
+            return labelMesh;
+        }
+
         let plane = Mesh.CreatePlane(label, 1, this._scene);
 
         this._labelMeshes.push(plane);
 
         plane.parent = this._rootNode;
         plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = 1;
+        plane.scaling.x = width;
 
-        let adt = AdvancedDynamicTexture.CreateForMesh(plane, 512, 128, false);
+        let resolution = 256;
+        let adt = AdvancedDynamicTexture.CreateForMesh(plane, resolution, resolution / width, false, true);
         let textBlock = new TextBlock(label, label);
         textBlock.color = "White";
+        textBlock.textWrapping = TextWrapping.Ellipsis;
         textBlock.fontWeight = "Bold";
-        textBlock.fontSize = 80;
+        textBlock.fontSize = 50;
 
-        adt.addControl(textBlock);
+        if (includeBackground) {
+            let rectangle = new Rectangle(label + "Border");
+            rectangle.thickness = 4;
+            rectangle.color = "White";
+            rectangle.background = "Black";
+            rectangle.addControl(textBlock);
+            adt.addControl(rectangle);
+        } else {
+            adt.addControl(textBlock);
+        }
 
         return plane;
     }
 
-    public removeLabels() {
+    /**
+     * Remove specific label mesh
+     * @param label defines the label mesh to remove
+     */
+    public removeLabel(label: Mesh): void {
+        let index = this._labelMeshes.indexOf(label);
+
+        if (index === -1) {
+            return;
+        }
+
+        this._labelMeshes.splice(index, 1);
+        label.dispose(false, true);
+    }
+
+    /** Remove all created labels */
+    public removeLabels(): void {
         this._labelMeshes.forEach(label => {
             label.dispose(false, true);
         });
@@ -171,11 +227,12 @@ export abstract class Chart {
     }
 
     /** 
-     * Force the graph to redraw itself 
-     * @returns the current BarGraph
+     * Force the chart to redraw itself 
+     * @returns the current chart
     */
     public abstract refresh(): Chart;
 
+    /** Release all associated resources */
     public dispose() {
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
