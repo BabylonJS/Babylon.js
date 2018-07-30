@@ -45,10 +45,32 @@ export class DataSeries {
         return filteredData;
     }
 
+    /**
+     * Get the different values of a dimension
+     * @param key defines the dimension name
+     * @returns An array of values
+     */
+    public getDimensionValues(key: string): Array<any> {
+        var result = new Array<any>();
+
+        this.data.forEach((entry) => {
+            var value = entry[key];
+            if (result.indexOf(value) === -1) {
+                result.push(value);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Create a new DataSeries containing testing values
+     * @returns the new DataSeries
+     */
     public static CreateFakeData(): DataSeries {
         var series = new DataSeries();
         series.label = "Product #1";
-        series.color = Color3.Red();
+        series.color = new Color3(1.0, 0, 0);
 
         series.dimensions = ["Year", "Country"];
 
@@ -67,11 +89,31 @@ export class DataSeries {
                 "Year": 2014,
                 "Country": "India",
                 "value": 400
-            }, 
+            },
             {
                 "Year": 2014,
                 "Country": "UK",
                 "value": 180
+            },
+            {
+                "Year": 2014,
+                "Country": "Germany",
+                "value": 400
+            }, 
+            {
+                "Year": 2014,
+                "Country": "Australia",
+                "value": 24
+            }, 
+            {
+                "Year": 2014,
+                "Country": "China",
+                "value": 540
+            }, 
+            {
+                "Year": 2014,
+                "Country": "Japan",
+                "value": 150
             },
             {
                 "Year": 2015,
@@ -92,6 +134,26 @@ export class DataSeries {
                 "Year": 2015,
                 "Country": "UK",
                 "value": 10
+            },
+            {
+                "Year": 2015,
+                "Country": "Germany",
+                "value": 80
+            }, 
+            {
+                "Year": 2015,
+                "Country": "Australia",
+                "value": 230
+            }, 
+            {
+                "Year": 2015,
+                "Country": "China",
+                "value": 490
+            }, 
+            {
+                "Year": 2015,
+                "Country": "Japan",
+                "value": 120
             }
         ];
         
