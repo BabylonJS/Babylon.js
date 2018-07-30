@@ -32,13 +32,13 @@ declare module BABYLON {
          * @param font the font to use, use the W3C CSS notation
          * @return the max char width
          */
-        private getFontWidth(font);
+        private getFontWidth;
         /**
          * Gets the max char height of a font.
          * @param font the font to use, use the W3C CSS notation
          * @return the max char height
          */
-        private getFontHeight(font);
+        private getFontHeight;
         /**
          * Clones the current AsciiArtTexture.
          * @return the clone of the texture.
@@ -135,13 +135,13 @@ declare module BABYLON {
          * @param font the font to use, use the W3C CSS notation
          * @return the max char width
          */
-        private getFontWidth(font);
+        private getFontWidth;
         /**
          * Gets the max char height of a font.
          * @param font the font to use, use the W3C CSS notation
          * @return the max char height
          */
-        private getFontHeight(font);
+        private getFontHeight;
         /**
          * Clones the current DigitalRainFontTexture.
          * @return the clone of the texture.
