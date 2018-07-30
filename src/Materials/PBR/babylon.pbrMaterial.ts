@@ -129,7 +129,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public metallic: number;
+        public metallic: Nullable<number>;
 
         /**
          * Specifies the roughness scalar of the metallic/roughness workflow.
@@ -137,7 +137,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public roughness: number;
+        public roughness: Nullable<number>;
 
         /**
          * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
