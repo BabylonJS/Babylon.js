@@ -1006,7 +1006,102 @@ declare module 'babylonjs-viewer/configuration' {
 }
 
 declare module 'babylonjs-viewer/configuration/configuration' {
-    
+    import { EngineOptions } from 'babylonjs';
+    import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
+    import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
+    export function getConfigurationKey(key: string, configObject: any): any;
+    export interface ViewerConfiguration {
+            version?: string;
+            extends?: string;
+            pageUrl?: string;
+            configuration?: string | {
+                    url?: string;
+                    payload?: any;
+                    mapper?: string;
+            };
+            observers?: IObserversConfiguration;
+            canvasElement?: string;
+            model?: IModelConfiguration | string;
+            scene?: ISceneConfiguration;
+            optimizer?: ISceneOptimizerConfiguration | boolean;
+            camera?: ICameraConfiguration;
+            skybox?: boolean | ISkyboxConfiguration;
+            ground?: boolean | IGroundConfiguration;
+            lights?: {
+                    [name: string]: number | boolean | ILightConfiguration;
+            };
+            engine?: {
+                    renderInBackground?: boolean;
+                    antialiasing?: boolean;
+                    disableResize?: boolean;
+                    engineOptions?: EngineOptions;
+                    adaptiveQuality?: boolean;
+                    hdEnabled?: boolean;
+            };
+            templates?: {
+                    main: ITemplateConfiguration;
+                    [key: string]: ITemplateConfiguration;
+            };
+            customShaders?: {
+                    shaders?: {
+                            [key: string]: string;
+                    };
+                    includes?: {
+                            [key: string]: string;
+                    };
+            };
+            loaderPlugins?: {
+                    extendedMaterial?: boolean;
+                    msftLod?: boolean;
+                    telemetry?: boolean;
+                    minecraft?: boolean;
+                    [propName: string]: boolean | undefined;
+            };
+            environmentMap?: IEnvironmentMapConfiguration;
+            vr?: IVRConfiguration;
+            lab?: {
+                    flashlight?: boolean | {
+                            exponent?: number;
+                            angle?: number;
+                            intensity?: number;
+                            diffuse?: {
+                                    r: number;
+                                    g: number;
+                                    b: number;
+                            };
+                            specular?: {
+                                    r: number;
+                                    g: number;
+                                    b: number;
+                            };
+                    };
+                    hideLoadingDelay?: number;
+                    /** Deprecated */
+                    assetsRootURL?: string;
+                    environmentMainColor?: {
+                            r: number;
+                            g: number;
+                            b: number;
+                    };
+                    /** Deprecated */
+                    environmentMap?: {
+                            /**
+                                * Environment map texture path in relative to the asset folder.
+                                */
+                            texture: string;
+                            /**
+                                * Default rotation to apply to the environment map.
+                                */
+                            rotationY: number;
+                            /**
+                                * Tint level of the main color on the environment map.
+                                */
+                            tintLevel: number;
+                    };
+                    defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
+                    globalLightRotation?: number;
+            };
+    }
 }
 
 declare module 'babylonjs-viewer/templating/templateManager' {
@@ -1568,6 +1663,31 @@ declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
 }
 
+declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration' {
+    export interface IEnvironmentMapConfiguration {
+            /**
+                * Environment map texture path in relative to the asset folder.
+                */
+            texture: string;
+            /**
+                * Default rotation to apply to the environment map.
+                */
+            rotationY: number;
+            /**
+                * Tint level of the main color on the environment map.
+                */
+            tintLevel: number;
+            /**
+                * The environment's main color.
+                */
+            mainColor?: {
+                    r?: number;
+                    g?: number;
+                    b?: number;
+            };
+    }
+}
+
 declare module 'babylonjs-viewer/templating/eventManager' {
     import { EventCallback, TemplateManager } from "babylonjs-viewer/templating/templateManager";
     /**
@@ -1651,31 +1771,6 @@ declare module 'babylonjs-viewer/labs/viewerLabs' {
                 */
             getAssetUrl(url: string): string;
             rotateShadowLight(shadowLight: ShadowLight, amount: number, point?: Vector3, axis?: Vector3, target?: Vector3): void;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration' {
-    export interface IEnvironmentMapConfiguration {
-            /**
-                * Environment map texture path in relative to the asset folder.
-                */
-            texture: string;
-            /**
-                * Default rotation to apply to the environment map.
-                */
-            rotationY: number;
-            /**
-                * Tint level of the main color on the environment map.
-                */
-            tintLevel: number;
-            /**
-                * The environment's main color.
-                */
-            mainColor?: {
-                    r?: number;
-                    g?: number;
-                    b?: number;
-            };
     }
 }
 

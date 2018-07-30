@@ -367,6 +367,7 @@
         constructor(name: string = "", hdr: boolean = true, scene: Scene = BABYLON.Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
             this._cameras = cameras ||  scene.cameras;
+            this._cameras = this._cameras.slice();
             this._camerasToBeAttached = this._cameras.slice();
 
             this._buildAllowed = automaticBuild;
