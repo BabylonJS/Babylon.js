@@ -447,6 +447,7 @@
         <script src="js/pbt.js"></script>
         <script>
             BABYLONDEVTOOLS.Loader
+                .require('node_modules/monaco-editor/min/vs/loader.js')
                 .require('js/index.js')
                 .load(function () {
                     BABYLON.DracoCompression.Configuration.decoder = {
@@ -454,10 +455,6 @@
                         wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
                         fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
                     };
-                    var script = document.createElement('script');
-                    script.type = 'text/javascript';
-                    script.src = "node_modules/monaco-editor/min/vs/loader.js";
-                    document.head.appendChild(script);
                 });
         </script>
     </body>
