@@ -35,6 +35,7 @@
 - Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
 - GUI and Inspector are now ES-Modules ([RaananW](https://github.com/RaananW))
 - Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
+- Consistency in module naming ([RaananW](https://github.com/RaananW))
 
 ## Updates
 
