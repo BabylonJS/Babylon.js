@@ -705,17 +705,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param width defines the texture width (1024 by default)
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true): AdvancedDynamicTexture {
+    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
 
         var material = new StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
         material.specularColor = Color3.Black();
-        material.emissiveTexture = result;
-        material.opacityTexture = result;
+
+        if (onlyAlphaTesting) {
+            material.diffuseTexture = result;
+            material.emissiveTexture = result;
+            result.hasAlpha = true;    
+        } else {
+            material.emissiveTexture = result;
+            material.opacityTexture = result;   
+        }
 
         mesh.material = material;
 
