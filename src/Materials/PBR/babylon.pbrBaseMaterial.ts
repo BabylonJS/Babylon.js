@@ -266,13 +266,13 @@
          * Specifies the metallic scalar of the metallic/roughness workflow.
          * Can also be used to scale the metalness values of the metallic texture.
          */
-        protected _metallic: number;
+        protected _metallic: Nullable<number>;
 
         /**
          * Specifies the roughness scalar of the metallic/roughness workflow.
          * Can also be used to scale the roughness values of the metallic texture.
          */
-        protected _roughness: number;
+        protected _roughness: Nullable<number>;
 
         /**
          * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.

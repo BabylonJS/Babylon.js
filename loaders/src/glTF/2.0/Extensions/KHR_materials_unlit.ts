@@ -6,23 +6,40 @@ module BABYLON.GLTF2.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
      */
-    export class KHR_materials_unlit extends GLTFLoaderExtension {
+    export class KHR_materials_unlit implements IGLTFLoaderExtension {
+        /** The name of this extension. */
         public readonly name = NAME;
 
-        protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-            return this._loadExtensionAsync<{}>(context, material, () => {
-                return this._loadUnlitPropertiesAsync(context, material, babylonMaterial as PBRMaterial);
+        /** Defines whether this extension is enabled. */
+        public enabled = true;
+
+        private _loader: GLTFLoader;
+
+        /** @hidden */
+        constructor(loader: GLTFLoader) {
+            this._loader = loader;
+        }
+
+        /** @hidden */
+        public dispose() {
+            delete this._loader;
+        }
+
+        /** @hidden */
+        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+            return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
+                return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
             });
         }
 
-        private _loadUnlitPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
-            const promises = new Array<Promise<void>>();
+        private _loadUnlitPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Promise<void> {
+            if (!(babylonMaterial instanceof PBRMaterial)) {
+                throw new Error(`${context}: Material type not supported`);
+            }
+
+            const promises = new Array<Promise<any>>();
 
             babylonMaterial.unlit = true;
-
-            // Ensure metallic workflow
-            babylonMaterial.metallic = 1;
-            babylonMaterial.roughness = 1;
 
             const properties = material.pbrMetallicRoughness;
             if (properties) {
@@ -35,8 +52,9 @@ module BABYLON.GLTF2.Extensions {
                 }
 
                 if (properties.baseColorTexture) {
-                    promises.push(this._loader._loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
+                    promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
                         babylonMaterial.albedoTexture = texture;
+                        return Promise.resolve();
                     }));
                 }
             }
@@ -46,11 +64,11 @@ module BABYLON.GLTF2.Extensions {
                 babylonMaterial.twoSidedLighting = true;
             }
 
-            this._loader._loadMaterialAlphaProperties(context, material, babylonMaterial);
+            this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
 
             return Promise.all(promises).then(() => {});
         }
     }
 
-    GLTFLoader._Register(NAME, loader => new KHR_materials_unlit(loader));
+    GLTFLoader.RegisterExtension(NAME, loader => new KHR_materials_unlit(loader));
 }
