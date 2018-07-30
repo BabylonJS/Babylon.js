@@ -91,6 +91,7 @@
 - Added ACES ToneMapping to the image processing to help getting more parity with other engines ([sebavan](http://www.github.com/sebavan))
 - Added Image Processing to the particle system to allow consistency in one pass forward rendering scenes ([sebavan](http://www.github.com/sebavan))
 - Added ignoreChildren field to bounding box to save performance when using heavily nested meshes ([TrevorDev](https://github.com/TrevorDev))
+- Add uniform scaling drag support to scale gizmo ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
