@@ -9,6 +9,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var WoodProceduralTexture = /** @class */ (function (_super) {
@@ -46,6 +52,32 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Serializes this wood procedural texture
+         * @returns a serialized wood procedural texture object
+         */
+        WoodProceduralTexture.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+            serializationObject.customType = "BABYLON.WoodProceduralTexture";
+            return serializationObject;
+        };
+        /**
+         * Creates a Wood Procedural Texture from parsed wood procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing wood procedural texture information
+         * @returns a parsed Wood Procedural Texture
+         */
+        WoodProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = BABYLON.SerializationHelper.Parse(function () { return new WoodProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+            return texture;
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], WoodProceduralTexture.prototype, "ampScale", null);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WoodProceduralTexture.prototype, "woodColor", null);
         return WoodProceduralTexture;
     }(BABYLON.ProceduralTexture));
     BABYLON.WoodProceduralTexture = WoodProceduralTexture;

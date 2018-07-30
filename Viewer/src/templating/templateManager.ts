@@ -80,8 +80,9 @@ export class TemplateManager {
             // register the observers
             //template.onLoaded.add(() => {
             let addToParent = () => {
-                let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
-                template.appendTo(containingElement);
+                let lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
+                let containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
+                template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
             }
 
@@ -272,6 +273,10 @@ export class Template {
      */
     public onEventTriggered: Observable<EventCallback>;
 
+    public onParamsUpdated: Observable<Template>;
+
+    public onHTMLRendered: Observable<Template>;
+
     /**
      * is the template loaded?
      */
@@ -309,6 +314,8 @@ export class Template {
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
         this.onEventTriggered = new Observable<EventCallback>();
+        this.onParamsUpdated = new Observable<Template>();
+        this.onHTMLRendered = new Observable<Template>();
 
         this.loadRequests = [];
 
@@ -373,6 +380,10 @@ export class Template {
         }
     }
 
+    public redraw() {
+        this.updateParams({});
+    }
+
     /**
      * Get the template'S configuration
      */
@@ -432,6 +443,9 @@ export class Template {
         } else {
             this.parent.insertAdjacentHTML("beforeend", this._rawHtml);
         }
+
+        this.onHTMLRendered.notifyObservers(this);
+
         // appended only one frame after.
         setTimeout(() => {
             this._registerEvents();
@@ -530,7 +544,7 @@ export class Template {
     private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject('No templateConfig provided');
-        } else if (templateConfig.html !== undefined) {
+        } else if (templateConfig.html && !templateConfig.location) {
             return Promise.resolve(templateConfig.html);
         } else {
             let location = this._getTemplateLocation(templateConfig);
@@ -592,10 +606,16 @@ export class Template {
                         // strict null checl is working incorrectly, must override:
                         let event = this._configuration.events[eventName] || {};
                         selectorsArray.filter(selector => event[selector]).forEach(selector => {
-                            if (selector && selector.indexOf('#') !== 0) {
-                                selector = '#' + selector;
-                            }
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                            if (!htmlElement) {
+                                // backcompat, fallback to id
+                                if (selector && selector.indexOf('#') !== 0) {
+                                    selector = '#' + selector;
+                                }
+                                try {
+                                    htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                                } catch (e) { }
+                            }
                             if (htmlElement) {
                                 let binding = functionToFire.bind(this, selector);
                                 htmlElement.addEventListener(eventName, binding, false);

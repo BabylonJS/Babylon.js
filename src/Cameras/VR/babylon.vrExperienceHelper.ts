@@ -129,6 +129,7 @@ module BABYLON {
             this._laserPointer.rotation.x = Math.PI / 2;
             this._laserPointer.position.z = -0.5;
             this._laserPointer.isVisible = false;
+            this._laserPointer.isPickable = false;
 
             if(!webVRController.mesh){
                 // Create an empty mesh that is used prior to loading the high quality model
@@ -166,7 +167,7 @@ module BABYLON {
 
         public _setLaserPointerParent(mesh:AbstractMesh){
             var makeNotPick = (root: AbstractMesh) => {
-                root.name += " laserPointer";
+                root.isPickable = false;
                 root.getChildMeshes().forEach((c) => {
                     makeNotPick(c);
                 });
@@ -506,7 +507,9 @@ module BABYLON {
          * @param scene The scene the VRExperienceHelper belongs to.
          * @param webVROptions Options to modify the vr experience helper's behavior.
          */
-        constructor(scene: Scene, /** Options to modify the vr experience helper's behavior. */public webVROptions: VRExperienceHelperOptions = {}) {
+        constructor(scene: Scene, 
+            /** Options to modify the vr experience helper's behavior. */
+            public webVROptions: VRExperienceHelperOptions = {}) {
             this._scene = scene;
             this._canvas = scene.getEngine().getRenderingCanvas();
 
@@ -619,6 +622,7 @@ module BABYLON {
             document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
             document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
             document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
+            (<any>document).onmsfullscreenchange = this._onFullscreenChange;
 
             // Display vr button when headset is connected
             if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
@@ -722,6 +726,8 @@ module BABYLON {
                 this._fullscreenVRpresenting = document.webkitIsFullScreen;
             } else if (document.msIsFullScreen !== undefined) {
                 this._fullscreenVRpresenting = document.msIsFullScreen;
+            } else if ((<any>document).msFullscreenElement !== undefined) {
+                this._fullscreenVRpresenting = (<any>document).msFullscreenElement;
             }
             if (!this._fullscreenVRpresenting && this._canvas) {
                 this.exitVR();
@@ -901,7 +907,7 @@ module BABYLON {
         }
 
         /**
-         * Enables controllers and user interactions suck as selecting and object or clicking on an object.
+         * Enables controllers and user interactions such as selecting and object or clicking on an object.
          */
         public enableInteractions() {
             if (!this._interactionsEnabled) {
@@ -916,7 +922,7 @@ module BABYLON {
                 }
 
                 this.raySelectionPredicate = (mesh) => {
-                    return mesh.isVisible;
+                    return mesh.isVisible && mesh.isPickable;
                 }
 
                 this.meshSelectionPredicate = (mesh) => {
@@ -926,8 +932,7 @@ module BABYLON {
                 this._raySelectionPredicate = (mesh) => {
                     if (this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
                         && mesh.name.indexOf("teleportationTarget") === -1
-                        && mesh.name.indexOf("torusTeleportation") === -1
-                        && mesh.name.indexOf("laserPointer") === -1)) {
+                        && mesh.name.indexOf("torusTeleportation") === -1)) {
                         return this.raySelectionPredicate(mesh);
                     }
                     return false;
@@ -935,6 +940,10 @@ module BABYLON {
 
                 this._interactionsEnabled = true;
             }
+        }
+
+        private get _noControllerIsActive(){
+            return !(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)
         }
 
         private beforeRender = () => {
@@ -946,7 +955,7 @@ module BABYLON {
                 this._castRayAndSelectObject(this.rightController);
             }
 
-            if(!(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)){
+            if(this._noControllerIsActive){
                 this._castRayAndSelectObject(this._cameraGazer);
             }else{
                 this._cameraGazer._gazeTracker.isVisible = false;
@@ -1139,12 +1148,16 @@ module BABYLON {
                     });
                 }
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
-                    if (!controller._pointerDownOnMeshAsked) {
+                    var gazer:VRExperienceHelperGazer = controller;
+                    if(this._noControllerIsActive){
+                        gazer = this._cameraGazer;
+                    }
+                    if (!gazer._pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
-                            controller._selectionPointerDown();
+                            gazer._selectionPointerDown();
                         }
                     } else if (stateObject.value < this._padSensibilityDown) {
-                        controller._selectionPointerUp();
+                        gazer._selectionPointerUp();
                     }
                 });
             }
@@ -1786,6 +1799,7 @@ module BABYLON {
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+            (<any>document).onmsfullscreenchange = null;
 
             this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChanged);
             this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);

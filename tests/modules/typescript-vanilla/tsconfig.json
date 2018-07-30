@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "none",
+        "declaration": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "strictNullChecks": true,
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": true,
+        "sourceMap": true,
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise",
+            "es2015.collection",
+            "es2015.iterable"
+        ],
+        "baseUrl": "./src/",
+        "rootDir": "./src/",
+        "outDir": "../build/",
+        "paths": {
+            "babylonjs-gui": [
+                "../../../../dist/preview release/gui/babylon.gui.modules.d.ts"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}

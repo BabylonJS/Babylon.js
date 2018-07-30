@@ -4,22 +4,48 @@
     #else
         #ifdef PBR
             #ifdef SPOTLIGHT{X}
-                info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
-            #endif
-            #ifdef HEMILIGHT{X}
+                spotInfo = computeSpotLightingInfo(light{X}.vLightData);
+
+                #ifdef LIGHT_FALLOFF_GLTF{X}
+                    spotInfo.attenuation = computeDistanceLightFalloff_GLTF(spotInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
+                    spotInfo.attenuation *= computeDirectionalLightFalloff_GLTF(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
+                #elif defined(LIGHT_FALLOFF_PHYSICAL{X})
+                    spotInfo.attenuation = computeDistanceLightFalloff_Physical(spotInfo.lightDistanceSquared);
+                    spotInfo.attenuation *= computeDirectionalLightFalloff_Physical(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightDirection.w);
+                #elif defined(LIGHT_FALLOFF_STANDARD{X})
+                    spotInfo.attenuation = computeDistanceLightFalloff_Standard(spotInfo.lightOffset, light{X}.vLightFalloff.x);
+                    spotInfo.attenuation *= computeDirectionalLightFalloff_Standard(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightDirection.w, light{X}.vLightData.w);
+                #else
+                    spotInfo.attenuation = computeDistanceLightFalloff(spotInfo.lightOffset, spotInfo.lightDistanceSquared, light{X}.vLightFalloff.x, light{X}.vLightFalloff.y);
+                    spotInfo.attenuation *= computeDirectionalLightFalloff(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightDirection.w, light{X}.vLightData.w, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
+                #endif
+
+                info = computeSpotLighting(spotInfo, viewDirectionW, normalW, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+            #elif defined(POINTLIGHT{X})
+                pointInfo = computePointLightingInfo(light{X}.vLightData);
+
+                #ifdef LIGHT_FALLOFF_GLTF{X}
+                    pointInfo.attenuation = computeDistanceLightFalloff_GLTF(pointInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
+                #elif defined(LIGHT_FALLOFF_PHYSICAL{X})
+                    pointInfo.attenuation = computeDistanceLightFalloff_Physical(pointInfo.lightDistanceSquared);
+                #elif defined(LIGHT_FALLOFF_STANDARD{X})
+                    pointInfo.attenuation = computeDistanceLightFalloff_Standard(pointInfo.lightOffset, light{X}.vLightFalloff.x);
+                #else
+                    pointInfo.attenuation = computeDistanceLightFalloff(pointInfo.lightOffset, pointInfo.lightDistanceSquared, light{X}.vLightFalloff.x, light{X}.vLightFalloff.y);
+                #endif
+                
+                info = computePointLighting(pointInfo, viewDirectionW, normalW, light{X}.vLightDiffuse.rgb, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+            #elif defined(HEMILIGHT{X})
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
-            #endif
-            #if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-                info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+            #elif defined(DIRLIGHT{X})
+                info = computeDirectionalLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
             #endif
         #else
             #ifdef SPOTLIGHT{X}
                 info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
-            #endif
-            #ifdef HEMILIGHT{X}
+            #elif defined(HEMILIGHT{X})
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, glossiness);
-            #endif
-            #if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
+            #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
             #endif
         #endif

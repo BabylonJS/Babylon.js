@@ -869,9 +869,9 @@
          */
         constructor(
             /** defines the first coordinate */
-            public x: number, 
+            public x: number = 0, 
             /** defines the second coordinate */
-            public y: number) {
+            public y: number = 0) {
         }
 
         /**
@@ -1092,7 +1092,7 @@
         }
 
         /**
-         * Divides the current Vector3 coordinates by the given ones
+         * Divides the current Vector2 coordinates by the given ones
          * @param otherVector defines the other vector
          * @returns the current updated Vector2
          */
@@ -1171,6 +1171,22 @@
          */
         public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
+        }
+        
+        /**
+         * Gets a new Vector2 from current Vector2 floored values
+         * @returns a new Vector2 
+         */
+        public floor(): Vector2 {
+            return new Vector2(Math.floor(this.x), Math.floor(this.y));
+        }
+        
+        /**
+         * Gets a new Vector2 from current Vector2 floored values
+         * @returns a new Vector2 
+         */
+        public fract(): Vector2 {
+            return new Vector2(this.x-Math.floor(this.x), this.y-Math.floor(this.y));
         }
 
         // Properties
@@ -1496,15 +1512,15 @@
             /**
              * Defines the first coordinates (on X axis)
              */
-            public x: number,
+            public x: number = 0,
             /**
              * Defines the second coordinates (on Y axis)
              */
-            public y: number,
+            public y: number = 0,
             /**
              * Defines the third coordinates (on Z axis)
              */
-            public z: number
+            public z: number = 0
         ) {
         }
 
@@ -1867,6 +1883,22 @@
             }
 
             return false;
+        }     
+                
+        /**
+         * Gets a new Vector3 from current Vector3 floored values
+         * @returns a new Vector3 
+         */
+        public floor(): Vector3 {
+            return new Vector3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
+        }
+        
+        /**
+         * Gets a new Vector3 from current Vector3 floored values
+         * @returns a new Vector3
+         */
+        public fract(): Vector3 {
+            return new Vector3(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z));
         }
 
         // Properties
@@ -2093,6 +2125,13 @@
          */
         public static Up(): Vector3 {
             return new Vector3(0.0, 1.0, 0.0);
+        }
+        /**
+         * Returns a new Vector3 set to (0.0, -1.0, 0.0)
+         * @returns a new down Vector3
+         */
+        public static Down(): Vector3 {
+            return new Vector3(0.0, -1.0, 0.0);
         }
         /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
@@ -2879,6 +2918,22 @@
             if (other.z > this.z) this.z = other.z;
             if (other.w > this.w) this.w = other.w;
             return this;
+        }
+        
+        /**
+         * Gets a new Vector4 from current Vector4 floored values
+         * @returns a new Vector4 
+         */
+        public floor(): Vector4 {
+            return new Vector4(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+        }
+        
+        /**
+         * Gets a new Vector4 from current Vector3 floored values
+         * @returns a new Vector4
+         */
+        public fract(): Vector4 {
+            return new Vector4(this.x-Math.floor(this.x), this.y-Math.floor(this.y), this.z-Math.floor(this.z), this.w-Math.floor(this.w));
         }
 
         // Properties
@@ -6656,6 +6711,7 @@
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
     export class Tmp {
         public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
+        public static Color4: Color4[] = [new Color4(0, 0, 0, 0), new Color4(0, 0, 0, 0)];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
         Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough

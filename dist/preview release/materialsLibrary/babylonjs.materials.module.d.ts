@@ -9,6 +9,7 @@ declare module BABYLON {
         private _renderId;
         private _activeLight;
         constructor(name: string, scene: Scene);
+        shadowColor: Color3;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -32,6 +33,7 @@ declare module BABYLON {
         bottomColor: Color3;
         bottomColorAlpha: number;
         offset: number;
+        scale: number;
         smoothness: number;
         disableLighting: boolean;
         private _scaledDiffuse;
@@ -237,7 +239,7 @@ declare module BABYLON {
         getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
-        private _createRenderTargets(scene, renderTargetSize);
+        private _createRenderTargets;
         getAnimatables(): IAnimatable[];
         getActiveTextures(): BaseTexture[];
         hasTexture(texture: BaseTexture): boolean;

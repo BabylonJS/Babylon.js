@@ -25,7 +25,7 @@
          */
         public pickedPoint: Nullable<Vector3> = null;
         /**
-         * The mesh corrisponding the the pick collision
+         * The mesh corresponding the the pick collision
          */
         public pickedMesh: Nullable<AbstractMesh> = null;
         /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
@@ -48,10 +48,10 @@
         public ray: Nullable<Ray> = null;
 
         /**
-         * Gets the normal corrispodning to the face the pick collided with
+         * Gets the normal correspodning to the face the pick collided with
          * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
          * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal corrispodning to the face the pick collided with
+         * @returns The normal correspodning to the face the pick collided with
          */
         public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
             if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -92,10 +92,24 @@
             }
 
             if (useWorldCoordinates) {
-                result = Vector3.TransformNormal(result, this.pickedMesh.getWorldMatrix());
+                let wm = this.pickedMesh.getWorldMatrix();
+
+                if (this.pickedMesh.nonUniformScaling) {
+                    Tmp.Matrix[0].copyFrom(wm);
+                    wm = Tmp.Matrix[0];
+                    wm.setTranslationFromFloats(0, 0, 0);
+                    wm.invert();
+                    wm.transposeToRef(Tmp.Matrix[1]);
+
+                    wm = Tmp.Matrix[1];
+                }
+
+                result = Vector3.TransformNormal(result, wm);
             }
 
-            return Vector3.Normalize(result);
+            result.normalize();
+
+            return result;
         }
 
         /**

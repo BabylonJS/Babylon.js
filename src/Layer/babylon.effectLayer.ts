@@ -24,6 +24,11 @@
          * The camera attached to the layer.
          */
         camera: Nullable<Camera>;
+
+        /**
+         * The rendering group to draw the layer in.
+         */
+        renderingGroupId: number;
     }
 
     /**
@@ -80,6 +85,14 @@
         }
 
         /**
+         * Gets the rendering group id the layer should render in.
+         */
+        @serialize()
+        public get renderingGroupId(): number {
+            return this._effectLayerOptions.renderingGroupId;
+        }
+
+        /**
          * An event triggered when the effect layer has been disposed.
          */
         public onDisposeObservable = new Observable<EffectLayer>();
@@ -116,7 +129,13 @@
             this.name = name;
 
             this._scene = scene || Engine.LastCreatedScene;
-            this._engine = scene.getEngine();
+            let component = this._scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
+            if (!component) {
+                component = new EffectLayerSceneComponent(this._scene);
+                this._scene._addComponent(component);
+            }
+
+            this._engine = this._scene.getEngine();
             this._maxSize = this._engine.getCaps().maxTextureSize;
             this._scene.effectLayers.push(this);
 
@@ -191,6 +210,7 @@
                 mainTextureRatio: 0.5,
                 alphaBlendingMode: Engine.ALPHA_COMBINE,
                 camera: null,
+                renderingGroupId: -1,
                 ...options,
             };
 
@@ -483,7 +503,10 @@
          * @returns true if the mesh will be used
          */
         public hasMesh(mesh: AbstractMesh): boolean {
-            return true;
+            if (this.renderingGroupId === -1 || mesh.renderingGroupId === this.renderingGroupId) {
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -595,7 +618,7 @@
                 mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
             } else {
-                // Need to reset refresh rate of the shadowMap
+                // Need to reset refresh rate of the main map
                 this._mainTexture.resetRefreshCounter();
             }
         }
@@ -686,7 +709,7 @@
          */
         public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
             var effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
-            
+
             return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
         }
     }

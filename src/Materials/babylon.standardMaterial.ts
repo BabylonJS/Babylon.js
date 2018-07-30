@@ -80,6 +80,7 @@ module BABYLON {
         public VIGNETTEBLENDMODEMULTIPLY = false;
         public VIGNETTEBLENDMODEOPAQUE = false;
         public TONEMAPPING = false;
+        public TONEMAPPING_ACES = false;
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
@@ -370,9 +371,11 @@ module BABYLON {
             }
 
             // Attaches observer.
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
-                this._markAllSubMeshesAsImageProcessingDirty();
-            });
+            if (this._imageProcessingConfiguration) {
+                this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(conf => {
+                    this._markAllSubMeshesAsImageProcessingDirty();
+                });
+            }
         }
 
         /**
@@ -542,7 +545,7 @@ module BABYLON {
          */
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
             if (subMesh.effect && this.isFrozen) {
-                if (this._wasPreviouslyReady && subMesh.effect) {
+                if (this._wasPreviouslyReady) {
                     return true;
                 }
             }
@@ -735,7 +738,7 @@ module BABYLON {
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
             }
 
-            if (defines._areImageProcessingDirty) {
+            if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
                 if (!this._imageProcessingConfiguration.isReady()) {
                     return false;
                 }
@@ -890,8 +893,10 @@ module BABYLON {
 
                 var uniformBuffers = ["Material", "Scene"];
 
-                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
-                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+                if (ImageProcessingConfiguration) {
+                    ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                    ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+                }
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -1223,7 +1228,7 @@ module BABYLON {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
                 // image processing
-                if (!this._imageProcessingConfiguration.applyByPostProcess) {
+                if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
                     this._imageProcessingConfiguration.bind(this._activeEffect);
                 }
             }

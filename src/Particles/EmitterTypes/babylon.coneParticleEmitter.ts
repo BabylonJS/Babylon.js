@@ -10,6 +10,21 @@ module BABYLON {
         private _height: number;
 
         /**
+         * Gets or sets a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
+         */
+        public radiusRange = 1;        
+
+        /**
+         * Gets or sets a value indicating where on the height the start position should be picked (1 = everywhere, 0 = only surface)
+         */
+        public heightRange = 1;   
+
+        /**
+         * Gets or sets a value indicating if all the particles should be emitted from the spawn point only (the base of the cone)
+         */
+        public emitFromSpawnPointOnly = false;
+
+        /**
          * Gets or sets the radius of the emission cone
          */
         public get radius(): number {
@@ -57,14 +72,13 @@ module BABYLON {
 
         /**
          * Called by the particle System when the direction is computed for the created particle.
-         * @param emitPower is the power of the particle (speed)
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
-            if (this._angle === 0) {
-                Vector3.TransformNormalFromFloatsToRef(0, emitPower, 0, worldMatrix, directionToUpdate);
+        public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+            if (Math.abs(Math.cos(this._angle)) === 1.0) {
+                Vector3.TransformNormalFromFloatsToRef(0, 1.0, 0, worldMatrix, directionToUpdate);
             }
             else {
                 // measure the direction Vector from the emitter to the particle.
@@ -77,7 +91,7 @@ module BABYLON {
                 direction.z += randZ;
                 direction.normalize();
 
-                Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+                Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
             }
         }
 
@@ -89,10 +103,16 @@ module BABYLON {
          */
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var s = Scalar.RandomRange(0, Math.PI * 2);
-            var h = Scalar.RandomRange(0, 1);
-            // Better distribution in a cone at normal angles.
-            h = 1 - h * h;
-            var radius = Scalar.RandomRange(0, this._radius);
+            var h: number;
+            
+            if (!this.emitFromSpawnPointOnly) {
+                h = Scalar.RandomRange(0, this.heightRange);
+                // Better distribution in a cone at normal angles.
+                h = 1 - h * h;
+            } else {
+                h = 0.0001;
+            }
+            var radius = this._radius - Scalar.RandomRange(0, this._radius * this.radiusRange);
             radius = radius * h;
 
             var randX = radius * Math.sin(s);
@@ -115,13 +135,13 @@ module BABYLON {
         }        
         
         /**
-         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {
-            effect.setFloat("radius", this._radius);
+            effect.setFloat2("radius", this._radius, this.radiusRange);
             effect.setFloat("coneAngle", this._angle);
-            effect.setFloat("height", this._height);
+            effect.setFloat2("height", this._height, this.heightRange);
             effect.setFloat("directionRandomizer", this.directionRandomizer);
         }
 
@@ -130,15 +150,21 @@ module BABYLON {
          * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
-            return "#define CONEEMITTER"
+            let defines = "#define CONEEMITTER";
+
+            if (this.emitFromSpawnPointOnly) {
+                defines += "\n#define CONEEMITTERSPAWNPOINT"
+            }
+
+            return defines;
         }     
         
         /**
-         * Returns the string "BoxEmitter"
+         * Returns the string "ConeParticleEmitter"
          * @returns a string containing the class name
          */
         public getClassName(): string {
-            return "ConeEmitter";
+            return "ConeParticleEmitter";
         }  
         
         /**

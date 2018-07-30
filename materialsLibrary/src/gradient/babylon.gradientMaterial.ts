@@ -90,6 +90,9 @@ module BABYLON {
         public offset = 0;
 
         @serialize()
+        public scale = 1.0;        
+
+        @serialize()
         public smoothness = 1.0;
 
         @serialize()
@@ -195,7 +198,7 @@ module BABYLON {
                     "vDiffuseInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix",
-                    "topColor", "bottomColor", "offset", "smoothness"
+                    "topColor", "bottomColor", "offset", "smoothness", "scale"
                 ];
                 var samplers = ["diffuseSampler"];
                 var uniformBuffers = new Array<string>();
@@ -282,6 +285,7 @@ module BABYLON {
             this._activeEffect.setColor4("topColor", this.topColor, this.topColorAlpha);
             this._activeEffect.setColor4("bottomColor", this.bottomColor, this.bottomColorAlpha);
             this._activeEffect.setFloat("offset", this.offset);
+            this._activeEffect.setFloat("scale", this.scale);
             this._activeEffect.setFloat("smoothness", this.smoothness);
 
             this._afterBind(mesh, this._activeEffect);

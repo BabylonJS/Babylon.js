@@ -15,31 +15,36 @@ module BABYLON {
         // force data to come in as an ArrayBuffer
         // we'll convert to string if it looks like it's an ASCII .stl
         public extensions: ISceneLoaderPluginExtensions = {
-            ".stl": {isBinary: true},
+            ".stl": { isBinary: true },
         };
 
-        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
+        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
             var matches;
 
-            if (this.isBinary(data)) {
-                // binary .stl
-                var babylonMesh = new Mesh("stlmesh", scene);
-                this.parseBinary(babylonMesh, data);
-                if (meshes) {
-                    meshes.push(babylonMesh);
+            if (typeof data !== "string") {
+
+                if (this.isBinary(data)) {
+                    // binary .stl
+                    var babylonMesh = new Mesh("stlmesh", scene);
+                    this.parseBinary(babylonMesh, data);
+                    if (meshes) {
+                        meshes.push(babylonMesh);
+                    }
+                    return true;
                 }
-                return true;
+
+                // ASCII .stl
+
+                // convert to string
+                var array_buffer = new Uint8Array(data);
+                var str = '';
+                for (var i = 0; i < data.byteLength; i++) {
+                    str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
+                }
+                data = str;
             }
 
-            // ASCII .stl
-
-            // convert to string
-            var array_buffer = new Uint8Array(data);
-            var str = '';
-            for (var i = 0; i < data.byteLength; i++) {
-                str += String.fromCharCode( array_buffer[ i ] ); // implicitly assumes little-endian
-            }
-            data = str;
+            //if arrived here, data is a string, containing the STLA data.
 
             while (matches = this.solidPattern.exec(data)) {
                 var meshName = matches[1];
@@ -93,13 +98,13 @@ module BABYLON {
             return container;
         }
 
-        private isBinary (data: any) {
+        private isBinary(data: any) {
 
             // check if file size is correct for binary stl
             var faceSize, nFaces, reader;
             reader = new DataView(data);
             faceSize = (32 / 8 * 3) + ((32 / 8 * 3) * 3) + (16 / 8);
-            nFaces = reader.getUint32( 80, true );
+            nFaces = reader.getUint32(80, true);
 
             if (80 + (32 / 8) + (nFaces * faceSize) === reader.byteLength) {
                 return true;
@@ -107,8 +112,8 @@ module BABYLON {
 
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
-            for (var index=0; index < fileLength; index++) {
-                if (reader.getUint8( index ) > 127) {
+            for (var index = 0; index < fileLength; index++) {
+                if (reader.getUint8(index) > 127) {
                     return true;
                 }
             }
@@ -134,9 +139,9 @@ module BABYLON {
             for (var face = 0; face < faces; face++) {
 
                 var start = dataOffset + face * faceLength;
-                var normalX = reader.getFloat32( start, true );
-                var normalY = reader.getFloat32( start + 4, true );
-                var normalZ = reader.getFloat32( start + 8, true );
+                var normalX = reader.getFloat32(start, true);
+                var normalY = reader.getFloat32(start + 4, true);
+                var normalZ = reader.getFloat32(start + 8, true);
 
 
                 for (var i = 1; i <= 3; i++) {
@@ -144,9 +149,9 @@ module BABYLON {
                     var vertexstart = start + i * 12;
 
                     // ordering is intentional to match ascii import
-                    positions[offset] = reader.getFloat32( vertexstart, true );
-                    positions[offset + 2] = reader.getFloat32( vertexstart + 4, true );
-                    positions[offset + 1] = reader.getFloat32( vertexstart + 8, true );
+                    positions[offset] = reader.getFloat32(vertexstart, true);
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
 
                     normals[offset] = normalX;
                     normals[offset + 2] = normalY;

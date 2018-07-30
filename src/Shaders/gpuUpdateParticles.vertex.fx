@@ -5,17 +5,19 @@
 uniform float currentCount;
 uniform float timeDelta;
 uniform float stopFactor;
-uniform vec3 generalRandoms;
 uniform mat4 emitterWM;
 uniform vec2 lifeTime;
 uniform vec2 emitPower;
 uniform vec2 sizeRange;
 uniform vec4 scaleRange;
+#ifndef COLORGRADIENTS
 uniform vec4 color1;
 uniform vec4 color2;
+#endif
 uniform vec3 gravity;
 uniform sampler2D randomSampler;
-uniform vec2 angleRange;
+uniform sampler2D randomSampler2;
+uniform vec4 angleRange;
 
 #ifdef BOXEMITTER
 uniform vec3 direction1;
@@ -24,20 +26,32 @@ uniform vec3 minEmitBox;
 uniform vec3 maxEmitBox;
 #endif
 
+#ifdef POINTEMITTER
+uniform vec3 direction1;
+uniform vec3 direction2;
+#endif
+
+#ifdef HEMISPHERICEMITTER
+uniform float radius;
+uniform float radiusRange;
+uniform float directionRandomizer;
+#endif
+
 #ifdef SPHEREEMITTER
 uniform float radius;
-  #ifdef DIRECTEDSPHEREEMITTER
+uniform float radiusRange;
+#ifdef DIRECTEDSPHEREEMITTER
   uniform vec3 direction1;
   uniform vec3 direction2;
-  #else
+#else
   uniform float directionRandomizer;
-  #endif
+#endif
 #endif
 
 #ifdef CONEEMITTER
-uniform float radius;
+uniform vec2 radius;
 uniform float coneAngle;
-uniform float height;
+uniform vec2 height;
 uniform float directionRandomizer;
 #endif
 
@@ -45,30 +59,75 @@ uniform float directionRandomizer;
 in vec3 position;
 in float age;
 in float life;
-in float seed;
+in vec4 seed;
 in vec3 size;
+#ifndef COLORGRADIENTS
 in vec4 color;
+#endif
 in vec3 direction;
+#ifndef BILLBOARD
+in vec3 initialDirection;
+#endif
+#ifdef ANGULARSPEEDGRADIENTS
+in float angle;
+#else
 in vec2 angle;
+#endif
+#ifdef ANIMATESHEET
+in float cellIndex;
+#endif
 
 // Output
 out vec3 outPosition;
 out float outAge;
 out float outLife;
-out float outSeed;
+out vec4 outSeed;
 out vec3 outSize;
+#ifndef COLORGRADIENTS
 out vec4 outColor;
+#endif
 out vec3 outDirection;
+#ifndef BILLBOARD
+out vec3 outInitialDirection;
+#endif
+#ifdef ANGULARSPEEDGRADIENTS
+out float outAngle;
+#else
 out vec2 outAngle;
+#endif
+#ifdef ANIMATESHEET
+out float outCellIndex;
+#endif
+
+#ifdef SIZEGRADIENTS
+uniform sampler2D sizeGradientSampler;
+#endif 
+
+#ifdef ANGULARSPEEDGRADIENTS
+uniform sampler2D angularSpeedGradientSampler;
+#endif 
+
+#ifdef VELOCITYGRADIENTS
+uniform sampler2D velocityGradientSampler;
+#endif
+
+#ifdef NOISE
+uniform vec3 noiseStrength;
+uniform sampler2D noiseSampler;
+#endif
+
+#ifdef ANIMATESHEET
+uniform vec3 cellInfos;
+#endif
+
 
 vec3 getRandomVec3(float offset) {
-  return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
+  return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
 }
 
 vec4 getRandomVec4(float offset) {
   return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0));
 }
-
 
 void main() {
   if (age >= life) {
@@ -77,17 +136,25 @@ void main() {
       outAge = life;
       outLife = life;
       outSeed = seed;
+#ifndef COLORGRADIENTS      
       outColor = vec4(0.,0.,0.,0.);
+#endif
       outSize = vec3(0., 0., 0.);
+#ifndef BILLBOARD        
+      outInitialDirection = initialDirection;
+#endif      
       outDirection = direction;
       outAngle = angle;
+#ifdef ANIMATESHEET      
+      outCellIndex = cellIndex;
+#endif
       return;
     }
     vec3 position;
     vec3 direction;
 
     // Let's get some random values
-    vec4 randoms = getRandomVec4(generalRandoms.x);
+    vec4 randoms = getRandomVec4(seed.x);
 
     // Age and life
     outAge = 0.0;
@@ -97,37 +164,67 @@ void main() {
     outSeed = seed;
 
     // Size
+#ifdef SIZEGRADIENTS    
+    outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
+#else
     outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
+#endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
-    outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a;
+    outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
 
+#ifndef COLORGRADIENTS
     // Color
     outColor = color1 + (color2 - color1) * randoms.b;
+#endif
 
     // Angular speed
+#ifndef ANGULARSPEEDGRADIENTS    
     outAngle.y = angleRange.x + (angleRange.y - angleRange.x) * randoms.a;
-    outAngle.x = 0.;
+    outAngle.x = angleRange.z + (angleRange.w - angleRange.z) * randoms.r;
+#else
+    outAngle = angleRange.z + (angleRange.w - angleRange.z) * randoms.r;
+#endif        
 
     // Position / Direction (based on emitter type)
-#ifdef BOXEMITTER
-    vec3 randoms2 = getRandomVec3(generalRandoms.y);
-    vec3 randoms3 = getRandomVec3(generalRandoms.z);
+#ifdef POINTEMITTER
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    position = vec3(0, 0, 0);
+
+    direction = direction1 + (direction2 - direction1) * randoms3;
+#elif defined(BOXEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
 
     position = minEmitBox + (maxEmitBox - minEmitBox) * randoms2;
 
-    direction = direction1 + (direction2 - direction1) * randoms3;
-#elif defined(SPHEREEMITTER)
-    vec3 randoms2 = getRandomVec3(generalRandoms.y);
-    vec3 randoms3 = getRandomVec3(generalRandoms.z);
+    direction = direction1 + (direction2 - direction1) * randoms3;    
+#elif defined(HEMISPHERICEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
 
     // Position on the sphere surface
     float phi = 2.0 * PI * randoms2.x;
-    float theta = PI * randoms2.y;
+    float theta = acos(2.0 * randoms2.y - 1.0);
     float randX = cos(phi) * sin(theta);
     float randY = cos(theta);
     float randZ = sin(phi) * sin(theta);
 
-    position = (radius * randoms2.z) * vec3(randX, randY, randZ);
+    position = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, abs(randY), randZ);
+    direction = position + directionRandomizer * randoms3;    
+#elif defined(SPHEREEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Position on the sphere surface
+    float phi = 2.0 * PI * randoms2.x;
+    float theta = acos(2.0 * randoms2.y - 1.0);
+    float randX = cos(phi) * sin(theta);
+    float randY = cos(theta);
+    float randZ = sin(phi) * sin(theta);
+
+    position = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
       direction = direction1 + (direction2 - direction1) * randoms3;
@@ -136,27 +233,33 @@ void main() {
       direction = position + directionRandomizer * randoms3;
     #endif
 #elif defined(CONEEMITTER)
-    vec3 randoms2 = getRandomVec3(generalRandoms.y);
+    vec3 randoms2 = getRandomVec3(seed.y);
 
     float s = 2.0 * PI * randoms2.x;
-    float h = randoms2.y;
-    
-    // Better distribution in a cone at normal angles.
-    h = 1. - h * h;
-    float lRadius = radius * randoms2.z;
+
+    #ifdef CONEEMITTERSPAWNPOINT
+        float h = 0.00001;
+    #else
+        float h = randoms2.y * height.y;
+        
+        // Better distribution in a cone at normal angles.
+        h = 1. - h * h;        
+    #endif
+
+    float lRadius = radius.x - radius.x * randoms2.z * radius.y;
     lRadius = lRadius * h;
 
     float randX = lRadius * sin(s);
     float randZ = lRadius * cos(s);
-    float randY = h  * height;
+    float randY = h  * height.x;
 
     position = vec3(randX, randY, randZ); 
 
     // Direction
-    if (coneAngle == 0.) {
+    if (abs(cos(coneAngle)) == 1.0) {
         direction = vec3(0., 1.0, 0.);
     } else {
-        vec3 randoms3 = getRandomVec3(generalRandoms.z);
+        vec3 randoms3 = getRandomVec3(seed.z);
         direction = position + directionRandomizer * randoms3;
     }
 #else    
@@ -164,22 +267,73 @@ void main() {
     position = vec3(0., 0., 0.);
 
     // Spread in all directions
-    direction = 2.0 * (getRandomVec3(seed) - vec3(0.5, 0.5, 0.5));
+    direction = 2.0 * (getRandomVec3(seed.w) - vec3(0.5, 0.5, 0.5));
 #endif
 
     float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
     outPosition = (emitterWM * vec4(position, 1.)).xyz;
-    outDirection = (emitterWM * vec4(direction * power, 0.)).xyz;
+    vec3 initial = (emitterWM * vec4(normalize(direction), 0.)).xyz;
+    outDirection = initial * power;
+#ifndef BILLBOARD        
+    outInitialDirection = initial;
+#endif
+#ifdef ANIMATESHEET      
+    outCellIndex = cellInfos.x;
+#endif
 
   } else {   
-    outPosition = position + direction * timeDelta;
+    float directionScale = timeDelta;
+    float ageGradient = age / life;
+
+#ifdef VELOCITYGRADIENTS
+    directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
+#endif
+
+    outPosition = position + direction * directionScale;
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
+#ifndef COLORGRADIENTS    
     outColor = color;
+#endif
+
+#ifdef SIZEGRADIENTS
+	outSize.x = texture(sizeGradientSampler, vec2(ageGradient, 0)).r;
+    outSize.yz = size.yz;
+#else
     outSize = size;
+#endif 
+
+#ifndef BILLBOARD    
+    outInitialDirection = initialDirection;
+#endif
     outDirection = direction + gravity * timeDelta;
+
+#ifdef NOISE
+    vec3 localPosition = outPosition - emitterWM[3].xyz;
+
+    float fetchedR = texture(noiseSampler, vec2(localPosition.y, localPosition.z) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedG = texture(noiseSampler, vec2(localPosition.x + 0.33, localPosition.z + 0.33) * vec2(0.5) + vec2(0.5)).r;
+    float fetchedB = texture(noiseSampler, vec2(localPosition.z - 0.33, localPosition.y - 0.33) * vec2(0.5) + vec2(0.5)).r;
+
+    vec3 force = vec3(2. * fetchedR - 1., 2. * fetchedG - 1., 2. * fetchedB - 1.) * noiseStrength;
+
+    outDirection = outDirection + force * timeDelta;
+#endif    
+
+#ifdef ANGULARSPEEDGRADIENTS
+    float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).r;
+    outAngle = angle + angularSpeed * timeDelta;
+#else
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);
+#endif
+
+#ifdef ANIMATESHEET      
+    float dist = cellInfos.y - cellInfos.x;
+    float ratio = clamp(mod(outAge * cellInfos.z, life) / life, 0., 1.0);
+
+    outCellIndex = float(int(cellInfos.x + ratio * dist));
+#endif
   }
 }

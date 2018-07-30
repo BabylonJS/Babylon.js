@@ -21,5 +21,12 @@
             "g": 0.9607843137254902,
             "b": 0.9607843137254902
         }
+    },
+    "templates": {
+        "navBar": {
+            "params": {
+                "hideHdButton": false
+            }
+        }
     }
 }

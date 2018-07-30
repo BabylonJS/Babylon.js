@@ -43,7 +43,11 @@
             return header;
         }
 
-        public static UploadContent(gl: WebGLRenderingContext, data: Uint8Array): void {
+        /**
+         * Uploads TGA content to a Babylon Texture
+         * @hidden
+         */
+        public static UploadContent(texture: InternalTexture, data: Uint8Array): void {
             // Not enough data to contain header ?
             if (data.length < 19) {
                 Tools.Error("Unable to load TGA file - Not enough data to contain header");
@@ -191,8 +195,8 @@
             var func = '_getImageData' + (use_grey ? 'Grey' : '') + (header.pixel_size) + 'bits';
             var imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, header.width, header.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
-
+            const engine = texture.getEngine();
+            engine._uploadDataToTextureDirectly(texture, imageData);
         }
 
         static _getImageData8bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {

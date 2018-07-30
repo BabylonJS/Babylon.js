@@ -1562,28 +1562,11 @@ module BABYLON.GLTF1 {
             GLTFLoader.Extensions[extension.name] = extension;
         }
 
-        // #region Stubs for IGLTFLoader interface
-        public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
-        public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
-        public compileMaterials = false;
-        public useClipPlane = false;
-        public compileShadowGenerators = false;
-        public transparencyAsCoverage = false;
-        public _normalizeAnimationGroupsToBeginAtZero = true;
-        public preprocessUrlAsync = (url: string) => Promise.resolve(url);
-
-        public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
-        public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
-        public readonly onMaterialLoadedObservable = new Observable<Material>();
-        public readonly onCameraLoadedObservable = new Observable<Camera>();
-        public readonly onCompleteObservable = new Observable<IGLTFLoader>();
-        public readonly onDisposeObservable = new Observable<IGLTFLoader>();
-        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
-
         public state: Nullable<GLTFLoaderState> = null;
 
-        public dispose(): void {}
-        // #endregion
+        public dispose(): void {
+            // do nothing
+        }
 
         private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
@@ -1657,7 +1640,7 @@ module BABYLON.GLTF1 {
         * @param onProgress event that fires when loading progress has occured
         * @returns a promise containg the loaded meshes, particles, skeletons and animations
         */
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return new Promise((resolve, reject) => {
                 this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, skeletons) => {
                     resolve({

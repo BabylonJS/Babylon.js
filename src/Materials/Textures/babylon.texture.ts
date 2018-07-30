@@ -1,39 +1,39 @@
 ﻿module BABYLON {
     export class Texture extends BaseTexture {
         // Constants
-        public static NEAREST_SAMPLINGMODE = 1;
-        public static NEAREST_NEAREST_MIPLINEAR = 1; // nearest is mag = nearest and min = nearest and mip = linear
+        public static NEAREST_SAMPLINGMODE = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        public static NEAREST_NEAREST_MIPLINEAR = Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
 
-        public static BILINEAR_SAMPLINGMODE = 2;
-        public static LINEAR_LINEAR_MIPNEAREST = 2; // Bilinear is mag = linear and min = linear and mip = nearest
+        public static BILINEAR_SAMPLINGMODE = Engine.TEXTURE_BILINEAR_SAMPLINGMODE;
+        public static LINEAR_LINEAR_MIPNEAREST = Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
 
-        public static TRILINEAR_SAMPLINGMODE = 3;
-        public static LINEAR_LINEAR_MIPLINEAR = 3; // Trilinear is mag = linear and min = linear and mip = linear
+        public static TRILINEAR_SAMPLINGMODE = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        public static LINEAR_LINEAR_MIPLINEAR = Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
 
-        public static NEAREST_NEAREST_MIPNEAREST = 4;
-        public static NEAREST_LINEAR_MIPNEAREST = 5;
-        public static NEAREST_LINEAR_MIPLINEAR = 6;
-        public static NEAREST_LINEAR = 7;
-        public static NEAREST_NEAREST = 8;
-        public static LINEAR_NEAREST_MIPNEAREST = 9;
-        public static LINEAR_NEAREST_MIPLINEAR = 10;
-        public static LINEAR_LINEAR = 11;
-        public static LINEAR_NEAREST = 12;
+        public static NEAREST_NEAREST_MIPNEAREST = Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+        public static NEAREST_LINEAR_MIPNEAREST = Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+        public static NEAREST_LINEAR_MIPLINEAR = Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+        public static NEAREST_LINEAR = Engine.TEXTURE_NEAREST_LINEAR;
+        public static NEAREST_NEAREST = Engine.TEXTURE_NEAREST_NEAREST;
+        public static LINEAR_NEAREST_MIPNEAREST = Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+        public static LINEAR_NEAREST_MIPLINEAR = Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+        public static LINEAR_LINEAR = Engine.TEXTURE_LINEAR_LINEAR;
+        public static LINEAR_NEAREST = Engine.TEXTURE_LINEAR_NEAREST;
 
-        public static EXPLICIT_MODE = 0;
-        public static SPHERICAL_MODE = 1;
-        public static PLANAR_MODE = 2;
-        public static CUBIC_MODE = 3;
-        public static PROJECTION_MODE = 4;
-        public static SKYBOX_MODE = 5;
-        public static INVCUBIC_MODE = 6;
-        public static EQUIRECTANGULAR_MODE = 7;
-        public static FIXED_EQUIRECTANGULAR_MODE = 8;
-        public static FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
+        public static EXPLICIT_MODE = Engine.TEXTURE_EXPLICIT_MODE;
+        public static SPHERICAL_MODE = Engine.TEXTURE_SPHERICAL_MODE;
+        public static PLANAR_MODE = Engine.TEXTURE_PLANAR_MODE;
+        public static CUBIC_MODE = Engine.TEXTURE_CUBIC_MODE;
+        public static PROJECTION_MODE = Engine.TEXTURE_PROJECTION_MODE;
+        public static SKYBOX_MODE = Engine.TEXTURE_SKYBOX_MODE;
+        public static INVCUBIC_MODE = Engine.TEXTURE_INVCUBIC_MODE;
+        public static EQUIRECTANGULAR_MODE = Engine.TEXTURE_EQUIRECTANGULAR_MODE;
+        public static FIXED_EQUIRECTANGULAR_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
+        public static FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Engine.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
-        public static CLAMP_ADDRESSMODE = 0;
-        public static WRAP_ADDRESSMODE = 1;
-        public static MIRROR_ADDRESSMODE = 2;
+        public static readonly CLAMP_ADDRESSMODE = Engine.TEXTURE_CLAMP_ADDRESSMODE;
+        public static readonly WRAP_ADDRESSMODE = Engine.TEXTURE_WRAP_ADDRESSMODE;
+        public static readonly MIRROR_ADDRESSMODE = Engine.TEXTURE_MIRROR_ADDRESSMODE;
 
         /**
          * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
@@ -429,8 +429,8 @@
         public dispose(): void {
             super.dispose();
 
-            if (this.onLoadObservable) {
-                this.onLoadObservable.clear();
+            if (this._onLoadObservable) {
+                this._onLoadObservable.clear();
                 this._onLoadObservable = null;
             }
 

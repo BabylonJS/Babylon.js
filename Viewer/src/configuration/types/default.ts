@@ -49,18 +49,28 @@ export let defaultConfiguration: ViewerConfiguration = {
                 logoText: 'BabylonJS',
                 logoLink: 'https://babylonjs.com',
                 hideHelp: true,
+                hideHd: true,
+                hideVr: true,
+                hidePrint: true,
                 disableOnFullscreen: false,
+                text: {
+                    hdButton: "Toggle HD",
+                    fullscreenButton: "Toggle Fullscreen",
+                    helpButton: "Help",
+                    vrButton: "Toggle VR",
+                    printButton: "3D Print Object"
+                }
             },
             events: {
                 pointerdown: {
-                    'navbar-control': true,
-                    'help-button': true
+                    '.navbar-control': true,
+                    '.help-button': true
                 },
                 input: {
-                    'progress-wrapper': true
+                    '.progress-wrapper': true
                 },
                 pointerup: {
-                    'progress-wrapper': true
+                    '.progress-wrapper': true
                 }
             }
         },
@@ -95,8 +105,7 @@ export let defaultConfiguration: ViewerConfiguration = {
             bouncing: {
                 type: 1
             }
-        },
-        wheelPrecision: 200,
+        }
     },
     skybox: {
     },

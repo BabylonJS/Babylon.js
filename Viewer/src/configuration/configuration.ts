@@ -1,5 +1,6 @@
-import { EngineOptions, IGlowLayerOptions, DepthOfFieldEffectBlurLevel } from 'babylonjs';
-import { IObserversConfiguration, IModelConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, IDefaultRenderingPipelineConfiguration, ITemplateConfiguration } from './interfaces';
+import { EngineOptions } from 'babylonjs';
+import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from './interfaces';
+import { IEnvironmentMapConfiguration } from './interfaces/environmentMapConfiguration';
 
 export function getConfigurationKey(key: string, configObject: any) {
     let splits = key.split('.');
@@ -54,6 +55,7 @@ export interface ViewerConfiguration {
         disableResize?: boolean;
         engineOptions?: EngineOptions;
         adaptiveQuality?: boolean;
+        hdEnabled?: boolean;
     },
     //templateStructure?: ITemplateStructure,
     templates?: {
@@ -79,6 +81,10 @@ export interface ViewerConfiguration {
         [propName: string]: boolean | undefined;
     };
 
+    environmentMap?: IEnvironmentMapConfiguration
+
+    vr?: IVRConfiguration;
+
     // features that are being tested.
     // those features' syntax will change and move out! 
     // Don't use in production (or be ready to make the changes :) )
@@ -91,8 +97,10 @@ export interface ViewerConfiguration {
             specular?: { r: number, g: number, b: number };
         }
         hideLoadingDelay?: number;
+        /** Deprecated */
         assetsRootURL?: string;
         environmentMainColor?: { r: number, g: number, b: number };
+        /** Deprecated */
         environmentMap?: {
             /**
              * Environment map texture path in relative to the asset folder.

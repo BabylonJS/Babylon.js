@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+    /**
+     * Class used to store an actual running animation
+     */
     export class Animatable {
         private _localDelayOffset: Nullable<number> = null;
         private _pausedDelay: Nullable<number> = null;
@@ -9,6 +12,15 @@
         private _weight = -1.0;
         private _syncRoot: Animatable;
 
+        /**
+         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
+         * This will only apply for non looping animation (default is true)
+         */
+        public disposeOnEnd = true;
+
+        /**
+         * Gets a boolean indicating if the animation has started
+         */
         public animationStarted = false;
 
         /**
@@ -69,7 +81,30 @@
         }
 
 
-        constructor(scene: Scene, public target: any, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?: Nullable<() => void>, animations?: any) {
+        /**
+         * Creates a new Animatable
+         * @param scene defines the hosting scene
+         * @param target defines the target object
+         * @param fromFrame defines the starting frame number (default is 0)
+         * @param toFrame defines the ending frame number (default is 100)
+         * @param loopAnimation defines if the animation must loop (default is false)
+         * @param speedRatio defines the factor to apply to animation speed (default is 1)
+         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
+         * @param animations defines a group of animation to add to the new Animatable
+         */
+        constructor(scene: Scene, 
+            /** defines the target object */
+            public target: any, 
+            /** defines the starting frame number (default is 0) */
+            public fromFrame: number = 0, 
+            /** defines the ending frame number (default is 100) */
+            public toFrame: number = 100, 
+            /** defines if the animation must loop (default is false)  */
+            public loopAnimation: boolean = false, 
+            speedRatio: number = 1.0, 
+            /** defines a callback to call when animation ends if it is not looping */
+            public onAnimationEnd?: Nullable<() => void>, 
+            animations?: Animation[]) {
             this._scene = scene;
             if (animations) {
                 this.appendAnimations(target, animations);
@@ -101,10 +136,19 @@
             return this;
         }
 
+        /**
+         * Gets the list of runtime animations
+         * @returns an array of RuntimeAnimation
+         */
         public getAnimations(): RuntimeAnimation[] {
             return this._runtimeAnimations;
         }
 
+        /**
+         * Adds more animations to the current animatable
+         * @param target defines the target of the animations
+         * @param animations defines the new animations to add
+         */
         public appendAnimations(target: any, animations: Animation[]): void {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
@@ -113,6 +157,11 @@
             }
         }
 
+        /**
+         * Gets the source animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the source animation for the given property
+         */
         public getAnimationByTargetProperty(property: string): Nullable<Animation> {
             var runtimeAnimations = this._runtimeAnimations;
 
@@ -125,6 +174,11 @@
             return null;
         }
 
+        /**
+         * Gets the runtime animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the runtime animation for the given property
+         */
         public getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation> {
             var runtimeAnimations = this._runtimeAnimations;
 
@@ -137,6 +191,9 @@
             return null;
         }
 
+        /**
+         * Resets the animatable to its original state
+         */
         public reset(): void {
             var runtimeAnimations = this._runtimeAnimations;
 
@@ -148,6 +205,11 @@
             this._pausedDelay = null;
         }
 
+        /**
+         * Allows the animatable to blend with current running animations
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         * @param blendingSpeed defines the blending speed to use
+         */
         public enableBlending(blendingSpeed: number): void {
             var runtimeAnimations = this._runtimeAnimations;
 
@@ -157,6 +219,10 @@
             }
         }
 
+        /**
+         * Disable animation blending
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
         public disableBlending(): void {
             var runtimeAnimations = this._runtimeAnimations;
 
@@ -165,6 +231,10 @@
             }
         }
 
+        /**
+         * Jump directly to a given frame
+         * @param frame defines the frame to jump to
+         */
         public goToFrame(frame: number): void {
             var runtimeAnimations = this._runtimeAnimations;
 
@@ -184,6 +254,9 @@
             }
         }
 
+        /**
+         * Pause the animation
+         */
         public pause(): void {
             if (this._paused) {
                 return;
@@ -191,6 +264,9 @@
             this._paused = true;
         }
 
+        /**
+         * Restart the animation
+         */
         public restart(): void {
             this._paused = false;
         }
@@ -203,8 +279,13 @@
             this.onAnimationEndObservable.notifyObservers(this);
         }
 
-        public stop(animationName?: string): void {
-            if (animationName) {
+        /**
+         * Stop and delete the current animation
+         * @param animationName defines a string used to only stop some of the runtime animations instead of all
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        public stop(animationName?: string, targetMask?: (target: any) => boolean): void {
+            if (animationName || targetMask) {
                 var idx = this._scene._activeAnimatables.indexOf(this);
 
                 if (idx > -1) {
@@ -212,11 +293,15 @@
                     var runtimeAnimations = this._runtimeAnimations;
 
                     for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
-                        if (typeof animationName === "string" && runtimeAnimations[index].animation.name != animationName) {
+                        const runtimeAnimation = runtimeAnimations[index];
+                        if (animationName && runtimeAnimation.animation.name != animationName) {
+                            continue;
+                        }
+                        if (targetMask && !targetMask(runtimeAnimation.target)) {
                             continue;
                         }
 
-                        runtimeAnimations[index].dispose();
+                        runtimeAnimation.dispose();
                         runtimeAnimations.splice(index, 1);
                     }
 
@@ -291,18 +376,23 @@
             this.animationStarted = running;
 
             if (!running) {
-                // Remove from active animatables
-                index = this._scene._activeAnimatables.indexOf(this);
-                this._scene._activeAnimatables.splice(index, 1);
+                if (this.disposeOnEnd) {
+                    // Remove from active animatables
+                    index = this._scene._activeAnimatables.indexOf(this);
+                    this._scene._activeAnimatables.splice(index, 1);
 
-                // Dispose all runtime animations
-                for (index = 0; index < runtimeAnimations.length; index++) {
-                    runtimeAnimations[index].dispose();
+                    // Dispose all runtime animations
+                    for (index = 0; index < runtimeAnimations.length; index++) {
+                        runtimeAnimations[index].dispose();
+                    }
                 }
 
                 this._raiseOnAnimationEnd();
-                this.onAnimationEnd = null
-                this.onAnimationEndObservable.clear();
+
+                if (this.disposeOnEnd) {
+                    this.onAnimationEnd = null
+                    this.onAnimationEndObservable.clear();
+                }
             }
 
             return running;

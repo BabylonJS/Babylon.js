@@ -166,7 +166,9 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
-            effect.onBindObservable.notifyObservers(effect);
+            if (effect._onBindObservable) {
+                effect._onBindObservable.notifyObservers(effect);
+            }
         }
 
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
@@ -397,6 +399,28 @@
             return vbo;
         }
 
+        public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+
+        }
+
+        /**
+         * Get the current error code of the webGL context
+         * @returns the error code
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
+         */
+        public getError(): number {
+            return 0;
+        }
+
+        /** @hidden */
+        public _getUnpackAlignement(): number {
+            return 1;
+        }
+
+        /** @hidden */
+        public _unpackFlipY(value: boolean) {
+        }
+
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
         }
 
@@ -410,10 +434,12 @@
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
         }
 
-        protected _bindTextureDirectly(target: number, texture: InternalTexture): void {
+        protected _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
             if (this._boundTexturesCache[this._activeChannel] !== texture) {
                 this._boundTexturesCache[this._activeChannel] = texture;
+                return true;
             }
+            return false;
         }
 
         public _bindTexture(channel: number, texture: InternalTexture): void {
@@ -435,6 +461,28 @@
         }
 
         public releaseEffects() {
+        }
+
+        public displayLoadingUI(): void {
+        }
+
+        public hideLoadingUI(): void {
+        }
+
+        /** @hidden */
+        public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+        }
+
+        /** @hidden */
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+        }
+
+        /** @hidden */
+        public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+        }
+
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
         }
     }
 }

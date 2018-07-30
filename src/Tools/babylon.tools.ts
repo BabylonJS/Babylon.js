@@ -3,6 +3,74 @@
         animations: Array<Animation>;
     }
 
+    
+    /** Interface used by value gradients (color, factor, ...) */
+    export interface IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */        
+        gradient: number;
+    }
+
+    /** Class used to store color gradient */
+    export class ColorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number;
+        /**
+         * Gets or sets first associated color
+         */
+        public color1: Color4;
+        /**
+         * Gets or sets second associated color
+         */
+        public color2?: Color4;
+
+        /** 
+         * Will get a color picked randomly between color1 and color2.
+         * If color2 is undefined then color1 will be used
+         * @param result defines the target Color4 to store the result in
+         */
+        public getColorToRef(result: Color4) {
+            if (!this.color2) {
+                result.copyFrom(this.color1);
+                return;
+            }
+
+            Color4.LerpToRef(this.color1, this.color2, Math.random(), result);
+        }
+    }
+
+    /** Class used to store factor gradient */
+    export class FactorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number;
+        /**
+         * Gets or sets first associated factor
+         */        
+        public factor1: number;
+        /**
+         * Gets or sets second associated factor
+         */        
+        public factor2?: number;    
+        
+        /** 
+         * Will get a number picked randomly between factor1 and factor2.
+         * If factor2 is undefined then factor1 will be used
+         * @returns the picked number
+         */
+        public getFactor(): number {
+            if (this.factor2 === undefined) {
+                return this.factor1;
+            }
+
+            return Scalar.Lerp(this.factor1, this.factor2, Math.random());
+        }        
+    }  
+
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
     // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
     export class LoadFileError extends Error {
@@ -84,6 +152,26 @@
         public static fallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
 
         /**
+         * Read the content of a byte array at a specified coordinates (taking in account wrapping)
+         * @param u defines the coordinate on X axis
+         * @param v defines the coordinate on Y axis 
+         * @param width defines the width of the source data
+         * @param height defines the height of the source data
+         * @param pixels defines the source byte array
+         * @param color defines the output color
+         */
+        public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: Color4): void {
+            let wrappedU = ((Math.abs(u) * width) % width) | 0;
+            let wrappedV = ((Math.abs(v) * height) % height) | 0;
+
+            let position = (wrappedU + wrappedV * width) * 4;
+            color.r = pixels[position] / 255;
+            color.g = pixels[position + 1] / 255;
+            color.b = pixels[position + 2] / 255;
+            color.a = pixels[position + 3] / 255;
+        }       
+
+        /**
 		 * Interpolates between a and b via alpha
 		 * @param a The lower value (returned when alpha = 0)
 		 * @param b The upper value (returned when alpha = 1)
@@ -129,7 +217,7 @@
         }
 
         public static SetImmediate(action: () => void) {
-            if (window.setImmediate) {
+            if (Tools.IsWindowObjectExist() && window.setImmediate) {
                 window.setImmediate(action);
             } else {
                 setTimeout(action, 1);
@@ -701,9 +789,15 @@
 
             // Caching all files
             if (database && database.enableSceneOffline) {
-                const noIndexedDB = () => {
-                    if (!aborted) {
-                        requestFile();
+                const noIndexedDB = (request?: any) => {
+                    if(request && request.status > 400){
+                        if(onError){
+                            onError(request);
+                        }
+                    } else {
+                        if (!aborted) {
+                            requestFile();
+                        }
                     }
                 };
 
@@ -973,29 +1067,48 @@
             }
         }
 
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
-            var base64Image = screenshotCanvas.toDataURL(mimeType);
+        /**
+         * Converts the canvas data to blob.
+         * This acts as a polyfill for browsers not supporting the to blob function.
+         * @param canvas Defines the canvas to extract the data from
+         * @param successCallback Defines the callback triggered once the data are available
+         * @param mimeType Defines the mime type of the result
+         */
+        static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png"): void {
+            // We need HTMLCanvasElement.toBlob for HD screenshots
+            if (!canvas.toBlob) {
+                //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
+                canvas.toBlob = function (callback, type, quality) {
+                    setTimeout(() => {
+                        var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
+                            len = binStr.length,
+                            arr = new Uint8Array(len);
+
+                        for (var i = 0; i < len; i++) {
+                            arr[i] = binStr.charCodeAt(i);
+                        }
+                        callback(new Blob([arr]));
+                    });
+                }
+            }
+            canvas.toBlob(function (blob) {
+                successCallback(blob);
+            }, mimeType);
+        }
+
+        /**
+         * Encodes the canvas data to base 64 or automatically download the result if filename is defined
+         * @param successCallback Defines the callback triggered once the data are available
+         * @param mimeType Defines the mime type of the result
+         * @param fileName The filename to download. If present, the result will automatically be downloaded
+         */
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             if (successCallback) {
+                var base64Image = screenshotCanvas.toDataURL(mimeType);
                 successCallback(base64Image);
             }
             else {
-                // We need HTMLCanvasElement.toBlob for HD screenshots
-                if (!screenshotCanvas.toBlob) {
-                    //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-                    screenshotCanvas.toBlob = function (callback, type, quality) {
-                        setTimeout(() => {
-                            var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
-                                len = binStr.length,
-                                arr = new Uint8Array(len);
-
-                            for (var i = 0; i < len; i++) {
-                                arr[i] = binStr.charCodeAt(i);
-                            }
-                            callback(new Blob([arr], { type: type || 'image/png' }));
-                        });
-                    }
-                }
-                screenshotCanvas.toBlob(function (blob) {
+                this.ToBlob(screenshotCanvas, function (blob) {
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         if (!fileName) {
@@ -1018,8 +1131,7 @@
                         img.src = url;
                         newWindow.document.body.appendChild(img);
                     }
-
-                });
+                }, mimeType);
             }
         }
 
@@ -1029,6 +1141,11 @@
          * @param fileName defines the name of the downloaded file
          */
         public static Download(blob: Blob, fileName: string): void {
+            if (navigator && navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, fileName);
+                return;
+            }
+
             var url = window.URL.createObjectURL(blob);
             var a = document.createElement("a");
             document.body.appendChild(a);
@@ -1606,6 +1723,25 @@
                     resolve();
                 }, delay);
             });
+        }
+
+
+        /**
+         * Gets the current gradient from an array of IValueGradient
+         * @param ratio defines the current ratio to get
+         * @param gradients defines the array of IValueGradient
+         * @param updateFunc defines the callback function used to get the final value from the selected gradients
+         */
+        public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
+            for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
+                let currentGradient = gradients[gradientIndex];
+                let nextGradient = gradients[gradientIndex + 1];
+
+                if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
+                    let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                    updateFunc(currentGradient, nextGradient, scale);
+               }
+            }
         }
     }
 

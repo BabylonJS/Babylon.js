@@ -139,9 +139,27 @@
         content: "\E740";
     }
 
+    /*
+    A few browsers dont support combining the next rule to one. Redudant.
+    */
+
+    viewer.in-fullscreen .fullscreen-icon:after {
+        content: "\E73F";
+    }
+
     .help-icon:after {
         font-size: 16px;
         content: "\EF4E";
+    }
+
+    viewer.in-vr .vr-icon:after {
+        font-size: 16px;
+        content: "\E7F4";
+    }
+
+    .vr-icon:after {
+        font-size: 16px;
+        content: "\F119";
     }
 
     .progress-control {
@@ -408,21 +426,13 @@
 </style>
 {{/if}} {{/if}} {{#if disableOnFullscreen}}
 <style>
-    viewer:fullscreen nav-bar {
-        display: none;
-    }
-
-    viewer:-moz-full-screen nav-bar {
-        display: none;
-    }
-
-    viewer:-webkit-full-screen nav-bar {
+    viewer.in-fullscreen nav-bar {
         display: none;
     }
 </style>
 {{/if}}
 
-<div class="nav-container" id="navbar-control">
+<div class="nav-container navbar-control">
     {{#unless hideLogo}}
     <div class="logo-button" title="{{logoText}}">
         {{#if logoLink}}
@@ -435,7 +445,7 @@
     {{/unless}}{{#unless (or (not animations) hideAnimations)}}
     <div class="animation-control">
         <div class="types">
-            <button class="flex-container animation-buttons" id="types-button">
+            <button class="flex-container types-button animation-buttons">
                 <!-- <div> -->
                 <span class="icon types-icon"></span>
                 <span class="control-text animation-label">{{selectedAnimationName}}</span>
@@ -447,34 +457,34 @@
             </button>
             <div class="menu-options">
                 {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
-                <button class="flex-container animation-buttons" id="label-option-button" data-value="{{this}}">
+                <button class="flex-container label-option-button animation-buttons" data-value="{{this.value}} ">
                     <!-- <div> -->
                     <span class="icon types-icon"></span>
-                    <span class="control-text animation-label">{{this}}</span>
+                    <span class="control-text animation-label">{{this.label}}</span>
                     <span class="control-text animation-number">{{add @index 1}}</span>
                     <!-- </div> -->
                 </button>
                 {{/unless}} {{/each}}
             </div>
         </div>
-        <div class="progress-control" id="progress-control">
-            <button class="play-pause" id="play-pause-button">
+        <div class="progress-control">
+            <button class="play-pause play-pause-button">
                 {{#if paused}}
                 <span class="icon play-icon"></span>
                 {{else}}
                 <span class="icon pause-icon"></span>
                 {{/if}}
             </button>
-            <input class="progress-wrapper" id="progress-wrapper" type="range" min="0" max="100" step="0.01">
+            <input class="progress-wrapper" type="range" min="0" max="100" step="0.01">
         </div>
         <div class="speed">
-            <button class="flex-container" id="speed-button">
+            <button class="flex-container speed-button">
                 <span class="control-text speed-text">{{selectedSpeed}}</span>
                 <span class="icon up-icon"></span>
             </button>
             <div class="menu-options">
                 {{#eachInMap speedList}} {{#unless (eq ../selectedSpeed id)}}
-                <button class="flex-container" id="speed-option-button" data-value="{{value}}">
+                <button class="flex-container speed-option-button" data-value="{{value}}">
                     <span class="control-text speed-text">{{id}}</span>
                 </button>
                 {{/unless}} {{/eachInMap}}
@@ -483,12 +493,16 @@
     </div>
     {{/unless}}
     <div class="default-control">
-        {{#unless hideHelp}}
-        <button class="help" id="help-button" title="Help">
+        {{#unless hideVr}}
+        <button class="vr vr-button" title="{{text.vrButton}} ">
+            <span class="icon vr-icon"></span>
+        </button>
+        {{/unless}}{{#unless hideHelp}}
+        <button class="help help-button" title="{{text.helpButton}} ">
             <span class="icon help-icon"></span>
         </button>
-        {{/unless}} {{#unless hideFullScreen}}
-        <button class="fullscreen" id="fullscreen-button" title="Fullscreen">
+        {{/unless}} {{#unless hideFullscreen}}
+        <button class="fullscreen fullscreen-button" title="{{text.fullscreenButton}} ">
             <span class="icon fullscreen-icon"></span>
         </button>
         {{/unless}}

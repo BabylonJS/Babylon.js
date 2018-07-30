@@ -1,166 +1,7 @@
 ﻿module BABYLON {
-    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader => {
-        return compileRawShader(gl, shaderVersion + (defines ? defines + "\n" : "") + source, type);
-    };
-
-    var compileRawShader = (gl: WebGLRenderingContext, source: string, type: string): WebGLShader => {
-        var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            let log = gl.getShaderInfoLog(shader);
-            if (log) {
-                throw new Error(log);
-            }
-        }
-
-        if (!shader) {
-            throw new Error("Something went wrong while compile the shader.");
-        }
-
-        return shader;
-    };
-
-    var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
-        var magFilter = gl.NEAREST;
-        var minFilter = gl.NEAREST;
-
-        switch (samplingMode) {
-            case Texture.BILINEAR_SAMPLINGMODE:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.TRILINEAR_SAMPLINGMODE:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.NEAREST_SAMPLINGMODE:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.NEAREST_NEAREST_MIPNEAREST:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.NEAREST_LINEAR_MIPNEAREST:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.NEAREST_LINEAR_MIPLINEAR:
-                magFilter = gl.NEAREST;
-                if (generateMipMaps) {
-                    minFilter = gl.LINEAR_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.LINEAR;
-                }
-                break;
-            case Texture.NEAREST_LINEAR:
-                magFilter = gl.NEAREST;
-                minFilter = gl.LINEAR;
-                break;
-            case Texture.NEAREST_NEAREST:
-                magFilter = gl.NEAREST;
-                minFilter = gl.NEAREST;
-                break;
-            case Texture.LINEAR_NEAREST_MIPNEAREST:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_NEAREST;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.LINEAR_NEAREST_MIPLINEAR:
-                magFilter = gl.LINEAR;
-                if (generateMipMaps) {
-                    minFilter = gl.NEAREST_MIPMAP_LINEAR;
-                } else {
-                    minFilter = gl.NEAREST;
-                }
-                break;
-            case Texture.LINEAR_LINEAR:
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR;
-                break;
-            case Texture.LINEAR_NEAREST:
-                magFilter = gl.LINEAR;
-                minFilter = gl.NEAREST;
-                break;
-        }
-
-        return {
-            min: minFilter,
-            mag: magFilter
-        }
-    }
-
-    var partialLoadImg = (url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
-        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var img: HTMLImageElement;
-
-        var onload = () => {
-            loadedImages[index] = img;
-            (<any>loadedImages)._internalCount++;
-
-            if (scene) {
-                scene._removePendingData(img);
-            }
-
-            if ((<any>loadedImages)._internalCount === 6) {
-                onfinish(loadedImages);
-            }
-        };
-
-        var onerror = (message?: string, exception?: any) => {
-            if (scene) {
-                scene._removePendingData(img);
-            }
-
-            if (onErrorCallBack) {
-                onErrorCallBack(message, exception);
-            }
-        };
-
-        img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
-        if (scene) {
-            scene._addPendingData(img);
-        }
-    }
-
-    var cascadeLoadImgs = (rootUrl: string, scene: Nullable<Scene>,
-        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var loadedImages: HTMLImageElement[] = [];
-        (<any>loadedImages)._internalCount = 0;
-
-        for (let index = 0; index < 6; index++) {
-            partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
-        }
-    };
-
+    /**
+     * Keeps track of all the buffer info used in engine.
+     */
     class BufferPointer {
         public active: boolean;
         public index: number;
@@ -423,294 +264,178 @@
             }
         }
 
+        /**
+         * Hidden
+         */
+        public static _TextureLoaders: IInternalTextureLoader[] = [];
+
         // Const statics
-        private static _ALPHA_DISABLE = 0;
-        private static _ALPHA_ADD = 1;
-        private static _ALPHA_COMBINE = 2;
-        private static _ALPHA_SUBTRACT = 3;
-        private static _ALPHA_MULTIPLY = 4;
-        private static _ALPHA_MAXIMIZED = 5;
-        private static _ALPHA_ONEONE = 6;
-        private static _ALPHA_PREMULTIPLIED = 7;
-        private static _ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-        private static _ALPHA_INTERPOLATE = 9;
-        private static _ALPHA_SCREENMODE = 10;
-
-        private static _DELAYLOADSTATE_NONE = 0;
-        private static _DELAYLOADSTATE_LOADED = 1;
-        private static _DELAYLOADSTATE_LOADING = 2;
-        private static _DELAYLOADSTATE_NOTLOADED = 4;
-
-        private static _TEXTUREFORMAT_ALPHA = 0;
-        private static _TEXTUREFORMAT_LUMINANCE = 1;
-        private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
-        private static _TEXTUREFORMAT_RGB = 4;
-        private static _TEXTUREFORMAT_RGBA = 5;
-        private static _TEXTUREFORMAT_R = 6;
-        private static _TEXTUREFORMAT_RG = 7;
-
-        private static _TEXTURETYPE_UNSIGNED_INT = 0;
-        private static _TEXTURETYPE_FLOAT = 1;
-        private static _TEXTURETYPE_HALF_FLOAT = 2;
-
-        // Depht or Stencil test Constants.
-        private static _NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
-        private static _ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
-        private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
-        private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
-        private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-        private static _GREATER = 0x0204; // Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
-        private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
-        private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
-        public static get NEVER(): number {
-            return Engine._NEVER;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        public static get ALWAYS(): number {
-            return Engine._ALWAYS;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
-        public static get LESS(): number {
-            return Engine._LESS;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
-        public static get EQUAL(): number {
-            return Engine._EQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
-        public static get LEQUAL(): number {
-            return Engine._LEQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
-        public static get GREATER(): number {
-            return Engine._GREATER;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
-        public static get GEQUAL(): number {
-            return Engine._GEQUAL;
-        }
-
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
-        public static get NOTEQUAL(): number {
-            return Engine._NOTEQUAL;
-        }
-
-        // Stencil Actions Constants.
-        private static _KEEP = 0x1E00;
-        private static _REPLACE = 0x1E01;
-        private static _INCR = 0x1E02;
-        private static _DECR = 0x1E03;
-        private static _INVERT = 0x150A;
-        private static _INCR_WRAP = 0x8507;
-        private static _DECR_WRAP = 0x8508;
-
-        /** Passed to stencilOperation to specify that stencil value must be kept */
-        public static get KEEP(): number {
-            return Engine._KEEP;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be replaced */
-        public static get REPLACE(): number {
-            return Engine._REPLACE;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be incremented */
-        public static get INCR(): number {
-            return Engine._INCR;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be decremented */
-        public static get DECR(): number {
-            return Engine._DECR;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be inverted */
-        public static get INVERT(): number {
-            return Engine._INVERT;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
-        public static get INCR_WRAP(): number {
-            return Engine._INCR_WRAP;
-        }
-
-        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
-        public static get DECR_WRAP(): number {
-            return Engine._DECR_WRAP;
-        }
-
-        // Alpha
-
         /** Defines that alpha blending is disabled */
-        public static get ALPHA_DISABLE(): number {
-            return Engine._ALPHA_DISABLE;
-        }
-
-        /** Defines that alpha blending to SRC + DEST */
-        public static get ALPHA_ONEONE(): number {
-            return Engine._ALPHA_ONEONE;
-        }
-
+        public static readonly ALPHA_DISABLE = 0;
         /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
-        public static get ALPHA_ADD(): number {
-            return Engine._ALPHA_ADD;
-        }
-
+        public static readonly ALPHA_ADD = 1;
         /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
-        public static get ALPHA_COMBINE(): number {
-            return Engine._ALPHA_COMBINE;
-        }
-
+        public static readonly ALPHA_COMBINE = 2;
         /** Defines that alpha blending to DEST - SRC * DEST */
-        public static get ALPHA_SUBTRACT(): number {
-            return Engine._ALPHA_SUBTRACT;
-        }
-
+        public static readonly ALPHA_SUBTRACT = 3;
         /** Defines that alpha blending to SRC * DEST */
-        public static get ALPHA_MULTIPLY(): number {
-            return Engine._ALPHA_MULTIPLY;
-        }
-
+        public static readonly ALPHA_MULTIPLY = 4;
         /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
-        public static get ALPHA_MAXIMIZED(): number {
-            return Engine._ALPHA_MAXIMIZED;
-        }
-
+        public static readonly ALPHA_MAXIMIZED = 5;
+        /** Defines that alpha blending to SRC + DEST */
+        public static readonly ALPHA_ONEONE = 6;
         /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
-        public static get ALPHA_PREMULTIPLIED(): number {
-            return Engine._ALPHA_PREMULTIPLIED;
-        }
-
+        public static readonly ALPHA_PREMULTIPLIED = 7;
         /** 
          * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
          * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
          */
-        public static get ALPHA_PREMULTIPLIED_PORTERDUFF(): number {
-            return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
-        }
-
+        public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
         /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
-        public static get ALPHA_INTERPOLATE(): number {
-            return Engine._ALPHA_INTERPOLATE;
-        }
-
+        public static readonly ALPHA_INTERPOLATE = 9;
         /** 
          * Defines that alpha blending to SRC + (1 - SRC) * DEST 
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
-        public static get ALPHA_SCREENMODE(): number {
-            return Engine._ALPHA_SCREENMODE;
-        }
-
-        // Delays
+        public static readonly ALPHA_SCREENMODE = 10;
 
         /** Defines that the ressource is not delayed*/
-        public static get DELAYLOADSTATE_NONE(): number {
-            return Engine._DELAYLOADSTATE_NONE;
-        }
-
+        public static readonly DELAYLOADSTATE_NONE = 0;
         /** Defines that the ressource was successfully delay loaded */
-        public static get DELAYLOADSTATE_LOADED(): number {
-            return Engine._DELAYLOADSTATE_LOADED;
-        }
-
+        public static readonly DELAYLOADSTATE_LOADED = 1;
         /** Defines that the ressource is currently delay loading */
-        public static get DELAYLOADSTATE_LOADING(): number {
-            return Engine._DELAYLOADSTATE_LOADING;
-        }
-
+        public static readonly DELAYLOADSTATE_LOADING = 2;
         /** Defines that the ressource is delayed and has not started loading */
-        public static get DELAYLOADSTATE_NOTLOADED(): number {
-            return Engine._DELAYLOADSTATE_NOTLOADED;
-        }
+        public static readonly DELAYLOADSTATE_NOTLOADED = 4;
+
+        // Depht or Stencil test Constants.
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+        public static readonly NEVER = 0x0200;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        public static readonly ALWAYS = 0x0207;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+        public static readonly LESS = 0x0201;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+        public static readonly EQUAL = 0x0202;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+        public static readonly LEQUAL = 0x0203;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+        public static readonly GREATER = 0x0204;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+        public static readonly GEQUAL = 0x0206;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+        public static readonly NOTEQUAL = 0x0205;
+
+        // Stencil Actions Constants.
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        public static readonly KEEP = 0x1E00;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        public static readonly REPLACE = 0x1E01;
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
+        public static readonly INCR = 0x1E02;
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
+        public static readonly DECR = 0x1E03;
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
+        public static readonly INVERT = 0x150A;
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+        public static readonly INCR_WRAP = 0x8507;
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+        public static readonly DECR_WRAP = 0x8508;
+
+        /** Texture is not repeating outside of 0..1 UVs */
+        public static readonly TEXTURE_CLAMP_ADDRESSMODE = 0;
+        /** Texture is repeating outside of 0..1 UVs */
+        public static readonly TEXTURE_WRAP_ADDRESSMODE = 1;
+        /** Texture is repeating and mirrored */
+        public static readonly TEXTURE_MIRROR_ADDRESSMODE = 2;
 
         /** ALPHA */
-        public static get TEXTUREFORMAT_ALPHA(): number {
-            return Engine._TEXTUREFORMAT_ALPHA;
-        }
-
+        public static readonly TEXTUREFORMAT_ALPHA = 0;
         /** LUMINANCE */
-        public static get TEXTUREFORMAT_LUMINANCE(): number {
-            return Engine._TEXTUREFORMAT_LUMINANCE;
-        }
-
-        /**
-         * R
-         */
-        public static get TEXTUREFORMAT_R(): number {
-            return Engine._TEXTUREFORMAT_R;
-        }       
-        
-        /**
-         * RG
-         */
-        public static get TEXTUREFORMAT_RG(): number {
-            return Engine._TEXTUREFORMAT_RG;
-        }
-
+        public static readonly TEXTUREFORMAT_LUMINANCE = 1;
         /** LUMINANCE_ALPHA */
-        public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
-            return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
-        }
-
+        public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         /** RGB */
-        public static get TEXTUREFORMAT_RGB(): number {
-            return Engine._TEXTUREFORMAT_RGB;
-        }
-
+        public static readonly TEXTUREFORMAT_RGB = 4;
         /** RGBA */
-        public static get TEXTUREFORMAT_RGBA(): number {
-            return Engine._TEXTUREFORMAT_RGBA;
-        }
+        public static readonly TEXTUREFORMAT_RGBA = 5;
+        /** R */
+        public static readonly TEXTUREFORMAT_R = 6;
+        /** RG */
+        public static readonly TEXTUREFORMAT_RG = 7;
 
         /** UNSIGNED_INT */
-        public static get TEXTURETYPE_UNSIGNED_INT(): number {
-            return Engine._TEXTURETYPE_UNSIGNED_INT;
-        }
-
+        public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
         /** FLOAT */
-        public static get TEXTURETYPE_FLOAT(): number {
-            return Engine._TEXTURETYPE_FLOAT;
-        }
-
+        public static readonly TEXTURETYPE_FLOAT = 1;
         /** HALF_FLOAT */
-        public static get TEXTURETYPE_HALF_FLOAT(): number {
-            return Engine._TEXTURETYPE_HALF_FLOAT;
-        }
+        public static readonly TEXTURETYPE_HALF_FLOAT = 2;
+
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1; 
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1; 
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
+        /** mag = nearest and min = nearest and mip = nearest */
+        public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
+        /** mag = nearest and min = linear and mip = nearest */
+        public static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST = 5;
+        /** mag = nearest and min = linear and mip = linear */
+        public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = 6;
+        /** mag = nearest and min = linear and mip = none */
+        public static readonly TEXTURE_NEAREST_LINEAR = 7;
+        /** mag = nearest and min = nearest and mip = none */
+        public static readonly TEXTURE_NEAREST_NEAREST = 8;
+        /** mag = linear and min = nearest and mip = nearest */
+        public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = 9;
+        /** mag = linear and min = nearest and mip = linear */
+        public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = 10;
+        /** mag = linear and min = linear and mip = none */
+        public static readonly TEXTURE_LINEAR_LINEAR = 11;
+        /** mag = linear and min = nearest and mip = none */
+        public static readonly TEXTURE_LINEAR_NEAREST = 12;
+
+        /** Explicit coordinates mode */
+        public static readonly TEXTURE_EXPLICIT_MODE = 0;
+        /** Spherical coordinates mode */
+        public static readonly TEXTURE_SPHERICAL_MODE = 1;
+        /** Planar coordinates mode */
+        public static readonly TEXTURE_PLANAR_MODE = 2;
+        /** Cubic coordinates mode */
+        public static readonly TEXTURE_CUBIC_MODE = 3;
+        /** Projection coordinates mode */
+        public static readonly TEXTURE_PROJECTION_MODE = 4;
+        /** Skybox coordinates mode */
+        public static readonly TEXTURE_SKYBOX_MODE = 5;
+        /** Inverse Cubic coordinates mode */
+        public static readonly TEXTURE_INVCUBIC_MODE = 6;
+        /** Equirectangular coordinates mode */
+        public static readonly TEXTURE_EQUIRECTANGULAR_MODE = 7;
+        /** Equirectangular Fixed coordinates mode */
+        public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = 8;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
 
         // Texture rescaling mode
-        private static _SCALEMODE_FLOOR = 1;
-        private static _SCALEMODE_NEAREST = 2;
-        private static _SCALEMODE_CEILING = 3;
-
         /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-        public static get SCALEMODE_FLOOR(): number {
-            return Engine._SCALEMODE_FLOOR;
-        }
-
+        public static readonly SCALEMODE_FLOOR = 1;
         /** Defines that texture rescaling will look for the nearest power of 2 size */
-        public static get SCALEMODE_NEAREST(): number {
-            return Engine._SCALEMODE_NEAREST;
-        }
-
+        public static readonly SCALEMODE_NEAREST = 2;
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-        public static get SCALEMODE_CEILING(): number {
-            return Engine._SCALEMODE_CEILING;
-        }
+        public static readonly SCALEMODE_CEILING = 3;
 
         /**
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.6";
+            return "3.3.0-alpha.13";
         }
 
         // Updatable statics so stick with vars here
@@ -780,6 +505,9 @@
          * Gets the list of created postprocesses
          */
         public postProcesses = new Array<PostProcess>();
+
+        /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
+        public validateShaderPrograms = false;
 
         // Observables
 
@@ -866,7 +594,9 @@
         public onAfterShaderCompilationObservable = new Observable<Engine>();
 
         // Private Members
-        private _gl: WebGLRenderingContext;
+
+        /** @hidden */
+        public _gl: WebGLRenderingContext;
         private _renderingCanvas: Nullable<HTMLCanvasElement>;
         private _windowIsBackground = false;
         private _webGLVersion = 1.0;
@@ -1037,7 +767,7 @@
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
         /** @hidden */
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
@@ -1098,7 +828,7 @@
          */
         public get emptyTexture(): InternalTexture {
             if (!this._emptyTexture) {
-                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture;
@@ -1109,7 +839,7 @@
          */        
         public get emptyTexture3D(): InternalTexture {
             if (!this._emptyTexture3D) {
-                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture3D;
@@ -1122,7 +852,7 @@
             if (!this._emptyCubeTexture) {
                 var faceData = new Uint8Array(4);
                 var cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Texture.NEAREST_SAMPLINGMODE);
+                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Engine.TEXTURE_NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyCubeTexture;
@@ -2182,6 +1912,24 @@
             }
         }
 
+        private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
+        
+        /** @hidden */
+        public _viewport(x: number, y: number, width: number, height: number): void {
+            if (x !== this._viewportCached.x ||
+                y !== this._viewportCached.y ||
+                width !== this._viewportCached.z ||
+                height !== this._viewportCached.w)
+            {
+                this._viewportCached.x = x;
+                this._viewportCached.y = y;
+                this._viewportCached.z = width;
+                this._viewportCached.w = height;
+
+                this._gl.viewport(x, y, width, height);
+            }
+        }
+
         /**
          * Set the WebGL's viewport
          * @param viewport defines the viewport element to be used
@@ -2196,7 +1944,7 @@
 
             this._cachedViewport = viewport;
 
-            this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
+            this._viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         }
 
         /**
@@ -2211,7 +1959,7 @@
             let currentViewport = this._cachedViewport;
             this._cachedViewport = null;
 
-            this._gl.viewport(x, y, width, height);
+            this._viewport(x, y, width, height);
 
             return currentViewport;
         }
@@ -2473,7 +2221,7 @@
                     }
                 }
 
-                gl.viewport(0, 0, requiredWidth, requiredHeight);
+                this._viewport(0, 0, requiredWidth, requiredHeight);
             }
 
             this.wipeCaches();
@@ -3422,29 +3170,30 @@
             return effect;
         }
 
-        /**
-         * Create an effect to use with particle systems
-         * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
-         * @param uniformsNames defines a list of attribute names 
-         * @param samplers defines an array of string used to represent textures
-         * @param defines defines the string containing the defines to use to compile the shaders
-         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
-         * @param onCompiled defines a function to call when the effect creation is successful
-         * @param onError defines a function to call when the effect creation has failed
-         * @returns the new Effect
-         */
-        public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
-
-            return this.createEffect(
-                {
-                    vertex: "particles",
-                    fragmentElement: fragmentName
-                },
-                ["position", "color", "options"],
-                ["view", "projection"].concat(uniformsNames),
-                ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
-        }
+        private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
+            return this._compileRawShader(shaderVersion + (defines ? defines + "\n" : "") + source, type);
+        };
+    
+        private _compileRawShader(source: string, type: string): WebGLShader {
+            var gl = this._gl;
+            var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
+    
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+    
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                let log = gl.getShaderInfoLog(shader);
+                if (log) {
+                    throw new Error(log);
+                }
+            }
+    
+            if (!shader) {
+                throw new Error("Something went wrong while compile the shader.");
+            }
+    
+            return shader;
+        };
 
         /**
          * Directly creates a webGL program
@@ -3457,8 +3206,8 @@
         public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
             context = context || this._gl;
 
-            var vertexShader = compileRawShader(context, vertexCode, "vertex");
-            var fragmentShader = compileRawShader(context, fragmentCode, "fragment");
+            var vertexShader = this._compileRawShader(vertexCode, "vertex");
+            var fragmentShader = this._compileRawShader(fragmentCode, "fragment");
 
             return this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
         }
@@ -3478,8 +3227,8 @@
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
             var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-            var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
-            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
+            var vertexShader = this._compileShader(vertexCode, "vertex", defines, shaderVersion);
+            var fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
 
             let program = this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
 
@@ -3515,10 +3264,21 @@
             var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
-                context.validateProgram(shaderProgram);
                 var error = context.getProgramInfoLog(shaderProgram);
                 if (error) {
                     throw new Error(error);
+                }
+            }
+
+            if (this.validateShaderPrograms) {
+                context.validateProgram(shaderProgram);
+                var validated = context.getProgramParameter(shaderProgram, context.VALIDATE_STATUS);
+
+                if(!validated) {
+                    var error = context.getProgramInfoLog(shaderProgram);
+                    if (error) {
+                        throw new Error(error);
+                    }
                 }
             }
 
@@ -3569,9 +3329,10 @@
          * @param effect defines the effect to activate
          */
         public enableEffect(effect: Nullable<Effect>): void {
-            if (!effect) {
+            if (!effect || effect === this._currentEffect) {
                 return;
             }
+
             // Use program
             this.bindSamplers(effect);
 
@@ -3580,7 +3341,9 @@
             if (effect.onBind) {
                 effect.onBind(effect);
             }
-            effect.onBindObservable.notifyObservers(effect);
+            if (effect._onBindObservable) {
+                effect._onBindObservable.notifyObservers(effect);
+            }
         }
 
         /**
@@ -4063,6 +3826,14 @@
         // Textures
 
         /**
+         * Clears the list of texture accessible through engine.
+         * This can help preventing texture load conflict due to name collision.
+         */
+        public clearInternalTexturesCache() {
+            this._internalTexturesCache = [];
+        }
+
+        /**
          * Force the entire cache to be cleared
          * You should not have to use this function unless your engine needs to share the webGL context with another engine
          * @param bruteForce defines a boolean to force clearing ALL caches (including stencil, detoh and alpha states)
@@ -4072,6 +3843,11 @@
                 return;
             }
             this._currentEffect = null;
+            this._unpackFlipYCached = null;
+            this._viewportCached.x = 0;
+            this._viewportCached.y = 0;
+            this._viewportCached.z = 0;
+            this._viewportCached.w = 0;
 
             if (bruteForce) {
                 this.resetTextureCache();
@@ -4124,6 +3900,145 @@
             return null;
         }
 
+        private _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+            var gl = this._gl;
+            var magFilter = gl.NEAREST;
+            var minFilter = gl.NEAREST;
+    
+            switch (samplingMode) {
+                case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                    magFilter = gl.NEAREST;
+                    if (generateMipMaps) {
+                        minFilter = gl.LINEAR_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.LINEAR;
+                    }
+                    break;
+                case Engine.TEXTURE_NEAREST_LINEAR:
+                    magFilter = gl.NEAREST;
+                    minFilter = gl.LINEAR;
+                    break;
+                case Engine.TEXTURE_NEAREST_NEAREST:
+                    magFilter = gl.NEAREST;
+                    minFilter = gl.NEAREST;
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_NEAREST;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                    magFilter = gl.LINEAR;
+                    if (generateMipMaps) {
+                        minFilter = gl.NEAREST_MIPMAP_LINEAR;
+                    } else {
+                        minFilter = gl.NEAREST;
+                    }
+                    break;
+                case Engine.TEXTURE_LINEAR_LINEAR:
+                    magFilter = gl.LINEAR;
+                    minFilter = gl.LINEAR;
+                    break;
+                case Engine.TEXTURE_LINEAR_NEAREST:
+                    magFilter = gl.LINEAR;
+                    minFilter = gl.NEAREST;
+                    break;
+            }
+    
+            return {
+                min: minFilter,
+                mag: magFilter
+            }
+        }
+    
+        private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
+            onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) {
+    
+            var img: HTMLImageElement;
+    
+            var onload = () => {
+                loadedImages[index] = img;
+                (<any>loadedImages)._internalCount++;
+    
+                if (scene) {
+                    scene._removePendingData(img);
+                }
+    
+                if ((<any>loadedImages)._internalCount === 6) {
+                    onfinish(loadedImages);
+                }
+            };
+    
+            var onerror = (message?: string, exception?: any) => {
+                if (scene) {
+                    scene._removePendingData(img);
+                }
+    
+                if (onErrorCallBack) {
+                    onErrorCallBack(message, exception);
+                }
+            };
+    
+            img = Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+            if (scene) {
+                scene._addPendingData(img);
+            }
+        }
+
+        private _cascadeLoadImgs(rootUrl: string, scene: Nullable<Scene>,
+            onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
+    
+            var loadedImages: HTMLImageElement[] = [];
+            (<any>loadedImages)._internalCount = 0;
+    
+            for (let index = 0; index < 6; index++) {
+                this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
+            }
+        };
+
         /** @hidden */
         public _createTexture(): WebGLTexture {
             let texture = this._gl.createTexture();
@@ -4151,11 +4066,13 @@
          * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+         * @param forcedExtension defines the extension to use to pick the right loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null): InternalTexture {
+            buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+            forcedExtension: Nullable<string> = null): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -4165,15 +4082,18 @@
 
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
-            var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
-            var isTGA = (extension.indexOf(".tga") === 0);
+            var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
 
-            // determine if a ktx file should be substituted
-            var isKTX = false;
-            if (this._textureFormatInUse && !isBase64 && !fallback) {
-                url = url.substring(0, lastDot) + this._textureFormatInUse;
-                isKTX = true;
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+                    loader = availableLoader;
+                    break;
+                }
+            }
+
+            if (loader) {
+                url = loader.transformUrl(url, this._textureFormatInUse);
             }
 
             if (scene) {
@@ -4196,78 +4116,54 @@
 
             if (!fallback) this._internalTexturesCache.push(texture);
 
-            var onerror = (message?: string, exception?: any) => {
+            let onInternalError = (message?: string, exception?: any) => {
                 if (scene) {
                     scene._removePendingData(texture);
                 }
 
-                if (onLoadObserver) {
-                    texture.onLoadedObservable.remove(onLoadObserver);
+                let customFallback = false;
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(url, this._textureFormatInUse);
+                    if (fallbackUrl) {
+                        // Add Back
+                        customFallback = true;
+                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
                 }
 
-                // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
-                if (isKTX) {
-                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                if (!customFallback) {
+                    if (onLoadObserver) {
+                        texture.onLoadedObservable.remove(onLoadObserver);
+                    }
+                    if (Tools.UseFallbackTexture) {
+                        this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
                 }
 
                 if (onError) {
                     onError(message || "Unknown error", exception);
                 }
-            };
-
-            var callback: Nullable<(arrayBuffer: any) => void> = null;
+            }
 
             // processing for non-image formats
-            if (isKTX || isTGA || isDDS) {
-                if (isKTX) {
-                    callback = (data) => {
-                        var ktx = new KhronosTextureContainer(data, 1);
-
-                        this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
-                            ktx.uploadLevels(this._gl, !noMipmap);
-                            return false;
-                        }, samplingMode);
-                    };
-                } else if (isTGA) {
-                    callback = (arrayBuffer) => {
-                        var data = new Uint8Array(arrayBuffer);
-
-                        var header = TGATools.GetTGAHeader(data);
-
-                        this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                            TGATools.UploadContent(this._gl, data);
-                            return false;
-                        }, samplingMode);
-                    };
-
-                } else if (isDDS) {
-                    callback = (data) => {
-                        var info = DDSTools.GetDDSInfo(data);
-
-                        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                        this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
-                            return false;
-                        }, samplingMode);
-                    };
+            if (loader) {
+                var callback = (data: string | ArrayBuffer) => {
+                    loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
+                        this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                                done();
+                                return false;
+                            }, 
+                            samplingMode);
+                    });
                 }
 
                 if (!buffer) {
-                    this._loadFile(url, data => {
-                        if (callback) {
-                            callback(data);
-                        }
-                    }, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
-                        onerror("Unable to load " + (request ? request.responseURL : url, exception));
+                    this._loadFile(url, callback, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                        onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                     });
                 } else {
-                    if (callback) {
-                        callback(buffer);
-                    }
+                    callback(buffer as ArrayBuffer);
                 }
-                // image format processing
             } else {
                 var onload = (img: HTMLImageElement) => {
                     if (fromBlob && !this._doNotHandleContextLost) {
@@ -4286,22 +4182,42 @@
                             return false;
                         }
 
-                        // Using shaders to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
-                        this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+                        let maxTextureSize = this._caps.maxTextureSize;
 
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                        if (img.width > maxTextureSize || img.height > maxTextureSize) {
+                            this._prepareWorkingCanvas();
+                            if (!this._workingCanvas || !this._workingContext) {
+                                return false;
+                            }
 
-                        this._rescaleTexture(source, texture, scene, internalFormat, () => {
-                            this._releaseTexture(source);
-                            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+                            this._workingCanvas.width = potWidth;
+                            this._workingCanvas.height = potHeight;
+        
+                            this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+    
+                            texture.width = potWidth;
+                            texture.height = potHeight;
 
-                            continuationCallback();
-                        });
+                            return false;
+                        } else {
+                            // Using shaders when possible to rescale because canvas.drawImage is lossy
+                            let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                            this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
+
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                            this._rescaleTexture(source, texture, scene, internalFormat, () => {
+                                this._releaseTexture(source);
+                                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+
+                                continuationCallback();
+                            });
+                        }
 
                         return true;
                     }, samplingMode);
@@ -4311,11 +4227,11 @@
                     if (buffer instanceof HTMLImageElement) {
                         onload(buffer);
                     } else {
-                        Tools.LoadImage(url, onload, onerror, scene ? scene.database : null);
+                        Tools.LoadImage(url, onload, onInternalError, scene ? scene.database : null);
                     }
                 }
                 else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
-                    Tools.LoadImage(buffer, onload, onerror, scene ? scene.database : null);
+                    Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.database : null);
                 }
                 else {
                     onload(<HTMLImageElement>buffer);
@@ -4332,14 +4248,14 @@
             }, {
                     generateMipMaps: false,
                     type: Engine.TEXTURETYPE_UNSIGNED_INT,
-                    samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                    samplingMode: Engine.TEXTURE_BILINEAR_SAMPLINGMODE,
                     generateDepthBuffer: false,
                     generateStencilBuffer: false
                 }
             );
 
             if (!this._rescalePostProcess) {
-                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
@@ -4384,7 +4300,7 @@
             var internalFormat = this._getInternalFormat(format);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
@@ -4446,7 +4362,7 @@
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
 
             // Filters
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -4461,6 +4377,20 @@
             this._internalTexturesCache.push(texture);
 
             return texture;
+        }
+
+        private _unpackFlipYCached: Nullable<boolean> = null;
+        /** @hidden */
+        public _unpackFlipY(value: boolean) {
+            if (this._unpackFlipYCached !== value) {
+                this._unpackFlipYCached = value;
+                this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
+            }
+        }
+
+        /** @hidden */
+        public _getUnpackAlignement(): number {
+            return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
         }
 
         /**
@@ -4501,7 +4431,7 @@
          * @param texture defines the texture to update
          */
         public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-            var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
 
             if (texture.isCube) {
                 this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
@@ -4534,7 +4464,7 @@
             }
 
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
+            this._unpackFlipY(invertY);
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
             }
@@ -4561,8 +4491,8 @@
                 return;
             }
 
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
+            var wasPreviouslyBound = this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+            this._unpackFlipY(!invertY); // Video are upside down by default
 
             try {
                 // Testing video texture support
@@ -4602,7 +4532,9 @@
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
 
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                if (!wasPreviouslyBound) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                }
                 //    this.resetTextureCache();
                 texture.isReady = true;
 
@@ -4671,13 +4603,13 @@
             internalTexture.generateMipMaps = false;
             internalTexture._generateDepthBuffer = true;
             internalTexture._generateStencilBuffer = generateStencil;
-            internalTexture.samplingMode = bilinearFiltering ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE;
+            internalTexture.samplingMode = bilinearFiltering ? Engine.TEXTURE_BILINEAR_SAMPLINGMODE : Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             internalTexture._comparisonFunction = comparisonFunction;
             
             var gl = this._gl;
             var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
-            var samplingParameters = getSamplingParameters(internalTexture.samplingMode, false, gl);
+            var samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
             gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
             gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
             gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -4850,24 +4782,24 @@
                 fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
                 fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-                fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+                fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
                 fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
                 fullOptions.generateDepthBuffer = true;
                 fullOptions.generateStencilBuffer = false;
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
                 fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
             }
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                 // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                 // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl;
 
@@ -4877,7 +4809,7 @@
             var width = (<{ width: number, height: number }>size).width || <number>size;
             var height = (<{ width: number, height: number }>size).height || <number>size;
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
+            var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -4943,7 +4875,7 @@
             var textureCount = 1;
 
             var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
-            var defaultSamplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            var defaultSamplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
             var types = new Array<number>();
             var samplingModes = new Array<number>();
@@ -4982,14 +4914,14 @@
 
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
                 else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                     // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
                 }
 
-                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+                var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                     type = Engine.TEXTURETYPE_UNSIGNED_INT;
                     Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
@@ -5281,17 +5213,54 @@
         }
 
         /** @hidden */
-        public _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView) {
-            this._gl.texImage2D(target, lod, internalFormat, width, height, 0, format, type, data);
-        }
+        public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+            var gl = this._gl;
 
-        /** @hidden */
-        public _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView) {
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
         }
 
         /** @hidden */
-        public _uploadImageToTexture(texture: InternalTexture, faceIndex: number, lod: number, image: HTMLImageElement) {
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            var gl = this._gl;
+
+            var textureType = this._getWebGLTextureType(texture.type);
+            var format = this._getInternalFormat(texture.format);
+            var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+
+            this._unpackFlipY(texture.invertY);
+
+            var target = gl.TEXTURE_2D;
+            if (texture.isCube) {
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            }
+
+            const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
+            const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
+            const width = Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+            const height = Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+
+            gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
+        }
+
+        /** @hidden */
+        public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            var gl = this._gl;
+            var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+            this._bindTextureDirectly(bindTarget, texture, true);
+
+            this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
+
+            this._bindTextureDirectly(bindTarget, null, true);
+        }
+
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
             var gl = this._gl;
 
             var textureType = this._getWebGLTextureType(texture.type);
@@ -5301,11 +5270,11 @@
             var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
             this._bindTextureDirectly(bindTarget, texture, true);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.invertY ? 1 : 0);
+            this._unpackFlipY(texture.invertY);
 
             var target = gl.TEXTURE_2D;
             if (texture.isCube) {
-                var target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+                target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
             }
 
             gl.texImage2D(target, lod, internalFormat, format, textureType, image);
@@ -5324,7 +5293,7 @@
               generateDepthBuffer: true,
               generateStencilBuffer: false,
               type: Engine.TEXTURETYPE_UNSIGNED_INT,
-              samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+              samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
               format: Engine.TEXTUREFORMAT_RGBA,
               ...options
             };
@@ -5332,18 +5301,18 @@
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
               // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+              fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
               // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+              fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
             }
             var gl = this._gl
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+            var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
               fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -5455,6 +5424,10 @@
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
                     var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                    glTextureFromLod.type = texture.type;
+                    glTextureFromLod.format = texture.format;
+                    glTextureFromLod.width = Math.pow(2, Math.max( Scalar.Log2(width) - mipmapIndex, 0));
+                    glTextureFromLod.height = glTextureFromLod.width;
                     glTextureFromLod.isCube = true;
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
 
@@ -5466,9 +5439,9 @@
                     if (loadData.isDDS) {
                         var info: DDSInfo = loadData.info;
                         var data: any = loadData.data;
-                        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
+                        this._unpackFlipY(info.isCompressed);
 
-                        DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
+                        DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
                     }
                     else {
                         Tools.Warn("DDS is the only prefiltered cube map supported so far.")
@@ -5510,12 +5483,13 @@
          * @param createPolynomials if a polynomial sphere should be created for the cube texture
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
             var gl = this._gl;
 
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+            var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
             texture.isCube = true;
             texture.url = rootUrl;
             texture.generateMipMaps = !noMipmap;
@@ -5527,145 +5501,55 @@
                 texture._files = files;
             }
 
-            var isKTX = false;
-            var isDDS = false;
-            var isEnv = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-            if (this._textureFormatInUse) {
-                extension = this._textureFormatInUse;
-                rootUrl = (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + this._textureFormatInUse;
-                isKTX = true;
-            } else {
-                isDDS = (extension === ".dds");
-                isEnv = (extension === ".env");
+
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
+                    loader = availableLoader;
+                    break;
+                }
             }
 
-            let onerror = (request?: XMLHttpRequest, exception?: any) => {
+            let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(rootUrl, this._textureFormatInUse);
+                    if (fallbackUrl) {
+                        this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                    }
+                }
+
                 if (onError && request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
             }
 
-            if (isKTX) {
-                this._loadFile(rootUrl, data => {
-                    var ktx = new KhronosTextureContainer(data, 6);
+            if (loader) {
+                rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
 
-                    var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
-
+                const onloaddata = (data: any) => {
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-
-                    ktx.uploadLevels(this._gl, !noMipmap);
-
-                    this.setCubeMapTextureParams(gl, loadMipmap);
-
-                    texture.width = ktx.pixelWidth;
-                    texture.height = ktx.pixelHeight;
-                    texture.isReady = true;
-                }, undefined, undefined, true, onerror);
-            }
-            else if (isEnv) {
-                this._loadFile(rootUrl, (data) => {
-                    data = data as ArrayBuffer;
-                    var info = EnvironmentTextureTools.GetEnvInfo(data);
-                    if (info) {
-                        texture.width = info.width;
-                        texture.height = info.width;
-
-                        EnvironmentTextureTools.UploadPolynomials(texture, data, info!);
-                        EnvironmentTextureTools.UploadLevelsAsync(texture, data, info!).then(() => {
-                            texture.isReady = true;
-                            if (onLoad) {
-                                onLoad();
-                            }
-                        });
+                    loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
+                };
+                if (files && files.length === 6) {
+                    if (loader.supportCascades) {
+                        this._cascadeLoadFiles(scene, onloaddata, files, onError);
                     }
                     else if (onError) {
-                        onError("Can not parse the environment file", null);
+                        onError("Textures type does not support cascades.");
                     }
-                }, undefined, undefined, true, onerror);
-            }
-            else if (isDDS) {
-                if (files && files.length === 6) {
-                    this._cascadeLoadFiles(
-                        scene,
-                        imgs => {
-                            var info: DDSInfo | undefined;
-                            var loadMipmap: boolean = false;
-                            var width: number = 0;
-                            for (let index = 0; index < imgs.length; index++) {
-                                let data = imgs[index];
-                                info = DDSTools.GetDDSInfo(data);
-
-                                loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-
-                                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
-
-                                DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
-
-                                if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                                }
-
-                                texture.width = info.width;
-                                texture.height = info.height;
-                                texture.type = info.textureType;
-                                width = info.width;
-                            }
-
-                            this.setCubeMapTextureParams(gl, loadMipmap);
-                            texture.isReady = true;
-
-                            if (onLoad) {
-                                onLoad({ isDDS: true, width: width, info, imgs, texture });
-                            }
-                        },
-                        files,
-                        onError);
-
-                } else {
-                    this._loadFile(rootUrl,
-                        data => {
-                            var info = DDSTools.GetDDSInfo(data);
-                            if(createPolynomials){
-                                info.sphericalPolynomial = new SphericalPolynomial();
-                            }
-                            
-                            var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-
-                            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
-
-                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
-
-                            if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
-                                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                            }
-
-                            this.setCubeMapTextureParams(gl, loadMipmap);
-
-                            texture.width = info.width;
-                            texture.height = info.height;
-                            texture.isReady = true;
-                            texture.type = info.textureType;
-                            
-                            if (onLoad) {
-                                onLoad({ isDDS: true, width: info.width, info, data, texture });
-                            }
-                        },
-                        undefined,
-                        undefined,
-                        true,
-                        onerror);
                 }
-            } else {
+                else {
+                    this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
+                }
+            }
+            else {
                 if (!files) {
                     throw new Error("Cannot load cubemap because files were not defined");
                 }
 
-                cascadeLoadImgs(rootUrl, scene, imgs => {
+                this._cascadeLoadImgs(rootUrl, scene, imgs => {
                     var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
                     var height = width;
 
@@ -5683,7 +5567,7 @@
                     ];
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                    this._unpackFlipY(false);
 
                     let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
                     for (var index = 0; index < faces.length; index++) {
@@ -5695,7 +5579,7 @@
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
 
-                    this.setCubeMapTextureParams(gl, !noMipmap);
+                    this._setCubeMapTextureParams(!noMipmap);
 
                     texture.width = width;
                     texture.height = height;
@@ -5718,7 +5602,11 @@
             return texture;
         }
 
-        private setCubeMapTextureParams(gl: WebGLRenderingContext, loadMipmap: boolean) {
+        /**
+         * @hidden
+         */
+        public _setCubeMapTextureParams(loadMipmap: boolean): void {
+            var gl = this._gl;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -5758,7 +5646,7 @@
             }
 
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             if (texture.width % 4 !== 0) {
                 gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
@@ -5793,20 +5681,19 @@
          * @param data defines the array of data to use to create each face
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type of the data (like BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT)
          * @param generateMipMaps  defines if the engine should generate the mip levels
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like BABYLON.Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compression used (null by default)
          * @returns the cube texture as an InternalTexture
          */
-        public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, 
-                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number, 
+        public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
+                                    generateMipMaps: boolean, invertY: boolean, samplingMode: number,
                                     compression: Nullable<string> = null): InternalTexture {
             var gl = this._gl;
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
             texture.isCube = true;
-            texture.generateMipMaps = generateMipMaps;
             texture.format = format;
             texture.type = type;
             if (!this._doNotHandleContextLost) {
@@ -5818,6 +5705,26 @@
 
             if (internalFormat === gl.RGB) {
                 internalFormat = gl.RGBA;
+            }
+
+            // Mipmap generation needs a sized internal format that is both color-renderable and texture-filterable
+            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                generateMipMaps = false;
+                samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                BABYLON.Tools.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+            }
+            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+                generateMipMaps = false;
+                samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+                BABYLON.Tools.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+            }
+            else if (textureType === gl.FLOAT && !this._caps.textureFloatRender) {
+                generateMipMaps = false;
+                BABYLON.Tools.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
+            }
+            else if (textureType === gl.HALF_FLOAT && !this._caps.colorBufferFloat) {
+                generateMipMaps = false;
+                BABYLON.Tools.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
             }
 
             var width = size;
@@ -5844,23 +5751,15 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
             }
 
-            if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            }
-            else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            }
-            else {
-                var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
-            }
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            texture.generateMipMaps = generateMipMaps;
 
             return texture;
         }
@@ -5886,7 +5785,7 @@
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void> = null,
             onError: Nullable<(message?: string, exception?: any) => void> = null,
-            samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
+            samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             invertY = false): InternalTexture {
 
             var gl = this._gl;
@@ -5922,7 +5821,7 @@
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                    this._unpackFlipY(false);
 
                     var mipData = mipmapGenerator(faceDataArrays);
                     for (var level = 0; level < mipData.length; level++) {
@@ -5940,7 +5839,6 @@
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                 }
                 else {
-                    texture.generateMipMaps = !noMipmap;
                     this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
 
@@ -5975,7 +5873,7 @@
             var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
 
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
@@ -6038,7 +5936,7 @@
             this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
 
             // Filters
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
+            var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -6060,7 +5958,7 @@
                 return;
             }
 
-            var filters = getSamplingParameters(samplingMode, !noMipmap, gl);
+            var filters = this._getSamplingParameters(samplingMode, !noMipmap);
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -6081,9 +5979,10 @@
         }
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): void {
-            var potWidth = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this.getCaps().maxTextureSize) : width;
-            var potHeight = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this.getCaps().maxTextureSize) : height;
+            processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
+            var maxTextureSize = this.getCaps().maxTextureSize;    
+            var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
+            var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
 
             var gl = this._gl;
             if (!gl) {
@@ -6100,7 +5999,7 @@
             }
 
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -6326,7 +6225,8 @@
         }
 
         /** @hidden */
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): void {
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
+            var wasPreviouslyBound = false;
             if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
                 this._activeChannel = texture._designatedSlot;
             }
@@ -6358,12 +6258,15 @@
                     texture._designatedSlot = this._activeChannel;
                 }
             } else if (forTextureDataUpdate) {
+                wasPreviouslyBound = true;
                 this._activateCurrentTexture();
             }
 
             if (isTextureForRendering && !forTextureDataUpdate) {
                 this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
             }
+
+            return wasPreviouslyBound;
         }
 
         /** @hidden */
@@ -6464,11 +6367,11 @@
 
         private _getTextureWrapMode(mode: number): number {
             switch(mode) {
-                case Texture.WRAP_ADDRESSMODE:
+                case Engine.TEXTURE_WRAP_ADDRESSMODE:
                     return this._gl.REPEAT;
-                case Texture.CLAMP_ADDRESSMODE:
+                case Engine.TEXTURE_CLAMP_ADDRESSMODE:
                     return this._gl.CLAMP_TO_EDGE;
-                case Texture.MIRROR_ADDRESSMODE:
+                case Engine.TEXTURE_MIRROR_ADDRESSMODE:
                     return this._gl.MIRRORED_REPEAT;
             }
             return this._gl.REPEAT;
@@ -6560,7 +6463,7 @@
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
-                    var textureWrapMode = (texture.coordinatesMode !== Texture.CUBIC_MODE && texture.coordinatesMode !== Texture.SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
+                    var textureWrapMode = (texture.coordinatesMode !== Engine.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Engine.TEXTURE_SKYBOX_MODE) ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE;
                     this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_S, textureWrapMode, internalTexture);
                     this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_WRAP_T, textureWrapMode);
                 }
@@ -6622,9 +6525,9 @@
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
 
-            if (internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPNEAREST
-                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR_MIPLINEAR
-                && internalTexture.samplingMode !== Texture.LINEAR_LINEAR) {
+            if (internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST
+                && internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR
+                && internalTexture.samplingMode !== Engine.TEXTURE_LINEAR_LINEAR) {
                 value = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
             }
 
@@ -7234,280 +7137,6 @@
 
             return this._gl.RGBA8;
         };
-
-        /**
-         * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @return the new query
-         */
-        public createQuery(): WebGLQuery {
-            return this._gl.createQuery();
-        }
-
-        /**
-         * Delete and release a webGL query
-         * @param query defines the query to delete
-         * @return the current engine
-         */
-        public deleteQuery(query: WebGLQuery): Engine {
-            this._gl.deleteQuery(query);
-
-            return this;
-        }
-
-        /**
-         * Check if a given query has resolved and got its value
-         * @param query defines the query to check
-         * @returns true if the query got its value
-         */
-        public isQueryResultAvailable(query: WebGLQuery): boolean {
-            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT_AVAILABLE) as boolean;
-        }
-
-        /**
-         * Gets the value of a given query
-         * @param query defines the query to check
-         * @returns the value of the query
-         */
-        public getQueryResult(query: WebGLQuery): number {
-            return this._gl.getQueryParameter(query, this._gl.QUERY_RESULT) as number;
-        }
-
-        /**
-         * Initiates an occlusion query
-         * @param algorithmType defines the algorithm to use
-         * @param query defines the query to use
-         * @returns the current engine
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         */
-        public beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine {
-            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
-            this._gl.beginQuery(glAlgorithm, query);
-
-            return this;
-        }
-
-        /**
-         * Ends an occlusion query
-         * @see http://doc.babylonjs.com/features/occlusionquery
-         * @param algorithmType defines the algorithm to use
-         * @returns the current engine
-         */
-        public endOcclusionQuery(algorithmType: number): Engine {
-            var glAlgorithm = this.getGlAlgorithmType(algorithmType);
-            this._gl.endQuery(glAlgorithm);
-
-            return this;
-        }
-
-        /* Time queries */
-
-        private _createTimeQuery(): WebGLQuery {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.createQueryEXT) {
-                return timerQuery.createQueryEXT();
-            }
-
-            return this.createQuery();
-        }
-
-        private _deleteTimeQuery(query: WebGLQuery): void {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.deleteQueryEXT) {
-                timerQuery.deleteQueryEXT(query);
-                return;
-            }
-
-            this.deleteQuery(query);
-        }
-
-        private _getTimeQueryResult(query: WebGLQuery): any {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.getQueryObjectEXT) {
-                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_EXT);
-            }
-            return this.getQueryResult(query);
-        }
-
-        private _getTimeQueryAvailability(query: WebGLQuery): any {
-            let timerQuery = <EXT_disjoint_timer_query>this._caps.timerQuery;
-
-            if (timerQuery.getQueryObjectEXT) {
-                return timerQuery.getQueryObjectEXT(query, timerQuery.QUERY_RESULT_AVAILABLE_EXT);
-            }
-            return this.isQueryResultAvailable(query);
-        }
-
-        private _currentNonTimestampToken: Nullable<_TimeToken>;
-
-        /**
-         * Starts a time query (used to measure time spent by the GPU on a specific frame)
-         * Please note that only one query can be issued at a time
-         * @returns a time token used to track the time span
-         */
-        public startTimeQuery(): Nullable<_TimeToken> {
-            let timerQuery = this._caps.timerQuery;
-            if (!timerQuery) {
-                return null;
-            }
-
-            let token = new _TimeToken();
-            this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
-            if (this._caps.canUseTimestampForTimerQuery) {
-                token._startTimeQuery = this._createTimeQuery();
-
-                timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
-            } else {
-                if (this._currentNonTimestampToken) {
-                    return this._currentNonTimestampToken;
-                }
-
-                token._timeElapsedQuery = this._createTimeQuery();
-                if (timerQuery.beginQueryEXT) {
-                    timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-                } else {
-                    this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-                }
-
-                this._currentNonTimestampToken = token;
-            }
-            return token;
-        }
-
-        /**
-         * Ends a time query
-         * @param token defines the token used to measure the time span
-         * @returns the time spent (in ns)
-         */
-        public endTimeQuery(token: _TimeToken): int {
-            let timerQuery = this._caps.timerQuery;
-            if (!timerQuery || !token) {
-                return -1;
-            }
-
-            if (this._caps.canUseTimestampForTimerQuery) {
-                if (!token._startTimeQuery) {
-                    return -1;
-                }
-                if (!token._endTimeQuery) {
-                    token._endTimeQuery = this._createTimeQuery();
-                    timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
-                }
-            } else if (!token._timeElapsedQueryEnded) {
-                if (!token._timeElapsedQuery) {
-                    return -1;
-                }
-                if (timerQuery.endQueryEXT) {
-                    timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
-                } else {
-                    this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
-                }
-                token._timeElapsedQueryEnded = true;
-            }
-
-            let disjoint = this._gl.getParameter(timerQuery.GPU_DISJOINT_EXT);
-            let available: boolean = false;
-            if (token._endTimeQuery) {
-                available = this._getTimeQueryAvailability(token._endTimeQuery);
-            } else if (token._timeElapsedQuery) {
-                available = this._getTimeQueryAvailability(token._timeElapsedQuery);
-            }
-
-            if (available && !disjoint) {
-                let result = 0;
-                if (this._caps.canUseTimestampForTimerQuery) {
-                    if (!token._startTimeQuery || !token._endTimeQuery) {
-                        return -1;
-                    }
-                    let timeStart = this._getTimeQueryResult(token._startTimeQuery);
-                    let timeEnd = this._getTimeQueryResult(token._endTimeQuery);
-
-                    result = timeEnd - timeStart;
-                    this._deleteTimeQuery(token._startTimeQuery);
-                    this._deleteTimeQuery(token._endTimeQuery);
-                    token._startTimeQuery = null;
-                    token._endTimeQuery = null;
-                } else {
-                    if (!token._timeElapsedQuery) {
-                        return -1;
-                    }
-
-                    result = this._getTimeQueryResult(token._timeElapsedQuery);
-                    this._deleteTimeQuery(token._timeElapsedQuery);
-                    token._timeElapsedQuery = null;
-                    token._timeElapsedQueryEnded = false;
-                    this._currentNonTimestampToken = null;
-                }
-                return result;
-            }
-
-            return -1;
-        }
-
-        private getGlAlgorithmType(algorithmType: number): number {
-            return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
-        }
-
-        // Transform feedback
-
-        /**
-         * Creates a webGL transform feedback object
-         * Please makes sure to check webGLVersion property to check if you are running webGL 2+
-         * @returns the webGL transform feedback object
-         */
-        public createTransformFeedback(): WebGLTransformFeedback {
-            return this._gl.createTransformFeedback();
-        }
-
-        /**
-         * Delete a webGL transform feedback object 
-         * @param value defines the webGL transform feedback object to delete
-         */
-        public deleteTransformFeedback(value: WebGLTransformFeedback): void {
-            this._gl.deleteTransformFeedback(value);
-        }
-
-        /**
-         * Bind a webGL transform feedback object to the webgl context
-         * @param value defines the webGL transform feedback object to bind
-         */        
-        public bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void {
-            this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
-        }
-
-        /**
-         * Begins a transform feedback operation
-         * @param usePoints defines if points or triangles must be used
-         */              
-        public beginTransformFeedback(usePoints: boolean = true): void {
-            this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
-        }
-
-        /**
-         * Ends a transform feedback operation
-         */           
-        public endTransformFeedback(): void {
-            this._gl.endTransformFeedback();
-        }
-
-        /**
-         * Specify the varyings to use with transform feedback
-         * @param program defines the associated webGL program
-         * @param value defines the list of strings representing the varying names
-         */
-        public setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void {
-            this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
-        }
-
-        /**
-         * Bind a webGL buffer for a transform feedback operation
-         * @param value defines the webGL buffer to bind
-         */          
-        public bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void {
-            this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
-        }
 
         /** @hidden */
         public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {

@@ -1,19 +1,26 @@
-/// <reference path="../../dist/preview release/gui/babylon.gui.d.ts"/>
 
-module INSPECTOR {
-    /**
-     * Function that add gui objects properties to the variable PROPERTIES
-     */
-    export function loadGUIProperties(){
+import { PROPERTIES } from "./properties";
+
+export type GUITyping = typeof import("babylonjs-gui");
+
+export let guiLoaded: boolean = false;
+/**
+  * Function that add gui objects properties to the variable PROPERTIES
+  */
+export function loadGUIProperties(GUI: GUITyping) {
+
+    guiLoaded = !!GUI;
+
+    if (guiLoaded) {
+
         let PROPERTIES_GUI = {
             'ValueAndUnit': {
-                type: BABYLON.GUI.ValueAndUnit,
+                type: GUI.ValueAndUnit,
                 properties: ['_value', 'unit'],
-                format: (valueAndUnit: BABYLON.GUI.ValueAndUnit) => 
-                    { return valueAndUnit }
+                format: (valueAndUnit: import("babylonjs-gui").ValueAndUnit) => { return valueAndUnit }
             },
             'Control': {
-                type: BABYLON.GUI.Control,
+                type: GUI.Control,
                 properties: [
                     '_alpha',
                     '_fontFamily',
@@ -30,40 +37,40 @@ module INSPECTOR {
                     'isHitTestVisible',
                     'isPointerBlocker',
                 ],
-                format: (control: BABYLON.GUI.Control) => { return control.name }
+                format: (control: import("babylonjs-gui").Control) => { return control.name }
             },
             'Button': {
-                type: BABYLON.GUI.Button,
+                type: GUI.Button,
                 properties: new Array(),
-                format: (button: BABYLON.GUI.Button) => { return button.name }
+                format: (button: import("babylonjs-gui").Button) => { return button.name }
             },
             'ColorPicker': {
-                type: BABYLON.GUI.ColorPicker,
+                type: GUI.ColorPicker,
                 properties: ['_value'],
-                format: (colorPicker: BABYLON.GUI.ColorPicker) => { return colorPicker.name }
+                format: (colorPicker: import("babylonjs-gui").ColorPicker) => { return colorPicker.name }
             },
             'Checkbox': {
-                type: BABYLON.GUI.Checkbox,
+                type: GUI.Checkbox,
                 properties: ['_isChecked', '_background'],
-                format: (checkbox: BABYLON.GUI.Checkbox) => { return checkbox.name }
+                format: (checkbox: import("babylonjs-gui").Checkbox) => { return checkbox.name }
             },
             'Ellipse': {
-                type: BABYLON.GUI.Ellipse,
+                type: GUI.Ellipse,
                 properties: ['_thickness'],
-                format: (ellipse: BABYLON.GUI.Ellipse) => { return ellipse.name }
+                format: (ellipse: import("babylonjs-gui").Ellipse) => { return ellipse.name }
             },
             'Image': {
-                type: BABYLON.GUI.Image,
+                type: GUI.Image,
                 properties: [
-                    '_imageWidth', 
+                    '_imageWidth',
                     '_imageHeight',
                     '_loaded',
                     '_source',
                 ],
-                format: (image: BABYLON.GUI.Image) => { return image.name }
+                format: (image: import("babylonjs-gui").Image) => { return image.name }
             },
             'Line': {
-                type: BABYLON.GUI.Line,
+                type: GUI.Line,
                 properties: ['_lineWidth',
                     '_background',
                     '_x1',
@@ -71,20 +78,20 @@ module INSPECTOR {
                     '_x2',
                     '_y2',
                 ],
-                format: (line: BABYLON.GUI.Line) => { return line.name }
+                format: (line: import("babylonjs-gui").Line) => { return line.name }
             },
             'RadioButton': {
-                type: BABYLON.GUI.RadioButton,
+                type: GUI.RadioButton,
                 properties: ['_isChecked', '_background'],
-                format: (radioButton: BABYLON.GUI.RadioButton) => { return radioButton.name }
+                format: (radioButton: import("babylonjs-gui").RadioButton) => { return radioButton.name }
             },
             'Rectangle': {
-                type: BABYLON.GUI.Rectangle,
+                type: GUI.Rectangle,
                 properties: ['_thickness', '_cornerRadius'],
-                format: (rectangle: BABYLON.GUI.Rectangle) => { return rectangle.name }
+                format: (rectangle: import("babylonjs-gui").Rectangle) => { return rectangle.name }
             },
             'Slider': {
-                type: BABYLON.GUI.Slider,
+                type: GUI.Slider,
                 properties: [
                     '_minimum',
                     '_maximum',
@@ -92,27 +99,27 @@ module INSPECTOR {
                     '_background',
                     '_borderColor',
                 ],
-                format: (slider: BABYLON.GUI.Slider) => { return slider.name }
+                format: (slider: import("babylonjs-gui").Slider) => { return slider.name }
             },
             'StackPanel': {
-                type: BABYLON.GUI.StackPanel,
+                type: GUI.StackPanel,
                 properties: ['_isVertical'],
-                format: (stackPanel: BABYLON.GUI.StackPanel) => { return stackPanel.name }
+                format: (stackPanel: import("babylonjs-gui").StackPanel) => { return stackPanel.name }
             },
             'TextBlock': {
-                type: BABYLON.GUI.TextBlock,
+                type: GUI.TextBlock,
                 properties: ['_text', '_textWrapping'],
-                format: (textBlock: BABYLON.GUI.TextBlock) => { return textBlock.name }
+                format: (textBlock: import("babylonjs-gui").TextBlock) => { return textBlock.name }
             },
             'Container': {
-                type: BABYLON.GUI.Container,
+                type: GUI.Container,
                 properties: ['_background'],
-                format: (container: BABYLON.GUI.Container) => { return container.name }
+                format: (container: import("babylonjs-gui").Container) => { return container.name }
             },
         }
 
         for (let prop in PROPERTIES_GUI) {
             (<any>PROPERTIES)[prop] = (<any>PROPERTIES_GUI)[prop];
         }
-    } 
-}
+    }
+} 

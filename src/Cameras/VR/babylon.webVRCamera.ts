@@ -1,4 +1,12 @@
 module BABYLON {
+    Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
+        return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+    });
+
+    Node.AddNodeConstructor("WebVRGamepadCamera", (name, scene) => {
+        return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+    });
+
     /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.
@@ -140,7 +148,8 @@ module BABYLON {
 
         // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
         private _deviceRoomPosition = Vector3.Zero();
-        private _deviceRoomRotationQuaternion = Quaternion.Identity();
+        /** @hidden */
+        public _deviceRoomRotationQuaternion = Quaternion.Identity();
 
         private _standingMatrix: Nullable<Matrix> = null;
 
@@ -173,6 +182,11 @@ module BABYLON {
          * Emits an event when a controller's mesh has been loaded;
          */
         public onControllerMeshLoadedObservable = new Observable<WebVRController>();
+        /**
+         * Emits an event when the HMD's pose has been updated.
+         */
+        public onPoseUpdatedFromDeviceObservable = new Observable<any>();
+        private _poseSet = false;
         /**
          * If the rig cameras be used as parent instead of this camera.
          */
@@ -422,6 +436,7 @@ module BABYLON {
                         this._deviceRoomPosition.z *= -1;
                     }
                 }
+                this._poseSet = true;
             }
         }
 
@@ -550,6 +565,9 @@ module BABYLON {
             this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
+            if(this._poseSet){
+                this.onPoseUpdatedFromDeviceObservable.notifyObservers(null);
+            }
             super.update();
         }
 

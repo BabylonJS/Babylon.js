@@ -1,5 +1,5 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh } from 'babylonjs';
-import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration } from '../configuration';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix } from 'babylonjs';
+import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
 import { CameraBehavior } from '../interfaces';
@@ -7,6 +7,8 @@ import { ViewerLabs } from '../labs/viewerLabs';
 import { getCustomOptimizerByName } from '../optimizer/custom/';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
+import { deepmerge } from '../helper';
+import { IEnvironmentMapConfiguration } from '../configuration/interfaces/environmentMapConfiguration';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -53,6 +55,11 @@ export class SceneManager {
     onEnvironmentConfiguredObservable: Observable<IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean, ground?: IGroundConfiguration | boolean }>>;
 
     /**
+     * Will notify after the model(s) were configured. Can be used to further configure models
+     */
+    onVRConfiguredObservable: Observable<IPostConfigurationCallback<VRExperienceHelper, IVRConfiguration>>;
+
+    /**
      * The Babylon Scene of this viewer
      */
     public scene: Scene;
@@ -71,7 +78,7 @@ export class SceneManager {
     /**
      * Babylon's environment helper of this viewer
      */
-    public environmentHelper: EnvironmentHelper;
+    public environmentHelper?: EnvironmentHelper;
 
     private _animationBlendingEnabled: boolean = true;
 
@@ -102,8 +109,17 @@ export class SceneManager {
 
     private _defaultRenderingPipeline: Nullable<DefaultRenderingPipeline>;
 
+    private _assetsRootURL: string;
+
     public get defaultRenderingPipeline() {
         return this._defaultRenderingPipeline;
+    }
+
+
+    protected _vrHelper?: VRExperienceHelper;
+
+    public get vrHelper() {
+        return this._vrHelper;
     }
 
     constructor(private _engine: Engine, private _configurationContainer: ConfigurationContainer, private _observablesManager?: ObservablesManager) {
@@ -116,6 +132,7 @@ export class SceneManager {
         this.onSceneInitObservable = new Observable();
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
+        this.onVRConfiguredObservable = new Observable();
 
         //this._viewer.onEngineInitObservable.add(() => {
         this._handleHardwareLimitations();
@@ -338,6 +355,8 @@ export class SceneManager {
         // create a new scene
         this.scene = new Scene(this._engine);
 
+        this._configurationContainer.scene = this.scene;
+
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
             var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
@@ -393,12 +412,6 @@ export class SceneManager {
             this._globalConfiguration = newConfiguration;
         }
 
-        if (newConfiguration.lab) {
-            if (newConfiguration.lab.assetsRootURL) {
-                this.labs.assetsRootURL = newConfiguration.lab.assetsRootURL;
-            }
-        }
-
         // update scene configuration
         if (newConfiguration.scene) {
             this._configureScene(newConfiguration.scene);
@@ -425,17 +438,15 @@ export class SceneManager {
         // camera
         this._configureCamera(newConfiguration.camera);
 
-        if (newConfiguration.lab) {
-            if (newConfiguration.lab.environmentMap) {
-                let rot = newConfiguration.lab.environmentMap.rotationY;
-                this.labs.loadEnvironment(newConfiguration.lab.environmentMap.texture, () => {
-                    this.labs.applyEnvironmentMapConfiguration(rot);
-                });
+        if (newConfiguration.environmentMap !== undefined) {
+            this._configureEnvironmentMap(newConfiguration.environmentMap);
+        }
 
-                if (!newConfiguration.lab.environmentMap.texture && newConfiguration.lab.environmentMap.rotationY) {
-                    this.labs.applyEnvironmentMapConfiguration(newConfiguration.lab.environmentMap.rotationY);
-                }
-            }
+        if (newConfiguration.vr !== undefined) {
+            this._configureVR(newConfiguration.vr);
+        }
+
+        if (newConfiguration.lab) {
 
             // rendering piplines
             if (newConfiguration.lab.defaultRenderingPipelines) {
@@ -447,7 +458,7 @@ export class SceneManager {
                 }
             }
 
-            if (newConfiguration.lab.environmentMainColor) {
+            if (this.environmentHelper && newConfiguration.lab.environmentMainColor) {
                 let mainColor = new Color3().copyFrom(newConfiguration.lab.environmentMainColor as Color3);
                 this.environmentHelper.setMainColor(mainColor);
             }
@@ -585,6 +596,10 @@ export class SceneManager {
             }
         }
 
+        if (sceneConfig.assetsRootURL) {
+            this._assetsRootURL = sceneConfig.assetsRootURL;
+        }
+
         // image processing configuration - optional.
         if (sceneConfig.imageProcessingConfiguration) {
             extendClassWithConfig(this.scene.imageProcessingConfiguration, sceneConfig.imageProcessingConfiguration);
@@ -628,43 +643,6 @@ export class SceneManager {
                 this.camera.detachControl(canvas);
             } else if (this.camera && sceneConfig.disableCameraControl === false) {
                 this.camera.attachControl(canvas);
-            }
-        }
-
-        // process mainColor changes:
-        if (sceneConfig.mainColor) {
-            this._configurationContainer.mainColor = this.mainColor || Color3.White();
-            let mc = sceneConfig.mainColor;
-            if (mc.r !== undefined) {
-                this.mainColor.r = mc.r;
-            }
-            if (mc.g !== undefined) {
-                this.mainColor.g = mc.g
-            }
-            if (mc.b !== undefined) {
-                this.mainColor.b = mc.b
-            }
-
-            this.reflectionColor.copyFrom(this.mainColor);
-
-
-            let environmentTint = getConfigurationKey("lab.environmentMap.tintLevel", this._globalConfiguration) || 0;
-
-            // reflection color
-            this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
-            this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
-            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
-            this.reflectionColor.copyFrom(tmpColor3);
-
-            //update the environment, if exists
-            if (this.environmentHelper) {
-                if (this.environmentHelper.groundMaterial) {
-                    this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
-                }
-
-                if (this.environmentHelper.skyboxMaterial) {
-                    this.environmentHelper.skyboxMaterial._perceptualColor = this.mainColor;
-                }
             }
         }
 
@@ -766,6 +744,116 @@ export class SceneManager {
         });
     }*/
 
+    protected _configureVR(vrConfig: IVRConfiguration) {
+        if (vrConfig.disabled) {
+            if (this._vrHelper) {
+                if (this._vrHelper.isInVRMode) {
+                    this._vrHelper.exitVR();
+                }
+                this._vrHelper.dispose();
+                this._vrHelper = undefined;
+            }
+            return;
+        }
+        let vrOptions: VRExperienceHelperOptions = deepmerge({
+            useCustomVRButton: true,
+            createDeviceOrientationCamera: false,
+            trackPosition: true
+        }, vrConfig.vrOptions || {});
+
+        this._vrHelper = this.scene.createDefaultVRExperience(vrOptions);
+        if (!vrConfig.disableInteractions) {
+            this._vrHelper.enableInteractions();
+        }
+        if (!vrConfig.disableTeleportation) {
+            let floorMeshName = vrConfig.overrideFloorMeshName || "BackgroundPlane";
+            this._vrHelper.enableTeleportation({
+                floorMeshName
+            });
+        }
+        if (vrConfig.rotateUsingControllers) {
+            let rotationOffset: Quaternion | null;
+            this._vrHelper.onControllerMeshLoadedObservable.add((controller) => {
+                controller.onTriggerStateChangedObservable.add((data) => {
+                    if (controller.mesh && controller.mesh.rotationQuaternion) {
+                        if (data.pressed) {
+                            if (!rotationOffset) {
+                                this.models[0].rootMesh.rotationQuaternion = this.models[0].rootMesh.rotationQuaternion || new Quaternion();
+                                rotationOffset = controller.mesh.rotationQuaternion.conjugate().multiply(this.models[0].rootMesh.rotationQuaternion!);
+                            }
+                        } else {
+                            rotationOffset = null;
+                        }
+                    }
+                });
+                this.scene.registerBeforeRender(() => {
+                    if (this.models[0]) {
+                        if (rotationOffset && controller.mesh && controller.mesh.rotationQuaternion) {
+                            this.models[0].rootMesh.rotationQuaternion!.copyFrom(controller.mesh.rotationQuaternion).multiplyInPlace(rotationOffset);
+                        } else {
+                            this.models[0].rootMesh.rotationQuaternion = null;
+                        }
+
+                    }
+                });
+            });
+        }
+        this.onVRConfiguredObservable.notifyObservers({
+            sceneManager: this,
+            object: this._vrHelper,
+            newConfiguration: vrConfig
+        });
+    }
+
+    protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
+        if (environmentMapConfiguration.texture) {
+            this.scene.environmentTexture = new BABYLON.CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
+        }
+
+        //sanity check
+        if (this.scene.environmentTexture) {
+            let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
+            Matrix.FromQuaternionToRef(rotatquatRotationionY, this.scene.environmentTexture.getReflectionTextureMatrix());
+        }
+
+        // process mainColor changes:
+        if (environmentMapConfiguration.mainColor) {
+            this._configurationContainer.mainColor = this.mainColor || Color3.White();
+            let mc = environmentMapConfiguration.mainColor;
+            if (mc.r !== undefined) {
+                this.mainColor.r = mc.r;
+            }
+            if (mc.g !== undefined) {
+                this.mainColor.g = mc.g
+            }
+            if (mc.b !== undefined) {
+                this.mainColor.b = mc.b
+            }
+
+            this.reflectionColor.copyFrom(this.mainColor);
+
+
+            let environmentTint = getConfigurationKey("environmentMap.tintLevel", this._globalConfiguration) || 0;
+
+            // reflection color
+            this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
+            this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
+            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
+            this.reflectionColor.copyFrom(tmpColor3);
+
+            //update the environment, if exists
+            if (this.environmentHelper) {
+                if (this.environmentHelper.groundMaterial) {
+                    this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
+                }
+
+                if (this.environmentHelper.skyboxMaterial) {
+                    this.environmentHelper.skyboxMaterial._perceptualColor = this.mainColor;
+                }
+            }
+        }
+    }
+
     /**
      * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
      * @param cameraConfig the new camera configuration
@@ -780,6 +868,9 @@ export class SceneManager {
             this.scene.createDefaultCamera(true, true, attachControl);
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
             this.camera.setTarget(Vector3.Zero());
+        }
+        if (!this.camera) {
+            this.camera = <ArcRotateCamera>this.scene.activeCamera!;
         }
         if (cameraConfig.position) {
             let newPosition = this.camera.position.clone();
@@ -811,11 +902,9 @@ export class SceneManager {
             return !this.environmentHelper || (mesh !== this.environmentHelper.ground && mesh !== this.environmentHelper.rootMesh && mesh !== this.environmentHelper.skybox);
         });
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-        const sceneDiagonalLenght = sceneDiagonal.length();
-        if (isFinite(sceneDiagonalLenght))
-            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
-        else {
-            this.camera.upperRadiusLimit = 10;
+        const sceneDiagonalLength = sceneDiagonal.length();
+        if (isFinite(sceneDiagonalLength)) {
+            this.camera.upperRadiusLimit = sceneDiagonalLength * 4;
         }
 
         // sanity check!
@@ -844,6 +933,12 @@ export class SceneManager {
         this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
+        const sceneDiagonalLenght = sizeVec.length();
+        if (isFinite(sceneDiagonalLenght))
+            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+
+        if (this._configurationContainer.configuration)
+            this._configureEnvironment(this._configurationContainer.configuration.skybox, this._configurationContainer.configuration.ground);
         /*this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
             // casting ais safe, due to the constraints tested before
             (<ShadowLight>light).setDirectionToTarget(center);
@@ -854,7 +949,7 @@ export class SceneManager {
         if (!skyboxConifguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
-                delete this.environmentHelper;
+                this.environmentHelper = undefined;
             };
         } else {
 
@@ -888,7 +983,7 @@ export class SceneManager {
                 }
                 options.enableGroundMirror = !!groundConfig.mirror && this.groundMirrorEnabled;
                 if (groundConfig.texture) {
-                    options.groundTexture = this.labs.getAssetUrl(groundConfig.texture);
+                    options.groundTexture = this._getAssetUrl(groundConfig.texture);
                 }
                 if (groundConfig.color) {
                     options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
@@ -934,7 +1029,7 @@ export class SceneManager {
                 }
                 if (conf.cubeTexture && conf.cubeTexture.url) {
                     if (typeof conf.cubeTexture.url === "string") {
-                        options.skyboxTexture = this.labs.getAssetUrl(conf.cubeTexture.url);
+                        options.skyboxTexture = this._getAssetUrl(conf.cubeTexture.url);
                     } else {
                         // init later!
                         postInitSkyboxMaterial = true;
@@ -960,7 +1055,19 @@ export class SceneManager {
                     this.environmentHelper.dispose();
                     this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
                 } else {
+                    // recreate the ground
+                    if (this.environmentHelper.ground) {
+                        this.environmentHelper.ground.dispose();
+                    }
+                    // recreate the skybox
+                    if (this.environmentHelper.skybox) {
+                        this.environmentHelper.skybox.dispose();
+                    }
+
                     this.environmentHelper.updateOptions(options)!;
+                    // update doesn't change the size of the skybox and ground, so we have to recreate!
+                    //this.environmentHelper.dispose();
+                    //this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
                 }
             }
 
@@ -1013,7 +1120,7 @@ export class SceneManager {
 
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
-            object: this.environmentHelper,
+            object: this.environmentHelper!,
             newConfiguration: {
                 skybox: skyboxConifguration,
                 ground: groundConfiguration
@@ -1223,7 +1330,7 @@ export class SceneManager {
     }
 
     private _updateGroundMirrorRenderList(model?: ViewerModel, resetList?: boolean) {
-        if (this.environmentHelper.groundMirror && this.environmentHelper.groundMirror.renderList) {
+        if (this.environmentHelper && this.environmentHelper.groundMirror && this.environmentHelper.groundMirror.renderList) {
             let focusMeshes = model ? model.meshes : this.scene.meshes;
             let renderList = this.environmentHelper.groundMirror.renderList;
             if (resetList) {
@@ -1311,6 +1418,7 @@ export class SceneManager {
         this.onSceneConfiguredObservable.clear();
         this.onSceneInitObservable.clear();
         this.onSceneOptimizerConfiguredObservable.clear();
+        this.onVRConfiguredObservable.clear();
 
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();
@@ -1334,6 +1442,25 @@ export class SceneManager {
         if (this.scene) {
             this.scene.dispose();
         }
+    }
+
+    /**
+     * Get an environment asset url by using the configuration if the path is not absolute.
+     * @param url Asset url
+     * @returns The Asset url using the `environmentAssetsRootURL` if the url is not an absolute path.
+     */
+    private _getAssetUrl(url: string): string {
+        let returnUrl = url;
+        if (url && url.toLowerCase().indexOf("//") === -1) {
+            if (!this._assetsRootURL) {
+                // Tools.Warn("Please, specify the root url of your assets before loading the configuration (labs.environmentAssetsRootURL) or disable the background through the viewer options.");
+                return url;
+            }
+
+            returnUrl = this._assetsRootURL + returnUrl;
+        }
+
+        return returnUrl;
     }
 
     private _cameraBehaviorMapping: { [name: string]: number } = {};

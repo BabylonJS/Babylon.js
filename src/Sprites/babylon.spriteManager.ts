@@ -207,7 +207,7 @@
             var offset = 0;
             for (var index = 0; index < max; index++) {
                 var sprite = this.sprites[index];
-                if (!sprite) {
+                if (!sprite || !sprite.isVisible) {
                     continue;
                 }
 
@@ -249,12 +249,12 @@
             engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.drawElementsType(Material.TriangleFillMode, 0, max * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset/4) * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.drawElementsType(Material.TriangleFillMode, 0, max * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset/4) * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
