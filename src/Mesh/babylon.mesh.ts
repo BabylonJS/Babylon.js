@@ -68,21 +68,42 @@
         }
 
         // Events 
+        private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
+        private _onAfterRenderObservable: Nullable<Observable<Mesh>>;
+        private _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
 
         /**
          * An event triggered before rendering the mesh
          */
-        public onBeforeRenderObservable = new Observable<Mesh>();
+        public get onBeforeRenderObservable(): Observable<Mesh> {
+            if (!this._onBeforeRenderObservable) {
+                this._onBeforeRenderObservable = new Observable<Mesh>();
+            }
+
+            return this._onBeforeRenderObservable;
+        }
 
         /**
         * An event triggered after rendering the mesh
         */
-        public onAfterRenderObservable = new Observable<Mesh>();
+        public get onAfterRenderObservable(): Observable<Mesh> {
+            if (!this._onAfterRenderObservable) {
+                this._onAfterRenderObservable = new Observable<Mesh>();
+            }
+
+            return this._onAfterRenderObservable;
+        }
 
         /**
         * An event triggered before drawing the mesh
         */
-        public onBeforeDrawObservable = new Observable<Mesh>();
+        public get onBeforeDrawObservable(): Observable<Mesh> {
+            if (!this._onBeforeDrawObservable) {
+                this._onBeforeDrawObservable = new Observable<Mesh>();
+            }
+
+            return this._onBeforeDrawObservable;
+        }
 
         private _onBeforeDrawObserver: Nullable<Observer<Mesh>>;
         public set onBeforeDraw(callback: () => void) {
@@ -184,7 +205,9 @@
 
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", 
-                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen"], 
+                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
+                                              "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw"
+                                            ], 
                                               ["_poseMatrix"]);
 
                 // Source mesh
@@ -242,6 +265,7 @@
                         system.clone(system.name, this);
                     }
                 }
+                this.refreshBoundingInfo();
                 this.computeWorldMatrix(true);
             }
 
@@ -805,16 +829,18 @@
                         var weight: number;
                         for (inf = 0; inf < 4; inf++) {
                             weight = matricesWeightsData[matWeightIdx + inf];
-                            if (weight <= 0) break;
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
-                            finalMatrix.addToSelf(tempMatrix);
+                            if (weight > 0) {
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
                         }
                         if (needExtras) {
                             for (inf = 0; inf < 4; inf++) {
                                 weight = matricesWeightsExtraData![matWeightIdx + inf];
-                                if (weight <= 0) break;
-                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
-                                finalMatrix.addToSelf(tempMatrix);
+                                if (weight > 0) {
+                                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
+                                    finalMatrix.addToSelf(tempMatrix);
+                                }
                             }
                         }
 
@@ -1073,7 +1099,9 @@
                 return this;
             }
 
-            this.onBeforeDrawObservable.notifyObservers(this);
+            if (this._onBeforeDrawObservable) {
+                this._onBeforeDrawObservable.notifyObservers(this);
+            }
 
             let scene = this.getScene();
             let engine = scene.getEngine();
@@ -1284,9 +1312,10 @@
         }
 
         /**
-         * Triggers the draw call for the mesh.
-         * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.   
-         * Returns the Mesh.   
+         * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
+         * @param subMesh defines the subMesh to render
+         * @param enableAlphaMode defines if alpha mode can be changed
+         * @returns the current mesh
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
@@ -1296,7 +1325,6 @@
             }
 
             var scene = this.getScene();
-
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
 
@@ -1309,7 +1337,9 @@
                 return this;
             }
 
-            this.onBeforeRenderObservable.notifyObservers(this);
+            if (this._onBeforeRenderObservable) {
+                this._onBeforeRenderObservable.notifyObservers(this);
+            }
 
             var engine = scene.getEngine();
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
@@ -1412,7 +1442,9 @@
                 engine.setAlphaMode(currentMode);
             }
 
-            this.onAfterRenderObservable.notifyObservers(this);
+            if (this._onAfterRenderObservable) {
+                this._onAfterRenderObservable.notifyObservers(this);
+            }
             return this;
         }
 
@@ -1423,7 +1455,7 @@
         }
 
         /**
-         * Returns an array populated with ParticleSystem objects whose the mesh is the emitter. 
+         * Returns an array populated with IParticleSystem objects whose the mesh is the emitter. 
          */
         public getEmittedParticleSystems(): IParticleSystem[] {
             var results = new Array<IParticleSystem>();
@@ -1437,7 +1469,7 @@
         }
 
         /**
-         * Returns an array populated with ParticleSystem objects whose the mesh or its children are the emitter.
+         * Returns an array populated with IParticleSystem objects whose the mesh or its children are the emitter.
          */
         public getHierarchyEmittedParticleSystems(): IParticleSystem[] {
             var results = new Array<IParticleSystem>();
@@ -1745,6 +1777,18 @@
                 this._geometry.releaseForMesh(this, true);
             }
 
+            if (this._onBeforeDrawObservable) {
+                this._onBeforeDrawObservable.clear();
+            }
+
+            if (this._onBeforeRenderObservable) {
+                this._onBeforeRenderObservable.clear();
+            }
+
+            if (this._onAfterRenderObservable) {
+                this._onAfterRenderObservable.clear();
+            }            
+
             // Sources
             var meshes = this.getScene().meshes;
             meshes.forEach((abstractMesh: AbstractMesh) => {
@@ -1765,14 +1809,6 @@
                 this.instances[0].dispose();
             }
 
-            // Effect layers.
-            let effectLayers = this.getScene().effectLayers;
-            for (let i = 0; i < effectLayers.length; i++) {
-                let effectLayer = effectLayers[i];
-                if (effectLayer) {
-                    effectLayer._disposeMesh(this);
-                }
-            }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
@@ -2635,7 +2671,7 @@
         /**
          * Creates a ribbon mesh.   
          * Please consider using the same method from the MeshBuilder class instead.   
-         * The ribbon is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
+         * The ribbon is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
          *
          * Please read this full tutorial to understand how to design a ribbon : http://doc.babylonjs.com/tutorials/Ribbon_Tutorial    
          * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.    
@@ -2880,7 +2916,7 @@
 
         /**
          * Creates an extruded shape mesh.    
-         * The extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
+         * The extrusion is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
          * Please consider using the same method from the MeshBuilder class instead.    
          *
          * Please read this full tutorial to understand how to design an extruded shape : http://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes     
@@ -2912,7 +2948,7 @@
         }
         /**
          * Creates an custom extruded shape mesh.    
-         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
+         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
          * Please consider using the same method from the MeshBuilder class instead.    
          *
          * Please read this full tutorial to understand how to design a custom extruded shape : http://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes     
@@ -3077,7 +3113,7 @@
         }
         /**
          * Creates a tube mesh.    
-         * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
+         * The tube is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
          * Please consider using the same method from the MeshBuilder class instead.    
          * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube.        
          * The parameter `radius` (positive float, default 1) sets the tube radius size.    
@@ -3292,8 +3328,7 @@
                     if (weight > 0) {
                         Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
-
-                    } else break;
+                    }
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
@@ -3301,8 +3336,7 @@
                         if (weight > 0) {
                             Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
-
-                        } else break;
+                        }
                     }
                 }
 

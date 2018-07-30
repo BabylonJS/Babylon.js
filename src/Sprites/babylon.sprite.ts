@@ -22,6 +22,10 @@
         private _manager: SpriteManager;
         private _time = 0;
         private _onAnimationEnd: () => void;
+        /**
+         * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
+         */
+        public isVisible = true;
 
         public get size(): number {
             return this.width;

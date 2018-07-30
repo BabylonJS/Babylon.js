@@ -189,7 +189,7 @@
         }
 
         /**
-         * Affects all gemetry data in one call
+         * Affects all geometry data in one call
          * @param vertexData defines the geometry data
          * @param updatable defines if the geometry must be flagged as updatable (false as default)
          */
@@ -1144,7 +1144,15 @@
 
                 if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
                     var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
-                    mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndicesData, false);
+                    var floatIndices = [];
+                    for (var i = 0; i < matricesIndicesData.length; i++) {
+                        var index = matricesIndicesData[i];
+                        floatIndices.push(index & 0x000000FF);
+                        floatIndices.push((index & 0x0000FF00) >> 8);
+                        floatIndices.push((index & 0x00FF0000) >> 16);
+                        floatIndices.push(index >> 24);
+                    }
+                    mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, false);
                 }
 
                 if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {

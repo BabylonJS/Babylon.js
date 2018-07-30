@@ -19,10 +19,12 @@ vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cu
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-	vec3 direction = vDirectionW;
-
-	float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
-	float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;
+	vec3 direction = normalize(vDirectionW);
+	float lon = atan(direction.z, direction.x);
+	float lat = acos(direction.y);
+	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
+	float s = sphereCoords.x * 0.5 + 0.5;
+	float t = sphereCoords.y;	
 
  	#ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
 		return vec3(1.0 - s, t, 0);
@@ -34,9 +36,12 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
 
 	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition.xyz);
-	vec3 r = reflect(cameraToVertex, worldNormal);
-	float t = clamp(r.y * -0.5 + 0.5, 0., 1.0);
-	float s = atan(r.z, r.x) * RECIPROCAL_PI2 + 0.5;
+	vec3 r = normalize(reflect(cameraToVertex, worldNormal));
+	float lon = atan(r.z, r.x);
+	float lat = acos(r.y);
+	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
+	float s = sphereCoords.x * 0.5 + 0.5;
+	float t = sphereCoords.y;		
 
 	return vec3(s, t, 0);
 #endif

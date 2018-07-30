@@ -58,9 +58,49 @@
         /**
          * Defines the cell index used by the particle to be rendered from a sprite.
          */
-        public cellIndex: number = 0;
+        public cellIndex: number = 0;  
 
-        private _currentFrameCounter = 0;
+        /** @hidden */
+        public _initialDirection: Nullable<Vector3>;
+
+        /** @hidden */
+        public _initialStartSpriteCellID: number;
+        public _initialEndSpriteCellID: number;
+
+        /** @hidden */
+        public _currentColorGradient: Nullable<ColorGradient>;
+        /** @hidden */
+        public _currentColor1 = new Color4(0, 0, 0, 0);
+        /** @hidden */
+        public _currentColor2 = new Color4(0, 0, 0, 0);
+
+        /** @hidden */
+        public _currentSizeGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentSize1 = 0;
+        /** @hidden */
+        public _currentSize2 = 0;      
+        
+        /** @hidden */
+        public _currentAngularSpeedGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentAngularSpeed1 = 0;
+        /** @hidden */
+        public _currentAngularSpeed2 = 0;          
+
+        /** @hidden */
+        public _currentVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentVelocity1 = 0;
+        /** @hidden */
+        public _currentVelocity2 = 0;           
+        
+        /** @hidden */
+        public _currentLimitVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentLimitVelocity1 = 0;
+        /** @hidden */
+        public _currentLimitVelocity2 = 0;            
 
         /**
          * Creates a new instance Particle
@@ -80,51 +120,16 @@
 
         private updateCellInfoFromSystem(): void {
             this.cellIndex = this.particleSystem.startSpriteCellID;
-
-            if (this.particleSystem.spriteCellChangeSpeed == 0) {
-                this.updateCellIndex = this._updateCellIndexWithSpeedCalculated;
-            }
-            else {
-                this.updateCellIndex = this._updateCellIndexWithCustomSpeed;
-            }
         }
 
         /**
-         * Defines how the sprite cell index is updated for the particle. This is 
-         * defined as a callback.
+         * Defines how the sprite cell index is updated for the particle
          */
-        public updateCellIndex: (scaledUpdateSpeed: number) => void;
+        public updateCellIndex(): void {
+            let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
+            let ratio = Scalar.Clamp(((this.age * this.particleSystem.spriteCellChangeSpeed) % this.lifeTime) / this.lifeTime);
 
-        private _updateCellIndexWithSpeedCalculated(scaledUpdateSpeed: number): void {
-            //   (ageOffset / scaledUpdateSpeed) / available cells
-            var numberOfScaledUpdatesPerCell = ((this.lifeTime - this.age) / scaledUpdateSpeed) / (this.particleSystem.endSpriteCellID + 1 - this.cellIndex);
-
-            this._currentFrameCounter += scaledUpdateSpeed;
-            if (this._currentFrameCounter >= numberOfScaledUpdatesPerCell * scaledUpdateSpeed) {
-                this._currentFrameCounter = 0;
-                this.cellIndex++;
-                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
-                    this.cellIndex = this.particleSystem.endSpriteCellID;
-                }
-            }
-        }
-
-        private _updateCellIndexWithCustomSpeed(): void {
-            if (this._currentFrameCounter >= this.particleSystem.spriteCellChangeSpeed) {
-                this.cellIndex++;
-                this._currentFrameCounter = 0;
-                if (this.cellIndex > this.particleSystem.endSpriteCellID) {
-                    if (this.particleSystem.spriteCellLoop) {
-                        this.cellIndex = this.particleSystem.startSpriteCellID;
-                    }
-                    else {
-                        this.cellIndex = this.particleSystem.endSpriteCellID;
-                    }
-                }
-            }
-            else {
-                this._currentFrameCounter++;
-            }
+            this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
         }
 
         /**
@@ -133,6 +138,15 @@
          */
         public copyTo(other: Particle) {
             other.position.copyFrom(this.position);
+            if (this._initialDirection) {
+                if (other._initialDirection) {
+                    other._initialDirection.copyFrom(this._initialDirection);
+                } else {
+                    other._initialDirection = this._initialDirection.clone();
+                }
+            } else {
+                other._initialDirection = null;
+            }
             other.direction.copyFrom(this.direction);
             other.color.copyFrom(this.color);
             other.colorStep.copyFrom(this.colorStep);
@@ -144,6 +158,35 @@
             other.angularSpeed = this.angularSpeed;
             other.particleSystem = this.particleSystem;
             other.cellIndex = this.cellIndex;
+            if (this._currentColorGradient) {
+                other._currentColorGradient = this._currentColorGradient;
+                other._currentColor1.copyFrom(this._currentColor1);
+                other._currentColor2.copyFrom(this._currentColor2);
+            }
+            if (this._currentSizeGradient) {
+                other._currentSizeGradient = this._currentSizeGradient;
+                other._currentSize1 = this._currentSize1;
+                other._currentSize2 = this._currentSize2;
+            }
+            if (this._currentAngularSpeedGradient) {
+                other._currentAngularSpeedGradient = this._currentAngularSpeedGradient;
+                other._currentAngularSpeed1 = this._currentAngularSpeed1;
+                other._currentAngularSpeed2 = this._currentAngularSpeed2;
+            }        
+            if (this._currentVelocityGradient) {
+                other._currentVelocityGradient = this._currentVelocityGradient;
+                other._currentVelocity1 = this._currentVelocity1;
+                other._currentVelocity2 = this._currentVelocity2;
+            }     
+            if (this._currentLimitVelocityGradient) {
+                other._currentLimitVelocityGradient = this._currentLimitVelocityGradient;
+                other._currentLimitVelocity1 = this._currentLimitVelocity1;
+                other._currentLimitVelocity2 = this._currentLimitVelocity2;
+            }                           
+            if (this.particleSystem.isAnimationSheetEnabled) {
+                other._initialStartSpriteCellID = this._initialStartSpriteCellID;
+                other._initialEndSpriteCellID = this._initialEndSpriteCellID;
+            }
         }
     }
 } 

@@ -11,3 +11,5 @@ export * from './sceneConfiguration';
 export * from './sceneOptimizerConfiguration';
 export * from './skyboxConfiguration';
 export * from './templateConfiguration';
+export * from './vrConfiguration';
+export * from './environmentMapConfiguration';

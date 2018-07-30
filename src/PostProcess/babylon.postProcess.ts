@@ -244,7 +244,10 @@
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
          * @param blockCompilation If the shader should not be compiled imediatly. (default: false) 
          */
-        constructor(/** Name of the PostProcess. */public name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
+        constructor(
+            /** Name of the PostProcess. */
+            public name: string, 
+            fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
             samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
@@ -468,7 +471,7 @@
             this.onActivateObservable.notifyObservers(camera);
 
             // Clear
-            if (this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
+            if (scene._allowPostProcessClear && this.autoClear && this.alphaMode === Engine.ALPHA_DISABLE) {
                 this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, true, true, true);
             }
 

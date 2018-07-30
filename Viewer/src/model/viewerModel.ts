@@ -1,4 +1,4 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, ParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
 import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
@@ -48,7 +48,7 @@ export class ViewerModel implements IDisposable {
     /**
      * ParticleSystems connected to this model
      */
-    public particleSystems: Array<ParticleSystem> = [];
+    public particleSystems: Array<IParticleSystem> = [];
     /**
      * Skeletons defined in this model
      */
@@ -114,8 +114,10 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
-        this.rootMesh = new AbstractMesh("modelRootMesh");
-        this._pivotMesh = new AbstractMesh("pivotMesh");
+        let scene = this._configurationContainer && this._configurationContainer.scene
+
+        this.rootMesh = new AbstractMesh("modelRootMesh", scene);
+        this._pivotMesh = new AbstractMesh("pivotMesh", scene);
         this._pivotMesh.parent = this.rootMesh;
         // rotate 180, gltf fun
         this._pivotMesh.rotation.y += Math.PI;
@@ -241,13 +243,17 @@ export class ViewerModel implements IDisposable {
         // check if this is not a gltf loader and init the animations
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx);
+                let ag = new AnimationGroup("animation-" + idx, this._configurationContainer && this._configurationContainer.scene);
+                let add = false;
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
+                        add = true;
                     }
                 });
-                this.addAnimationGroup(ag);
+                if (add) {
+                    this.addAnimationGroup(ag);
+                }
             });
         }
 
@@ -348,7 +354,7 @@ export class ViewerModel implements IDisposable {
      */
     protected _getAnimationByName(name: string): Nullable<IModelAnimation> {
         // can't use .find, noe available on IE
-        let filtered = this._animations.filter(a => a.name === name);
+        let filtered = this._animations.filter(a => a.name === name.trim());
         // what the next line means - if two animations have the same name, they will not be returned!
         if (filtered.length === 1) {
             return filtered[0];
@@ -371,7 +377,7 @@ export class ViewerModel implements IDisposable {
     }
 
     public setCurrentAnimationByName(name: string) {
-        let animation = this._getAnimationByName(name);
+        let animation = this._getAnimationByName(name.trim());
         if (animation) {
             if (this.currentAnimation && this.currentAnimation.state !== AnimationState.STOPPED) {
                 this.currentAnimation.stop();

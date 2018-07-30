@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
+        return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
+    });
+
     /**
      * A spot light is defined by a position, a direction, an angle, and an exponent. 
      * These values define a cone of light starting from the position, emitting toward the direction.
@@ -21,6 +25,12 @@
         */
 
         private _angle: number;
+        private _innerAngle: number = 0;
+        private _cosHalfAngle: number;
+
+        private _lightAngleScale: number;
+        private _lightAngleOffset: number;
+
         /**
          * Gets the cone angle of the spot light in Radians.
          */
@@ -33,8 +43,29 @@
          */
         public set angle(value: number) {
             this._angle = value;
+            this._cosHalfAngle = Math.cos(value * 0.5);
             this._projectionTextureProjectionLightDirty = true;
             this.forceProjectionMatrixCompute();
+            this._computeAngleValues();
+        }
+
+        /**
+         * Only used in gltf falloff mode, this defines the angle where 
+         * the directional falloff will start before cutting at angle which could be seen
+         * as outer angle.
+         */
+        @serialize()
+        public get innerAngle(): number {
+            return this._angle
+        }
+        /**
+         * Only used in gltf falloff mode, this defines the angle where 
+         * the directional falloff will start before cutting at angle which could be seen
+         * as outer angle.
+         */
+        public set innerAngle(value: number) {
+            this._innerAngle = value;
+            this._computeAngleValues();
         }
 
         private _shadowAngleScale: number;
@@ -257,9 +288,15 @@
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
             this._uniformBuffer.addUniform("vLightSpecular", 3);
             this._uniformBuffer.addUniform("vLightDirection", 3);
+            this._uniformBuffer.addUniform("vLightFalloff", 4);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
             this._uniformBuffer.addUniform("depthValues", 2);
             this._uniformBuffer.create();
+        }
+
+        private _computeAngleValues(): void {
+            this._lightAngleScale = 1.0 / Math.max(0.001, (Math.cos(this._innerAngle * 0.5) - this._cosHalfAngle));
+            this._lightAngleOffset = -this._cosHalfAngle * this._lightAngleScale;
         }
 
         /**
@@ -295,8 +332,16 @@
                 normalizeDirection.x,
                 normalizeDirection.y,
                 normalizeDirection.z,
-                Math.cos(this.angle * 0.5),
+                this._cosHalfAngle,
                 lightIndex);
+
+            this._uniformBuffer.updateFloat4("vLightFalloff",
+                this.range,
+                this._inverseSquaredRange,
+                this._lightAngleScale,
+                this._lightAngleOffset,
+                lightIndex
+            );
 
             if (this.projectionTexture && this.projectionTexture.isReady()) {
                 if (this._projectionTextureViewLightDirty) {
@@ -322,6 +367,16 @@
             if (this._projectionTexture){
                 this._projectionTexture.dispose();
             }
+        }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["SPOTLIGHT" + lightIndex] = true;
+            defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture ? true : false;
         }
     }
 }

@@ -216,20 +216,24 @@ module BABYLON {
                     defines["POINTLIGHT" + lightIndex] = false;
                     defines["DIRLIGHT" + lightIndex] = false;
 
-                    var type;
-                    if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
-                        type = "SPOTLIGHT" + lightIndex;
-                        let spotLight = light as SpotLight;
-                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = spotLight.projectionTexture ? true : false;
-                    } else if (light.getTypeID() === Light.LIGHTTYPEID_HEMISPHERICLIGHT) {
-                        type = "HEMILIGHT" + lightIndex;
-                    } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
-                        type = "POINTLIGHT" + lightIndex;
-                    } else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
+                    light.prepareLightSpecificDefines(defines, lightIndex);
 
-                    defines[type] = true;
+                    // FallOff.
+                    defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
+                    defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
+                    defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
+
+                    switch (light.falloffType) {
+                        case Light.FALLOFF_GLTF:
+                        defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
+                        break;
+                        case Light.FALLOFF_PHYSICAL:
+                        defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
+                        break;
+                        case Light.FALLOFF_STANDARD:
+                        defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
+                        break;
+                    }
 
                     // Specular
                     if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
@@ -249,8 +253,13 @@ module BABYLON {
                     if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (shadowGenerator) {
-                            shadowEnabled = true;
-                            shadowGenerator.prepareDefines(defines, lightIndex);
+                            const shadowMap = shadowGenerator.getShadowMap();
+                            if (shadowMap) {
+                                if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+                                    shadowEnabled = true;
+                                    shadowGenerator.prepareDefines(defines, lightIndex);
+                                }
+                            }
                         }
                     }
 
@@ -338,6 +347,7 @@ module BABYLON {
                     "vLightDiffuse" + lightIndex,
                     "vLightSpecular" + lightIndex,
                     "vLightDirection" + lightIndex,
+                    "vLightFalloff" + lightIndex,
                     "vLightGround" + lightIndex,
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex,

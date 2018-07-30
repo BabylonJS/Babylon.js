@@ -10,8 +10,12 @@ module BABYLON.GLTF2.Extensions {
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
      */
-    export class MSFT_lod extends GLTFLoaderExtension {
+    export class MSFT_lod implements IGLTFLoaderExtension {
+        /** The name of this extension. */
         public readonly name = NAME;
+
+        /** Defines whether this extension is enabled. */
+        public enabled = true;
 
         /**
          * Maximum number of LODs to load, starting from the lowest LOD.
@@ -32,121 +36,155 @@ module BABYLON.GLTF2.Extensions {
          */
         public onMaterialLODsLoadedObservable = new Observable<number>();
 
-        private _loadingNodeLOD: Nullable<_ILoaderNode> = null;
-        private _loadNodeSignals: { [nodeIndex: number]: Deferred<void> } = {};
-        private _loadNodePromises = new Array<Array<Promise<void>>>();
+        private _loader: GLTFLoader;
 
-        private _loadingMaterialLOD: Nullable<_ILoaderMaterial> = null;
-        private _loadMaterialSignals: { [materialIndex: number]: Deferred<void> } = {};
-        private _loadMaterialPromises = new Array<Array<Promise<void>>>();
+        private _nodeIndexLOD: Nullable<number> = null;
+        private _nodeSignalLODs = new Array<Deferred<void>>();
+        private _nodePromiseLODs = new Array<Array<Promise<any>>>();
 
+        private _materialIndexLOD: Nullable<number> = null;
+        private _materialSignalLODs = new Array<Deferred<void>>();
+        private _materialPromiseLODs = new Array<Array<Promise<any>>>();
+
+        /** @hidden */
         constructor(loader: GLTFLoader) {
-            super(loader);
-
-            this._loader._onReadyObservable.addOnce(() => {
-                for (let indexLOD = 0; indexLOD < this._loadNodePromises.length; indexLOD++) {
-                    Promise.all(this._loadNodePromises[indexLOD]).then(() => {
-                        this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
-                    });
-                }
-
-                for (let indexLOD = 0; indexLOD < this._loadMaterialPromises.length; indexLOD++) {
-                    Promise.all(this._loadMaterialPromises[indexLOD]).then(() => {
-                        this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
-                    });
-                }
-            });
+            this._loader = loader;
         }
 
+        /** @hidden */
         public dispose() {
-            super.dispose();
+            delete this._loader;
 
-            this._loadingNodeLOD = null;
-            this._loadNodeSignals = {};
-            this._loadingMaterialLOD = null;
-            this._loadMaterialSignals = {};
+            this._nodeIndexLOD = null;
+            this._nodeSignalLODs.length = 0;
+            this._nodePromiseLODs.length = 0;
+
+            this._materialIndexLOD = null;
+            this._materialSignalLODs.length = 0;
+            this._materialPromiseLODs.length = 0;
 
             this.onMaterialLODsLoadedObservable.clear();
             this.onNodeLODsLoadedObservable.clear();
         }
 
-        protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> {
-            return this._loadExtensionAsync<IMSFTLOD>(context, node, (extensionContext, extension) => {
-                let firstPromise: Promise<void>;
+        /** @hidden */
+        public onReady(): void {
+            for (let indexLOD = 0; indexLOD < this._nodePromiseLODs.length; indexLOD++) {
+                const promise = Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
+                    if (indexLOD !== 0) {
+                        this._loader.endPerformanceCounter(`Node LOD ${indexLOD}`);
+                    }
 
-                const nodeLODs = this._getLODs(extensionContext, node, this._loader._gltf.nodes, extension.ids);
+                    this._loader.log(`Loaded node LOD ${indexLOD}`);
+                    this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
+
+                    if (indexLOD !== this._nodePromiseLODs.length - 1) {
+                        this._loader.startPerformanceCounter(`Node LOD ${indexLOD + 1}`);
+                        if (this._nodeSignalLODs[indexLOD]) {
+                            this._nodeSignalLODs[indexLOD].resolve();
+                        }
+                    }
+                });
+
+                this._loader._completePromises.push(promise);
+            }
+
+            for (let indexLOD = 0; indexLOD < this._materialPromiseLODs.length; indexLOD++) {
+                const promise = Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
+                    if (indexLOD !== 0) {
+                        this._loader.endPerformanceCounter(`Material LOD ${indexLOD}`);
+                    }
+
+                    this._loader.log(`Loaded material LOD ${indexLOD}`);
+                    this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
+
+                    if (indexLOD !== this._materialPromiseLODs.length - 1) {
+                        this._loader.startPerformanceCounter(`Material LOD ${indexLOD + 1}`);
+                        if (this._materialSignalLODs[indexLOD]) {
+                            this._materialSignalLODs[indexLOD].resolve();
+                        }
+                    }
+                });
+
+                this._loader._completePromises.push(promise);
+            }
+        }
+
+        /** @hidden */
+        public loadNodeAsync(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>> {
+            return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Mesh>(context, node, this.name, (extensionContext, extension) => {
+                let firstPromise: Promise<Mesh>;
+
+                const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
+                this._loader.logOpen(`${extensionContext}`);
+
                 for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                     const nodeLOD = nodeLODs[indexLOD];
 
                     if (indexLOD !== 0) {
-                        this._loadingNodeLOD = nodeLOD;
-
-                        if (!this._loadNodeSignals[nodeLOD._index]) {
-                            this._loadNodeSignals[nodeLOD._index] = new Deferred<void>();
-                        }
+                        this._nodeIndexLOD = indexLOD;
+                        this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                     }
 
-                    const promise = this._loader._loadNodeAsync(`#/nodes/${nodeLOD._index}`, nodeLOD).then(() => {
+                    const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD).then(babylonMesh => {
                         if (indexLOD !== 0) {
+                            // TODO: should not rely on _babylonMesh
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
                             if (previousNodeLOD._babylonMesh) {
-                                previousNodeLOD._babylonMesh.dispose(false, true);
+                                previousNodeLOD._babylonMesh.dispose();
                                 delete previousNodeLOD._babylonMesh;
+                                this._disposeUnusedMaterials();
                             }
                         }
 
-                        if (indexLOD !== nodeLODs.length - 1) {
-                            const nodeIndex = nodeLODs[indexLOD + 1]._index;
-
-                            if (this._loadNodeSignals[nodeIndex]) {
-                                this._loadNodeSignals[nodeIndex].resolve();
-                                delete this._loadNodeSignals[nodeIndex];
-                            }
-                        }
+                        return babylonMesh;
                     });
 
                     if (indexLOD === 0) {
                         firstPromise = promise;
                     }
                     else {
-                        this._loader._completePromises.push(promise);
-                        this._loadingNodeLOD = null;
+                        this._nodeIndexLOD = null;
                     }
 
-                    this._loadNodePromises[indexLOD] = this._loadNodePromises[indexLOD] || [];
-                    this._loadNodePromises[indexLOD].push(promise);
+                    this._nodePromiseLODs[indexLOD] = this._nodePromiseLODs[indexLOD] || [];
+                    this._nodePromiseLODs[indexLOD].push(promise);
                 }
 
+                this._loader.logClose();
                 return firstPromise!;
             });
         }
 
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        /** @hidden */
+        public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
             // Don't load material LODs if already loading a node LOD.
-            if (this._loadingNodeLOD) {
+            if (this._nodeIndexLOD) {
                 return null;
             }
 
-            return this._loadExtensionAsync<IMSFTLOD>(context, material, (extensionContext, extension) => {
-                let firstPromise: Promise<void>;
+            return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, (extensionContext, extension) => {
+                let firstPromise: Promise<Material>;
 
-                const materialLODs = this._getLODs(extensionContext, material, this._loader._gltf.materials, extension.ids);
+                const materialLODs = this._getLODs(extensionContext, material, this._loader.gltf.materials, extension.ids);
+                this._loader.logOpen(`${extensionContext}`);
+
                 for (let indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
                     const materialLOD = materialLODs[indexLOD];
 
                     if (indexLOD !== 0) {
-                        this._loadingMaterialLOD = materialLOD;
-
-                        if (!this._loadMaterialSignals[materialLOD._index]) {
-                            this._loadMaterialSignals[materialLOD._index] = new Deferred<void>();
-                        }
+                        this._materialIndexLOD = indexLOD;
                     }
 
-                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, mesh, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : () => {}).then(() => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, babylonMaterial => {
+                        if (indexLOD === 0) {
+                            assign(babylonMaterial);
+                        }
+                    }).then(babylonMaterial => {
                         if (indexLOD !== 0) {
-                            const babylonDataLOD = materialLOD._babylonData!;
-                            assign(babylonDataLOD[babylonDrawMode].material);
+                            assign(babylonMaterial);
 
+                            // TODO: should not rely on _babylonData
                             const previousBabylonDataLOD = materialLODs[indexLOD - 1]._babylonData!;
                             if (previousBabylonDataLOD[babylonDrawMode]) {
                                 previousBabylonDataLOD[babylonDrawMode].material.dispose();
@@ -154,43 +192,42 @@ module BABYLON.GLTF2.Extensions {
                             }
                         }
 
-                        if (indexLOD !== materialLODs.length - 1) {
-                            const materialIndex = materialLODs[indexLOD + 1]._index;
-                            if (this._loadMaterialSignals[materialIndex]) {
-                                this._loadMaterialSignals[materialIndex].resolve();
-                                delete this._loadMaterialSignals[materialIndex];
-                            }
-                        }
+                        return babylonMaterial;
                     });
 
                     if (indexLOD === 0) {
                         firstPromise = promise;
                     }
                     else {
-                        this._loader._completePromises.push(promise);
-                        this._loadingMaterialLOD = null;
+                        this._materialIndexLOD = null;
                     }
 
-                    this._loadMaterialPromises[indexLOD] = this._loadMaterialPromises[indexLOD] || [];
-                    this._loadMaterialPromises[indexLOD].push(promise);
+                    this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
+                    this._materialPromiseLODs[indexLOD].push(promise);
                 }
 
+                this._loader.logClose();
                 return firstPromise!;
             });
         }
 
-        protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
+        /** @hidden */
+        public _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
             // Defer the loading of uris if loading a material or node LOD.
-            if (this._loadingMaterialLOD) {
-                const index = this._loadingMaterialLOD._index;
-                return this._loadMaterialSignals[index].promise.then(() => {
-                    return this._loader._loadUriAsync(context, uri);
+            if (this._materialIndexLOD !== null) {
+                this._loader.log(`deferred`);
+                const previousIndexLOD = this._materialIndexLOD - 1;
+                this._materialSignalLODs[previousIndexLOD] = this._materialSignalLODs[previousIndexLOD] || new Deferred<void>();
+                return this._materialSignalLODs[previousIndexLOD].promise.then(() => {
+                    return this._loader.loadUriAsync(context, uri);
                 });
             }
-            else if (this._loadingNodeLOD) {
-                const index = this._loadingNodeLOD._index;
-                return this._loadNodeSignals[index].promise.then(() => {
-                    return this._loader._loadUriAsync(context, uri);
+            else if (this._nodeIndexLOD !== null) {
+                this._loader.log(`deferred`);
+                const previousIndexLOD = this._nodeIndexLOD - 1;
+                this._nodeSignalLODs[previousIndexLOD] = this._nodeSignalLODs[previousIndexLOD] || new Deferred<void>();
+                return this._nodeSignalLODs[this._nodeIndexLOD - 1].promise.then(() => {
+                    return this._loader.loadUriAsync(context, uri);
                 });
             }
 
@@ -208,7 +245,7 @@ module BABYLON.GLTF2.Extensions {
             const properties = new Array<T>();
 
             for (let i = ids.length - 1; i >= 0; i--) {
-                properties.push(GLTFLoader._GetProperty(`${context}/ids/${ids[i]}`, array, ids[i]));
+                properties.push(ArrayItem.Get(`${context}/ids/${ids[i]}`, array, ids[i]));
                 if (properties.length === this.maxLODsToLoad) {
                     return properties;
                 }
@@ -217,7 +254,25 @@ module BABYLON.GLTF2.Extensions {
             properties.push(property);
             return properties;
         }
+
+        private _disposeUnusedMaterials(): void {
+            // TODO: should not rely on _babylonData
+            const materials = this._loader.gltf.materials;
+            if (materials) {
+                for (const material of materials) {
+                    if (material._babylonData) {
+                        for (const drawMode in material._babylonData) {
+                            const babylonData = material._babylonData[drawMode];
+                            if (babylonData.meshes.length === 0) {
+                                babylonData.material.dispose(false, true);
+                                delete material._babylonData[drawMode];
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    GLTFLoader._Register(NAME, loader => new MSFT_lod(loader));
+    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_lod(loader));
 }

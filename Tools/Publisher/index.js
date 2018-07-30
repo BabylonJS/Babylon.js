@@ -8,6 +8,8 @@ let basePath = '../../dist/preview release';
 // This can be changed when we have a new major release.
 let minimumDependency = '>=3.2.0-alpha';
 
+process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin'));
+
 let packages = [
     {
         name: 'core',
@@ -51,12 +53,13 @@ let packages = [
         required: [
             basePath + '/viewer/readme.md',
             basePath + '/viewer/package.json',
-            basePath + '/viewer/babylon.viewer.js'
+            basePath + '/viewer/babylon.viewer.js',
+            basePath + '/viewer/babylon.viewer.max.js'
         ]
     },
     {
         name: 'viewer-assets',
-        path: basePath + '/../../Viewer/dist/build/assets/',
+        path: basePath + '/../../Viewer/build/assets/',
         required: [
             basePath + '/../../Viewer/assets/readme.md',
             basePath + '/../../Viewer/assets/package.json',
@@ -215,7 +218,7 @@ function processCore(package, version) {
 
 function processViewer(package, version) {
 
-    let buildPath = package.path + "dist/build/src/";
+    let buildPath = package.path + "build/src/";
     let projectPath = '../../Viewer';
 
     if (package.required) {
@@ -228,7 +231,11 @@ function processViewer(package, version) {
 
     // build the viewer
     console.log("executing " + 'tsc -p ' + projectPath);
-    shelljs.exec('tsc -p ' + projectPath);
+
+    let tscCompile = shelljs.exec('tsc -p ' + projectPath);
+    if (tscCompile.code !== 0) {
+        throw new Error("tsc compilation failed");
+    }
 
     let packageJson = require(buildPath + '/package.json');
 
@@ -257,7 +264,10 @@ function publish(version, packageName, basePath) {
 
     //publish the respected package
     console.log("executing " + 'npm publish \"' + basePath + "\"" + ' ' + tagDef);
-    shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tagDef);
+    if (process.argv.indexOf('--no-publish') === -1) {
+        shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tagDef);
+    }
+
 }
 
 function getFiles(dir, files_) {

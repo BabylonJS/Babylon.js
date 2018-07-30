@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
+        return () => new PointLight(name, Vector3.Zero(), scene);
+    });
+
     /**
      * A point light is a light defined by an unique point in world space. 
      * The light is emitted in every direction from this point.
@@ -141,6 +145,7 @@
             this._uniformBuffer.addUniform("vLightData", 4);
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
             this._uniformBuffer.addUniform("vLightSpecular", 3);
+            this._uniformBuffer.addUniform("vLightFalloff", 4);
             this._uniformBuffer.addUniform("shadowsInfo", 3);
             this._uniformBuffer.addUniform("depthValues", 2);
             this._uniformBuffer.create();
@@ -159,12 +164,29 @@
                     this.transformedPosition.y,
                     this.transformedPosition.z,
                     0.0,
-                    lightIndex); 
-                return this;
+                    lightIndex);
+            }
+            else {
+                this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
             }
 
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightFalloff",
+                this.range,
+                this._inverseSquaredRange,
+                0,
+                0,
+                lightIndex
+            );
             return this;
+        }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+            defines["POINTLIGHT" + lightIndex] = true;
         }
     }
 } 

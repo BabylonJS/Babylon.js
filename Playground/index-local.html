@@ -18,7 +18,7 @@
         <script src="../dist/preview%20release/Oimo.js"></script>
         <script src="../dist/preview%20release/earcut.min.js"></script>
         <!-- Monaco -->
-        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+
         <!-- Babylon.js -->
         <script src="../tools/DevLoader/BabylonLoader.js"></script>
 
@@ -381,7 +381,7 @@
             </div>
             <div class="horizontalSeparator"></div>
             <input id="filterBar" type="text" placeholder="Filter examples...">
-            <img id="filterBarClear" src="http://d33wubrfki0l68.cloudfront.net/17ca450bae302631f4857cd8c3992234ec5dd9a7/057f9/img/ui/clear_button.png">
+            <img id="filterBarClear" src="https://d33wubrfki0l68.cloudfront.net/17ca450bae302631f4857cd8c3992234ec5dd9a7/057f9/img/ui/clear_button.png">
         </div>
 
         <span class="label" id="fpsLabel">FPS</span>
@@ -447,6 +447,7 @@
         <script src="js/pbt.js"></script>
         <script>
             BABYLONDEVTOOLS.Loader
+                .require('node_modules/monaco-editor/min/vs/loader.js')
                 .require('js/index.js')
                 .load(function () {
                     BABYLON.DracoCompression.Configuration.decoder = {

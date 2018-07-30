@@ -1,4 +1,23 @@
 ﻿module BABYLON {
+    export interface AbstractScene {
+        /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null.
+         */
+        getHighlightLayerByName(name: string): Nullable<HighlightLayer>;
+    }
+
+    AbstractScene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
+        for (var index = 0; index < this.effectLayers.length; index++) {
+            if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
+                return (<any>this.effectLayers[index]) as HighlightLayer;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
@@ -61,6 +80,11 @@
          * Should we display highlight as a solid stroke?
          */
         isStroke?: boolean;
+
+        /**
+         * The rendering group to draw the layer in.
+         */
+        renderingGroupId: number;
     }
 
     /**
@@ -225,6 +249,7 @@
                 blurVerticalSize: 1.0,
                 alphaBlendingMode: Engine.ALPHA_COMBINE,
                 camera: null,
+                renderingGroupId: -1,
                 ...options,
             };
 
@@ -233,7 +258,8 @@
                 alphaBlendingMode: this._options.alphaBlendingMode,
                 camera: this._options.camera,
                 mainTextureFixedSize: this._options.mainTextureFixedSize,
-                mainTextureRatio: this._options.mainTextureRatio
+                mainTextureRatio: this._options.mainTextureRatio,
+                renderingGroupId: this._options.renderingGroupId
             });
 
             // Do not render as long as no meshes have been added
@@ -460,6 +486,10 @@
                 return false;
             };
 
+            if (!super.hasMesh(mesh)) {
+                return false;
+            }
+
             return true;
         }
 
@@ -553,6 +583,10 @@
                 return false;
             }
 
+            if (!super.hasMesh(mesh)) {
+                return false;
+            }
+
             return this._meshes[mesh.uniqueId] !== undefined && this._meshes[mesh.uniqueId] !== null;
         }
 
@@ -587,6 +621,10 @@
                     observerDefault: mesh.onAfterRenderObservable.add(this._defaultStencilReference),
                     glowEmissiveOnly: glowEmissiveOnly
                 };
+
+                mesh.onDisposeObservable.add(() => {
+                    this._disposeMesh(mesh);
+                });
             }
 
             this._shouldRender = true;

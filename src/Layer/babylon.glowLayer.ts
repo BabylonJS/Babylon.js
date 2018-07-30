@@ -1,4 +1,24 @@
 ﻿module BABYLON {
+
+    export interface AbstractScene {
+        /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null.
+         */
+        getGlowLayerByName(name: string): Nullable<GlowLayer>;
+    }
+
+    AbstractScene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
+        for (var index = 0; index < this.effectLayers.length; index++) {
+            if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
+                return (<any>this.effectLayers[index]) as GlowLayer;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Glow layer options. This helps customizing the behaviour
      * of the glow layer.
@@ -29,6 +49,11 @@
          * Enable MSAA by chosing the number of samples.
          */
         mainTextureSamples?: number;
+
+        /**
+         * The rendering group to draw the layer in.
+         */
+        renderingGroupId: number;
     }
 
     /**
@@ -130,6 +155,7 @@
                 mainTextureFixedSize: undefined,
                 camera: null,
                 mainTextureSamples: 1,
+                renderingGroupId: -1,
                 ...options,
             };
 
@@ -138,7 +164,8 @@
                 alphaBlendingMode: Engine.ALPHA_ADD,
                 camera: this._options.camera,
                 mainTextureFixedSize: this._options.mainTextureFixedSize,
-                mainTextureRatio: this._options.mainTextureRatio
+                mainTextureRatio: this._options.mainTextureRatio,
+                renderingGroupId: this._options.renderingGroupId
             });
         }
 
@@ -423,6 +450,10 @@
          * @returns true if the mesh will be highlighted by the current glow layer
          */
         public hasMesh(mesh: AbstractMesh): boolean {
+            if (!super.hasMesh(mesh)) {
+                return false;
+            }
+
             // Included Mesh
             if (this._includedOnlyMeshes.length) {
                 return this._includedOnlyMeshes.indexOf(mesh.uniqueId) !== -1;

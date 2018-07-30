@@ -557,7 +557,11 @@
             return this._projectionMatrix;
         }
 
-        public getTranformationMatrix(): Matrix {
+        /**
+         * Gets the transformation matrix (ie. the multiplication of view by projection matrices)
+         * @returns a Matrix
+         */
+        public getTransformationMatrix(): Matrix {
             this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             return this._transformMatrix;
         }
@@ -567,7 +571,7 @@
                 return;
             }
 
-            this.getTranformationMatrix();
+            this.getTransformationMatrix();
 
             if (!this._frustumPlanes) {
                 this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
@@ -909,50 +913,17 @@
         }
 
         static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
-            switch (type) {
-                case "ArcRotateCamera":
-                    return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
-                case "DeviceOrientationCamera":
-                    return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
-                case "FollowCamera":
-                    return () => new FollowCamera(name, Vector3.Zero(), scene);
-                case "ArcFollowCamera":
-                    return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);
-                case "GamepadCamera":
-                    return () => new GamepadCamera(name, Vector3.Zero(), scene);
-                case "TouchCamera":
-                    return () => new TouchCamera(name, Vector3.Zero(), scene);
-                case "VirtualJoysticksCamera":
-                    return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
-                case "WebVRFreeCamera":
-                    return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
-                case "WebVRGamepadCamera":
-                    return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
-                case "VRDeviceOrientationFreeCamera":
-                    return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
-                case "VRDeviceOrientationGamepadCamera":
-                    return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
-                case "AnaglyphArcRotateCamera":
-                    return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, scene);
-                case "AnaglyphFreeCamera":
-                    return () => new AnaglyphFreeCamera(name, Vector3.Zero(), interaxial_distance, scene);
-                case "AnaglyphGamepadCamera":
-                    return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), interaxial_distance, scene);
-                case "AnaglyphUniversalCamera":
-                    return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), interaxial_distance, scene);
-                case "StereoscopicArcRotateCamera":
-                    return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
-                case "StereoscopicFreeCamera":
-                    return () => new StereoscopicFreeCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
-                case "StereoscopicGamepadCamera":
-                    return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
-                case "StereoscopicUniversalCamera":
-                    return () => new StereoscopicUniversalCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
-                case "FreeCamera": // Forcing Universal here
-                    return () => new UniversalCamera(name, Vector3.Zero(), scene);
-                default: // Universal Camera is the default value
-                    return () => new UniversalCamera(name, Vector3.Zero(), scene);
+            let constructorFunc = Node.Construct(type, name, scene, {
+                interaxial_distance: interaxial_distance,
+                isStereoscopicSideBySide: isStereoscopicSideBySide
+            });
+
+            if (constructorFunc) {
+                return <() => Camera>constructorFunc;
             }
+
+            // Default to universal camera
+            return () => new UniversalCamera(name, Vector3.Zero(), scene);
         }
 
         public computeWorldMatrix(): Matrix {

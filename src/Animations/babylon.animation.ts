@@ -46,7 +46,7 @@
             /** The frame for which the event is triggered **/
             public frame: number,
             /** The event to perform when triggered **/
-            public action: () => void , 
+            public action: (currentFrame: number) => void , 
             /** Specifies if the event should be triggered only once**/
             public onlyOnce?: boolean ) {
         }
@@ -1058,7 +1058,7 @@
         }
 
         /**
-         * Get the Vectpr2 animation type
+         * Get the Vector2 animation type
          */
         public static get ANIMATIONTYPE_VECTOR2(): number {
             return Animation._ANIMATIONTYPE_VECTOR2;

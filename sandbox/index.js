@@ -53,7 +53,7 @@ if (BABYLON.Engine.isSupported()) {
     var currentScene;
     var currentSkybox;
     var currentPluginName;
-    var skyboxPath = "Assets/environment.dds";
+    var skyboxPath = "https://assets.babylonjs.com/environments/environmentSpecular.env";
     var debugLayerEnabled = false;
     var debugLayerLastActiveTab = 0;
 
@@ -83,6 +83,8 @@ if (BABYLON.Engine.isSupported()) {
     });
 
     var sceneLoaded = function (sceneFile, babylonScene) {
+        engine.clearInternalTexturesCache();
+
         // Clear dropdown that contains animation names
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
@@ -124,7 +126,7 @@ if (BABYLON.Engine.isSupported()) {
 
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
-            currentScene.createDefaultCameraOrLight(true);
+            currentScene.createDefaultCamera(true);
 
             if (cameraPosition) {
                 currentScene.activeCamera.setPosition(cameraPosition);
@@ -158,10 +160,16 @@ if (BABYLON.Engine.isSupported()) {
 
         currentScene.activeCamera.attachControl(canvas);
 
-        // Environment
+        // Lighting
         if (currentPluginName === "gltf") {
-            var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
-            currentSkybox = currentScene.createDefaultSkybox(hdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
+            if (!currentScene.environmentTexture) {
+                currentScene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
+            }
+
+            currentSkybox = currentScene.createDefaultSkybox(currentScene.environmentTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3, false);
+        }
+        else {
+            currentScene.createDefaultLight();
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
@@ -262,8 +270,9 @@ if (BABYLON.Engine.isSupported()) {
 
     window.addEventListener("keydown", function (event) {
         // Press R to reload
-        if (event.keyCode === 82 && event.target.nodeName !== "INPUT") {
+        if (event.keyCode === 82 && event.target.nodeName !== "INPUT" && currentScene) {
             debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
+
             if (assetUrl) {
                 loadFromAssetUrl();
             }

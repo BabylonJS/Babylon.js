@@ -6,116 +6,91 @@ module BABYLON {
      */
     export abstract class Light extends Node {
 
-        //lightmapMode Consts
-        private static _LIGHTMAP_DEFAULT = 0;
-        private static _LIGHTMAP_SPECULAR = 1;
-        private static _LIGHTMAP_SHADOWSONLY = 2;
+        /**
+         * Falloff Default: light is falling off following the material specification: 
+         * standard material is using standard falloff whereas pbr material can request special falloff per materials.
+         */
+        public static readonly FALLOFF_DEFAULT = 0;
 
+        /**
+         * Falloff Physical: light is falling off following the inverse squared distance law.
+         */
+        public static readonly FALLOFF_PHYSICAL = 1;
+
+        /**
+         * Falloff gltf: light is falling off as described in the gltf moving to PBR document 
+         * to enhance interoperability with other engines.
+         */
+        public static readonly FALLOFF_GLTF = 2;
+
+        /**
+         * Falloff Standard: light is falling off like in the standard material 
+         * to enhance interoperability with other materials.
+         */
+        public static readonly FALLOFF_STANDARD = 3;
+
+        //lightmapMode Consts
         /**
          * If every light affecting the material is in this lightmapMode,
          * material.lightmapTexture adds or multiplies
          * (depends on material.useLightmapAsShadowmap)
          * after every other light calculations.
          */
-        public static get LIGHTMAP_DEFAULT(): number {
-            return Light._LIGHTMAP_DEFAULT;
-        }
-
+        public static readonly LIGHTMAP_DEFAULT = 0;
         /**
          * material.lightmapTexture as only diffuse lighting from this light
          * adds only specular lighting from this light
          * adds dynamic shadows
          */
-        public static get LIGHTMAP_SPECULAR(): number {
-            return Light._LIGHTMAP_SPECULAR;
-        }
-
+        public static readonly LIGHTMAP_SPECULAR = 1;
         /**
          * material.lightmapTexture as only lighting
          * no light calculation from this light
          * only adds dynamic shadows from this light
          */
-        public static get LIGHTMAP_SHADOWSONLY(): number {
-            return Light._LIGHTMAP_SHADOWSONLY;
-        }
+        public static readonly LIGHTMAP_SHADOWSONLY = 2;
 
         // Intensity Mode Consts
-        private static _INTENSITYMODE_AUTOMATIC = 0;
-        private static _INTENSITYMODE_LUMINOUSPOWER = 1;
-        private static _INTENSITYMODE_LUMINOUSINTENSITY = 2;
-        private static _INTENSITYMODE_ILLUMINANCE = 3;
-        private static _INTENSITYMODE_LUMINANCE = 4;
-
         /**
          * Each light type uses the default quantity according to its type:
          *      point/spot lights use luminous intensity
          *      directional lights use illuminance
          */
-        public static get INTENSITYMODE_AUTOMATIC(): number {
-            return Light._INTENSITYMODE_AUTOMATIC;
-        }
-
+        public static readonly INTENSITYMODE_AUTOMATIC = 0;
         /**
          * lumen (lm)
          */
-        public static get INTENSITYMODE_LUMINOUSPOWER(): number {
-            return Light._INTENSITYMODE_LUMINOUSPOWER;
-        }
-
+        public static readonly INTENSITYMODE_LUMINOUSPOWER = 1;
         /**
          * candela (lm/sr)
          */
-        public static get INTENSITYMODE_LUMINOUSINTENSITY(): number {
-            return Light._INTENSITYMODE_LUMINOUSINTENSITY;
-        }
-
+        public static readonly INTENSITYMODE_LUMINOUSINTENSITY = 2;
         /**
          * lux (lm/m^2)
          */
-        public static get INTENSITYMODE_ILLUMINANCE(): number {
-            return Light._INTENSITYMODE_ILLUMINANCE;
-        }
-
+        public static readonly INTENSITYMODE_ILLUMINANCE = 3;
         /**
          * nit (cd/m^2)
          */
-        public static get INTENSITYMODE_LUMINANCE(): number {
-            return Light._INTENSITYMODE_LUMINANCE;
-        }
+        public static readonly INTENSITYMODE_LUMINANCE = 4;
 
         // Light types ids const.
-        private static _LIGHTTYPEID_POINTLIGHT = 0;
-        private static _LIGHTTYPEID_DIRECTIONALLIGHT = 1;
-        private static _LIGHTTYPEID_SPOTLIGHT = 2;
-        private static _LIGHTTYPEID_HEMISPHERICLIGHT = 3;
-
         /**
          * Light type const id of the point light.
          */
-        public static get LIGHTTYPEID_POINTLIGHT(): number {
-            return Light._LIGHTTYPEID_POINTLIGHT;
-        }
-
+        public static readonly LIGHTTYPEID_POINTLIGHT = 0;
         /**
          * Light type const id of the directional light.
          */
-        public static get LIGHTTYPEID_DIRECTIONALLIGHT(): number {
-            return Light._LIGHTTYPEID_DIRECTIONALLIGHT;
-        }
-
+        public static readonly LIGHTTYPEID_DIRECTIONALLIGHT = 1;
         /**
          * Light type const id of the spot light.
          */
-        public static get LIGHTTYPEID_SPOTLIGHT(): number {
-            return Light._LIGHTTYPEID_SPOTLIGHT;
-        }
-
+        public static readonly LIGHTTYPEID_SPOTLIGHT = 2;
         /**
          * Light type const id of the hemispheric light.
          */
-        public static get LIGHTTYPEID_HEMISPHERICLIGHT(): number {
-            return Light._LIGHTTYPEID_HEMISPHERICLIGHT;
-        }
+        public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = 3;
 
         /**
          * Diffuse gives the basic color to an object.
@@ -131,6 +106,17 @@ module BABYLON {
         public specular = new Color3(1.0, 1.0, 1.0);
 
         /**
+         * Defines the falloff type for this light. This lets overrriding how punctual light are 
+         * falling off base on range or angle.
+         * This can be set to any values in Light.FALLOFF_x.
+         * 
+         * Note: This is only usefull for PBR Materials at the moment. This could be extended if required to 
+         * other types of materials.
+         */
+        @serialize()
+        public falloffType = Light.FALLOFF_DEFAULT;
+
+        /**
          * Strength of the light.
          * Note: By default it is define in the framework own unit.
          * Note: In PBR materials the intensityMode can be use to chose what unit the intensity is defined in.
@@ -138,12 +124,25 @@ module BABYLON {
         @serialize()
         public intensity = 1.0;
 
+        private _range = Number.MAX_VALUE;
+        protected _inverseSquaredRange = 0;
+
         /**
          * Defines how far from the source the light is impacting in scene units.
          * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
          */
         @serialize()
-        public range = Number.MAX_VALUE;
+        public get range(): number {
+            return this._range
+        }
+        /**
+         * Defines how far from the source the light is impacting in scene units.
+         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
+         */
+        public set range(value: number) {
+            this._range = value;
+            this._inverseSquaredRange = 1.0 / (this.range * this.range);
+        }
 
         /**
          * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type
@@ -581,18 +580,14 @@ module BABYLON {
          * @param scene The scene the new light will belong to
          * @returns the constructor function
          */
-        public static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
-            switch (type) {
-                case 0:
-                    return () => new PointLight(name, Vector3.Zero(), scene);
-                case 1:
-                    return () => new DirectionalLight(name, Vector3.Zero(), scene);
-                case 2:
-                    return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
-                case 3:
-                    return () => new HemisphericLight(name, Vector3.Zero(), scene);
+        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
+            let constructorFunc = Node.Construct("Light_Type_" + type, name, scene);
+
+            if (constructorFunc) {
+                return <() => Light>constructorFunc;
             }
 
+            // Default to no light for none present once.
             return null;
         }
 
@@ -788,5 +783,12 @@ module BABYLON {
             }
             this.getScene().sortLightsByPriority();
         }
+
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        public abstract prepareLightSpecificDefines(defines: any, lightIndex: number): void;
     }
 }

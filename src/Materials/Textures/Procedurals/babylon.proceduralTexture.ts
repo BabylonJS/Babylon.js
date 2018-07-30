@@ -1,7 +1,12 @@
 ﻿module BABYLON {
     export class ProceduralTexture extends Texture {
+        @serialize()
         private _size: number;
+
+        @serialize()
         public _generateMipMaps: boolean;
+
+        @serialize()
         public isEnabled = true;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
@@ -18,6 +23,7 @@
 
         public _textures: {[key: string]: Texture} = {};
         private _floats: {[key: string]: number} = {};
+        private _ints: {[key: string]: number} = {};
         private _floatsArrays: {[key: string]: number[]} = {};
         private _colors3: {[key: string]: Color3} = {};
         private _colors4: {[key: string]: Color4} = {};
@@ -30,8 +36,10 @@
         private _fallbackTextureUsed = false;
         private _engine: Engine;
 
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
+        constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
+
+            scene = this.getScene()!;
 
             scene.proceduralTextures.push(this);
 
@@ -154,6 +162,7 @@
             this._fragment = fragment;
         }
 
+        @serialize()
         public get refreshRate(): number {
             return this._refreshRate;
         }
@@ -198,6 +207,10 @@
 
             this.releaseInternalTexture();
             this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
+
+            // Update properties
+            this._size = size;
+            this._generateMipMaps = generateMipMaps;
         }
 
         private _checkUniform(uniformName: string): void {
@@ -218,6 +231,19 @@
         public setFloat(name: string, value: number): ProceduralTexture {
             this._checkUniform(name);
             this._floats[name] = value;
+
+            return this;
+        }
+
+        /**
+         * Set the value of an uniform to an integer value
+         * @param name defines the name of the uniform
+         * @param value defines the value to set
+         * @returns the current procedural texture
+         */
+        public setInt(name: string, value: number): ProceduralTexture {
+            this._checkUniform(name);
+            this._ints[name] = value;
 
             return this;
         }
@@ -281,6 +307,11 @@
             for (var name in this._textures) {
                 this._effect.setTexture(name, this._textures[name]);
             }
+
+            // Float    
+            for (name in this._ints) {
+                this._effect.setInt(name, this._ints[name]);
+            }            
 
             // Float    
             for (name in this._floats) {

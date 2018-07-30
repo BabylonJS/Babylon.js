@@ -494,7 +494,7 @@ module BABYLON {
 
             var saveAndLoadFile = () => {
                 // the scene is not yet in the DB, let's try to save it
-                this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
+                this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
             };
 
             this._checkVersionFromDB(completeUrl, version => {
@@ -503,7 +503,7 @@ module BABYLON {
                         this._loadFileFromDBAsync(completeUrl, sceneLoaded, saveAndLoadFile, useArrayBuffer);
                     }
                     else {
-                        this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer);
+                        this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
                     }
                 }
                 else {
@@ -557,7 +557,7 @@ module BABYLON {
             }
         }
 
-        private _saveFileIntoDBAsync(url: string, callback: (data?: any) => void, progressCallback?: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any, useArrayBuffer?: boolean) {
+        private _saveFileIntoDBAsync(url: string, callback: (data?: any) => void, progressCallback?: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any, useArrayBuffer?: boolean, errorCallback?: (data?: any) => void) {
             if (this.isSupported) {
                 var targetStore: string;
                 if (url.indexOf(".babylon") !== -1) {
@@ -570,7 +570,7 @@ module BABYLON {
                 // Create XHR
                 var xhr = new XMLHttpRequest();
                 var fileData: any;
-                xhr.open("GET", url, true);
+                xhr.open("GET", url + "?" + Date.now(), true);
 
                 if (useArrayBuffer) {
                     xhr.responseType = "arraybuffer";
@@ -581,7 +581,7 @@ module BABYLON {
                 }
 
                 xhr.addEventListener("load", () => {
-                    if (xhr.status === 200 || Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
+                    if (xhr.status === 200 || (xhr.status < 400 && Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6))) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;
                         fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
@@ -633,7 +633,11 @@ module BABYLON {
                         }
                     }
                     else {
-                        callback();
+                        if(xhr.status >= 400 && errorCallback){
+                            errorCallback(xhr);
+                        }else{
+                            callback();
+                        }
                     }
                 }, false);
 

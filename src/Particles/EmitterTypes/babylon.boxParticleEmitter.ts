@@ -32,17 +32,16 @@ module BABYLON {
 
         /**
          * Called by the particle System when the direction is computed for the created particle.
-         * @param emitPower is the power of the particle (speed)
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
             var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
             var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
 
-            Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+            Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
         }
 
         /**
@@ -73,7 +72,7 @@ module BABYLON {
         }
 
         /**
-         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * Called by the GPUParticleSystem to setup the update shader
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {            
@@ -92,11 +91,11 @@ module BABYLON {
         }
 
         /**
-         * Returns the string "BoxEmitter"
+         * Returns the string "BoxParticleEmitter"
          * @returns a string containing the class name
          */
         public getClassName(): string {
-            return "BoxEmitter";
+            return "BoxParticleEmitter";
         }   
         
         /**
@@ -120,10 +119,10 @@ module BABYLON {
          * @param serializationObject defines the JSON object
          */
         public parse(serializationObject: any): void {
-            this.direction1.copyFrom(serializationObject.direction1);
-            this.direction2.copyFrom(serializationObject.direction2);
-            this.minEmitBox.copyFrom(serializationObject.minEmitBox);
-            this.maxEmitBox.copyFrom(serializationObject.maxEmitBox);
+            Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
+            Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
+            Vector3.FromArrayToRef(serializationObject.minEmitBox, 0, this.minEmitBox);
+            Vector3.FromArrayToRef(serializationObject.maxEmitBox, 0, this.maxEmitBox);
         }
     }
 }

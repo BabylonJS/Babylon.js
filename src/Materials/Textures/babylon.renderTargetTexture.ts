@@ -22,10 +22,46 @@
         */
         public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
+        private _renderList: Nullable<Array<AbstractMesh>>;
         /**
         * Use this list to define the list of mesh you want to render.
         */
-        public renderList: Nullable<Array<AbstractMesh>> = new Array<AbstractMesh>();
+        public get renderList(): Nullable<Array<AbstractMesh>> {
+            return this._renderList;
+        }
+ 
+        public set renderList(value: Nullable<Array<AbstractMesh>>) {
+            this._renderList = value;
+
+            if (this._renderList) {
+                this._hookArray(this._renderList);
+            }
+        }
+
+        private _hookArray(array: AbstractMesh[]): void {
+            var oldPush = array.push;
+            array.push = (...items: AbstractMesh[]) => {
+                var result = oldPush.apply(array, items);
+                
+                this.getScene()!.meshes.forEach(mesh => {
+                    mesh._markSubMeshesAsLightDirty();
+                })
+
+                return result;
+            }
+
+            var oldSplice = array.splice;
+            array.splice = (index: number, deleteCount?: number) => {
+                var deleted = oldSplice.apply(array, [index, deleteCount]);
+
+                this.getScene()!.meshes.forEach(mesh => {
+                    mesh._markSubMeshesAsLightDirty();
+                })
+
+                return deleted;
+            }
+        }
+
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
@@ -172,8 +208,9 @@
          * @param generateDepthBuffer True to generate a depth buffer
          * @param generateStencilBuffer True to generate a stencil buffer
          * @param isMulti True if multiple textures need to be created (Draw Buffers)
+         * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
          */
-        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
+        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 
@@ -181,6 +218,7 @@
                 return;
             }
 
+            this.renderList = new Array<AbstractMesh>();
             this._engine = scene.getEngine();
             this.name = name;
             this.isRenderTarget = true;
@@ -196,6 +234,7 @@
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
+            this._renderingManager._useSceneAutoClearSetup = true;
 
             if (isMulti) {
                 return;
@@ -204,6 +243,7 @@
             this._renderTargetOptions = {
                 generateMipMaps: generateMipMaps,
                 type: type,
+                format: format,
                 samplingMode: samplingMode,
                 generateDepthBuffer: generateDepthBuffer,
                 generateStencilBuffer: generateStencilBuffer
@@ -669,6 +709,7 @@
          */
         public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+            this._renderingManager._useSceneAutoClearSetup = false;
         }
 
         public clone(): RenderTargetTexture {

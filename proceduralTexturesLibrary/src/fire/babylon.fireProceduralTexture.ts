@@ -79,6 +79,15 @@ module BABYLON {
             ];
         }
 
+        @serialize()
+        public get autoGenerateTime(): boolean {
+            return this._autoGenerateTime;
+        }
+
+        public set autoGenerateTime(value: boolean) {
+            this._autoGenerateTime = value;
+        }
+        
         public get fireColors(): Color3[] {
             return this._fireColors;
         }
@@ -88,6 +97,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get time(): number {
             return this._time;
         }
@@ -97,6 +107,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serializeAsVector2()
         public get speed(): Vector2 {
             return this._speed;
         }
@@ -106,6 +117,7 @@ module BABYLON {
             this.updateShaderUniforms();
         }
 
+        @serialize()
         public get alphaThreshold(): number {
             return this._alphaThreshold;
         }
@@ -113,6 +125,42 @@ module BABYLON {
         public set alphaThreshold(value: number) {
             this._alphaThreshold = value;
             this.updateShaderUniforms();
+        }
+
+        /**
+         * Serializes this fire procedural texture
+         * @returns a serialized fire procedural texture object
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.FireProceduralTexture";
+
+            serializationObject.fireColors = [];
+            for (var i = 0; i < this._fireColors.length; i++) {
+                serializationObject.fireColors.push(this._fireColors[i].asArray());
+            }
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Fire Procedural Texture from parsed fire procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing fire procedural texture information
+         * @returns a parsed Fire Procedural Texture
+         */
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
+            var texture = SerializationHelper.Parse(() => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+
+            var colors: Color3[] = [];
+            for (var i = 0; i < parsedTexture.fireColors.length; i++) {
+                colors.push(Color3.FromArray(parsedTexture.fireColors[i]));
+            }
+
+            texture.fireColors = colors;
+
+            return texture;
         }
     }
 }
