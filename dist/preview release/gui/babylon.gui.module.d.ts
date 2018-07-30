@@ -20,6 +20,7 @@ declare module 'babylonjs-gui/2D' {
 declare module 'babylonjs-gui/3D' {
     export * from "babylonjs-gui/3D/controls";
     export * from "babylonjs-gui/3D/materials";
+    export * from "babylonjs-gui/3D/charting";
     export * from "babylonjs-gui/3D/gui3DManager";
     export * from "babylonjs-gui/3D/vector3WithInfo";
 }
@@ -222,9 +223,10 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 * @param width defines the texture width (1024 by default)
                 * @param height defines the texture height (1024 by default)
                 * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+                * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
                 * @returns a new AdvancedDynamicTexture
                 */
-            static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
+            static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean): AdvancedDynamicTexture;
             /**
                 * Creates a new AdvancedDynamicTexture in fullscreen mode.
                 * In this mode the texture will rely on a layer for its rendering.
@@ -554,6 +556,12 @@ declare module 'babylonjs-gui/3D/materials' {
     export * from "babylonjs-gui/3D/materials/fluentMaterial";
 }
 
+declare module 'babylonjs-gui/3D/charting' {
+    export * from "babylonjs-gui/3D/charting/dataSeries";
+    export * from "babylonjs-gui/3D/charting/chart";
+    export * from "babylonjs-gui/3D/charting/barGraph";
+}
+
 declare module 'babylonjs-gui/3D/gui3DManager' {
     import { IDisposable, Scene, Nullable, UtilityLayerRenderer, Observable, Vector3, Material } from "babylonjs";
     import { Container3D } from "babylonjs-gui/3D/controls/container3D";
@@ -716,6 +724,7 @@ declare module 'babylonjs-gui/2D/controls/checkbox' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Observable, Vector2 } from "babylonjs";
+    import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     /**
         * Class used to represent a 2D checkbox
         */
@@ -743,6 +752,13 @@ declare module 'babylonjs-gui/2D/controls/checkbox' {
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+            /**
+                * Utility function to easily create a checkbox with a header
+                * @param title defines the label to use for the header
+                * @param onValueChanged defines the callback to call when value changes
+                * @returns a StackPanel containing the checkbox and a textBlock
+                */
+            static AddCheckBoxWithHeader(title: string, onValueChanged: (value: boolean) => void): StackPanel;
     }
 }
 
@@ -839,6 +855,11 @@ declare module 'babylonjs-gui/2D/controls/container' {
                 * @returns the current container
                 */
             addControl(control: Nullable<Control>): Container;
+            /**
+                * Removes all controls from the current container
+                * @returns the current container
+                */
+            clearControls(): Container;
             /**
                 * Removes a control from the current container
                 * @param control defines the control to remove
@@ -1963,6 +1984,10 @@ declare module 'babylonjs-gui/2D/controls/displayGrid' {
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
             name?: string | undefined;
+            /** Gets or sets a boolean indicating if minor lines must be rendered (true by default)) */
+            displayMinorLines: boolean;
+            /** Gets or sets a boolean indicating if major lines must be rendered (true by default)) */
+            displayMajorLines: boolean;
             /** Gets or sets background color (Black by default) */
             background: string;
             /** Gets or sets the width of each cell (20 by default) */
@@ -2527,7 +2552,7 @@ declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
                 */
             renderHoverLight: boolean;
             /**
-                * Gets or sets the radius used to render the hover light (default is 0.15)
+                * Gets or sets the radius used to render the hover light (default is 1.0)
                 */
             hoverRadius: number;
             /**
@@ -2556,6 +2581,163 @@ declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
             serialize(): any;
             getClassName(): string;
             static Parse(source: any, scene: Scene, rootUrl: string): FluentMaterial;
+    }
+}
+
+declare module 'babylonjs-gui/3D/charting/dataSeries' {
+    import { Color3 } from "babylonjs";
+    /** Class used to store data to display */
+    export class DataSeries {
+            /** Gets or sets the label of the series */
+            label: string;
+            /** Gets or sets the color associated with the series */
+            color: Color3;
+            /** Gets or sets the list of dimensions (used to filter data) */
+            dimensions: Array<string>;
+            /** Gets or sets the list of values (data to display) */
+            data: Array<any>;
+            /**
+                * Apply a list of filters to the data and return a list
+                * @param filters defines the filters to apply
+                * @returns an array containing the filtered data
+                */
+            getFilteredData(filters: {
+                    [key: string]: string;
+            }): Array<any>;
+            /**
+                * Get the different values of a dimension
+                * @param key defines the dimension name
+                * @returns An array of values
+                */
+            getDimensionValues(key: string): Array<any>;
+            /**
+                * Create a new DataSeries containing testing values
+                * @returns the new DataSeries
+                */
+            static CreateFakeData(): DataSeries;
+    }
+}
+
+declare module 'babylonjs-gui/3D/charting/chart' {
+    import { Nullable, TransformNode, Scene, Vector3, Observable, Mesh, AbstractMesh } from "babylonjs";
+    import { DataSeries } from "babylonjs-gui/3D/charting";
+    /** base class for all chart controls*/
+    export abstract class Chart {
+            protected _dataSource: Nullable<DataSeries>;
+            protected _rootNode: TransformNode;
+            protected _dataFilters: {
+                    [key: string]: string;
+            };
+            protected _scene: Scene;
+            protected _blockRefresh: boolean;
+            /** Observable raised when a new element is created */
+            onElementCreated: Observable<Mesh>;
+            /** User defined callback used to create labels */
+            labelCreationFunction: (label: string, width: number, includeBackground: boolean) => Mesh;
+            /**
+                * Observable raised when the point picked by the pointer events changed
+                */
+            onPickedPointChangedObservable: Observable<Nullable<Vector3>>;
+            /**
+                * Observable raised when the pointer enters an element of the chart
+             */
+            onElementEnterObservable: Observable<AbstractMesh>;
+            /**
+                * Observable raised when the pointer leaves an element of the chart
+                */
+            onElementOutObservable: Observable<AbstractMesh>;
+            /** Gets or sets the rotation of the entire chart */
+            rotation: Vector3;
+            /** Gets or sets the position of the entire chart */
+            position: Vector3;
+            /** Gets or sets the scaling of the entire chart */
+            scaling: Vector3;
+            /** Gets or sets the data source used by the graph */
+            dataSource: Nullable<DataSeries>;
+            /** Gets the filters applied to data source */
+            dataFilters: {
+                    [key: string]: string;
+            };
+            /** Gets the root node associated with this graph */
+            readonly rootNode: TransformNode;
+            /** Gets or sets a value indicating if refresh function should be executed (useful when multiple changes will happen and you want to run refresh only at the end) */
+            blockRefresh: boolean;
+            /** Gets or sets the name of the graph */
+            name: string;
+            /**
+                * Creates a new Chart
+                * @param name defines the name of the graph
+                * @param scene defines the hosting scene
+                */
+            constructor(name: string, scene?: Nullable<Scene>);
+            /**
+                * Function called by the chart objects when they need a label. Could be user defined if you set this.labelCreationFunction to a custom callback
+                * @param label defines the text of the label
+                * @param width defines the expected width (height is supposed to be 1)
+                * @param includeBackground defines if a background rectangle must be added (default is true)
+                * @returns a mesh used to host the label
+                */
+            addLabel(label: string, width: number, includeBackground?: boolean): Mesh;
+            /**
+                * Remove specific label mesh
+                * @param label defines the label mesh to remove
+                */
+            removeLabel(label: Mesh): void;
+            /** Remove all created labels */
+            removeLabels(): void;
+            /**
+                * Force the chart to redraw itself
+                * @returns the current chart
+             */
+            abstract refresh(): Chart;
+            /** Release all associated resources */
+            dispose(): void;
+            protected _clean(): void;
+    }
+}
+
+declare module 'babylonjs-gui/3D/charting/barGraph' {
+    import { Nullable, Scene, Mesh, Material } from "babylonjs";
+    import { Chart } from "babylonjs-gui/3D/charting";
+    /** Class used to render bar graphs */
+    export class BarGraph extends Chart {
+            protected _ownDefaultMaterial: boolean;
+            /** Gets or sets a boolean indicating if the background must be displayed */
+            displayBackground: boolean;
+            /** Gets or sets a boolean indicating if labels must be displayed */
+            displayLabels: boolean;
+            /** Gets or sets the margin between bars */
+            margin: number;
+            /** Gets or sets the with of each bar */
+            barWidth: number;
+            /** Gets or sets the maximum height of a bar */
+            maxBarHeight: number;
+            /** Gets or sets the dimension used for the labels */
+            labelDimension: string;
+            /** Gets or sets the material used by bar meshes */
+            defaultMaterial: Nullable<Material>;
+            /**
+                * Creates a new BarGraph
+                * @param name defines the name of the graph
+                * @param scene defines the hosting scene
+                */
+            constructor(name: string, scene?: Nullable<Scene>);
+            protected _createDefaultMaterial(scene: Scene): Material;
+            /**
+                * Children class can override this function to provide a new mesh (as long as it stays inside a 1x1x1 box)
+                * @param name defines the mesh name
+                * @param scene defines the hosting scene
+                * @returns a new mesh used to represent the current bar
+                */
+            protected _createBarMesh(name: string, scene: Scene): Mesh;
+            /**
+                * Force the graph to redraw itself
+                * @returns the current BarGraph
+             */
+            refresh(): BarGraph;
+            /** Clean associated resources */
+            dispose(): void;
+            protected _clean(): void;
     }
 }
 
@@ -2742,9 +2924,10 @@ declare module BABYLON.GUI {
                 * @param width defines the texture width (1024 by default)
                 * @param height defines the texture height (1024 by default)
                 * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+                * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
                 * @returns a new AdvancedDynamicTexture
                 */
-            static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
+            static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean): AdvancedDynamicTexture;
             /**
                 * Creates a new AdvancedDynamicTexture in fullscreen mode.
                 * In this mode the texture will rely on a layer for its rendering.
@@ -3046,6 +3229,8 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
+}
+declare module BABYLON.GUI {
     /**
         * Class used to manage 3D user interface
         * @see http://doc.babylonjs.com/how_to/gui3d
@@ -3221,6 +3406,13 @@ declare module BABYLON.GUI {
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+            /**
+                * Utility function to easily create a checkbox with a header
+                * @param title defines the label to use for the header
+                * @param onValueChanged defines the callback to call when value changes
+                * @returns a StackPanel containing the checkbox and a textBlock
+                */
+            static AddCheckBoxWithHeader(title: string, onValueChanged: (value: boolean) => void): StackPanel;
     }
 }
 declare module BABYLON.GUI {
@@ -3308,6 +3500,11 @@ declare module BABYLON.GUI {
                 * @returns the current container
                 */
             addControl(control: BABYLON.Nullable<Control>): Container;
+            /**
+                * Removes all controls from the current container
+                * @returns the current container
+                */
+            clearControls(): Container;
             /**
                 * Removes a control from the current container
                 * @param control defines the control to remove
@@ -4371,6 +4568,10 @@ declare module BABYLON.GUI {
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
             name?: string | undefined;
+            /** Gets or sets a boolean indicating if minor lines must be rendered (true by default)) */
+            displayMinorLines: boolean;
+            /** Gets or sets a boolean indicating if major lines must be rendered (true by default)) */
+            displayMajorLines: boolean;
             /** Gets or sets background color (Black by default) */
             background: string;
             /** Gets or sets the width of each cell (20 by default) */
@@ -4885,7 +5086,7 @@ declare module BABYLON.GUI {
                 */
             renderHoverLight: boolean;
             /**
-                * Gets or sets the radius used to render the hover light (default is 0.15)
+                * Gets or sets the radius used to render the hover light (default is 1.0)
                 */
             hoverRadius: number;
             /**
@@ -4914,5 +5115,154 @@ declare module BABYLON.GUI {
             serialize(): any;
             getClassName(): string;
             static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /** Class used to store data to display */
+    export class DataSeries {
+            /** Gets or sets the label of the series */
+            label: string;
+            /** Gets or sets the color associated with the series */
+            color: BABYLON.Color3;
+            /** Gets or sets the list of dimensions (used to filter data) */
+            dimensions: Array<string>;
+            /** Gets or sets the list of values (data to display) */
+            data: Array<any>;
+            /**
+                * Apply a list of filters to the data and return a list
+                * @param filters defines the filters to apply
+                * @returns an array containing the filtered data
+                */
+            getFilteredData(filters: {
+                    [key: string]: string;
+            }): Array<any>;
+            /**
+                * Get the different values of a dimension
+                * @param key defines the dimension name
+                * @returns An array of values
+                */
+            getDimensionValues(key: string): Array<any>;
+            /**
+                * Create a new DataSeries containing testing values
+                * @returns the new DataSeries
+                */
+            static CreateFakeData(): DataSeries;
+    }
+}
+declare module BABYLON.GUI {
+    /** base class for all chart controls*/
+    export abstract class Chart {
+            protected _dataSource: BABYLON.Nullable<DataSeries>;
+            protected _rootNode: BABYLON.TransformNode;
+            protected _dataFilters: {
+                    [key: string]: string;
+            };
+            protected _scene: BABYLON.Scene;
+            protected _blockRefresh: boolean;
+            /** BABYLON.Observable raised when a new element is created */
+            onElementCreated: BABYLON.Observable<BABYLON.Mesh>;
+            /** User defined callback used to create labels */
+            labelCreationFunction: (label: string, width: number, includeBackground: boolean) => BABYLON.Mesh;
+            /**
+                * BABYLON.Observable raised when the point picked by the pointer events changed
+                */
+            onPickedPointChangedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector3>>;
+            /**
+                * BABYLON.Observable raised when the pointer enters an element of the chart
+             */
+            onElementEnterObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
+            /**
+                * BABYLON.Observable raised when the pointer leaves an element of the chart
+                */
+            onElementOutObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
+            /** Gets or sets the rotation of the entire chart */
+            rotation: BABYLON.Vector3;
+            /** Gets or sets the position of the entire chart */
+            position: BABYLON.Vector3;
+            /** Gets or sets the scaling of the entire chart */
+            scaling: BABYLON.Vector3;
+            /** Gets or sets the data source used by the graph */
+            dataSource: BABYLON.Nullable<DataSeries>;
+            /** Gets the filters applied to data source */
+            dataFilters: {
+                    [key: string]: string;
+            };
+            /** Gets the root node associated with this graph */
+            readonly rootNode: BABYLON.TransformNode;
+            /** Gets or sets a value indicating if refresh function should be executed (useful when multiple changes will happen and you want to run refresh only at the end) */
+            blockRefresh: boolean;
+            /** Gets or sets the name of the graph */
+            name: string;
+            /**
+                * Creates a new Chart
+                * @param name defines the name of the graph
+                * @param scene defines the hosting scene
+                */
+            constructor(name: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
+            /**
+                * Function called by the chart objects when they need a label. Could be user defined if you set this.labelCreationFunction to a custom callback
+                * @param label defines the text of the label
+                * @param width defines the expected width (height is supposed to be 1)
+                * @param includeBackground defines if a background rectangle must be added (default is true)
+                * @returns a mesh used to host the label
+                */
+            addLabel(label: string, width: number, includeBackground?: boolean): BABYLON.Mesh;
+            /**
+                * Remove specific label mesh
+                * @param label defines the label mesh to remove
+                */
+            removeLabel(label: BABYLON.Mesh): void;
+            /** Remove all created labels */
+            removeLabels(): void;
+            /**
+                * Force the chart to redraw itself
+                * @returns the current chart
+             */
+            abstract refresh(): Chart;
+            /** Release all associated resources */
+            dispose(): void;
+            protected _clean(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /** Class used to render bar graphs */
+    export class BarGraph extends Chart {
+            protected _ownDefaultMaterial: boolean;
+            /** Gets or sets a boolean indicating if the background must be displayed */
+            displayBackground: boolean;
+            /** Gets or sets a boolean indicating if labels must be displayed */
+            displayLabels: boolean;
+            /** Gets or sets the margin between bars */
+            margin: number;
+            /** Gets or sets the with of each bar */
+            barWidth: number;
+            /** Gets or sets the maximum height of a bar */
+            maxBarHeight: number;
+            /** Gets or sets the dimension used for the labels */
+            labelDimension: string;
+            /** Gets or sets the material used by bar meshes */
+            defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /**
+                * Creates a new BarGraph
+                * @param name defines the name of the graph
+                * @param scene defines the hosting scene
+                */
+            constructor(name: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
+            protected _createDefaultMaterial(scene: BABYLON.Scene): BABYLON.Material;
+            /**
+                * Children class can override this function to provide a new mesh (as long as it stays inside a 1x1x1 box)
+                * @param name defines the mesh name
+                * @param scene defines the hosting scene
+                * @returns a new mesh used to represent the current bar
+                */
+            protected _createBarMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
+            /**
+                * Force the graph to redraw itself
+                * @returns the current BarGraph
+             */
+            refresh(): BarGraph;
+            /** Clean associated resources */
+            dispose(): void;
+            protected _clean(): void;
     }
 }

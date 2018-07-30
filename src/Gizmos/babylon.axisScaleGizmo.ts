@@ -3,6 +3,7 @@ module BABYLON {
      * Single axis scale gizmo
      */
     export class AxisScaleGizmo extends Gizmo {
+        private _coloredMaterial:StandardMaterial;
         /**
          * Drag behavior responsible for the gizmos dragging interactions
          */
@@ -18,6 +19,10 @@ module BABYLON {
          */
         public onSnapObservable = new Observable<{snapDistance:number}>();
         /**
+         * If the scaling operation should be done on all axis (default: false)
+         */
+        public uniformScaling = false;
+        /**
          * Creates an AxisScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param dragAxis The axis which the gizmo will be able to scale on
@@ -27,9 +32,9 @@ module BABYLON {
             super(gizmoLayer);
             
             // Create Material
-            var coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
-            coloredMaterial.disableLighting = true;
-            coloredMaterial.emissiveColor = color;
+            this._coloredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
+            this._coloredMaterial.disableLighting = true;
+            this._coloredMaterial.emissiveColor = color;
 
             var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverMaterial.disableLighting = true;
@@ -39,18 +44,18 @@ module BABYLON {
             var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene)
             var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.4}, gizmoLayer.utilityLayerScene);
             var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.5, 0)]}, gizmoLayer.utilityLayerScene);
-            arrowTail.color = coloredMaterial.emissiveColor;
+            arrowTail.color = this._coloredMaterial.emissiveColor;
             arrow.addChild(arrowMesh);
             arrow.addChild(arrowTail);
 
             // Position arrow pointing in its drag axis
             arrowMesh.scaling.scaleInPlace(0.1);
-            arrowMesh.material = coloredMaterial;
+            arrowMesh.material = this._coloredMaterial;
             arrowMesh.rotation.x = Math.PI/2;
             arrowMesh.position.z+=0.3;
             arrowTail.scaling.scaleInPlace(0.2);
             arrowTail.rotation.x = Math.PI/2;
-            arrowTail.material = coloredMaterial;
+            arrowTail.material = this._coloredMaterial;
             arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
             this._rootMesh.addChild(arrow);
 
@@ -67,14 +72,22 @@ module BABYLON {
                     // Snapping logic
                     var snapped = false;
                     var dragSteps = 0;
+                    if(this.uniformScaling){
+                        this.attachedMesh.scaling.normalizeToRef(tmpVector)
+                        if(tmpVector.y < 0){
+                            tmpVector.scaleInPlace(-1);
+                        }
+                    }else{
+                        tmpVector.copyFrom(dragAxis)
+                    }
                     if(this.snapDistance == 0){
-                        dragAxis.scaleToRef(event.dragDistance, tmpVector);
+                        tmpVector.scaleToRef(event.dragDistance, tmpVector);
                     }else{
                         currentSnapDragDistance+=event.dragDistance;
                         if(Math.abs(currentSnapDragDistance)>this.snapDistance){
                             dragSteps = Math.floor(currentSnapDragDistance/this.snapDistance);
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                            dragAxis.scaleToRef(this.snapDistance*dragSteps, tmpVector);
+                            tmpVector.scaleToRef(this.snapDistance*dragSteps, tmpVector);
                             snapped = true;
                         }else{
                             tmpVector.scaleInPlace(0);
@@ -95,7 +108,7 @@ module BABYLON {
                     return;
                 }
                 var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-                var material = isHovered ? hoverMaterial : coloredMaterial;
+                var material = isHovered ? hoverMaterial : this._coloredMaterial;
                 this._rootMesh.getChildMeshes().forEach((m)=>{
                     m.material = material;
                     if((<LinesMesh>m).color){
@@ -119,6 +132,24 @@ module BABYLON {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
             this.dragBehavior.detach();
             super.dispose();
+        }
+
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
+         */
+        public setCustomMesh(mesh:Mesh, useGizmoMaterial:boolean = false){
+            super.setCustomMesh(mesh);
+            if(useGizmoMaterial){
+                this._rootMesh.getChildMeshes().forEach((m)=>{
+                    m.material = this._coloredMaterial;
+                    if((<LinesMesh>m).color){
+                        (<LinesMesh>m).color = this._coloredMaterial.emissiveColor
+                    }
+                });
+                this._customMeshSet = false;
+            }
         }
     }
 }
