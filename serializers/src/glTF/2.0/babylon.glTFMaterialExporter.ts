@@ -32,11 +32,11 @@ module BABYLON.GLTF2 {
         /** 
          * Represents the metallness of the material
         */
-        metallic: number;
+        metallic: Nullable<number>;
         /** 
          * Represents the roughness of the material
         */
-        roughness: number;
+        roughness: Nullable<number>;
         /** 
          * The metallic roughness texture as a base64 string
         */
@@ -679,8 +679,8 @@ module BABYLON.GLTF2 {
                         maxBaseColor.r = Math.max(maxBaseColor.r, metallicRoughness.baseColor.r);
                         maxBaseColor.g = Math.max(maxBaseColor.g, metallicRoughness.baseColor.g);
                         maxBaseColor.b = Math.max(maxBaseColor.b, metallicRoughness.baseColor.b);
-                        maxMetallic = Math.max(maxMetallic, metallicRoughness.metallic);
-                        maxRoughness = Math.max(maxRoughness, metallicRoughness.roughness);
+                        maxMetallic = Math.max(maxMetallic, metallicRoughness.metallic!);
+                        maxRoughness = Math.max(maxRoughness, metallicRoughness.roughness!);
 
                         baseColorBuffer[offset] = metallicRoughness.baseColor.r * 255;
                         baseColorBuffer[offset + 1] = metallicRoughness.baseColor.g * 255;
@@ -688,8 +688,8 @@ module BABYLON.GLTF2 {
                         baseColorBuffer[offset + 3] = resizedTextures.texture1.hasAlpha ? diffuseBuffer[offset + 3] * 255 : 255;
 
                         metallicRoughnessBuffer[offset] = 0;
-                        metallicRoughnessBuffer[offset + 1] = metallicRoughness.roughness * 255;
-                        metallicRoughnessBuffer[offset + 2] = metallicRoughness.metallic * 255;
+                        metallicRoughnessBuffer[offset + 1] = metallicRoughness.roughness! * 255;
+                        metallicRoughnessBuffer[offset + 2] = metallicRoughness.metallic! * 255;
                         metallicRoughnessBuffer[offset + 3] = 255;
                     }
                 }
@@ -722,8 +722,8 @@ module BABYLON.GLTF2 {
                             writeOutBaseColorTexture = true;
                         }
 
-                        metallicRoughnessBuffer[destinationOffset + 1] /= metallicRoughnessFactors.roughness > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors.roughness : 1;
-                        metallicRoughnessBuffer[destinationOffset + 2] /= metallicRoughnessFactors.metallic > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors.metallic : 1;
+                        metallicRoughnessBuffer[destinationOffset + 1] /= metallicRoughnessFactors.roughness! > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors.roughness! : 1;
+                        metallicRoughnessBuffer[destinationOffset + 2] /= metallicRoughnessFactors.metallic! > _GLTFMaterialExporter._Epsilon ? metallicRoughnessFactors.metallic! : 1;
 
                         const metallicRoughnessPixel = Color3.FromInts(255, metallicRoughnessBuffer[destinationOffset + 1], metallicRoughnessBuffer[destinationOffset + 2]);
 
