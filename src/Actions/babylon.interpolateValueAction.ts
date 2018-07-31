@@ -12,6 +12,7 @@
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
@@ -54,7 +55,7 @@
                 scene.stopAnimation(this._effectiveTarget);
             }
 
-            let wrapper = ()=> {
+            let wrapper = () => {
                 this.onInterpolationDoneObservable.notifyObservers(this);
                 if (this.onInterpolationDone) {
                     this.onInterpolationDone();
@@ -63,7 +64,7 @@
 
             scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "InterpolateValueAction",

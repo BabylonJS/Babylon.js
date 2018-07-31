@@ -83,16 +83,22 @@
         private _slidePlaneNormal = Vector3.Zero();
         private _displacementVector = Vector3.Zero();
 
+        /** @hidden */
         public _radius = Vector3.One();
+        /** @hidden */
         public _retry = 0;
         private _velocity: Vector3;
         private _basePoint: Vector3;
         private _epsilon: number;
+        /** @hidden */
         public _velocityWorldLength: number;
+        /** @hidden */
         public _basePointWorld = Vector3.Zero();
         private _velocityWorld = Vector3.Zero();
         private _normalizedVelocity = Vector3.Zero();
+        /** @hidden */
         public _initialVelocity: Vector3;
+        /** @hidden */
         public _initialPosition: Vector3;
         private _nearestDistance: number;
 
@@ -114,6 +120,7 @@
         }
 
         // Methods
+        /** @hidden */
         public _initialize(source: Vector3, dir: Vector3, e: number): void {
             this._velocity = dir;
             Vector3.NormalizeToRef(dir, this._normalizedVelocity);
@@ -128,6 +135,7 @@
             this.collisionFound = false;
         }
 
+        /** @hidden */
         public _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean {
             pa.subtractToRef(point, this._tempVector);
             pb.subtractToRef(point, this._tempVector2);
@@ -148,6 +156,7 @@
             return d >= 0;
         }
 
+        /** @hidden */
         public _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean {
             var distance = Vector3.Distance(this._basePointWorld, sphereCenter);
 
@@ -163,6 +172,7 @@
             return true;
         }
 
+        /** @hidden */
         public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void {
             var t0;
             var embeddedInPlane = false;
@@ -346,6 +356,7 @@
             }
         }
 
+        /** @hidden */
         public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void {
             for (var i = indexStart; i < indexEnd; i += 3) {
                 var p1 = pts[indices[i] - decal];
@@ -356,6 +367,7 @@
             }
         }
 
+        /** @hidden */
         public _getResponse(pos: Vector3, vel: Vector3): void {
             pos.addToRef(vel, this._destinationPoint);
             vel.scaleInPlace((this._nearestDistance / vel.length()));

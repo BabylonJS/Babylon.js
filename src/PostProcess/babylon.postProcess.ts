@@ -17,6 +17,7 @@
 
         /**
         * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
+        * @hidden
         */
         public _outputTexture: Nullable<InternalTexture> = null;
         /**
@@ -84,16 +85,18 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
-        
+
         private _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
         /**
         * Smart array of input and output textures for the post process.
+        * @hidden
         */
         public _textures = new SmartArray<InternalTexture>(2);
         /**
         * The index in _textures that corresponds to the output texture.
+        * @hidden
         */
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
@@ -246,7 +249,7 @@
          */
         constructor(
             /** Name of the PostProcess. */
-            public name: string, 
+            public name: string,
             fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
             samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
@@ -317,7 +320,7 @@
          * This should be called if the post process that shares output with this post process is disabled/disposed.
          */
         public useOwnOutput() {
-            if(this._textures.length == 0){
+            if (this._textures.length == 0) {
                 this._textures = new SmartArray<InternalTexture>(2);
             }
 
@@ -380,8 +383,8 @@
 
             // If rendering to a webvr camera's left or right eye only half the width should be used to avoid resize when rendered to screen
             var webVRCamera = (<WebVRFreeCamera>camera.parent);
-            if(webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)){
-                requiredWidth/=2;
+            if (webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)) {
+                requiredWidth /= 2;
             }
 
             var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
@@ -592,7 +595,7 @@
             var index = camera._postProcesses.indexOf(this);
             if (index === 0 && camera._postProcesses.length > 0) {
                 var firstPostProcess = this._camera._getFirstPostProcess();
-                if(firstPostProcess){
+                if (firstPostProcess) {
                     firstPostProcess.markTextureDirty();
                 }
             }

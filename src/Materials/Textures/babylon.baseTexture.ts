@@ -28,10 +28,10 @@
 
         @serialize()
         public coordinatesIndex = 0;
-        
+
         @serialize("coordinatesMode")
         private _coordinatesMode = Texture.EXPLICIT_MODE;
-        
+
         /**
         * How a texture is mapped.
         *
@@ -59,8 +59,8 @@
         }
         public get coordinatesMode(): number {
             return this._coordinatesMode;
-        } 
-        
+        }
+
         /**
         * | Value | Type               | Description |
         * | ----- | ------------------ | ----------- |
@@ -70,7 +70,7 @@
         */
         @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;
-        
+
         /**
         * | Value | Type               | Description |
         * | ----- | ------------------ | ----------- |
@@ -80,7 +80,7 @@
         */
         @serialize()
         public wrapV = Texture.WRAP_ADDRESSMODE;
-        
+
         /**
         * | Value | Type               | Description |
         * | ----- | ------------------ | ----------- |
@@ -172,6 +172,8 @@
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
         private _scene: Nullable<Scene>;
+
+        /** @hidden */
         public _texture: Nullable<InternalTexture>;
         private _uid: Nullable<string>;
 
@@ -257,6 +259,7 @@
             return false;
         }
 
+        /** @hidden */
         public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
             if (!this._scene) {
                 return null
@@ -277,6 +280,7 @@
             return null;
         }
 
+        /** @hidden */
         public _rebuild(): void {
 
         }

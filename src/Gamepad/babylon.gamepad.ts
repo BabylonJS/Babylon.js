@@ -10,7 +10,7 @@
         touchChanged: boolean;
         valueChanged: boolean;
     }
-    
+
     export class Gamepad {
 
         public type: number;
@@ -18,6 +18,7 @@
         private _leftStick: StickValues;
         private _rightStick: StickValues;
 
+        /** @hidden */
         public _isConnected = true;
 
         private _leftStickAxisX: number;
@@ -33,7 +34,7 @@
         public static XBOX = 2;
         public static POSE_ENABLED = 3;
 
-        protected _invertLeftStickY:boolean = false;
+        protected _invertLeftStickY: boolean = false;
 
         public get isConnected(): boolean {
             return this._isConnected;
@@ -83,7 +84,7 @@
         public update() {
             if (this._leftStick) {
                 this.leftStick = { x: this.browserGamepad.axes[this._leftStickAxisX], y: this.browserGamepad.axes[this._leftStickAxisY] };
-                if(this._invertLeftStickY){
+                if (this._invertLeftStickY) {
                     this.leftStick.y *= -1;
                 }
             }
@@ -92,14 +93,14 @@
             }
         }
 
-        public dispose() {            
+        public dispose() {
         }
     }
 
     export class GenericPad extends Gamepad {
         private _buttons: Array<number>;
         private _onbuttondown: (buttonPressed: number) => void;
-        private _onbuttonup: (buttonReleased: number) => void;        
+        private _onbuttonup: (buttonReleased: number) => void;
 
         public onButtonDownObservable = new Observable<number>();
         public onButtonUpObservable = new Observable<number>();
@@ -144,7 +145,7 @@
             }
         }
 
-        public dispose(){
+        public dispose() {
             super.dispose();
             this.onButtonDownObservable.clear();
             this.onButtonUpObservable.clear();
