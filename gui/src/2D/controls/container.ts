@@ -154,6 +154,20 @@ export class Container extends Control {
     }
 
     /**
+     * Removes all controls from the current container
+     * @returns the current container
+     */
+    public clearControls(): Container {
+        let children = this._children.slice();
+
+        for (var child of children) {
+            this.removeControl(child);
+        }
+
+        return this;
+    }
+
+    /**
      * Removes a control from the current container
      * @param control defines the control to remove
      * @returns the current container

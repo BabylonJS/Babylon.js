@@ -27,7 +27,6 @@
         private _sourceBuffer: Buffer;
         private _targetBuffer: Buffer;
 
-        private _scene: Scene;
         private _engine: Engine;
 
         private _currentRenderId = -1;    
@@ -101,7 +100,7 @@
             }
 
 
-            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+            if (!this.emitter || !this._updateEffect.isReady() || !this._imageProcessingConfiguration.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
                 return false;
             }
 
@@ -392,8 +391,8 @@
             this._removeGradient(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
             (<any>this._limitVelocityGradientsTexture) = null;
 
-            return this;           
-        }           
+            return this;
+        }
 
         /**
          * Instantiates a GPU particle system.
@@ -409,6 +408,9 @@
                     }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
             super(name);
             this._scene = scene || Engine.LastCreatedScene;
+            // Setup the default processing configuration to the scene.
+            this._attachImageProcessingConfiguration(null);
+            
             this._engine = this._scene.getEngine();
 
             if (!options.randomTextureSize) {
@@ -755,14 +757,27 @@
                 defines += "\n#define ANIMATESHEET";
             }                 
 
+            if (this._imageProcessingConfiguration) {
+                this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
+                defines += "\n" + this._imageProcessingConfigurationDefines.toString();
+            }
+
             if (this._renderEffect && this._renderEffect.defines === defines) {
                 return;
             }
 
+            var uniforms = ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot", "eyePosition"];
+            var samplers = ["textureSampler", "colorGradientSampler"];
+
+            if (ImageProcessingConfiguration) {
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, this._imageProcessingConfigurationDefines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+            }
+
             this._renderEffect = new Effect("gpuRenderParticles", 
                                             ["position", "age", "life", "size", "color", "offset", "uv", "initialDirection", "angle", "cellIndex"], 
-                                            ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot", "eyePosition"], 
-                                            ["textureSampler", "colorGradientSampler"], this._scene.getEngine(), defines);
+                                            uniforms, 
+                                            samplers, this._scene.getEngine(), defines);
         }        
 
         /**
@@ -986,7 +1001,12 @@
                     invView.invert();
                     this._renderEffect.setMatrix("invView", invView);
                     this._renderEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }            
+                }
+
+                // image processing
+                if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
+                    this._imageProcessingConfiguration.bind(this._renderEffect);
+                }
 
                 // Draw order
                 switch(this.blendMode)

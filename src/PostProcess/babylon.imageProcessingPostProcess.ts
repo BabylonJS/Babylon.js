@@ -303,6 +303,7 @@
             VIGNETTEBLENDMODEMULTIPLY: false,
             VIGNETTEBLENDMODEOPAQUE: false,
             TONEMAPPING: false,
+            TONEMAPPING_ACES: false,
             CONTRAST: false,
             COLORCURVES: false,
             COLORGRADING: false,

@@ -45,6 +45,20 @@ module BABYLON {
         public get updateGizmoRotationToMatchAttachedMesh(){
             return this.xGizmo.updateGizmoRotationToMatchAttachedMesh;
         }
+
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        public set snapDistance(value:number){
+            if(this.xGizmo){
+                this.xGizmo.snapDistance = value;
+                this.yGizmo.snapDistance = value;
+                this.zGizmo.snapDistance = value;
+            }
+        }
+        public get snapDistance(){
+            return this.xGizmo.snapDistance;
+        }
         
         /**
          * Disposes of the gizmo
