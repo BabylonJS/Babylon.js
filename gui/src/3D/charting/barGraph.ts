@@ -223,7 +223,7 @@ export class BarGraph extends Chart {
             return this;
         }
 
-        let scene = this._rootNode.getScene();
+        const scene = this._rootNode.getScene();
 
         // Default material
         if (!this._defaultMaterial) {
@@ -247,7 +247,7 @@ export class BarGraph extends Chart {
             }
         });
 
-        let ratio = this.maxBarHeight / (max - min);
+        let ratio = this._maxBarHeight / (max - min);
 
         let createMesh = false;
         let left = -(data.length / 2) * (this.barWidth + this.margin) + 1.5 * this._margin;
@@ -324,7 +324,7 @@ export class BarGraph extends Chart {
 
             this.onElementCreatedObservable.notifyObservers(barMesh);
 
-            left += this.barWidth + this.margin;
+            left += this._barWidth + this.margin;
 
             // Label
             if (!this._labelDimension || !this._displayLabels) {

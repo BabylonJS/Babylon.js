@@ -162,4 +162,133 @@ export class DataSeries {
         
         return series;
     }
+
+    /**
+     * Create a new DataSeries containing testing spatial values
+     * @returns the new DataSeries
+     */
+    public static CreateFakeSpatialData(): DataSeries {
+        var series = new DataSeries();
+        series.label = "Spatial Data";
+        series.color = new Color3(0, 1.0, 0);
+
+        series.dimensions = ["Year", "Country"];
+
+        series.data = [
+            {
+                "Year": 2014,
+                "Country": "France",
+                "value": 10,
+                "latitude": 46.63728,
+                "longitude": 2.338262
+            }, 
+            {
+                "Year": 2014,
+                "Country": "USA",
+                "value": 200,
+                "latitude": 39.83333,
+                "longitude": -98.58334
+            }, 
+            {
+                "Year": 2014,
+                "Country": "India",
+                "value": 400,
+                "latitude": 23.40601,
+                "longitude": 79.45809
+            },
+            {
+                "Year": 2014,
+                "Country": "UK",
+                "value": 180,
+                "latitude": 54.56089,
+                "longitude": -2.212512
+            },
+            {
+                "Year": 2014,
+                "Country": "Germany",
+                "value": 400,
+                "latitude": 51.20247,
+                "longitude": 10.3822
+            }, 
+            {
+                "Year": 2014,
+                "Country": "Australia",
+                "value": 24,
+                "latitude": -25.58524,
+                "longitude": 134.5041
+            }, 
+            {
+                "Year": 2014,
+                "Country": "China",
+                "value": 540,
+                "latitude": 36.55309,
+                "longitude": 103.9754
+            }, 
+            {
+                "Year": 2014,
+                "Country": "Japan",
+                "value": 150,
+                "latitude": 36.28165,
+                "longitude": 139.0773
+            },
+            {
+                "Year": 2015,
+                "Country": "France",
+                "value": 12,
+                "latitude": 46.63728,
+                "longitude": 2.338262
+            }, 
+            {
+                "Year": 2015,
+                "Country": "USA",
+                "value": 120,
+                "latitude": 39.83333,
+                "longitude": -98.58334
+            }, 
+            {
+                "Year": 2015,
+                "Country": "India",
+                "value": 480,
+                "latitude": 23.40601,
+                "longitude": 79.45809
+            }, 
+            {
+                "Year": 2015,
+                "Country": "UK",
+                "value": 10,
+                "latitude": 54.56089,
+                "longitude": -2.212512
+            },
+            {
+                "Year": 2015,
+                "Country": "Germany",
+                "value": 80,
+                "latitude": 51.20247,
+                "longitude": 10.3822
+            }, 
+            {
+                "Year": 2015,
+                "Country": "Australia",
+                "value": 230,
+                "latitude": -25.58524,
+                "longitude": 134.5041
+            }, 
+            {
+                "Year": 2015,
+                "Country": "China",
+                "value": 490,
+                "latitude": 36.55309,
+                "longitude": 103.9754
+            }, 
+            {
+                "Year": 2015,
+                "Country": "Japan",
+                "value": 120,
+                "latitude": 36.28165,
+                "longitude": 139.0773
+            }
+        ];
+        
+        return series;
+    }
 }
