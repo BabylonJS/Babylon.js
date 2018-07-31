@@ -3,7 +3,10 @@ import { Chart } from ".";
 import { AdvancedDynamicTexture, DisplayGrid } from "../../2D";
 import { FluentMaterial } from "../materials";
 
-/** Class used to render bar graphs */
+/** 
+ * Class used to render bar graphs 
+ * @see http://doc.babylonjs.com/how_to/chart3d#bargraph
+ */
 export class BarGraph extends Chart {
     private _margin = 1;
     private _barWidth = 2
@@ -74,7 +77,7 @@ export class BarGraph extends Chart {
         this.refresh();
     }
 
-    /** Gets or sets the with of each bar */
+    /** Gets or sets the width of each bar */
     public get barWidth(): number {
         return this._barWidth;
     }
@@ -148,10 +151,9 @@ export class BarGraph extends Chart {
         this._onElementEnterObserver = this.onElementEnterObservable.add(mesh => {
             activeBar = <Mesh>mesh;
 
-            this._hoverLabel = this.addLabel(activeBar.metadata.value.toString(), this._barWidth);
+            this._hoverLabel = this._addLabel(activeBar.metadata.value.toString(), this._barWidth);
 
             this._hoverLabel.position = activeBar.position.clone();
-            //this._hoverLabel.position.z -= this.barWidth / 2;
             this._hoverLabel.position.y = activeBar.scaling.y + 0.5;
             this._hoverLabel.scaling.x = this.barWidth;            
         });
@@ -160,7 +162,7 @@ export class BarGraph extends Chart {
             activeBar = null;
 
             if (this._hoverLabel) {
-                this.removeLabel(this._hoverLabel);
+                this._removeLabel(this._hoverLabel);
                 this._hoverLabel = null;
             }
         });
@@ -257,7 +259,7 @@ export class BarGraph extends Chart {
             this._barMeshes = [];
         }        
 
-        this.removeLabels();
+        this._removeLabels();
 
         if (this._backgroundMesh) {
             this._backgroundMesh.dispose(false, true);
@@ -289,7 +291,7 @@ export class BarGraph extends Chart {
 
             for (var tickIndex = 0; tickIndex <= this._backgroundTickCount; tickIndex++) {
                 var label = (max / this._backgroundTickCount) * tickIndex + "";
-                var ticklabel = this.addLabel(label, this._barWidth, false);
+                var ticklabel = this._addLabel(label, this._barWidth, false);
                 ticklabel.position.x = left - this._barWidth;
                 ticklabel.position.y = (this.maxBarHeight * (tickIndex - 0.25)) / this._backgroundTickCount;
                 ticklabel.position.z = this._barWidth;
@@ -320,7 +322,7 @@ export class BarGraph extends Chart {
 
             barMesh.material = this._defaultMaterial;
 
-            this.onElementCreated.notifyObservers(barMesh);
+            this.onElementCreatedObservable.notifyObservers(barMesh);
 
             left += this.barWidth + this.margin;
 
@@ -329,7 +331,7 @@ export class BarGraph extends Chart {
                 return;
             }
 
-            let label = this.addLabel(entry[this._labelDimension], this.barWidth);
+            let label = this._addLabel(entry[this._labelDimension], this.barWidth);
             label.position = barMesh.position.clone();
             label.position.z -= this.barWidth;
         });
