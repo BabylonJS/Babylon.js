@@ -8,7 +8,7 @@
         getHighlightLayerByName(name: string): Nullable<HighlightLayer>;
     }
 
-    AbstractScene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
+    AbstractScene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
         for (var index = 0; index < this.effectLayers.length; index++) {
             if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
                 return (<any>this.effectLayers[index]) as HighlightLayer;
@@ -25,7 +25,7 @@
     class GlowBlurPostProcess extends PostProcess {
         constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
-            
+
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -269,7 +269,7 @@
         /**
          * Get the effect name of the layer.
          * @return The effect name
-         */ 
+         */
         public getEffectName(): string {
             return HighlightLayer.EffectName;
         }
@@ -279,8 +279,8 @@
          * to the main canvas at the end of the scene rendering.
          */
         protected _createMergeEffect(): Effect {
-             // Effect
-             return this._engine.createEffect("glowMapMerge",
+            // Effect
+            return this._engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
                 ["textureSampler"],
@@ -321,7 +321,7 @@
             this._blurTexture.renderParticles = false;
             this._blurTexture.ignoreCameraViewport = true;
 
-            this._textures = [ this._blurTexture ];
+            this._textures = [this._blurTexture];
 
             if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
                 this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
@@ -346,9 +346,9 @@
             }
             else {
                 this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize / 2, {
-                        width:  blurTextureWidth,
-                        height: blurTextureHeight
-                    },
+                    width: blurTextureWidth,
+                    height: blurTextureHeight
+                },
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
                 this._horizontalBlurPostprocess.width = blurTextureWidth;
                 this._horizontalBlurPostprocess.height = blurTextureHeight;
@@ -357,9 +357,9 @@
                 });
 
                 this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize / 2, {
-                        width:  blurTextureWidth,
-                        height: blurTextureHeight
-                    },
+                    width: blurTextureWidth,
+                    height: blurTextureHeight
+                },
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
 
                 this._postProcesses = [this._horizontalBlurPostprocess, this._verticalBlurPostprocess];
@@ -372,7 +372,7 @@
                 if (internalTexture) {
                     this._scene.postProcessManager.directRender(
                         this._postProcesses,
-                        internalTexture, 
+                        internalTexture,
                         true);
                 }
 
@@ -672,6 +672,7 @@
          * Free any resources and references associated to a mesh.
          * Internal use
          * @param mesh The mesh to free.
+         * @hidden
          */
         public _disposeMesh(mesh: Mesh): void {
             this.removeMesh(mesh);
@@ -724,7 +725,7 @@
           * Gets the class name of the effect layer
           * @returns the string with the class name of the effect layer
           */
-         public getClassName(): string {
+        public getClassName(): string {
             return "HighlightLayer";
         }
 
@@ -784,7 +785,7 @@
             for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
                 var mesh = scene.getMeshByID(parsedHightlightLayer.excludedMeshes[index]);
                 if (mesh) {
-                    hl.addExcludedMesh(<Mesh> mesh);
+                    hl.addExcludedMesh(<Mesh>mesh);
                 }
             }
 
@@ -794,7 +795,7 @@
                 var mesh = scene.getMeshByID(highlightedMesh.meshId);
 
                 if (mesh) {
-                    hl.addMesh(<Mesh> mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);
+                    hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);
                 }
             }
 

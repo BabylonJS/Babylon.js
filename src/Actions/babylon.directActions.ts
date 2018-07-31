@@ -9,6 +9,7 @@
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
@@ -17,7 +18,7 @@
         public execute(): void {
             this._effectiveTarget[this._property] = !this._effectiveTarget[this._property];
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SwitchBooleanAction",
@@ -40,7 +41,7 @@
         public execute(): void {
             this._target.state = this.value;
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SetStateAction",
@@ -62,6 +63,7 @@
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
@@ -74,7 +76,7 @@
                 this._target.markAsDirty(this._property);
             }
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SetValueAction",
@@ -97,6 +99,7 @@
             this._target = this._effectiveTarget = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
             this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
@@ -113,7 +116,7 @@
                 this._target.markAsDirty(this._property);
             }
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "IncrementValueAction",
@@ -134,6 +137,7 @@
             this._target = target;
         }
 
+        /** @hidden */
         public _prepare(): void {
         }
 
@@ -141,7 +145,7 @@
             var scene = this._actionManager.getScene();
             scene.beginAnimation(this._target, this.from, this.to, this.loop);
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "PlayAnimationAction",
@@ -163,14 +167,15 @@
             this._target = target;
         }
 
-        public _prepare(): void {           
+        /** @hidden */
+        public _prepare(): void {
         }
 
         public execute(): void {
             var scene = this._actionManager.getScene();
             scene.stopAnimation(this._target);
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "StopAnimationAction",
@@ -186,7 +191,7 @@
 
         public execute(): void {
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "DoNothingAction",
@@ -200,6 +205,7 @@
             super(triggerOptions, condition);
         }
 
+        /** @hidden */
         public _prepare(): void {
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index]._actionManager = this._actionManager;
@@ -212,18 +218,18 @@
                 this.children[index].execute(evt);
             }
         }
-        
+
         public serialize(parent: any): any {
             var serializationObject = super._serialize({
                 name: "CombineAction",
                 properties: [],
                 combine: []
             }, parent);
-            
-            for (var i=0; i < this.children.length; i++) {
+
+            for (var i = 0; i < this.children.length; i++) {
                 serializationObject.combine.push(this.children[i].serialize(null));
             }
-            
+
             return serializationObject;
         }
     }
@@ -248,6 +254,7 @@
             this._parent = parent;
         }
 
+        /** @hidden */
         public _prepare(): void {
         }
 
@@ -263,7 +270,7 @@
 
             this._target.parent = this._parent;
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SetParentAction",
@@ -283,6 +290,7 @@
             this._sound = sound;
         }
 
+        /** @hidden */
         public _prepare(): void {
         }
 
@@ -290,7 +298,7 @@
             if (this._sound !== undefined)
                 this._sound.play();
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "PlaySoundAction",
@@ -307,6 +315,7 @@
             this._sound = sound;
         }
 
+        /** @hidden */
         public _prepare(): void {
         }
 
@@ -314,7 +323,7 @@
             if (this._sound !== undefined)
                 this._sound.stop();
         }
-        
+
         public serialize(parent: any): any {
             return super._serialize({
                 name: "StopSoundAction",

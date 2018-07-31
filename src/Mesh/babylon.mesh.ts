@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
      * @hidden
-     **/        
+     **/
     export class _InstancesBatch {
         public mustReturn = false;
         public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
@@ -111,12 +111,13 @@
                 this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
             }
             this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
-        }     
+        }
 
         // Members
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
+        /** @hidden */
         public _binaryInfo: any;
         private _LODLevels = new Array<MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
@@ -137,10 +138,14 @@
         }
 
         // Private
+        /** @hidden */
         public _geometry: Nullable<Geometry>;
+        /** @hidden */
         public _delayInfo: Array<string>;
+        /** @hidden */
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
+        /** @hidden */
         public _visibleInstances: any = {};
         private _renderIdForInstances = new Array<number>();
         private _batchCache = new _InstancesBatch();
@@ -151,10 +156,12 @@
 
         private _effectiveMaterial: Material;
 
+        /** @hidden */
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
 
         // Use by builder only to know what orientation were the mesh build in.
+        /** @hidden */
         public _originalBuilderSideOrientation: number = Mesh._DEFAULTSIDE;
 
         public overrideMaterialSideOrientation: Nullable<number> = null;
@@ -204,11 +211,11 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", 
-                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
-                                              "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw"
-                                            ], 
-                                              ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
+                    "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
+                    "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw"
+                ],
+                    ["_poseMatrix"]);
 
                 // Source mesh
                 this._source = source;
@@ -315,13 +322,14 @@
             return ret;
         }
 
+        /** @hidden */
         public _unBindEffect() {
             super._unBindEffect();
 
             for (var instance of this.instances) {
                 instance._unBindEffect();
             }
-        }           
+        }
 
         /**
          * True if the mesh has some Levels Of Details (LOD).  
@@ -455,7 +463,7 @@
                         this.onLODLevelSelection(distanceToCamera, this, level.mesh);
                     }
 
-                    return level.mesh;                   
+                    return level.mesh;
                 }
             }
 
@@ -662,7 +670,7 @@
                             if (effectiveMaterial.storeEffectOnSubMeshes) {
                                 if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                                     return false;
-                                } 
+                                }
                             }
                             else {
                                 if (!effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
@@ -739,6 +747,7 @@
         }
 
         // Methods
+        /** @hidden */
         public _preActivate(): Mesh {
             var sceneRenderId = this.getScene().getRenderId();
             if (this._preActivateId === sceneRenderId) {
@@ -750,6 +759,7 @@
             return this;
         }
 
+        /** @hidden */
         public _preActivateForIntermediateRendering(renderId: number): Mesh {
             if (this._visibleInstances) {
                 this._visibleInstances.intermediateDefaultRenderId = renderId;
@@ -757,6 +767,7 @@
             return this;
         }
 
+        /** @hidden */
         public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
             if (!this._visibleInstances) {
                 this._visibleInstances = {};
@@ -781,6 +792,7 @@
             return this._refreshBoundingInfo(false);
         }
 
+        /** @hidden */
         public _refreshBoundingInfo(applySkeleton: boolean): Mesh {
             if (this._boundingInfo && this._boundingInfo.isLocked) {
                 return this;
@@ -853,6 +865,7 @@
             return data;
         }
 
+        /** @hidden */
         public _createGlobalSubMesh(force: boolean): Nullable<SubMesh> {
             var totalVertices = this.getTotalVertices();
             if (!totalVertices || !this.getIndices()) {
@@ -1062,6 +1075,7 @@
             return this;
         }
 
+        /** @hidden */
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
             if (!this._geometry) {
                 return this;
@@ -1094,6 +1108,7 @@
             return this;
         }
 
+        /** @hidden */
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
             if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
                 return this;
@@ -1176,6 +1191,7 @@
             return this;
         }
 
+        /** @hidden */
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
             var scene = this.getScene();
             this._batchCache.mustReturn = false;
@@ -1212,6 +1228,7 @@
             return this._batchCache;
         }
 
+        /** @hidden */
         public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
             var visibleInstances = batch.visibleInstances[subMesh._id];
             if (!visibleInstances) {
@@ -1274,6 +1291,7 @@
             return this;
         }
 
+        /** @hidden */
         public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
             onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
             var scene = this.getScene();
@@ -1487,7 +1505,7 @@
 
             return results;
         }
-        
+
         /**
          * Normalize matrix weights so that all vertices have a total weight set to 1
          */
@@ -1499,7 +1517,7 @@
                 noInfluenceBoneIndex = this.skeleton.bones.length;
             } else {
                 return;
-            }            
+            }
 
             let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
             let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
@@ -1559,10 +1577,11 @@
             this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
             if (matricesWeightsExtra) {
                 this.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, matricesWeightsExtra);
-            }            
+            }
         }
 
 
+        /** @hidden */
         public _checkDelayState(): Mesh {
             var scene = this.getScene();
             if (this._geometry) {
@@ -1739,6 +1758,7 @@
             return null;
         }
 
+        /** @hidden */
         public _resetPointsArrayCache(): Mesh {
             if (this._geometry) {
                 this._geometry._resetPointsArrayCache();
@@ -1746,6 +1766,7 @@
             return this;
         }
 
+        /** @hidden */
         public _generatePointsArray(): boolean {
             if (this._geometry) {
                 return this._geometry._generatePointsArray();
@@ -1787,7 +1808,7 @@
 
             if (this._onAfterRenderObservable) {
                 this._onAfterRenderObservable.clear();
-            }            
+            }
 
             // Sources
             var meshes = this.getScene().meshes;
@@ -2353,6 +2374,7 @@
             }
         }
 
+        /** @hidden */
         public _syncGeometryWithMorphTargetManager() {
             if (!this.geometry) {
                 return;
@@ -2660,8 +2682,8 @@
 
                         if (parsedMesh.autoAnimate) {
                             scene.beginAnimation(instance, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
-                        }                            
-                }
+                        }
+                    }
                 }
             }
 

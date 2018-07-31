@@ -105,9 +105,10 @@
             } else if (this._updatable) { // update buffer
                 this._engine.updateDynamicVertexBuffer(this._buffer, data);
                 this._data = data;
-            }     
+            }
         }
 
+        /** @hidden */
         public _rebuild(): void {
             this._buffer = null;
             this.create(this._data);

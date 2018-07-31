@@ -202,6 +202,7 @@
             return this;
         }
 
+        /** @hidden */
         public _preActivate(): InstancedMesh {
             if (this._currentLOD) {
                 this._currentLOD._preActivate();
@@ -209,6 +210,7 @@
             return this;
         }
 
+        /** @hidden */
         public _activate(renderId: number): InstancedMesh {
             if (this._currentLOD) {
                 this._currentLOD._registerInstanceForRenderId(this, renderId);
@@ -235,6 +237,7 @@
             return this._currentLOD;
         }
 
+        /** @hidden */
         public _syncSubMeshes(): InstancedMesh {
             this.releaseSubMeshes();
             if (this._sourceMesh.subMeshes) {
@@ -245,6 +248,7 @@
             return this;
         }
 
+        /** @hidden */
         public _generatePointsArray(): boolean {
             return this._sourceMesh._generatePointsArray();
         }

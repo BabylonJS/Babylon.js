@@ -17,20 +17,28 @@
         @serializeAsMeshReference("lockedTargetId")
         public lockedTarget: any = null;
 
+        /** @hidden */
         public _currentTarget = Vector3.Zero();
+        /** @hidden */
         public _viewMatrix = Matrix.Zero();
+        /** @hidden */
         public _camMatrix = Matrix.Zero();
+        /** @hidden */
         public _cameraTransformMatrix = Matrix.Zero();
+        /** @hidden */
         public _cameraRotationMatrix = Matrix.Zero();
         private _rigCamTransformMatrix: Matrix;
 
+        /** @hidden */
         public _referencePoint = new Vector3(0, 0, 1);
         private _currentUpVector = new Vector3(0, 1, 0);
+        /** @hidden */
         public _transformedReferencePoint = Vector3.Zero();
 
         protected _globalCurrentTarget = Vector3.Zero();
         protected _globalCurrentUpVector = Vector3.Zero();
 
+        /** @hidden */
         public _reset: () => void;
 
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
@@ -45,6 +53,7 @@
             return this.globalPosition.add(direction);
         }
 
+        /** @hidden */
         public _getLockedTargetPosition(): Nullable<Vector3> {
             if (!this.lockedTarget) {
                 return null;
@@ -79,6 +88,7 @@
         /**
          * Restored camera state. You must call storeState() first
          * @returns whether it was successful or not
+         * @hidden
          */
         public _restoreStateValues(): boolean {
             if (!super._restoreStateValues()) {
@@ -99,6 +109,7 @@
         }
 
         // Cache
+        /** @hidden */
         public _initCache() {
             super._initCache();
             this._cache.lockedTarget = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -106,6 +117,7 @@
             this._cache.rotationQuaternion = new Quaternion(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         }
 
+        /** @hidden */
         public _updateCache(ignoreParentClass?: boolean): void {
             if (!ignoreParentClass) {
                 super._updateCache();
@@ -130,6 +142,7 @@
         }
 
         // Synchronized
+        /** @hidden */
         public _isSynchronizedViewMatrix(): boolean {
             if (!super._isSynchronizedViewMatrix()) {
                 return false;
@@ -142,12 +155,14 @@
         }
 
         // Methods
+        /** @hidden */
         public _computeLocalCameraSpeed(): number {
             var engine = this.getEngine();
             return this.speed * Math.sqrt((engine.getDeltaTime() / (engine.getFps() * 100.0)));
         }
 
         // Target
+        /** @hidden */
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
@@ -195,10 +210,12 @@
             return this._currentTarget;
         }
 
+        /** @hidden */
         public _decideIfNeedsToMove(): boolean {
             return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
+        /** @hidden */
         public _updatePosition(): void {
             if (this.parent) {
                 this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
@@ -208,6 +225,8 @@
             }
             this.position.addInPlace(this.cameraDirection);
         }
+
+        /** @hidden */
         public _checkInputs(): void {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
@@ -283,6 +302,7 @@
             Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         }
 
+        /** @hidden */
         public _getViewMatrix(): Matrix {
             if (this.lockedTarget) {
                 this.setTarget(this._getLockedTargetPosition()!);
@@ -340,6 +360,7 @@
         }
 
         /**
+         * @hidden
          * @override
          * Override Camera._updateRigCameras
          */
