@@ -1,11 +1,11 @@
 module BABYLON {
     /**
      * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of Node, this allow parenting to the camera or multiple videos with different locations in the scene.
+     * As a subclass of TransformNode, this allow parenting to the camera or multiple videos with different locations in the scene.
      * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
-    export class VideoDome extends Node {
+    export class VideoDome extends TransformNode {
         private _useDirectMapping = false;
 
         /**

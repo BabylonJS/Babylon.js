@@ -2,7 +2,10 @@ import { Nullable, TransformNode, Scene, Vector3, Engine, Observer, PointerInfo,
 import { DataSeries } from ".";
 import { AdvancedDynamicTexture, TextBlock, Rectangle, TextWrapping } from "../../2D";
 
-/** base class for all chart controls*/
+/** 
+ * Base class for all chart controls
+ * @see http://doc.babylonjs.com/how_to/chart3d#charts
+ */
 export abstract class Chart {
     protected _dataSource: Nullable<DataSeries>;
     protected _rootNode: TransformNode;
@@ -14,10 +17,7 @@ export abstract class Chart {
     protected _blockRefresh = false;
 
     /** Observable raised when a new element is created */
-    public onElementCreated = new Observable<Mesh>();
-
-    /** User defined callback used to create labels */
-    public labelCreationFunction: (label: string, width: number, includeBackground: boolean) => Mesh;
+    public onElementCreatedObservable  = new Observable<Mesh>();
 
     /**
      * Observable raised when the point picked by the pointer events changed
@@ -33,6 +33,9 @@ export abstract class Chart {
      * Observable raised when the pointer leaves an element of the chart
      */
     public onElementOutObservable = new Observable<AbstractMesh>();
+
+    /** User defined callback used to create labels */
+    public labelCreationFunction: Nullable<(label: string, width: number, includeBackground: boolean) => Mesh>;
 
     /** Gets or sets the rotation of the entire chart */
     public set rotation(value: Vector3) {
@@ -76,7 +79,7 @@ export abstract class Chart {
         this.refresh();
     }
 
-    /** Gets the filters applied to data source */
+    /** Gets or sets the filters applied to data source */
     public get dataFilters(): {[key: string]: string} {
         return this._dataFilters;
     }
@@ -162,7 +165,7 @@ export abstract class Chart {
      * @param includeBackground defines if a background rectangle must be added (default is true)
      * @returns a mesh used to host the label
      */
-    public addLabel(label: string, width: number, includeBackground = true): Mesh {
+    protected _addLabel(label: string, width: number, includeBackground = true): Mesh {
         if (this.labelCreationFunction) {
             let labelMesh = this.labelCreationFunction(label, width, includeBackground);
             labelMesh.parent = this._rootNode;
@@ -206,7 +209,7 @@ export abstract class Chart {
      * Remove specific label mesh
      * @param label defines the label mesh to remove
      */
-    public removeLabel(label: Mesh): void {
+    protected _removeLabel(label: Mesh): void {
         let index = this._labelMeshes.indexOf(label);
 
         if (index === -1) {
@@ -218,7 +221,7 @@ export abstract class Chart {
     }
 
     /** Remove all created labels */
-    public removeLabels(): void {
+    protected _removeLabels(): void {
         this._labelMeshes.forEach(label => {
             label.dispose(false, true);
         });
@@ -234,6 +237,13 @@ export abstract class Chart {
 
     /** Release all associated resources */
     public dispose() {
+        this.onElementCreatedObservable.clear();
+        this.onPickedPointChangedObservable.clear();
+        this.onElementEnterObservable.clear();
+        this.onElementOutObservable.clear();
+
+        this.labelCreationFunction = null;
+
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
             this._pointerObserver = null;
