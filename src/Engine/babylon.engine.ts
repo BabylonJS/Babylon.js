@@ -361,11 +361,13 @@
         public static readonly TEXTUREFORMAT_RGBA = 5;
         /** RED */
         public static readonly TEXTUREFORMAT_RED = 6;
+        /** RED (2nd reference) */
         public static readonly TEXTUREFORMAT_R = 6;
         /** RG */
         public static readonly TEXTUREFORMAT_RG = 7;
         /** RED_INTEGER */
         public static readonly TEXTUREFORMAT_RED_INTEGER = 8;
+        /** RED_INTEGER (2nd reference) */
         public static readonly TEXTUREFORMAT_R_INTEGER = 8;
         /** RG_INTEGER */
         public static readonly TEXTUREFORMAT_RG_INTEGER = 9;
@@ -376,6 +378,7 @@
 
         /** UNSIGNED_BYTE */
         public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
+        /** UNSIGNED_BYTE (2nd reference) */
         public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
         /** FLOAT */
         public static readonly TEXTURETYPE_FLOAT = 1;
