@@ -95,7 +95,7 @@
 
             position = Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
 
-            if (this.viewportBorder>0) {
+            if (this.viewportBorder > 0) {
                 globalViewport.x -= this.viewportBorder;
                 globalViewport.y -= this.viewportBorder;
                 globalViewport.width += this.viewportBorder * 2;
@@ -117,6 +117,7 @@
             return false;
         }
 
+        /** @hidden */
         public _isVisible(): boolean {
             if (!this._isEnabled || !this._scene.activeCamera) {
                 return false;
@@ -188,7 +189,7 @@
                 intensity = 1.0;
             }
 
-            if (this.viewportBorder>0) {
+            if (this.viewportBorder > 0) {
                 globalViewport.x += this.viewportBorder;
                 globalViewport.y += this.viewportBorder;
                 globalViewport.width -= this.viewportBorder * 2;

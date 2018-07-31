@@ -4,13 +4,21 @@
 
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
 
+        /** @hidden */
         public _subdivisionsX: number;
+        /** @hidden */
         public _subdivisionsY: number;
+        /** @hidden */
         public _width: number;
+        /** @hidden */
         public _height: number;
+        /** @hidden */
         public _minX: number;
+        /** @hidden */
         public _maxX: number;
+        /** @hidden */
         public _minZ: number;
+        /** @hidden */
         public _maxZ: number;
 
         constructor(name: string, scene: Scene) {

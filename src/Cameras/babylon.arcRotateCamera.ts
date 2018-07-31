@@ -239,11 +239,16 @@
         @serialize()
         public allowUpsideDown = true;
 
+        /** @hidden */
         public _viewMatrix = new Matrix();
+        /** @hidden */
         public _useCtrlForPanning: boolean;
+        /** @hidden */
         public _panningMouseButton: number;
+
         public inputs: ArcRotateCameraInputsManager;
 
+        /** @hidden */
         public _reset: () => void;
 
         // Panning
@@ -362,6 +367,7 @@
         }
 
         // Cache
+        /** @hidden */
         public _initCache(): void {
             super._initCache();
             this._cache._target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -371,6 +377,7 @@
             this._cache.targetScreenOffset = Vector2.Zero();
         }
 
+        /** @hidden */
         public _updateCache(ignoreParentClass?: boolean): void {
             if (!ignoreParentClass) {
                 super._updateCache();
@@ -422,6 +429,7 @@
         }
 
         /**
+         * @hidden
          * Restored camera state. You must call storeState() first
          */
         public _restoreStateValues(): boolean {
@@ -444,6 +452,7 @@
         }
 
         // Synchronized
+        /** @hidden */
         public _isSynchronizedViewMatrix(): boolean {
             if (!super._isSynchronizedViewMatrix())
                 return false;
@@ -479,6 +488,7 @@
             }
         }
 
+        /** @hidden */
         public _checkInputs(): void {
             //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
             if (this._collisionTriggered) {
@@ -645,6 +655,7 @@
             this.rebuildAnglesAndRadius();
         }
 
+        /** @hidden */
         public _getViewMatrix(): Matrix {
             // Compute
             var cosa = Math.cos(this.alpha);
@@ -785,6 +796,7 @@
         }
 
         /**
+         * @hidden
          * @override
          * Override Camera._updateRigCameras
          */

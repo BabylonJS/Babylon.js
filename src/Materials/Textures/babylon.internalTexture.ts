@@ -382,6 +382,7 @@ module BABYLON {
             }
         }
 
+        /** @hidden */
         public _swapAndDie(target: InternalTexture): void {
             target._webGLTexture = this._webGLTexture;
 

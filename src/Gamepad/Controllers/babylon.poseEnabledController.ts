@@ -147,6 +147,7 @@ module BABYLON {
 
         /**
          * Internal, the mesh attached to the controller
+         * @hidden
          */
         public _mesh: Nullable<AbstractMesh>; // a node that will be attached to this Gamepad
         private _poseControlledCamera: TargetCamera;
@@ -155,13 +156,15 @@ module BABYLON {
 
         /**
          * Internal, matrix used to convert room space to babylon space
+         * @hidden
          */
         public _deviceToWorld = Matrix.Identity();
 
         /**
          * Node to be used when casting a ray from the controller
+         * @hidden
          */
-        public _pointingPoseNode:Nullable<AbstractMesh> = null;
+        public _pointingPoseNode: Nullable<AbstractMesh> = null;
         /**
          * Name of the child mesh that can be used to cast a ray from the controller
          */
@@ -194,7 +197,7 @@ module BABYLON {
         /**
          * Updates only the pose device and mesh without doing any button event checking
          */
-        protected _updatePoseAndMesh(){
+        protected _updatePoseAndMesh() {
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
 
@@ -269,14 +272,14 @@ module BABYLON {
 
             // Sync controller mesh and pointing pose node's state with controller, this is done to avoid a frame where position is 0,0,0 when attaching mesh
             this._updatePoseAndMesh();
-            if(this._pointingPoseNode){
+            if (this._pointingPoseNode) {
                 var parents = [];
-                var obj:Node = this._pointingPoseNode;
-                while(obj.parent){
-                    parents.push(obj.parent); 
+                var obj: Node = this._pointingPoseNode;
+                while (obj.parent) {
+                    parents.push(obj.parent);
                     obj = obj.parent;
                 }
-                parents.reverse().forEach((p)=>{p.computeWorldMatrix(true)});
+                parents.reverse().forEach((p) => { p.computeWorldMatrix(true) });
             }
 
             this._meshAttachedObservable.notifyObservers(mesh);
