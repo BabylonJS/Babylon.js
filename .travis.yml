@@ -2,7 +2,7 @@ sudo: required
 dist: trusty
 language: node_js
 node_js:
-- '6'
+- '8'
 git:
   depth: 3
 cache:
