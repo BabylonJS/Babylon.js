@@ -3,6 +3,7 @@
         private _babylonGamepads: Array<Gamepad> = [];
         private _oneGamepadConnected: boolean = false;
 
+        /** @hidden */
         public _isMonitoring: boolean = false;
         private _gamepadEventSupported: boolean;
         private _gamepadSupport: () => Array<any>;
@@ -160,6 +161,7 @@
             this._isMonitoring = false;
         }
 
+        /** @hidden */
         public _checkGamepadsStatus() {
             // Hack to be compatible Chrome
             this._updateGamepadObjects();

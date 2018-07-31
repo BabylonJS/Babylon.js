@@ -138,6 +138,7 @@
             this._instanceDivisor = instanced ? 1 : 0;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (!this._buffer) {
                 return;

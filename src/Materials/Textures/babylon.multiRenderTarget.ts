@@ -94,6 +94,7 @@ module BABYLON {
             this._createTextures();
         }
 
+        /** @hidden */
         public _rebuild(): void {
             this.releaseInternalTextures();
             this._createInternalTextures();

@@ -413,10 +413,25 @@
                 }
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
-                for (var index = 0; index < other.indices.length; index++) {
-                    //TODO check type - if Int32Array | Uint32Array | Uint16Array!
-                    (<number[]>this.indices).push(other.indices[index] + offset);
-                }
+
+                var isSrcTypedArray = (<any>this.indices).BYTES_PER_ELEMENT !== undefined;
+
+                if (isSrcTypedArray) {
+                    var len = this.indices.length + other.indices.length;
+                    var temp = this.indices instanceof Uint32Array ? new Uint32Array(len) : new Uint16Array(len);
+                    temp.set(this.indices);
+
+                    let decal = this.indices.length;
+                    for (var index = 0; index < other.indices.length; index++) {
+                        temp[decal + index] = other.indices[index] + offset;
+                    }
+
+                    this.indices = temp;
+                } else {
+                    for (var index = 0; index < other.indices.length; index++) {
+                        (<number[]>this.indices).push(other.indices[index] + offset);
+                    }
+                }                
             }
 
             this.positions = this._mergeElement(this.positions, other.positions);

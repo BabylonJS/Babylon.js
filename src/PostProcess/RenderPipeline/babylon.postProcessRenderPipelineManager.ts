@@ -1,7 +1,7 @@
 module BABYLON {
     export class PostProcessRenderPipelineManager {
-        private _renderPipelines: {[Key:string]:PostProcessRenderPipeline};
-        
+        private _renderPipelines: { [Key: string]: PostProcessRenderPipeline };
+
         constructor() {
             this._renderPipelines = {};
         }
@@ -72,6 +72,7 @@ module BABYLON {
             }
         }
 
+        /** @hidden */
         public _rebuild(): void {
             for (var renderPipelineName in this._renderPipelines) {
                 if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {

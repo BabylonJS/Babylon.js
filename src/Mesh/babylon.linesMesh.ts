@@ -44,18 +44,18 @@
 
             this._intersectionThreshold = 0.1;
 
-            var defines: String[] = []; 
+            var defines: String[] = [];
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
                 needAlphaBlending: true,
                 defines: defines
             };
-            
+
             if (useVertexAlpha === false) {
                 options.needAlphaBlending = false;
             }
-            
+
             if (!useVertexColor) {
                 options.uniforms.push("color");
             }
@@ -99,6 +99,7 @@
             throw new Error("LinesMeshes do not support createInstance.");
         }
 
+        /** @hidden */
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
             if (!this._geometry) {
                 return this;
@@ -113,6 +114,7 @@
             return this;
         }
 
+        /** @hidden */
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh {
             if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
                 return this;

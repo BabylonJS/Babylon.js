@@ -152,6 +152,7 @@
             });
         }
 
+        /** @hidden */
         public _rebuild() {
             this._firstUpdate = true;
             super._rebuild();

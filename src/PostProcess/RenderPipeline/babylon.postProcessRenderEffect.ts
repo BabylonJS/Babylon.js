@@ -5,7 +5,7 @@ module BABYLON {
      * @example https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
      */
     export class PostProcessRenderEffect {
-        private _postProcesses: {[Key:string]:Array<PostProcess>};
+        private _postProcesses: { [Key: string]: Array<PostProcess> };
         private _getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>;
 
         private _singleInstance: boolean;
@@ -15,9 +15,10 @@ module BABYLON {
 
         /**
          * Name of the effect
+         * @hidden
          */
         public _name: string;
-        
+
         /**
          * Instantiates a post process render effect.
          * A post process can be used to apply a shader to a texture after it is rendered.
@@ -45,7 +46,7 @@ module BABYLON {
             for (var index in this._postProcesses) {
                 if (this._postProcesses.hasOwnProperty(index)) {
                     let pps = this._postProcesses[index];
-                    for(var ppIndex = 0; ppIndex < pps.length; ppIndex++){
+                    for (var ppIndex = 0; ppIndex < pps.length; ppIndex++) {
                         if (!pps[ppIndex].isSupported) {
                             return false;
                         }
@@ -57,6 +58,7 @@ module BABYLON {
 
         /**
          * Updates the current state of the effect
+         * @hidden
          */
         public _update(): void {
         }
@@ -64,16 +66,19 @@ module BABYLON {
         /**
          * Attaches the effect on cameras
          * @param cameras The camera to attach to.
+         * @hidden
          */
         public _attachCameras(cameras: Camera): void;
         /**
          * Attaches the effect on cameras
          * @param cameras The camera to attach to.
+         * @hidden
          */
         public _attachCameras(cameras: Camera[]): void;
         /**
          * Attaches the effect on cameras
          * @param cameras The camera to attach to.
+         * @hidden
          */
         public _attachCameras(cameras: any): void {
             var cameraKey;
@@ -95,10 +100,10 @@ module BABYLON {
                     cameraKey = cameraName;
                 }
 
-                if(!this._postProcesses[cameraKey]){
+                if (!this._postProcesses[cameraKey]) {
                     var postProcess = this._getPostProcesses();
-                    if(postProcess){
-                        this._postProcesses[cameraKey] = Array.isArray(postProcess) ? postProcess :[postProcess];
+                    if (postProcess) {
+                        this._postProcesses[cameraKey] = Array.isArray(postProcess) ? postProcess : [postProcess];
                     }
                 }
 
@@ -106,12 +111,12 @@ module BABYLON {
                     this._indicesForCamera[cameraName] = [];
                 }
 
-                this._postProcesses[cameraKey].forEach((postProcess:PostProcess) => {
+                this._postProcesses[cameraKey].forEach((postProcess: PostProcess) => {
                     var index = camera.attachPostProcess(postProcess);
-    
+
                     this._indicesForCamera[cameraName].push(index);
                 });
-                
+
                 if (!this._cameras[cameraName]) {
                     this._cameras[cameraName] = camera;
                 }
@@ -122,16 +127,19 @@ module BABYLON {
         /**
          * Detatches the effect on cameras
          * @param cameras The camera to detatch from.
+         * @hidden
          */
         public _detachCameras(cameras: Camera): void;
         /**
          * Detatches the effect on cameras
          * @param cameras The camera to detatch from.
+         * @hidden
          */
         public _detachCameras(cameras: Camera[]): void;
         /**
          * Detatches the effect on cameras
          * @param cameras The camera to detatch from.
+         * @hidden
          */
         public _detachCameras(cameras: any): void {
             var cams = Tools.MakeArray(cameras || this._cameras);
@@ -143,7 +151,7 @@ module BABYLON {
             for (var i = 0; i < cams.length; i++) {
                 var camera: Camera = cams[i];
                 var cameraName: string = camera.name;
-                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess:PostProcess)=>{
+                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess: PostProcess) => {
                     camera.detachPostProcess(postProcess);
                 })
 
@@ -157,19 +165,22 @@ module BABYLON {
         /**
          * Enables the effect on given cameras
          * @param cameras The camera to enable.
+         * @hidden
          */
         public _enable(cameras: Camera): void;
         /**
          * Enables the effect on given cameras
          * @param cameras The camera to enable.
+         * @hidden
          */
         public _enable(cameras: Nullable<Camera[]>): void;
         /**
          * Enables the effect on given cameras
          * @param cameras The camera to enable.
+         * @hidden
          */
         public _enable(cameras: any): void {
-            var cams:Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
+            var cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
             if (!cams) {
                 return;
@@ -181,7 +192,7 @@ module BABYLON {
 
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                     if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined || camera._postProcesses[this._indicesForCamera[cameraName][j]] === null) {
-                        this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess)=>{
+                        this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                             cams![i].attachPostProcess(postProcess, this._indicesForCamera[cameraName][j]);
                         });
                     }
@@ -192,19 +203,22 @@ module BABYLON {
         /**
          * Disables the effect on the given cameras
          * @param cameras The camera to disable.
+         * @hidden
          */
         public _disable(cameras: Camera): void;
         /**
          * Disables the effect on the given cameras
          * @param cameras The camera to disable.
+         * @hidden
          */
         public _disable(cameras: Nullable<Camera[]>): void;
         /**
          * Disables the effect on the given cameras
          * @param cameras The camera to disable.
+         * @hidden
          */
         public _disable(cameras: any): void {
-            var cams:Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
+            var cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
             if (!cams) {
                 return;
@@ -213,7 +227,7 @@ module BABYLON {
             for (var i = 0; i < cams.length; i++) {
                 var camera = cams[i];
                 var cameraName = camera.name;
-                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess)=>{
+                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                     camera.detachPostProcess(postProcess);
                 });
             }

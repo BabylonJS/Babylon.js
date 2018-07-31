@@ -234,6 +234,7 @@
         private _uniforms: Nullable<WebGLUniformLocation>[];
         /**
          * Key for the effect.
+         * @hidden
          */
         public _key: string;
         private _indexParameters: any;
@@ -245,6 +246,7 @@
         private _transformFeedbackVaryings: Nullable<string[]>;
         /**
          * Compiled shader to webGL program.
+         * @hidden
          */
         public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
@@ -725,6 +727,7 @@
          * @param fragmentSourceCode The source code for the fragment shader.
          * @param onCompiled Callback called when completed.
          * @param onError Callback called on error.
+         * @hidden
          */
         public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
             this._isReady = false;
@@ -762,6 +765,7 @@
 
         /**
          * Prepares the effect
+         * @hidden
          */
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
@@ -871,6 +875,7 @@
          * Binds a texture to the engine to be used as output of the shader.
          * @param channel Name of the output variable.
          * @param texture Texture to bind.
+         * @hidden
          */
         public _bindTexture(channel: string, texture: InternalTexture): void {
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);

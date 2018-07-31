@@ -9,7 +9,7 @@ Build Babylon.js with [gulp](http://gulpjs.com/ "gulp") and npm ([nodejs](http:/
 
 ### First install gulp :
 ```
-npm install -g gulp
+npm install -g gulp@4.0.0
 ```
 
 ### Install some dependencies :
@@ -38,7 +38,6 @@ gulp
 ```
 Will be generated :
 - babylon.js
-- babylon.noworker.js (minified version without collisions workers)
 - babylon.max.js (unminified)
 
 ## From the typescript source
