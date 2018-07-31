@@ -305,7 +305,7 @@ module BABYLON {
 
         /**
          * Shadow generator associted to the light.
-         * Internal use only.
+         * @hidden Internal use only.
          */
         public _shadowGenerator: Nullable<IShadowGenerator>;
 

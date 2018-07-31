@@ -41,11 +41,11 @@ module BABYLON {
         readonly angularAcceleration: Nullable<Float32Array>;
     }
 
-     /**
-     * Interface representing a pose controlled object in Babylon.
-     * A pose controlled object has both regular pose values as well as pose values 
-     * from an external device such as a VR head mounted display
-     */
+    /**
+    * Interface representing a pose controlled object in Babylon.
+    * A pose controlled object has both regular pose values as well as pose values 
+    * from an external device such as a VR head mounted display
+    */
     export interface PoseControlled {
         /**
          * The position of the object in babylon space.
@@ -131,6 +131,7 @@ module BABYLON {
      */
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         /**
+         * @hidden
          * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
          */
         public _vrDevice: any = null;
@@ -302,7 +303,7 @@ module BABYLON {
                 return this._deviceRoomPosition.y + this._workingVector.y
             }
             //If VRDisplay does not inform stage parameters and no default height is set we fallback to zero.
-            return this._defaultHeight || 0;            
+            return this._defaultHeight || 0;
         }
 
         /**
@@ -311,7 +312,7 @@ module BABYLON {
          */
         public useStandingMatrix(callback = (bool: boolean) => { }) {
             // Use standing matrix if available
-            this.getEngine().initWebVRAsync().then((result)=>{
+            this.getEngine().initWebVRAsync().then((result) => {
                 if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform) {
                     callback(false);
                 } else {
@@ -333,9 +334,9 @@ module BABYLON {
          * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
          * @returns A promise with a boolean set to if the standing matrix is supported.
          */
-        public useStandingMatrixAsync():Promise<boolean> {
-            return new Promise((res, rej)=>{
-                this.useStandingMatrix((supported)=>{
+        public useStandingMatrixAsync(): Promise<boolean> {
+            return new Promise((res, rej) => {
+                this.useStandingMatrix((supported) => {
                     res(supported);
                 });
             });
@@ -405,6 +406,7 @@ module BABYLON {
         }
 
         /**
+         * @hidden
          * Updates the camera based on device's frame data
          */
         public _checkInputs(): void {
@@ -492,6 +494,7 @@ module BABYLON {
         }
 
         /**
+         * @hidden
          * Updates the rig cameras (left and right eye)
          */
         public _updateRigCameras() {
@@ -511,6 +514,7 @@ module BABYLON {
         private updateCacheCalled: boolean;
 
         /**
+         * @hidden
          * Updates the cached values of the camera
          * @param ignoreParentClass ignores updating the parent class's cache (default: false)
          */
@@ -565,13 +569,14 @@ module BABYLON {
             this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
-            if(this._poseSet){
+            if (this._poseSet) {
                 this.onPoseUpdatedFromDeviceObservable.notifyObservers(null);
             }
             super.update();
         }
 
         /**
+         * @hidden
          * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
          * @returns an identity matrix
          */
@@ -590,7 +595,7 @@ module BABYLON {
 
             //WebVR 1.1
             var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
-            
+
             Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
             if (!this.getScene().useRightHandedSystem) {

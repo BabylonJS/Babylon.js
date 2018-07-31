@@ -376,6 +376,7 @@ module BABYLON {
             this._needSync = true;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (this._noUBO) {
                 return;

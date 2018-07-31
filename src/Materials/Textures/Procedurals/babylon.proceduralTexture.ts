@@ -3,6 +3,7 @@
         @serialize()
         private _size: number;
 
+        /** @hidden */
         @serialize()
         public _generateMipMaps: boolean;
 
@@ -21,15 +22,16 @@
         private _samplers = new Array<string>();
         private _fragment: any;
 
-        public _textures: {[key: string]: Texture} = {};
-        private _floats: {[key: string]: number} = {};
-        private _ints: {[key: string]: number} = {};
-        private _floatsArrays: {[key: string]: number[]} = {};
-        private _colors3: {[key: string]: Color3} = {};
-        private _colors4: {[key: string]: Color4} = {};
-        private _vectors2: {[key: string]: Vector2} = {};
-        private _vectors3: {[key: string]: Vector3} = {};
-        private _matrices: {[key: string]: Matrix} = {};
+        /** @hidden */
+        public _textures: { [key: string]: Texture } = {};
+        private _floats: { [key: string]: number } = {};
+        private _ints: { [key: string]: number } = {};
+        private _floatsArrays: { [key: string]: number[] } = {};
+        private _colors3: { [key: string]: Color3 } = {};
+        private _colors4: { [key: string]: Color4 } = {};
+        private _vectors2: { [key: string]: Vector2 } = {};
+        private _vectors3: { [key: string]: Vector3 } = {};
+        private _matrices: { [key: string]: Matrix } = {};
 
         private _fallbackTexture: Nullable<Texture>;
 
@@ -90,25 +92,26 @@
             this._indexBuffer = engine.createIndexBuffer(indices);
         }
 
+        /** @hidden */
         public _rebuild(): void {
             let vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
             if (vb) {
                 vb._rebuild();
             }
-            
+
             this._createIndexBuffer();
 
             if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
                 this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
-            }            
+            }
         }
 
         public reset(): void {
             if (this._effect === undefined) {
                 return;
-            }      
-            
+            }
+
             var engine = this._engine;
             engine._releaseEffect(this._effect);
         }
@@ -173,6 +176,7 @@
             this.resetRefreshCounter();
         }
 
+        /** @hidden */
         public _shouldRender(): boolean {
             if (!this.isEnabled || !this.isReady() || !this._texture) {
                 return false;
@@ -311,7 +315,7 @@
             // Float    
             for (name in this._ints) {
                 this._effect.setInt(name, this._ints[name]);
-            }            
+            }
 
             // Float    
             for (name in this._floats) {
@@ -347,8 +351,8 @@
             // Matrix      
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
-            }           
-            
+            }
+
             if (!this._texture) {
                 return;
             }

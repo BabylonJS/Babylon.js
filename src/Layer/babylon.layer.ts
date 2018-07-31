@@ -112,6 +112,7 @@
             this._indexBuffer = engine.createIndexBuffer(indices);
         }
 
+        /** @hidden */
         public _rebuild(): void {
             let vb = this._vertexBuffers[VertexBuffer.PositionKind];
 

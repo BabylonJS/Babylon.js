@@ -5,7 +5,7 @@ module BABYLON {
         private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
         private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
         private _engine: Engine;
-        private _scene: Scene;        
+        private _scene: Scene;
 
         @serialize()
         public keysUp = [38];
@@ -19,7 +19,7 @@ module BABYLON {
         @serialize()
         public keysRight = [39];
 
-        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
+        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             if (this._onCanvasBlurObserver) {
                 return;
             }
@@ -27,7 +27,7 @@ module BABYLON {
             this._scene = this.camera.getScene();
             this._engine = this._scene.getEngine();
 
-            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(()=>{
+            this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
                 this._keys = [];
             });
 
@@ -63,7 +63,7 @@ module BABYLON {
                         }
                     }
                 }
-            });     
+            });
         }
 
         detachControl(element: Nullable<HTMLElement>) {
@@ -80,9 +80,9 @@ module BABYLON {
             }
             this._keys = [];
         }
-        
+
         public checkInputs() {
-            if (this._onKeyboardObserver){
+            if (this._onKeyboardObserver) {
                 var camera = this.camera;
                 // Keyboard
                 for (var index = 0; index < this._keys.length; index++) {
@@ -114,14 +114,15 @@ module BABYLON {
             return "FreeCameraKeyboardMoveInput";
         }
 
+        /** @hidden */
         public _onLostFocus(e: FocusEvent): void {
             this._keys = [];
         }
-        
-        getSimpleName(){
+
+        getSimpleName() {
             return "keyboard";
         }
     }
-    
+
     (<any>CameraInputTypes)["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
 }

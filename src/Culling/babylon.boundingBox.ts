@@ -34,7 +34,7 @@
             this.minimum = min.clone();
             this.maximum = max.clone()
             // Bounding vectors
-            this.vectors= new Array<Vector3>();
+            this.vectors = new Array<Vector3>();
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
 
@@ -101,6 +101,7 @@
             return this;
         }
 
+        /** @hidden */
         public _update(world: Matrix): void {
             Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);

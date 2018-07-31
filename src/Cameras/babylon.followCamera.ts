@@ -5,7 +5,7 @@
 
     Node.AddNodeConstructor("ArcFollowCamera", (name, scene) => {
         return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);
-    });    
+    });
 
     export class FollowCamera extends TargetCamera {
         @serialize()
@@ -76,6 +76,7 @@
             this.setTarget(targetPosition);
         }
 
+        /** @hidden */
         public _checkInputs(): void {
             super._checkInputs();
             if (this.lockedTarget) {
@@ -110,6 +111,7 @@
             this.setTarget(targetPosition);
         }
 
+        /** @hidden */
         public _checkInputs(): void {
             super._checkInputs();
             this.follow();
