@@ -7,8 +7,14 @@
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
-- Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, scale, rotation and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
-- New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
+- Gizmo Support ([TrevorDev](https://github.com/TrevorDev))
+  - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
+  - New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
+  - Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
+  - Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
+  - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
+  - Added ignoreChildren field to bounding box to save performance when using heavily nested meshes ([TrevorDev](https://github.com/TrevorDev))
+  - Add uniform scaling drag support to scale gizmo ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
   - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style. [Doc](https://doc.babylonjs.com/How_To/ParticleHelper) ([Deltakosh](https://github.com/deltakosh)) / ([DevChris](https://github.com/yovanoc))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
@@ -41,6 +47,7 @@
 - All NPM packages have `latest`and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
 - Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
 - Added `TextBlock.computeExpectedHeight`, added `TextWrapping.Ellipsis` as `TextBlock.wordWrapping` possible value ([adrientetar](https://github.com/adrientetar))
+- Moved to gulp 4, updated dependencies to latest ([RaananW](https://github.com/RaananW))
 
 ### Core Engine
 
@@ -79,14 +86,13 @@
 - Added predicate function `targetMask` argument to `scene.beginWeightedAnimation`, `scene.beginAnimation`, `scene.stopAnimation`, and `animatable.stop` to allow for selective application of animations.  ([fmmoret](http://github.com/fmmoret))
 - Oculus GO and GearVR 3dof controllers will now rotate with the user's head if they turn around in their room ([TrevorDev](https://github.com/TrevorDev))
 - Added onPoseUpdatedFromDeviceObservable to webVRCamera to detect when the camera's pose has been updated ([TrevorDev](https://github.com/TrevorDev))
-- Added attachToBoxBehavior to attach UI to a bounding box ([TrevorDev](https://github.com/TrevorDev))
-- Gizmo manager's internal gizmos are now public ([TrevorDev](https://github.com/TrevorDev))
-- Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
 - Added gltf light falloff [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added falloff type per light to prevent material only inconsistencies [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 - Added HDR support to ReflectionProbe ([Deltakosh](https://github.com/deltakosh))
 - Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
+- Added ACES ToneMapping to the image processing to help getting more parity with other engines ([sebavan](http://www.github.com/sebavan))
+- Added Image Processing to the particle system to allow consistency in one pass forward rendering scenes ([sebavan](http://www.github.com/sebavan))
 - Added support for main WebGL2 texture formats ([PeapBoy](https://github.com/NicolasBuecher))
 
 ### glTF Loader
@@ -97,6 +103,7 @@
 - Added debug logging and performance counters ([bghgary](http://www.github.com/bghgary))
 - Added support for EXT_lights_imageBased ([bghgary](http://www.github.com/bghgary))
 - Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
+- Added support for custom loader extensions ([bghgary](http://www.github.com/bghgary))
 
 ### Viewer
 
@@ -134,6 +141,7 @@
 - Removing observers during observable notify should not skip over valid observers ([TrevorDev](https://github.com/TrevorDev))
 - Initializing gamepadManager should register the gamepad update events ([TrevorDev](https://github.com/TrevorDev))
 - Do not generate mipmaps for RawCubeTexture if OES_texture_float_linear and/or EXT_color_buffer_float extensions are not supported ([PeapBoy](https://github.com/NicolasBuecher))
+- Do not modify passed camera array parameter when creating a default pipeline ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

@@ -415,7 +415,56 @@ module BABYLON {
 
             this._isBillboardBased = value;
             this._reset();
-        }     
+        }
+
+        /**
+         * The scene the particle system belongs to.
+         */
+        protected _scene: Scene;
+
+        /**
+         * Local cache of defines for image processing.
+         */
+        protected _imageProcessingConfigurationDefines = new ImageProcessingConfigurationDefines();
+
+        /**
+         * Default configuration related to image processing available in the standard Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+            return this._imageProcessingConfiguration;
+        }
+
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         * 
+         * If sets to null, the scene one is in use.
+         */
+        public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+            this._attachImageProcessingConfiguration(value);
+        }
+
+        /**
+         * Attaches a new image processing configuration to the Standard Material.
+         * @param configuration 
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
+            if (configuration === this._imageProcessingConfiguration) {
+                return;
+            }
+
+            // Pick the scene configuration if needed.
+            if (!configuration) {
+                this._imageProcessingConfiguration = this._scene.imageProcessingConfiguration;
+            }
+            else {
+                this._imageProcessingConfiguration = configuration;
+            }
+        }
 
         /** @hidden */
         protected _reset() {

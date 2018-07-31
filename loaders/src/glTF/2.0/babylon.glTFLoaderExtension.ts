@@ -2,249 +2,109 @@
 
 module BABYLON.GLTF2 {
     /**
-     * Abstract class that can be implemented to extend existing glTF loader behavior.
+     * Interface for a glTF loader extension.
      */
-    export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension, IDisposable {
+    export interface IGLTFLoaderExtension extends BABYLON.IGLTFLoaderExtension, IDisposable {
         /**
-         * Gets or sets a boolean indicating if the extension is enabled
+         * Called after the loader state changes to LOADING.
          */
-        public enabled = true;
-
-        /**
-         * Gets or sets extension name
-         */
-        public abstract readonly name: string;
-
-        protected _loader: GLTFLoader;
+        onLoading?(): void;
 
         /**
-         * Creates new GLTFLoaderExtension
-         * @param loader defines the GLTFLoader to use
+         * Called after the loader state changes to READY.
          */
-        constructor(loader: GLTFLoader) {
-            this._loader = loader;
-        }
+        onReady?(): void;
 
         /**
-         * Release all resources
+         * Define this method to modify the default behavior when loading scenes.
+         * @param context The context when loading the asset
+         * @param scene The glTF scene property
+         * @returns A promise that resolves when the load is complete or null if not handled
          */
-        public dispose(): void {
-            delete this._loader;
-        }
-
-        // #region Overridable Methods
+        loadSceneAsync?(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
 
         /**
-         * Override this method to do work after the state changes to LOADING.
+         * Define this method to modify the default behavior when loading nodes.
+         * @param context The context when loading the asset
+         * @param node The glTF node property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded Babylon mesh when the load is complete or null if not handled
          */
-        protected _onLoading(): void {}
+        loadNodeAsync?(context: string, node: ILoaderNode, assign: (babylonMesh: Mesh) => void): Nullable<Promise<Mesh>>;
 
         /**
-         * Override this method to do work after the state changes to READY.
+         * Define this method to modify the default behavior when loading cameras.
+         * @param context The context when loading the asset
+         * @param camera The glTF camera property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded Babylon camera when the load is complete or null if not handled
          */
-        protected _onReady(): void {}
+        loadCameraAsync?(context: string, camera: ILoaderCamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
 
         /**
-         * Override this method to modify the default behavior for loading scenes.
-         * @hidden
+         * @hidden Define this method to modify the default behavior when loading vertex data for mesh primitives.
+         * @param context The context when loading the asset
+         * @param primitive The glTF mesh primitive property
+         * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
          */
-        protected _loadSceneAsync(context: string, node: _ILoaderScene): Nullable<Promise<void>> { return null; }
+        _loadVertexDataAsync?(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
 
         /**
-         * Override this method to modify the default behavior for loading nodes.
-         * @hidden
+         * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
+         * @param context The context when loading the asset
+         * @param material The glTF material property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
          */
-        protected _loadNodeAsync(context: string, node: _ILoaderNode): Nullable<Promise<void>> { return null; }
+        _loadMaterialAsync?(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
 
         /**
-         * Override this method to modify the default behavior for loading mesh primitive vertex data.
-         * @hidden
+         * Define this method to modify the default behavior when creating materials.
+         * @param context The context when loading the asset
+         * @param material The glTF material property
+         * @param babylonDrawMode The draw mode for the Babylon material
+         * @returns The Babylon material or null if not handled
          */
-        protected _loadVertexDataAsync(context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> { return null; }
+        createMaterial?(context: string, material: ILoaderMaterial, babylonDrawMode: number): Nullable<Material>;
 
         /**
-         * Override this method to modify the default behavior for loading materials.
-         * @hidden
+         * Define this method to modify the default behavior when loading material properties.
+         * @param context The context when loading the asset
+         * @param material The glTF material property
+         * @param babylonMaterial The Babylon material
+         * @returns A promise that resolves when the load is complete or null if not handled
          */
-        protected _loadMaterialAsync(context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
+        loadMaterialPropertiesAsync?(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
 
         /**
-         * Override this method to modify the default behavior for loading material properties.
-         * @hidden
+         * Define this method to modify the default behavior when loading texture infos.
+         * @param context The context when loading the asset
+         * @param textureInfo The glTF texture info property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
          */
-        protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> { return null; }
+        loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
 
         /**
-         * Override this method to modify the default behavior for loading texture infos.
-         * @hidden
+         * Define this method to modify the default behavior when loading animations.
+         * @param context The context when loading the asset
+         * @param animation The glTF animation property
+         * @returns A promise that resolves with the loaded Babylon animation group when the load is complete or null if not handled
          */
-        protected _loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> { return null; }
+        loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
 
         /**
-         * Override this method to modify the default behavior for loading textures.
-         * @hidden
+         * Define this method to modify the default behavior when loading uris.
+         * @param context The context when loading the asset
+         * @param uri The uri to load
+         * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */
-        protected _loadTextureAsync(context: string, texture: _ILoaderTexture, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> { return null; }
-
-        /**
-         * Override this method to modify the default behavior for loading uris.
-         * @hidden
-         */
-        protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> { return null; }
-
-        /** Override this method to modify the default behavior for loading animations. */
-        protected _loadAnimationAsync(context: string, animation: _ILoaderAnimation): Nullable<Promise<void>> { return null; }
-
-        // #endregion
-
-        /**
-         * Helper method called by a loader extension to load an glTF extension.
-         * @hidden
-         */
-        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, extension: TProperty) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>> {
-            if (!property.extensions) {
-                return null;
-            }
-
-            const extensions = property.extensions;
-
-            const extension = extensions[this.name] as TProperty;
-            if (!extension) {
-                return null;
-            }
-
-            // Clear out the extension before executing the action to avoid infinite recursion.
-            delete extensions[this.name];
-
-            try {
-                return actionAsync(`${context}/extensions/${this.name}`, extension);
-            }
-            finally {
-                // Restore the extension after executing the action.
-                extensions[this.name] = extension;
-            }
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading scenes.
-         * @hidden
-         */
-        protected _loadExtrasValueAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, value: TProperty) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>> {
-            if (!property.extras) {
-                return null;
-            }
-
-            const extras = property.extras;
-
-            const value = extras[this.name] as TProperty;
-            if (value === undefined) {
-                return null;
-            }
-
-            // Clear out the extras value before executing the action to avoid infinite recursion.
-            delete extras[this.name];
-
-            try {
-                return actionAsync(`${context}/extras/${this.name}`, value);
-            }
-            finally {
-                // Restore the extras value after executing the action.
-                extras[this.name] = value;
-            }
-        }
-
-        /**
-         * Helper method called by the loader after the state changes to LOADING.
-         * @hidden
-         */
-        public static _OnLoading(loader: GLTFLoader): void {
-            loader._forEachExtensions(extension => extension._onLoading());
-        }
-
-        /**
-         * Helper method called by the loader after the state changes to READY.
-         * @hidden
-         */
-        public static _OnReady(loader: GLTFLoader): void {
-            loader._forEachExtensions(extension => extension._onReady());
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading scenes.
-         * @hidden
-         */
-        public static _LoadSceneAsync(loader: GLTFLoader, context: string, scene: _ILoaderScene): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadSceneAsync(context, scene));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading nodes.
-         * @hidden
-         */
-        public static _LoadNodeAsync(loader: GLTFLoader, context: string, node: _ILoaderNode): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadNodeAsync(context, node));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading mesh primitive vertex data.
-         * @hidden
-         */
-        public static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: _ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
-            return loader._applyExtensions(extension => extension._loadVertexDataAsync(context, primitive, babylonMesh));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading materials.
-         * @hidden
-         */
-        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, mesh: _ILoaderMesh, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, mesh, babylonMesh, babylonDrawMode, assign));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading material properties.
-         * @hidden
-         */
-        public static _LoadMaterialPropertiesAsync(loader: GLTFLoader, context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadMaterialPropertiesAsync(context, material, babylonMaterial));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading texture infos.
-         * @hidden
-         */
-        public static _LoadTextureInfoAsync(loader: GLTFLoader, context: string, textureInfo: ITextureInfo, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadTextureInfoAsync(context, textureInfo, assign));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading textures.
-         * @hidden
-         */
-        public static _LoadTextureAsync(loader: GLTFLoader, context: string, texture: _ILoaderTexture, assign: (babylonTexture: Texture) => void): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadTextureAsync(context, texture, assign));
-        }
-
-        /**
-         * Helper method called by the loader to allow extensions to override loading uris.
-         * @hidden
-         */
-        public static _LoadUriAsync(loader: GLTFLoader, context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
-            return loader._applyExtensions(extension => extension._loadUriAsync(context, uri));
-        }
-
-        /** 
-         * Helper method called by the loader to allow extensions to override loading animations.
-         * @hidden
-         */
-        public static _LoadAnimationAsync(loader: GLTFLoader, context: string, animation: _ILoaderAnimation): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadAnimationAsync(context, animation));
-        }
+        _loadUriAsync?(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
 }
 
 /**
- * Defines the module of the glTF 2.0 loader extensions.
+ * Defines the module for the built-in glTF 2.0 loader extensions.
  */
 module BABYLON.GLTF2.Extensions {
 }

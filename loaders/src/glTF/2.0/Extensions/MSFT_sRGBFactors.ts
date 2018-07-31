@@ -4,31 +4,44 @@ module BABYLON.GLTF2.Extensions {
     const NAME = "MSFT_sRGBFactors";
 
     /** @hidden */
-    export class MSFT_sRGBFactors extends GLTFLoaderExtension {
+    export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         public readonly name = NAME;
+        public enabled = true;
 
-        protected _loadMaterialPropertiesAsync(context: string, material: _ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-            return this._loadExtrasValueAsync<boolean>(context, material, (extensionContext, value) => {
-                if (value) {
-                    const promise = this._loader._loadMaterialPropertiesAsync(context, material, babylonMaterial);
-                    this._convertColorsToLinear(babylonMaterial as PBRMaterial);
+        private _loader: GLTFLoader;
+
+        constructor(loader: GLTFLoader) {
+            this._loader = loader;
+        }
+
+        public dispose() {
+            delete this._loader;
+        }
+
+        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+            return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
+                if (extra) {
+                    if (!(babylonMaterial instanceof PBRMaterial)) {
+                        throw new Error(`${extraContext}: Material type not supported`);
+                    }
+        
+                    const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
+
+                    if (!babylonMaterial.albedoTexture) {
+                        babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor);
+                    }
+
+                    if (!babylonMaterial.reflectivityTexture) {
+                        babylonMaterial.reflectivityColor.toLinearSpaceToRef(babylonMaterial.reflectivityColor);
+                    }
+
                     return promise;
                 }
 
                 return null;
             });
         }
-
-        private _convertColorsToLinear(babylonMaterial: PBRMaterial): void {
-            if (!babylonMaterial.albedoTexture) {
-                babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor);
-            }
-
-            if (!babylonMaterial.reflectivityTexture) {
-                babylonMaterial.reflectivityColor.toLinearSpaceToRef(babylonMaterial.reflectivityColor);
-            }
-        }
     }
 
-    GLTFLoader._Register(NAME, loader => new MSFT_sRGBFactors(loader));
+    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_sRGBFactors(loader));
 }

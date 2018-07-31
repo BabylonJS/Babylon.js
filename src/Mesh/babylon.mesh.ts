@@ -1319,10 +1319,10 @@
          */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
 
-            // this._checkOcclusionQuery();
-            // if (this._isOccluded) {
-            //     return this;
-            // }
+            this._checkOcclusionQuery();
+            if (this._isOccluded) {
+                return this;
+            }
 
             var scene = this.getScene();
             // Managing instances
@@ -2671,7 +2671,7 @@
         /**
          * Creates a ribbon mesh.   
          * Please consider using the same method from the MeshBuilder class instead.   
-         * The ribbon is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
+         * The ribbon is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
          *
          * Please read this full tutorial to understand how to design a ribbon : http://doc.babylonjs.com/tutorials/Ribbon_Tutorial    
          * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.    
@@ -2916,7 +2916,7 @@
 
         /**
          * Creates an extruded shape mesh.    
-         * The extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
+         * The extrusion is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
          * Please consider using the same method from the MeshBuilder class instead.    
          *
          * Please read this full tutorial to understand how to design an extruded shape : http://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes     
@@ -2948,7 +2948,7 @@
         }
         /**
          * Creates an custom extruded shape mesh.    
-         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
+         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.  
          * Please consider using the same method from the MeshBuilder class instead.    
          *
          * Please read this full tutorial to understand how to design a custom extruded shape : http://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes     
@@ -3113,7 +3113,7 @@
         }
         /**
          * Creates a tube mesh.    
-         * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
+         * The tube is a parametric shape :  http://doc.babylonjs.com/how_to/parametric_shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
          * Please consider using the same method from the MeshBuilder class instead.    
          * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube.        
          * The parameter `radius` (positive float, default 1) sets the tube radius size.    
