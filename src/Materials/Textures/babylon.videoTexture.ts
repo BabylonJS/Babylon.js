@@ -94,7 +94,7 @@
             }
 
             this.video.setAttribute("playsinline", "");
-                
+
             this.video.addEventListener("canplay", this._createInternalTexture);
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
@@ -114,14 +114,14 @@
             if (src instanceof HTMLVideoElement) {
                 return src.currentSrc;
             }
-    
+
             if (typeof src === "object") {
                 return src.toString();
             }
 
             return src;
         };
-    
+
         private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
             if (src instanceof HTMLVideoElement) {
                 Tools.SetCorsBehavior(src.currentSrc, src);
@@ -189,13 +189,13 @@
                     playing.then(() => {
                         // Everything is good.
                     })
-                    .catch(() => {
-                        error = true;
-                        // On Chrome for instance, new policies might prevent playing without user interaction.
-                        if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
-                            this._onUserActionRequestedObservable.notifyObservers(this);
-                        }
-                    });
+                        .catch(() => {
+                            error = true;
+                            // On Chrome for instance, new policies might prevent playing without user interaction.
+                            if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
+                                this._onUserActionRequestedObservable.notifyObservers(this);
+                            }
+                        });
                 }
                 else {
                     this.video.onplaying = oldHandler;
@@ -227,7 +227,7 @@
         };
 
         /**
-         * Internal method to initiate `update`.
+         * @hidden Internal method to initiate `update`.
          */
         public _rebuild(): void {
             this.update();
@@ -281,7 +281,7 @@
 
         public dispose(): void {
             super.dispose();
-            
+
             if (this._onUserActionRequestedObservable) {
                 this._onUserActionRequestedObservable.clear();
                 this._onUserActionRequestedObservable = null;
@@ -321,7 +321,7 @@
 
             if (navigator.mediaDevices) {
                 navigator.mediaDevices.getUserMedia({ video: constraints })
-                    .then(function(stream) {
+                    .then(function (stream) {
                         if (video.mozSrcObject !== undefined) {
                             // hack for Firefox < 19
                             video.mozSrcObject = stream;
@@ -339,7 +339,7 @@
                         video.addEventListener("playing", onPlaying);
                         video.play();
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         Tools.Error(err.name);
                     });
             }
@@ -379,7 +379,7 @@
                                 onReady(new VideoTexture("video", video, scene, true, true));
                             }
                         },
-                        function(e: MediaStreamError) {
+                        function (e: MediaStreamError) {
                             Tools.Error(e.name);
                         }
                     );

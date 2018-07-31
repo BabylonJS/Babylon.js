@@ -6,7 +6,7 @@ module BABYLON {
         public static BILLBOARDMODE_Y = 2;
         public static BILLBOARDMODE_Z = 4;
         public static BILLBOARDMODE_ALL = 7;
-        
+
         private _forward = new Vector3(0, 0, 1);
         private _forwardInverted = new Vector3(0, 0, -1);
         private _up = new Vector3(0, 1, 0);
@@ -51,15 +51,18 @@ module BABYLON {
          * By default the system will update normals to compensate
          */
         @serialize()
-        public ignoreNonUniformScaling = false;        
+        public ignoreNonUniformScaling = false;
 
         @serializeAsVector3()
         public position = Vector3.Zero();
 
-        // Cache        
+        // Cache      
+        /** @hidden */
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
+        /** @hidden */
         public _worldMatrix = Matrix.Zero();
+        /** @hidden */
         public _worldMatrixDeterminant = 0;
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
@@ -206,6 +209,7 @@ module BABYLON {
             return this._poseMatrix;
         }
 
+        /** @hidden */
         public _isSynchronized(): boolean {
             if (this._isDirty) {
                 return false;
@@ -239,6 +243,7 @@ module BABYLON {
             return true;
         }
 
+        /** @hidden */
         public _initCache() {
             super._initCache();
 
@@ -471,7 +476,7 @@ module BABYLON {
          * @param point defines the new pivot point to use
          * @param space defines if the point is in world or local space (local by default)
          * @returns the current TransformNode
-        */        
+        */
         public setPivotPoint(point: Vector3, space: Space = Space.LOCAL): TransformNode {
             if (this.getScene().getRenderId() == 0) {
                 this.computeWorldMatrix(true);
@@ -601,6 +606,7 @@ module BABYLON {
             return this._nonUniformScaling;
         }
 
+        /** @hidden */
         public _updateNonUniformScalingState(value: boolean): boolean {
             if (this._nonUniformScaling === value) {
                 return false;
@@ -792,7 +798,7 @@ module BABYLON {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, Tmp.Matrix[0]);
                 this._cache.rotation.copyFrom(this.rotation);
             }
-          
+
             // Translation
             let camera = (<Camera>this.getScene().activeCamera);
 
@@ -809,7 +815,7 @@ module BABYLON {
             }
 
             // Composing transformations
-            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);           
+            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
 
             // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
@@ -859,7 +865,7 @@ module BABYLON {
             // Post multiply inverse of pivotMatrix
             if (this._postMultiplyPivotMatrix) {
                 Tmp.Matrix[5].multiplyToRef(this._pivotMatrixInverse, Tmp.Matrix[5]);
-            }           
+            }
 
             // Local world
             Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
@@ -902,7 +908,7 @@ module BABYLON {
                 } else {
                     this._updateNonUniformScalingState(false);
                 }
-            }else {
+            } else {
                 this._updateNonUniformScalingState(false);
             }
 

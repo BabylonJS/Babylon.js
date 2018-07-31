@@ -1,12 +1,12 @@
 module BABYLON {
     export class PostProcessRenderPipeline {
 
-        private _renderEffects: {[key: string]: PostProcessRenderEffect};
+        private _renderEffects: { [key: string]: PostProcessRenderEffect };
         private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
         protected _cameras: Camera[];
 
-        // private
+        /** @hidden */
         @serialize()
         public _name: string;
 
@@ -21,7 +21,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "PostProcessRenderPipeline";
-        }        
+        }
 
         public get isSupported(): boolean {
             for (var renderEffectName in this._renderEffects) {
@@ -41,12 +41,16 @@ module BABYLON {
 
         // private
 
+        /** @hidden */
         public _rebuild() {
-            
+
         }
 
+        /** @hidden */
         public _enableEffect(renderEffectName: string, cameras: Camera): void;
+        /** @hidden */
         public _enableEffect(renderEffectName: string, cameras: Camera[]): void;
+        /** @hidden */
         public _enableEffect(renderEffectName: string, cameras: any): void {
             var renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
 
@@ -69,8 +73,11 @@ module BABYLON {
             renderEffects._disable(Tools.MakeArray(cameras || this._cameras));
         }
 
+        /** @hidden */
         public _attachCameras(cameras: Camera, unique: boolean): void;
+        /** @hidden */
         public _attachCameras(cameras: Camera[], unique: boolean): void;
+        /** @hidden */
         public _attachCameras(cameras: any, unique: boolean): void {
             var cams = Tools.MakeArray(cameras || this._cameras);
 
@@ -103,8 +110,11 @@ module BABYLON {
             }
         }
 
+        /** @hidden */
         public _detachCameras(cameras: Camera): void;
+        /** @hidden */
         public _detachCameras(cameras: Nullable<Camera[]>): void;
+        /** @hidden */
         public _detachCameras(cameras: any): void {
             var cams = Tools.MakeArray(cameras || this._cameras);
 
@@ -123,6 +133,7 @@ module BABYLON {
             }
         }
 
+        /** @hidden */
         public _update(): void {
             for (var renderEffectName in this._renderEffects) {
                 if (this._renderEffects.hasOwnProperty(renderEffectName)) {
@@ -138,17 +149,18 @@ module BABYLON {
             }
         }
 
+        /** @hidden */
         public _reset(): void {
             this._renderEffects = {};
             this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();
         }
 
-        protected _enableMSAAOnFirstPostProcess(sampleCount: number):boolean{
+        protected _enableMSAAOnFirstPostProcess(sampleCount: number): boolean {
             // Set samples of the very first post process to 4 to enable native anti-aliasing in browsers that support webGL 2.0 (See: https://github.com/BabylonJS/Babylon.js/issues/3754)
             var effectKeys = Object.keys(this._renderEffects);
-            if(this.engine.webGLVersion >= 2 && effectKeys.length > 0){
+            if (this.engine.webGLVersion >= 2 && effectKeys.length > 0) {
                 var postProcesses = this._renderEffects[effectKeys[0]].getPostProcesses();
-                if(postProcesses){
+                if (postProcesses) {
                     postProcesses[0].samples = sampleCount;
                     return true;
                 }
@@ -157,7 +169,7 @@ module BABYLON {
         }
 
         public dispose() {
-           // Must be implemented by children 
+            // Must be implemented by children 
         }
     }
 }

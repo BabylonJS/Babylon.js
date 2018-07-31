@@ -168,11 +168,11 @@ declare module BabylonViewer {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
+            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<Template> | Promise<string>;
+            hideOverlayScreen(): Promise<string> | Promise<Template>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -189,11 +189,11 @@ declare module BabylonViewer {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<Template> | Promise<string>;
+            showLoadingScreen(): Promise<string> | Promise<Template>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<Template> | Promise<string>;
+            hideLoadingScreen(): Promise<string> | Promise<Template>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -639,6 +639,7 @@ declare module BabylonViewer {
             /**
                 * Apply a material configuration to a material
                 * @param material BABYLON.Material to apply configuration to
+                * @hidden
                 */
             _applyModelMaterialConfiguration(material: BABYLON.Material): void;
             /**
@@ -915,7 +916,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -1539,20 +1540,6 @@ declare module BabylonViewer {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
-}
-declare module BabylonViewer {
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 declare module BabylonViewer {
 }

@@ -234,7 +234,7 @@
 
             this._vertexBuffers[kind] = buffer;
 
-            if (kind === VertexBuffer.PositionKind) {                
+            if (kind === VertexBuffer.PositionKind) {
                 var data = <FloatArray>buffer.getData();
                 if (totalVertices != null) {
                     this._totalVertices = totalVertices;
@@ -386,7 +386,7 @@
 
             let data = vertexBuffer.getData();
             if (!data) {
-                 return null;
+                return null;
             }
 
             const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
@@ -977,7 +977,7 @@
                 if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
                     serializationObject.tangets._updatable = true;
                 }
-            }            
+            }
 
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
@@ -1105,7 +1105,7 @@
                 if (binaryInfo.tangetsAttrDesc && binaryInfo.tangetsAttrDesc.count > 0) {
                     var tangentsData = new Float32Array(parsedGeometry, binaryInfo.tangetsAttrDesc.offset, binaryInfo.tangetsAttrDesc.count);
                     mesh.setVerticesData(VertexBuffer.TangentKind, tangentsData, false);
-                }                
+                }
 
                 if (binaryInfo.uvsAttrDesc && binaryInfo.uvsAttrDesc.count > 0) {
                     var uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
@@ -1186,7 +1186,7 @@
 
                 if (parsedGeometry.tangents) {
                     mesh.setVerticesData(VertexBuffer.TangentKind, parsedGeometry.tangents, parsedGeometry.tangents._updatable);
-                }                
+                }
 
                 if (parsedGeometry.uvs) {
                     mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, parsedGeometry.uvs._updatable);
@@ -1530,7 +1530,7 @@
      * @description See http://doc.babylonjs.com/how_to/ribbon_tutorial, http://doc.babylonjs.com/resources/maths_make_ribbons 
      */
     export class RibbonGeometry extends _PrimitiveGeometry {
-       
+
         /**
          * Creates a ribbon geometry
          * @param id defines the unique ID of the geometry
@@ -1544,25 +1544,25 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the array of paths to use
              */
-            public pathArray: Vector3[][], 
+            public pathArray: Vector3[][],
             /**
              * Defines if the last and first points of each path in your pathArray must be joined
              */
-            public closeArray: boolean, 
+            public closeArray: boolean,
             /**
              * Defines if the last and first points of each path in your pathArray must be joined
              */
-            public closePath: boolean, 
+            public closePath: boolean,
             /**
              * Defines the offset between points 
              */
-            public offset: number, 
-            canBeRegenerated?: boolean, 
-            mesh?: Mesh, 
+            public offset: number,
+            canBeRegenerated?: boolean,
+            mesh?: Mesh,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
@@ -1596,13 +1596,13 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the zise of the box (width, height and depth are the same)
              */
-            public size: number, 
-            canBeRegenerated?: boolean, 
-            mesh: Nullable<Mesh> = null, 
+            public size: number,
+            canBeRegenerated?: boolean,
+            mesh: Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
              */
@@ -1610,6 +1610,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
         }
@@ -1659,17 +1660,17 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the number of segments to use to create the sphere
              */
-            public segments: number, 
+            public segments: number,
             /**
              * Defines the diameter of the sphere
              */
-            public diameter: number, 
-            canBeRegenerated?: boolean, 
-            mesh: Nullable<Mesh> = null, 
+            public diameter: number,
+            canBeRegenerated?: boolean,
+            mesh: Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
              */
@@ -1677,6 +1678,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
         }
@@ -1715,7 +1717,7 @@
      * @description see http://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
      */
     export class DiscGeometry extends _PrimitiveGeometry {
-       
+
         /**
          * Creates a new disc geometry
          * @param id defines the unique ID of the geometry
@@ -1727,17 +1729,17 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the radius of the disc
              */
-            public radius: number, 
+            public radius: number,
             /**
              * Defines the tesselation factor to apply to the disc
              */
-            public tessellation: number, 
-            canBeRegenerated?: boolean, 
-            mesh: Nullable<Mesh> = null, 
+            public tessellation: number,
+            canBeRegenerated?: boolean,
+            mesh: Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
              */
@@ -1745,6 +1747,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
         }
@@ -1775,19 +1778,19 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the height of the cylinder
              */
-            public height: number, 
+            public height: number,
             /**
              * Defines the diameter of the cylinder's top cap
              */
-            public diameterTop: number, 
+            public diameterTop: number,
             /**
              * Defines the diameter of the cylinder's bottom cap
              */
-            public diameterBottom: number, 
+            public diameterBottom: number,
             /**
              * Defines the tessellation factor to apply to the cylinder
              */
@@ -1795,9 +1798,9 @@
             /**
              * Defines the number of subdivisions to apply to the cylinder (1 by default)
              */
-            public subdivisions: number = 1, 
-            canBeRegenerated?: boolean, mesh: 
-            Nullable<Mesh> = null, 
+            public subdivisions: number = 1,
+            canBeRegenerated?: boolean, mesh:
+                Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
@@ -1805,6 +1808,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
         }
@@ -1858,21 +1862,21 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the diameter of the torus
              */
-            public diameter: number, 
+            public diameter: number,
             /**
              * Defines the thickness of the torus (ie. internal diameter)
              */
-            public thickness: number, 
+            public thickness: number,
             /**
              * Defines the tesselation factor to apply to the torus
              */
-            public tessellation: number, 
-            canBeRegenerated?: boolean, 
-            mesh: Nullable<Mesh> = null, 
+            public tessellation: number,
+            canBeRegenerated?: boolean,
+            mesh: Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
              */
@@ -1880,6 +1884,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
         }
@@ -1931,24 +1936,25 @@
          * @param mesh defines the hosting mesh (can be null)
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the width of the ground
              */
-            public width: number, 
+            public width: number,
             /**
              * Defines the height of the ground
              */
-            public height: number, 
+            public height: number,
             /**
              * Defines the subdivisions to apply to the ground
              */
-            public subdivisions: number, 
-            canBeRegenerated?: boolean, 
+            public subdivisions: number,
+            canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
         }
@@ -2003,36 +2009,37 @@
          * @param mesh defines the hosting mesh (can be null)
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the minimum value on X axis
              */
-            public xmin: number, 
+            public xmin: number,
             /**
              * Defines the minimum value on Z axis
              */
-            public zmin: number, 
+            public zmin: number,
             /**
              * Defines the maximum value on X axis
              */
-            public xmax: number, 
+            public xmax: number,
             /**
              * Defines the maximum value on Z axis
              */
-            public zmax: number, 
+            public zmax: number,
             /**
              * Defines the subdivisions to apply to the ground
              */
-            public subdivisions: { w: number; h: number; }, 
+            public subdivisions: { w: number; h: number; },
             /**
              * Defines the precision to use when computing the tiles
              */
-            public precision: { w: number; h: number; }, 
-            canBeRegenerated?: boolean, 
+            public precision: { w: number; h: number; },
+            canBeRegenerated?: boolean,
             mesh: Nullable<Mesh> = null) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
         }
@@ -2058,13 +2065,13 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the size of the plane (width === height)
              */
-            public size: number, 
-            canBeRegenerated?: boolean, 
-            mesh: Nullable<Mesh> = null, 
+            public size: number,
+            canBeRegenerated?: boolean,
+            mesh: Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
@@ -2072,6 +2079,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
         }
@@ -2125,33 +2133,33 @@
          * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
          */
         constructor(
-            id: string, scene: Scene, 
+            id: string, scene: Scene,
             /**
              * Defines the radius of the torus knot
              */
-            public radius: number, 
+            public radius: number,
             /**
              * Defines the thickness of the torus knot tube
              */
-            public tube: number, 
+            public tube: number,
             /**
              * Defines the number of radial segments
              */
-            public radialSegments: number, 
+            public radialSegments: number,
             /**
              * Defines the number of tubular segments
              */
-            public tubularSegments: number, 
+            public tubularSegments: number,
             /**
              * Defines the first number of windings
              */
-            public p: number, 
+            public p: number,
             /**
              * Defines the second number of windings
              */
-            public q: number, 
-            canBeRegenerated?: boolean, 
-            mesh: Nullable<Mesh> = null, 
+            public q: number,
+            canBeRegenerated?: boolean,
+            mesh: Nullable<Mesh> = null,
             /**
              * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
              */
@@ -2159,6 +2167,7 @@
             super(id, scene, canBeRegenerated, mesh);
         }
 
+        /** @hidden */
         public _regenerateVertexData(): VertexData {
             return VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
         }

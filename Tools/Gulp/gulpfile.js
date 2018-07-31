@@ -22,7 +22,6 @@ var expect = require("gulp-expect-file");
 var optimisejs = require("gulp-optimize-js");
 var webserver = require("gulp-webserver");
 var path = require("path");
-var sass = require("gulp-sass");
 const webpack = require('webpack');
 var webpackStream = require("webpack-stream");
 var typedoc = require("gulp-typedoc");
@@ -206,7 +205,7 @@ gulp.task("workers", function (cb) {
 /**
  * Build tasks to concat minify uflify optimise the BJS js in different flavor (workers...).
  */
-gulp.task("buildWorker", gulp.series("workers", "shaders", function () {
+gulp.task("buildWorker", gulp.series(gulp.parallel("workers", "shaders"), function () {
     var filesToProcess = determineFilesToProcess("files");
     return merge2(
         gulp.src(filesToProcess).
@@ -402,7 +401,7 @@ var buildExternalLibrary = function (library, settings, watch) {
 
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
-    let cssTask;
+    /*let cssTask;
 
     if (library.sassFiles && library.sassFiles.length) {
         cssTask = gulp.src(library.sassFiles)
@@ -410,7 +409,7 @@ var buildExternalLibrary = function (library, settings, watch) {
             .pipe(concat(library.output.replace(".js", ".css")))
             .pipe(gulp.dest(outputDirectory));
         tasks.push(cssTask);
-    }
+    }*/
 
 
     if (watch) {
@@ -481,9 +480,9 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         var waitAll;
         let waitAllTasks = [];
-        if (cssTask) {
+        /*if (cssTask) {
             waitAllTasks.push(cssTask);
-        }
+        }*/
 
         if (dev) {
             waitAllTasks.push(dev);
@@ -523,7 +522,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                     if (!out.minified) {
                         wpConfig.mode = "development";
                     }
-                    let wpBuild = webpackStream(wpConfig, webpack);
+                    let wpBuild = webpackStream(wpConfig, require("webpack"));
 
                     //shoud dtsBundle create the declaration?
                     if (settings.build.dtsBundle) {
@@ -592,9 +591,6 @@ var buildExternalLibrary = function (library, settings, watch) {
                     sequence.push(build);
 
                 });
-
-
-
             } else {
 
                 let wpBuild = webpackStream(require(library.webpack), webpack);
