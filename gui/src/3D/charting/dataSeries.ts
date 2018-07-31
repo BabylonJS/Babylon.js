@@ -1,6 +1,9 @@
 import { Color3 } from "babylonjs";
 
-/** Class used to store data to display */
+/** 
+ * Class used to store data to display 
+ * @see http://doc.babylonjs.com/how_to/chart3d
+ */
 export class DataSeries {
     /** Gets or sets the label of the series */
     public label: string;
