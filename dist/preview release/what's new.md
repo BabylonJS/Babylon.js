@@ -93,7 +93,6 @@
 - Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
 - Added ACES ToneMapping to the image processing to help getting more parity with other engines ([sebavan](http://www.github.com/sebavan))
 - Added Image Processing to the particle system to allow consistency in one pass forward rendering scenes ([sebavan](http://www.github.com/sebavan))
-- Added support for main WebGL2 texture formats ([PeapBoy](https://github.com/NicolasBuecher))
 
 ### glTF Loader
 
