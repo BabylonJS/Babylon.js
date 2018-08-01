@@ -1,6 +1,5 @@
 import { Chart } from ".";
-import { Engine, Scene, Nullable, Mesh, Animation, StandardMaterial, Texture, Matrix, Material, Observer, Vector3 } from "babylonjs";
-import { FluentMaterial } from "../materials";
+import { Engine, Scene, Nullable, Mesh, Animation, StandardMaterial, Texture, Matrix } from "babylonjs";
 
 /** 
  * Class used to render bar graphs 
@@ -9,28 +8,11 @@ import { FluentMaterial } from "../materials";
 export class MapGraph extends Chart {
 
     private _cylinderMeshes: Nullable<Array<Mesh>>;
-    private _cylinderRadius = 0.5;    
     private _maxCylinderHeight = 10;
     private _worldMap: Nullable<Mesh>;
     private _mercatorMaterial: Nullable<StandardMaterial>;
     private _worldMapSize = 40;   
-    private _pickedPointObserver: Nullable<Observer<Vector3>>;    
-    private _defaultMaterial: Nullable<Material>;
 
-    /** Gets or sets the radius of each cylinder */
-    public get cylinderRadius(): number {
-        return this._cylinderRadius;
-    }
-
-    public set cylinderRadius(value: number) {
-        if (this._cylinderRadius === value) {
-            return;
-        }
-
-        this._cylinderRadius = value;
-
-        this.refresh();
-    }
     
     /** Gets or sets the size of the world map (this will define the width) */
     public get worldMapSize(): number {
@@ -68,25 +50,6 @@ export class MapGraph extends Chart {
         cylinder.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
         return cylinder;
-    }
-
-    protected _createDefaultMaterial(scene: Scene): Material {
-        var result = new FluentMaterial("fluent", scene);
-        result.albedoColor = this._dataSource!.color.scale(0.5);
-        result.innerGlowColorIntensity = 0.6;
-        result.renderHoverLight = true;
-        result.hoverRadius = 5;
-
-        this._pickedPointObserver = this.onPickedPointChangedObservable.add(pickedPoint => {
-            if (pickedPoint) {
-                result.hoverPosition = pickedPoint;
-                result.hoverColor.a = 1.0;
-            } else {
-                result.hoverColor.a = 0;
-            }
-        });
-
-        return result;
     }
 
     public refresh(): MapGraph {
@@ -161,7 +124,7 @@ export class MapGraph extends Chart {
             cylinderMesh.metadata = entry;
             cylinderMesh.parent = this._rootNode;
             let currentScalingYState = cylinderMesh.scaling.y;
-            cylinderMesh.scaling.set(this._cylinderRadius, 0, this._cylinderRadius);
+            cylinderMesh.scaling.set(this._elementWidth / 2, 0, this._elementWidth / 2);
 
             // Lat/long convertion
             const latitude: number = entry.latitude;
@@ -187,14 +150,5 @@ export class MapGraph extends Chart {
         super._clean();
         this._worldMap = null;
         this._cylinderMeshes = null;
-    }
-    
-    /** Clean associated resources */
-    public dispose() {
-        super.dispose();
-        if (this._pickedPointObserver) {
-            this.onPickedPointChangedObservable.remove(this._pickedPointObserver);
-            this._pickedPointObserver = null;
-        }
     }
 }
