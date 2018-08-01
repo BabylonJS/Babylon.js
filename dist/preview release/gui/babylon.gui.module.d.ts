@@ -2642,6 +2642,8 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             };
             protected _scene: Scene;
             protected _blockRefresh: boolean;
+            /** Observable raised when a refresh was done */
+            onRefreshObservable: Observable<Chart>;
             /** Observable raised when a new element is created */
             onElementCreatedObservable: Observable<Mesh>;
             /**
@@ -2758,21 +2760,28 @@ declare module 'babylonjs-gui/3D/charting/barGraph' {
 
 declare module 'babylonjs-gui/3D/charting/mapGraph' {
     import { Chart } from "babylonjs-gui/3D/charting";
-    import { Scene, Nullable, Mesh } from "babylonjs";
+    import { Scene, Nullable, Mesh, Material } from "babylonjs";
     /**
         * Class used to render bar graphs
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the radius of each cylinder */
+            cylinderRadius: number;
+            /** Gets or sets the size of the world map (this will define the width) */
+            worldMapSize: number;
             /**
                 * Creates a new MapGraph
                 * @param name defines the name of the graph
                 * @param scene defines the hosting scene
                 */
             constructor(name: string, mapUrl: string, scene?: Nullable<Scene>);
-            protected _createBarMesh(name: string, scene: Scene): Mesh;
+            protected _createCylinderMesh(name: string, scene: Scene): Mesh;
+            protected _createDefaultMaterial(scene: Scene): Material;
             refresh(): MapGraph;
             protected _clean(): void;
+            /** Clean associated resources */
+            dispose(): void;
     }
 }
 
@@ -5205,6 +5214,8 @@ declare module BABYLON.GUI {
             };
             protected _scene: BABYLON.Scene;
             protected _blockRefresh: boolean;
+            /** BABYLON.Observable raised when a refresh was done */
+            onRefreshObservable: BABYLON.Observable<Chart>;
             /** BABYLON.Observable raised when a new element is created */
             onElementCreatedObservable: BABYLON.Observable<BABYLON.Mesh>;
             /**
@@ -5321,14 +5332,21 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the radius of each cylinder */
+            cylinderRadius: number;
+            /** Gets or sets the size of the world map (this will define the width) */
+            worldMapSize: number;
             /**
                 * Creates a new MapGraph
                 * @param name defines the name of the graph
                 * @param scene defines the hosting scene
                 */
             constructor(name: string, mapUrl: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
-            protected _createBarMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
+            protected _createCylinderMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
+            protected _createDefaultMaterial(scene: BABYLON.Scene): BABYLON.Material;
             refresh(): MapGraph;
             protected _clean(): void;
+            /** Clean associated resources */
+            dispose(): void;
     }
 }
