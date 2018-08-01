@@ -32,9 +32,9 @@ export class Inspector {
 
     private _parentElement: Nullable<HTMLElement>;
 
-    public onGUILoaded: Observable<typeof import("babylonjs-gui")>;
+    public onGUILoaded: Observable<any>;
 
-    public static GUIObject: typeof import("babylonjs-gui"); // should be typeof "babylonjs-gui";
+    public static GUIObject: any; // should be typeof "babylonjs-gui";
 
     /** The inspector is created with the given engine.
      * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
