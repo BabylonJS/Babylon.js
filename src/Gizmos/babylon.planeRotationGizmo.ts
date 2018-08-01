@@ -82,6 +82,7 @@ module BABYLON {
             var currentSnapDragDistance = 0;
             var tmpMatrix = new BABYLON.Matrix();
             var tmpVector = new BABYLON.Vector3();
+            var amountToRotate = new BABYLON.Quaternion();
             this.dragBehavior.onDragObservable.add((event)=>{
                 if(this.attachedMesh){
                     if(!this.attachedMesh.rotationQuaternion){
@@ -134,7 +135,7 @@ module BABYLON {
 
                     // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
                     var quaternionCoefficient = Math.sin(angle/2);
-                    var amountToRotate = new BABYLON.Quaternion(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
+                    amountToRotate.set(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
 
                     // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
                     if(tmpMatrix.determinant() > 0){
