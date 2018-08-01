@@ -2628,7 +2628,7 @@ declare module 'babylonjs-gui/3D/charting/dataSeries' {
 }
 
 declare module 'babylonjs-gui/3D/charting/chart' {
-    import { Nullable, TransformNode, Scene, Vector3, Observable, Mesh, AbstractMesh } from "babylonjs";
+    import { Nullable, TransformNode, Scene, Vector3, Observable, Mesh, AbstractMesh, Material } from "babylonjs";
     import { DataSeries } from "babylonjs-gui/3D/charting";
     /**
         * Base class for all chart controls
@@ -2642,6 +2642,8 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             };
             protected _scene: Scene;
             protected _blockRefresh: boolean;
+            protected _elementWidth: number;
+            protected _defaultMaterial: Nullable<Material>;
             /** Observable raised when a refresh was done */
             onRefreshObservable: Observable<Chart>;
             /** Observable raised when a new element is created */
@@ -2660,6 +2662,8 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             onElementOutObservable: Observable<AbstractMesh>;
             /** User defined callback used to create labels */
             labelCreationFunction: Nullable<(label: string, width: number, includeBackground: boolean) => Mesh>;
+            /** Gets or sets the width of each element */
+            elementWidth: number;
             /** Gets or sets the rotation of the entire chart */
             rotation: Vector3;
             /** Gets or sets the position of the entire chart */
@@ -2676,6 +2680,10 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             readonly rootNode: TransformNode;
             /** Gets or sets a value indicating if refresh function should be executed (useful when multiple changes will happen and you want to run refresh only at the end) */
             blockRefresh: boolean;
+            /** Gets or sets the material used by element meshes */
+            defaultMaterial: Nullable<Material>;
+            /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
+            glowHover: boolean;
             /** Gets or sets the name of the graph */
             name: string;
             /**
@@ -2684,6 +2692,7 @@ declare module 'babylonjs-gui/3D/charting/chart' {
                 * @param scene defines the hosting scene
                 */
             constructor(name: string, scene?: Nullable<Scene>);
+            protected _createDefaultMaterial(scene: Scene): Material;
             /**
                 * Function called by the chart objects when they need a label. Could be user defined if you set this.labelCreationFunction to a custom callback
                 * @param label defines the text of the label
@@ -2711,35 +2720,29 @@ declare module 'babylonjs-gui/3D/charting/chart' {
 }
 
 declare module 'babylonjs-gui/3D/charting/barGraph' {
-    import { Nullable, Scene, Mesh, Material } from "babylonjs";
+    import { Nullable, Scene, Mesh } from "babylonjs";
     import { Chart } from "babylonjs-gui/3D/charting";
     /**
         * Class used to render bar graphs
         * @see http://doc.babylonjs.com/how_to/chart3d#bargraph
         */
     export class BarGraph extends Chart {
-            protected _ownDefaultMaterial: boolean;
             /** Gets or sets a boolean indicating if the background must be displayed */
             displayBackground: boolean;
             /** Gets or sets a boolean indicating if labels must be displayed */
             displayLabels: boolean;
             /** Gets or sets the margin between bars */
             margin: number;
-            /** Gets or sets the width of each bar */
-            barWidth: number;
             /** Gets or sets the maximum height of a bar */
             maxBarHeight: number;
             /** Gets or sets the dimension used for the labels */
             labelDimension: string;
-            /** Gets or sets the material used by bar meshes */
-            defaultMaterial: Nullable<Material>;
             /**
                 * Creates a new BarGraph
                 * @param name defines the name of the graph
                 * @param scene defines the hosting scene
                 */
             constructor(name: string, scene?: Nullable<Scene>);
-            protected _createDefaultMaterial(scene: Scene): Material;
             /**
                 * Children class can override this function to provide a new mesh (as long as it stays inside a 1x1x1 box)
                 * @param name defines the mesh name
@@ -2752,22 +2755,18 @@ declare module 'babylonjs-gui/3D/charting/barGraph' {
                 * @returns the current BarGraph
              */
             refresh(): BarGraph;
-            /** Clean associated resources */
-            dispose(): void;
             protected _clean(): void;
     }
 }
 
 declare module 'babylonjs-gui/3D/charting/mapGraph' {
     import { Chart } from "babylonjs-gui/3D/charting";
-    import { Scene, Nullable, Mesh, Material } from "babylonjs";
+    import { Scene, Nullable, Mesh } from "babylonjs";
     /**
         * Class used to render bar graphs
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
-            /** Gets or sets the radius of each cylinder */
-            cylinderRadius: number;
             /** Gets or sets the size of the world map (this will define the width) */
             worldMapSize: number;
             /**
@@ -2777,11 +2776,8 @@ declare module 'babylonjs-gui/3D/charting/mapGraph' {
                 */
             constructor(name: string, mapUrl: string, scene?: Nullable<Scene>);
             protected _createCylinderMesh(name: string, scene: Scene): Mesh;
-            protected _createDefaultMaterial(scene: Scene): Material;
             refresh(): MapGraph;
             protected _clean(): void;
-            /** Clean associated resources */
-            dispose(): void;
     }
 }
 
@@ -5214,6 +5210,8 @@ declare module BABYLON.GUI {
             };
             protected _scene: BABYLON.Scene;
             protected _blockRefresh: boolean;
+            protected _elementWidth: number;
+            protected _defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
             /** BABYLON.Observable raised when a refresh was done */
             onRefreshObservable: BABYLON.Observable<Chart>;
             /** BABYLON.Observable raised when a new element is created */
@@ -5232,6 +5230,8 @@ declare module BABYLON.GUI {
             onElementOutObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
             /** User defined callback used to create labels */
             labelCreationFunction: BABYLON.Nullable<(label: string, width: number, includeBackground: boolean) => BABYLON.Mesh>;
+            /** Gets or sets the width of each element */
+            elementWidth: number;
             /** Gets or sets the rotation of the entire chart */
             rotation: BABYLON.Vector3;
             /** Gets or sets the position of the entire chart */
@@ -5248,6 +5248,10 @@ declare module BABYLON.GUI {
             readonly rootNode: BABYLON.TransformNode;
             /** Gets or sets a value indicating if refresh function should be executed (useful when multiple changes will happen and you want to run refresh only at the end) */
             blockRefresh: boolean;
+            /** Gets or sets the material used by element meshes */
+            defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
+            glowHover: boolean;
             /** Gets or sets the name of the graph */
             name: string;
             /**
@@ -5256,6 +5260,7 @@ declare module BABYLON.GUI {
                 * @param scene defines the hosting scene
                 */
             constructor(name: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
+            protected _createDefaultMaterial(scene: BABYLON.Scene): BABYLON.Material;
             /**
                 * Function called by the chart objects when they need a label. Could be user defined if you set this.labelCreationFunction to a custom callback
                 * @param label defines the text of the label
@@ -5287,28 +5292,22 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#bargraph
         */
     export class BarGraph extends Chart {
-            protected _ownDefaultMaterial: boolean;
             /** Gets or sets a boolean indicating if the background must be displayed */
             displayBackground: boolean;
             /** Gets or sets a boolean indicating if labels must be displayed */
             displayLabels: boolean;
             /** Gets or sets the margin between bars */
             margin: number;
-            /** Gets or sets the width of each bar */
-            barWidth: number;
             /** Gets or sets the maximum height of a bar */
             maxBarHeight: number;
             /** Gets or sets the dimension used for the labels */
             labelDimension: string;
-            /** Gets or sets the material used by bar meshes */
-            defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
             /**
                 * Creates a new BarGraph
                 * @param name defines the name of the graph
                 * @param scene defines the hosting scene
                 */
             constructor(name: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
-            protected _createDefaultMaterial(scene: BABYLON.Scene): BABYLON.Material;
             /**
                 * Children class can override this function to provide a new mesh (as long as it stays inside a 1x1x1 box)
                 * @param name defines the mesh name
@@ -5321,8 +5320,6 @@ declare module BABYLON.GUI {
                 * @returns the current BarGraph
              */
             refresh(): BarGraph;
-            /** Clean associated resources */
-            dispose(): void;
             protected _clean(): void;
     }
 }
@@ -5332,8 +5329,6 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
-            /** Gets or sets the radius of each cylinder */
-            cylinderRadius: number;
             /** Gets or sets the size of the world map (this will define the width) */
             worldMapSize: number;
             /**
@@ -5343,10 +5338,7 @@ declare module BABYLON.GUI {
                 */
             constructor(name: string, mapUrl: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
             protected _createCylinderMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
-            protected _createDefaultMaterial(scene: BABYLON.Scene): BABYLON.Material;
             refresh(): MapGraph;
             protected _clean(): void;
-            /** Clean associated resources */
-            dispose(): void;
     }
 }
