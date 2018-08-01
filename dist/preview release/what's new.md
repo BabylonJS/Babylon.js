@@ -2,11 +2,10 @@
 
 ## Major updates
 
-(https://github.com/SzeyinLee))
 - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
 - New 3D chart controls. [Complete doc + demos](http://doc.babylonjs.com/how_to/chart3d) ([Deltakosh](https://github.com/deltakosh))
-- Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
+- New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 - Gizmo Support ([TrevorDev](https://github.com/TrevorDev))
   - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
   - New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
@@ -37,12 +36,12 @@
   - Added support for limit velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time)
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
+- Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))
-- New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 - Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
 - GUI and Inspector are now ES-Modules ([RaananW](https://github.com/RaananW))
 - Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
-- Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee]
+- Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
 
 ## Updates
 
