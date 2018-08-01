@@ -155,11 +155,9 @@ module BABYLON {
                             }
 
                             // Rotate around center of bounding box
-                            var originalParent = this.attachedMesh.parent;
                             this._anchorMesh.addChild(this.attachedMesh);
                             this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
                             this._anchorMesh.removeChild(this.attachedMesh);
-                            this.attachedMesh.setParent(originalParent);
                         }
                         this.updateBoundingBox();
                     }
@@ -204,15 +202,12 @@ module BABYLON {
                                 // Scale from the position of the opposite corner                   
                                 box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
-                                
-                                var originalParent = this.attachedMesh.parent;
                                 this._anchorMesh.addChild(this.attachedMesh);
                                 this._anchorMesh.scaling.addInPlace(deltaScale);
                                 if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
                                     this._anchorMesh.scaling.subtractInPlace(deltaScale);
                                 }
                                 this._anchorMesh.removeChild(this.attachedMesh);
-                                this.attachedMesh.setParent(originalParent);
                             }
                         })
 
@@ -264,10 +259,8 @@ module BABYLON {
             if (value) {
                 // Reset anchor mesh to match attached mesh's scale
                 // This is needed to avoid invalid box/sphere position on first drag
-                var oldParent = value.parent;
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
-                value.setParent(oldParent);
                 this.updateBoundingBox();
             }
         }
