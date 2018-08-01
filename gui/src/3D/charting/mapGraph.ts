@@ -1,5 +1,5 @@
 import { Chart } from ".";
-import { Engine, Scene, Nullable, Mesh, Animation, StandardMaterial, Texture } from "babylonjs";
+import { Engine, Scene, Nullable, Mesh, Animation, StandardMaterial, Texture, Matrix } from "babylonjs";
 
 /** 
  * Class used to render bar graphs 
@@ -7,11 +7,27 @@ import { Engine, Scene, Nullable, Mesh, Animation, StandardMaterial, Texture } f
  */
 export class MapGraph extends Chart {
 
-    private _barMeshes: Nullable<Array<Mesh>>;
-    private _barWidth = 0.5;    
-    private _maxBarHeight = 10;
+    private _cylinderMeshes: Nullable<Array<Mesh>>;
+    private _maxCylinderHeight = 10;
     private _worldMap: Nullable<Mesh>;
     private _mercatorMaterial: Nullable<StandardMaterial>;
+    private _worldMapSize = 40;   
+
+    
+    /** Gets or sets the size of the world map (this will define the width) */
+    public get worldMapSize(): number {
+        return this._worldMapSize;
+    }
+
+    public set worldMapSize(value: number) {
+        if (this._worldMapSize === value) {
+            return;
+        }
+
+        this._worldMapSize = value;
+
+        this.refresh();
+    }    
     
     /**
      * Creates a new MapGraph
@@ -22,19 +38,22 @@ export class MapGraph extends Chart {
         super(name, scene);
 
         this._mercatorMaterial = new StandardMaterial("WorldMap", scene!);
-        this._mercatorMaterial.emissiveTexture = new Texture(mapUrl, scene);
+        this._mercatorMaterial.emissiveTexture = new Texture(mapUrl, scene, false, true, Texture.LINEAR_LINEAR_MIPLINEAR, () => {
+            this.refresh();
+        });
         this._mercatorMaterial.disableLighting = true;
+        this._mercatorMaterial.backFaceCulling = false;
     }
 
-    protected _createBarMesh(name: string, scene: Scene): Mesh {
-        var box = Mesh.CreateBox(name, 1, scene);
-        box.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
+    protected _createCylinderMesh(name: string, scene: Scene): Mesh {
+        var cylinder = Mesh.CreateCylinder(name, 1, 1, 1, 16, 1, scene);
+        cylinder.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
-        return box;
+        return cylinder;
     }
 
     public refresh(): MapGraph {
-        if (this._blockRefresh) {
+        if (this._blockRefresh || !this._mercatorMaterial || !this._mercatorMaterial.emissiveTexture!.isReady()) {
             return this;
         }
 
@@ -48,10 +67,10 @@ export class MapGraph extends Chart {
         let createMesh = false;
 
         // Do we need to create new graph or animate the current one
-        if (!this._barMeshes || this._barMeshes.length !== data.length) {
+        if (!this._cylinderMeshes || this._cylinderMeshes.length !== data.length) {
             this._clean();
             createMesh = true;
-            this._barMeshes = [];
+            this._cylinderMeshes = [];
         }      
 
         // Scan data
@@ -69,10 +88,11 @@ export class MapGraph extends Chart {
             }
         });
 
-        let ratio = this._maxBarHeight / (max - min);     
+        let ratio = this._maxCylinderHeight / (max - min);     
         
-        const worldMapWidth = 40;
-        const worldMapHeight = 20;
+        const worldMaptextureSize = this._mercatorMaterial.emissiveTexture!.getSize();
+        const worldMapWidth = this._worldMapSize;
+        const worldMapHeight = worldMapWidth * worldMaptextureSize.height / worldMaptextureSize.width;
 
         if (this._worldMap) {
             this._worldMap.dispose();
@@ -81,24 +101,30 @@ export class MapGraph extends Chart {
         this._worldMap = Mesh.CreateGround("WorldMap", worldMapWidth, worldMapHeight, 1, scene);
         this._worldMap.parent = this._rootNode;
         this._worldMap.material = this._mercatorMaterial;
+
+        // Default material
+        if (!this._defaultMaterial) {
+            this._defaultMaterial = this._createDefaultMaterial(scene);
+        }        
         
-        // We will generate one bar per entry
+        // We will generate one cylinder per entry
         let index = 0;
         data.forEach(entry => {
 
-            var barMesh: Mesh;
+            var cylinderMesh: Mesh;
             if (createMesh) {
-                barMesh = this._createBarMesh(this.name + "_box_" + index++, scene);
-                barMesh.enablePointerMoveEvents = true;
-                this._barMeshes!.push(barMesh);
+                cylinderMesh = this._createCylinderMesh(this.name + "_cylinder_" + index++, scene);
+                cylinderMesh.enablePointerMoveEvents = true;
+                this._cylinderMeshes!.push(cylinderMesh);
             } else {
-                barMesh = this._barMeshes![index++];
+                cylinderMesh = this._cylinderMeshes![index++];
             }
 
-            barMesh.metadata = entry;
-            barMesh.parent = this._worldMap;
-            let currentScalingYState = barMesh.scaling.y;
-            barMesh.scaling.set(this._barWidth, 0, this._barWidth);
+            cylinderMesh.material = this._defaultMaterial;
+            cylinderMesh.metadata = entry;
+            cylinderMesh.parent = this._rootNode;
+            let currentScalingYState = cylinderMesh.scaling.y;
+            cylinderMesh.scaling.set(this._elementWidth / 2, 0, this._elementWidth / 2);
 
             // Lat/long convertion
             const latitude: number = entry.latitude;
@@ -107,20 +133,22 @@ export class MapGraph extends Chart {
             const latRad = latitude * Math.PI / 180;
             const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
             const z = worldMapWidth * mercN / (2 * Math.PI);
-            barMesh.position.set(x, 0, z);
+            cylinderMesh.position.set(x, 0, z);
 
             var easing = new BABYLON.CircleEase();
-            Animation.CreateAndStartAnimation("entryScale", barMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
+            Animation.CreateAndStartAnimation("entryScale", cylinderMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
 
-            this.onElementCreatedObservable.notifyObservers(barMesh);
+            this.onElementCreatedObservable.notifyObservers(cylinderMesh);
         });
+
+        this.onRefreshObservable.notifyObservers(this);
     
         return this;
     }
 
-
     protected _clean(): void {
         super._clean();
-        this._barMeshes = null;
-    }    
+        this._worldMap = null;
+        this._cylinderMeshes = null;
+    }
 }
