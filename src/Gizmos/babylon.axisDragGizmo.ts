@@ -53,7 +53,7 @@ module BABYLON {
             arrowTail.material = coloredMaterial;
             arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
 
-            this._rootMesh.addChild(arrow)
+            this._rootMesh.addChild(arrow);
 
             var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
@@ -62,17 +62,28 @@ module BABYLON {
             this.dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
             this.dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this.dragBehavior);
+
+            var localDelta = new BABYLON.Vector3();
+            var tmpMatrix = new BABYLON.Matrix();
             this.dragBehavior.onDragObservable.add((event)=>{
                 if(this.attachedMesh){
+                    // Convert delta to local translation if it has a parent
+                    if(this.attachedMesh.parent){
+                        this.attachedMesh.parent.computeWorldMatrix().invertToRef(tmpMatrix);
+                        tmpMatrix.setTranslationFromFloats(0,0,0);
+                        Vector3.TransformCoordinatesToRef(event.delta, tmpMatrix, localDelta);
+                    }else{
+                        localDelta.copyFrom(event.delta);
+                    }
                     // Snapping logic
                     if(this.snapDistance == 0){
-                        this.attachedMesh.position.addInPlace(event.delta);
+                        this.attachedMesh.position.addInPlace(localDelta);
                     }else{
-                        currentSnapDragDistance+=event.dragDistance
+                        currentSnapDragDistance+=event.dragDistance;
                         if(Math.abs(currentSnapDragDistance)>this.snapDistance){
                             var dragSteps = Math.floor(Math.abs(currentSnapDragDistance)/this.snapDistance);
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                            event.delta.normalizeToRef(tmpVector);
+                            localDelta.normalizeToRef(tmpVector);
                             tmpVector.scaleInPlace(this.snapDistance*dragSteps);
                             this.attachedMesh.position.addInPlace(tmpVector);
                             tmpSnapEvent.snapDistance = this.snapDistance*dragSteps;
