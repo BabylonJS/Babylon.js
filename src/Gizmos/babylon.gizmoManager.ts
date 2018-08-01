@@ -8,7 +8,6 @@ module BABYLON {
          */
         public gizmos:{positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo>};
         private _gizmosEnabled = {positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false};
-        private _gizmoLayer:UtilityLayerRenderer;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh:Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
@@ -164,7 +163,6 @@ module BABYLON {
                 }
             }
             this._dragBehavior.detach();
-            this._gizmoLayer.dispose();
         }
     }
 }
