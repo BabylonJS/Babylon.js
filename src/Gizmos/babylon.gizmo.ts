@@ -101,6 +101,8 @@ module BABYLON {
                     this.attachedMesh.scaling.copyFrom(this._tempVector);
                     this.attachedMesh.computeWorldMatrix();
                     Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
+                }else if(this._rootMesh.rotationQuaternion){
+                    this._rootMesh.rotationQuaternion.set(0,0,0,1);
                 }
                 if(this.updateGizmoPositionToMatchAttachedMesh){
                     this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
