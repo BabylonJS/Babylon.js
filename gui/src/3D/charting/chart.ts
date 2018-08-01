@@ -16,6 +16,9 @@ export abstract class Chart {
     private _labelMeshes = new Array<Mesh>();
     protected _blockRefresh = false;
 
+    /** Observable raised when a refresh was done */
+    public onRefreshObservable  = new Observable<Chart>();
+
     /** Observable raised when a new element is created */
     public onElementCreatedObservable  = new Observable<Mesh>();
 

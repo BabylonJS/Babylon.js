@@ -1,4 +1,4 @@
-import { Nullable, Scene, Mesh, StandardMaterial, Material, Animation, Observer, Vector3, GlowLayer, Engine, AbstractMesh } from "babylonjs";
+import { Nullable, Scene, Mesh, StandardMaterial, Material, Animation, Observer, Vector3, GlowLayer, Engine, AbstractMesh, Matrix } from "babylonjs";
 import { Chart } from ".";
 import { AdvancedDynamicTexture, DisplayGrid } from "../../2D";
 import { FluentMaterial } from "../materials";
@@ -204,7 +204,7 @@ export class BarGraph extends Chart {
      */
     protected _createBarMesh(name: string, scene: Scene): Mesh {
         var box = Mesh.CreateBox(name, 1, scene);
-        box.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
+        box.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
         return box;
     }
@@ -270,7 +270,7 @@ export class BarGraph extends Chart {
             // Axis
             this._backgroundMesh = BABYLON.Mesh.CreatePlane("background", 1, scene);
             this._backgroundMesh.parent = this._rootNode;            
-            this._backgroundMesh.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
+            this._backgroundMesh.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
             this._backgroundADT = AdvancedDynamicTexture.CreateForMesh(this._backgroundMesh, this._backgroundResolution, this._backgroundResolution, false);
 
@@ -293,7 +293,7 @@ export class BarGraph extends Chart {
                 var label = (max / this._backgroundTickCount) * tickIndex + "";
                 var ticklabel = this._addLabel(label, this._barWidth, false);
                 ticklabel.position.x = left - this._barWidth;
-                ticklabel.position.y = (this.maxBarHeight * (tickIndex - 0.25)) / this._backgroundTickCount;
+                ticklabel.position.y = (this.maxBarHeight * tickIndex) / this._backgroundTickCount;
                 ticklabel.position.z = this._barWidth;
             }
         }
@@ -335,6 +335,8 @@ export class BarGraph extends Chart {
             label.position = barMesh.position.clone();
             label.position.z -= this.barWidth;
         });
+
+        this.onRefreshObservable.notifyObservers(this);
 
         return this;
     }
