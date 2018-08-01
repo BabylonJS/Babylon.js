@@ -15,6 +15,7 @@
   - Ability to customize meshes on gizmos ([TrevorDev](https://github.com/TrevorDev))
   - Added ignoreChildren field to bounding box to save performance when using heavily nested meshes ([TrevorDev](https://github.com/TrevorDev))
   - Add uniform scaling drag support to scale gizmo ([TrevorDev](https://github.com/TrevorDev))
+  - Support interacting with child elements ([TrevorDev](https://github.com/TrevorDev))
 - Particle system improvements ([Deltakosh](https://github.com/deltakosh))
   - Added a ParticleHelper class to create some pre-configured particle systems in a one-liner method style. [Doc](https://doc.babylonjs.com/How_To/ParticleHelper) ([Deltakosh](https://github.com/deltakosh)) / ([DevChris](https://github.com/yovanoc))
   - Improved CPU particles rendering performance (up to x2 on low end devices)
