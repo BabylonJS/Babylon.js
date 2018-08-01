@@ -1,7 +1,7 @@
 
 import { PROPERTIES } from "./properties";
 
-export type GUITyping = typeof import("babylonjs-gui");
+export type GUITyping = any;
 
 export let guiLoaded: boolean = false;
 /**
