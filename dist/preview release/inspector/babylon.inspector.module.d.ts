@@ -101,7 +101,7 @@ declare module 'babylonjs-inspector/treetools' {
 
 declare module 'babylonjs-inspector/Inspector' {
     import { AbstractMesh, Nullable, Scene, Observable } from "babylonjs";
-    import "../sass/main.scss";
+    
     export class Inspector {
             /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
             static DOCUMENT: HTMLDocument;
@@ -381,7 +381,7 @@ declare module 'babylonjs-inspector/adapters/GUIAdapter' {
     import { IToolVisible } from "babylonjs-inspector/treetools/Checkbox";
     import { Adapter } from "babylonjs-inspector/adapters/Adapter";
     export class GUIAdapter extends Adapter implements IToolVisible {
-        constructor(obj: import("babylonjs-gui").Control);
+        constructor(obj: any);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -1615,7 +1615,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class GUIAdapter extends Adapter implements IToolVisible {
-        constructor(obj: import("babylonjs-gui").Control);
+        constructor(obj: any);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
