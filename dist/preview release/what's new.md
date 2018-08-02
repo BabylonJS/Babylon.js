@@ -2,10 +2,11 @@
 
 ## Major updates
 
-- New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
-- New 3D chart controls. [Complete doc + demos](http://doc.babylonjs.com/how_to/chart3d) ([Deltakosh](https://github.com/deltakosh))
-- New GUI control: the [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
-- New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
+- GUI
+  - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
+  - New 3D chart controls. [Complete doc + demos](http://doc.babylonjs.com/how_to/chart3d) ([Deltakosh](https://github.com/deltakosh))
+  - New GUI control: [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
+  - New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 - Gizmo Support ([TrevorDev](https://github.com/TrevorDev))
   - Gizmo and GizmoManager classes used to manipulate meshes in a scene. Gizmo types include: position, rotation, scale and bounding box. [Doc](http://doc.babylonjs.com/how_to/gizmo) ([TrevorDev](https://github.com/TrevorDev))
   - New behaviors: PointerDragBehavior, SixDofDragBehavior and MultiPointerScaleBehavior to enable smooth drag and drop/scaling with mouse or 6dof controller on a mesh. [Doc](http://doc.babylonjs.com/how_to/meshbehavior) ([TrevorDev](https://github.com/TrevorDev))
@@ -38,21 +39,25 @@
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))
-- Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
 - GUI and Inspector are now ES-Modules ([RaananW](https://github.com/RaananW))
 - Added support for noise procedural textures. [Doc](http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#noise-procedural-texture) ([Deltakosh](https://github.com/deltakosh))
 - Added new `PhotoDome` object to display 360 photos. [Demo](https://www.babylonjs-playground.com/#14KRGG#0) ([SzeyinLee](https://github.com/SzeyinLee))
+- Added Video Recorder [Documentation](http://localhost:8080/How_To/Render_Scene_on_a_Video) ([sebavan](http://www.github.com/sebavan))
 
 ## Updates
 
 - All NPM packages have `latest`and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
-- Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 - Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
-- Added `TextBlock.computeExpectedHeight`, added `TextWrapping.Ellipsis` as `TextBlock.wordWrapping` possible value ([adrientetar](https://github.com/adrientetar))
 - Moved to gulp 4, updated dependencies to latest ([RaananW](https://github.com/RaananW))
+
+### GUI
+- Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
+- Added `TextBlock.computeExpectedHeight`, added `TextWrapping.Ellipsis` as `TextBlock.wordWrapping` possible value ([adrientetar](https://github.com/adrientetar))
+- New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
 
 ### Core Engine
 
+- Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 - Added new `BoundingInfo.scale()` function to let users control the size of the bounding info ([Deltakosh](https://github.com/deltakosh))
 - Added new `Animatable.waitAsync` function to use Promises with animations. Demo [Here](https://www.babylonjs-playground.com/#HZBCXR) ([Deltakosh](https://github.com/deltakosh))
 - Added the choice of [forming a closed loop](http://doc.babylonjs.com/how_to/how_to_use_curve3#catmull-rom-spline) to the catmull-rom-spline curve3 ([johnk](https://github.com/babylonjsguide))
@@ -79,7 +84,6 @@
 - Added ```onUserActionRequestedObservable``` to workaround and detect autoplay video policy restriction on VideoTexture ([sebavan](http://www.github.com/sebavan))
 - `Sound` now accepts `MediaStream` as source to enable easier WebAudio and WebRTC integrations ([menduz](https://github.com/menduz))
 - Vector x, y and z constructor parameters are now optional and default to 0 ([TrevorDev](https://github.com/TrevorDev))
-- New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
 - Added and removed camera methods in the default pipeline ([TrevorDev](https://github.com/TrevorDev))
 - Added internal texture `format` support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Added canvas toBlob polyfill in tools ([sebavan](http://www.github.com/sebavan))
@@ -92,7 +96,6 @@
 - Added falloff type per light to prevent material only inconsistencies [Issue 4148](https://github.com/BabylonJS/Babylon.js/issues/4148) ([sebavan](http://www.github.com/sebavan))
 - Added WeightedSound; selects one from many Sounds with random weight for playback. ([najadojo](https://github.com/najadojo))
 - Added HDR support to ReflectionProbe ([Deltakosh](https://github.com/deltakosh))
-- Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
 - Added ACES ToneMapping to the image processing to help getting more parity with other engines ([sebavan](http://www.github.com/sebavan))
 - Added Image Processing to the particle system to allow consistency in one pass forward rendering scenes ([sebavan](http://www.github.com/sebavan))
 
@@ -144,6 +147,7 @@
 - Do not generate mipmaps for RawCubeTexture if OES_texture_float_linear and/or EXT_color_buffer_float extensions are not supported ([PeapBoy](https://github.com/NicolasBuecher))
 - Do not modify passed camera array parameter when creating a default pipeline ([TrevorDev](https://github.com/TrevorDev))
 - AdvancedDynamicTexture should not overwrite skipOnPointerObservable to false ([TrevorDev](https://github.com/TrevorDev))
+- Fixed issue where VRExperienceHelper.onExitingVR observable was being fired twice ([atulyar](https://github.com/atulyar))
 
 ### Core Engine
 
