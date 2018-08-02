@@ -1,5 +1,6 @@
 import { Chart } from ".";
-import { Engine, Scene, Nullable, Mesh, Animation, StandardMaterial, Texture, Matrix } from "babylonjs";
+import { Engine, Scene, Nullable, Mesh, Animation, Texture, Matrix, Observer, Vector3, Material } from "babylonjs";
+import { FluentMaterial } from "../materials";
 
 /** 
  * Class used to render bar graphs 
@@ -10,9 +11,42 @@ export class MapGraph extends Chart {
     private _cylinderMeshes: Nullable<Array<Mesh>>;
     private _maxCylinderHeight = 10;
     private _worldMap: Nullable<Mesh>;
-    private _mercatorMaterial: Nullable<StandardMaterial>;
+    private _mercatorMaterial: Nullable<FluentMaterial>;
     private _worldMapSize = 40;   
     private _cylinderTesselation = 16;
+    private _xOffset = 0;
+    private _yOffset = 0;
+    private _worldMapPickedPointObserver: Nullable<Observer<Vector3>>;  
+
+    /** Gets or sets the offset (in world unit) on X axis to apply to all elements */
+    public get xOffset(): number {
+        return this._xOffset;
+    }
+
+    public set xOffset(value: number) {
+        if (this._xOffset === value) {
+            return;
+        }
+
+        this._xOffset = value;
+
+        this.refresh();
+    }    
+    
+    /** Gets or sets the offset (in world unit) on Y axis to apply to all elements */
+    public get yOffset(): number {
+        return this._yOffset;
+    }
+
+    public set yOffset(value: number) {
+        if (this._yOffset === value) {
+            return;
+        }
+
+        this._yOffset = value;
+
+        this.refresh();
+    }       
 
     /** Gets or sets the tesselation used to build the cylinders */
     public get cylinderTesselation(): number {
@@ -53,6 +87,44 @@ export class MapGraph extends Chart {
 
         meshLabel.position.y += 1.5;
     }
+
+    /**
+     * Gets the material used to render the world map
+     */
+    public get worldMapMaterial(): Nullable<Material> {
+        return this._mercatorMaterial;
+    }
+
+    /** Sets the texture url to use for the world map */
+    public set worldMapUrl(value: string) {
+        const scene = this._scene;
+        if (!this._mercatorMaterial) {
+            this._mercatorMaterial = new FluentMaterial("WorldMap", scene!);
+    
+            this._mercatorMaterial.backFaceCulling = false;
+    
+            this._mercatorMaterial.renderHoverLight = true;
+            this._mercatorMaterial.hoverRadius = 3;
+    
+            this._worldMapPickedPointObserver = this.onPickedPointChangedObservable.add(pickedPoint => {
+                if (pickedPoint) {
+                    this._mercatorMaterial!.hoverPosition = pickedPoint;
+                    this._mercatorMaterial!.hoverColor.a = 1.0;
+                } else {
+                    this._mercatorMaterial!.hoverColor.a = 0;
+                }
+            });
+        }
+
+        if (this._mercatorMaterial.albedoTexture) {
+            this._mercatorMaterial.albedoTexture.dispose();
+        }
+
+        const texture = new Texture(value, scene, false, true, Texture.LINEAR_LINEAR_MIPLINEAR, () => {
+            this.refresh();
+        });
+        this._mercatorMaterial.albedoTexture = texture;
+    }
     
     /**
      * Creates a new MapGraph
@@ -62,12 +134,7 @@ export class MapGraph extends Chart {
     constructor(name: string, mapUrl: string, scene: Nullable<Scene> = Engine.LastCreatedScene) {
         super(name, scene);
 
-        this._mercatorMaterial = new StandardMaterial("WorldMap", scene!);
-        this._mercatorMaterial.emissiveTexture = new Texture(mapUrl, scene, false, true, Texture.LINEAR_LINEAR_MIPLINEAR, () => {
-            this.refresh();
-        });
-        this._mercatorMaterial.disableLighting = true;
-        this._mercatorMaterial.backFaceCulling = false;
+        this.worldMapUrl = mapUrl;
     }
 
     protected _createCylinderMesh(name: string, scene: Scene): Mesh {
@@ -78,7 +145,7 @@ export class MapGraph extends Chart {
     }
 
     public refresh(): MapGraph {
-        if (this._blockRefresh || !this._mercatorMaterial || !this._mercatorMaterial.emissiveTexture!.isReady()) {
+        if (this._blockRefresh || !this._mercatorMaterial || !this._mercatorMaterial.albedoTexture!.isReady()) {
             return this;
         }
 
@@ -117,7 +184,7 @@ export class MapGraph extends Chart {
 
         this._removeLabels();
         
-        const worldMaptextureSize = this._mercatorMaterial.emissiveTexture!.getSize();
+        const worldMaptextureSize = this._mercatorMaterial.albedoTexture!.getSize();
         const worldMapWidth = this._worldMapSize;
         const worldMapHeight = worldMapWidth * worldMaptextureSize.height / worldMaptextureSize.width;
 
@@ -128,6 +195,7 @@ export class MapGraph extends Chart {
         this._worldMap = Mesh.CreateGround("WorldMap", worldMapWidth, worldMapHeight, 1, scene);
         this._worldMap.parent = this._rootNode;
         this._worldMap.material = this._mercatorMaterial;
+        this._worldMap.enablePointerMoveEvents = true;
 
         // Default material
         if (!this._defaultMaterial) {
@@ -160,7 +228,7 @@ export class MapGraph extends Chart {
             const latRad = latitude * Math.PI / 180;
             const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
             const z = worldMapWidth * mercN / (2 * Math.PI);
-            cylinderMesh.position.set(x, 0, z);
+            cylinderMesh.position.set(x + this._xOffset, 0.01, z + this._yOffset);
 
             var easing = new BABYLON.CircleEase();
             Animation.CreateAndStartAnimation("entryScale", cylinderMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
@@ -186,5 +254,13 @@ export class MapGraph extends Chart {
         super._clean();
         this._worldMap = null;
         this._cylinderMeshes = null;
+    }
+
+    public dispose() {
+        super.dispose();
+        if (this._worldMapPickedPointObserver) {
+            this.onPickedPointChangedObservable.remove(this._worldMapPickedPointObserver);
+            this._worldMapPickedPointObserver = null;    
+        }
     }
 }
