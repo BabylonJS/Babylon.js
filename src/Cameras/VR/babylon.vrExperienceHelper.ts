@@ -777,7 +777,7 @@ module BABYLON {
                 // A VR display is connected
                 this._webVRpresenting = vrDisplay.isPresenting;
 
-                if (wasPresenting && !this._webVRpresenting)
+                if (wasPresenting && !this._webVRpresenting && this.isInVRMode)
                     this.exitVR();
             } else {
                 Tools.Warn('Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?');
@@ -906,6 +906,13 @@ module BABYLON {
 
             if (this._interactionsEnabled) {
                 this._scene.unregisterBeforeRender(this.beforeRender);
+                this._cameraGazer._gazeTracker.isVisible = false;
+                if (this.leftController) {
+                    this.leftController._gazeTracker.isVisible = false;
+                }
+                if (this.rightController) {
+                    this.rightController._gazeTracker.isVisible = false;
+                }
             }
 
             // resize to update width and height when exiting vr exits fullscreen

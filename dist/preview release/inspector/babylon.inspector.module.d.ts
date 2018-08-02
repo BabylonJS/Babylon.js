@@ -107,8 +107,8 @@ declare module 'babylonjs-inspector/Inspector' {
             static DOCUMENT: HTMLDocument;
             /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
             static WINDOW: Window;
-            onGUILoaded: Observable<typeof import("babylonjs-gui")>;
-            static GUIObject: typeof import("babylonjs-gui");
+            onGUILoaded: Observable<any>;
+            static GUIObject: any;
             /** The inspector is created with the given engine.
                 * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
                 * If the parameter 'popup' is true, the inspector is created in another popup.
@@ -322,7 +322,7 @@ declare module 'babylonjs-inspector/properties' {
 }
 
 declare module 'babylonjs-inspector/properties_gui' {
-    export type GUITyping = typeof import("babylonjs-gui");
+    export type GUITyping = any;
     export let guiLoaded: boolean;
     /**
        * Function that add gui objects properties to the variable PROPERTIES
@@ -1358,8 +1358,8 @@ declare module INSPECTOR {
             static DOCUMENT: HTMLDocument;
             /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
             static WINDOW: Window;
-            onGUILoaded: BABYLON.Observable<typeof import("babylonjs-gui")>;
-            static GUIObject: typeof import("babylonjs-gui");
+            onGUILoaded: BABYLON.Observable<any>;
+            static GUIObject: any;
             /** The inspector is created with the given engine.
                 * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
                 * If the parameter 'popup' is true, the inspector is created in another popup.
@@ -1570,7 +1570,7 @@ declare module INSPECTOR {
     };
 }
 declare module INSPECTOR {
-    export type GUITyping = typeof import("babylonjs-gui");
+    export type GUITyping = any;
     export let guiLoaded: boolean;
     /**
        * Function that add gui objects properties to the variable PROPERTIES

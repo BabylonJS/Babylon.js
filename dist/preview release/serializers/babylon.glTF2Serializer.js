@@ -680,6 +680,9 @@ var BABYLON;
              * @param babylonTransformNode Babylon mesh used as the source for the transformation data
              */
             _Exporter.prototype.setNodeTransformation = function (node, babylonTransformNode) {
+                if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
+                    BABYLON.Tools.Warn("Pivot points are not supported in the glTF serializer");
+                }
                 if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
                     node.translation = this._convertToRightHandedSystem ? GLTF2._GLTFUtilities._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
                 }
