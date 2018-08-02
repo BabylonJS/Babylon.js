@@ -19,6 +19,8 @@ export abstract class Chart {
     protected _elementWidth = 2;    
     private _pickedPointObserver: Nullable<Observer<Vector3>>;      
     protected _defaultMaterial: Nullable<Material>; 
+    private _labelDimension: string;
+    private _displayLabels = true;
 
     private _glowLayer: Nullable<GlowLayer>;
     private _onElementEnterObserver: Nullable<Observer<AbstractMesh>>;
@@ -49,6 +51,9 @@ export abstract class Chart {
 
     /** User defined callback used to create labels */
     public labelCreationFunction: Nullable<(label: string, width: number, includeBackground: boolean) => Mesh>;
+
+    /** User defined callback used to apply specific setup to hover labels */
+    public updateHoverLabel: Nullable<(meshLabel: Mesh) => void>;
 
     /** Gets or sets the width of each element */
     public get elementWidth(): number {
@@ -155,6 +160,36 @@ export abstract class Chart {
         this.refresh();
     }
 
+    /** Gets or sets a boolean indicating if labels must be displayed */
+    public get displayLabels(): boolean {
+        return this._displayLabels;
+    }
+
+    public set displayLabels(value: boolean) {
+        if (this._displayLabels === value) {
+            return;
+        }
+
+        this._displayLabels = value;
+
+        this.refresh();
+    }       
+    
+    /** Gets or sets the dimension used for the labels */
+    public get labelDimension(): string {
+        return this._labelDimension;
+    }
+
+    public set labelDimension(value: string) {
+        if (this._labelDimension === value) {
+            return;
+        }
+
+        this._labelDimension = value;
+
+        this.refresh();
+    }    
+
     /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
     public get glowHover(): boolean {
         return this._glowLayer !== undefined && this._glowLayer !== null;
@@ -190,8 +225,12 @@ export abstract class Chart {
             this._hoverLabel = this._addLabel(activeBar.metadata.value.toString(), this._elementWidth);
 
             this._hoverLabel.position = activeBar.position.clone();
-            this._hoverLabel.position.y = activeBar.scaling.y + 0.5;
-            this._hoverLabel.scaling.x = this._elementWidth;            
+            this._hoverLabel.position.y = activeBar.scaling.y + 1.0;
+            this._hoverLabel.scaling.x = this._elementWidth;     
+            
+            if (this.updateHoverLabel) {
+                this.updateHoverLabel(this._hoverLabel);
+            }
         });
 
         this._onElementOutObserver = this.onElementOutObservable.add(mesh => {

@@ -12,6 +12,23 @@ export class MapGraph extends Chart {
     private _worldMap: Nullable<Mesh>;
     private _mercatorMaterial: Nullable<StandardMaterial>;
     private _worldMapSize = 40;   
+    private _cylinderTesselation = 16;
+
+    /** Gets or sets the tesselation used to build the cylinders */
+    public get cylinderTesselation(): number {
+        return this._cylinderTesselation;
+    }
+
+    public set cylinderTesselation(value: number) {
+        if (this._cylinderTesselation === value) {
+            return;
+        }
+
+        this._cylinderTesselation = value;
+        this._clean();
+
+        this.refresh();
+    }        
 
     
     /** Gets or sets the size of the world map (this will define the width) */
@@ -28,6 +45,14 @@ export class MapGraph extends Chart {
 
         this.refresh();
     }    
+
+    public updateHoverLabel = (meshLabel: Mesh) => {
+        if (!this.labelDimension || !this.displayLabels) {
+            return;
+        }
+
+        meshLabel.position.y += 1.5;
+    }
     
     /**
      * Creates a new MapGraph
@@ -46,7 +71,7 @@ export class MapGraph extends Chart {
     }
 
     protected _createCylinderMesh(name: string, scene: Scene): Mesh {
-        var cylinder = Mesh.CreateCylinder(name, 1, 1, 1, 16, 1, scene);
+        var cylinder = Mesh.CreateCylinder(name, 1, 1, 1, this._cylinderTesselation, 1, scene);
         cylinder.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
         return cylinder;
@@ -89,6 +114,8 @@ export class MapGraph extends Chart {
         });
 
         let ratio = this._maxCylinderHeight / (max - min);     
+
+        this._removeLabels();
         
         const worldMaptextureSize = this._mercatorMaterial.emissiveTexture!.getSize();
         const worldMapWidth = this._worldMapSize;
@@ -139,6 +166,15 @@ export class MapGraph extends Chart {
             Animation.CreateAndStartAnimation("entryScale", cylinderMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
 
             this.onElementCreatedObservable.notifyObservers(cylinderMesh);
+
+            // Label
+            if (!this.labelDimension || !this.displayLabels) {
+                return;
+            }
+
+            let label = this._addLabel(entry[this.labelDimension], this._elementWidth);
+            label.position = cylinderMesh.position.clone();
+            Animation.CreateAndStartAnimation("labelScale", label, "position.y", 30, 30, currentScalingYState + 1.0, entry.value * ratio + 1.0, 0, easing);
         });
 
         this.onRefreshObservable.notifyObservers(this);

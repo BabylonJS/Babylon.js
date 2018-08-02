@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 
 declare module 'babylonjs-gui' {
     export * from "babylonjs-gui/2D";
@@ -2662,6 +2662,8 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             onElementOutObservable: Observable<AbstractMesh>;
             /** User defined callback used to create labels */
             labelCreationFunction: Nullable<(label: string, width: number, includeBackground: boolean) => Mesh>;
+            /** User defined callback used to apply specific setup to hover labels */
+            updateHoverLabel: Nullable<(meshLabel: Mesh) => void>;
             /** Gets or sets the width of each element */
             elementWidth: number;
             /** Gets or sets the rotation of the entire chart */
@@ -2682,6 +2684,10 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             blockRefresh: boolean;
             /** Gets or sets the material used by element meshes */
             defaultMaterial: Nullable<Material>;
+            /** Gets or sets a boolean indicating if labels must be displayed */
+            displayLabels: boolean;
+            /** Gets or sets the dimension used for the labels */
+            labelDimension: string;
             /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
             glowHover: boolean;
             /** Gets or sets the name of the graph */
@@ -2729,14 +2735,10 @@ declare module 'babylonjs-gui/3D/charting/barGraph' {
     export class BarGraph extends Chart {
             /** Gets or sets a boolean indicating if the background must be displayed */
             displayBackground: boolean;
-            /** Gets or sets a boolean indicating if labels must be displayed */
-            displayLabels: boolean;
             /** Gets or sets the margin between bars */
             margin: number;
             /** Gets or sets the maximum height of a bar */
             maxBarHeight: number;
-            /** Gets or sets the dimension used for the labels */
-            labelDimension: string;
             /**
                 * Creates a new BarGraph
                 * @param name defines the name of the graph
@@ -2767,8 +2769,11 @@ declare module 'babylonjs-gui/3D/charting/mapGraph' {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the tesselation used to build the cylinders */
+            cylinderTesselation: number;
             /** Gets or sets the size of the world map (this will define the width) */
             worldMapSize: number;
+            updateHoverLabel: (meshLabel: Mesh) => void;
             /**
                 * Creates a new MapGraph
                 * @param name defines the name of the graph
@@ -2784,7 +2789,7 @@ declare module 'babylonjs-gui/3D/charting/mapGraph' {
 
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -5230,6 +5235,8 @@ declare module BABYLON.GUI {
             onElementOutObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
             /** User defined callback used to create labels */
             labelCreationFunction: BABYLON.Nullable<(label: string, width: number, includeBackground: boolean) => BABYLON.Mesh>;
+            /** User defined callback used to apply specific setup to hover labels */
+            updateHoverLabel: BABYLON.Nullable<(meshLabel: BABYLON.Mesh) => void>;
             /** Gets or sets the width of each element */
             elementWidth: number;
             /** Gets or sets the rotation of the entire chart */
@@ -5250,6 +5257,10 @@ declare module BABYLON.GUI {
             blockRefresh: boolean;
             /** Gets or sets the material used by element meshes */
             defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /** Gets or sets a boolean indicating if labels must be displayed */
+            displayLabels: boolean;
+            /** Gets or sets the dimension used for the labels */
+            labelDimension: string;
             /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
             glowHover: boolean;
             /** Gets or sets the name of the graph */
@@ -5294,14 +5305,10 @@ declare module BABYLON.GUI {
     export class BarGraph extends Chart {
             /** Gets or sets a boolean indicating if the background must be displayed */
             displayBackground: boolean;
-            /** Gets or sets a boolean indicating if labels must be displayed */
-            displayLabels: boolean;
             /** Gets or sets the margin between bars */
             margin: number;
             /** Gets or sets the maximum height of a bar */
             maxBarHeight: number;
-            /** Gets or sets the dimension used for the labels */
-            labelDimension: string;
             /**
                 * Creates a new BarGraph
                 * @param name defines the name of the graph
@@ -5329,8 +5336,11 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the tesselation used to build the cylinders */
+            cylinderTesselation: number;
             /** Gets or sets the size of the world map (this will define the width) */
             worldMapSize: number;
+            updateHoverLabel: (meshLabel: BABYLON.Mesh) => void;
             /**
                 * Creates a new MapGraph
                 * @param name defines the name of the graph
