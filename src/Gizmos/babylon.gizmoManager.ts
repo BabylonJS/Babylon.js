@@ -89,8 +89,10 @@ module BABYLON {
          */
         public set positionGizmoEnabled(value:boolean){
             if(value){
-                this.gizmos.positionGizmo = this.gizmos.positionGizmo || new PositionGizmo();
-                this.gizmos.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                if(!this.gizmos.positionGizmo){
+                    this.gizmos.positionGizmo = new PositionGizmo();
+                    this.gizmos.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                }
                 this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.positionGizmo){
                 this.gizmos.positionGizmo.attachedMesh = null;
@@ -105,8 +107,10 @@ module BABYLON {
          */
         public set rotationGizmoEnabled(value:boolean){
             if(value){
-                this.gizmos.rotationGizmo = this.gizmos.rotationGizmo || new RotationGizmo();
-                this.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                if(!this.gizmos.rotationGizmo){
+                    this.gizmos.rotationGizmo = new RotationGizmo();
+                    this.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                }
                 this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.rotationGizmo){
                 this.gizmos.rotationGizmo.attachedMesh = null;
