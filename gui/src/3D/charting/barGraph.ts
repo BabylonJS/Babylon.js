@@ -1,27 +1,36 @@
-import { Nullable, Scene, Mesh, StandardMaterial, Material, Animation, Observer, Vector3, GlowLayer, Engine, AbstractMesh } from "babylonjs";
+import { Nullable, Scene, Mesh, StandardMaterial, Animation, Engine, Matrix } from "babylonjs";
 import { Chart } from ".";
 import { AdvancedDynamicTexture, DisplayGrid } from "../../2D";
-import { FluentMaterial } from "../materials";
 
-/** Class used to render bar graphs */
+/** 
+ * Class used to render bar graphs 
+ * @see http://doc.babylonjs.com/how_to/chart3d#bargraph
+ */
 export class BarGraph extends Chart {
     private _margin = 1;
-    private _barWidth = 2
     private _maxBarHeight = 10;
-    private _defaultMaterial: Nullable<Material>;
-    protected _ownDefaultMaterial = false;
     private _barMeshes: Nullable<Array<Mesh>>;
     private _backgroundMesh: Nullable<Mesh>;
     private _backgroundADT : Nullable<AdvancedDynamicTexture>;
-
-    private _pickedPointObserver: Nullable<Observer<Vector3>>;
-
-    private _glowLayer: GlowLayer;
     
-    private _onElementEnterObserver: Nullable<Observer<AbstractMesh>>;
-    private _onElementOutObserver: Nullable<Observer<AbstractMesh>>;
-    
-    private _labelDimension: string;
+    private _displayBackground = true;
+    private _backgroundResolution = 512;
+    private _backgroundTickCount = 5;
+
+    /** Gets or sets a boolean indicating if the background must be displayed */
+    public get displayBackground(): boolean {
+        return this._displayBackground;
+    }
+
+    public set displayBackground(value: boolean) {
+        if (this._displayBackground === value) {
+            return;
+        }
+
+        this._displayBackground = value;
+
+        this.refresh();
+    }     
 
     /** Gets or sets the margin between bars */
     public get margin(): number {
@@ -34,21 +43,6 @@ export class BarGraph extends Chart {
         }
 
         this._margin = value;
-
-        this.refresh();
-    }
-
-    /** Gets or sets the with of each bar */
-    public get barWidth(): number {
-        return this._barWidth;
-    }
-
-    public set barWidth(value: number) {
-        if (this._barWidth === value) {
-            return;
-        }
-
-        this._barWidth = value;
 
         this.refresh();
     }
@@ -68,36 +62,6 @@ export class BarGraph extends Chart {
         this.refresh();
     }
 
-    /** Gets or sets the dimension used for the labels */
-    public get labelDimension(): string {
-        return this._labelDimension;
-    }
-
-    public set labelDimension(value: string) {
-        if (this._labelDimension === value) {
-            return;
-        }
-
-        this._labelDimension = value;
-
-        this.refresh();
-    }
-
-    /** Gets or sets the material used by bar meshes */
-    public get defaultMaterial(): Nullable<Material> {
-        return this._defaultMaterial;
-    }
-
-    public set defaultMaterial(value: Nullable<Material>) {
-        if (this._defaultMaterial === value) {
-            return;
-        }
-
-        this._defaultMaterial = value;
-
-        this.refresh();
-    }
-
     /**
      * Creates a new BarGraph
      * @param name defines the name of the graph
@@ -105,45 +69,6 @@ export class BarGraph extends Chart {
      */
     constructor(name: string, scene: Nullable<Scene> = Engine.LastCreatedScene) {
         super(name, scene);
-
-        this._glowLayer = new GlowLayer("glow", scene!);
-
-        let activeBar: Nullable<Mesh>;
-        this._onElementEnterObserver = this.onElementEnterObservable.add(mesh => {
-            activeBar = <Mesh>mesh;
-        });
-
-        this._onElementOutObserver = this.onElementOutObservable.add(mesh => {
-            activeBar = null;
-        });
-
-        this._glowLayer.customEmissiveColorSelector = (mesh, subMesh, material, result) => {
-            if (mesh === activeBar) {
-                let chartColor = this._dataSource!.color.scale(0.75);
-                result.set(chartColor.r, chartColor.g, chartColor.b, 1.0);
-            } else {
-                result.set(0, 0, 0, 0);
-            }
-        }
-    }
-
-    protected _createDefaultMaterial(scene: Scene): Material {
-        var result = new FluentMaterial("fluent", scene);
-        result.albedoColor = this._dataSource!.color.scale(0.5);
-        result.innerGlowColorIntensity = 0.6;
-        result.renderHoverLight = true;
-        result.hoverRadius = 5;
-
-        this._pickedPointObserver = this.onPickedPointChangedObservable.add(pickedPoint => {
-            if (pickedPoint) {
-                result.hoverPosition = pickedPoint;
-                result.hoverColor.a = 1.0;
-            } else {
-                result.hoverColor.a = 0;
-            }
-        });
-
-        return result;
     }
 
     /**
@@ -154,9 +79,7 @@ export class BarGraph extends Chart {
      */
     protected _createBarMesh(name: string, scene: Scene): Mesh {
         var box = Mesh.CreateBox(name, 1, scene);
-        box.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
-
-        box.metadata = "chart";
+        box.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
         return box;
     }
@@ -175,7 +98,7 @@ export class BarGraph extends Chart {
             return this;
         }
 
-        let scene = this._rootNode.getScene();
+        const scene = this._rootNode.getScene();
 
         // Default material
         if (!this._defaultMaterial) {
@@ -199,9 +122,10 @@ export class BarGraph extends Chart {
             }
         });
 
-        let ratio = this.maxBarHeight / (max - min);
+        let ratio = this._maxBarHeight / (max - min);
 
         let createMesh = false;
+        let left = -(data.length / 2) * (this._elementWidth + this.margin) + 1.5 * this._margin;
 
         // Do we need to create new graph or animate the current one
         if (!this._barMeshes || this._barMeshes.length !== data.length) {
@@ -210,33 +134,46 @@ export class BarGraph extends Chart {
             this._barMeshes = [];
         }        
 
-        this.removeLabels();
+        this._removeLabels();
 
-        // Axis
-        if (!this._backgroundMesh) {
+        if (this._backgroundMesh) {
+            this._backgroundMesh.dispose(false, true);
+            this._backgroundMesh = null;
+        }
+
+        if (this._displayBackground) {
+            // Axis
             this._backgroundMesh = BABYLON.Mesh.CreatePlane("background", 1, scene);
             this._backgroundMesh.parent = this._rootNode;            
-            this._backgroundMesh.setPivotPoint(new BABYLON.Vector3(0, -0.5, 0));
+            this._backgroundMesh.setPivotMatrix(Matrix.Translation(0, 0.5, 0), false);
 
-            this._backgroundADT = AdvancedDynamicTexture.CreateForMesh(this._backgroundMesh, 512, 512, false);
+            this._backgroundADT = AdvancedDynamicTexture.CreateForMesh(this._backgroundMesh, this._backgroundResolution, this._backgroundResolution, false);
 
             let displayGrid = new DisplayGrid();
             displayGrid.displayMajorLines = false;
             displayGrid.minorLineColor = "White";
             displayGrid.minorLineTickness = 2;
-            displayGrid.cellWidth = 512 / data.length;
-            displayGrid.cellHeight = 512 / 5;
+            displayGrid.cellWidth = this._backgroundResolution / data.length;
+            displayGrid.cellHeight = this._backgroundResolution / this._backgroundTickCount;
 
             this._backgroundADT.addControl(displayGrid);
 
             (<StandardMaterial>this._backgroundMesh.material!).opacityTexture = null;
+
+            this._backgroundMesh.position.z = this._elementWidth;
+            this._backgroundMesh.scaling.x = (this._elementWidth + this.margin) * data.length;
+            this._backgroundMesh.scaling.y = this._maxBarHeight; 
+
+            for (var tickIndex = 0; tickIndex <= this._backgroundTickCount; tickIndex++) {
+                var label = (max / this._backgroundTickCount) * tickIndex + "";
+                var ticklabel = this._addLabel(label, this._elementWidth, false);
+                ticklabel.position.x = left - this._elementWidth;
+                ticklabel.position.y = (this.maxBarHeight * tickIndex) / this._backgroundTickCount;
+                ticklabel.position.z = this._elementWidth;
+            }
         }
-        this._backgroundMesh.position.z = this.barWidth;
-        this._backgroundMesh.scaling.x = (this.barWidth + this.margin) * data.length;
-        this._backgroundMesh.scaling.y = this._maxBarHeight; 
 
         // We will generate one bar per entry
-        let left = -(data.length / 2) * (this.barWidth + this.margin) + 1.5 * this._margin;
         let index = 0;
         data.forEach(entry => {
 
@@ -249,61 +186,34 @@ export class BarGraph extends Chart {
                 barMesh = this._barMeshes![index++];
             }
 
+            barMesh.metadata = entry;
             barMesh.parent = this._rootNode;
             barMesh.position.x = left;
             let currentScalingYState = barMesh.scaling.y;
-            barMesh.scaling.set(this.barWidth, 0, this._barWidth);
+            barMesh.scaling.set(this._elementWidth, 0, this._elementWidth);
 
             var easing = new BABYLON.CircleEase();
             Animation.CreateAndStartAnimation("entryScale", barMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
 
             barMesh.material = this._defaultMaterial;
 
-            this.onElementCreated.notifyObservers(barMesh);
+            this.onElementCreatedObservable.notifyObservers(barMesh);
 
-            left += this.barWidth + this.margin;
+            left += this._elementWidth + this.margin;
 
             // Label
-            if (!this._labelDimension) {
+            if (!this.labelDimension || !this.displayLabels) {
                 return;
             }
 
-            let label = this.addLabel(entry[this._labelDimension]);
+            let label = this._addLabel(entry[this.labelDimension], this._elementWidth);
             label.position = barMesh.position.clone();
-            label.position.z -= this.barWidth;
-            label.scaling.x = this.barWidth;
+            label.position.z -= this._elementWidth;
         });
 
+        this.onRefreshObservable.notifyObservers(this);
+
         return this;
-    }
-
-    /** Clean associated resources */
-    public dispose() {
-        super.dispose();
-        if (this._ownDefaultMaterial && this._defaultMaterial) {
-            this._defaultMaterial.dispose();
-            this._defaultMaterial = null;
-        }
-
-        if (this._backgroundADT) {
-            this._backgroundADT.dispose();
-            this._backgroundADT = null;
-        }
-
-        if (this._pickedPointObserver) {
-            this.onPickedPointChangedObservable.remove(this._pickedPointObserver);
-            this._pickedPointObserver = null;
-        }
-
-        if (this._onElementEnterObserver) {
-            this.onElementEnterObservable.remove(this._onElementEnterObserver);
-            this._onElementEnterObserver = null;
-        }
-
-        if (this._onElementOutObserver) {
-            this.onElementOutObservable.remove(this._onElementOutObserver);
-            this._onElementOutObserver = null;
-        }
     }
 
     protected _clean(): void {

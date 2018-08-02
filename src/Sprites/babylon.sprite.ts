@@ -63,6 +63,7 @@
             this._animationStarted = false;
         }
 
+        /** @hidden */
         public _animate(deltaTime: number): void {
             if (!this._animationStarted)
                 return;

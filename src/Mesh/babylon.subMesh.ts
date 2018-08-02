@@ -1,6 +1,8 @@
 ﻿module BABYLON {
     export class BaseSubMesh {
+        /** @hidden */
         public _materialDefines: Nullable<MaterialDefines>;
+        /** @hidden */
         public _materialEffect: Nullable<Effect>;
 
         public get effect(): Nullable<Effect> {
@@ -26,13 +28,20 @@
         private _renderingMesh: Mesh;
         private _boundingInfo: BoundingInfo;
         private _linesIndexBuffer: Nullable<WebGLBuffer>;
+        /** @hidden */
         public _lastColliderWorldVertices: Nullable<Vector3[]>;
+        /** @hidden */
         public _trianglePlanes: Plane[];
+        /** @hidden */
         public _lastColliderTransformMatrix: Matrix;
 
+        /** @hidden */
         public _renderId = 0;
+        /** @hidden */
         public _alphaIndex: number;
+        /** @hidden */
         public _distanceToCamera: number;
+        /** @hidden */
         public _id: number;
 
         private _currentMaterial: Nullable<Material>;
@@ -152,6 +161,7 @@
             return this;
         }
 
+        /** @hidden */
         public _checkCollision(collider: Collider): boolean {
             let boundingInfo = this.getBoundingInfo();
 
@@ -314,6 +324,7 @@
             return intersectInfo;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (this._linesIndexBuffer) {
                 this._linesIndexBuffer = null;

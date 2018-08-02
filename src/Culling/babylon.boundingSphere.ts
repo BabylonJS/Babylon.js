@@ -33,7 +33,7 @@
             this.radius = distance * 0.5;
 
             this.centerWorld = Vector3.Zero();
-            this._update(Matrix.Identity());            
+            this._update(Matrix.Identity());
         }
 
         /**
@@ -54,6 +54,7 @@
         }
 
         // Methods
+        /** @hidden */
         public _update(world: Matrix): void {
             Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
             Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, this._tempRadiusVector);

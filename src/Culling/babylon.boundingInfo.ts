@@ -42,7 +42,7 @@
             return this._isLocked;
         }
 
-        public set isLocked(value: boolean) { 
+        public set isLocked(value: boolean) {
             this._isLocked = value;
         }
 
@@ -92,16 +92,16 @@
         /**
 		 * Gets the world distance between the min and max points of the bounding box
 		 */
-		public get diagonalLength(): number {
+        public get diagonalLength(): number {
             let boundingBox = this.boundingBox;
             let size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
-		    return size.length();
-		}     
+            return size.length();
+        }
 
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
         }
-       
+        /** @hidden */
         public _checkCollision(collider: Collider): boolean {
             return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);
         }

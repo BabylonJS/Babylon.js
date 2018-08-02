@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     Node.AddNodeConstructor("FreeCamera", (name, scene) => {
         // Forcing to use the Universal camera
-        return () => new UniversalCamera(name, Vector3.Zero(), scene);   
+        return () => new UniversalCamera(name, Vector3.Zero(), scene);
     });
 
     export class FreeCamera extends TargetCamera {
@@ -108,7 +108,9 @@
         private _diffPosition = Vector3.Zero();
         private _newPosition = Vector3.Zero();
 
+        /** @hidden */
         public _localDirection: Vector3;
+        /** @hidden */
         public _transformedDirection: Vector3;
 
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
@@ -140,6 +142,7 @@
             this._collisionMask = !isNaN(mask) ? mask : -1;
         }
 
+        /** @hidden */
         public _collideWithWorld(displacement: Vector3): void {
             var globalPosition: Vector3;
 
@@ -193,6 +196,7 @@
             updatePosition(newPosition);
         }
 
+        /** @hidden */
         public _checkInputs(): void {
             if (!this._localDirection) {
                 this._localDirection = Vector3.Zero();
@@ -204,10 +208,12 @@
             super._checkInputs();
         }
 
+        /** @hidden */
         public _decideIfNeedsToMove(): boolean {
             return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
+        /** @hidden */
         public _updatePosition(): void {
             if (this.checkCollisions && this.getScene().collisionsEnabled) {
                 this._collideWithWorld(this.cameraDirection);

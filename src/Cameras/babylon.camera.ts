@@ -141,11 +141,17 @@
         @serialize()
         public isStereoscopicSideBySide: boolean
 
+        /** @hidden */
         public _cameraRigParams: any;
+        /** @hidden */
         public _rigCameras = new Array<Camera>();
+        /** @hidden */
         public _rigPostProcess: Nullable<PostProcess>;
+
         protected _webvrViewMatrix = Matrix.Identity();
+        /** @hidden */
         public _skipRendering = false;
+        /** @hidden */
         public _alternateCamera: Camera;
 
         public customRenderTargets = new Array<RenderTargetTexture>();
@@ -269,6 +275,7 @@
         }
 
         //Cache
+        /** @hidden */
         public _initCache() {
             super._initCache();
 
@@ -291,6 +298,7 @@
             this._cache.renderHeight = undefined;
         }
 
+        /** @hidden */
         public _updateCache(ignoreParentClass?: boolean): void {
             if (!ignoreParentClass) {
                 super._updateCache();
@@ -301,10 +309,12 @@
         }
 
         // Synchronized
+        /** @hidden */
         public _isSynchronized(): boolean {
             return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
         }
 
+        /** @hidden */
         public _isSynchronizedViewMatrix(): boolean {
             if (!super._isSynchronized())
                 return false;
@@ -314,6 +324,7 @@
                 && this.isSynchronizedWithParent();
         }
 
+        /** @hidden */
         public _isSynchronizedProjectionMatrix(): boolean {
             var check = this._cache.mode === this.mode
                 && this._cache.minZ === this.minZ
@@ -356,6 +367,7 @@
             }
         }
 
+        /** @hidden */
         public _checkInputs(): void {
             this.onAfterCheckInputsObservable.notifyObservers(this);
         }
@@ -372,9 +384,9 @@
          * Internal, gets the first post proces.
          * @returns the first post process to be run on this camera.
          */
-        public _getFirstPostProcess():Nullable<PostProcess>{
-            for(var ppIndex = 0; ppIndex < this._postProcesses.length; ppIndex++){
-                if(this._postProcesses[ppIndex] !== null){
+        public _getFirstPostProcess(): Nullable<PostProcess> {
+            for (var ppIndex = 0; ppIndex < this._postProcesses.length; ppIndex++) {
+                if (this._postProcesses[ppIndex] !== null) {
                     return this._postProcesses[ppIndex];
                 }
             }
@@ -417,9 +429,9 @@
 
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-            } else if(this._postProcesses[insertAt] === null) {
+            } else if (this._postProcesses[insertAt] === null) {
                 this._postProcesses[insertAt] = postProcess;
-            }else{
+            } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
@@ -445,6 +457,7 @@
             return this._worldMatrix;
         }
 
+        /** @hidden */
         public _getViewMatrix(): Matrix {
             return Matrix.Identity();
         }
@@ -652,7 +665,7 @@
                 var i = this._postProcesses.length;
                 while (--i >= 0) {
                     var postProcess = this._postProcesses[i]
-                    if(postProcess){
+                    if (postProcess) {
                         postProcess.dispose(this);
                     }
                 }
@@ -858,6 +871,7 @@
 
         /**
          * May need to be overridden by children
+         * @hidden
          */
         public _updateRigCameras() {
             for (var i = 0; i < this._rigCameras.length; i++) {
@@ -872,6 +886,7 @@
             }
         }
 
+        /** @hidden */
         public _setupInputs() {
         }
 

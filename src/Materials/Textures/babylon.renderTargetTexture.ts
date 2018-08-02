@@ -29,7 +29,7 @@
         public get renderList(): Nullable<Array<AbstractMesh>> {
             return this._renderList;
         }
- 
+
         public set renderList(value: Nullable<Array<AbstractMesh>>) {
             this._renderList = value;
 
@@ -42,7 +42,7 @@
             var oldPush = array.push;
             array.push = (...items: AbstractMesh[]) => {
                 var result = oldPush.apply(array, items);
-                
+
                 this.getScene()!.meshes.forEach(mesh => {
                     mesh._markSubMeshesAsLightDirty();
                 })
@@ -71,7 +71,7 @@
         public ignoreCameraViewport: boolean = false;
 
         private _postProcessManager: Nullable<PostProcessManager>;
-        private _postProcesses: PostProcess[];        
+        private _postProcesses: PostProcess[];
 
         private _resizeObserver: Nullable<Observer<Engine>>;
 
@@ -135,11 +135,13 @@
         }
 
         public clearColor: Color4;
-        protected _size: number | {width: number, height: number};
-        protected _initialSizeParameter: number | {width: number, height: number} | {ratio: number}
+        protected _size: number | { width: number, height: number };
+        protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number }
         protected _sizeRatio: Nullable<number>;
+        /** @hidden */
         public _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
+        /** @hidden */
         public _waitingRenderList: string[];
         protected _doNotChangeAspectRatio: boolean;
         protected _currentRefreshId = -1;
@@ -172,7 +174,7 @@
          * When defined, the cubemap will switch to local mode
          * @see https://community.arm.com/graphics/b/blog/posts/reflections-based-on-local-cubemaps-in-unity
          * @example https://www.babylonjs-playground.com/#RNASML
-         */        
+         */
         public set boundingBoxSize(value: Vector3) {
             if (this._boundingBoxSize && this._boundingBoxSize.equals(value)) {
                 return;
@@ -210,7 +212,7 @@
          * @param isMulti True if multiple textures need to be created (Draw Buffers)
          * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
          */
-        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA) {
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Engine.TEXTUREFORMAT_RGBA) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
 
@@ -227,7 +229,7 @@
             this._processSizeParameter(size);
 
             this._resizeObserver = this.getScene()!.getEngine().onResizeObservable.add(() => {
-            });            
+            });
 
             this._generateMipMaps = generateMipMaps ? true : false;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
@@ -271,7 +273,7 @@
          * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
          * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
          */
-        public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false) : void {
+        public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false): void {
             if (!this.getScene()) {
                 return;
             }
@@ -286,15 +288,15 @@
             engine.setFrameBufferDepthStencilTexture(this);
         }
 
-        private _processSizeParameter(size: number | {width: number, height: number} | {ratio: number}): void {
-            if ((<{ratio: number}>size).ratio) {
-                this._sizeRatio = (<{ratio: number}>size).ratio;
+        private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
+            if ((<{ ratio: number }>size).ratio) {
+                this._sizeRatio = (<{ ratio: number }>size).ratio;
                 this._size = {
                     width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
                     height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
                 }
-            } else {            
-                this._size = <number | {width: number, height: number}>size;
+            } else {
+                this._size = <number | { width: number, height: number }>size;
             }
         }
 
@@ -333,10 +335,10 @@
         public addPostProcess(postProcess: PostProcess): void {
             if (!this._postProcessManager) {
                 let scene = this.getScene();
-                
+
                 if (!scene) {
                     return;
-                }                
+                }
                 this._postProcessManager = new PostProcessManager(scene);
                 this._postProcesses = new Array<PostProcess>();
             }
@@ -377,6 +379,7 @@
             }
         }
 
+        /** @hidden */
         public _shouldRender(): boolean {
             if (this._currentRefreshId === -1) { // At least render once
                 this._currentRefreshId = 1;
@@ -393,24 +396,24 @@
         }
 
         public getRenderSize(): number {
-            if ((<{width: number, height: number}>this._size).width) {
-                return (<{width: number, height: number}>this._size).width;
+            if ((<{ width: number, height: number }>this._size).width) {
+                return (<{ width: number, height: number }>this._size).width;
             }
 
             return <number>this._size;
         }
 
         public getRenderWidth(): number {
-            if ((<{width: number, height: number}>this._size).width) {
-                return (<{width: number, height: number}>this._size).width;
+            if ((<{ width: number, height: number }>this._size).width) {
+                return (<{ width: number, height: number }>this._size).width;
             }
 
             return <number>this._size;
         }
 
         public getRenderHeight(): number {
-            if ((<{width: number, height: number}>this._size).width) {
-                return (<{width: number, height: number}>this._size).height;
+            if ((<{ width: number, height: number }>this._size).width) {
+                return (<{ width: number, height: number }>this._size).height;
             }
 
             return <number>this._size;
@@ -434,16 +437,16 @@
             return super.getReflectionTextureMatrix();
         }
 
-        public resize(size: number | {width: number, height: number} | {ratio: number}) {
+        public resize(size: number | { width: number, height: number } | { ratio: number }) {
             this.releaseInternalTexture();
             let scene = this.getScene();
-            
+
             if (!scene) {
                 return;
             }
-            
+
             this._processSizeParameter(size);
-            
+
             if (this.isCube) {
                 this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
             } else {
@@ -486,7 +489,7 @@
                 }
 
                 var scene = this.getScene();
-                
+
                 if (!scene) {
                     return;
                 }
@@ -596,7 +599,7 @@
             let minimum = 128;
             let x = renderDimension * scale;
             let curved = Tools.NearestPOT(x + (minimum * minimum / (minimum + x)));
-            
+
             // Ensure we don't exceed the render dimension (while staying POT)
             return Math.min(Tools.FloorPOT(renderDimension), curved);
         }
@@ -612,7 +615,7 @@
 
         private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
-            
+
             if (!scene) {
                 return;
             }
@@ -674,7 +677,7 @@
                     }
                 }
 
-            this.unbindFrameBuffer(engine, faceIndex);
+                this.unbindFrameBuffer(engine, faceIndex);
 
             } else {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
@@ -807,6 +810,7 @@
             super.dispose();
         }
 
+        /** @hidden */
         public _rebuild(): void {
             if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
                 this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;

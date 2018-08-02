@@ -46,6 +46,7 @@ module BABYLON {
             return "TouchCamera";
         }
 
+        /** @hidden */
         public _setupInputs() {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse) {

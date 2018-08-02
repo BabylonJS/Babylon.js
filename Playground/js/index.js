@@ -170,7 +170,7 @@ function showError(errorMessage, errorEvent) {
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-        if (location.href.indexOf("indexstable") !== -1) {
+        if (location.href.indexOf("indexStable") !== -1) {
             setToMultipleID("currentVersion", "innerHTML", "Version: Stable");
         } else {
             setToMultipleID("currentVersion", "innerHTML", "Version: Latest");

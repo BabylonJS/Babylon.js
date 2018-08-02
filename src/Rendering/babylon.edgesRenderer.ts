@@ -52,6 +52,7 @@
             this._lineShader.backFaceCulling = false;
         }
 
+        /** @hidden */
         public _rebuild(): void {
             var buffer = this._buffers[VertexBuffer.PositionKind];
             if (buffer) {
@@ -279,7 +280,7 @@
                     }
                 }
             }
-            
+
             // Create lines
             for (index = 0; index < adjacencies.length; index++) {
                 // We need a line when a face has no adjacency on a specific edge or if all the adjacencies has an angle greater than epsilon

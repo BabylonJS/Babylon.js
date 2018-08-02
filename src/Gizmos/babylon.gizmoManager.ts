@@ -8,7 +8,6 @@ module BABYLON {
          */
         public gizmos:{positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo>};
         private _gizmosEnabled = {positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false};
-        private _gizmoLayer:UtilityLayerRenderer;
         private _pointerObserver:Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh:Nullable<AbstractMesh> = null;
         private _boundingBoxColor = BABYLON.Color3.FromHexString("#0984e3");
@@ -90,8 +89,10 @@ module BABYLON {
          */
         public set positionGizmoEnabled(value:boolean){
             if(value){
-                this.gizmos.positionGizmo = this.gizmos.positionGizmo || new PositionGizmo();
-                this.gizmos.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                if(!this.gizmos.positionGizmo){
+                    this.gizmos.positionGizmo = new PositionGizmo();
+                    this.gizmos.positionGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                }
                 this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.positionGizmo){
                 this.gizmos.positionGizmo.attachedMesh = null;
@@ -106,8 +107,10 @@ module BABYLON {
          */
         public set rotationGizmoEnabled(value:boolean){
             if(value){
-                this.gizmos.rotationGizmo = this.gizmos.rotationGizmo || new RotationGizmo();
-                this.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                if(!this.gizmos.rotationGizmo){
+                    this.gizmos.rotationGizmo = new RotationGizmo();
+                    this.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                }
                 this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
             }else if(this.gizmos.rotationGizmo){
                 this.gizmos.rotationGizmo.attachedMesh = null;
@@ -164,7 +167,6 @@ module BABYLON {
                 }
             }
             this._dragBehavior.detach();
-            this._gizmoLayer.dispose();
         }
     }
 }

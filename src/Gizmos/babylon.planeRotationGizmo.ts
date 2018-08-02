@@ -80,14 +80,17 @@ module BABYLON {
 
             var tmpSnapEvent = {snapDistance: 0};
             var currentSnapDragDistance = 0;
+            var tmpMatrix = new BABYLON.Matrix();
+            var tmpVector = new BABYLON.Vector3();
+            var amountToRotate = new BABYLON.Quaternion();
             this.dragBehavior.onDragObservable.add((event)=>{
                 if(this.attachedMesh){
                     if(!this.attachedMesh.rotationQuaternion){
                         this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                     }
                     // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
-                    var newVector = event.dragPlanePoint.subtract(this.attachedMesh.position).normalize();
-                    var originalVector = lastDragPosition.subtract(this.attachedMesh.position).normalize();
+                    var newVector = event.dragPlanePoint.subtract(this.attachedMesh.absolutePosition).normalize();
+                    var originalVector = lastDragPosition.subtract(this.attachedMesh.absolutePosition).normalize();
                     var cross = Vector3.Cross(newVector,originalVector);
                     var dot = Vector3.Dot(newVector,originalVector);
                     var angle = Math.atan2(cross.length(), dot);
@@ -121,9 +124,24 @@ module BABYLON {
                             angle = 0;
                         }
                     }
-                     // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
-                     var quaternionCoefficient = Math.sin(angle/2)
-                     var amountToRotate = new BABYLON.Quaternion(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
+
+                    // If the mesh has a parent, convert needed world rotation to local rotation
+                    tmpMatrix.reset();
+                    if(this.attachedMesh.parent){
+                        this.attachedMesh.parent.computeWorldMatrix().invertToRef(tmpMatrix);
+                        tmpMatrix.getRotationMatrixToRef(tmpMatrix);
+                        Vector3.TransformCoordinatesToRef(planeNormalTowardsCamera, tmpMatrix, planeNormalTowardsCamera);
+                    }
+
+                    // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
+                    var quaternionCoefficient = Math.sin(angle/2);
+                    amountToRotate.set(planeNormalTowardsCamera.x*quaternionCoefficient,planeNormalTowardsCamera.y*quaternionCoefficient,planeNormalTowardsCamera.z*quaternionCoefficient,Math.cos(angle/2));
+
+                    // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
+                    if(tmpMatrix.determinant() > 0){
+                        amountToRotate.toEulerAnglesToRef(tmpVector);
+                        BABYLON.Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
+                    }
 
                      if(this.updateGizmoRotationToMatchAttachedMesh){
                         // Rotate selected mesh quaternion over fixed axis

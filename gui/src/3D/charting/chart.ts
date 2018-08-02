@@ -1,8 +1,12 @@
-import { Nullable, TransformNode, Scene, Vector3, Engine, Observer, PointerInfo, Observable, Mesh, AbstractMesh } from "babylonjs";
+import { Nullable, TransformNode, Scene, Vector3, Engine, Observer, PointerInfo, Observable, Mesh, AbstractMesh, GlowLayer, Material } from "babylonjs";
 import { DataSeries } from ".";
-import { AdvancedDynamicTexture, TextBlock } from "../../2D";
+import { AdvancedDynamicTexture, TextBlock, Rectangle, TextWrapping } from "../../2D";
+import { FluentMaterial } from "../materials";
 
-/** base class for all chart controls*/
+/** 
+ * Base class for all chart controls
+ * @see http://doc.babylonjs.com/how_to/chart3d#charts
+ */
 export abstract class Chart {
     protected _dataSource: Nullable<DataSeries>;
     protected _rootNode: TransformNode;
@@ -11,10 +15,25 @@ export abstract class Chart {
     protected _scene: Scene;
     private _lastElementOver: Nullable<AbstractMesh>;
     private _labelMeshes = new Array<Mesh>();
-    protected _blockRefresh = false;
+    protected _blockRefresh = false;    
+    protected _elementWidth = 2;    
+    private _pickedPointObserver: Nullable<Observer<Vector3>>;      
+    protected _defaultMaterial: Nullable<Material>; 
+    private _labelDimension: string;
+    private _displayLabels = true;
+    private _activeBar: Nullable<Mesh>;
+
+    private _glowLayer: Nullable<GlowLayer>;
+    private _onElementEnterObserver: Nullable<Observer<AbstractMesh>>;
+    private _onElementOutObserver: Nullable<Observer<AbstractMesh>>;
+    
+    private _hoverLabel: Nullable<Mesh>;
+
+    /** Observable raised when a refresh was done */
+    public onRefreshObservable  = new Observable<Chart>();
 
     /** Observable raised when a new element is created */
-    public onElementCreated = new Observable<Mesh>();
+    public onElementCreatedObservable  = new Observable<Mesh>();
 
     /**
      * Observable raised when the point picked by the pointer events changed
@@ -30,6 +49,27 @@ export abstract class Chart {
      * Observable raised when the pointer leaves an element of the chart
      */
     public onElementOutObservable = new Observable<AbstractMesh>();
+
+    /** User defined callback used to create labels */
+    public labelCreationFunction: Nullable<(label: string, width: number, includeBackground: boolean) => Mesh>;
+
+    /** User defined callback used to apply specific setup to hover labels */
+    public updateHoverLabel: Nullable<(meshLabel: Mesh) => void>;
+
+    /** Gets or sets the width of each element */
+    public get elementWidth(): number {
+        return this._elementWidth;
+    }
+
+    public set elementWidth(value: number) {
+        if (this._elementWidth === value) {
+            return;
+        }
+
+        this._elementWidth = value;
+
+        this.refresh();
+    }    
 
     /** Gets or sets the rotation of the entire chart */
     public set rotation(value: Vector3) {
@@ -73,7 +113,7 @@ export abstract class Chart {
         this.refresh();
     }
 
-    /** Gets the filters applied to data source */
+    /** Gets or sets the filters applied to data source */
     public get dataFilters(): {[key: string]: string} {
         return this._dataFilters;
     }
@@ -106,6 +146,79 @@ export abstract class Chart {
         }
     }
 
+    /** Gets or sets the material used by element meshes */
+    public get defaultMaterial(): Nullable<Material> {
+        return this._defaultMaterial;
+    }
+
+    public set defaultMaterial(value: Nullable<Material>) {
+        if (this._defaultMaterial === value) {
+            return;
+        }
+
+        this._defaultMaterial = value;
+
+        this.refresh();
+    }
+
+    /** Gets or sets a boolean indicating if labels must be displayed */
+    public get displayLabels(): boolean {
+        return this._displayLabels;
+    }
+
+    public set displayLabels(value: boolean) {
+        if (this._displayLabels === value) {
+            return;
+        }
+
+        this._displayLabels = value;
+
+        this.refresh();
+    }       
+    
+    /** Gets or sets the dimension used for the labels */
+    public get labelDimension(): string {
+        return this._labelDimension;
+    }
+
+    public set labelDimension(value: string) {
+        if (this._labelDimension === value) {
+            return;
+        }
+
+        this._labelDimension = value;
+
+        this.refresh();
+    }    
+
+    /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
+    public get glowHover(): boolean {
+        return this._glowLayer !== undefined && this._glowLayer !== null;
+    }
+
+    public set glowHover(value: boolean) {
+        if (this.glowHover === value) {
+            return;
+        }
+
+        if (this._glowLayer) {
+            this._glowLayer.dispose();
+            this._glowLayer = null;
+            return;
+        }
+
+        this._glowLayer = new GlowLayer("glow", this._scene);
+
+        this._glowLayer.customEmissiveColorSelector = (mesh, subMesh, material, result) => {
+            if (mesh === this._activeBar) {
+                let chartColor = this._dataSource!.color.scale(0.75);
+                result.set(chartColor.r, chartColor.g, chartColor.b, 1.0);
+            } else {
+                result.set(0, 0, 0, 0);
+            }
+        }     
+    }
+
     /** Gets or sets the name of the graph */
     public name: string; 
 
@@ -131,38 +244,136 @@ export abstract class Chart {
                 return;
             }
 
-            if (pi.pickInfo.pickedMesh!.metadata === "chart") {
+            let metadata = pi.pickInfo.pickedMesh!.metadata;
+            if (metadata && metadata.value) {
                 if (this._lastElementOver !== pi.pickInfo.pickedMesh) {
+                    if (this._lastElementOver) {
+                        this.onElementOutObservable.notifyObservers(this._lastElementOver);
+                        this._lastElementOver = null;
+                    }
                     this._lastElementOver = pi.pickInfo.pickedMesh;
                     this.onElementEnterObservable.notifyObservers(this._lastElementOver!);
+                }
+            } else {
+                if (this._lastElementOver) {
+                    this.onElementOutObservable.notifyObservers(this._lastElementOver);
+                    this._lastElementOver = null;
                 }
             }
 
             this.onPickedPointChangedObservable.notifyObservers(pi.pickInfo.pickedPoint);
         });
+
+        this._onElementEnterObserver = this.onElementEnterObservable.add(mesh => {
+            this._activeBar = <Mesh>mesh;
+
+            this._hoverLabel = this._addLabel(this._activeBar.metadata.value.toString(), this._elementWidth);
+
+            this._hoverLabel.position = this._activeBar.position.clone();
+            this._hoverLabel.position.y = this._activeBar.scaling.y + 1.0;
+            this._hoverLabel.scaling.x = this._elementWidth;     
+            
+            if (this.updateHoverLabel) {
+                this.updateHoverLabel(this._hoverLabel);
+            }
+        });
+
+        this._onElementOutObserver = this.onElementOutObservable.add(mesh => {
+            this._activeBar = null;
+
+            if (this._hoverLabel) {
+                this._removeLabel(this._hoverLabel);
+                this._hoverLabel = null;
+            }
+        });
+
+
+        this.glowHover = true;
     }
 
-    public addLabel(label: string): Mesh {
+    protected _createDefaultMaterial(scene: Scene): Material {
+        var result = new FluentMaterial("fluent", scene);
+        result.albedoColor = this._dataSource!.color.scale(0.5);
+        result.innerGlowColorIntensity = 0.6;
+        result.renderHoverLight = true;
+        result.hoverRadius = 5;
+
+        this._pickedPointObserver = this.onPickedPointChangedObservable.add(pickedPoint => {
+            if (pickedPoint) {
+                result.hoverPosition = pickedPoint;
+                result.hoverColor.a = 1.0;
+            } else {
+                result.hoverColor.a = 0;
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Function called by the chart objects when they need a label. Could be user defined if you set this.labelCreationFunction to a custom callback
+     * @param label defines the text of the label
+     * @param width defines the expected width (height is supposed to be 1)
+     * @param includeBackground defines if a background rectangle must be added (default is true)
+     * @returns a mesh used to host the label
+     */
+    protected _addLabel(label: string, width: number, includeBackground = true): Mesh {
+        if (this.labelCreationFunction) {
+            let labelMesh = this.labelCreationFunction(label, width, includeBackground);
+            labelMesh.parent = this._rootNode;
+
+            this._labelMeshes.push(labelMesh);
+
+            return labelMesh;
+        }
+
         let plane = Mesh.CreatePlane(label, 1, this._scene);
 
         this._labelMeshes.push(plane);
 
         plane.parent = this._rootNode;
         plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = 1;
+        plane.scaling.x = width;
 
-        let adt = AdvancedDynamicTexture.CreateForMesh(plane, 512, 128, false);
+        let resolution = 256;
+        let adt = AdvancedDynamicTexture.CreateForMesh(plane, resolution, resolution / width, false, true);
         let textBlock = new TextBlock(label, label);
         textBlock.color = "White";
+        textBlock.textWrapping = TextWrapping.Ellipsis;
         textBlock.fontWeight = "Bold";
-        textBlock.fontSize = 80;
+        textBlock.fontSize = 50;
 
-        adt.addControl(textBlock);
+        if (includeBackground) {
+            let rectangle = new Rectangle(label + "Border");
+            rectangle.thickness = 4;
+            rectangle.color = "White";
+            rectangle.background = "Black";
+            rectangle.addControl(textBlock);
+            adt.addControl(rectangle);
+        } else {
+            adt.addControl(textBlock);
+        }
 
         return plane;
     }
 
-    public removeLabels() {
+    /**
+     * Remove specific label mesh
+     * @param label defines the label mesh to remove
+     */
+    protected _removeLabel(label: Mesh): void {
+        let index = this._labelMeshes.indexOf(label);
+
+        if (index === -1) {
+            return;
+        }
+
+        this._labelMeshes.splice(index, 1);
+        label.dispose(false, true);
+    }
+
+    /** Remove all created labels */
+    protected _removeLabels(): void {
         this._labelMeshes.forEach(label => {
             label.dispose(false, true);
         });
@@ -171,15 +382,40 @@ export abstract class Chart {
     }
 
     /** 
-     * Force the graph to redraw itself 
-     * @returns the current BarGraph
+     * Force the chart to redraw itself 
+     * @returns the current chart
     */
     public abstract refresh(): Chart;
 
+    /** Release all associated resources */
     public dispose() {
+        this.onElementCreatedObservable.clear();
+        this.onPickedPointChangedObservable.clear();
+        this.onElementEnterObservable.clear();
+        this.onElementOutObservable.clear();
+
+        this.labelCreationFunction = null;
+
+        if (this._onElementEnterObserver) {
+            this.onElementEnterObservable.remove(this._onElementEnterObserver);
+            this._onElementEnterObserver = null;
+        }
+
+        if (this._onElementOutObserver) {
+            this.onElementOutObservable.remove(this._onElementOutObserver);
+            this._onElementOutObserver = null;
+        }         
+
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
             this._pointerObserver = null;
+        }
+
+        this.glowHover = false;
+
+        if (this._pickedPointObserver) {
+            this.onPickedPointChangedObservable.remove(this._pickedPointObserver);
+            this._pickedPointObserver = null;
         }
 
         this._rootNode.dispose();
