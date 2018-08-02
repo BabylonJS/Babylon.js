@@ -31,7 +31,6 @@
 
         /** @hidden */
         public _referencePoint = new Vector3(0, 0, 1);
-        private _currentUpVector = new Vector3(0, 1, 0);
         /** @hidden */
         public _transformedReferencePoint = Vector3.Zero();
 
@@ -170,7 +169,7 @@
                 this.position.z += Epsilon;
             }
 
-            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, Vector3.Up(), this._camMatrix);
             this._camMatrix.invert();
 
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -297,9 +296,15 @@
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
+        }
 
-            //update the up vector!
-            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
+        /**
+         * Update the up vector to apply the rotation of the camera (So if you changed the camera rotation.z this will let you update the up vector as well)
+         * @returns the current camera
+         */
+        public rotateUpVectorWithCameraRotationMatrix(): TargetCamera {
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this.upVector);
+            return this;
         }
 
         /** @hidden */
@@ -316,7 +321,7 @@
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
 
-            this._computeViewMatrix(this.position, this._currentTarget, this._currentUpVector);
+            this._computeViewMatrix(this.position, this._currentTarget, this.upVector);
             return this._viewMatrix;
         }
 
