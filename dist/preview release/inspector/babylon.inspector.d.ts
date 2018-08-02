@@ -284,7 +284,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class GUIAdapter extends Adapter implements IToolVisible {
-        constructor(obj: import("babylonjs-gui").Control);
+        constructor(obj: any);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
