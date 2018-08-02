@@ -603,9 +603,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
 
             this._shouldBlockPointer = false;
+            // Do picking modifies _shouldBlockPointer
             this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
-
-            pi.skipOnPointerObservable = this._shouldBlockPointer;
+            
+            // Avoid overwriting a true skipOnPointerObservable to false 
+            if(this._shouldBlockPointer){
+                pi.skipOnPointerObservable = this._shouldBlockPointer;
+            }
         });
 
         this._attachToOnPointerOut(scene);
