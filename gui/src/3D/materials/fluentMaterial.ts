@@ -100,6 +100,10 @@ export class FluentMaterial extends PushMaterial {
 
     @serializeAsTexture("albedoTexture")
     private _albedoTexture: Nullable<BaseTexture>;
+
+    /**
+     * Gets or sets the albedo texture
+     */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public albedoTexture: Nullable<BaseTexture>;    
 
