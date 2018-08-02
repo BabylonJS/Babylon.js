@@ -13,8 +13,6 @@ export class BarGraph extends Chart {
     private _backgroundMesh: Nullable<Mesh>;
     private _backgroundADT : Nullable<AdvancedDynamicTexture>;
     
-    private _labelDimension: string;
-    private _displayLabels = true;
     private _displayBackground = true;
     private _backgroundResolution = 512;
     private _backgroundTickCount = 5;
@@ -33,21 +31,6 @@ export class BarGraph extends Chart {
 
         this.refresh();
     }     
-
-    /** Gets or sets a boolean indicating if labels must be displayed */
-    public get displayLabels(): boolean {
-        return this._displayLabels;
-    }
-
-    public set displayLabels(value: boolean) {
-        if (this._displayLabels === value) {
-            return;
-        }
-
-        this._displayLabels = value;
-
-        this.refresh();
-    }    
 
     /** Gets or sets the margin between bars */
     public get margin(): number {
@@ -75,21 +58,6 @@ export class BarGraph extends Chart {
         }
 
         this._maxBarHeight = value;
-
-        this.refresh();
-    }
-
-    /** Gets or sets the dimension used for the labels */
-    public get labelDimension(): string {
-        return this._labelDimension;
-    }
-
-    public set labelDimension(value: string) {
-        if (this._labelDimension === value) {
-            return;
-        }
-
-        this._labelDimension = value;
 
         this.refresh();
     }
@@ -234,11 +202,11 @@ export class BarGraph extends Chart {
             left += this._elementWidth + this.margin;
 
             // Label
-            if (!this._labelDimension || !this._displayLabels) {
+            if (!this.labelDimension || !this.displayLabels) {
                 return;
             }
 
-            let label = this._addLabel(entry[this._labelDimension], this._elementWidth);
+            let label = this._addLabel(entry[this.labelDimension], this._elementWidth);
             label.position = barMesh.position.clone();
             label.position.z -= this._elementWidth;
         });
