@@ -64,7 +64,7 @@ export class LabelTool extends AbstractTool {
         return true;
     }
 
-    private _createLabel(mesh: AbstractMesh, GUI: typeof import("babylonjs-gui")) {
+    private _createLabel(mesh: AbstractMesh, GUI: any) {
         // Don't create label for "system nodes" (starting and ending with ###)
         let name = mesh.name;
 
@@ -73,14 +73,14 @@ export class LabelTool extends AbstractTool {
         }
 
         if (mesh && this._advancedTexture) {
-            let rect1: import("babylonjs-gui").Rectangle = new GUI.Rectangle();
+            let rect1 = new GUI.Rectangle();
             rect1.width = 4 + 10 * name.length + "px";
             rect1.height = "22px";
             rect1.background = "rgba(0,0,0,0.6)";
             rect1.color = "black";
             this._advancedTexture.addControl(rect1);
 
-            let label: import("babylonjs-gui").TextBlock = new GUI.TextBlock();
+            let label = new GUI.TextBlock();
             label.text = name;
             label.fontSize = 12;
             rect1.addControl(label);
