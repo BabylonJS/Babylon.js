@@ -620,6 +620,11 @@ var buildExternalLibrary = function (library, settings, watch) {
                             let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
                             fs.readFile(fileLocation, function (err, data) {
                                 if (err) throw err;
+
+                                // For Raanan,litera litteral import hack TO BETTER INTEGRATE
+                                data = data + "";
+                                data = data.replace('import "../sass/main.scss";', "");
+
                                 var newData = processDeclaration(data, settings.build.processDeclaration);
                                 fs.writeFileSync(fileLocation.replace('.module', ''), newData);
                                 //legacy module support

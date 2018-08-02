@@ -10,7 +10,7 @@ export class GUIAdapter
     extends Adapter
     implements IToolVisible {
 
-    constructor(obj: import("babylonjs-gui").Control) {
+    constructor(obj: any) {
         super(obj);
     }
 
