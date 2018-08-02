@@ -446,7 +446,7 @@
          */
         public get alpha(): number {
             return this._alpha;
-        }        
+        }
 
         /**
          * Specifies if back face culling is enabled
@@ -528,7 +528,7 @@
             }
             this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
-        
+
         private _onBindObservable: Nullable<Observable<AbstractMesh>>;
 
         /**
@@ -752,11 +752,13 @@
         }
 
         /**
+         * @hidden
          * Stores the effects for the material
          */
         public _effect: Nullable<Effect>;
 
         /**
+         * @hidden
          * Specifies if the material was previously ready
          */
         public _wasPreviouslyReady = false;
@@ -825,10 +827,10 @@
             return ret;
         }
 
-         /**
-          * Gets the class name of the material
-          * @returns a string with the class name of the material
-          */
+        /**
+         * Gets the class name of the material
+         * @returns a string with the class name of the material
+         */
         public getClassName(): string {
             return "Material";
         }
@@ -1242,7 +1244,7 @@
                 defines.markAsFresnelDirty();
                 defines.markAsMiscDirty();
             });
-        }        
+        }
 
         /**
          * Indicates that lights need to be re-calculated for all submeshes
@@ -1333,7 +1335,7 @@
             if (this._onBindObservable) {
                 this._onBindObservable.clear();
             }
-            
+
             if (this._onUnBindObservable) {
                 this._onUnBindObservable.clear();
             }
@@ -1383,7 +1385,7 @@
          * @returns a new material
          */
         public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any {
-            if (!parsedMaterial.customType || parsedMaterial.customType === "BABYLON.StandardMaterial" ) {
+            if (!parsedMaterial.customType || parsedMaterial.customType === "BABYLON.StandardMaterial") {
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
 

@@ -17,20 +17,27 @@
         @serializeAsMeshReference("lockedTargetId")
         public lockedTarget: any = null;
 
+        /** @hidden */
         public _currentTarget = Vector3.Zero();
+        /** @hidden */
         public _viewMatrix = Matrix.Zero();
+        /** @hidden */
         public _camMatrix = Matrix.Zero();
+        /** @hidden */
         public _cameraTransformMatrix = Matrix.Zero();
+        /** @hidden */
         public _cameraRotationMatrix = Matrix.Zero();
         private _rigCamTransformMatrix: Matrix;
 
+        /** @hidden */
         public _referencePoint = new Vector3(0, 0, 1);
-        private _currentUpVector = new Vector3(0, 1, 0);
+        /** @hidden */
         public _transformedReferencePoint = Vector3.Zero();
 
         protected _globalCurrentTarget = Vector3.Zero();
         protected _globalCurrentUpVector = Vector3.Zero();
 
+        /** @hidden */
         public _reset: () => void;
 
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
@@ -45,6 +52,7 @@
             return this.globalPosition.add(direction);
         }
 
+        /** @hidden */
         public _getLockedTargetPosition(): Nullable<Vector3> {
             if (!this.lockedTarget) {
                 return null;
@@ -79,6 +87,7 @@
         /**
          * Restored camera state. You must call storeState() first
          * @returns whether it was successful or not
+         * @hidden
          */
         public _restoreStateValues(): boolean {
             if (!super._restoreStateValues()) {
@@ -99,6 +108,7 @@
         }
 
         // Cache
+        /** @hidden */
         public _initCache() {
             super._initCache();
             this._cache.lockedTarget = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -106,6 +116,7 @@
             this._cache.rotationQuaternion = new Quaternion(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         }
 
+        /** @hidden */
         public _updateCache(ignoreParentClass?: boolean): void {
             if (!ignoreParentClass) {
                 super._updateCache();
@@ -130,6 +141,7 @@
         }
 
         // Synchronized
+        /** @hidden */
         public _isSynchronizedViewMatrix(): boolean {
             if (!super._isSynchronizedViewMatrix()) {
                 return false;
@@ -142,12 +154,14 @@
         }
 
         // Methods
+        /** @hidden */
         public _computeLocalCameraSpeed(): number {
             var engine = this.getEngine();
             return this.speed * Math.sqrt((engine.getDeltaTime() / (engine.getFps() * 100.0)));
         }
 
         // Target
+        /** @hidden */
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
@@ -155,7 +169,7 @@
                 this.position.z += Epsilon;
             }
 
-            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, Vector3.Up(), this._camMatrix);
             this._camMatrix.invert();
 
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -195,10 +209,12 @@
             return this._currentTarget;
         }
 
+        /** @hidden */
         public _decideIfNeedsToMove(): boolean {
             return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
         }
 
+        /** @hidden */
         public _updatePosition(): void {
             if (this.parent) {
                 this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
@@ -208,6 +224,8 @@
             }
             this.position.addInPlace(this.cameraDirection);
         }
+
+        /** @hidden */
         public _checkInputs(): void {
             var needToMove = this._decideIfNeedsToMove();
             var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
@@ -278,11 +296,18 @@
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
-
-            //update the up vector!
-            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         }
 
+        /**
+         * Update the up vector to apply the rotation of the camera (So if you changed the camera rotation.z this will let you update the up vector as well)
+         * @returns the current camera
+         */
+        public rotateUpVectorWithCameraRotationMatrix(): TargetCamera {
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this.upVector);
+            return this;
+        }
+
+        /** @hidden */
         public _getViewMatrix(): Matrix {
             if (this.lockedTarget) {
                 this.setTarget(this._getLockedTargetPosition()!);
@@ -296,7 +321,7 @@
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
 
-            this._computeViewMatrix(this.position, this._currentTarget, this._currentUpVector);
+            this._computeViewMatrix(this.position, this._currentTarget, this.upVector);
             return this._viewMatrix;
         }
 
@@ -340,6 +365,7 @@
         }
 
         /**
+         * @hidden
          * @override
          * Override Camera._updateRigCameras
          */

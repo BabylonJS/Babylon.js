@@ -359,17 +359,57 @@
         public static readonly TEXTUREFORMAT_RGB = 4;
         /** RGBA */
         public static readonly TEXTUREFORMAT_RGBA = 5;
-        /** R */
+        /** RED */
+        public static readonly TEXTUREFORMAT_RED = 6;
+        /** RED (2nd reference) */
         public static readonly TEXTUREFORMAT_R = 6;
         /** RG */
         public static readonly TEXTUREFORMAT_RG = 7;
+        /** RED_INTEGER */
+        public static readonly TEXTUREFORMAT_RED_INTEGER = 8;
+        /** RED_INTEGER (2nd reference) */
+        public static readonly TEXTUREFORMAT_R_INTEGER = 8;
+        /** RG_INTEGER */
+        public static readonly TEXTUREFORMAT_RG_INTEGER = 9;
+        /** RGB_INTEGER */
+        public static readonly TEXTUREFORMAT_RGB_INTEGER = 10;
+        /** RGBA_INTEGER */
+        public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
 
-        /** UNSIGNED_INT */
+        /** UNSIGNED_BYTE */
+        public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
+        /** UNSIGNED_BYTE (2nd reference) */
         public static readonly TEXTURETYPE_UNSIGNED_INT = 0;
         /** FLOAT */
         public static readonly TEXTURETYPE_FLOAT = 1;
         /** HALF_FLOAT */
         public static readonly TEXTURETYPE_HALF_FLOAT = 2;
+        /** BYTE */
+        public static readonly TEXTURETYPE_BYTE = 3;
+        /** SHORT */
+        public static readonly TEXTURETYPE_SHORT = 4;
+        /** UNSIGNED_SHORT */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT = 5;
+        /** INT */
+        public static readonly TEXTURETYPE_INT = 6;
+        /** UNSIGNED_INT */
+        public static readonly TEXTURETYPE_UNSIGNED_INTEGER = 7;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = 8;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = 9;
+        /** UNSIGNED_SHORT_5_6_5 */
+        public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = 10;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = 11;
+        /** UNSIGNED_INT_24_8 */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = 12;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = 13;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = 14;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
         /** nearest is mag = nearest and min = nearest and mip = linear */
         public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1; 
@@ -435,7 +475,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.13";
+            return "3.3.0-alpha.14";
         }
 
         // Updatable statics so stick with vars here
@@ -4850,6 +4890,7 @@
             texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
+            texture.format = fullOptions.format;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
@@ -5353,6 +5394,7 @@
             texture.generateMipMaps = fullOptions.generateMipMaps;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
+            texture.format = fullOptions.format;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
@@ -7027,12 +7069,51 @@
 
         /** @hidden */
         public _getWebGLTextureType(type: number): number {
-            if (type === Engine.TEXTURETYPE_FLOAT) {
-                return this._gl.FLOAT;
+            if (this._webGLVersion === 1) {
+                switch (type) {
+                    case Engine.TEXTURETYPE_FLOAT:
+                        return this._gl.FLOAT;
+                    case Engine.TEXTURETYPE_HALF_FLOAT:
+                        return this._gl.HALF_FLOAT_OES;
+                    case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                        return this._gl.UNSIGNED_BYTE;
+                }
+                return this._gl.UNSIGNED_BYTE;
             }
-            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                // Add Half Float Constant.
-                return this._gl.HALF_FLOAT_OES;
+
+            switch (type) {
+                case Engine.TEXTURETYPE_BYTE:
+                    return this._gl.BYTE;
+                case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                    return this._gl.UNSIGNED_BYTE;
+                case Engine.TEXTURETYPE_SHORT:
+                    return this._gl.SHORT;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT:
+                    return this._gl.UNSIGNED_SHORT;
+                case Engine.TEXTURETYPE_INT:
+                    return this._gl.INT;
+                case Engine.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                    return this._gl.UNSIGNED_INT;
+                case Engine.TEXTURETYPE_FLOAT:
+                    return this._gl.FLOAT;
+                case Engine.TEXTURETYPE_HALF_FLOAT:
+                    return this._gl.HALF_FLOAT;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.UNSIGNED_SHORT_4_4_4_4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.UNSIGNED_SHORT_5_5_5_1;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.UNSIGNED_SHORT_5_6_5;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                    return this._gl.UNSIGNED_INT_2_10_10_10_REV;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_24_8:
+                    return this._gl.UNSIGNED_INT_24_8;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                    return this._gl.UNSIGNED_INT_10F_11F_11F_REV;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                    return this._gl.UNSIGNED_INT_5_9_9_9_REV;
+                case Engine.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV:
+                    return this._gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
             }
 
             return this._gl.UNSIGNED_BYTE;
@@ -7040,6 +7121,7 @@
 
         private _getInternalFormat(format: number): number {
             var internalFormat = this._gl.RGBA;
+
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
                     internalFormat = this._gl.ALPHA;
@@ -7050,18 +7132,35 @@
                 case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
+                case Engine.TEXTUREFORMAT_RED:
+                    internalFormat = this._gl.RED;
+                    break;
+                case Engine.TEXTUREFORMAT_RG:
+                    internalFormat = this._gl.RG;
+                    break;
                 case Engine.TEXTUREFORMAT_RGB:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
-                case Engine.TEXTUREFORMAT_R:
-                    internalFormat = this._gl.RED;
-                    break;       
-                case Engine.TEXTUREFORMAT_RG:
-                    internalFormat = this._gl.RG;
-                    break;                                    
+            }
+
+            if (this._webGLVersion > 1) {
+                switch (format) {
+                    case Engine.TEXTUREFORMAT_RED_INTEGER:
+                        internalFormat = this._gl.RED_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RG_INTEGER:
+                        internalFormat = this._gl.RG_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                        internalFormat = this._gl.RGB_INTEGER;
+                        break;
+                    case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                        internalFormat = this._gl.RGBA_INTEGER;
+                        break;
+                }
             }
 
             return internalFormat;
@@ -7072,58 +7171,158 @@
             if (this._webGLVersion === 1) {
                 if (format !== undefined) {
                     switch(format) {
+                        case Engine.TEXTUREFORMAT_ALPHA:
+                            return this._gl.ALPHA; 
                         case Engine.TEXTUREFORMAT_LUMINANCE:
                             return this._gl.LUMINANCE;
-                        case Engine.TEXTUREFORMAT_ALPHA:
-                            return this._gl.ALPHA;     
+                        case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                            return this._gl.LUMINANCE_ALPHA;
                     }                    
                 }
                 return this._gl.RGBA;
             }
 
-            if (type === Engine.TEXTURETYPE_FLOAT) {
-                if (format !== undefined) {
-                    switch(format) {
-                        case Engine.TEXTUREFORMAT_R:
-                            return this._gl.R32F;
+            switch (type) {
+                case Engine.TEXTURETYPE_BYTE:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
+                            return this._gl.R8_SNORM;
                         case Engine.TEXTUREFORMAT_RG:
-                            return this._gl.RG32F;
-                            case Engine.TEXTUREFORMAT_RGB:
-                            return this._gl.RGB32F;
-                    }                    
-                }
-                return this._gl.RGBA32F;
-            }
-
-            if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-                if (format) {
-                    switch(format) {
-                        case Engine.TEXTUREFORMAT_R:
+                            return this._gl.RG8_SNORM;
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB8_SNORM;
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R8I;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG8I;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB8I;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA8I;
+                        default:
+                            return this._gl.RGBA8_SNORM;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_BYTE:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
+                            return this._gl.R8;
+                        case Engine.TEXTUREFORMAT_RG:
+                            return this._gl.RG8;
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R8UI;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG8UI;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB8UI;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA8UI;
+                        default:
+                            return this._gl.RGBA8;
+                        }
+                case Engine.TEXTURETYPE_SHORT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R16I;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG16I;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB16I;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA16I;
+                        default:
+                            return this._gl.RGBA16I;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R16UI;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG16UI;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB16UI;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA16UI;
+                        default:
+                            return this._gl.RGBA16UI;
+                    }
+                case Engine.TEXTURETYPE_INT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R32I;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG32I;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB32I;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA32I;
+                        default:
+                            return this._gl.RGBA32I;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED_INTEGER:
+                            return this._gl.R32UI;
+                        case Engine.TEXTUREFORMAT_RG_INTEGER:
+                            return this._gl.RG32UI;
+                        case Engine.TEXTUREFORMAT_RGB_INTEGER:
+                            return this._gl.RGB32UI;
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGBA32UI;
+                        default:
+                            return this._gl.RGBA32UI;
+                    }
+                case Engine.TEXTURETYPE_FLOAT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
+                            return this._gl.R32F; // By default. Other possibility is R16F.
+                        case Engine.TEXTUREFORMAT_RG:
+                            return this._gl.RG32F; // By default. Other possibility is RG16F.
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB32F; // By default. Other possibilities are RGB16F, R11F_G11F_B10F, RGB9_E5.
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGBA32F; // By default. Other possibility is RGBA16F.
+                        default:
+                            return this._gl.RGBA32F;
+                    }
+                case Engine.TEXTURETYPE_HALF_FLOAT:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RED:
                             return this._gl.R16F;
                         case Engine.TEXTUREFORMAT_RG:
                             return this._gl.RG16F;
-                            case Engine.TEXTUREFORMAT_RGB:
-                            return this._gl.RGB16F;
-                    }                    
-                }
-                return this._gl.RGBA16F;
+                        case Engine.TEXTUREFORMAT_RGB:
+                            return this._gl.RGB16F; // By default. Other possibilities are R11F_G11F_B10F, RGB9_E5.
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGBA16F;
+                        default:
+                            return this._gl.RGBA16F;
+                    }
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.RGB565;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                    return this._gl.R11F_G11F_B10F;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                    return this._gl.RGB9_E5;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.RGBA4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.RGB5_A1;
+                case Engine.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                    switch (format) {
+                        case Engine.TEXTUREFORMAT_RGBA:
+                            return this._gl.RGB10_A2; // By default. Other possibility is RGB5_A1.
+                        case Engine.TEXTUREFORMAT_RGBA_INTEGER:
+                            return this._gl.RGB10_A2UI;
+                        default:
+                            return this._gl.RGB10_A2;
+                    }
             }
 
-            if (format !== undefined) {
-                switch(format) {
-                    case Engine.TEXTUREFORMAT_LUMINANCE:
-                        return this._gl.LUMINANCE;
-                    case Engine.TEXTUREFORMAT_RGB:
-                        return this._gl.RGB;
-                    case Engine.TEXTUREFORMAT_R:
-                        return this._gl.R8;
-                    case Engine.TEXTUREFORMAT_RG:
-                        return this._gl.RG8;
-                    case Engine.TEXTUREFORMAT_ALPHA:
-                        return this._gl.ALPHA;
-                }
-            }
-            return this._gl.RGBA;
+            return this._gl.RGBA8;
         };
 
         /** @hidden */

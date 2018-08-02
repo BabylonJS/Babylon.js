@@ -156,6 +156,7 @@ module BABYLON {
             this._updateParameters();
         }
 
+        /** @hidden */
         @serialize()
         public _exposure = 1.0;
         /**
@@ -427,7 +428,7 @@ module BABYLON {
             defines.VIGNETTE = this.vignetteEnabled;
             defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
             defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
-            
+
             defines.TONEMAPPING = this.toneMappingEnabled;
             switch (this._toneMappingType) {
                 case ImageProcessingConfiguration.TONEMAPPING_ACES:

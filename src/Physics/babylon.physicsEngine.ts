@@ -61,7 +61,7 @@
 
         private _impostors: Array<PhysicsImpostor> = [];
         private _joints: Array<PhysicsImpostorJoint> = [];
-        
+
         /**
          * Adding a new impostor for the impostor tracking.
          * This will be done by the impostor itself.
@@ -124,6 +124,7 @@
 
         /**
          * Called by the scene. no need to call it.
+         * @hidden
          */
         public _step(delta: number) {
             //check if any mesh has no body / requires an update
@@ -146,7 +147,7 @@
         public getPhysicsPlugin(): IPhysicsEnginePlugin {
             return this._physicsPlugin;
         }
-        
+
         public getImpostors(): Array<PhysicsImpostor> {
             return this._impostors;
         }
@@ -202,13 +203,13 @@
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         //Joint Update
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        getRadius(impostor: PhysicsImpostor):number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3): void;
-        syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
         dispose(): void;
     }
-    
+
 }

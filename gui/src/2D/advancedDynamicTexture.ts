@@ -603,9 +603,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
 
             this._shouldBlockPointer = false;
+            // Do picking modifies _shouldBlockPointer
             this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
-
-            pi.skipOnPointerObservable = this._shouldBlockPointer;
+            
+            // Avoid overwriting a true skipOnPointerObservable to false 
+            if(this._shouldBlockPointer){
+                pi.skipOnPointerObservable = this._shouldBlockPointer;
+            }
         });
 
         this._attachToOnPointerOut(scene);
@@ -705,17 +709,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param width defines the texture width (1024 by default)
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true): AdvancedDynamicTexture {
+    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
 
         var material = new StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
         material.specularColor = Color3.Black();
-        material.emissiveTexture = result;
-        material.opacityTexture = result;
+
+        if (onlyAlphaTesting) {
+            material.diffuseTexture = result;
+            material.emissiveTexture = result;
+            result.hasAlpha = true;    
+        } else {
+            material.emissiveTexture = result;
+            material.opacityTexture = result;   
+        }
 
         mesh.material = material;
 

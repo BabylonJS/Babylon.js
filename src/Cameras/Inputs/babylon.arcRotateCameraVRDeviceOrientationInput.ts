@@ -21,6 +21,7 @@ module BABYLON {
             window.addEventListener("deviceorientation", this._deviceOrientationHandler);
         }
 
+        /** @hidden */
         public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             if (evt.alpha !== null) {
                 this._alpha = +evt.alpha | 0;

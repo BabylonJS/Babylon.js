@@ -288,10 +288,12 @@
         public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         }
 
+        /** @hidden */
         public _createTexture(): WebGLTexture {
             return {};
         }
 
+        /** @hidden */
         public _releaseTexture(texture: InternalTexture): void {
         }
 
@@ -404,6 +406,7 @@
         }
 
         /**
+         * @hidden
          * Get the current error code of the webGL context
          * @returns the error code
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
@@ -442,6 +445,7 @@
             return false;
         }
 
+        /** @hidden */
         public _bindTexture(channel: number, texture: InternalTexture): void {
             if (channel < 0) {
                 return;
@@ -450,6 +454,7 @@
             this._bindTextureDirectly(0, texture);
         }
 
+        /** @hidden */
         public _releaseBuffer(buffer: WebGLBuffer): boolean {
             buffer.references--;
 

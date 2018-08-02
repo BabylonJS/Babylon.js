@@ -1,5 +1,5 @@
 {
-    "name": "banylonjs-publisher",
+    "name": "babylonjs-publisher",
     "version": "1.0.0",
     "description": "Publishing babylon's packages automatically",
     "main": "index.js",

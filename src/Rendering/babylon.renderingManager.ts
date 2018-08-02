@@ -36,14 +36,14 @@
         public static AUTOCLEAR = true;
 
         /**
-         * Hidden
+         * @hidden
          */
         public _useSceneAutoClearSetup = false;
 
         private _scene: Scene;
         private _renderingGroups = new Array<RenderingGroup>();
         private _depthStencilBufferAlreadyCleaned: boolean;
-        
+
         private _autoClearDepthStencil: { [id: number]: IRenderingManagerAutoClearSetup } = {};
         private _customOpaqueSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
         private _customAlphaTestSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
@@ -98,7 +98,7 @@
 
                 // Clear depth/stencil if needed
                 if (RenderingManager.AUTOCLEAR) {
-                    const autoClear = this._useSceneAutoClearSetup ? 
+                    const autoClear = this._useSceneAutoClearSetup ?
                         this._scene.getAutoClearDepthStencilSetup(index) :
                         this._autoClearDepthStencil[index];
 

@@ -88,6 +88,7 @@
         }
 
         private _noMipmap: boolean;
+        /** @hidden */
         public _invertY: boolean;
         private _rowGenerationMatrix: Matrix;
         private _cachedTextureMatrix: Matrix;
@@ -105,6 +106,7 @@
         private _cachedWAng: number;
         private _cachedProjectionMatrixId: number;
         private _cachedCoordinatesMode: number;
+        /** @hidden */
         public _samplingMode: number;
         /** @hidden */
         public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
@@ -245,10 +247,10 @@
             }
 
             let scene = this.getScene();
-            
+
             if (!scene) {
                 return;
-            }            
+            }
 
             this._samplingMode = samplingMode;
             scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
@@ -312,7 +314,7 @@
             this._cachedTextureMatrix.m[8] = this._t0.x; this._cachedTextureMatrix.m[9] = this._t0.y; this._cachedTextureMatrix.m[10] = this._t0.z;
 
             let scene = this.getScene();
-            
+
             if (!scene) {
                 return this._cachedTextureMatrix;
             }
@@ -349,11 +351,11 @@
             if (!this._cachedTextureMatrix) {
                 this._cachedTextureMatrix = Matrix.Zero();
             }
-            
+
             if (!this._projectionModeMatrix) {
                 this._projectionModeMatrix = Matrix.Zero();
             }
-            
+
             this._cachedUOffset = this.uOffset;
             this._cachedVOffset = this.vOffset;
             this._cachedUScale = this.uScale;
@@ -439,8 +441,8 @@
         }
 
         // Statics
-        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
-                                            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+        public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
         }
 
@@ -486,9 +488,9 @@
                     if (parsedTexture.base64String) {
                         texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
                     } else {
-                        let url = rootUrl + parsedTexture.name; 
+                        let url = rootUrl + parsedTexture.name;
 
-                        if (Texture.UseSerializedUrlIfAny && parsedTexture.url ) {
+                        if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
                             url = parsedTexture.url;
                         }
                         texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
@@ -518,8 +520,8 @@
             return texture;
         }
 
-        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
-                                    onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
+        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Engine.TEXTUREFORMAT_RGBA): Texture {
             if (name.substr(0, 5) !== "data:") {
                 name = "data:" + name;
             }
