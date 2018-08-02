@@ -1,6 +1,6 @@
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 
 declare module 'babylonjs-gui' {
     export * from "babylonjs-gui/2D";
@@ -2575,6 +2575,7 @@ declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
                 * Gets or sets the hover light position in world space (default is Vector3.Zero())
                 */
             hoverPosition: Vector3;
+            /** Gets or sets the texture to use for albedo color */
             albedoTexture: Nullable<BaseTexture>;
             /**
                 * Creates a new Fluent material
@@ -2812,7 +2813,7 @@ declare module 'babylonjs-gui/3D/charting/mapGraph' {
 
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -5175,6 +5176,7 @@ declare module BABYLON.GUI {
                 * Gets or sets the hover light position in world space (default is BABYLON.Vector3.Zero())
                 */
             hoverPosition: BABYLON.Vector3;
+            /** Gets or sets the texture to use for albedo color */
             albedoTexture: BABYLON.Nullable<BABYLON.BaseTexture>;
             /**
                 * Creates a new Fluent material
