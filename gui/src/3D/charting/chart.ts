@@ -19,6 +19,9 @@ export abstract class Chart {
     protected _elementWidth = 2;    
     private _pickedPointObserver: Nullable<Observer<Vector3>>;      
     protected _defaultMaterial: Nullable<Material>; 
+    private _labelDimension: string;
+    private _displayLabels = true;
+    private _activeBar: Nullable<Mesh>;
 
     private _glowLayer: Nullable<GlowLayer>;
     private _onElementEnterObserver: Nullable<Observer<AbstractMesh>>;
@@ -49,6 +52,9 @@ export abstract class Chart {
 
     /** User defined callback used to create labels */
     public labelCreationFunction: Nullable<(label: string, width: number, includeBackground: boolean) => Mesh>;
+
+    /** User defined callback used to apply specific setup to hover labels */
+    public updateHoverLabel: Nullable<(meshLabel: Mesh) => void>;
 
     /** Gets or sets the width of each element */
     public get elementWidth(): number {
@@ -155,6 +161,36 @@ export abstract class Chart {
         this.refresh();
     }
 
+    /** Gets or sets a boolean indicating if labels must be displayed */
+    public get displayLabels(): boolean {
+        return this._displayLabels;
+    }
+
+    public set displayLabels(value: boolean) {
+        if (this._displayLabels === value) {
+            return;
+        }
+
+        this._displayLabels = value;
+
+        this.refresh();
+    }       
+    
+    /** Gets or sets the dimension used for the labels */
+    public get labelDimension(): string {
+        return this._labelDimension;
+    }
+
+    public set labelDimension(value: string) {
+        if (this._labelDimension === value) {
+            return;
+        }
+
+        this._labelDimension = value;
+
+        this.refresh();
+    }    
+
     /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
     public get glowHover(): boolean {
         return this._glowLayer !== undefined && this._glowLayer !== null;
@@ -166,16 +202,6 @@ export abstract class Chart {
         }
 
         if (this._glowLayer) {
-            if (this._onElementEnterObserver) {
-                this.onElementEnterObservable.remove(this._onElementEnterObserver);
-                this._onElementEnterObserver = null;
-            }
-    
-            if (this._onElementOutObserver) {
-                this.onElementOutObservable.remove(this._onElementOutObserver);
-                this._onElementOutObserver = null;
-            } 
-
             this._glowLayer.dispose();
             this._glowLayer = null;
             return;
@@ -183,28 +209,8 @@ export abstract class Chart {
 
         this._glowLayer = new GlowLayer("glow", this._scene);
 
-        let activeBar: Nullable<Mesh>;
-        this._onElementEnterObserver = this.onElementEnterObservable.add(mesh => {
-            activeBar = <Mesh>mesh;
-
-            this._hoverLabel = this._addLabel(activeBar.metadata.value.toString(), this._elementWidth);
-
-            this._hoverLabel.position = activeBar.position.clone();
-            this._hoverLabel.position.y = activeBar.scaling.y + 0.5;
-            this._hoverLabel.scaling.x = this._elementWidth;            
-        });
-
-        this._onElementOutObserver = this.onElementOutObservable.add(mesh => {
-            activeBar = null;
-
-            if (this._hoverLabel) {
-                this._removeLabel(this._hoverLabel);
-                this._hoverLabel = null;
-            }
-        });
-
         this._glowLayer.customEmissiveColorSelector = (mesh, subMesh, material, result) => {
-            if (mesh === activeBar) {
+            if (mesh === this._activeBar) {
                 let chartColor = this._dataSource!.color.scale(0.75);
                 result.set(chartColor.r, chartColor.g, chartColor.b, 1.0);
             } else {
@@ -257,6 +263,30 @@ export abstract class Chart {
 
             this.onPickedPointChangedObservable.notifyObservers(pi.pickInfo.pickedPoint);
         });
+
+        this._onElementEnterObserver = this.onElementEnterObservable.add(mesh => {
+            this._activeBar = <Mesh>mesh;
+
+            this._hoverLabel = this._addLabel(this._activeBar.metadata.value.toString(), this._elementWidth);
+
+            this._hoverLabel.position = this._activeBar.position.clone();
+            this._hoverLabel.position.y = this._activeBar.scaling.y + 1.0;
+            this._hoverLabel.scaling.x = this._elementWidth;     
+            
+            if (this.updateHoverLabel) {
+                this.updateHoverLabel(this._hoverLabel);
+            }
+        });
+
+        this._onElementOutObserver = this.onElementOutObservable.add(mesh => {
+            this._activeBar = null;
+
+            if (this._hoverLabel) {
+                this._removeLabel(this._hoverLabel);
+                this._hoverLabel = null;
+            }
+        });
+
 
         this.glowHover = true;
     }
@@ -365,6 +395,16 @@ export abstract class Chart {
         this.onElementOutObservable.clear();
 
         this.labelCreationFunction = null;
+
+        if (this._onElementEnterObserver) {
+            this.onElementEnterObservable.remove(this._onElementEnterObserver);
+            this._onElementEnterObserver = null;
+        }
+
+        if (this._onElementOutObserver) {
+            this.onElementOutObservable.remove(this._onElementOutObserver);
+            this._onElementOutObserver = null;
+        }         
 
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);

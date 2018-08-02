@@ -1555,6 +1555,15 @@ declare module BABYLON.GUI {
             protected _getTypeName(): string;
             _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+            /**
+                * Utility function to easily create a radio button with a header
+                * @param title defines the label to use for the header
+                * @param group defines the group to use for the radio button
+                * @param isChecked defines the initial state of the radio button
+                * @param onValueChanged defines the callback to call when value changes
+                * @returns a StackPanel containing the radio button and a textBlock
+                */
+            static AddRadioButtonWithHeader(title: string, group: string, isChecked: boolean, onValueChanged: (button: RadioButton, value: boolean) => void): StackPanel;
     }
 }
 declare module BABYLON.GUI {
@@ -2299,6 +2308,7 @@ declare module BABYLON.GUI {
             INNERGLOW: boolean;
             BORDER: boolean;
             HOVERLIGHT: boolean;
+            TEXTURE: boolean;
             constructor();
     }
     /**
@@ -2353,6 +2363,8 @@ declare module BABYLON.GUI {
                 * Gets or sets the hover light position in world space (default is BABYLON.Vector3.Zero())
                 */
             hoverPosition: BABYLON.Vector3;
+            /** Gets or sets the texture to use for albedo color */
+            albedoTexture: BABYLON.Nullable<BABYLON.BaseTexture>;
             /**
                 * Creates a new Fluent material
                 * @param name defines the name of the material
@@ -2446,6 +2458,8 @@ declare module BABYLON.GUI {
             onElementOutObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
             /** User defined callback used to create labels */
             labelCreationFunction: BABYLON.Nullable<(label: string, width: number, includeBackground: boolean) => BABYLON.Mesh>;
+            /** User defined callback used to apply specific setup to hover labels */
+            updateHoverLabel: BABYLON.Nullable<(meshLabel: BABYLON.Mesh) => void>;
             /** Gets or sets the width of each element */
             elementWidth: number;
             /** Gets or sets the rotation of the entire chart */
@@ -2466,6 +2480,10 @@ declare module BABYLON.GUI {
             blockRefresh: boolean;
             /** Gets or sets the material used by element meshes */
             defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /** Gets or sets a boolean indicating if labels must be displayed */
+            displayLabels: boolean;
+            /** Gets or sets the dimension used for the labels */
+            labelDimension: string;
             /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
             glowHover: boolean;
             /** Gets or sets the name of the graph */
@@ -2510,14 +2528,10 @@ declare module BABYLON.GUI {
     export class BarGraph extends Chart {
             /** Gets or sets a boolean indicating if the background must be displayed */
             displayBackground: boolean;
-            /** Gets or sets a boolean indicating if labels must be displayed */
-            displayLabels: boolean;
             /** Gets or sets the margin between bars */
             margin: number;
             /** Gets or sets the maximum height of a bar */
             maxBarHeight: number;
-            /** Gets or sets the dimension used for the labels */
-            labelDimension: string;
             /**
                 * Creates a new BarGraph
                 * @param name defines the name of the graph
@@ -2545,8 +2559,21 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the offset (in world unit) on X axis to apply to all elements */
+            xOffset: number;
+            /** Gets or sets the offset (in world unit) on Y axis to apply to all elements */
+            yOffset: number;
+            /** Gets or sets the tesselation used to build the cylinders */
+            cylinderTesselation: number;
             /** Gets or sets the size of the world map (this will define the width) */
             worldMapSize: number;
+            updateHoverLabel: (meshLabel: BABYLON.Mesh) => void;
+            /**
+                * Gets the material used to render the world map
+                */
+            readonly worldMapMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /** Sets the texture url to use for the world map */
+            worldMapUrl: string;
             /**
                 * Creates a new MapGraph
                 * @param name defines the name of the graph
@@ -2556,5 +2583,6 @@ declare module BABYLON.GUI {
             protected _createCylinderMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
             refresh(): MapGraph;
             protected _clean(): void;
+            dispose(): void;
     }
 }
