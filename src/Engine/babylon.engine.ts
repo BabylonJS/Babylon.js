@@ -639,7 +639,7 @@
         public _gl: WebGLRenderingContext;
         private _renderingCanvas: Nullable<HTMLCanvasElement>;
         private _windowIsBackground = false;
-        private _webGLVersion = 1.0;
+        protected _webGLVersion = 1.0;
 
         /**
          * Gets a boolean indicating that only power of 2 textures are supported
@@ -3210,8 +3210,12 @@
             return effect;
         }
 
+        protected static _concatenateShader(source: string, defines: Nullable<string>, shaderVersion: string): string {
+            return shaderVersion + (defines ? defines + "\n" : "") + source;
+        }
+
         private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
-            return this._compileRawShader(shaderVersion + (defines ? defines + "\n" : "") + source, type);
+            return this._compileRawShader(Engine._concatenateShader(source, defines, shaderVersion), type);
         };
     
         private _compileRawShader(source: string, type: string): WebGLShader {

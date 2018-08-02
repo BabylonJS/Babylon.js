@@ -9,7 +9,7 @@
         createVertexBuffer(vertices: Float32Array): WebGLBuffer;
         bindVertexBuffer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void;
 
-        createProgram(): WebGLProgram;
+        createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         setProgram(program: WebGLProgram): void;
 
         setMatrix(program: WebGLProgram, slot: number, matrix: Float32Array): void;
@@ -263,6 +263,18 @@
         }
 
         /**
+         * Directly creates a webGL program
+         * @param vertexCode defines the vertex shader code to use
+         * @param fragmentCode defines the fragment shader code to use
+         * @param context defines the webGL context to use (if not set, the current one will be used)
+         * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
+         * @returns the new webGL program
+         */
+        public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
+            return this._interop.createProgram(vertexCode, fragmentCode);
+        }
+
+        /**
          * Creates a webGL program
          * @param vertexCode  defines the vertex shader code to use
          * @param fragmentCode defines the fragment shader code to use
@@ -272,17 +284,13 @@
          * @returns the new webGL program
          */
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
-            // context = context || this._gl;
-
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-            // var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-            // var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
-            // var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
+            var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
+            var vertexCodeConcat = Engine._concatenateShader(vertexCode, defines, shaderVersion);
+            var fragmentCodeConcat = Engine._concatenateShader(fragmentCode, defines, shaderVersion);
 
-            // let program = this._createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings);
-
-            var program = this._interop.createProgram();
+            var program = this.createRawShaderProgram(vertexCodeConcat, fragmentCodeConcat);
             program.transformFeedback = null;
             program.__SPECTOR_rebuildProgram = null;
 
@@ -593,9 +601,12 @@
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
         }
 
-        protected _bindTextureDirectly(target: number, texture: InternalTexture): void {
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
             if (this._boundTexturesCache[this._activeChannel] !== texture) {
                 this._boundTexturesCache[this._activeChannel] = texture;
+                return false;
+            } else {
+                return true;
             }
         }
 
