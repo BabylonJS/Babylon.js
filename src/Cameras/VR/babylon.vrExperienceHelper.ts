@@ -906,6 +906,13 @@ module BABYLON {
 
             if (this._interactionsEnabled) {
                 this._scene.unregisterBeforeRender(this.beforeRender);
+                this._cameraGazer._gazeTracker.isVisible = false;
+                if (this.leftController) {
+                    this.leftController._gazeTracker.isVisible = false;
+                }
+                if (this.rightController) {
+                    this.rightController._gazeTracker.isVisible = false;
+                }
             }
 
             // resize to update width and height when exiting vr exits fullscreen
