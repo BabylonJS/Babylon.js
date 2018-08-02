@@ -5705,6 +5705,174 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class BoundingBox implements ICullable {
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _worldMatrix;
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding box from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        /**
+         * Scale the current bounding box by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingBox;
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        /** @hidden */
+
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        /**
+         * Scale the current bounding info by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding info
+         */
+        scale(factor: number): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        /** @hidden */
+
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _tempRadiusVector;
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding sphere from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        /**
+         * Scale the current bounding sphere by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingSphere;
+        /** @hidden */
+
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
     class Collider {
         /** Define if a collision was found */
         collisionFound: boolean;
@@ -7098,241 +7266,6 @@ declare module BABYLON.Debug {
 }
 
 declare module BABYLON {
-    class BoundingBox implements ICullable {
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _worldMatrix;
-        /**
-         * Creates a new bounding box
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding box from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        /**
-         * Scale the current bounding box by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingBox;
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        /** @hidden */
-
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        /**
-         * Scale the current bounding info by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding info
-         */
-        scale(factor: number): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        /** @hidden */
-
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _tempRadiusVector;
-        /**
-         * Creates a new bounding sphere
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding sphere from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        /**
-         * Scale the current bounding sphere by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingSphere;
-        /** @hidden */
-
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo;
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-private static _KEYDOWN: number;
-private static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-private static _POINTERDOWN: number;
-private static _POINTERUP: number;
-private static _POINTERMOVE: number;
-private static _POINTERWHEEL: number;
-private static _POINTERPICK: number;
-private static _POINTERTAP: number;
-private static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        /**
-         * Ray from a pointer if availible (eg. 6dof controller)
-         */
-        ray: Nullable<Ray>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
     /**
      * Interface for attribute information associated with buffer instanciation
      */
@@ -7632,16 +7565,56 @@ private static _TextureLoaders: IInternalTextureLoader[];
         static readonly TEXTUREFORMAT_RGB: number;
         /** RGBA */
         static readonly TEXTUREFORMAT_RGBA: number;
-        /** R */
+        /** RED */
+        static readonly TEXTUREFORMAT_RED: number;
+        /** RED (2nd reference) */
         static readonly TEXTUREFORMAT_R: number;
         /** RG */
         static readonly TEXTUREFORMAT_RG: number;
-        /** UNSIGNED_INT */
+        /** RED_INTEGER */
+        static readonly TEXTUREFORMAT_RED_INTEGER: number;
+        /** RED_INTEGER (2nd reference) */
+        static readonly TEXTUREFORMAT_R_INTEGER: number;
+        /** RG_INTEGER */
+        static readonly TEXTUREFORMAT_RG_INTEGER: number;
+        /** RGB_INTEGER */
+        static readonly TEXTUREFORMAT_RGB_INTEGER: number;
+        /** RGBA_INTEGER */
+        static readonly TEXTUREFORMAT_RGBA_INTEGER: number;
+        /** UNSIGNED_BYTE */
+        static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
+        /** UNSIGNED_BYTE (2nd reference) */
         static readonly TEXTURETYPE_UNSIGNED_INT: number;
         /** FLOAT */
         static readonly TEXTURETYPE_FLOAT: number;
         /** HALF_FLOAT */
         static readonly TEXTURETYPE_HALF_FLOAT: number;
+        /** BYTE */
+        static readonly TEXTURETYPE_BYTE: number;
+        /** SHORT */
+        static readonly TEXTURETYPE_SHORT: number;
+        /** UNSIGNED_SHORT */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT: number;
+        /** INT */
+        static readonly TEXTURETYPE_INT: number;
+        /** UNSIGNED_INT */
+        static readonly TEXTURETYPE_UNSIGNED_INTEGER: number;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4: number;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1: number;
+        /** UNSIGNED_SHORT_5_6_5 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5: number;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV: number;
+        /** UNSIGNED_INT_24_8 */
+        static readonly TEXTURETYPE_UNSIGNED_INT_24_8: number;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV: number;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
         /** nearest is mag = nearest and min = nearest and mip = linear */
         static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
         /** Bilinear is mag = linear and min = linear and mip = nearest */
@@ -9496,6 +9469,47 @@ interface WebGLRenderingContext {
     readonly COMPARE_REF_TO_TEXTURE: number;
     readonly TEXTURE_WRAP_R: number;
     readonly HALF_FLOAT: number;
+    readonly RGB8: number;
+    readonly RED_INTEGER: number;
+    readonly RG_INTEGER: number;
+    readonly RGB_INTEGER: number;
+    readonly RGBA_INTEGER: number;
+    readonly R8_SNORM: number;
+    readonly RG8_SNORM: number;
+    readonly RGB8_SNORM: number;
+    readonly RGBA8_SNORM: number;
+    readonly R8I: number;
+    readonly RG8I: number;
+    readonly RGB8I: number;
+    readonly RGBA8I: number;
+    readonly R8UI: number;
+    readonly RG8UI: number;
+    readonly RGB8UI: number;
+    readonly RGBA8UI: number;
+    readonly R16I: number;
+    readonly RG16I: number;
+    readonly RGB16I: number;
+    readonly RGBA16I: number;
+    readonly R16UI: number;
+    readonly RG16UI: number;
+    readonly RGB16UI: number;
+    readonly RGBA16UI: number;
+    readonly R32I: number;
+    readonly RG32I: number;
+    readonly RGB32I: number;
+    readonly RGBA32I: number;
+    readonly R32UI: number;
+    readonly RG32UI: number;
+    readonly RGB32UI: number;
+    readonly RGBA32UI: number;
+    readonly RGB10_A2UI: number;
+    readonly R11F_G11F_B10F: number;
+    readonly RGB9_E5: number;
+    readonly RGB10_A2: number;
+    readonly UNSIGNED_INT_2_10_10_10_REV: number;
+    readonly UNSIGNED_INT_10F_11F_11F_REV: number;
+    readonly UNSIGNED_INT_5_9_9_9_REV: number;
+    readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
@@ -9509,6 +9523,10 @@ interface WebGLRenderingContext {
     beginTransformFeedback(primitiveMode: number): void;
     endTransformFeedback(): void;
     transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
+    clearBufferfv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
+    clearBufferiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
+    clearBufferuiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
+    clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
 }
 interface ImageBitmap {
     readonly width: number;
@@ -9547,290 +9565,69 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
+    class KeyboardEventTypes {
+private static _KEYDOWN: number;
+private static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
     }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
+    class KeyboardInfo {
         type: number;
-        private _leftStick;
-        private _rightStick;
-        /** @hidden */
-
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue;
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
-        private _scene?;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        /** @hidden */
-
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad;
-        private _startMonitoringGamepads;
-        private _stopMonitoringGamepads;
-        /** @hidden */
-
-        private _updateGamepadObjects;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden */
-
-        /**
-         * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
-         */
-        gamepadManager: GamepadManager;
-    }
-    interface FreeCameraInputsManager {
-        addGamepad(): FreeCameraInputsManager;
-    }
-    interface ArcRotateCameraInputsManager {
-        addGamepad(): ArcRotateCameraInputsManager;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
     }
     /**
-      * Defines the gamepad scene component responsible to manage gamepads in a given scene
-      */
-    class GamepadSystemSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _beforeCameraUpdate;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines supported buttons for XBox360 compatible gamepads
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
      */
-    enum Xbox360Button {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** Start */
-        Start = 4,
-        /** Back */
-        Back = 5,
-        /** Left button */
-        LB = 6,
-        /** Right button */
-        RB = 7,
-        /** Left stick */
-        LeftStick = 8,
-        /** Right stick */
-        RightStick = 9
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
     }
-    /** Defines values for XBox360 DPad  */
-    enum Xbox360Dpad {
-        /** Up */
-        Up = 0,
-        /** Down */
-        Down = 1,
-        /** Left */
-        Left = 2,
-        /** Right */
-        Right = 3
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+private static _POINTERDOWN: number;
+private static _POINTERUP: number;
+private static _POINTERMOVE: number;
+private static _POINTERWHEEL: number;
+private static _POINTERPICK: number;
+private static _POINTERTAP: number;
+private static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
     }
     /**
-     * Defines a XBox360 gamepad
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        /** Observable raised when a button is pressed */
-        onButtonDownObservable: Observable<Xbox360Button>;
-        /** Observable raised when a button is released */
-        onButtonUpObservable: Observable<Xbox360Button>;
-        /** Observable raised when a pad is pressed */
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        /** Observable raised when a pad is released */
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
+    class PointerInfoPre extends PointerInfoBase {
         /**
-         * Creates a new XBox360 gamepad object
-         * @param id defines the id of this gamepad
-         * @param index defines its index
-         * @param gamepad defines the internal HTML gamepad object
-         * @param xboxOne defines if it is a XBox One gamepad
+         * Ray from a pointer if availible (eg. 6dof controller)
          */
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        /**
-         * Defines the callback to call when left trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Defines the callback to call when right trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Gets or sets left trigger value
-         */
-        leftTrigger: number;
-        /**
-         * Gets or sets right trigger value
-         */
-        rightTrigger: number;
-        /**
-         * Defines the callback to call when a button is pressed
-         * @param callback defines the callback to use
-         */
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a button is released
-         * @param callback defines the callback to use
-         */
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a pad is pressed
-         * @param callback defines the callback to use
-         */
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        /**
-         * Defines the callback to call when a pad is released
-         * @param callback defines the callback to use
-         */
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue;
-        private _setDPadValue;
-        /** Gets or sets value of A button */
-        buttonA: number;
-        /** Gets or sets value of B button */
-        buttonB: number;
-        /** Gets or sets value of X button */
-        buttonX: number;
-        /** Gets or sets value of Y button */
-        buttonY: number;
-        /** Gets or sets value of Start button  */
-        buttonStart: number;
-        /** Gets or sets value of Back button  */
-        buttonBack: number;
-        /** Gets or sets value of Left button  */
-        buttonLB: number;
-        /** Gets or sets value of Right button  */
-        buttonRB: number;
-        /** Gets or sets value of left stick */
-        buttonLeftStick: number;
-        /** Gets or sets value of right stick */
-        buttonRightStick: number;
-        /** Gets or sets value of DPad up */
-        dPadUp: number;
-        /** Gets or sets value of DPad down */
-        dPadDown: number;
-        /** Gets or sets value of DPad left */
-        dPadLeft: number;
-        /** Gets or sets value of DPad right */
-        dPadRight: number;
-        /**
-         * Force the gamepad to synchronize with device values
-         */
-        update(): void;
-        dispose(): void;
+        ray: Nullable<Ray>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -10285,6 +10082,294 @@ declare module BABYLON {
         /**
          * Disposes of the gizmo
          */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        /** @hidden */
+
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue;
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene?;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        /** @hidden */
+
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad;
+        private _startMonitoringGamepads;
+        private _stopMonitoringGamepads;
+        /** @hidden */
+
+        private _updateGamepadObjects;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden */
+
+        /**
+         * Gets the gamepad manager associated with the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
+         */
+        gamepadManager: GamepadManager;
+    }
+    interface FreeCameraInputsManager {
+        addGamepad(): FreeCameraInputsManager;
+    }
+    interface ArcRotateCameraInputsManager {
+        addGamepad(): ArcRotateCameraInputsManager;
+    }
+    /**
+      * Defines the gamepad scene component responsible to manage gamepads in a given scene
+      */
+    class GamepadSystemSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _beforeCameraUpdate;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines supported buttons for XBox360 compatible gamepads
+     */
+    enum Xbox360Button {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** Start */
+        Start = 4,
+        /** Back */
+        Back = 5,
+        /** Left button */
+        LB = 6,
+        /** Right button */
+        RB = 7,
+        /** Left stick */
+        LeftStick = 8,
+        /** Right stick */
+        RightStick = 9
+    }
+    /** Defines values for XBox360 DPad  */
+    enum Xbox360Dpad {
+        /** Up */
+        Up = 0,
+        /** Down */
+        Down = 1,
+        /** Left */
+        Left = 2,
+        /** Right */
+        Right = 3
+    }
+    /**
+     * Defines a XBox360 gamepad
+     */
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        /** Observable raised when a button is pressed */
+        onButtonDownObservable: Observable<Xbox360Button>;
+        /** Observable raised when a button is released */
+        onButtonUpObservable: Observable<Xbox360Button>;
+        /** Observable raised when a pad is pressed */
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        /** Observable raised when a pad is released */
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        /**
+         * Creates a new XBox360 gamepad object
+         * @param id defines the id of this gamepad
+         * @param index defines its index
+         * @param gamepad defines the internal HTML gamepad object
+         * @param xboxOne defines if it is a XBox One gamepad
+         */
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        /**
+         * Defines the callback to call when left trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Defines the callback to call when right trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Gets or sets left trigger value
+         */
+        leftTrigger: number;
+        /**
+         * Gets or sets right trigger value
+         */
+        rightTrigger: number;
+        /**
+         * Defines the callback to call when a button is pressed
+         * @param callback defines the callback to use
+         */
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a button is released
+         * @param callback defines the callback to use
+         */
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a pad is pressed
+         * @param callback defines the callback to use
+         */
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        /**
+         * Defines the callback to call when a pad is released
+         * @param callback defines the callback to use
+         */
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue;
+        private _setDPadValue;
+        /** Gets or sets value of A button */
+        buttonA: number;
+        /** Gets or sets value of B button */
+        buttonB: number;
+        /** Gets or sets value of X button */
+        buttonX: number;
+        /** Gets or sets value of Y button */
+        buttonY: number;
+        /** Gets or sets value of Start button  */
+        buttonStart: number;
+        /** Gets or sets value of Back button  */
+        buttonBack: number;
+        /** Gets or sets value of Left button  */
+        buttonLB: number;
+        /** Gets or sets value of Right button  */
+        buttonRB: number;
+        /** Gets or sets value of left stick */
+        buttonLeftStick: number;
+        /** Gets or sets value of right stick */
+        buttonRightStick: number;
+        /** Gets or sets value of DPad up */
+        dPadUp: number;
+        /** Gets or sets value of DPad down */
+        dPadDown: number;
+        /** Gets or sets value of DPad left */
+        dPadLeft: number;
+        /** Gets or sets value of DPad right */
+        dPadRight: number;
+        /**
+         * Force the gamepad to synchronize with device values
+         */
+        update(): void;
         dispose(): void;
     }
 }
@@ -27094,66 +27179,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Postprocess used to generate anaglyphic rendering
      */
     class AnaglyphPostProcess extends PostProcess {
@@ -28390,6 +28415,66 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
     }
 }
 
@@ -32332,6 +32417,53 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+private static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Nullable<Gamepad>;
@@ -33370,53 +33502,6 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
-    }
-}
-
-declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-private static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
     }
 }
 
@@ -39079,7 +39164,7 @@ declare module BABYLON {
 
 /*BabylonJS GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/gulp/babylonjs
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -40546,6 +40631,15 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            /**
+                * Utility function to easily create a radio button with a header
+                * @param title defines the label to use for the header
+                * @param group defines the group to use for the radio button
+                * @param isChecked defines the initial state of the radio button
+                * @param onValueChanged defines the callback to call when value changes
+                * @returns a StackPanel containing the radio button and a textBlock
+                */
+            static AddRadioButtonWithHeader(title: string, group: string, isChecked: boolean, onValueChanged: (button: RadioButton, value: boolean) => void): StackPanel;
     }
 }
 declare module BABYLON.GUI {
@@ -41275,6 +41369,7 @@ declare module BABYLON.GUI {
             INNERGLOW: boolean;
             BORDER: boolean;
             HOVERLIGHT: boolean;
+            TEXTURE: boolean;
             constructor();
     }
     /**
@@ -41329,6 +41424,8 @@ declare module BABYLON.GUI {
                 * Gets or sets the hover light position in world space (default is BABYLON.Vector3.Zero())
                 */
             hoverPosition: BABYLON.Vector3;
+            /** Gets or sets the texture to use for albedo color */
+            albedoTexture: BABYLON.Nullable<BABYLON.BaseTexture>;
             /**
                 * Creates a new Fluent material
                 * @param name defines the name of the material
@@ -41422,6 +41519,8 @@ declare module BABYLON.GUI {
             onElementOutObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
             /** User defined callback used to create labels */
             labelCreationFunction: BABYLON.Nullable<(label: string, width: number, includeBackground: boolean) => BABYLON.Mesh>;
+            /** User defined callback used to apply specific setup to hover labels */
+            updateHoverLabel: BABYLON.Nullable<(meshLabel: BABYLON.Mesh) => void>;
             /** Gets or sets the width of each element */
             elementWidth: number;
             /** Gets or sets the rotation of the entire chart */
@@ -41442,6 +41541,10 @@ declare module BABYLON.GUI {
             blockRefresh: boolean;
             /** Gets or sets the material used by element meshes */
             defaultMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /** Gets or sets a boolean indicating if labels must be displayed */
+            displayLabels: boolean;
+            /** Gets or sets the dimension used for the labels */
+            labelDimension: string;
             /** Gets or sets a boolean indicating if glow should be used to highlight element hovering */
             glowHover: boolean;
             /** Gets or sets the name of the graph */
@@ -41486,14 +41589,10 @@ declare module BABYLON.GUI {
     export class BarGraph extends Chart {
             /** Gets or sets a boolean indicating if the background must be displayed */
             displayBackground: boolean;
-            /** Gets or sets a boolean indicating if labels must be displayed */
-            displayLabels: boolean;
             /** Gets or sets the margin between bars */
             margin: number;
             /** Gets or sets the maximum height of a bar */
             maxBarHeight: number;
-            /** Gets or sets the dimension used for the labels */
-            labelDimension: string;
             /**
                 * Creates a new BarGraph
                 * @param name defines the name of the graph
@@ -41521,8 +41620,21 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the offset (in world unit) on X axis to apply to all elements */
+            xOffset: number;
+            /** Gets or sets the offset (in world unit) on Y axis to apply to all elements */
+            yOffset: number;
+            /** Gets or sets the tesselation used to build the cylinders */
+            cylinderTesselation: number;
             /** Gets or sets the size of the world map (this will define the width) */
             worldMapSize: number;
+            updateHoverLabel: (meshLabel: BABYLON.Mesh) => void;
+            /**
+                * Gets the material used to render the world map
+                */
+            readonly worldMapMaterial: BABYLON.Nullable<BABYLON.Material>;
+            /** Sets the texture url to use for the world map */
+            worldMapUrl: string;
             /**
                 * Creates a new MapGraph
                 * @param name defines the name of the graph
@@ -41532,6 +41644,7 @@ declare module BABYLON.GUI {
             protected _createCylinderMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
             refresh(): MapGraph;
             protected _clean(): void;
+            dispose(): void;
     }
 }
 

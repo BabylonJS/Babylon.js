@@ -1,4 +1,4 @@
-import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, serializeAsColor4, Color4, serializeAsVector3, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, VertexBuffer, MaterialHelper, EffectCreationOptions, Matrix, Mesh, Tmp, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, serializeAsColor4, Color4, serializeAsVector3, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, VertexBuffer, MaterialHelper, EffectCreationOptions, Matrix, Mesh, Tmp, SerializationHelper, serializeAsTexture } from "babylonjs";
 
 import { registerShader } from "./shaders/fluent";
 
@@ -10,6 +10,7 @@ export class FluentMaterialDefines extends MaterialDefines {
     public INNERGLOW = false;
     public BORDER = false;
     public HOVERLIGHT = false;
+    public TEXTURE = false;
 
     constructor() {
         super();
@@ -97,6 +98,13 @@ export class FluentMaterial extends PushMaterial {
     @serializeAsVector3()
     public hoverPosition = Vector3.Zero();
 
+    @serializeAsTexture("albedoTexture")
+    private _albedoTexture: Nullable<BaseTexture>;
+
+    /** Gets or sets the texture to use for albedo color */
+    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+    public albedoTexture: Nullable<BaseTexture>;    
+
     /**
      * Creates a new Fluent material
      * @param name defines the name of the material
@@ -141,6 +149,16 @@ export class FluentMaterial extends PushMaterial {
             defines.INNERGLOW = this.innerGlowColorIntensity > 0;
             defines.BORDER = this.renderBorders;
             defines.HOVERLIGHT = this.renderHoverLight;
+
+            if (this._albedoTexture) {
+                if (!this._albedoTexture.isReadyOrNotBlocking()) {
+                    return false;
+                } else {
+                    defines.TEXTURE = true;
+                }
+            } else {
+                defines.TEXTURE = false;
+            }
         }
 
         var engine = scene.getEngine();
@@ -160,7 +178,7 @@ export class FluentMaterial extends PushMaterial {
                 "hoverColor", "hoverPosition", "hoverRadius"
             ];
 
-            var samplers = new Array<String>();
+            var samplers = ["albedoSampler"];
             var uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
@@ -236,6 +254,10 @@ export class FluentMaterial extends PushMaterial {
                 this._activeEffect.setDirectColor4("hoverColor", this.hoverColor);
                 this._activeEffect.setFloat("hoverRadius", this.hoverRadius);
                 this._activeEffect.setVector3("hoverPosition", this.hoverPosition);
+            }
+
+            if (defines.TEXTURE) {
+                this._activeEffect.setTexture("albedoSampler", this._albedoTexture)
             }
         }
 
