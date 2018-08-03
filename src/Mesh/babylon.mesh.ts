@@ -617,15 +617,16 @@
 
         /**
          * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.  
-         * If the parameter `copyWhenShared` is true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
-         * Returns an empty array if the mesh has no geometry.
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns the indices array or an empty array if the mesh has no geometry
          */
-        public getIndices(copyWhenShared?: boolean): Nullable<IndicesArray> {
+        public getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray> {
 
             if (!this._geometry) {
                 return [];
             }
-            return this._geometry.getIndices(copyWhenShared);
+            return this._geometry.getIndices(copyWhenShared, forceCopy);
         }
 
         public get isBlocked(): boolean {
