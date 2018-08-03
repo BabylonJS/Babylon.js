@@ -664,7 +664,7 @@
                         try {
                             var blobURL;
                             try {
-                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName], { oneTimeOnly: true });
+                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName]);
                             }
                             catch (ex) {
                                 // Chrome doesn't support oneTimeOnly parameter

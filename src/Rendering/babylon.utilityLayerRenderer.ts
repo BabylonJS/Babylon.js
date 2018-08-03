@@ -185,7 +185,7 @@ module BABYLON {
         private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: PointerEvent) {
             if (!prePointerInfo.skipOnPointerObservable){
                 this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo))
-                this._lastPointerEvents[pointerEvent.pointerId] = pointerEvent.pointerType;
+                this._lastPointerEvents[pointerEvent.pointerId] = parseInt(pointerEvent.pointerType);
             }
         }
 
