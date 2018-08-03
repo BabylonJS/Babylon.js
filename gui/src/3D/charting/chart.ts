@@ -33,7 +33,7 @@ export abstract class Chart {
     public onRefreshObservable  = new Observable<Chart>();
 
     /** Observable raised when a new element is created */
-    public onElementCreatedObservable  = new Observable<Mesh>();
+    public onElementCreatedObservable  = new Observable<AbstractMesh>();
 
     /**
      * Observable raised when the point picked by the pointer events changed

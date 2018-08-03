@@ -2147,7 +2147,8 @@
          * - rotationQuaternion
          * - setPivotMatrix
          * - scaling
-         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
+         * 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_instances
          * Warning : this method is not supported for Line mesh and LineSystem
          */
         public createInstance(name: string): InstancedMesh {

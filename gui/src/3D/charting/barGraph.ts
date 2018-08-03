@@ -1,4 +1,4 @@
-import { Nullable, Scene, Mesh, StandardMaterial, Animation, Engine, Matrix } from "babylonjs";
+import { Nullable, Scene, Mesh, StandardMaterial, Animation, Engine, Matrix, AbstractMesh } from "babylonjs";
 import { Chart } from ".";
 import { AdvancedDynamicTexture, DisplayGrid } from "../../2D";
 
@@ -9,7 +9,7 @@ import { AdvancedDynamicTexture, DisplayGrid } from "../../2D";
 export class BarGraph extends Chart {
     private _margin = 1;
     private _maxBarHeight = 10;
-    private _barMeshes: Nullable<Array<Mesh>>;
+    private _barMeshes: Nullable<Array<AbstractMesh>>;
     private _backgroundMesh: Nullable<Mesh>;
     private _backgroundADT : Nullable<AdvancedDynamicTexture>;
     
@@ -177,7 +177,7 @@ export class BarGraph extends Chart {
         let index = 0;
         data.forEach(entry => {
 
-            var barMesh: Mesh;
+            var barMesh: AbstractMesh;
             if (createMesh) {
                 barMesh = this._createBarMesh(this.name + "_box_" + index++, scene);
                 barMesh.enablePointerMoveEvents = true;
@@ -186,6 +186,7 @@ export class BarGraph extends Chart {
                 barMesh = this._barMeshes![index++];
             }
 
+            barMesh.material = this._defaultMaterial;
             barMesh.metadata = entry;
             barMesh.parent = this._rootNode;
             barMesh.position.x = left;
@@ -194,8 +195,6 @@ export class BarGraph extends Chart {
 
             var easing = new BABYLON.CircleEase();
             Animation.CreateAndStartAnimation("entryScale", barMesh, "scaling.y", 30, 30, currentScalingYState, entry.value * ratio, 0, easing);
-
-            barMesh.material = this._defaultMaterial;
 
             this.onElementCreatedObservable.notifyObservers(barMesh);
 
