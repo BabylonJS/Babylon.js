@@ -241,6 +241,30 @@
             this._delayedOnError = null;
         }
 
+        /**
+        * Default is Trilinear mode.
+        *
+        * | Value | Type               | Description |
+        * | ----- | ------------------ | ----------- |
+        * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
+        * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
+        * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
+        * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
+        * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
+        * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
+        * | 7    | NEAREST_LINEAR |             |
+        * | 8    | NEAREST_NEAREST |             |
+        * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
+        * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
+        * | 11   | LINEAR_LINEAR |             |
+        * | 12   | LINEAR_NEAREST |             |
+        *
+        *    > _mag_: magnification filter (close to the viewer)
+        *    > _min_: minification filter (far from the viewer)
+        *    > _mip_: filter used between mip map levels
+        *
+        */
+
         public updateSamplingMode(samplingMode: number): void {
             if (!this._texture) {
                 return;
@@ -529,4 +553,4 @@
             return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format);
         }
     }
-} 
+}
