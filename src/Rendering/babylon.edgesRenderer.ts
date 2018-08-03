@@ -312,6 +312,12 @@
             var engine = scene.getEngine();
             this._lineShader._preBind();
 
+            if (this._source.edgesColor.a !== 1) {
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            } else {
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            }
+
             // VBOs
             engine.bindBuffers(this._buffers, this._ib, <Effect>this._lineShader.getEffect());
 
@@ -330,7 +336,6 @@
             // Draw order
             engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
             this._lineShader.unbind();
-            engine.setDepthWrite(true);
         }
     }
 } 

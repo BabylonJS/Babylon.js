@@ -118,7 +118,7 @@ module BABYLON {
                             case "MediaStream":
                                 this._streaming = true;
                                 this._isReadyToPlay = true;
-                                this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
+                                this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
 
                                 if (this.autoplay) {
                                     this.play();
