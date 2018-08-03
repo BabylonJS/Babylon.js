@@ -504,6 +504,11 @@
       "referenceImage": "dds.png"
     },
     {
+      "title": "DDS2D",
+      "playgroundId": "#I2MSBE#0",
+      "referenceImage": "dds2d.png"
+    },
+    {
       "title": "LightFalloff",
       "playgroundId": "#20OAV9#201",
       "referenceImage": "lightFalloff.png"
