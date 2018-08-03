@@ -1,5 +1,5 @@
 import { Chart } from ".";
-import { Engine, Scene, Nullable, Mesh, Animation, Texture, Matrix, Observer, Vector3, Material } from "babylonjs";
+import { Engine, Scene, Nullable, Mesh, Animation, Texture, Matrix, Observer, Vector3, Material, AbstractMesh } from "babylonjs";
 import { FluentMaterial } from "../materials";
 
 /** 
@@ -8,7 +8,7 @@ import { FluentMaterial } from "../materials";
  */
 export class MapGraph extends Chart {
 
-    private _cylinderMeshes: Nullable<Array<Mesh>>;
+    private _cylinderMeshes: Nullable<Array<AbstractMesh>>;
     private _maxCylinderHeight = 10;
     private _worldMap: Nullable<Mesh>;
     private _mercatorMaterial: Nullable<FluentMaterial>;
@@ -206,7 +206,7 @@ export class MapGraph extends Chart {
         let index = 0;
         data.forEach(entry => {
 
-            var cylinderMesh: Mesh;
+            var cylinderMesh: AbstractMesh;
             if (createMesh) {
                 cylinderMesh = this._createCylinderMesh(this.name + "_cylinder_" + index++, scene);
                 cylinderMesh.enablePointerMoveEvents = true;
