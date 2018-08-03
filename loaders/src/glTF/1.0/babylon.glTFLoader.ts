@@ -1352,7 +1352,7 @@ module BABYLON.GLTF1 {
 
             var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
-            var blob = new Blob([buffer]);
+            var blob = buffer == null ? new Blob() : new Blob([buffer]);
             var blobURL = URL.createObjectURL(blob);
             var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
             var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
