@@ -3421,11 +3421,11 @@
 
         /**
          * Merge the array of meshes into a single mesh for performance reasons.
-         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
-         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
-         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
-         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-         * @param {boolean} subdivideWithSubMeshes - When true (false default), subdivide mesh to his subMesh array with meshes source.
+         * @param meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         * @param subdivideWithSubMeshes - When true (false default), subdivide mesh to his subMesh array with meshes source.
          */
         public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean): Nullable<Mesh> {
             var index: number;
@@ -3452,12 +3452,12 @@
             var source: Nullable<Mesh> = null;
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
-                    meshes[index].computeWorldMatrix(true);
+                    const wm = meshes[index].computeWorldMatrix(true);
                     otherVertexData = VertexData.ExtractFromMesh(meshes[index], true, true);
-                    otherVertexData.transform(meshes[index].getWorldMatrix());
+                    otherVertexData.transform(wm);
 
                     if (vertexData) {
-                        vertexData.merge(otherVertexData);
+                        vertexData.merge(otherVertexData, allow32BitsIndices);
                     } else {
                         vertexData = otherVertexData;
                         source = meshes[index];
