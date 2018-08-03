@@ -384,9 +384,10 @@
         /**
          * Merges the passed VertexData into the current one
          * @param other the VertexData to be merged into the current one  
+         * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
          * @returns the modified VertexData 
          */
-        public merge(other: VertexData): VertexData {
+        public merge(other: VertexData, use32BitsIndices = false): VertexData {
             this._validate();
             other._validate();
 
@@ -418,7 +419,7 @@
 
                 if (isSrcTypedArray) {
                     var len = this.indices.length + other.indices.length;
-                    var temp = this.indices instanceof Uint32Array ? new Uint32Array(len) : new Uint16Array(len);
+                    var temp = use32BitsIndices || this.indices instanceof Uint32Array ? new Uint32Array(len) : new Uint16Array(len);
                     temp.set(this.indices);
 
                     let decal = this.indices.length;
