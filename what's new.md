@@ -30,7 +30,6 @@
 
 ## Updates
 
-- Updated TypeScript version to new major 3.0.1 ([christopherstock](https://github.com/christopherstock))
 - Improved [animation blending](https://www.babylonjs-playground.com/#DMLMIP#1) ([deltakosh](https://github.com/deltakosh))
 - New [particle system emitter shapes](http://doc.babylonjs.com/babylon101/particles#shape-emitters): cone and sphere ([IbraheemOsama](https://github.com/IbraheemOsama))
 - Added support for 16bits TGA ([deltakosh](https://github.com/deltakosh))
