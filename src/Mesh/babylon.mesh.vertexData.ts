@@ -5,7 +5,13 @@
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
-        getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
+        /**
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.  
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns the indices array or an empty array if the mesh has no geometry
+         */
+        getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray>;
         setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
@@ -676,7 +682,7 @@
                 result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
 
-            result.indices = meshOrGeometry.getIndices(copyWhenShared);
+            result.indices = meshOrGeometry.getIndices(copyWhenShared, forceCopy);
 
             return result;
         }
