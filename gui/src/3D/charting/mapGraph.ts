@@ -18,6 +18,21 @@ export class MapGraph extends Chart {
     private _yOffset = 0;
     private _worldMapPickedPointObserver: Nullable<Observer<Vector3>>;  
 
+    /** Gets or sets the maximum height of a cylinder */
+    public get maxCylinderHeight(): number {
+        return this._maxCylinderHeight;
+    }
+
+    public set maxCylinderHeight(value: number) {
+        if (this._maxCylinderHeight === value) {
+            return;
+        }
+
+        this._maxCylinderHeight = value;
+
+        this.refresh();
+    }    
+
     /** Gets or sets the offset (in world unit) on X axis to apply to all elements */
     public get xOffset(): number {
         return this._xOffset;
@@ -65,7 +80,7 @@ export class MapGraph extends Chart {
     }        
 
     
-    /** Gets or sets the size of the world map (this will define the width) */
+    /** Gets or sets the size of the world map (this will define the width of the supporting plane) */
     public get worldMapSize(): number {
         return this._worldMapSize;
     }
