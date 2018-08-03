@@ -96,6 +96,9 @@ export class Control {
     /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
     public shadowColor = '#000';
 
+    /** Gets or sets the cursor to use when the control is hovered */
+    public hoverCursor = "";
+
     /** @hidden */
     protected _linkOffsetX = new ValueAndUnit(0);
     /** @hidden */

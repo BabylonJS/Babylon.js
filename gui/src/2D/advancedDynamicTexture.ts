@@ -61,6 +61,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _focusedControl: Nullable<IFocusableControl>;
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
+    private _rootCanvas: Nullable<HTMLCanvasElement>;
 
     /**
      * Gets or sets a boolean defining if alpha is stored as premultiplied
@@ -247,6 +248,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             return;
         }
 
+        this._rootCanvas = scene.getEngine()!.getRenderingCanvas()!;
+
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add(info => {
             if (!this._focusedControl) {
@@ -345,6 +348,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
+
+        this._rootCanvas = null;
 
         scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
 
@@ -516,6 +521,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._draw(measure, context);
     }
 
+    /** @hidden */
+    public _changeCursor(cursor: string) {
+        if (this._rootCanvas) {
+            this._rootCanvas.style.cursor = cursor;
+        }
+    }
+
     private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): void {
         var scene = this.getScene();
 
@@ -537,7 +549,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
-
+            this._changeCursor("");
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
