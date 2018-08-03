@@ -85,12 +85,16 @@
      */
     export class Scene extends AbstractScene implements IAnimatable {
         // Statics
-        private static _FOGMODE_NONE = 0;
-        private static _FOGMODE_EXP = 1;
-        private static _FOGMODE_EXP2 = 2;
-        private static _FOGMODE_LINEAR = 3;
-
         private static _uniqueIdCounter = 0;
+
+        /** The fog is deactivated */
+        public static readonly FOGMODE_NONE = 0;
+        /** The fog density is following an exponential function */
+        public static readonly FOGMODE_EXP = 1;
+        /** The fog density is following an exponential function faster than FOGMODE_EXP */
+        public static readonly FOGMODE_EXP2 = 2;
+        /** The fog density is following a linear function. */
+        public static readonly FOGMODE_LINEAR = 3;
 
         /**
          * Gets or sets the minimum deltatime when deterministic lock step is enabled
@@ -103,28 +107,15 @@
          */
         public static MaxDeltaTime = 1000.0;
 
-        /** The fog is deactivated */
-        public static get FOGMODE_NONE(): number {
-            return Scene._FOGMODE_NONE;
-        }
-
-        /** The fog density is following an exponential function */
-        public static get FOGMODE_EXP(): number {
-            return Scene._FOGMODE_EXP;
-        }
-
-        /** The fog density is following an exponential function faster than FOGMODE_EXP */
-        public static get FOGMODE_EXP2(): number {
-            return Scene._FOGMODE_EXP2;
-        }
-
-        /** The fog density is following a linear function. */
-        public static get FOGMODE_LINEAR(): number {
-            return Scene._FOGMODE_LINEAR;
-        }
+        /** Default culling strategy with bounding box and bounding sphere and then frustum culling */
+        public static readonly CULLINGSTRATEGY_STANDARD = 0;
+        /** Culling strategy with bounding sphere only and then frustum culling */
+        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
 
         // Members
 
+        /** Gets ot sets the culling strategy to use to find visible meshes */
+        public cullingStrategy = Scene.CULLINGSTRATEGY_STANDARD;
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
          */
@@ -4229,7 +4220,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
+                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes, this.cullingStrategy)))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 

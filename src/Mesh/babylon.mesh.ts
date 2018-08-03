@@ -1623,14 +1623,18 @@
         }
 
         /**
-         * Boolean, true is the mesh in the frustum defined by the Plane objects from the `frustumPlanes` array parameter.
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
+         * A mesh is in the frustum if its bounding box intersects the frustum
+         * @param frustumPlanes defines the frustum to test
+         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
+         * @returns true if the mesh is in the frustum planes 
          */
-        public isInFrustum(frustumPlanes: Plane[]): boolean {
+        public isInFrustum(frustumPlanes: Plane[], strategy: number = Scene.CULLINGSTRATEGY_STANDARD): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            if (!super.isInFrustum(frustumPlanes)) {
+            if (!super.isInFrustum(frustumPlanes, strategy)) {
                 return false;
             }
 
