@@ -258,7 +258,7 @@ module BABYLON {
                     var blobTextureURL: string;
                     if (texture) {
                         var URL = window.URL || window.webkitURL;
-                        blobTextureURL = URL.createObjectURL(texture.data, { oneTimeOnly: true });
+                        blobTextureURL = URL.createObjectURL(texture.data);
 
                         image.onerror = () => {
                             Tools.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
@@ -296,7 +296,7 @@ module BABYLON {
                     if (blob) {
                         var URL = window.URL || window.webkitURL;
                         try {
-                            blobTextureURL = URL.createObjectURL(blob, { oneTimeOnly: true });
+                            blobTextureURL = URL.createObjectURL(blob);
                         }
                         // Chrome is raising a type error if we're setting the oneTimeOnly parameter
                         catch (ex) {
