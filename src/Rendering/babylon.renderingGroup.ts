@@ -137,8 +137,12 @@
             engine.setStencilBuffer(false);
 
             // Edges
-            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
-                this._edgesRenderers.data[edgesRendererIndex].render();
+            if (this._edgesRenderers.length) {
+                for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                    this._edgesRenderers.data[edgesRendererIndex].render();
+                }
+
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
 
             // Restore Stencil state.
