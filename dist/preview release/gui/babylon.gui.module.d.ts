@@ -199,6 +199,8 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 */
             getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
             /** @hidden */
+            _changeCursor(cursor: string): void;
+            /** @hidden */
             _cleanControlAfterRemovalFromList(list: {
                     [pointerId: number]: Control;
             }, control: Control): void;
@@ -957,6 +959,8 @@ declare module 'babylonjs-gui/2D/controls/control' {
             shadowBlur: number;
             /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
             shadowColor: string;
+            /** Gets or sets the cursor to use when the control is hovered */
+            hoverCursor: string;
             /** @hidden */
             protected _linkOffsetX: ValueAndUnit;
             /** @hidden */
@@ -2660,7 +2664,7 @@ declare module 'babylonjs-gui/3D/charting/chart' {
             /** Observable raised when a refresh was done */
             onRefreshObservable: Observable<Chart>;
             /** Observable raised when a new element is created */
-            onElementCreatedObservable: Observable<Mesh>;
+            onElementCreatedObservable: Observable<AbstractMesh>;
             /**
                 * Observable raised when the point picked by the pointer events changed
                 */
@@ -2968,6 +2972,8 @@ declare module BABYLON.GUI {
                 * @returns the projected position
                 */
             getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
+            /** @hidden */
+            _changeCursor(cursor: string): void;
             /** @hidden */
             _cleanControlAfterRemovalFromList(list: {
                     [pointerId: number]: Control;
@@ -3662,6 +3668,8 @@ declare module BABYLON.GUI {
             shadowBlur: number;
             /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
             shadowColor: string;
+            /** Gets or sets the cursor to use when the control is hovered */
+            hoverCursor: string;
             /** @hidden */
             protected _linkOffsetX: ValueAndUnit;
             /** @hidden */
@@ -5256,7 +5264,7 @@ declare module BABYLON.GUI {
             /** BABYLON.Observable raised when a refresh was done */
             onRefreshObservable: BABYLON.Observable<Chart>;
             /** BABYLON.Observable raised when a new element is created */
-            onElementCreatedObservable: BABYLON.Observable<BABYLON.Mesh>;
+            onElementCreatedObservable: BABYLON.Observable<BABYLON.AbstractMesh>;
             /**
                 * BABYLON.Observable raised when the point picked by the pointer events changed
                 */
