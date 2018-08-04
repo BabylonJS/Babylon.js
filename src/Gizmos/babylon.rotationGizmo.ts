@@ -61,6 +61,20 @@ module BABYLON {
         }
 
         /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        public set scaleRatio(value:number){
+            if(this.xGizmo){
+                this.xGizmo.scaleRatio = value;
+                this.yGizmo.scaleRatio = value;
+                this.zGizmo.scaleRatio = value;
+            }
+        }
+        public get scaleRatio(){
+            return this.xGizmo.scaleRatio;
+        }
+
+        /**
          * Disposes of the gizmo
          */
         public dispose(){

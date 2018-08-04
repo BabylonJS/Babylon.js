@@ -75,7 +75,7 @@ module BABYLON {
             coloredMaterial.emissiveColor = color;
             var hoverColoredMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverColoredMaterial.disableLighting = true;
-            hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.2, 0.2, 0.2));
+            hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
 
             // Build bounding box out of lines
             this._lineBoundingBox = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
