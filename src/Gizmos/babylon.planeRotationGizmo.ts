@@ -35,14 +35,14 @@ module BABYLON {
             
             var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverMaterial.disableLighting = true;
-            hoverMaterial.emissiveColor = color.add(new Color3(0.2,0.2,0.2));
+            hoverMaterial.emissiveColor = color.add(new Color3(0.3,0.3,0.3));
 
             // Build mesh on root node
             var parentMesh = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
 
             // Create circle out of lines
             var tessellation = 20;
-            var radius = 2;
+            var radius = 0.8;
             var points = new Array<Vector3>();
             for(var i = 0;i < tessellation;i++){
                 var radian = (2*Math.PI) * (i/(tessellation-1));
@@ -52,13 +52,14 @@ module BABYLON {
             rotationMesh.color = coloredMaterial.emissiveColor;
             
             // Position arrow pointing in its drag axis
-            rotationMesh.scaling.scaleInPlace(0.1);
+            rotationMesh.scaling.scaleInPlace(0.26);
             rotationMesh.material = coloredMaterial;
             rotationMesh.rotation.x = Math.PI/2;
             parentMesh.addChild(rotationMesh);
             parentMesh.lookAt(this._rootMesh.position.subtract(planeNormal));
             
             this._rootMesh.addChild(parentMesh);
+            parentMesh.scaling.scaleInPlace(1/3);
             // Add drag behavior to handle events when the gizmo is dragged
             this.dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
             this.dragBehavior.moveAttached = false;

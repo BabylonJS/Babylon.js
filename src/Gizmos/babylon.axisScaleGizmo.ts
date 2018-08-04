@@ -38,12 +38,12 @@ module BABYLON {
 
             var hoverMaterial = new BABYLON.StandardMaterial("", gizmoLayer.utilityLayerScene);
             hoverMaterial.disableLighting = true;
-            hoverMaterial.emissiveColor = color.add(new Color3(0.2,0.2,0.2));
+            hoverMaterial.emissiveColor = color.add(new Color3(0.3,0.3,0.3));
 
             // Build mesh on root node
             var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene)
             var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.4}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.5, 0)]}, gizmoLayer.utilityLayerScene);
+            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
             arrowTail.color = this._coloredMaterial.emissiveColor;
             arrow.addChild(arrowMesh);
             arrow.addChild(arrowTail);
@@ -53,11 +53,12 @@ module BABYLON {
             arrowMesh.material = this._coloredMaterial;
             arrowMesh.rotation.x = Math.PI/2;
             arrowMesh.position.z+=0.3;
-            arrowTail.scaling.scaleInPlace(0.2);
+            arrowTail.scaling.scaleInPlace(0.26);
             arrowTail.rotation.x = Math.PI/2;
             arrowTail.material = this._coloredMaterial;
             arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
             this._rootMesh.addChild(arrow);
+            arrow.scaling.scaleInPlace(1/3);
 
             // Add drag behavior to handle events when the gizmo is dragged
             this.dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
