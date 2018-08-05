@@ -2145,6 +2145,7 @@
         /**
          * Creates a new InstancedMesh object from the mesh model.
          * An instance shares the same properties and the same material than its model.
+         * Please make sure to call mesh.makeGeometryUnique() if you are calling createInstance on a previously cloned mesh.
          * Only these properties of each instance can then be set individually :
          * - position
          * - rotation
