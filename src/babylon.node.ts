@@ -80,7 +80,7 @@
          * Gets a list of Animations associated with the node
          */
         public animations = new Array<Animation>();
-        private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
+        protected _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         /**
          * Callback raised when the node is ready to be used
