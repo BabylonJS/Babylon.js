@@ -953,7 +953,7 @@ module BABYLON {
                 }
 
                 this.raySelectionPredicate = (mesh) => {
-                    return mesh.isVisible && mesh.isPickable;
+                    return mesh.isVisible && (mesh.isPickable || mesh.name === this._floorMeshName);
                 }
 
                 this.meshSelectionPredicate = (mesh) => {
