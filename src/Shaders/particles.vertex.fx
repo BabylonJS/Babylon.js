@@ -24,11 +24,10 @@ uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSiz
 varying vec2 vUV;
 varying vec4 vColor;
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 uniform mat4 invView;
-varying float fClipDistance;
 #endif
+#include<clipPlaneVertexDeclaration>
 
 #ifdef BILLBOARD
 	uniform vec3 eyePosition;	
@@ -104,8 +103,9 @@ void main(void) {
 	#endif
 
 	// Clip plane
-#ifdef CLIPPLANE
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 	vec4 worldPos = invView * vec4(viewPos, 1.0);
-	fClipDistance = dot(worldPos, vClipPlane);
 #endif
+	#include<clipPlaneVertex>
+
 }

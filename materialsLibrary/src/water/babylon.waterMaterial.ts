@@ -5,6 +5,9 @@ module BABYLON {
         public BUMP = false;
         public REFLECTION = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -360,7 +363,7 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vNormalInfos",
                     "mBones",
-                    "vClipPlane", "normalMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "normalMatrix",
                     "logarithmicDepthConstant",
 
                     // Water

@@ -23,11 +23,11 @@ in vec2 uv;
 out vec2 vUV;
 out vec4 vColor;
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 uniform mat4 invView;
-out float fClipDistance;
 #endif
+
+#include<clipPlaneVertexDeclaration2>
 
 #ifdef COLORGRADIENTS
 uniform sampler2D colorGradientSampler;
@@ -120,8 +120,8 @@ void main() {
 	gl_Position = projection * viewPosition;
 
 	// Clip plane
-#ifdef CLIPPLANE
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
 	vec4 worldPos = invView * viewPosition;
-	fClipDistance = dot(worldPos, vClipPlane);
 #endif  
+	#include<clipPlaneVertex>
 }

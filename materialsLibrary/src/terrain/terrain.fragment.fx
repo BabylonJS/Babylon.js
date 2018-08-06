@@ -97,10 +97,7 @@ vec3 perturbNormal(vec3 viewDir, vec3 mixColor)
 
 void main(void) {
 	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+	#include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
