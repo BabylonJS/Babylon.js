@@ -45,7 +45,7 @@ module BABYLON {
             this._uniformGizmo.updateGizmoRotationToMatchAttachedMesh = false;
             this._uniformGizmo.uniformScaling = true
             var octahedron = BABYLON.Mesh.CreatePolyhedron("", {type: 1}, this._uniformGizmo.gizmoLayer.utilityLayerScene);
-            octahedron.scaling.scaleInPlace(0.02);
+            octahedron.scaling.scaleInPlace(0.007);
             this._uniformGizmo.setCustomMesh(octahedron, true);
             
             this.attachedMesh = null;
@@ -75,6 +75,21 @@ module BABYLON {
         }
         public get snapDistance(){
             return this.xGizmo.snapDistance;
+        }
+
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        public set scaleRatio(value:number){
+            if(this.xGizmo){
+                this.xGizmo.scaleRatio = value;
+                this.yGizmo.scaleRatio = value;
+                this.zGizmo.scaleRatio = value;
+                this._uniformGizmo.scaleRatio = value;
+            }
+        }
+        public get scaleRatio(){
+            return this.xGizmo.scaleRatio;
         }
 
         /**

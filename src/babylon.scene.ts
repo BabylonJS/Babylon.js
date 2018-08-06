@@ -85,12 +85,16 @@
      */
     export class Scene extends AbstractScene implements IAnimatable {
         // Statics
-        private static _FOGMODE_NONE = 0;
-        private static _FOGMODE_EXP = 1;
-        private static _FOGMODE_EXP2 = 2;
-        private static _FOGMODE_LINEAR = 3;
-
         private static _uniqueIdCounter = 0;
+
+        /** The fog is deactivated */
+        public static readonly FOGMODE_NONE = 0;
+        /** The fog density is following an exponential function */
+        public static readonly FOGMODE_EXP = 1;
+        /** The fog density is following an exponential function faster than FOGMODE_EXP */
+        public static readonly FOGMODE_EXP2 = 2;
+        /** The fog density is following a linear function. */
+        public static readonly FOGMODE_LINEAR = 3;
 
         /**
          * Gets or sets the minimum deltatime when deterministic lock step is enabled
@@ -102,26 +106,6 @@
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         public static MaxDeltaTime = 1000.0;
-
-        /** The fog is deactivated */
-        public static get FOGMODE_NONE(): number {
-            return Scene._FOGMODE_NONE;
-        }
-
-        /** The fog density is following an exponential function */
-        public static get FOGMODE_EXP(): number {
-            return Scene._FOGMODE_EXP;
-        }
-
-        /** The fog density is following an exponential function faster than FOGMODE_EXP */
-        public static get FOGMODE_EXP2(): number {
-            return Scene._FOGMODE_EXP2;
-        }
-
-        /** The fog density is following a linear function. */
-        public static get FOGMODE_LINEAR(): number {
-            return Scene._FOGMODE_LINEAR;
-        }
 
         // Members
 
