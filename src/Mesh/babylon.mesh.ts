@@ -220,6 +220,22 @@
                 // Source mesh
                 this._source = source;
 
+                // Animation ranges
+                if (this._source._ranges) {
+                    const ranges = this._source._ranges;
+                    for (var name in ranges) {
+                        if (!ranges.hasOwnProperty(name)) {
+                            continue;
+                        }
+
+                        if (!ranges[name]) {
+                            continue;
+                        }
+
+                        this.createAnimationRange(name, ranges[name]!.from, ranges[name]!.to);
+                    }
+                }
+
                 // Metadata
                 if (source.metadata && source.metadata.clone) {
                     this.metadata = source.metadata.clone();
