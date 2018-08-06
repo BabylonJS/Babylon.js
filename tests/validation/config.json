@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [  
     {
+      "title": "Clip planes",
+      "playgroundId": "#Y6W087#0",
+      "referenceImage": "clipplanes.png"
+    },         
+    {
       "title": "ShadowOnlyMaterial",
       "playgroundId": "#1KF7V1#18",
       "referenceImage": "shadowOnlyMaterial.png"
