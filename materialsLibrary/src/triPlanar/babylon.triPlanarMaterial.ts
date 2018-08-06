@@ -11,6 +11,9 @@ module BABYLON {
         public BUMPZ = false;
 
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;        
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -209,7 +212,7 @@ module BABYLON {
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "mBones",
-                    "vClipPlane",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
                     "tileSize"
                 ];
                 var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",

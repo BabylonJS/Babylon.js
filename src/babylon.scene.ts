@@ -198,9 +198,27 @@
         }
 
         /**
-         * Gets or sets the active clipplane
+         * Gets or sets the active clipplane 1
          */
         public clipPlane: Nullable<Plane>;
+
+
+        /**
+         * Gets or sets the active clipplane 2
+         */
+        public clipPlane2: Nullable<Plane>;
+        
+
+        /**
+         * Gets or sets the active clipplane 3
+         */
+        public clipPlane3: Nullable<Plane>;
+        
+
+        /**
+         * Gets or sets the active clipplane 4
+         */
+        public clipPlane4: Nullable<Plane>;        
 
         /**
          * Gets or sets a boolean indicating if animations are enabled
@@ -5993,7 +6011,7 @@
             return this._renderingManager.getAutoClearDepthStencilSetup(index);
         }
 
-        /** Gets or sets a boolean blocking all the call to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
+        /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
         public blockMaterialDirtyMechanism = false;
 
         /**

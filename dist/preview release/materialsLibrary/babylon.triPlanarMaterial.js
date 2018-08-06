@@ -31,6 +31,9 @@ var BABYLON;
             _this.BUMPY = false;
             _this.BUMPZ = false;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.ALPHATEST = false;
             _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
@@ -156,7 +159,7 @@ var BABYLON;
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "mBones",
-                    "vClipPlane",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
                     "tileSize"
                 ];
                 var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
