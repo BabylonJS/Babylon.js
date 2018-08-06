@@ -107,15 +107,8 @@
          */
         public static MaxDeltaTime = 1000.0;
 
-        /** Default culling strategy with bounding box and bounding sphere and then frustum culling */
-        public static readonly CULLINGSTRATEGY_STANDARD = 0;
-        /** Culling strategy with bounding sphere only and then frustum culling */
-        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
-
         // Members
 
-        /** Gets ot sets the culling strategy to use to find visible meshes */
-        public cullingStrategy = Scene.CULLINGSTRATEGY_STANDARD;
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
          */
@@ -4220,7 +4213,7 @@
 
                 mesh._preActivate();
 
-                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes, this.cullingStrategy)))) {
+                if (mesh.isVisible && mesh.visibility > 0 && (mesh.alwaysSelectAsActiveMesh || ((mesh.layerMask & this.activeCamera.layerMask) !== 0 && mesh.isInFrustum(this._frustumPlanes)))) {
                     this._activeMeshes.push(mesh);
                     this.activeCamera._activeMeshes.push(mesh);
 
