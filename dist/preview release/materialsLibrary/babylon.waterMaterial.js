@@ -27,6 +27,9 @@ var BABYLON;
             _this.BUMP = false;
             _this.REFLECTION = false;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.ALPHATEST = false;
             _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
@@ -295,7 +298,7 @@ var BABYLON;
                     "vFogInfos", "vFogColor", "pointSize",
                     "vNormalInfos",
                     "mBones",
-                    "vClipPlane", "normalMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "normalMatrix",
                     "logarithmicDepthConstant",
                     // Water
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",

@@ -26,6 +26,9 @@ var BABYLON;
             var _this = _super.call(this) || this;
             _this.DIFFUSE = false;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.ALPHATEST = false;
             _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
@@ -132,7 +135,7 @@ var BABYLON;
                         "vFogInfos", "vFogColor", "pointSize",
                         "vDiffuseInfos",
                         "mBones",
-                        "vClipPlane", "diffuseMatrix",
+                        "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
                         // Fire
                         "time", "speed"
                     ],
@@ -183,10 +186,7 @@ var BABYLON;
                     this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
                 }
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._activeEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
                 // Point size
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);

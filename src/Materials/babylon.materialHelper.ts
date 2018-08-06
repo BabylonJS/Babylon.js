@@ -88,15 +88,35 @@ module BABYLON {
          */
         public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null): void {
             var changed = false;
+            let useClipPlane1 = false;
+            let useClipPlane2 = false;
+            let useClipPlane3 = false;
+            let useClipPlane4 = false;
 
-            if (useClipPlane == null) {
-                useClipPlane = (scene.clipPlane !== undefined && scene.clipPlane !== null);
-            }
+            useClipPlane1 = useClipPlane == null ? (scene.clipPlane !== undefined && scene.clipPlane !== null) : useClipPlane;
+            useClipPlane2 = useClipPlane == null ? (scene.clipPlane2 !== undefined && scene.clipPlane2 !== null) : useClipPlane;
+            useClipPlane3 = useClipPlane == null ? (scene.clipPlane3 !== undefined && scene.clipPlane3 !== null) : useClipPlane;
+            useClipPlane4 = useClipPlane == null ? (scene.clipPlane4 !== undefined && scene.clipPlane4 !== null) : useClipPlane;
 
-            if (defines["CLIPPLANE"] !== useClipPlane) {
-                defines["CLIPPLANE"] = useClipPlane;
+            if (defines["CLIPPLANE"] !== useClipPlane1) {
+                defines["CLIPPLANE"] = useClipPlane1;
                 changed = true;
             }
+
+            if (defines["CLIPPLANE2"] !== useClipPlane2) {
+                defines["CLIPPLANE2"] = useClipPlane2;
+                changed = true;
+            }
+            
+            if (defines["CLIPPLANE3"] !== useClipPlane3) {
+                defines["CLIPPLANE3"] = useClipPlane3;
+                changed = true;
+            }
+            
+            if (defines["CLIPPLANE4"] !== useClipPlane4) {
+                defines["CLIPPLANE4"] = useClipPlane4;
+                changed = true;
+            }            
 
             if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
                 defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
@@ -617,8 +637,20 @@ module BABYLON {
          */
         public static BindClipPlane(effect: Effect, scene: Scene): void {
             if (scene.clipPlane) {
-                var clipPlane = scene.clipPlane;
+                let clipPlane = scene.clipPlane;
                 effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+            if (scene.clipPlane2) {
+                let clipPlane = scene.clipPlane2;
+                effect.setFloat4("vClipPlane2", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+            if (scene.clipPlane3) {
+                let clipPlane = scene.clipPlane3;
+                effect.setFloat4("vClipPlane3", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+            if (scene.clipPlane4) {
+                let clipPlane = scene.clipPlane4;
+                effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
             }
         }
     }

@@ -26,6 +26,9 @@ var BABYLON;
             var _this = _super.call(this) || this;
             _this.DIFFUSE = false;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.ALPHATEST = false;
             _this.DEPTHPREPASS = false;
             _this.POINTSIZE = false;
@@ -185,7 +188,7 @@ var BABYLON;
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
                     "time", "speed", "movingSpeed",
                     "fogColor", "fogDensity", "lowFrequencySpeed"
                 ];

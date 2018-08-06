@@ -200,11 +200,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
+            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<Template> | Promise<string>;
+            hideOverlayScreen(): Promise<string> | Promise<Template>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -221,11 +221,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<Template> | Promise<string>;
+            showLoadingScreen(): Promise<string> | Promise<Template>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<Template> | Promise<string>;
+            hideLoadingScreen(): Promise<string> | Promise<Template>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -977,14 +977,13 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
-    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1645,22 +1644,6 @@ declare module 'babylonjs-viewer/loader/plugins' {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
-}
-
-declare module 'babylonjs-viewer/optimizer/custom/extended' {
-    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces' {
@@ -2331,22 +2314,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
-    import { VRExperienceHelperOptions } from "babylonjs";
-    export interface IVRConfiguration {
-        disabled?: boolean;
-        objectScaleFactor?: number;
-        disableInteractions?: boolean;
-        disableTeleportation?: boolean;
-        overrideFloorMeshName?: string;
-        vrOptions?: VRExperienceHelperOptions;
-        modelHeightCorrection?: number | boolean;
-        rotateUsingControllers?: boolean;
-        cameraPosition?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-    }
+    
 }
 
 declare module 'babylonjs-viewer/labs/environmentSerializer' {
