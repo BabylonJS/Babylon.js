@@ -1623,7 +1623,10 @@
         }
 
         /**
-         * Boolean, true is the mesh in the frustum defined by the Plane objects from the `frustumPlanes` array parameter.
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
+         * A mesh is in the frustum if its bounding box intersects the frustum
+         * @param frustumPlanes defines the frustum to test
+         * @returns true if the mesh is in the frustum planes 
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
@@ -2141,6 +2144,7 @@
         /**
          * Creates a new InstancedMesh object from the mesh model.
          * An instance shares the same properties and the same material than its model.
+         * Please make sure to call mesh.makeGeometryUnique() if you are calling createInstance on a previously cloned mesh.
          * Only these properties of each instance can then be set individually :
          * - position
          * - rotation

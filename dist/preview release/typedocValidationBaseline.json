@@ -1,7 +1,7 @@
 {
-  "errors": 4020,
+  "errors": 4018,
   "babylon.typedoc.json": {
-    "errors": 4020,
+    "errors": 4018,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -2026,18 +2026,6 @@
           }
         },
         "isCompletelyInFrustum": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frustumPlanes": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "isInFrustum": {
           "Comments": {
             "MissingText": true
           },

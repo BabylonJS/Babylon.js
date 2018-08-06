@@ -2563,13 +2563,15 @@ declare module BABYLON.GUI {
         * @see http://doc.babylonjs.com/how_to/chart3d#mapgraph
         */
     export class MapGraph extends Chart {
+            /** Gets or sets the maximum height of a cylinder */
+            maxCylinderHeight: number;
             /** Gets or sets the offset (in world unit) on X axis to apply to all elements */
             xOffset: number;
             /** Gets or sets the offset (in world unit) on Y axis to apply to all elements */
             yOffset: number;
             /** Gets or sets the tesselation used to build the cylinders */
             cylinderTesselation: number;
-            /** Gets or sets the size of the world map (this will define the width) */
+            /** Gets or sets the size of the world map (this will define the width of the supporting plane) */
             worldMapSize: number;
             updateHoverLabel: (meshLabel: BABYLON.Mesh) => void;
             /**
