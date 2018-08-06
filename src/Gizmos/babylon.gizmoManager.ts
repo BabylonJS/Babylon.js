@@ -56,6 +56,8 @@ module BABYLON {
                         }
                         if(node instanceof AbstractMesh){
                             this.attachToMesh(node);
+                        }else{
+                            this.attachToMesh(null);
                         }
                     }else{
                         this.attachToMesh(null);
