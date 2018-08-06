@@ -1406,7 +1406,7 @@ declare module 'babylonjs-gui/2D/controls/image' {
     /**
         * Class used to create 2D images
         */
-    class GUIImage extends Control {
+    export class Image extends Control {
             name?: string | undefined;
             /**
                 * Gets or sets the left coordinate in the source image
@@ -1473,7 +1473,6 @@ declare module 'babylonjs-gui/2D/controls/image' {
             /** STRETCH_EXTEND */
             static readonly STRETCH_EXTEND: number;
     }
-    export { GUIImage as Image };
 }
 
 declare module 'babylonjs-gui/2D/controls/inputText' {
@@ -4106,7 +4105,7 @@ declare module BABYLON.GUI {
     /**
         * Class used to create 2D images
         */
-    class GUIImage extends Control {
+    export class Image extends Control {
             name?: string | undefined;
             /**
                 * Gets or sets the left coordinate in the source image

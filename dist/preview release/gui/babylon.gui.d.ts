@@ -1287,7 +1287,7 @@ declare module BABYLON.GUI {
     /**
         * Class used to create 2D images
         */
-    class GUIImage extends Control {
+    export class Image extends Control {
             name?: string | undefined;
             /**
                 * Gets or sets the left coordinate in the source image
