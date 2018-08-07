@@ -529,6 +529,12 @@
       "referenceImage": "ssao2.png",
       "renderCount": 200,
       "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "DepthRenderer",
+      "playgroundId": "#3HPMAA#0",
+      "renderCount": 50,
+      "referenceImage": "depthRenderer.png"
     }
   ]
 }

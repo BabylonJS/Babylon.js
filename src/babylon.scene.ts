@@ -1072,8 +1072,6 @@
 
         private _debugLayer: DebugLayer;
 
-        private _depthRenderer: { [id: string]: DepthRenderer } = {};
-
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
         private _pickedDownSprite: Nullable<Sprite>;
@@ -4669,11 +4667,6 @@
                 step.action(this._renderTargets);
             }
 
-            // Depth renderer
-            for (var key in this._depthRenderer) {
-                this._renderTargets.push(this._depthRenderer[key].getDepthMap());
-            }
-
             // RenderPipeline
             if (this._postProcessRenderPipelineManager) {
                 this._postProcessRenderPipelineManager.update();
@@ -4861,46 +4854,6 @@
             }
         }
 
-        /**
-         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
-         * @param camera The camera to create the depth renderer on (default: scene's active camera)
-         * @returns the created depth renderer
-         */
-        public enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer {
-            camera = camera || this.activeCamera;
-            if (!camera) {
-                throw "No camera available to enable depth renderer";
-            }
-            if (!this._depthRenderer[camera.id]) {
-                var textureType = 0;
-                if (this._engine.getCaps().textureHalfFloatRender) {
-                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;
-                }
-                else if (this._engine.getCaps().textureFloatRender) {
-                    textureType = Engine.TEXTURETYPE_FLOAT;
-                } else {
-                    throw "Depth renderer does not support int texture type";
-                }
-                this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera);
-            }
-
-            return this._depthRenderer[camera.id];
-        }
-
-        /**
-         * Disables a depth renderer for a given camera
-         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
-         */
-        public disableDepthRenderer(camera?: Nullable<Camera>): void {
-            camera = camera || this.activeCamera;
-            if (!camera || !this._depthRenderer[camera.id]) {
-                return;
-            }
-
-            this._depthRenderer[camera.id].dispose();
-            delete this._depthRenderer[camera.id];
-        }
-
         /** 
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render
@@ -4951,10 +4904,6 @@
             this.stopAllAnimations();
 
             this.resetCachedMaterial();
-
-            for (var key in this._depthRenderer) {
-                this._depthRenderer[key].dispose();
-            }
 
             // Smart arrays
             if (this.activeCamera) {
