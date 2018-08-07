@@ -2189,25 +2189,6 @@
         }
 
         /**
-         * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async. It returns the Mesh.  
-         * @param settings a collection of simplification settings.
-         * @param parallelProcessing should all levels calculate parallel or one after the other.
-         * @param type the type of simplification to run.
-         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
-         */
-        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
-            this.getScene().simplificationQueue.addTask({
-                settings: settings,
-                parallelProcessing: parallelProcessing,
-                mesh: this,
-                simplificationType: simplificationType,
-                successCallback: successCallback
-            });
-            return this;
-        }
-
-        /**
          * Optimization of the mesh's indices, in case a mesh has duplicated vertices.   
          * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.   
          * This should be used together with the simplification to avoid disappearing triangles.  

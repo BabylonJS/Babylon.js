@@ -10,6 +10,7 @@
         public static readonly NAME_BOUNDINGBOXRENDERER = "BoundingBoxRenderer";
         public static readonly NAME_PARTICLESYSTEM = "ParticleSystem";
         public static readonly NAME_GAMEPAD = "Gamepad";
+        public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -26,7 +27,8 @@
 
         public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
 
-        public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 0;
+        public static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE = 0;
+        public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
 
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
