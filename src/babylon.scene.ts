@@ -1073,22 +1073,6 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: { [id: string]: DepthRenderer } = {};
-        private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-
-        /**
-         * Gets the current geometry buffer associated to the scene.
-         */
-        public get geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
-            return this._geometryBufferRenderer;
-        }
-        /**
-         * Sets the current geometry buffer for the scene.
-         */
-        public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
-            if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
-                this._geometryBufferRenderer = geometryBufferRenderer;
-            }
-        }
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
@@ -1164,6 +1148,11 @@
          * Defines the actions happening before camera updates.
          */
         public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening before camera updates.
+         */
+        public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
         /**
          * @hidden
          * Defines the actions happening during the per mesh ready checks.
@@ -4675,14 +4664,14 @@
                 }
             }
 
+            // Collects render targets from external components.
+            for (let step of this._gatherRenderTargetsStage) {
+                step.action(this._renderTargets);
+            }
+
             // Depth renderer
             for (var key in this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer[key].getDepthMap());
-            }
-
-            // Geometry renderer
-            if (this._geometryBufferRenderer) {
-                this._renderTargets.push(this._geometryBufferRenderer.getGBuffer());
             }
 
             // RenderPipeline
@@ -4912,36 +4901,6 @@
             delete this._depthRenderer[camera.id];
         }
 
-        /**
-         * Enables a GeometryBufferRender and associates it with the scene
-         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
-         * @returns the GeometryBufferRenderer
-         */
-        public enableGeometryBufferRenderer(ratio: number = 1): Nullable<GeometryBufferRenderer> {
-            if (this._geometryBufferRenderer) {
-                return this._geometryBufferRenderer;
-            }
-
-            this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
-            if (!this._geometryBufferRenderer.isSupported) {
-                this._geometryBufferRenderer = null;
-            }
-
-            return this._geometryBufferRenderer;
-        }
-
-        /**
-         * Disables the GeometryBufferRender associated with the scene
-         */
-        public disableGeometryBufferRenderer(): void {
-            if (!this._geometryBufferRenderer) {
-                return;
-            }
-
-            this._geometryBufferRenderer.dispose();
-            this._geometryBufferRenderer = null;
-        }
-
         /** 
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render
@@ -4982,6 +4941,7 @@
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
+            this._gatherRenderTargetsStage.clear();
             for (let component of this._components) {
                 component.dispose();
             }

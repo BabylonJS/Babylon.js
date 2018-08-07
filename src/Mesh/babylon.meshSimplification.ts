@@ -38,7 +38,7 @@
          * @param type the type of simplification to run.
          * @param successCallback optional success callback to be called after the simplification finished processing all settings.
          */
-        simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean, simplificationType: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh;
+        simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, simplificationType?: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh;
     }
 
     Mesh.prototype.simplify = function(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
