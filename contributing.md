@@ -31,3 +31,7 @@ Need help contributing, here are some links:
   - [VSCode Editor](https://code.visualstudio.com/), Microsoft Code editor, see [Julian Chenard's post](http://pixelcodr.com/tutos/contribute/contribute.html) a Microsoft code editor.
   - [Visual Studio](http://doc.babylonjs.com/generals/setup_visualStudio), Microsoft's IDE.
   - [Forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
+  
+ ## What should go where?
+ 
+ If your PR is about a foundation tool then it will probably belong to the core engine (/src folder). Else you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.
