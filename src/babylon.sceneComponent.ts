@@ -12,6 +12,7 @@
         public static readonly NAME_GAMEPAD = "Gamepad";
         public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
         public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
+        public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -38,6 +39,7 @@
         public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
 
         public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 0;
+        public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 1;
     }
 
     /**
