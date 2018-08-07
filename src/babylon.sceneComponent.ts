@@ -11,7 +11,7 @@
         public static readonly NAME_PARTICLESYSTEM = "ParticleSystem";
         public static readonly NAME_GAMEPAD = "Gamepad";
         public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
-        public static readonly NAME_GEOMETRYBUFFER = "GeometryBuffer";
+        public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -37,7 +37,7 @@
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
         public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
 
-        public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFER = 0;
+        public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 0;
     }
 
     /**
