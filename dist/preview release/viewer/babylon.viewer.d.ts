@@ -1828,25 +1828,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface IDefaultRenderingPipelineConfiguration {
-        sharpenEnabled?: boolean;
-        bloomEnabled?: boolean;
-        bloomThreshold?: number;
-        depthOfFieldEnabled?: boolean;
-        depthOfFieldBlurLevel?: BABYLON.DepthOfFieldEffectBlurLevel;
-        fxaaEnabled?: boolean;
-        imageProcessingEnabled?: boolean;
-        defaultPipelineTextureType?: number;
-        bloomScale?: number;
-        chromaticAberrationEnabled?: boolean;
-        grainEnabled?: boolean;
-        bloomKernel?: number;
-        hardwareScaleLevel?: number;
-        bloomWeight?: number;
-        hdr?: boolean;
-        samples?: number;
-        glowLayerEnabled?: boolean;
-    }
 }
 declare module BabylonViewer {
     export interface IGroundConfiguration {
@@ -2154,6 +2135,21 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface IVRConfiguration {
+        disabled?: boolean;
+        objectScaleFactor?: number;
+        disableInteractions?: boolean;
+        disableTeleportation?: boolean;
+        overrideFloorMeshName?: string;
+        vrOptions?: BABYLON.VRExperienceHelperOptions;
+        modelHeightCorrection?: number | boolean;
+        rotateUsingControllers?: boolean;
+        cameraPosition?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+    }
 }
 declare module BabylonViewer {
     /**

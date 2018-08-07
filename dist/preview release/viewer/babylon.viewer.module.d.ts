@@ -1974,26 +1974,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/colorGradingConfigurat
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipelineConfiguration' {
-    import { DepthOfFieldEffectBlurLevel } from 'babylonjs';
-    export interface IDefaultRenderingPipelineConfiguration {
-        sharpenEnabled?: boolean;
-        bloomEnabled?: boolean;
-        bloomThreshold?: number;
-        depthOfFieldEnabled?: boolean;
-        depthOfFieldBlurLevel?: DepthOfFieldEffectBlurLevel;
-        fxaaEnabled?: boolean;
-        imageProcessingEnabled?: boolean;
-        defaultPipelineTextureType?: number;
-        bloomScale?: number;
-        chromaticAberrationEnabled?: boolean;
-        grainEnabled?: boolean;
-        bloomKernel?: number;
-        hardwareScaleLevel?: number;
-        bloomWeight?: number;
-        hdr?: boolean;
-        samples?: number;
-        glowLayerEnabled?: boolean;
-    }
+    
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/groundConfiguration' {
@@ -2314,7 +2295,22 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
-    
+    import { VRExperienceHelperOptions } from "babylonjs";
+    export interface IVRConfiguration {
+        disabled?: boolean;
+        objectScaleFactor?: number;
+        disableInteractions?: boolean;
+        disableTeleportation?: boolean;
+        overrideFloorMeshName?: string;
+        vrOptions?: VRExperienceHelperOptions;
+        modelHeightCorrection?: number | boolean;
+        rotateUsingControllers?: boolean;
+        cameraPosition?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+    }
 }
 
 declare module 'babylonjs-viewer/labs/environmentSerializer' {
