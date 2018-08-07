@@ -1,7 +1,7 @@
 {
-  "errors": 4018,
+  "errors": 4023,
   "babylon.typedoc.json": {
-    "errors": 4018,
+    "errors": 4023,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -7767,18 +7767,6 @@
             }
           }
         },
-        "simplify": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "simplificationType": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "subdivide": {
           "Comments": {
             "MissingText": true
@@ -8819,6 +8807,21 @@
           },
           "Parameter": {
             "meshes": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "simplify": {
+          "Naming": {
+            "NotPascalCase": true
+          },
+          "Comments": {
+            "MissingReturn": true
+          },
+          "Parameter": {
+            "simplificationType": {
               "Comments": {
                 "MissingText": true
               }
@@ -14271,9 +14274,29 @@
           "Naming": {
             "NotPascalCase": true
           }
+        },
+        "geometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "simplificationQueue": {
+          "Naming": {
+            "NotPascalCase": true
+          }
         }
       },
       "Method": {
+        "disableGeometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "enableGeometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "getBoundingBoxRenderer": {
           "Naming": {
             "NotPascalCase": true
