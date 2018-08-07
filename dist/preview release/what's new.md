@@ -4,7 +4,7 @@
 
 - GUI
   - New GUI 3D controls toolset. [Complete doc + demos](http://doc.babylonjs.com/how_to/gui3d) ([Deltakosh](https://github.com/deltakosh))
-  - New 3D chart controls. [Complete doc + demos](http://doc.babylonjs.com/how_to/chart3d) ([Deltakosh](https://github.com/deltakosh))
+  - New 3D chart control fundation. [Complete doc + demos](http://doc.babylonjs.com/how_to/chart3d) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [Grid](http://doc.babylonjs.com/how_to/gui#grid) ([Deltakosh](https://github.com/deltakosh))
   - New GUI control: [InputPassword](https://doc.babylonjs.com/how_to/gui#inputpassword) ([theom](https://github.com/theom))
 - Gizmo Support ([TrevorDev](https://github.com/TrevorDev))
