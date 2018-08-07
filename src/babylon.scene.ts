@@ -966,12 +966,6 @@
          */
         public VRHelper: VRExperienceHelper;
 
-        /**
-         * Gets or sets the simplification queue attached to the scene
-         * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
-         */
-        public simplificationQueue: SimplificationQueue;
-
         // Private
         private _engine: Engine;
 
@@ -1238,11 +1232,6 @@
 
             if (Tools.IsWindowObjectExist()) {
                 this.attachControl();
-            }
-
-            //simplification queue
-            if (SimplificationQueue) {
-                this.simplificationQueue = new SimplificationQueue();
             }
 
             //collision coordinator initialization. For now legacy per default.
@@ -4523,11 +4512,6 @@
             // Actions
             if (this.actionManager) {
                 this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger);
-            }
-
-            //Simplification Queue
-            if (this.simplificationQueue && !this.simplificationQueue.running) {
-                this.simplificationQueue.executeNext();
             }
 
             if (this._engine.isDeterministicLockStep()) {
