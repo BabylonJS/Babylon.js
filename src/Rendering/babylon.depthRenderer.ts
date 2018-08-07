@@ -19,6 +19,13 @@
          */
         constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT, camera:Nullable<Camera> = null) {
             this._scene = scene;
+            // Register the G Buffer component to the scene.
+            let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHRENDERER) as DepthRendererSceneComponent;
+            if (!component) {
+                component = new DepthRendererSceneComponent(scene);
+                scene._addComponent(component);
+            }
+
             this._camera = camera;
             var engine = scene.getEngine();
 

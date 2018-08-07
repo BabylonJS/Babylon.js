@@ -719,7 +719,8 @@
         },
         "depthRenderer": {
             "files": [
-                "../../src/Rendering/babylon.depthRenderer.js"
+                "../../src/Rendering/babylon.depthRenderer.js",
+                "../../src/Rendering/babylon.depthRendererSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
