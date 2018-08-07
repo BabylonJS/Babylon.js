@@ -10,6 +10,8 @@
         public static readonly NAME_BOUNDINGBOXRENDERER = "BoundingBoxRenderer";
         public static readonly NAME_PARTICLESYSTEM = "ParticleSystem";
         public static readonly NAME_GAMEPAD = "Gamepad";
+        public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
+        public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -26,13 +28,16 @@
 
         public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
 
-        public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 0;
+        public static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE = 0;
+        public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
 
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
         public static readonly STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER = 2;
         public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
         public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
+
+        public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 0;
     }
 
     /**
@@ -123,6 +128,11 @@
      * Strong typing of a simple stage step action 
      */
     export type SimpleStageAction = () => void;
+
+    /** 
+     * Strong typing of a render target action.
+     */
+    export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>) => void;
 
     /** 
      * Repressentation of a stage in the scene (Basically a list of ordered steps) 
