@@ -753,7 +753,7 @@
                             // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
                             request.removeEventListener("readystatechange", onReadyStateChange);
 
-                            if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
+                            if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!Tools.IsWindowObjectExist() || Tools.IsFileURL()))) {
                                 onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
                                 return;
                             }
@@ -1505,6 +1505,14 @@
                 Tools.Error = Tools._ErrorDisabled;
             }
         }
+	
+	/** 
+         * Check if the loaded document was accessed via `file:`-Protocol.
+         * @returns boolean
+         */
+	public static IsFileURL(): boolean {
+	    return location.protocol === "file:";
+	}
 
         public static IsWindowObjectExist(): boolean {
             return (typeof window) !== "undefined";

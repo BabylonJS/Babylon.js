@@ -1,5 +1,4 @@
 ﻿module BABYLON {
-
     /**
      * A simplifier interface for future simplification implementations.
      */
@@ -698,7 +697,6 @@
                 this.identifyBorder();
             }
         }
-
 
         private vertexError(q: QuadraticMatrix, point: Vector3): number {
             var x = point.x;
