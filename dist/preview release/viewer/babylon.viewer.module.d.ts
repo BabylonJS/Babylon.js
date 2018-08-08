@@ -41,7 +41,47 @@ declare module 'babylonjs-viewer' {
 }
 
 declare module 'babylonjs-viewer/configuration/mappers' {
-    
+    import { ViewerConfiguration } from 'babylonjs-viewer/configuration/configuration';
+    /**
+        * This is the mapper's interface. Implement this function to create your own mapper and register it at the mapper manager
+        */
+    export interface IMapper {
+            map(rawSource: any): ViewerConfiguration;
+    }
+    /**
+        * The MapperManager manages the different implemented mappers.
+        * It allows the user to register new mappers as well and use them to parse their own configuration data
+        */
+    export class MapperManager {
+            /**
+                * The default mapper is the JSON mapper.
+                */
+            static DefaultMapper: string;
+            constructor();
+            /**
+                * Get a specific configuration mapper.
+                *
+                * @param type the name of the mapper to load
+                */
+            getMapper(type: string): IMapper;
+            /**
+                * Use this functio to register your own configuration mapper.
+                * After a mapper is registered, it can be used to parse the specific type fo configuration to the standard ViewerConfiguration.
+                * @param type the name of the mapper. This will be used to define the configuration type and/or to get the mapper
+                * @param mapper The implemented mapper
+                */
+            registerMapper(type: string, mapper: IMapper): void;
+            /**
+                * Dispose the mapper manager and all of its mappers.
+                */
+            dispose(): void;
+    }
+    /**
+        * mapperManager is a singleton of the type MapperManager.
+        * The mapperManager can be disposed directly with calling mapperManager.dispose()
+        * or indirectly with using BabylonViewer.disposeAll()
+        */
+    export let mapperManager: MapperManager;
 }
 
 declare module 'babylonjs-viewer/configuration/globals' {
@@ -160,11 +200,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -181,11 +221,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -937,13 +977,14 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
+    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -964,6 +1005,105 @@ declare module 'babylonjs-viewer/initializer' {
 declare module 'babylonjs-viewer/configuration' {
     export * from 'babylonjs-viewer/configuration/configuration';
     export * from 'babylonjs-viewer/configuration/interfaces';
+}
+
+declare module 'babylonjs-viewer/configuration/configuration' {
+    import { EngineOptions } from 'babylonjs';
+    import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
+    import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
+    export function getConfigurationKey(key: string, configObject: any): any;
+    export interface ViewerConfiguration {
+            version?: string;
+            extends?: string;
+            pageUrl?: string;
+            configuration?: string | {
+                    url?: string;
+                    payload?: any;
+                    mapper?: string;
+            };
+            observers?: IObserversConfiguration;
+            canvasElement?: string;
+            model?: IModelConfiguration | string;
+            scene?: ISceneConfiguration;
+            optimizer?: ISceneOptimizerConfiguration | boolean;
+            camera?: ICameraConfiguration;
+            skybox?: boolean | ISkyboxConfiguration;
+            ground?: boolean | IGroundConfiguration;
+            lights?: {
+                    [name: string]: number | boolean | ILightConfiguration;
+            };
+            engine?: {
+                    renderInBackground?: boolean;
+                    antialiasing?: boolean;
+                    disableResize?: boolean;
+                    engineOptions?: EngineOptions;
+                    adaptiveQuality?: boolean;
+                    hdEnabled?: boolean;
+            };
+            templates?: {
+                    main: ITemplateConfiguration;
+                    [key: string]: ITemplateConfiguration;
+            };
+            customShaders?: {
+                    shaders?: {
+                            [key: string]: string;
+                    };
+                    includes?: {
+                            [key: string]: string;
+                    };
+            };
+            loaderPlugins?: {
+                    extendedMaterial?: boolean;
+                    msftLod?: boolean;
+                    telemetry?: boolean;
+                    minecraft?: boolean;
+                    [propName: string]: boolean | undefined;
+            };
+            environmentMap?: IEnvironmentMapConfiguration;
+            vr?: IVRConfiguration;
+            lab?: {
+                    flashlight?: boolean | {
+                            exponent?: number;
+                            angle?: number;
+                            intensity?: number;
+                            diffuse?: {
+                                    r: number;
+                                    g: number;
+                                    b: number;
+                            };
+                            specular?: {
+                                    r: number;
+                                    g: number;
+                                    b: number;
+                            };
+                    };
+                    hideLoadingDelay?: number;
+                    /** Deprecated */
+                    assetsRootURL?: string;
+                    environmentMainColor?: {
+                            r: number;
+                            g: number;
+                            b: number;
+                    };
+                    /** Deprecated */
+                    environmentMap?: {
+                            /**
+                                * Environment map texture path in relative to the asset folder.
+                                */
+                            texture: string;
+                            /**
+                                * Default rotation to apply to the environment map.
+                                */
+                            rotationY: number;
+                            /**
+                                * Tint level of the main color on the environment map.
+                                */
+                            tintLevel: number;
+                    };
+                    defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
+                    globalLightRotation?: number;
+            };
+    }
 }
 
 declare module 'babylonjs-viewer/templating/templateManager' {
@@ -1507,103 +1647,20 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
-declare module 'babylonjs-viewer/configuration/configuration' {
-    import { EngineOptions } from 'babylonjs';
-    import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
-    import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
-    export function getConfigurationKey(key: string, configObject: any): any;
-    export interface ViewerConfiguration {
-            version?: string;
-            extends?: string;
-            pageUrl?: string;
-            configuration?: string | {
-                    url?: string;
-                    payload?: any;
-                    mapper?: string;
-            };
-            observers?: IObserversConfiguration;
-            canvasElement?: string;
-            model?: IModelConfiguration | string;
-            scene?: ISceneConfiguration;
-            optimizer?: ISceneOptimizerConfiguration | boolean;
-            camera?: ICameraConfiguration;
-            skybox?: boolean | ISkyboxConfiguration;
-            ground?: boolean | IGroundConfiguration;
-            lights?: {
-                    [name: string]: number | boolean | ILightConfiguration;
-            };
-            engine?: {
-                    renderInBackground?: boolean;
-                    antialiasing?: boolean;
-                    disableResize?: boolean;
-                    engineOptions?: EngineOptions;
-                    adaptiveQuality?: boolean;
-                    hdEnabled?: boolean;
-            };
-            templates?: {
-                    main: ITemplateConfiguration;
-                    [key: string]: ITemplateConfiguration;
-            };
-            customShaders?: {
-                    shaders?: {
-                            [key: string]: string;
-                    };
-                    includes?: {
-                            [key: string]: string;
-                    };
-            };
-            loaderPlugins?: {
-                    extendedMaterial?: boolean;
-                    msftLod?: boolean;
-                    telemetry?: boolean;
-                    minecraft?: boolean;
-                    [propName: string]: boolean | undefined;
-            };
-            environmentMap?: IEnvironmentMapConfiguration;
-            vr?: IVRConfiguration;
-            lab?: {
-                    flashlight?: boolean | {
-                            exponent?: number;
-                            angle?: number;
-                            intensity?: number;
-                            diffuse?: {
-                                    r: number;
-                                    g: number;
-                                    b: number;
-                            };
-                            specular?: {
-                                    r: number;
-                                    g: number;
-                                    b: number;
-                            };
-                    };
-                    hideLoadingDelay?: number;
-                    /** Deprecated */
-                    assetsRootURL?: string;
-                    environmentMainColor?: {
-                            r: number;
-                            g: number;
-                            b: number;
-                    };
-                    /** Deprecated */
-                    environmentMap?: {
-                            /**
-                                * Environment map texture path in relative to the asset folder.
-                                */
-                            texture: string;
-                            /**
-                                * Default rotation to apply to the environment map.
-                                */
-                            rotationY: number;
-                            /**
-                                * Tint level of the main color on the environment map.
-                                */
-                            tintLevel: number;
-                    };
-                    defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
-                    globalLightRotation?: number;
-            };
-    }
+declare module 'babylonjs-viewer/optimizer/custom/extended' {
+    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces' {
@@ -1622,6 +1679,31 @@ declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/templateConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/vrConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration' {
+    export interface IEnvironmentMapConfiguration {
+            /**
+                * Environment map texture path in relative to the asset folder.
+                */
+            texture: string;
+            /**
+                * Default rotation to apply to the environment map.
+                */
+            rotationY: number;
+            /**
+                * Tint level of the main color on the environment map.
+                */
+            tintLevel: number;
+            /**
+                * The environment's main color.
+                */
+            mainColor?: {
+                    r?: number;
+                    g?: number;
+                    b?: number;
+            };
+    }
 }
 
 declare module 'babylonjs-viewer/templating/eventManager' {
@@ -1707,31 +1789,6 @@ declare module 'babylonjs-viewer/labs/viewerLabs' {
                 */
             getAssetUrl(url: string): string;
             rotateShadowLight(shadowLight: ShadowLight, amount: number, point?: Vector3, axis?: Vector3, target?: Vector3): void;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration' {
-    export interface IEnvironmentMapConfiguration {
-            /**
-                * Environment map texture path in relative to the asset folder.
-                */
-            texture: string;
-            /**
-                * Default rotation to apply to the environment map.
-                */
-            rotationY: number;
-            /**
-                * Tint level of the main color on the environment map.
-                */
-            tintLevel: number;
-            /**
-                * The environment's main color.
-                */
-            mainColor?: {
-                    r?: number;
-                    g?: number;
-                    b?: number;
-            };
     }
 }
 
