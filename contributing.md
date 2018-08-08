@@ -38,7 +38,7 @@ To validate your PR, please follow these steps:
   
  ## What should go where?
 
-In order to not bloat the core engine with unwanted or unnecessary features, here is a list of questions you could ask yourself before submitting a new feature (or feature request) for Babylon.js core engine:
+In order to not bloat the core engine with unwanted or unnecessary features (that we will need to maintain forever), here is a list of questions you could ask yourself before submitting a new feature (or feature request) for Babylon.js core engine:
 - Does my feature belong to a framework library?
 - Can my feature be used by multiple different applications?
 - Is there a general use case for this feature?
