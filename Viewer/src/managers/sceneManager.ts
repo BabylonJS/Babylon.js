@@ -59,6 +59,9 @@ export class SceneManager {
      */
     onVRConfiguredObservable: Observable<IPostConfigurationCallback<VRExperienceHelper, IVRConfiguration>>;
 
+    onEnteringVRObservable: Observable<any>;
+    onExitingVRObservable: Observable<any>;
+
     /**
      * The Babylon Scene of this viewer
      */
@@ -133,6 +136,9 @@ export class SceneManager {
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
         this.onVRConfiguredObservable = new Observable();
+
+        this.onEnteringVRObservable = new Observable();
+        this.onExitingVRObservable = new Observable();
 
         //this._viewer.onEngineInitObservable.add(() => {
         this._handleHardwareLimitations();
@@ -798,6 +804,12 @@ export class SceneManager {
                 });
             });
         }
+        this._vrHelper.onEnteringVRObservable.add(() => {
+            this.onEnteringVRObservable.notifyObservers(this);
+        });
+        this._vrHelper.onExitingVRObservable.add(() => {
+            this.onExitingVRObservable.notifyObservers(this);
+        });
         this.onVRConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this._vrHelper,
@@ -933,7 +945,7 @@ export class SceneManager {
         this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
-        const sceneDiagonalLenght = sizeVec.length();
+        const sceneDiagonalLenght = sizeVec.length(); 
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
 
@@ -1419,6 +1431,9 @@ export class SceneManager {
         this.onSceneInitObservable.clear();
         this.onSceneOptimizerConfiguredObservable.clear();
         this.onVRConfiguredObservable.clear();
+
+        this.onEnteringVRObservable.clear();
+        this.onExitingVRObservable.clear();
 
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();

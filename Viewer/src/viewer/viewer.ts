@@ -1,4 +1,4 @@
-import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3 } from 'babylonjs';
+import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3, Observer } from 'babylonjs';
 import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
 import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
@@ -121,6 +121,13 @@ export abstract class AbstractViewer {
         return this.observablesManager.onFrameRenderedObservable;
     }
 
+    public get onEnteringVRObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onEnteringVRObservable;
+    }
+    public get onExitingVRObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onExitingVRObservable;
+    }
+
     public observablesManager: ObservablesManager;
 
     /**
@@ -146,6 +153,7 @@ export abstract class AbstractViewer {
      * This functions are also registered at the native scene. The reference can be used to unregister them.
      */
     protected _registeredOnBeforeRenderFunctions: Array<() => void>;
+
     /**
      * The configuration loader of this viewer
      */
@@ -264,17 +272,63 @@ export abstract class AbstractViewer {
 
     protected _vrInit: boolean = false;
 
+    // private upscaleModelAndEnvironment() {
+    //     // scale the model
+    //     if (this.sceneManager.models.length) {
+    //         let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
+    //         let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+    //         let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+    //         this._vrScale = (1 / maxDimension);
+    //         if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
+    //             this._vrScale *= this.configuration.vr.objectScaleFactor;
+    //         }
+
+    //         this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(this._vrScale);
+
+    //         // reposition the object to "float" in front of the user
+    //         this.sceneManager.models[0].rootMesh.position.y += this._vrModelRepositioning;
+    //         this.sceneManager.models[0].rootMesh.rotationQuaternion = null;
+    //     }
+
+    //     // scale the environment to match the model
+    //     if (this.sceneManager.environmentHelper) {
+    //         this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(this._vrScale);
+    //         this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(this._vrScale);
+    //     }
+    // }
+
+    // private downscaleModelAndEnvironment() {
+    //     // undo the scaling of the model
+    //     if (this.sceneManager.models.length) {
+    //         this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
+    //         this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
+    //     }
+
+    //     // undo the scaling of the environment
+    //     if (this.sceneManager.environmentHelper) {
+    //         this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
+    //         this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+    //     }
+    // }
+
     public toggleVR() {
         if (!this._vrInit) {
             this._initVR();
         }
 
         if (this.sceneManager.vrHelper && !this.sceneManager.vrHelper.isInVRMode) {
+
+            //this.sceneManager.onEnteringVRObservable.remove(o)
+            // this.sceneManager.onEnteringVRObservable.add(() => {
+            //     this.onEnteringVRObservable.notifyObservers(this);
+            // });
+
             // make sure the floor is set
             if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
                 this.sceneManager.vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
             }
 
+            this._vrToggled = true;
             this.sceneManager.vrHelper.enterVR();
 
             // position the vr camera to be in front of the object or wherever the user has configured it to be
@@ -295,6 +349,8 @@ export abstract class AbstractViewer {
                         this._vrModelRepositioning = 0;
                     }
                 }
+
+                console.log("upscaling");
 
                 // scale the model
                 if (this.sceneManager.models.length) {
@@ -337,29 +393,41 @@ export abstract class AbstractViewer {
     protected _initVR() {
 
         if (this.sceneManager.vrHelper) {
-            this.sceneManager.vrHelper.onExitingVR.add(() => {
-                // undo the scaling of the model
-                if (this.sceneManager.models.length) {
-                    this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
-                }
+            this.sceneManager.onExitingVRObservable.add(() => {
+                if (this._vrToggled) {
 
-                // undo the scaling of the environment
-                if (this.sceneManager.environmentHelper) {
-                    this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
-                }
+                    //this.sceneManager.onExitingVRObservable.remove(o)
+                    // var o = this.sceneManager.onExitingVRObservable.add(() => {
+                    //     this.onExitingVRObservable.notifyObservers(this);
+                    // });
 
-                // post processing
-                if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
-                    this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
-                    this.sceneManager.defaultRenderingPipeline.prepare();
-                }
+                    console.log("downscaling");
 
-                // clear set height and eidth
-                this.canvas.removeAttribute("height");
-                this.canvas.removeAttribute("width");
-                this.engine.resize();
+                    this._vrToggled = false;
+                    
+                    // undo the scaling of the model
+                    if (this.sceneManager.models.length) {
+                        this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
+                        this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
+                    }
+
+                    // undo the scaling of the environment
+                    if (this.sceneManager.environmentHelper) {
+                        this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
+                        this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+                    }
+
+                    // post processing
+                    if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
+                        this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
+                        this.sceneManager.defaultRenderingPipeline.prepare();
+                    }
+
+                    // clear set height and eidth
+                    this.canvas.removeAttribute("height");
+                    this.canvas.removeAttribute("width");
+                    this.engine.resize();
+                }
             })
         }
 
@@ -531,7 +599,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Dispoe the entire viewer including the scene and the engine
+     * Dispose the entire viewer including the scene and the engine
      */
     public dispose() {
         if (this._isDisposed) {
@@ -653,6 +721,15 @@ export abstract class AbstractViewer {
 
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
+        
+        // //this.sceneManager.onEnteringVRObservable.remove(o)
+        var o = this.sceneManager.onEnteringVRObservable.add(() => {
+            this.onEnteringVRObservable.notifyObservers(this);
+        });
+        
+        this.sceneManager.onExitingVRObservable.add(() => {
+            this.onExitingVRObservable.notifyObservers(this);
+        });
 
         return Promise.resolve(this.engine);
     }
