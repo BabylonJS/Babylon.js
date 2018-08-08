@@ -862,19 +862,6 @@
          * Gets the current postprocess manager
          */
         public postProcessManager: PostProcessManager;
-        private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
-        /**
-         * Gets the postprocess render pipeline manager
-         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
-         * @see http://doc.babylonjs.com/how_to/using_default_rendering_pipeline
-         */
-        public get postProcessRenderPipelineManager(): PostProcessRenderPipelineManager {
-            if (!this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
-            }
-
-            return this._postProcessRenderPipelineManager;
-        }
 
         // Customs render targets
         /**
@@ -1195,6 +1182,11 @@
          * Defines the actions happening just after the active camera has been drawn.
          */
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when Geometries are rebuilding.
+         */
+        public _rebuildGeometryStage = Stage.Create<SimpleStageAction>();
 
         /**
          * Creates a new Scene
@@ -4667,11 +4659,6 @@
                 step.action(this._renderTargets);
             }
 
-            // RenderPipeline
-            if (this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager.update();
-            }
-
             // Multi-cameras?
             if (this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
@@ -4895,6 +4882,7 @@
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
             this._gatherRenderTargetsStage.clear();
+            this._rebuildGeometryStage.clear();
             for (let component of this._components) {
                 component.dispose();
             }
@@ -5042,10 +5030,6 @@
 
             // Post-processes
             this.postProcessManager.dispose();
-
-            if (this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager.dispose();
-            }
 
             // Physics
             if (this._physicsEngine) {
@@ -5623,8 +5607,8 @@
                 system.rebuild();
             }
 
-            if (this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager._rebuild();
+            for (let step of this._rebuildGeometryStage) {
+                step.action();
             }
         }
 

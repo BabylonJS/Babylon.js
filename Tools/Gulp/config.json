@@ -974,6 +974,7 @@
         "renderingPipeline": {
             "files": [
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManager.js",
+                "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManagerSceneComponent.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderEffect.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js"
             ],
