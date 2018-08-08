@@ -1505,7 +1505,11 @@
                 Tools.Error = Tools._ErrorDisabled;
             }
         }
-	    
+	
+	/** 
+         * Check if the loaded document was accessed via `file:`-Protocol.
+         * @returns boolean
+         */
 	public static IsFileURL(): boolean {
 	    return location.protocol === "file:";
 	}
