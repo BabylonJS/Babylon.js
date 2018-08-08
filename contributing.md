@@ -26,10 +26,8 @@ We will try to enforce these rules as we consider the forum is a better place fo
 We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/how_to/approved_naming_conventions)
 Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/resources/creating_the_mini-fied_version)
 
-Need help contributing, here are some links:
-- [Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp) to build from command line.
-- [VSCode Editor](https://code.visualstudio.com/), Microsoft Code editor, see [Julian Chenard's post](http://pixelcodr.com/tutos/contribute/contribute.html) a Microsoft code editor.
-- [Forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
+You should read the [how to contribute documentation](http://doc.babylonjs.com/how_to/how_to_start) before working on your PR.
+We also have a [forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
   
 To validate your PR, please follow these steps:
 - Run "gulp" locally and make sure that no error is generated
