@@ -1828,6 +1828,25 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface IDefaultRenderingPipelineConfiguration {
+        sharpenEnabled?: boolean;
+        bloomEnabled?: boolean;
+        bloomThreshold?: number;
+        depthOfFieldEnabled?: boolean;
+        depthOfFieldBlurLevel?: BABYLON.DepthOfFieldEffectBlurLevel;
+        fxaaEnabled?: boolean;
+        imageProcessingEnabled?: boolean;
+        defaultPipelineTextureType?: number;
+        bloomScale?: number;
+        chromaticAberrationEnabled?: boolean;
+        grainEnabled?: boolean;
+        bloomKernel?: number;
+        hardwareScaleLevel?: number;
+        bloomWeight?: number;
+        hdr?: boolean;
+        samples?: number;
+        glowLayerEnabled?: boolean;
+    }
 }
 declare module BabylonViewer {
     export interface IGroundConfiguration {

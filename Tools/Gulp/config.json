@@ -719,7 +719,8 @@
         },
         "depthRenderer": {
             "files": [
-                "../../src/Rendering/babylon.depthRenderer.js"
+                "../../src/Rendering/babylon.depthRenderer.js",
+                "../../src/Rendering/babylon.depthRendererSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -732,7 +733,8 @@
         },
         "geometryBufferRenderer": {
             "files": [
-                "../../src/Rendering/babylon.geometryBufferRenderer.js"
+                "../../src/Rendering/babylon.geometryBufferRenderer.js",
+                "../../src/Rendering/babylon.geometryBufferRendererSceneComponent.js"
             ],
             "dependUpon": [
                 "core"
@@ -988,7 +990,8 @@
             ],
             "dependUpon": [
                 "renderingPipeline",
-                "depthRenderer"
+                "depthRenderer",
+                "geometryBufferRenderer"
             ],
             "shaders": [
                 "ssao.fragment",
@@ -1269,6 +1272,7 @@
         "optimizations": {
             "files": [
                 "../../src/Mesh/babylon.meshSimplification.js",
+                "../../src/Mesh/babylon.meshSimplificationSceneComponent.js",
                 "../../src/Mesh/babylon.meshLODLevel.js",
                 "../../src/Tools/babylon.sceneOptimizer.js"
             ],
