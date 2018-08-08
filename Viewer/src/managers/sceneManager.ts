@@ -59,7 +59,13 @@ export class SceneManager {
      */
     onVRConfiguredObservable: Observable<IPostConfigurationCallback<VRExperienceHelper, IVRConfiguration>>;
 
+    /**
+     * Will notify when VR mode is entered.
+     */
     onEnteringVRObservable: Observable<any>;
+    /**
+     * Will notify when VR mode is exited.
+     */
     onExitingVRObservable: Observable<any>;
 
     /**
@@ -136,7 +142,6 @@ export class SceneManager {
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
         this.onVRConfiguredObservable = new Observable();
-
         this.onEnteringVRObservable = new Observable();
         this.onExitingVRObservable = new Observable();
 
@@ -945,7 +950,7 @@ export class SceneManager {
         this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
-        const sceneDiagonalLenght = sizeVec.length(); 
+        const sceneDiagonalLenght = sizeVec.length();
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
 
@@ -1431,7 +1436,6 @@ export class SceneManager {
         this.onSceneInitObservable.clear();
         this.onSceneOptimizerConfiguredObservable.clear();
         this.onVRConfiguredObservable.clear();
-
         this.onEnteringVRObservable.clear();
         this.onExitingVRObservable.clear();
 
