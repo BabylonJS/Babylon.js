@@ -71,8 +71,6 @@ module BABYLON {
         /** @hidden */
         public _activePointer = false;
 
-        
-
         constructor(public scene: Scene, gazeTrackerToClone: Nullable<Mesh> = null) {
             this._id = VRExperienceHelperGazer._idCounter++;
 
@@ -258,7 +256,7 @@ module BABYLON {
         private _webVRrequesting = false;
         // Are we presenting to the headset right now?
         private _webVRpresenting = false;
-
+        // Have we entered VR?
         private hasEnteredVR: boolean;
 
         // Are we presenting in the fullscreen fallback?
@@ -778,12 +776,6 @@ module BABYLON {
         private onVrDisplayPresentChange() {
             var vrDisplay = this._scene.getEngine().getVRDevice();
             if (vrDisplay) {
-                // var wasPresenting = this._webVRpresenting;
-                // if (wasPresenting && this.isInVRMode) {
-                //     this.exitVR();
-                // }
-                // // A VR display is connected
-                // this._webVRpresenting = vrDisplay.isPresenting;
                 var wasPresenting = this._webVRpresenting;
                 this._webVRpresenting = vrDisplay.isPresenting;
                 if (wasPresenting && !this._webVRpresenting)
@@ -886,7 +878,7 @@ module BABYLON {
          * Attempt to exit VR, or fullscreen.
          */
         public exitVR() {
-            if (this.hasEnteredVR) { ////////////////////////////////////////////////////////////////////////// risky!
+            if (this.hasEnteredVR) {
                 if (this.onExitingVRObservable) {
                     try {
                         this.onExitingVRObservable.notifyObservers(this);

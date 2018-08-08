@@ -54,8 +54,13 @@ export class ObservablesManager {
      */
     public onFrameRenderedObservable: Observable<any>;
 
-
+    /**
+     * Will notify when VR mode is entered.
+     */
     public onEnteringVRObservable: Observable<any>;
+    /**
+     * Will notify when VR mode is exited.
+     */
     public onExitingVRObservable: Observable<any>;
 
     constructor() {
@@ -70,7 +75,6 @@ export class ObservablesManager {
         this.onViewerInitStartedObservable = new Observable();
         this.onLoaderInitObservable = new Observable();
         this.onFrameRenderedObservable = new Observable();
-
         this.onEnteringVRObservable = new Observable();
         this.onExitingVRObservable = new Observable();
     }
@@ -86,7 +90,6 @@ export class ObservablesManager {
         this.onViewerInitDoneObservable.clear();
         this.onLoaderInitObservable.clear();
         this.onFrameRenderedObservable.clear();
-
         this.onEnteringVRObservable.clear();
         this.onExitingVRObservable.clear();
     }
