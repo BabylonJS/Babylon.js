@@ -24,14 +24,24 @@ We will try to enforce these rules as we consider the forum is a better place fo
 ## Pull requests
 
 We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/how_to/approved_naming_conventions)
-Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
+Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/resources/creating_the_mini-fied_version)
 
 Need help contributing, here are some links:
-  - [Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp) to build from command line.
-  - [VSCode Editor](https://code.visualstudio.com/), Microsoft Code editor, see [Julian Chenard's post](http://pixelcodr.com/tutos/contribute/contribute.html) a Microsoft code editor.
-  - [Visual Studio](http://doc.babylonjs.com/generals/setup_visualStudio), Microsoft's IDE.
-  - [Forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
+- [Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp) to build from command line.
+- [VSCode Editor](https://code.visualstudio.com/), Microsoft Code editor, see [Julian Chenard's post](http://pixelcodr.com/tutos/contribute/contribute.html) a Microsoft code editor.
+- [Forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
+  
+To validate your PR, please follow these steps:
+- Run "gulp" locally and make sure that no error is generated
+- Make sure that all public functions and classes are commented using JSDoc syntax
+- Make sure to add a line about your PR in the [what's new](https://github.com/BabylonJS/Babylon.js/blob/master/dist/preview%20release/what's%20new.md)
   
  ## What should go where?
- 
- If your PR is about a foundation tool then it will probably belong to the core engine (/src folder). Else you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.
+
+In order to not bloat the core engine with unwanted or unnecessary features, here is a list of questions you could ask yourself before submitting a new feature (or feature request) for Babylon.js core engine:
+- Does my feature belong to a framework library?
+- Can my feature be used by multiple different applications?
+- Is there a general use case for this feature?
+- Does this feature already exist in a similar framework?
+
+If your PR is does not fall into the core category you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.
