@@ -220,6 +220,22 @@
                 // Source mesh
                 this._source = source;
 
+                // Animation ranges
+                if (this._source._ranges) {
+                    const ranges = this._source._ranges;
+                    for (var name in ranges) {
+                        if (!ranges.hasOwnProperty(name)) {
+                            continue;
+                        }
+
+                        if (!ranges[name]) {
+                            continue;
+                        }
+
+                        this.createAnimationRange(name, ranges[name]!.from, ranges[name]!.to);
+                    }
+                }
+
                 // Metadata
                 if (source.metadata && source.metadata.clone) {
                     this.metadata = source.metadata.clone();
@@ -617,15 +633,16 @@
 
         /**
          * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.  
-         * If the parameter `copyWhenShared` is true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
-         * Returns an empty array if the mesh has no geometry.
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns the indices array or an empty array if the mesh has no geometry
          */
-        public getIndices(copyWhenShared?: boolean): Nullable<IndicesArray> {
+        public getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray> {
 
             if (!this._geometry) {
                 return [];
             }
-            return this._geometry.getIndices(copyWhenShared);
+            return this._geometry.getIndices(copyWhenShared, forceCopy);
         }
 
         public get isBlocked(): boolean {
@@ -1622,7 +1639,10 @@
         }
 
         /**
-         * Boolean, true is the mesh in the frustum defined by the Plane objects from the `frustumPlanes` array parameter.
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
+         * A mesh is in the frustum if its bounding box intersects the frustum
+         * @param frustumPlanes defines the frustum to test
+         * @returns true if the mesh is in the frustum planes 
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
@@ -2140,13 +2160,15 @@
         /**
          * Creates a new InstancedMesh object from the mesh model.
          * An instance shares the same properties and the same material than its model.
+         * Please make sure to call mesh.makeGeometryUnique() if you are calling createInstance on a previously cloned mesh.
          * Only these properties of each instance can then be set individually :
          * - position
          * - rotation
          * - rotationQuaternion
          * - setPivotMatrix
          * - scaling
-         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
+         * 
+         * @see http://doc.babylonjs.com/how_to/how_to_use_instances
          * Warning : this method is not supported for Line mesh and LineSystem
          */
         public createInstance(name: string): InstancedMesh {
@@ -2163,25 +2185,6 @@
                 var instance = this.instances[instanceIndex];
                 instance._syncSubMeshes();
             }
-            return this;
-        }
-
-        /**
-         * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async. It returns the Mesh.  
-         * @param settings a collection of simplification settings.
-         * @param parallelProcessing should all levels calculate parallel or one after the other.
-         * @param type the type of simplification to run.
-         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
-         */
-        public simplify(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
-            this.getScene().simplificationQueue.addTask({
-                settings: settings,
-                parallelProcessing: parallelProcessing,
-                mesh: this,
-                simplificationType: simplificationType,
-                successCallback: successCallback
-            });
             return this;
         }
 
@@ -3421,11 +3424,11 @@
 
         /**
          * Merge the array of meshes into a single mesh for performance reasons.
-         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
-         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
-         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
-         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-         * @param {boolean} subdivideWithSubMeshes - When true (false default), subdivide mesh to his subMesh array with meshes source.
+         * @param meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         * @param subdivideWithSubMeshes - When true (false default), subdivide mesh to his subMesh array with meshes source.
          */
         public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean): Nullable<Mesh> {
             var index: number;
@@ -3452,12 +3455,12 @@
             var source: Nullable<Mesh> = null;
             for (index = 0; index < meshes.length; index++) {
                 if (meshes[index]) {
-                    meshes[index].computeWorldMatrix(true);
+                    const wm = meshes[index].computeWorldMatrix(true);
                     otherVertexData = VertexData.ExtractFromMesh(meshes[index], true, true);
-                    otherVertexData.transform(meshes[index].getWorldMatrix());
+                    otherVertexData.transform(wm);
 
                     if (vertexData) {
-                        vertexData.merge(otherVertexData);
+                        vertexData.merge(otherVertexData, allow32BitsIndices);
                     } else {
                         vertexData = otherVertexData;
                         source = meshes[index];

@@ -14,6 +14,11 @@
         /** Use a conservative occlusion algorithm */
         public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
 
+        /** Default culling strategy with bounding box and bounding sphere and then frustum culling */
+        public static readonly CULLINGSTRATEGY_STANDARD = 0;
+        /** Culling strategy with bounding sphere only and then frustum culling */
+        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;       
+
         /**
          * No billboard
          */
@@ -66,6 +71,9 @@
         private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
         private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
         private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
+
+        /** Gets ot sets the culling strategy to use to find visible meshes */
+        public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
 
         /**
          * Gets the number of facets in the mesh
@@ -1153,7 +1161,7 @@
          * @returns true if the mesh is in the frustum planes 
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes);
+            return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes, this.cullingStrategy);
         }
 
         /**

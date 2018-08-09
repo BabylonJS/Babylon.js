@@ -6,6 +6,9 @@ module BABYLON {
         public DIFFUSE = false;
         public BUMP = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;        
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -197,7 +200,7 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vTextureInfos",
                     "mBones",
-                    "vClipPlane", "textureMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMatrix",
                     "diffuse1Infos", "diffuse2Infos", "diffuse3Infos"
                 ];
                 var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler",

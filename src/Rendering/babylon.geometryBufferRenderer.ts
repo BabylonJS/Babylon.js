@@ -67,6 +67,13 @@ module BABYLON {
             this._scene = scene;
             this._ratio = ratio;
 
+            // Register the G Buffer component to the scene.
+            let component = scene._getComponent(SceneComponentConstants.NAME_GEOMETRYBUFFERRENDERER) as GeometryBufferRendererSceneComponent;
+            if (!component) {
+                component = new GeometryBufferRendererSceneComponent(scene);
+                scene._addComponent(component);
+            }
+
             // Render target
             this._createRenderTargets();
         }

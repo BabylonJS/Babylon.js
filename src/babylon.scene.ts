@@ -85,12 +85,16 @@
      */
     export class Scene extends AbstractScene implements IAnimatable {
         // Statics
-        private static _FOGMODE_NONE = 0;
-        private static _FOGMODE_EXP = 1;
-        private static _FOGMODE_EXP2 = 2;
-        private static _FOGMODE_LINEAR = 3;
-
         private static _uniqueIdCounter = 0;
+
+        /** The fog is deactivated */
+        public static readonly FOGMODE_NONE = 0;
+        /** The fog density is following an exponential function */
+        public static readonly FOGMODE_EXP = 1;
+        /** The fog density is following an exponential function faster than FOGMODE_EXP */
+        public static readonly FOGMODE_EXP2 = 2;
+        /** The fog density is following a linear function. */
+        public static readonly FOGMODE_LINEAR = 3;
 
         /**
          * Gets or sets the minimum deltatime when deterministic lock step is enabled
@@ -102,26 +106,6 @@
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         public static MaxDeltaTime = 1000.0;
-
-        /** The fog is deactivated */
-        public static get FOGMODE_NONE(): number {
-            return Scene._FOGMODE_NONE;
-        }
-
-        /** The fog density is following an exponential function */
-        public static get FOGMODE_EXP(): number {
-            return Scene._FOGMODE_EXP;
-        }
-
-        /** The fog density is following an exponential function faster than FOGMODE_EXP */
-        public static get FOGMODE_EXP2(): number {
-            return Scene._FOGMODE_EXP2;
-        }
-
-        /** The fog density is following a linear function. */
-        public static get FOGMODE_LINEAR(): number {
-            return Scene._FOGMODE_LINEAR;
-        }
 
         // Members
 
@@ -214,9 +198,27 @@
         }
 
         /**
-         * Gets or sets the active clipplane
+         * Gets or sets the active clipplane 1
          */
         public clipPlane: Nullable<Plane>;
+
+
+        /**
+         * Gets or sets the active clipplane 2
+         */
+        public clipPlane2: Nullable<Plane>;
+        
+
+        /**
+         * Gets or sets the active clipplane 3
+         */
+        public clipPlane3: Nullable<Plane>;
+        
+
+        /**
+         * Gets or sets the active clipplane 4
+         */
+        public clipPlane4: Nullable<Plane>;        
 
         /**
          * Gets or sets a boolean indicating if animations are enabled
@@ -860,19 +862,6 @@
          * Gets the current postprocess manager
          */
         public postProcessManager: PostProcessManager;
-        private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
-        /**
-         * Gets the postprocess render pipeline manager
-         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
-         * @see http://doc.babylonjs.com/how_to/using_default_rendering_pipeline
-         */
-        public get postProcessRenderPipelineManager(): PostProcessRenderPipelineManager {
-            if (!this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
-            }
-
-            return this._postProcessRenderPipelineManager;
-        }
 
         // Customs render targets
         /**
@@ -963,12 +952,6 @@
          * @ignorenaming
          */
         public VRHelper: VRExperienceHelper;
-
-        /**
-         * Gets or sets the simplification queue attached to the scene
-         * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
-         */
-        public simplificationQueue: SimplificationQueue;
 
         // Private
         private _engine: Engine;
@@ -1076,24 +1059,6 @@
 
         private _debugLayer: DebugLayer;
 
-        private _depthRenderer: { [id: string]: DepthRenderer } = {};
-        private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-
-        /**
-         * Gets the current geometry buffer associated to the scene.
-         */
-        public get geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
-            return this._geometryBufferRenderer;
-        }
-        /**
-         * Sets the current geometry buffer for the scene.
-         */
-        public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
-            if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
-                this._geometryBufferRenderer = geometryBufferRenderer;
-            }
-        }
-
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
         private _pickedDownSprite: Nullable<Sprite>;
@@ -1170,6 +1135,11 @@
         public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
         /**
          * @hidden
+         * Defines the actions happening before camera updates.
+         */
+        public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
+        /**
+         * @hidden
          * Defines the actions happening during the per mesh ready checks.
          */
         public _isReadyForMeshStage = Stage.Create<MeshStageAction>();
@@ -1212,6 +1182,11 @@
          * Defines the actions happening just after the active camera has been drawn.
          */
         public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when Geometries are rebuilding.
+         */
+        public _rebuildGeometryStage = Stage.Create<SimpleStageAction>();
 
         /**
          * Creates a new Scene
@@ -1236,11 +1211,6 @@
 
             if (Tools.IsWindowObjectExist()) {
                 this.attachControl();
-            }
-
-            //simplification queue
-            if (SimplificationQueue) {
-                this.simplificationQueue = new SimplificationQueue();
             }
 
             //collision coordinator initialization. For now legacy per default.
@@ -4523,11 +4493,6 @@
                 this.actionManager.processTrigger(ActionManager.OnEveryFrameTrigger);
             }
 
-            //Simplification Queue
-            if (this.simplificationQueue && !this.simplificationQueue.running) {
-                this.simplificationQueue.executeNext();
-            }
-
             if (this._engine.isDeterministicLockStep()) {
                 var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
@@ -4689,19 +4654,9 @@
                 }
             }
 
-            // Depth renderer
-            for (var key in this._depthRenderer) {
-                this._renderTargets.push(this._depthRenderer[key].getDepthMap());
-            }
-
-            // Geometry renderer
-            if (this._geometryBufferRenderer) {
-                this._renderTargets.push(this._geometryBufferRenderer.getGBuffer());
-            }
-
-            // RenderPipeline
-            if (this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager.update();
+            // Collects render targets from external components.
+            for (let step of this._gatherRenderTargetsStage) {
+                step.action(this._renderTargets);
             }
 
             // Multi-cameras?
@@ -4886,76 +4841,6 @@
             }
         }
 
-        /**
-         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
-         * @param camera The camera to create the depth renderer on (default: scene's active camera)
-         * @returns the created depth renderer
-         */
-        public enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer {
-            camera = camera || this.activeCamera;
-            if (!camera) {
-                throw "No camera available to enable depth renderer";
-            }
-            if (!this._depthRenderer[camera.id]) {
-                var textureType = 0;
-                if (this._engine.getCaps().textureHalfFloatRender) {
-                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;
-                }
-                else if (this._engine.getCaps().textureFloatRender) {
-                    textureType = Engine.TEXTURETYPE_FLOAT;
-                } else {
-                    throw "Depth renderer does not support int texture type";
-                }
-                this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera);
-            }
-
-            return this._depthRenderer[camera.id];
-        }
-
-        /**
-         * Disables a depth renderer for a given camera
-         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
-         */
-        public disableDepthRenderer(camera?: Nullable<Camera>): void {
-            camera = camera || this.activeCamera;
-            if (!camera || !this._depthRenderer[camera.id]) {
-                return;
-            }
-
-            this._depthRenderer[camera.id].dispose();
-            delete this._depthRenderer[camera.id];
-        }
-
-        /**
-         * Enables a GeometryBufferRender and associates it with the scene
-         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
-         * @returns the GeometryBufferRenderer
-         */
-        public enableGeometryBufferRenderer(ratio: number = 1): Nullable<GeometryBufferRenderer> {
-            if (this._geometryBufferRenderer) {
-                return this._geometryBufferRenderer;
-            }
-
-            this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
-            if (!this._geometryBufferRenderer.isSupported) {
-                this._geometryBufferRenderer = null;
-            }
-
-            return this._geometryBufferRenderer;
-        }
-
-        /**
-         * Disables the GeometryBufferRender associated with the scene
-         */
-        public disableGeometryBufferRenderer(): void {
-            if (!this._geometryBufferRenderer) {
-                return;
-            }
-
-            this._geometryBufferRenderer.dispose();
-            this._geometryBufferRenderer = null;
-        }
-
         /** 
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render
@@ -4996,6 +4881,8 @@
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
+            this._gatherRenderTargetsStage.clear();
+            this._rebuildGeometryStage.clear();
             for (let component of this._components) {
                 component.dispose();
             }
@@ -5005,10 +4892,6 @@
             this.stopAllAnimations();
 
             this.resetCachedMaterial();
-
-            for (var key in this._depthRenderer) {
-                this._depthRenderer[key].dispose();
-            }
 
             // Smart arrays
             if (this.activeCamera) {
@@ -5147,10 +5030,6 @@
 
             // Post-processes
             this.postProcessManager.dispose();
-
-            if (this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager.dispose();
-            }
 
             // Physics
             if (this._physicsEngine) {
@@ -5728,8 +5607,8 @@
                 system.rebuild();
             }
 
-            if (this._postProcessRenderPipelineManager) {
-                this._postProcessRenderPipelineManager._rebuild();
+            for (let step of this._rebuildGeometryStage) {
+                step.action();
             }
         }
 
@@ -6009,12 +5888,19 @@
             return this._renderingManager.getAutoClearDepthStencilSetup(index);
         }
 
+        /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
+        public blockMaterialDirtyMechanism = false;
+
         /**
          * Will flag all materials as dirty to trigger new shader compilation
          * @param flag defines the flag used to specify which material part must be marked as dirty
          * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
          */
         public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+            if (this.blockMaterialDirtyMechanism) {
+                return;
+            }
+
             for (var material of this.materials) {
                 if (predicate && !predicate(material)) {
                     continue;

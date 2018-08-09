@@ -1,6 +1,6 @@
 /*BabylonJS Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
