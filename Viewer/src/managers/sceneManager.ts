@@ -60,15 +60,6 @@ export class SceneManager {
     onVRConfiguredObservable: Observable<IPostConfigurationCallback<VRExperienceHelper, IVRConfiguration>>;
 
     /**
-     * Will notify when VR mode is entered.
-     */
-    onEnteringVRObservable: Observable<any>;
-    /**
-     * Will notify when VR mode is exited.
-     */
-    onExitingVRObservable: Observable<any>;
-
-    /**
      * The Babylon Scene of this viewer
      */
     public scene: Scene;
@@ -142,8 +133,6 @@ export class SceneManager {
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
         this.onVRConfiguredObservable = new Observable();
-        this.onEnteringVRObservable = new Observable();
-        this.onExitingVRObservable = new Observable();
 
         //this._viewer.onEngineInitObservable.add(() => {
         this._handleHardwareLimitations();
@@ -810,10 +799,14 @@ export class SceneManager {
             });
         }
         this._vrHelper.onEnteringVRObservable.add(() => {
-            this.onEnteringVRObservable.notifyObservers(this);
+            if (this._observablesManager) {
+                this._observablesManager.onEnteringVRObservable.notifyObservers(this);
+            }
         });
         this._vrHelper.onExitingVRObservable.add(() => {
-            this.onExitingVRObservable.notifyObservers(this);
+            if (this._observablesManager) {
+                this._observablesManager.onExitingVRObservable.notifyObservers(this);
+            }
         });
         this.onVRConfiguredObservable.notifyObservers({
             sceneManager: this,
@@ -1436,8 +1429,6 @@ export class SceneManager {
         this.onSceneInitObservable.clear();
         this.onSceneOptimizerConfiguredObservable.clear();
         this.onVRConfiguredObservable.clear();
-        this.onEnteringVRObservable.clear();
-        this.onExitingVRObservable.clear();
 
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();

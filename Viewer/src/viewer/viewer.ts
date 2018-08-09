@@ -352,7 +352,7 @@ export abstract class AbstractViewer {
     protected _initVR() {
 
         if (this.sceneManager.vrHelper) {
-            this.sceneManager.onExitingVRObservable.add(() => {
+            this.observablesManager.onExitingVRObservable.add(() => {
                 if (this._vrToggled) {
                     this._vrToggled = false;
                     
@@ -673,13 +673,13 @@ export abstract class AbstractViewer {
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
         
-        this.sceneManager.onEnteringVRObservable.add(() => {
-            this.onEnteringVRObservable.notifyObservers(this);
-        });
+        // this.observablesManager.onEnteringVRObservable.add(() => {
+        //     this.onEnteringVRObservable.notifyObservers(this);
+        // });
         
-        this.sceneManager.onExitingVRObservable.add(() => {
-            this.onExitingVRObservable.notifyObservers(this);
-        });
+        // this.observablesManager.onExitingVRObservable.add(() => {
+        //     this.onExitingVRObservable.notifyObservers(this);
+        // });
 
         return Promise.resolve(this.engine);
     }

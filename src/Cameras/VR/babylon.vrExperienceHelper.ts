@@ -254,10 +254,10 @@ module BABYLON {
         private _webVRready = false;
         // Are we waiting for the requestPresent callback to complete?
         private _webVRrequesting = false;
-        // Are we presenting to the headset right now?
+        // Are we presenting to the headset right now? (this is the vrDevice state)
         private _webVRpresenting = false;
-        // Have we entered VR?
-        private hasEnteredVR: boolean;
+        // Have we entered VR? (this is the VRExperienceHelper state)
+        private _hasEnteredVR: boolean;
 
         // Are we presenting in the fullscreen fallback?
         private _fullscreenVRpresenting = false;
@@ -568,7 +568,7 @@ module BABYLON {
                 this._defaultHeight *= webVROptions.positionScale;
             }
 
-            this.hasEnteredVR = false;
+            this._hasEnteredVR = false;
 
             // Set position
             if (this._scene.activeCamera) {
@@ -871,14 +871,14 @@ module BABYLON {
                 this._scene.registerBeforeRender(this.beforeRender);
             }
 
-            this.hasEnteredVR = true;
+            this._hasEnteredVR = true;
         }
 
         /**
          * Attempt to exit VR, or fullscreen.
          */
         public exitVR() {
-            if (this.hasEnteredVR) {
+            if (this._hasEnteredVR) {
                 if (this.onExitingVRObservable) {
                     try {
                         this.onExitingVRObservable.notifyObservers(this);
@@ -922,7 +922,7 @@ module BABYLON {
                 // resize to update width and height when exiting vr exits fullscreen
                 this._scene.getEngine().resize();
 
-                this.hasEnteredVR = false;
+                this._hasEnteredVR = false;
             }
         }
 
