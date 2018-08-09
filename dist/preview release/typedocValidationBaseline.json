@@ -1,7 +1,7 @@
 {
-  "errors": 4025,
+  "errors": 4026,
   "babylon.typedoc.json": {
-    "errors": 4025,
+    "errors": 4026,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -14276,6 +14276,11 @@
           }
         },
         "geometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "postProcessRenderPipelineManager": {
           "Naming": {
             "NotPascalCase": true
           }
