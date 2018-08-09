@@ -911,11 +911,11 @@ module BABYLON {
                 if (this._interactionsEnabled) {
                     this._scene.unregisterBeforeRender(this.beforeRender);
                     this._cameraGazer._gazeTracker.isVisible = false;
-                    if (this.leftController) {
-                        this.leftController._gazeTracker.isVisible = false;
+                    if (this._leftController) {
+                        this._leftController._gazeTracker.isVisible = false;
                     }
-                    if (this.rightController) {
-                        this.rightController._gazeTracker.isVisible = false;
+                    if (this._rightController) {
+                        this._rightController._gazeTracker.isVisible = false;
                     }
                 }
     
