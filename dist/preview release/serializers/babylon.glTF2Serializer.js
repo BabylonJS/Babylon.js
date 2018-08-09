@@ -2354,7 +2354,7 @@ var BABYLON;
                         var pixels = _this.getPixelsFromTexture(babylonTexture);
                         var size = babylonTexture.getSize();
                         return _this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(function (base64Data) {
-                            var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name, mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
+                            var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
                             if (textureInfo) {
                                 _this._textureMap[textureUid] = textureInfo;
                             }
