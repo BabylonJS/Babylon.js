@@ -1172,7 +1172,7 @@ module BABYLON.GLTF2 {
                     const size = babylonTexture.getSize();
 
                     return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(base64Data => {
-                        const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name, mimeType, babylonTexture.coordinatesIndex, samplerIndex);
+                        const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g , "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex);
                         if (textureInfo) {
                             this._textureMap[textureUid] = textureInfo;
                         }
