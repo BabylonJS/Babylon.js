@@ -3,6 +3,9 @@
 module BABYLON {
     class ShadowOnlyMaterialDefines extends MaterialDefines {
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;        
         public POINTSIZE = false;
         public FOG = false;
         public NORMAL = false;
@@ -130,7 +133,7 @@ module BABYLON {
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                     "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor",
                     "mBones",
-                    "vClipPlane"
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4"
                 ];
                 var samplers = new Array<string>();
 

@@ -229,33 +229,55 @@ function runTest(index, done) {
 
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var pgRoot = "/Playground"
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState === 4) {
-                try {
-                    xmlHttp.onreadystatechange = null;
-                    var snippet = JSON.parse(xmlHttp.responseText)[0];
-                    var code = JSON.parse(snippet.jsonPayload).code.toString();
-                    code = code.replace(/\/textures\//g, pgRoot + "/textures/");
-                    code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
-                    code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
-                    code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
-                    currentScene = eval(code + "\r\ncreateScene(engine)");
-                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
-                }
-                catch (e) {
-                    console.error(e);
-                    done(false);
-                }
+
+        var retryTime = 30*1000;
+        var maxRetry = 2;
+        var retry = 0;
+
+        var onError = function() {
+            retry++;
+            if (retry < maxRetry) {
+                setTimeout(function() {
+                    loadPG();
+                }, retryTime);
+            }
+            else {
+                // Skip the test as we can not fetch the source.
+                done(true);
             }
         }
-        xmlHttp.onerror = function () {
-            console.error("Network error during test load.");
-            done(false);
+
+        var loadPG = function() {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState === 4) {
+                    try {
+                        xmlHttp.onreadystatechange = null;
+                        var snippet = JSON.parse(xmlHttp.responseText)[0];
+                        var code = JSON.parse(snippet.jsonPayload).code.toString();
+                        code = code.replace(/\/textures\//g, pgRoot + "/textures/");
+                        code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
+                        code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
+                        code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
+                        currentScene = eval(code + "\r\ncreateScene(engine)");
+                        processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    }
+                    catch (e) {
+                        console.error(e);
+                        onError();
+                    }
+                }
+            }
+            xmlHttp.onerror = function () {
+                console.error("Network error during test load.");
+                onError();
+            }
+
+            xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
+            xmlHttp.send();
         }
 
-        xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
-        xmlHttp.send();
+        loadPG();
     } else {
         // Fix references
         if (test.specificRoot) {
