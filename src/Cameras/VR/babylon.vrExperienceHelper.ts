@@ -778,6 +778,7 @@ module BABYLON {
             if (vrDisplay) {
                 var wasPresenting = this._webVRpresenting;
                 this._webVRpresenting = vrDisplay.isPresenting;
+                
                 if (wasPresenting && !this._webVRpresenting)
                     this.exitVR();
             } else {
