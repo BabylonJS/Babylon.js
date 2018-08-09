@@ -672,14 +672,6 @@ export abstract class AbstractViewer {
 
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
-        
-        // this.observablesManager.onEnteringVRObservable.add(() => {
-        //     this.onEnteringVRObservable.notifyObservers(this);
-        // });
-        
-        // this.observablesManager.onExitingVRObservable.add(() => {
-        //     this.onExitingVRObservable.notifyObservers(this);
-        // });
 
         return Promise.resolve(this.engine);
     }
