@@ -5,6 +5,9 @@ module BABYLON {
     class FireMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;        
         public ALPHATEST = false;
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
@@ -155,7 +158,7 @@ module BABYLON {
                             "vFogInfos", "vFogColor", "pointSize",
                             "vDiffuseInfos",
                             "mBones",
-                            "vClipPlane", "diffuseMatrix",
+                            "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
                             // Fire
                             "time", "speed"
                         ],
@@ -218,10 +221,7 @@ module BABYLON {
                 }
 
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._activeEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+               MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
                 // Point size
                 if (this.pointsCloud) {

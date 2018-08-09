@@ -8,7 +8,10 @@ module BABYLON {
          */
         protected _rootMesh:Mesh;
         private _attachedMesh:Nullable<AbstractMesh>;
-        private _scaleFactor = 3;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        public scaleRatio = 1;
         private _tmpMatrix = new Matrix();
         /**
          * If a custom mesh has been set (Default: false)
@@ -113,7 +116,7 @@ module BABYLON {
                         cameraPosition = (<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition;
                     }
                     this._rootMesh.position.subtractToRef(cameraPosition, this._tempVector);
-                    var dist = this._tempVector.length()/this._scaleFactor;
+                    var dist = this._tempVector.length()*this.scaleRatio;
                     this._rootMesh.scaling.set(dist, dist, dist);
                 }
             }

@@ -735,6 +735,15 @@
             if (this._scene.clipPlane) {
                 defines = "\n#define CLIPPLANE";
             }
+            if (this._scene.clipPlane2) {
+                defines = "\n#define CLIPPLANE2";
+            }
+            if (this._scene.clipPlane3) {
+                defines = "\n#define CLIPPLANE3";
+            }
+            if (this._scene.clipPlane4) {
+                defines = "\n#define CLIPPLANE4";
+            }
 
             if (this._isBillboardBased) {
                 defines += "\n#define BILLBOARD";
@@ -766,7 +775,7 @@
                 return;
             }
 
-            var uniforms = ["view", "projection", "colorDead", "invView", "vClipPlane", "sheetInfos", "translationPivot", "eyePosition"];
+            var uniforms = ["view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "sheetInfos", "translationPivot", "eyePosition"];
             var samplers = ["textureSampler", "colorGradientSampler"];
 
             if (ImageProcessingConfiguration) {
@@ -995,12 +1004,11 @@
                     this._renderEffect.setVector3("eyePosition", camera.globalPosition);
                 }
 
-                if (this._scene.clipPlane) {
-                    var clipPlane = this._scene.clipPlane;
+                if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
                     var invView = viewMatrix.clone();
                     invView.invert();
                     this._renderEffect.setMatrix("invView", invView);
-                    this._renderEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+                    MaterialHelper.BindClipPlane(this._renderEffect, this._scene);
                 }
 
                 // image processing

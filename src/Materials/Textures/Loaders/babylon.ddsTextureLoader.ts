@@ -112,7 +112,7 @@ module BABYLON {
             var info = DDSTools.GetDDSInfo(data);
 
             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && texture.generateMipMaps && ((info.width >> (info.mipmapCount - 1)) === 1);
-            callback(info.width, info.height, !loadMipmap, info.isFourCC, () => {
+            callback(info.width, info.height, loadMipmap, info.isFourCC, () => {
                 DDSTools.UploadDDSLevels(texture.getEngine(), texture, data, info, loadMipmap, 1);
             });
         }

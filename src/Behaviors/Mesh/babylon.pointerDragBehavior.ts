@@ -217,7 +217,7 @@ module BABYLON {
                 if(this._moving && this.moveAttached){
                     // Slowly move mesh to avoid jitter
                     targetPosition.subtractToRef((<Mesh>this._attachedNode).absolutePosition, this._tmpVector);
-                    this._tmpVector.scaleInPlace(0.2);
+                    this._tmpVector.scaleInPlace(this.dragDeltaRatio);
                     (<Mesh>this._attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
                     (<Mesh>this._attachedNode).setAbsolutePosition(this._tmpVector);
                 }

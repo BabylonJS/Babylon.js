@@ -968,7 +968,7 @@
         }
 
         public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask", "translationPivot", "eyePosition"];
+            var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMask", "translationPivot", "eyePosition"];
 
             if (isAnimationSheetEnabled) {
                 effectCreationOption.push("particlesInfos")
@@ -987,6 +987,18 @@
             if (this._scene.clipPlane) {
                 defines.push("#define CLIPPLANE");
             }
+
+            if (this._scene.clipPlane2) {
+                defines.push("#define CLIPPLANE2");
+            }
+            
+            if (this._scene.clipPlane3) {
+                defines.push("#define CLIPPLANE3");
+            }
+            
+            if (this._scene.clipPlane4) {
+                defines.push("#define CLIPPLANE4");
+            }            
 
             if (this._isAnimationSheetEnabled) {
                 defines.push("#define ANIMATESHEET");
@@ -1188,12 +1200,11 @@
                 effect.setVector3("eyePosition", camera.globalPosition);
             }
 
-            if (this._scene.clipPlane) {
-                var clipPlane = this._scene.clipPlane;
+            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
                 var invView = viewMatrix.clone();
                 invView.invert();
                 effect.setMatrix("invView", invView);
-                effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+                MaterialHelper.BindClipPlane(effect, this._scene);
             }
 
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);

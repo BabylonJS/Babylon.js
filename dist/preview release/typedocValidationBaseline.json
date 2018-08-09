@@ -1,7 +1,7 @@
 {
-  "errors": 4023,
+  "errors": 4026,
   "babylon.typedoc.json": {
-    "errors": 4023,
+    "errors": 4026,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -2026,18 +2026,6 @@
           }
         },
         "isCompletelyInFrustum": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frustumPlanes": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "isInFrustum": {
           "Comments": {
             "MissingText": true
           },
@@ -7779,18 +7767,6 @@
             }
           }
         },
-        "simplify": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "simplificationType": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "subdivide": {
           "Comments": {
             "MissingText": true
@@ -8831,6 +8807,21 @@
           },
           "Parameter": {
             "meshes": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
+        "simplify": {
+          "Naming": {
+            "NotPascalCase": true
+          },
+          "Comments": {
+            "MissingReturn": true
+          },
+          "Parameter": {
+            "simplificationType": {
               "Comments": {
                 "MissingText": true
               }
@@ -14283,9 +14274,44 @@
           "Naming": {
             "NotPascalCase": true
           }
+        },
+        "geometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "postProcessRenderPipelineManager": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "simplificationQueue": {
+          "Naming": {
+            "NotPascalCase": true
+          }
         }
       },
       "Method": {
+        "disableDepthRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "disableGeometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "enableDepthRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
+        "enableGeometryBufferRenderer": {
+          "Naming": {
+            "NotPascalCase": true
+          }
+        },
         "getBoundingBoxRenderer": {
           "Naming": {
             "NotPascalCase": true
@@ -17865,9 +17891,6 @@
       },
       "Method": {
         "updateSamplingMode": {
-          "Comments": {
-            "MissingText": true
-          },
           "Parameter": {
             "samplingMode": {
               "Comments": {
@@ -21212,18 +21235,6 @@
     },
     "IGetSetVerticesData": {
       "Method": {
-        "getIndices": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "copyWhenShared": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "getVerticesData": {
           "Comments": {
             "MissingText": true

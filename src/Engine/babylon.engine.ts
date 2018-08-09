@@ -475,7 +475,7 @@
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "3.3.0-alpha.14";
+            return "3.3.0-beta.1";
         }
 
         // Updatable statics so stick with vars here
@@ -905,7 +905,7 @@
 
         /**
          * Creates a new engine
-         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
          * @param antialias defines enable antialiasing (default: false)
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
