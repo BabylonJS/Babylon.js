@@ -116,6 +116,9 @@
         public UV1 = false;
         public UV2 = false;
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;        
         public POINTSIZE = false;
         public FOG = false;
         public NORMAL = false;
@@ -813,7 +816,7 @@
 
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vClipPlane", "mBones",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "mBones",
 
                     "vPrimaryColor", "vPrimaryColorShadow",
                     "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",

@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [  
     {
+      "title": "Clip planes",
+      "playgroundId": "#Y6W087#0",
+      "referenceImage": "clipplanes.png"
+    },         
+    {
       "title": "ShadowOnlyMaterial",
       "playgroundId": "#1KF7V1#18",
       "referenceImage": "shadowOnlyMaterial.png"
@@ -504,9 +509,32 @@
       "referenceImage": "dds.png"
     },
     {
+      "title": "DDS2D",
+      "playgroundId": "#I2MSBE#0",
+      "referenceImage": "dds2d.png"
+    },
+    {
       "title": "LightFalloff",
       "playgroundId": "#20OAV9#201",
       "referenceImage": "lightFalloff.png"
+    },
+    {
+      "title": "MeshSimplification",
+      "playgroundId": "#1ED15P#35",
+      "referenceImage": "meshSimplification.png"
+    },
+    {
+      "title": "SSAO2",
+      "playgroundId": "#XT1HAS#1",
+      "referenceImage": "ssao2.png",
+      "renderCount": 200,
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "DepthRenderer",
+      "playgroundId": "#3HPMAA#0",
+      "renderCount": 50,
+      "referenceImage": "depthRenderer.png"
     }
   ]
 }

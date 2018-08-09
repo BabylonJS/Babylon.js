@@ -409,7 +409,16 @@
                     return new Float32Array(data, vertexBuffer.byteOffset, count);
                 }
                 else {
-                    return new Float32Array(data.buffer, data.byteOffset + vertexBuffer.byteOffset, count);
+                    const offset = data.byteOffset + vertexBuffer.byteOffset;
+                    if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
+                        let result = new Float32Array(count);
+                        let source = new Float32Array(data.buffer, offset, count);
+
+                        result.set(source);
+                
+                        return result;
+                    }
+                    return new Float32Array(data.buffer, offset, count);
                 }
             }
 
@@ -556,14 +565,15 @@
         /**
          * Gets the index buffer array
          * @param copyWhenShared defines if the returned array must be cloned upon returning it if the current geometry is shared between multiple meshes
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
          * @returns the index buffer array
          */
-        public getIndices(copyWhenShared?: boolean): Nullable<IndicesArray> {
+        public getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray> {
             if (!this.isReady()) {
                 return null;
             }
             var orig = this._indices;
-            if (!copyWhenShared || this._meshes.length === 1) {
+            if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             } else {
                 var len = orig.length;

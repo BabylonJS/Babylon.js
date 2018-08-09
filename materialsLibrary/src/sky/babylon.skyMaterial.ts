@@ -3,6 +3,9 @@
 module BABYLON {
     class SkyMaterialDefines extends MaterialDefines {
         public CLIPPLANE = false;
+        public CLIPPLANE2 = false;
+        public CLIPPLANE3 = false;
+        public CLIPPLANE4 = false;        
         public POINTSIZE = false;
         public FOG = false;
         public VERTEXCOLOR = false;
@@ -118,7 +121,7 @@ module BABYLON {
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     attribs,
                     ["world", "viewProjection", "view",
-                        "vFogInfos", "vFogColor", "pointSize", "vClipPlane",
+                        "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
                         "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                         "cameraPosition"
                     ],
@@ -155,11 +158,8 @@ module BABYLON {
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             if (this._mustRebind(scene, effect)) {
-                // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._activeEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+
+                BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
                 // Point size
                 if (this.pointsCloud) {

@@ -5,7 +5,13 @@
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
-        getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
+        /**
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.  
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns the indices array or an empty array if the mesh has no geometry
+         */
+        getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray>;
         setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
@@ -384,9 +390,10 @@
         /**
          * Merges the passed VertexData into the current one
          * @param other the VertexData to be merged into the current one  
+         * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
          * @returns the modified VertexData 
          */
-        public merge(other: VertexData): VertexData {
+        public merge(other: VertexData, use32BitsIndices = false): VertexData {
             this._validate();
             other._validate();
 
@@ -418,7 +425,7 @@
 
                 if (isSrcTypedArray) {
                     var len = this.indices.length + other.indices.length;
-                    var temp = this.indices instanceof Uint32Array ? new Uint32Array(len) : new Uint16Array(len);
+                    var temp = use32BitsIndices || this.indices instanceof Uint32Array ? new Uint32Array(len) : new Uint16Array(len);
                     temp.set(this.indices);
 
                     let decal = this.indices.length;
@@ -675,7 +682,7 @@
                 result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared, forceCopy);
             }
 
-            result.indices = meshOrGeometry.getIndices(copyWhenShared);
+            result.indices = meshOrGeometry.getIndices(copyWhenShared, forceCopy);
 
             return result;
         }

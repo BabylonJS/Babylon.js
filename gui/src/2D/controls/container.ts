@@ -320,6 +320,9 @@ export class Container extends Control {
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
             if (child._processPicking(x, y, type, pointerId, buttonIndex)) {
+                if (child.hoverCursor) {
+                    this._host._changeCursor(child.hoverCursor);
+                }
                 return true;
             }
         }
