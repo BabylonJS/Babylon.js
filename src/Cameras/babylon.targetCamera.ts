@@ -4,10 +4,26 @@
         public cameraDirection = new Vector3(0, 0, 0);
         public cameraRotation = new Vector2(0, 0);
 
+        private _rotation = new Vector3(0, 0, 0);
         @serializeAsVector3()
-        public rotation = new Vector3(0, 0, 0);
+        public get rotation(): Vector3 {
+            return this._rotation;
+        }
+        public set rotation(value: Vector3) {
+            this._rotation = value;
+            this._updateCameraRotationMatrix();
+            this.rotateUpVectorWithCameraRotationMatrix();
+        }
 
-        public rotationQuaternion: Quaternion;
+        public _rotationQuaternion: Quaternion;
+        public get rotationQuaternion(): Quaternion {
+            return this._rotationQuaternion;
+        }
+        public set rotationQuaternion(value: Quaternion) {
+            this._rotationQuaternion = value;
+            this._updateCameraRotationMatrix();
+            this.rotateUpVectorWithCameraRotationMatrix();
+        }
 
         @serialize()
         public speed = 2.0;
@@ -39,6 +55,8 @@
 
         /** @hidden */
         public _reset: () => void;
+
+        private _defaultUp = Vector3.Up();
 
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
             super(name, position, scene, setActiveOnSceneIfNoneActive);
@@ -76,9 +94,9 @@
 
         public storeState(): Camera {
             this._storedPosition = this.position.clone();
-            this._storedRotation = this.rotation.clone();
-            if (this.rotationQuaternion) {
-                this._storedRotationQuaternion = this.rotationQuaternion.clone();
+            this._storedRotation = this._rotation.clone();
+            if (this._rotationQuaternion) {
+                this._storedRotationQuaternion = this._rotationQuaternion.clone();
             }
 
             return super.storeState();
@@ -95,10 +113,10 @@
             }
 
             this.position = this._storedPosition.clone();
-            this.rotation = this._storedRotation.clone();
+            this._rotation = this._storedRotation.clone();
 
-            if (this.rotationQuaternion) {
-                this.rotationQuaternion = this._storedRotationQuaternion.clone();
+            if (this._rotationQuaternion) {
+                this._rotationQuaternion = this._storedRotationQuaternion.clone();
             }
 
             this.cameraDirection.copyFromFloats(0, 0, 0);
@@ -135,9 +153,9 @@
                 }
             }
 
-            this._cache.rotation.copyFrom(this.rotation);
-            if (this.rotationQuaternion)
-                this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
+            this._cache.rotation.copyFrom(this._rotation);
+            if (this._rotationQuaternion)
+                this._cache.rotationQuaternion.copyFrom(this._rotationQuaternion);
         }
 
         // Synchronized
@@ -150,7 +168,7 @@
             var lockedTargetPosition = this._getLockedTargetPosition();
 
             return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
-                && (this.rotationQuaternion ? this.rotationQuaternion.equals(this._cache.rotationQuaternion) : this._cache.rotation.equals(this.rotation));
+                && (this._rotationQuaternion ? this._rotationQuaternion.equals(this._cache.rotationQuaternion) : this._cache.rotation.equals(this._rotation));
         }
 
         // Methods
@@ -169,35 +187,35 @@
                 this.position.z += Epsilon;
             }
 
-            Matrix.LookAtLHToRef(this.position, target, Vector3.Up(), this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, this._defaultUp, this._camMatrix);
             this._camMatrix.invert();
 
-            this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
+            this._rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
 
             var vDir = target.subtract(this.position);
 
             if (vDir.x >= 0.0) {
-                this.rotation.y = (-Math.atan(vDir.z / vDir.x) + Math.PI / 2.0);
+                this._rotation.y = (-Math.atan(vDir.z / vDir.x) + Math.PI / 2.0);
             } else {
-                this.rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
+                this._rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
             }
 
-            this.rotation.z = 0;
+            this._rotation.z = 0;
 
-            if (isNaN(this.rotation.x)) {
-                this.rotation.x = 0;
+            if (isNaN(this._rotation.x)) {
+                this._rotation.x = 0;
             }
 
-            if (isNaN(this.rotation.y)) {
-                this.rotation.y = 0;
+            if (isNaN(this._rotation.y)) {
+                this._rotation.y = 0;
             }
 
-            if (isNaN(this.rotation.z)) {
-                this.rotation.z = 0;
+            if (isNaN(this._rotation.z)) {
+                this._rotation.z = 0;
             }
 
-            if (this.rotationQuaternion) {
-                Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+            if (this._rotationQuaternion) {
+                Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, this._rotationQuaternion);
             }
         }
 
@@ -237,14 +255,14 @@
 
             // Rotate
             if (needToRotate) {
-                this.rotation.x += this.cameraRotation.x;
-                this.rotation.y += this.cameraRotation.y;
+                this._rotation.x += this.cameraRotation.x;
+                this._rotation.y += this.cameraRotation.y;
 
                 //rotate, if quaternion is set and rotation was used
-                if (this.rotationQuaternion) {
-                    var len = this.rotation.lengthSquared();
+                if (this._rotationQuaternion) {
+                    var len = this._rotation.lengthSquared();
                     if (len) {
-                        Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                        Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, this._rotationQuaternion);
                     }
                 }
 
@@ -253,10 +271,10 @@
                     var limit = (Math.PI / 2) * 0.95;
 
 
-                    if (this.rotation.x > limit)
-                        this.rotation.x = limit;
-                    if (this.rotation.x < -limit)
-                        this.rotation.x = -limit;
+                    if (this._rotation.x > limit)
+                        this._rotation.x = limit;
+                    if (this._rotation.x < -limit)
+                        this._rotation.x = -limit;
                 }
             }
 
@@ -291,10 +309,10 @@
         }
 
         protected _updateCameraRotationMatrix() {
-            if (this.rotationQuaternion) {
-                this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
+            if (this._rotationQuaternion) {
+                this._rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
             } else {
-                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+                Matrix.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, this._cameraRotationMatrix);
             }
         }
 
@@ -303,7 +321,7 @@
          * @returns the current camera
          */
         public rotateUpVectorWithCameraRotationMatrix(): TargetCamera {
-            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this.upVector);
+            Vector3.TransformNormalToRef(this._defaultUp, this._cameraRotationMatrix, this.upVector);
             return this;
         }
 
@@ -353,8 +371,8 @@
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
                 if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {
-                    if (!this.rotationQuaternion) {
-                        this.rotationQuaternion = new Quaternion();
+                    if (!this._rotationQuaternion) {
+                        this._rotationQuaternion = new Quaternion();
                     }
                     rigCamera._cameraRigParams = {};
                     rigCamera.rotationQuaternion = new Quaternion();
@@ -390,11 +408,11 @@
 
                 case Camera.RIG_MODE_VR:
                     if (camLeft.rotationQuaternion) {
-                        camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
-                        camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                        camLeft.rotationQuaternion.copyFrom(this._rotationQuaternion);
+                        camRight.rotationQuaternion.copyFrom(this._rotationQuaternion);
                     } else {
-                        camLeft.rotation.copyFrom(this.rotation);
-                        camRight.rotation.copyFrom(this.rotation);
+                        camLeft.rotation.copyFrom(this._rotation);
+                        camRight.rotation.copyFrom(this._rotation);
                     }
                     camLeft.position.copyFrom(this.position);
                     camRight.position.copyFrom(this.position);
