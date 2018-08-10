@@ -54,7 +54,7 @@ void main()
 
 	// Avoid numerical precision issue while applying Gram-Schmidt
 	float dotProduct = dot(rvec, normal);
-	rvec = 1.0 - abs(dotProduct) < 1e-2 ? rvec : vec3(-rvec.y, 0.0, rvec.x);
+	rvec = 1.0 - abs(dotProduct) > 1e-2 ? rvec : vec3(-rvec.y, 0.0, rvec.x);
 	vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
 	vec3 bitangent = cross(normal, tangent);
 	mat3 tbn = mat3(tangent, bitangent, normal);
