@@ -29,10 +29,10 @@
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
         /**
          *
-         * @param {BABYLON.AbstractMesh} source Mesh used to create edges
-         * @param {number} epsilon sum of angles in adjacency to check for edge
-         * @param {boolean} checkVerticesInsteadOfIndices
-         * @param {boolean} generateEdgesLines - should generate Lines or only prepare resources.
+         * @param  source Mesh used to create edges
+         * @param  epsilon sum of angles in adjacency to check for edge
+         * @param  checkVerticesInsteadOfIndices
+         * @param  generateEdgesLines - should generate Lines or only prepare resources.
          */
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {
             this._source = source;
@@ -127,6 +127,15 @@
             return -1;
         }
 
+        /**
+         * Checks if the pair of p0 and p1 is en edge
+         * @param faceIndex
+         * @param edge
+         * @param faceNormals
+         * @param  p0
+         * @param  p1
+         * @private
+         */
         protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
             var needToCreateLine;
 
@@ -191,6 +200,10 @@
             }
         }
 
+        /**
+         * Generates lines edges from adjacencjes
+         * @private
+         */
         _generateEdgesLines(): void {
             var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
             var indices = this._source.getIndices();
