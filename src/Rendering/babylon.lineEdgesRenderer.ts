@@ -1,7 +1,6 @@
 ﻿module BABYLON {
     /**
      * FaceAdjacencies Helper class to generate edges
-     *
      */
     class FaceAdjacencies {
         public edges = new Array<number>();
@@ -12,9 +11,7 @@
 
     /**
      * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
-     * @param {string} author Bartosz Ostapowicz
-     *
-     * */
+     */
     export class LineEdgesRenderer extends EdgesRenderer {
 
         /**
@@ -22,7 +19,6 @@
          * @param  source LineMesh used to generate edges
          * @param  epsilon not important (specified angle for edge detection)
          * @param  checkVerticesInsteadOfIndices not important for LineMesh
-         *
          */
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
                 super(source, epsilon, checkVerticesInsteadOfIndices, false);
@@ -36,7 +32,6 @@
          * @param  faceNormals not important for LineMesh
          * @param  p0 beginnig of line
          * @param  p1 end of line
-         * @private
          */
         protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
                 var offset = this._linesPositions.length / 3;
@@ -92,7 +87,6 @@
 
         /**
          * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
-         * @private
          */
         _generateEdgesLines(): void {
             var positions = this._source.getVerticesData(VertexBuffer.PositionKind);

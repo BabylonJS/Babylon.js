@@ -2,10 +2,7 @@
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;
-        /**
-         @hidden
-         **/
-        public _edgesRenderer: Nullable<LineEdgesRenderer>;
+
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
          * This margin is expressed in world space coordinates, so its value may vary.
@@ -141,18 +138,6 @@
          */
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
-        }
-
-        /**
-         * Disables the mesh edge rendering mode
-         * @returns the currentAbstractMesh
-         */
-        public disableEdgesRendering(): AbstractMesh {
-            if (this._edgesRenderer) {
-                this._edgesRenderer.dispose();
-                this._edgesRenderer = null;
-            }
-            return this;
         }
 
         /**
