@@ -1,5 +1,8 @@
 ﻿module BABYLON {
-
+    /**
+     * @class FaceAdjacencies
+     * Helper class to generate edges
+     */
     class FaceAdjacencies {
         public edges = new Array<number>();
         public p0: Vector3;
@@ -7,13 +10,34 @@
         public edgesConnectedCount = 0;
     }
 
+    /**
+     * @class LineEdgesRenderer
+     * @param {string} author Bartosz Ostapowicz
+     * for LineMeshes to remove unnecessary triangulation
+     */
     export class LineEdgesRenderer extends EdgesRenderer {
-        // Beware when you use this class with complex objects as the adjacencies computation can be really long
+
+        /**
+         * This constructor turns off auto generating edges line in Edges Renderer to make it here.
+         * @param {BABYLON.AbstractMesh} source
+         * @param {number} epsilon
+         * @param {boolean} checkVerticesInsteadOfIndices
+         *
+         */
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
                 super(source, epsilon, checkVerticesInsteadOfIndices, false);
                 this._generateEdgesLines();
         }
 
+        /**
+         * Always create the edge since its a line
+         * @param {number} faceIndex
+         * @param {number} edge
+         * @param {Array<BABYLON.Vector3>} faceNormals
+         * @param {BABYLON.Vector3} p0
+         * @param {BABYLON.Vector3} p1
+         * @private
+         */
         protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
                 var offset = this._linesPositions.length / 3;
                 var normal = p0.subtract(p1);
@@ -66,6 +90,10 @@
                 this._linesIndices.push(offset + 3);
         }
 
+        /**
+         * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
+         * @private
+         */
         _generateEdgesLines(): void {
             var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
             var indices = this._source.getIndices();
