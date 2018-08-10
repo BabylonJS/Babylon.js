@@ -157,6 +157,7 @@
 - GizmoManager should hide existing gizmos if a non-attachable mesh is selected ([TrevorDev](https://github.com/TrevorDev))
 - Ignore isPickable = false for vr ray casting if the mesh's name matches the specified floorMeshName to maintain backwards compatability ([TrevorDev](https://github.com/TrevorDev))
 - Fix File Loading if hosted from `file:`-Protocol ([ltetzlaff](https://github.com/ltetzlaff))
+- Do not throw error when updating a controller with no left stick ([TrevorDev](https://github.com/TrevorDev))
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
