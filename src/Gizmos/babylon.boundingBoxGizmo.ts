@@ -272,11 +272,11 @@ module BABYLON {
                 })
         }
 
-        private _recurseComputeWorld(mesh: AbstractMesh) {
-            mesh.computeWorldMatrix(true);
+        private _recurseComputeWorld(node: Node) {
+            node.computeWorldMatrix(true);
             if(!this.ignoreChildren){
-                mesh.getChildMeshes().forEach((m) => {
-                    this._recurseComputeWorld(m);
+                node.getDescendants().forEach((n) => {
+                    this._recurseComputeWorld(n);
                 });
             }
         }
