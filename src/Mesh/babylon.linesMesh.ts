@@ -2,7 +2,7 @@
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;
-
+        public _edgesRenderer: Nullable<LineEdgesRenderer>;
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
          * This margin is expressed in world space coordinates, so its value may vary.
@@ -138,6 +138,32 @@
          */
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+        }
+
+        /**
+         * Disables the mesh edge rendering mode
+         * @returns the currentAbstractMesh
+         */
+        public disableEdgesRendering(): AbstractMesh {
+            if (this._edgesRenderer) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = null;
+            }
+            return this;
+        }
+
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+            this.disableEdgesRendering();
+            this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+            return this;
         }
     }
 } 

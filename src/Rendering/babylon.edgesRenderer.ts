@@ -11,33 +11,35 @@
     export class EdgesRenderer {
         public edgesWidthScalerForOrthographic = 1000.0;
         public edgesWidthScalerForPerspective = 50.0;
-        private _source: AbstractMesh;
-        private _linesPositions = new Array<number>();
-        private _linesNormals = new Array<number>();
-        private _linesIndices = new Array<number>();
-        private _epsilon: number;
-        private _indicesCount: number;
+        protected _source: AbstractMesh;
+        protected _linesPositions = new Array<number>();
+        protected _linesNormals = new Array<number>();
+        protected _linesIndices = new Array<number>();
+        protected _epsilon: number;
+        protected _indicesCount: number;
 
-        private _lineShader: ShaderMaterial;
-        private _ib: WebGLBuffer;
-        private _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
-        private _checkVerticesInsteadOfIndices = false;
+        protected _lineShader: ShaderMaterial;
+        protected _ib: WebGLBuffer;
+        protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
+        protected _checkVerticesInsteadOfIndices = false;
 
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         public isEnabled = true;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
-        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {
             this._source = source;
             this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
 
             this._epsilon = epsilon;
 
             this._prepareRessources();
-            this._generateEdgesLines();
+            if(generateEdgesLines) {
+                this._generateEdgesLines();
+            }
         }
 
-        private _prepareRessources(): void {
+        protected _prepareRessources(): void {
             if (this._lineShader) {
                 return;
             }
@@ -86,7 +88,7 @@
             this._lineShader.dispose();
         }
 
-        private _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
+        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
             if (pa === p0 && pb === p1 || pa === p1 && pb === p0) {
                 return 0;
             }
@@ -102,7 +104,7 @@
             return -1;
         }
 
-        private _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
+        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
             if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
                 return 0;
             }
@@ -118,7 +120,7 @@
             return -1;
         }
 
-        private _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
+        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
             var needToCreateLine;
 
             if (edge === undefined) {
