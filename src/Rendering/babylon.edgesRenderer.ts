@@ -27,6 +27,13 @@
         public isEnabled = true;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
+        /**
+         *
+         * @param {BABYLON.AbstractMesh} source
+         * @param {number} epsilon
+         * @param {boolean} checkVerticesInsteadOfIndices
+         * @param {boolean} generateEdgesLines - should generate Lines or only prepare resources.
+         */
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {
             this._source = source;
             this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
