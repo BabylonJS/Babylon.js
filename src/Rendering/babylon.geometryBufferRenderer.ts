@@ -202,7 +202,6 @@ module BABYLON {
             this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
                 engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
             });
-
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
                 var mesh = subMesh.getRenderingMesh();

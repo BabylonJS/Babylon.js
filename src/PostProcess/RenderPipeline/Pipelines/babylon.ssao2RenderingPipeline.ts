@@ -158,6 +158,7 @@
             this._normalTexture = geometryBufferRenderer.getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._originalColorPostProcess.samples = 4;
             this._createSSAOPostProcess(1.0);
             this._createBlurPostProcess(ssaoRatio, blurRatio);
             this._createSSAOCombinePostProcess(blurRatio);
@@ -245,6 +246,9 @@
                     this._firstUpdate = false;
                 }
             };
+
+            this._blurHPostProcess.samples =4;
+            this._blurVPostProcess.samples =4;
         }
 
         /** @hidden */
@@ -254,26 +258,47 @@
             super._rebuild();
         }
 
+        private _bits = new Uint32Array(1);
+
+        //Van der Corput radical inverse
+        private _radicalInverse_VdC(i: number) {
+            this._bits[0] = i;
+            this._bits[0] = ((this._bits[0] << 16) | (this._bits[0] >> 16))>>>0;
+            this._bits[0] = ((this._bits[0] & 0x55555555) << 1) | ((this._bits[0] & 0xAAAAAAAA) >>> 1) >>>0;
+            this._bits[0] = ((this._bits[0] & 0x33333333) << 2) | ((this._bits[0] & 0xCCCCCCCC) >>> 2) >>>0;
+            this._bits[0] = ((this._bits[0] & 0x0F0F0F0F) << 4) | ((this._bits[0] & 0xF0F0F0F0) >>> 4) >>>0;
+            this._bits[0] = ((this._bits[0] & 0x00FF00FF) << 8) | ((this._bits[0] & 0xFF00FF00) >>> 8) >>>0;
+            return this._bits[0] * 2.3283064365386963e-10; // / 0x100000000 or / 4294967296
+        }
+
+        private _hammersley(i : number, n : number) {
+            return [i/n, this._radicalInverse_VdC(i)];
+        }
+
+        private _hemisphereSample_uniform(u: number, v: number) : Vector3 {
+            var phi = v * 2.0 * Math.PI;
+            var cosTheta = 1.0 - u;
+            var sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
+            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, Math.max(0.35, cosTheta)).normalize();
+         }
+
         private _generateHemisphere(): number[] {
             var numSamples = this.samples;
             var result = [];
             var vector, scale;
 
-            var rand = (min: number, max: number) => {
-                return Math.random() * (max - min) + min;
-            }
+            // var rand = (min: number, max: number) => {
+            //     return Math.random() * (max - min) + min;
+            // }
 
             var i = 0;
             while (i < numSamples) {
-                vector = new Vector3(
-                    rand(-1.0, 1.0),
-                    rand(-1.0, 1.0),
-                    rand(0.30, 1.0));
+                var rand = this._hammersley(i, numSamples);
+                vector = this._hemisphereSample_uniform(rand[0], rand[1]);
                 vector.normalize();
                 scale = i / numSamples;
-                scale = Scalar.Lerp(0.1, 1.0, scale * scale);
+                scale = Scalar.Lerp(0.05, 1.0, scale * scale);
                 vector.scaleInPlace(scale);
-
 
                 result.push(vector.x, vector.y, vector.z);
                 i++;
@@ -325,6 +350,7 @@
                 effect.setTexture("normalSampler", this._normalTexture);
                 effect.setTexture("randomSampler", this._randomTexture);
             };
+            this._ssaoPostProcess.samples =4;
         }
 
         private _createSSAOCombinePostProcess(ratio: number): void {
@@ -337,12 +363,13 @@
                 effect.setVector4("viewport", Tmp.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
                 effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
             };
+            this._ssaoCombinePostProcess.samples =4;
         }
 
         private _createRandomTexture(): void {
             var size = 512;
 
-            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.TRILINEAR_SAMPLINGMODE);
+            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.NEAREST_SAMPLINGMODE);
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
