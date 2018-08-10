@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     /**
-     * @class FaceAdjacencies Helper class to generate edges
+     * FaceAdjacencies Helper class to generate edges
      *
      */
     class FaceAdjacencies {
@@ -11,7 +11,7 @@
     }
 
     /**
-     * @class LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
+     * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
      * @param {string} author Bartosz Ostapowicz
      *
      * */
