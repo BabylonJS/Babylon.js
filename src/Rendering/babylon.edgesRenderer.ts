@@ -1,5 +1,7 @@
 ﻿module BABYLON {
-
+    /**
+     * FaceAdjacencies Helper class to generate edges
+     */
     class FaceAdjacencies {
         public edges = new Array<number>();
         public p0: Vector3;
@@ -8,36 +10,48 @@
         public edgesConnectedCount = 0;
     }
 
+    /**
+     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
+     */
     export class EdgesRenderer {
         public edgesWidthScalerForOrthographic = 1000.0;
         public edgesWidthScalerForPerspective = 50.0;
-        private _source: AbstractMesh;
-        private _linesPositions = new Array<number>();
-        private _linesNormals = new Array<number>();
-        private _linesIndices = new Array<number>();
-        private _epsilon: number;
-        private _indicesCount: number;
+        protected _source: AbstractMesh;
+        protected _linesPositions = new Array<number>();
+        protected _linesNormals = new Array<number>();
+        protected _linesIndices = new Array<number>();
+        protected _epsilon: number;
+        protected _indicesCount: number;
 
-        private _lineShader: ShaderMaterial;
-        private _ib: WebGLBuffer;
-        private _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
-        private _checkVerticesInsteadOfIndices = false;
+        protected _lineShader: ShaderMaterial;
+        protected _ib: WebGLBuffer;
+        protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
+        protected _checkVerticesInsteadOfIndices = false;
 
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         public isEnabled = true;
 
-        // Beware when you use this class with complex objects as the adjacencies computation can be really long
-        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+        /**
+         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
+         * Beware when you use this class with complex objects as the adjacencies computation can be really long
+         * @param  source Mesh used to create edges
+         * @param  epsilon sum of angles in adjacency to check for edge
+         * @param  checkVerticesInsteadOfIndices
+         * @param  generateEdgesLines - should generate Lines or only prepare resources.
+         */
+        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {
             this._source = source;
             this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
 
             this._epsilon = epsilon;
 
             this._prepareRessources();
-            this._generateEdgesLines();
+            if(generateEdgesLines) {
+                this._generateEdgesLines();
+            }
         }
 
-        private _prepareRessources(): void {
+        protected _prepareRessources(): void {
             if (this._lineShader) {
                 return;
             }
@@ -69,6 +83,9 @@
             this._ib = engine.createIndexBuffer(this._linesIndices);
         }
 
+        /**
+         * Releases the required resources for the edges renderer
+         */
         public dispose(): void {
 
             var buffer = this._buffers[VertexBuffer.PositionKind];
@@ -86,7 +103,7 @@
             this._lineShader.dispose();
         }
 
-        private _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
+        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
             if (pa === p0 && pb === p1 || pa === p1 && pb === p0) {
                 return 0;
             }
@@ -102,7 +119,7 @@
             return -1;
         }
 
-        private _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
+        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
             if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
                 return 0;
             }
@@ -118,7 +135,16 @@
             return -1;
         }
 
-        private _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
+        /**
+         * Checks if the pair of p0 and p1 is en edge
+         * @param faceIndex
+         * @param edge
+         * @param faceNormals
+         * @param  p0
+         * @param  p1
+         * @private
+         */
+        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
             var needToCreateLine;
 
             if (edge === undefined) {
@@ -182,6 +208,10 @@
             }
         }
 
+        /**
+         * Generates lines edges from adjacencjes
+         * @private
+         */
         _generateEdgesLines(): void {
             var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
             var indices = this._source.getIndices();
