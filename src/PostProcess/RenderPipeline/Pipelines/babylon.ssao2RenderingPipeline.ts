@@ -279,7 +279,7 @@
             var phi = v * 2.0 * Math.PI;
             var cosTheta = 1.0 - u;
             var sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
-            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, Math.max(0.35, cosTheta)).normalize();
+            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta);
          }
 
         private _generateHemisphere(): number[] {
@@ -287,17 +287,13 @@
             var result = [];
             var vector, scale;
 
-            // var rand = (min: number, max: number) => {
-            //     return Math.random() * (max - min) + min;
-            // }
-
-            var i = 0;
-            while (i < numSamples) {
-                var rand = this._hammersley(i, numSamples);
+            var i = 1;
+            while (i < numSamples + 1) {
+                var rand = this._hammersley(i, numSamples + 1);
                 vector = this._hemisphereSample_uniform(rand[0], rand[1]);
                 vector.normalize();
                 scale = i / numSamples;
-                scale = Scalar.Lerp(0.05, 1.0, scale * scale);
+                scale = Scalar.Lerp(0.15, 1.0, scale * scale);
                 vector.scaleInPlace(scale);
 
                 result.push(vector.x, vector.y, vector.z);
@@ -326,7 +322,7 @@
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", this._sampleSphere);
-                    effect.setFloat("randTextureTiles", 4.0);
+                    effect.setFloat("randTextureTiles", 128.0);
                 }
 
                 if (!this._scene.activeCamera) {
@@ -367,7 +363,7 @@
         }
 
         private _createRandomTexture(): void {
-            var size = 512;
+            var size = 16;
 
             this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.NEAREST_SAMPLINGMODE);
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
