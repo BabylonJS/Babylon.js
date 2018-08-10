@@ -19,9 +19,9 @@
 
         /**
          * This constructor turns off auto generating edges line in Edges Renderer to make it here.
-         * @param {BABYLON.AbstractMesh} source LineMesh used to generate edges
-         * @param {number} epsilon not important (specified angle for edge detection)
-         * @param {boolean} checkVerticesInsteadOfIndices not important for LineMesh
+         * @param  source LineMesh used to generate edges
+         * @param  epsilon not important (specified angle for edge detection)
+         * @param  checkVerticesInsteadOfIndices not important for LineMesh
          *
          */
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
@@ -31,11 +31,11 @@
 
         /**
          * Always create the edge since its a line so only important things are p0 and p1
-         * @param {number} faceIndex not important for LineMesh
-         * @param {number} edge not important for LineMesh
-         * @param {Array<BABYLON.Vector3>} faceNormals not important for LineMesh
-         * @param {BABYLON.Vector3} p0 beginnig of line
-         * @param {BABYLON.Vector3} p1 end of line
+         * @param  faceIndex not important for LineMesh
+         * @param  edge not important for LineMesh
+         * @param  faceNormals not important for LineMesh
+         * @param  p0 beginnig of line
+         * @param  p1 end of line
          * @private
          */
         protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {

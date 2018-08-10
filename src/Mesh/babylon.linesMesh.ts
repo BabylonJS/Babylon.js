@@ -2,6 +2,9 @@
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;
+        /**
+         @hidden
+         **/
         public _edgesRenderer: Nullable<LineEdgesRenderer>;
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
