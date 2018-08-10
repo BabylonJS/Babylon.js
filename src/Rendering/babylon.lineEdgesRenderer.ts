@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     /**
-     * @class FaceAdjacencies
-     * Helper class to generate edges
+     * @class FaceAdjacencies Helper class to generate edges
+     *
      */
     class FaceAdjacencies {
         public edges = new Array<number>();
@@ -11,17 +11,17 @@
     }
 
     /**
-     * @class LineEdgesRenderer
+     * @class LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
      * @param {string} author Bartosz Ostapowicz
-     * for LineMeshes to remove unnecessary triangulation
-     */
+     *
+     * */
     export class LineEdgesRenderer extends EdgesRenderer {
 
         /**
          * This constructor turns off auto generating edges line in Edges Renderer to make it here.
-         * @param {BABYLON.AbstractMesh} source
-         * @param {number} epsilon
-         * @param {boolean} checkVerticesInsteadOfIndices
+         * @param {BABYLON.AbstractMesh} source LineMesh used to generate edges
+         * @param {number} epsilon not important (specified angle for edge detection)
+         * @param {boolean} checkVerticesInsteadOfIndices not important for LineMesh
          *
          */
         constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
@@ -30,12 +30,12 @@
         }
 
         /**
-         * Always create the edge since its a line
-         * @param {number} faceIndex
-         * @param {number} edge
-         * @param {Array<BABYLON.Vector3>} faceNormals
-         * @param {BABYLON.Vector3} p0
-         * @param {BABYLON.Vector3} p1
+         * Always create the edge since its a line so only important things are p0 and p1
+         * @param {number} faceIndex not important for LineMesh
+         * @param {number} edge not important for LineMesh
+         * @param {Array<BABYLON.Vector3>} faceNormals not important for LineMesh
+         * @param {BABYLON.Vector3} p0 beginnig of line
+         * @param {BABYLON.Vector3} p1 end of line
          * @private
          */
         protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void {
