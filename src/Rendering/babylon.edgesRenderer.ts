@@ -1,5 +1,7 @@
 ﻿module BABYLON {
-
+    /**
+     * FaceAdjacencies Helper class to generate edges
+     */
     class FaceAdjacencies {
         public edges = new Array<number>();
         public p0: Vector3;
@@ -8,6 +10,9 @@
         public edgesConnectedCount = 0;
     }
 
+    /**
+     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
+     */
     export class EdgesRenderer {
         public edgesWidthScalerForOrthographic = 1000.0;
         public edgesWidthScalerForPerspective = 50.0;
@@ -26,9 +31,9 @@
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         public isEnabled = true;
 
-        // Beware when you use this class with complex objects as the adjacencies computation can be really long
         /**
-         *
+         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
+         * Beware when you use this class with complex objects as the adjacencies computation can be really long
          * @param  source Mesh used to create edges
          * @param  epsilon sum of angles in adjacency to check for edge
          * @param  checkVerticesInsteadOfIndices
@@ -78,6 +83,9 @@
             this._ib = engine.createIndexBuffer(this._linesIndices);
         }
 
+        /**
+         * Releases the required resources for the edges renderer
+         */
         public dispose(): void {
 
             var buffer = this._buffers[VertexBuffer.PositionKind];
