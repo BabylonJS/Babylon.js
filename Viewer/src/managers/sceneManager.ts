@@ -798,6 +798,16 @@ export class SceneManager {
                 });
             });
         }
+        this._vrHelper.onEnteringVRObservable.add(() => {
+            if (this._observablesManager) {
+                this._observablesManager.onEnteringVRObservable.notifyObservers(this);
+            }
+        });
+        this._vrHelper.onExitingVRObservable.add(() => {
+            if (this._observablesManager) {
+                this._observablesManager.onExitingVRObservable.notifyObservers(this);
+            }
+        });
         this.onVRConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this._vrHelper,
