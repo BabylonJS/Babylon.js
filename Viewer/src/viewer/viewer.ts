@@ -1,4 +1,4 @@
-import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3 } from 'babylonjs';
+import { Database, Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3, Observer } from 'babylonjs';
 import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
 import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
@@ -119,6 +119,19 @@ export abstract class AbstractViewer {
      */
     public get onFrameRenderedObservable(): Observable<AbstractViewer> {
         return this.observablesManager.onFrameRenderedObservable;
+    }
+
+    /**
+     * Observers registered here will be executed when VR more is entered.
+     */
+    public get onEnteringVRObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onEnteringVRObservable;
+    }
+    /**
+     * Observers registered here will be executed when VR mode is exited.
+     */
+    public get onExitingVRObservable(): Observable<AbstractViewer> {
+        return this.observablesManager.onExitingVRObservable;
     }
 
     public observablesManager: ObservablesManager;
@@ -270,11 +283,13 @@ export abstract class AbstractViewer {
         }
 
         if (this.sceneManager.vrHelper && !this.sceneManager.vrHelper.isInVRMode) {
+
             // make sure the floor is set
             if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
                 this.sceneManager.vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
             }
 
+            this._vrToggled = true;
             this.sceneManager.vrHelper.enterVR();
 
             // position the vr camera to be in front of the object or wherever the user has configured it to be
@@ -337,29 +352,33 @@ export abstract class AbstractViewer {
     protected _initVR() {
 
         if (this.sceneManager.vrHelper) {
-            this.sceneManager.vrHelper.onExitingVR.add(() => {
-                // undo the scaling of the model
-                if (this.sceneManager.models.length) {
-                    this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
-                }
+            this.observablesManager.onExitingVRObservable.add(() => {
+                if (this._vrToggled) {
+                    this._vrToggled = false;
+                    
+                    // undo the scaling of the model
+                    if (this.sceneManager.models.length) {
+                        this.sceneManager.models[0].rootMesh.scaling.scaleInPlace(1 / this._vrScale);
+                        this.sceneManager.models[0].rootMesh.position.y -= this._vrModelRepositioning;
+                    }
 
-                // undo the scaling of the environment
-                if (this.sceneManager.environmentHelper) {
-                    this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
-                    this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
-                }
+                    // undo the scaling of the environment
+                    if (this.sceneManager.environmentHelper) {
+                        this.sceneManager.environmentHelper.ground && this.sceneManager.environmentHelper.ground.scaling.scaleInPlace(1 / this._vrScale);
+                        this.sceneManager.environmentHelper.skybox && this.sceneManager.environmentHelper.skybox.scaling.scaleInPlace(1 / this._vrScale);
+                    }
 
-                // post processing
-                if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
-                    this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
-                    this.sceneManager.defaultRenderingPipeline.prepare();
-                }
+                    // post processing
+                    if (this.sceneManager.defaultRenderingPipelineEnabled && this.sceneManager.defaultRenderingPipeline) {
+                        this.sceneManager.defaultRenderingPipeline.imageProcessingEnabled = true;
+                        this.sceneManager.defaultRenderingPipeline.prepare();
+                    }
 
-                // clear set height and eidth
-                this.canvas.removeAttribute("height");
-                this.canvas.removeAttribute("width");
-                this.engine.resize();
+                    // clear set height and eidth
+                    this.canvas.removeAttribute("height");
+                    this.canvas.removeAttribute("width");
+                    this.engine.resize();
+                }
             })
         }
 
@@ -531,7 +550,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Dispoe the entire viewer including the scene and the engine
+     * Dispose the entire viewer including the scene and the engine
      */
     public dispose() {
         if (this._isDisposed) {

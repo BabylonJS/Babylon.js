@@ -1285,6 +1285,7 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
+                "../../src/Rendering/babylon.lineEdgesRenderer.js",
                 "../../src/Layer/babylon.effectLayerSceneComponent.js",
                 "../../src/Layer/babylon.effectLayer.js",
                 "../../src/Layer/babylon.highlightLayer.js",
