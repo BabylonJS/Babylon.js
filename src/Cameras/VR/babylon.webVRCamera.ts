@@ -346,6 +346,7 @@ module BABYLON {
          * Disposes the camera
          */
         public dispose(): void {
+            this._detachIfAttached();
             this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
             super.dispose();
         }
@@ -442,6 +443,14 @@ module BABYLON {
             }
         }
 
+        private _htmlElementAttached:Nullable<HTMLElement> = null;
+        private _detachIfAttached = ()=>{
+            var vrDisplay = this.getEngine().getVRDevice();
+            if (vrDisplay && !vrDisplay.isPresenting && this._htmlElementAttached) {
+                this.detachControl(this._htmlElementAttached);
+            }
+        }
+
         /**
          * WebVR's attach control will start broadcasting frames to the device.
          * Note that in certain browsers (chrome for example) this function must be called
@@ -454,12 +463,14 @@ module BABYLON {
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             super.attachControl(element, noPreventDefault);
             this._attached = true;
+            this._htmlElementAttached = element;
 
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
             if (this._vrDevice) {
                 this.getEngine().enableVR();
             }
+            window.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
         }
 
         /**
@@ -474,6 +485,7 @@ module BABYLON {
             super.detachControl(element);
             this._attached = false;
             this.getEngine().disableVR();
+            window.removeEventListener('vrdisplaypresentchange', this._detachIfAttached);
         }
 
         /**
