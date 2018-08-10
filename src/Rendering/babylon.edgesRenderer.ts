@@ -29,8 +29,8 @@
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
         /**
          *
-         * @param {BABYLON.AbstractMesh} source
-         * @param {number} epsilon
+         * @param {BABYLON.AbstractMesh} source Mesh used to create edges
+         * @param {number} epsilon sum of angles in adjacency to check for edge
          * @param {boolean} checkVerticesInsteadOfIndices
          * @param {boolean} generateEdgesLines - should generate Lines or only prepare resources.
          */
