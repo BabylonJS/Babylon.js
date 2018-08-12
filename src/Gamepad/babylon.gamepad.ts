@@ -15,8 +15,8 @@
 
         public type: number;
 
-        private _leftStick: StickValues;
-        private _rightStick: StickValues;
+        private _leftStick: StickValues = { x: 0, y: 0 };
+        private _rightStick: StickValues = { x: 0, y: 0 };
 
         /** @hidden */
         public _isConnected = true;
