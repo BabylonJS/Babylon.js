@@ -1,7 +1,7 @@
 {
-  "errors": 4026,
+  "errors": 4019,
   "babylon.typedoc.json": {
-    "errors": 4026,
+    "errors": 4019,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -4700,35 +4700,6 @@
       }
     },
     "EdgesRenderer": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new EdgesRenderer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "source": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "epsilon": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "checkVerticesInsteadOfIndices": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Property": {
         "edgesWidthScalerForOrthographic": {
           "Comments": {
@@ -4742,16 +4713,6 @@
         }
       },
       "Method": {
-        "_generateEdgesLines": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "render": {
           "Comments": {
             "MissingText": true

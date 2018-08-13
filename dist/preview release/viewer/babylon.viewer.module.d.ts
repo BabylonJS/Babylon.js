@@ -321,6 +321,14 @@ declare module 'babylonjs-viewer/viewer/viewer' {
                 * Functions added to this observable will be executed on each frame rendered.
                 */
             readonly onFrameRenderedObservable: Observable<AbstractViewer>;
+            /**
+                * Observers registered here will be executed when VR more is entered.
+                */
+            readonly onEnteringVRObservable: Observable<AbstractViewer>;
+            /**
+                * Observers registered here will be executed when VR mode is exited.
+                */
+            readonly onExitingVRObservable: Observable<AbstractViewer>;
             observablesManager: ObservablesManager;
             /**
                 * The canvas associated with this viewer
@@ -416,7 +424,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
                 */
             protected _configureObservers(observersConfiguration: IObserversConfiguration): void;
             /**
-                * Dispoe the entire viewer including the scene and the engine
+                * Dispose the entire viewer including the scene and the engine
                 */
             dispose(): void;
             /**
@@ -1365,6 +1373,14 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
                 * Functions added to this observable will be executed on each frame rendered.
                 */
             onFrameRenderedObservable: Observable<any>;
+            /**
+                * Will notify when VR mode is entered.
+                */
+            onEnteringVRObservable: Observable<any>;
+            /**
+                * Will notify when VR mode is exited.
+                */
+            onExitingVRObservable: Observable<any>;
             constructor();
             dispose(): void;
     }

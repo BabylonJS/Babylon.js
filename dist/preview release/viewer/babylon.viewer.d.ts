@@ -279,6 +279,14 @@ declare module BabylonViewer {
                 * Functions added to this observable will be executed on each frame rendered.
                 */
             readonly onFrameRenderedObservable: BABYLON.Observable<AbstractViewer>;
+            /**
+                * Observers registered here will be executed when VR more is entered.
+                */
+            readonly onEnteringVRObservable: BABYLON.Observable<AbstractViewer>;
+            /**
+                * Observers registered here will be executed when VR mode is exited.
+                */
+            readonly onExitingVRObservable: BABYLON.Observable<AbstractViewer>;
             observablesManager: ObservablesManager;
             /**
                 * The canvas associated with this viewer
@@ -374,7 +382,7 @@ declare module BabylonViewer {
                 */
             protected _configureObservers(observersConfiguration: IObserversConfiguration): void;
             /**
-                * Dispoe the entire viewer including the scene and the engine
+                * Dispose the entire viewer including the scene and the engine
                 */
             dispose(): void;
             /**
@@ -1277,6 +1285,14 @@ declare module BabylonViewer {
                 * Functions added to this observable will be executed on each frame rendered.
                 */
             onFrameRenderedObservable: BABYLON.Observable<any>;
+            /**
+                * Will notify when VR mode is entered.
+                */
+            onEnteringVRObservable: BABYLON.Observable<any>;
+            /**
+                * Will notify when VR mode is exited.
+                */
+            onExitingVRObservable: BABYLON.Observable<any>;
             constructor();
             dispose(): void;
     }

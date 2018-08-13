@@ -40,6 +40,8 @@
         /** @hidden */
         public _reset: () => void;
 
+        private _defaultUp = BABYLON.Vector3.Up();
+
         constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
             super(name, position, scene, setActiveOnSceneIfNoneActive);
         }
@@ -169,7 +171,7 @@
                 this.position.z += Epsilon;
             }
 
-            Matrix.LookAtLHToRef(this.position, target, Vector3.Up(), this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, this._defaultUp, this._camMatrix);
             this._camMatrix.invert();
 
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -302,11 +304,12 @@
          * Update the up vector to apply the rotation of the camera (So if you changed the camera rotation.z this will let you update the up vector as well)
          * @returns the current camera
          */
-        public rotateUpVectorWithCameraRotationMatrix(): TargetCamera {
-            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this.upVector);
+        private _rotateUpVectorWithCameraRotationMatrix(): TargetCamera {
+            Vector3.TransformNormalToRef(this._defaultUp, this._cameraRotationMatrix, this.upVector);
             return this;
         }
 
+        private _cachedRotationZ = 0;
         /** @hidden */
         public _getViewMatrix(): Matrix {
             if (this.lockedTarget) {
@@ -315,6 +318,12 @@
 
             // Compute
             this._updateCameraRotationMatrix();
+
+            // Apply the changed rotation to the upVector.
+            if (this._cachedRotationZ != this.rotation.z) {
+                this._rotateUpVectorWithCameraRotationMatrix();
+                this._cachedRotationZ = this.rotation.z;
+            }
 
             Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
