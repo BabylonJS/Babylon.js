@@ -1858,15 +1858,16 @@
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.  
          * The mesh must be set as updatable. Its internal geometry is directly modified, no new buffer are allocated.
          * This method returns nothing.   
-         * The parameter `url` is a string, the URL from the image file is to be downloaded.  
-         * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
-         * The parameter `onSuccess` is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
-         * The parameter `uvOffset` is an optional vector2 used to offset UV.
-         * The parameter `uvScale` is an optional vector2 used to scale UV.  
-         * 
-         * Returns the Mesh.  
+         * @param url is a string, the URL from the image file is to be downloaded.
+         * @param minHeight is the lower limit of the displacement.
+         * @param maxHeight is the upper limit of the displacement.
+         * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
+         * @param uvOffset is an optional vector2 used to offset UV.
+         * @param uvScale is an optional vector2 used to scale UV.  
+         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
+         * @returns the Mesh.  
          */
-        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2): Mesh {
+        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
             var scene = this.getScene();
 
             var onload = (img: HTMLImageElement) => {
@@ -1884,7 +1885,7 @@
                 //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
 
-                this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight, uvOffset, uvScale);
+                this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight, uvOffset, uvScale, forceUpdate);
                 //execute success callback, if set
                 if (onSuccess) {
                     onSuccess(this);
@@ -1899,16 +1900,18 @@
          * Modifies the mesh geometry according to a displacementMap buffer.
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.  
          * The mesh must be set as updatable. Its internal geometry is directly modified, no new buffer are allocated.
-         * This method returns nothing.   
-         * The parameter `buffer` is a `Uint8Array` buffer containing series of `Uint8` lower than 255, the red, green, blue and alpha values of each successive pixel.
-         * The parameters `heightMapWidth` and `heightMapHeight` are positive integers to set the width and height of the buffer image.     
-         * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
-         * The parameter `uvOffset` is an optional vector2 used to offset UV.
-         * The parameter `uvScale` is an optional vector2 used to scale UV.  
-         * 
-         * Returns the Mesh.  
+         * @param buffer is a `Uint8Array` buffer containing series of `Uint8` lower than 255, the red, green, blue and alpha values of each successive pixel.
+         * @param heightMapWidth is the width of the buffer image.
+         * @param heightMapHeight is the height of the buffer image.
+         * @param minHeight is the lower limit of the displacement.
+         * @param maxHeight is the upper limit of the displacement.
+         * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
+         * @param uvOffset is an optional vector2 used to offset UV.
+         * @param uvScale is an optional vector2 used to scale UV.  
+         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
+         * @returns the Mesh.
          */
-        public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number, uvOffset?: Vector2, uvScale?: Vector2): Mesh {
+        public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(VertexBuffer.NormalKind)
                 || !this.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -1916,7 +1919,7 @@
                 return this;
             }
 
-            var positions = <FloatArray>this.getVerticesData(VertexBuffer.PositionKind);
+            var positions = <FloatArray>this.getVerticesData(VertexBuffer.PositionKind, true, true);
             var normals = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
             var uvs = <number[]>this.getVerticesData(VertexBuffer.UVKind);
             var position = Vector3.Zero();
@@ -1951,8 +1954,14 @@
 
             VertexData.ComputeNormals(positions, this.getIndices(), normals);
 
-            this.updateVerticesData(VertexBuffer.PositionKind, positions);
-            this.updateVerticesData(VertexBuffer.NormalKind, normals);
+            if (forceUpdate) {
+                this.setVerticesData(VertexBuffer.PositionKind, positions);
+                this.setVerticesData(VertexBuffer.NormalKind, normals);
+            }
+            else {
+                this.updateVerticesData(VertexBuffer.PositionKind, positions);
+                this.updateVerticesData(VertexBuffer.NormalKind, normals);
+            }
             return this;
         }
 
