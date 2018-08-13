@@ -1,7 +1,7 @@
 {
-  "errors": 4019,
+  "errors": 4018,
   "babylon.typedoc.json": {
-    "errors": 4019,
+    "errors": 4018,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -13770,11 +13770,6 @@
           }
         },
         "expensiveBlur": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samples": {
           "Comments": {
             "MissingText": true
           }
