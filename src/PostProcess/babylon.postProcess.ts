@@ -73,10 +73,25 @@
         * Force textures to be a power of two (default: false)
         */
         public alwaysForcePOT = false;
+        
+        private _samples = 1;
         /**
         * Number of sample textures (default: 1)
         */
-        public samples = 1;
+        public get samples () {
+            return this._samples;
+        }
+
+        public set samples (n: number) {
+            this._samples = n;
+
+            this._textures.forEach(texture => {
+                if (texture.samples !== this._samples) {
+                    this._engine.updateRenderTargetTextureSampleCount(texture, this._samples);
+                }
+            });
+        }
+
         /**
         * Modify the scale of the post process to be the same as the viewport (default: false)
         */
