@@ -3046,7 +3046,7 @@ var BABYLON;
                             return node;
                         });
                     }
-                    return _this._loadAsync(nodes).then(function () {
+                    return _this._loadAsync(nodes, function () {
                         return {
                             meshes: _this._getMeshes(),
                             particleSystems: [],
@@ -3064,10 +3064,10 @@ var BABYLON;
                     _this._rootUrl = rootUrl;
                     _this._progressCallback = onProgress;
                     _this._loadData(data);
-                    return _this._loadAsync(null);
+                    return _this._loadAsync(null, function () { return undefined; });
                 });
             };
-            GLTFLoader.prototype._loadAsync = function (nodes) {
+            GLTFLoader.prototype._loadAsync = function (nodes, resultFunc) {
                 var _this = this;
                 return Promise.resolve().then(function () {
                     _this._loadExtensions();
@@ -3096,6 +3096,7 @@ var BABYLON;
                         _this._setState(BABYLON.GLTFLoaderState.READY);
                         _this._extensionsOnReady();
                         _this._startAnimations();
+                        return resultFunc();
                     });
                     resultPromise.then(function () {
                         _this._parent._endPerformanceCounter(loadingToReadyCounterName);
@@ -3121,8 +3122,8 @@ var BABYLON;
                         _this._parent.onErrorObservable.notifyObservers(error);
                         _this._parent.onErrorObservable.clear();
                         _this.dispose();
-                        throw error;
                     }
+                    throw error;
                 });
             };
             GLTFLoader.prototype._loadData = function (data) {
