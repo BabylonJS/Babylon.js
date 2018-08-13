@@ -2151,6 +2151,10 @@ declare module BABYLON.GUI {
         */
     export class HolographicButton extends Button3D {
             /**
+                * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
+                */
+            tooltipText: BABYLON.Nullable<string>;
+            /**
                 * Gets or sets text for the button
                 */
             text: string;
