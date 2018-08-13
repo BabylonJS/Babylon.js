@@ -41,18 +41,27 @@
         @serialize()
         public minZAspect: number = 0.2;
 
+        @serialize("samples")
+        private _samples: number = 8;
         /**
         * Number of samples used for the SSAO calculations. Default value is 8
         */
-        @serialize("samples")
-        private _samples: number = 8;
+        public set samples(n: number) {
+            this._ssaoPostProcess.updateEffect("#define SAMPLES " + n + "\n#define SSAO");
+            this._samples = n;
+            this._sampleSphere = this._generateHemisphere();
 
+            this._firstUpdate = true;
+        }
+        public get samples(): number {
+            return this._samples;
+        }
+
+        @serialize("textureSamples")
+        private _textureSamples: number = 1;
         /**
         * Number of samples to use for antialiasing
         */
-        @serialize("textureSamples")
-        private _textureSamples: number = 1;
-
         public set textureSamples(n: number) {
             this._textureSamples = n;
 
@@ -62,7 +71,6 @@
             this._ssaoPostProcess.samples = n;
             this._ssaoCombinePostProcess.samples = n;
         }
-
         public get textureSamples(): number {
             return this._textureSamples;
         }
@@ -82,18 +90,6 @@
         * Blur filter offsets
         */
         private _samplerOffsets: number[];
-
-        public set samples(n: number) {
-            this._ssaoPostProcess.updateEffect("#define SAMPLES " + n + "\n#define SSAO");
-            this._samples = n;
-            this._sampleSphere = this._generateHemisphere();
-
-            this._firstUpdate = true;
-        }
-
-        public get samples(): number {
-            return this._samples;
-        }
 
         /**
         * Are we using bilateral blur ?
