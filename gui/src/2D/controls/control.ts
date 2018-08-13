@@ -1202,6 +1202,10 @@ export class Control {
 
     /** @hidden */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
+        // Prevent pointerout to lose control context.
+        // Event redundancy is checked inside the function.
+        this._onPointerEnter(this);
+
         if (this._downCount !== 0) {
             return false;
         }
