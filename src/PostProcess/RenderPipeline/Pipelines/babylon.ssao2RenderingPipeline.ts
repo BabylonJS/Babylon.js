@@ -48,6 +48,26 @@
         private _samples: number = 8;
 
         /**
+        * Number of samples to use for antialiasing
+        */
+        @serialize("textureSamples")
+        private _textureSamples: number = 1;
+
+        public set textureSamples(n: number) {
+            this._textureSamples = n;
+
+            this._originalColorPostProcess.samples = n;
+            this._blurHPostProcess.samples = n;
+            this._blurVPostProcess.samples = n;
+            this._ssaoPostProcess.samples = n;
+            this._ssaoCombinePostProcess.samples = n;
+        }
+
+        public get textureSamples(): number {
+            return this._textureSamples;
+        }
+
+        /**
          * Ratio object used for SSAO ratio and blur ratio
          */
         @serialize()
@@ -104,7 +124,7 @@
         * The final result is "base + ssao" between [0, 1]
         */
         @serialize()
-        public base: number = 0.1;
+        public base: number = 0;
 
         /**
         *  Support test.
@@ -158,7 +178,7 @@
             this._normalTexture = geometryBufferRenderer.getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._originalColorPostProcess.samples = 4;
+            this._originalColorPostProcess.samples = this.textureSamples;
             this._createSSAOPostProcess(1.0);
             this._createBlurPostProcess(ssaoRatio, blurRatio);
             this._createSSAOCombinePostProcess(blurRatio);
@@ -247,8 +267,8 @@
                 }
             };
 
-            this._blurHPostProcess.samples =4;
-            this._blurVPostProcess.samples =4;
+            this._blurHPostProcess.samples = this.textureSamples;
+            this._blurVPostProcess.samples = this.textureSamples;
         }
 
         /** @hidden */
@@ -263,38 +283,39 @@
         //Van der Corput radical inverse
         private _radicalInverse_VdC(i: number) {
             this._bits[0] = i;
-            this._bits[0] = ((this._bits[0] << 16) | (this._bits[0] >> 16))>>>0;
-            this._bits[0] = ((this._bits[0] & 0x55555555) << 1) | ((this._bits[0] & 0xAAAAAAAA) >>> 1) >>>0;
-            this._bits[0] = ((this._bits[0] & 0x33333333) << 2) | ((this._bits[0] & 0xCCCCCCCC) >>> 2) >>>0;
-            this._bits[0] = ((this._bits[0] & 0x0F0F0F0F) << 4) | ((this._bits[0] & 0xF0F0F0F0) >>> 4) >>>0;
-            this._bits[0] = ((this._bits[0] & 0x00FF00FF) << 8) | ((this._bits[0] & 0xFF00FF00) >>> 8) >>>0;
+            this._bits[0] = ((this._bits[0] << 16) | (this._bits[0] >> 16)) >>> 0;
+            this._bits[0] = ((this._bits[0] & 0x55555555) << 1) | ((this._bits[0] & 0xAAAAAAAA) >>> 1) >>> 0;
+            this._bits[0] = ((this._bits[0] & 0x33333333) << 2) | ((this._bits[0] & 0xCCCCCCCC) >>> 2) >>> 0;
+            this._bits[0] = ((this._bits[0] & 0x0F0F0F0F) << 4) | ((this._bits[0] & 0xF0F0F0F0) >>> 4) >>> 0;
+            this._bits[0] = ((this._bits[0] & 0x00FF00FF) << 8) | ((this._bits[0] & 0xFF00FF00) >>> 8) >>> 0;
             return this._bits[0] * 2.3283064365386963e-10; // / 0x100000000 or / 4294967296
         }
 
-        private _hammersley(i : number, n : number) {
-            return [i/n, this._radicalInverse_VdC(i)];
+        private _hammersley(i: number, n: number) {
+            return [i / n, this._radicalInverse_VdC(i)];
         }
 
-        private _hemisphereSample_uniform(u: number, v: number) : Vector3 {
+        private _hemisphereSample_uniform(u: number, v: number): Vector3 {
             var phi = v * 2.0 * Math.PI;
-            var cosTheta = 1.0 - u;
+            // rejecting samples that are close to tangent plane to avoid z-fighting artifacts
+            var cosTheta = 1.0 - (u * 0.85 + 0.15); 
             var sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
-            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta);
-         }
+            return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta );
+        }
 
         private _generateHemisphere(): number[] {
             var numSamples = this.samples;
             var result = [];
-            var vector, scale;
+            var vector;
 
-            var i = 1;
-            while (i < numSamples + 1) {
-                var rand = this._hammersley(i, numSamples + 1);
-                vector = this._hemisphereSample_uniform(rand[0], rand[1]);
-                vector.normalize();
-                scale = i / numSamples;
-                scale = Scalar.Lerp(0.15, 1.0, scale * scale);
-                vector.scaleInPlace(scale);
+            var i = 0;
+            while (i < numSamples) {
+                if (numSamples < 16) {
+                    vector = this._hemisphereSample_uniform(Math.random(), Math.random());
+                } else {
+                    var rand = this._hammersley(i, numSamples);
+                    vector = this._hemisphereSample_uniform(rand[0], rand[1]);
+                }
 
                 result.push(vector.x, vector.y, vector.z);
                 i++;
@@ -322,7 +343,7 @@
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", this._sampleSphere);
-                    effect.setFloat("randTextureTiles", 128.0);
+                    effect.setFloat("randTextureTiles", 32.0);
                 }
 
                 if (!this._scene.activeCamera) {
@@ -346,7 +367,7 @@
                 effect.setTexture("normalSampler", this._normalTexture);
                 effect.setTexture("randomSampler", this._randomTexture);
             };
-            this._ssaoPostProcess.samples =4;
+            this._ssaoPostProcess.samples = this.textureSamples;
         }
 
         private _createSSAOCombinePostProcess(ratio: number): void {
@@ -359,13 +380,13 @@
                 effect.setVector4("viewport", Tmp.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
                 effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
             };
-            this._ssaoCombinePostProcess.samples =4;
+            this._ssaoCombinePostProcess.samples = this.textureSamples;
         }
 
         private _createRandomTexture(): void {
-            var size = 16;
+            var size = 128;
 
-            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.NEAREST_SAMPLINGMODE);
+            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.TRILINEAR_SAMPLINGMODE);
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
