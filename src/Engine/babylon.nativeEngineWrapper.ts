@@ -10,6 +10,7 @@
         bindVertexBuffer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void;
 
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
+        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
         setProgram(program: WebGLProgram): void;
 
         setMatrix(program: WebGLProgram, slot: number, matrix: Float32Array): void;
@@ -323,27 +324,7 @@
         }
 
         public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[] {
-            var results: WebGLUniformLocation[] = [];
-
-            for (var index = 0; index < uniformsNames.length; index++) {
-                switch (uniformsNames[index])
-                {
-                    case "world":
-                    results.push(<any>0);
-                    break;
-                    case "view":
-                    results.push(<any>1);
-                    break;
-                    case "viewProjection":
-                    results.push(<any>2);
-                    break;
-                    default:
-                    results.push(<any>-1);
-                    break;
-                }
-            }
-
-            return results;
+            return this._interop.getUniforms(shaderProgram, uniformsNames);
         }
 
         public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
