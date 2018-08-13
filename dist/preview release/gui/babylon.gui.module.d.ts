@@ -2325,13 +2325,17 @@ declare module 'babylonjs-gui/3D/controls/cylinderPanel' {
 
 declare module 'babylonjs-gui/3D/controls/holographicButton' {
     import { Button3D } from "babylonjs-gui/3D/controls/button3D";
-    import { Mesh, StandardMaterial, Scene, TransformNode } from "babylonjs";
+    import { Mesh, StandardMaterial, Nullable, Scene, TransformNode } from "babylonjs";
     import { FluentMaterial } from "babylonjs-gui/3D/materials/fluentMaterial";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
         * Class used to create a holographic button in 3D
         */
     export class HolographicButton extends Button3D {
+            /**
+                * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
+                */
+            tooltipText: Nullable<string>;
             /**
                 * Gets or sets text for the button
                 */
@@ -4746,6 +4750,10 @@ declare module BABYLON.GUI {
         * Class used to create a holographic button in 3D
         */
     export class HolographicButton extends Button3D {
+            /**
+                * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
+                */
+            tooltipText: BABYLON.Nullable<string>;
             /**
                 * Gets or sets text for the button
                 */
