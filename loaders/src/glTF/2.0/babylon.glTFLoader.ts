@@ -186,7 +186,7 @@ module BABYLON.GLTF2 {
                     });
                 }
 
-                return this._loadAsync(nodes).then(() => {
+                return this._loadAsync(nodes, () => {
                     return {
                         meshes: this._getMeshes(),
                         particleSystems: [],
@@ -204,11 +204,11 @@ module BABYLON.GLTF2 {
                 this._rootUrl = rootUrl;
                 this._progressCallback = onProgress;
                 this._loadData(data);
-                return this._loadAsync(null);
+                return this._loadAsync(null, () => undefined);
             });
         }
 
-        private _loadAsync(nodes: Nullable<Array<number>>): Promise<void> {
+        private _loadAsync<T>(nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
             return Promise.resolve().then(() => {
                 this._loadExtensions();
                 this._checkExtensions();
@@ -245,6 +245,8 @@ module BABYLON.GLTF2 {
                     this._extensionsOnReady();
 
                     this._startAnimations();
+
+                    return resultFunc();
                 });
 
                 resultPromise.then(() => {
@@ -278,9 +280,9 @@ module BABYLON.GLTF2 {
                     this._parent.onErrorObservable.clear();
 
                     this.dispose();
-
-                    throw error;
                 }
+
+                throw error;
             });
         }
 
