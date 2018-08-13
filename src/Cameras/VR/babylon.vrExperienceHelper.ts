@@ -254,8 +254,10 @@ module BABYLON {
         private _webVRready = false;
         // Are we waiting for the requestPresent callback to complete?
         private _webVRrequesting = false;
-        // Are we presenting to the headset right now?
+        // Are we presenting to the headset right now? (this is the vrDevice state)
         private _webVRpresenting = false;
+        // Have we entered VR? (this is the VRExperienceHelper state)
+        private _hasEnteredVR: boolean;
 
         // Are we presenting in the fullscreen fallback?
         private _fullscreenVRpresenting = false;
@@ -566,6 +568,8 @@ module BABYLON {
                 this._defaultHeight *= webVROptions.positionScale;
             }
 
+            this._hasEnteredVR = false;
+
             // Set position
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
@@ -773,11 +777,9 @@ module BABYLON {
             var vrDisplay = this._scene.getEngine().getVRDevice();
             if (vrDisplay) {
                 var wasPresenting = this._webVRpresenting;
-
-                // A VR display is connected
                 this._webVRpresenting = vrDisplay.isPresenting;
-
-                if (wasPresenting && !this._webVRpresenting && this.isInVRMode)
+                
+                if (wasPresenting && !this._webVRpresenting)
                     this.exitVR();
             } else {
                 Tools.Warn('Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?');
@@ -869,54 +871,60 @@ module BABYLON {
             if (this._interactionsEnabled) {
                 this._scene.registerBeforeRender(this.beforeRender);
             }
+
+            this._hasEnteredVR = true;
         }
 
         /**
          * Attempt to exit VR, or fullscreen.
          */
         public exitVR() {
-            if (this.onExitingVRObservable) {
-                try {
-                    this.onExitingVRObservable.notifyObservers(this);
+            if (this._hasEnteredVR) {
+                if (this.onExitingVRObservable) {
+                    try {
+                        this.onExitingVRObservable.notifyObservers(this);
+                    }
+                    catch (err) {
+                        Tools.Warn("Error in your custom logic onExitingVR: " + err);
+                    }
                 }
-                catch (err) {
-                    Tools.Warn("Error in your custom logic onExitingVR: " + err);
+                if (this._webVRpresenting) {
+                    this._scene.getEngine().disableVR();
                 }
-            }
-            if (this._webVRpresenting) {
-                this._scene.getEngine().disableVR();
-            }
-            if (this._scene.activeCamera) {
-                this._position = this._scene.activeCamera.position.clone();
+                if (this._scene.activeCamera) {
+                    this._position = this._scene.activeCamera.position.clone();
 
-            }
-
-            if (this._deviceOrientationCamera) {
-                this._deviceOrientationCamera.position = this._position;
-                this._scene.activeCamera = this._deviceOrientationCamera;
-                if (this._canvas) {
-                    this._scene.activeCamera.attachControl(this._canvas);
                 }
-            } else if (this._existingCamera) {
-                this._existingCamera.position = this._position;
-                this._scene.activeCamera = this._existingCamera;
-            }
-
-            this.updateButtonVisibility();
-
-            if (this._interactionsEnabled) {
-                this._scene.unregisterBeforeRender(this.beforeRender);
-                this._cameraGazer._gazeTracker.isVisible = false;
-                if (this._leftController) {
-                    this._leftController._gazeTracker.isVisible = false;
+    
+                if (this._deviceOrientationCamera) {
+                    this._deviceOrientationCamera.position = this._position;
+                    this._scene.activeCamera = this._deviceOrientationCamera;
+                    if (this._canvas) {
+                        this._scene.activeCamera.attachControl(this._canvas);
+                    }
+                } else if (this._existingCamera) {
+                    this._existingCamera.position = this._position;
+                    this._scene.activeCamera = this._existingCamera;
                 }
-                if (this._rightController) {
-                    this._rightController._gazeTracker.isVisible = false;
+    
+                this.updateButtonVisibility();
+    
+                if (this._interactionsEnabled) {
+                    this._scene.unregisterBeforeRender(this.beforeRender);
+                    this._cameraGazer._gazeTracker.isVisible = false;
+                    if (this._leftController) {
+                        this._leftController._gazeTracker.isVisible = false;
+                    }
+                    if (this._rightController) {
+                        this._rightController._gazeTracker.isVisible = false;
+                    }
                 }
-            }
+    
+                // resize to update width and height when exiting vr exits fullscreen
+                this._scene.getEngine().resize();
 
-            // resize to update width and height when exiting vr exits fullscreen
-            this._scene.getEngine().resize();
+                this._hasEnteredVR = false;
+            }
         }
 
         /**
