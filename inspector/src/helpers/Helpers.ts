@@ -141,8 +141,10 @@ export class Helpers {
      * Removes all children of the given div.
      */
     public static CleanDiv(div: HTMLElement) {
-        while (div.firstChild) {
-            div.removeChild(div.firstChild);
+        if (div) {
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
         }
     }
 

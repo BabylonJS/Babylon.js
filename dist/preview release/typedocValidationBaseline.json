@@ -1,7 +1,7 @@
 {
-  "errors": 4019,
+  "errors": 4003,
   "babylon.typedoc.json": {
-    "errors": 4019,
+    "errors": 4003,
     "AbstractMesh": {
       "Property": {
         "showBoundingBox": {
@@ -7447,85 +7447,6 @@
         }
       },
       "Method": {
-        "applyDisplacementMap": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "url": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "minHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onSuccess": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uvOffset": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uvScale": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "applyDisplacementMapFromBuffer": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "buffer": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "heightMapWidth": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "heightMapHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "minHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "maxHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uvOffset": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uvScale": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "applySkeleton": {
           "Comments": {
             "MissingReturn": true
@@ -13770,11 +13691,6 @@
           }
         },
         "expensiveBlur": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samples": {
           "Comments": {
             "MissingText": true
           }
