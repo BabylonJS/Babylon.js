@@ -5,6 +5,25 @@ uniform float near;
 uniform float far;
 uniform float radius;
 
+float scales[16] = float[16](
+0.1,
+0.11406250000000001,
+0.131640625,
+0.15625,
+0.187890625,
+0.2265625,
+0.272265625,
+0.325,
+0.384765625,
+0.4515625,
+0.525390625,
+0.60625,
+0.694140625,
+0.7890625,
+0.891015625,
+1.0
+);
+
 varying vec2 vUV;
 
 float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
@@ -61,14 +80,9 @@ void main()
 
 	float difference;
 
-	if (depth > maxZ) {
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-		return;
-	}
-
 	for (int i = 0; i < SAMPLES; ++i) {
 		// get sample position:
-	   vec3 samplePosition = tbn * sampleSphere[i];
+	   vec3 samplePosition = scales[(i + int(random.x * 16.0)) % 16] * tbn * sampleSphere[(i + int(random.y * 16.0)) % 16];
 	   samplePosition = samplePosition * correctedRadius + origin;
 	  
 		// project sample position:
@@ -85,10 +99,10 @@ void main()
 	   float sampleDepth = abs(texture2D(textureSampler, offset.xy).r);
 		// range check & accumulate:
 	   difference = depthSign * samplePosition.z - sampleDepth;
-	   float rangeCheck = smoothstep(correctedRadius, difference, correctedRadius * 0.15);
+	   float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
 	   occlusion += (difference >= 0.0 ? 1.0 : 0.0) * rangeCheck;
 	}
-
+	occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 	float ao = 1.0 - totalStrength * occlusion * samplesFactor;
 	float result = clamp(ao + base, 0.0, 1.0);
 	gl_FragColor = vec4(vec3(result), 1.0);
