@@ -12,8 +12,25 @@
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
         setProgram(program: WebGLProgram): void;
+        setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
 
-        setMatrix(program: WebGLProgram, slot: number, matrix: Float32Array): void;
+        setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setFloat(uniform: WebGLUniformLocation, value: number): void;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
+        setBool(uniform: WebGLUniformLocation, bool: number): void;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+        setColor(uniform: WebGLUniformLocation, r: number, g: number, b: number, a: number): void;
 
         drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
         draw(fillMode: number, vertexStart: number, vertexCount: number): void;
@@ -328,12 +345,10 @@
         }
 
         public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
-            if (this._currentProgram) {
-                var locationValue: number = <any>uniform;
-                if (locationValue > -1) {
-                    this._interop.setMatrix(this._currentProgram, locationValue, matrix.m);
-                }
-            }
+            if (!uniform)
+                return;
+
+            this._interop.setMatrix(uniform, matrix.toArray());
         }
 
         public getRenderWidth(useScreen = false): number {
@@ -357,72 +372,161 @@
         }
 
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+            this._interop.setState(culling, zOffset, reverseSide);
         }
 
         public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setIntArray(uniform, array);
         }
 
         public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setIntArray2(uniform, array);
         }
 
         public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setIntArray3(uniform, array);
         }
 
         public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setIntArray4(uniform, array);
         }
 
         public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray(uniform, array);
         }
 
         public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray2(uniform, array);
         }
 
         public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray3(uniform, array);
         }
 
         public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray4(uniform, array);
         }
 
         public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray(uniform, array);
         }
 
         public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray2(uniform, array);
         }
 
         public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray3(uniform, array);
         }
 
         public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloatArray4(uniform, array);
         }
 
         public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setMatrix(uniform, matrices);
         }
 
         public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setMatrix3x3(uniform, matrix);
         }
 
         public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._interop.setMatrix2x2(uniform, matrix);
         }
 
         public setFloat(uniform: WebGLUniformLocation, value: number): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloat(uniform, value);
         }
 
         public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloat2(uniform, x, y);
         }
 
         public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloat3(uniform, x, y, z);
         }
 
         public setBool(uniform: WebGLUniformLocation, bool: number): void {
+            if (!uniform)
+                return;
+
+            this._interop.setBool(uniform, bool);
         }
 
         public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+            if (!uniform)
+                return;
+
+            this._interop.setFloat4(uniform, x, y, z, w);
         }
 
         public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
+            if (!uniform)
+                return;
+
+            this._interop.setColor(uniform, color3.r, color3.g, color3.b, 0);
         }
 
         public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
+            if (!uniform)
+                return;
+
+            this._interop.setColor(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
         public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
