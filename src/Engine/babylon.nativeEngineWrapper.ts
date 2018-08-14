@@ -30,7 +30,6 @@
         setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
         setBool(uniform: WebGLUniformLocation, bool: number): void;
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-        setColor(uniform: WebGLUniformLocation, r: number, g: number, b: number, a: number): void;
 
         drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
         draw(fillMode: number, vertexStart: number, vertexCount: number): void;
@@ -519,14 +518,14 @@
             if (!uniform)
                 return;
 
-            this._interop.setColor(uniform, color3.r, color3.g, color3.b, 0);
+            this._interop.setFloat3(uniform, color3.r, color3.g, color3.b);
         }
 
         public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
             if (!uniform)
                 return;
 
-            this._interop.setColor(uniform, color3.r, color3.g, color3.b, alpha);
+            this._interop.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
         public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
