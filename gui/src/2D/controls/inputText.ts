@@ -27,7 +27,7 @@ export class InputText extends Control implements IFocusableControl {
     private _deadKey = false;
     private _addKey = true;
     private _currentKey = "";
-    private _isFocusable = true;
+    private _isEnabled = true;
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
@@ -223,16 +223,16 @@ export class InputText extends Control implements IFocusableControl {
         this.autoStretchWidth = false;
     }
     /** Gets or sets if control is focusable / editable*/
-    public get isFocusable(): boolean {
-        return this._isFocusable;
+    public get isEnabled(): boolean {
+        return this._isEnabled;
     }
 
-    public set isFocusable(value: boolean) {
-        if(this._isFocusable === value){
+    public set isEnabled(value: boolean) {
+        if(this._isEnabled === value){
             return;
         }
 
-        this._isFocusable = value;
+        this._isEnabled = value;
         this._markAsDirty();
     }
 
@@ -260,7 +260,7 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public onFocus(): void {
-        if(!this._isFocusable) {
+        if(!this._isEnabled) {
             return;
         }
         this._scrollLeft = null;
@@ -391,12 +391,12 @@ export class InputText extends Control implements IFocusableControl {
             // Background
             if (this._isFocused) {
                 if (this._focusedBackground) {
-                    context.fillStyle = this._isFocusable ?  this._focusedBackground : "#9a9a9a";
+                    context.fillStyle = this._isEnabled ?  this._focusedBackground : "#9a9a9a";
 
                     context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                 }
             } else if (this._background) {
-                context.fillStyle = this._isFocusable ? this._background : "#9a9a9a";
+                context.fillStyle = this._isEnabled ? this._background : "#9a9a9a";
 
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
@@ -532,7 +532,7 @@ export class InputText extends Control implements IFocusableControl {
             this._markAsDirty();
             return true;
         }
-        if(!this._isFocusable) {
+        if(!this._isEnabled) {
             return false;
         }
         this._host.focusedControl = this;
