@@ -27,6 +27,7 @@ export class InputText extends Control implements IFocusableControl {
     private _deadKey = false;
     private _addKey = true;
     private _currentKey = "";
+    private _isFocusable = true;
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
@@ -221,6 +222,19 @@ export class InputText extends Control implements IFocusableControl {
 
         this.autoStretchWidth = false;
     }
+    /** Gets or sets if control is focusable / editable*/
+    public get isFocusable(): boolean {
+        return this._isFocusable;
+    }
+
+    public set isFocusable(value: boolean) {
+        if(this._isFocusable === value){
+            return;
+        }
+
+        this._isFocusable = value;
+        this._markAsDirty();
+    }
 
     /**
      * Creates a new InputText
@@ -246,6 +260,9 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public onFocus(): void {
+        if(!this._isFocusable) {
+            return;
+        }
         this._scrollLeft = null;
         this._isFocused = true;
         this._blinkIsEven = false;
@@ -374,12 +391,12 @@ export class InputText extends Control implements IFocusableControl {
             // Background
             if (this._isFocused) {
                 if (this._focusedBackground) {
-                    context.fillStyle = this._focusedBackground;
+                    context.fillStyle = this._isFocusable ?  this._focusedBackground : "#9a9a9a";
 
                     context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                 }
             } else if (this._background) {
-                context.fillStyle = this._background;
+                context.fillStyle = this._isFocusable ? this._background : "#9a9a9a";
 
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
@@ -514,6 +531,9 @@ export class InputText extends Control implements IFocusableControl {
             clearTimeout(this._blinkTimeout);
             this._markAsDirty();
             return true;
+        }
+        if(!this._isFocusable) {
+            return false;
         }
         this._host.focusedControl = this;
 
