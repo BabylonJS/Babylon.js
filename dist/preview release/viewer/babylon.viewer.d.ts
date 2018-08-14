@@ -168,11 +168,11 @@ declare module BabylonViewer {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
+            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<Template> | Promise<string>;
+            hideOverlayScreen(): Promise<string> | Promise<Template>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -189,16 +189,252 @@ declare module BabylonViewer {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<Template> | Promise<string>;
+            showLoadingScreen(): Promise<string> | Promise<Template>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<Template> | Promise<string>;
+            hideLoadingScreen(): Promise<string> | Promise<Template>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
 }
 declare module BabylonViewer {
+    /**
+        * The AbstractViewr is the center of Babylon's viewer.
+        * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
+        */
+    export abstract class AbstractViewer {
+            containerElement: HTMLElement;
+            /**
+                * The corresponsing template manager of this viewer.
+                */
+            templateManager: TemplateManager;
+            /**
+                * Babylon BABYLON.Engine corresponding with this viewer
+                */
+            engine: BABYLON.Engine;
+            /**
+                * The ID of this viewer. it will be generated randomly or use the HTML Element's ID.
+                */
+            readonly baseId: string;
+            /**
+                * The last loader used to load a model.
+                * @deprecated
+                */
+            lastUsedLoader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
+            /**
+                * The ModelLoader instance connected with this viewer.
+                */
+            modelLoader: ModelLoader;
+            /**
+                * A flag that controls whether or not the render loop should be executed
+                */
+            runRenderLoop: boolean;
+            /**
+                * The scene manager connected with this viewer instance
+                */
+            sceneManager: SceneManager;
+            /**
+                * Will notify when the scene was initialized
+                */
+            readonly onSceneInitObservable: BABYLON.Observable<BABYLON.Scene>;
+            /**
+                * will notify when the engine was initialized
+                */
+            readonly onEngineInitObservable: BABYLON.Observable<BABYLON.Engine>;
+            /**
+                * Will notify when a new model was added to the scene.
+                * Note that added does not neccessarily mean loaded!
+                */
+            readonly onModelAddedObservable: BABYLON.Observable<ViewerModel>;
+            /**
+                * will notify after every model load
+                */
+            readonly onModelLoadedObservable: BABYLON.Observable<ViewerModel>;
+            /**
+                * will notify when any model notify of progress
+                */
+            readonly onModelLoadProgressObservable: BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
+            /**
+                * will notify when any model load failed.
+                */
+            readonly onModelLoadErrorObservable: BABYLON.Observable<{
+                    message: string;
+                    exception: any;
+            }>;
+            /**
+                * Will notify when a model was removed from the scene;
+                */
+            readonly onModelRemovedObservable: BABYLON.Observable<ViewerModel>;
+            /**
+                * will notify when a new loader was initialized.
+                * Used mainly to know when a model starts loading.
+                */
+            readonly onLoaderInitObservable: BABYLON.Observable<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>;
+            /**
+                * Observers registered here will be executed when the entire load process has finished.
+                */
+            readonly onInitDoneObservable: BABYLON.Observable<AbstractViewer>;
+            /**
+                * Functions added to this observable will be executed on each frame rendered.
+                */
+            readonly onFrameRenderedObservable: BABYLON.Observable<AbstractViewer>;
+            /**
+                * Observers registered here will be executed when VR more is entered.
+                */
+            readonly onEnteringVRObservable: BABYLON.Observable<AbstractViewer>;
+            /**
+                * Observers registered here will be executed when VR mode is exited.
+                */
+            readonly onExitingVRObservable: BABYLON.Observable<AbstractViewer>;
+            observablesManager: ObservablesManager;
+            /**
+                * The canvas associated with this viewer
+                */
+            protected _canvas: HTMLCanvasElement;
+            /**
+                * The (single) canvas of this viewer
+                */
+            readonly canvas: HTMLCanvasElement;
+            /**
+                * is this viewer disposed?
+                */
+            protected _isDisposed: boolean;
+            /**
+                * registered onBeforeRender functions.
+                * This functions are also registered at the native scene. The reference can be used to unregister them.
+                */
+            protected _registeredOnBeforeRenderFunctions: Array<() => void>;
+            /**
+                * The configuration loader of this viewer
+                */
+            protected _configurationLoader: ConfigurationLoader;
+            /**
+                * Is the viewer already initialized. for internal use.
+                */
+            protected _isInit: boolean;
+            protected _configurationContainer: ConfigurationContainer;
+            readonly configurationContainer: ConfigurationContainer;
+            constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
+            /**
+                * get the baseId of this viewer
+                */
+            getBaseId(): string;
+            /**
+                * Do we have a canvas to render on, and is it a part of the scene
+                */
+            isCanvasInDOM(): boolean;
+            /**
+             * Set the viewer's background rendering flag.
+             */
+            renderInBackground: boolean;
+            /**
+                * Get the configuration object. This is a reference only.
+                * The configuration can ONLY be updated using the updateConfiguration function.
+                * changing this object will have no direct effect on the scene.
+                */
+            readonly configuration: ViewerConfiguration;
+            /**
+                * force resizing the engine.
+                */
+            forceResize(): void;
+            protected _hdToggled: boolean;
+            toggleHD(): void;
+            protected _vrToggled: boolean;
+            protected _vrScale: number;
+            protected _vrInit: boolean;
+            toggleVR(): void;
+            protected _initVR(): void;
+            /**
+                * The resize function that will be registered with the window object
+                */
+            protected _resize: () => void;
+            protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
+            /**
+                * Force a single render loop execution.
+                */
+            forceRender(): void;
+            /**
+                * render loop that will be executed by the engine
+                */
+            protected _render: (force?: boolean) => void;
+            /**
+                * Takes a screenshot of the scene and returns it as a base64 encoded png.
+                * @param callback optional callback that will be triggered when screenshot is done.
+                * @param width Optional screenshot width (default to 512).
+                * @param height Optional screenshot height (default to 512).
+                * @returns a promise with the screenshot data
+                */
+            takeScreenshot(callback?: (data: string) => void, width?: number, height?: number): Promise<string>;
+            /**
+                * Update the current viewer configuration with new values.
+                * Only provided information will be updated, old configuration values will be kept.
+                * If this.configuration was manually changed, you can trigger this function with no parameters,
+                * and the entire configuration will be updated.
+                * @param newConfiguration the partial configuration to update or a URL to a JSON holding the updated configuration
+                *
+                */
+            updateConfiguration(newConfiguration?: Partial<ViewerConfiguration> | string): void;
+            /**
+                * this is used to register native functions using the configuration object.
+                * This will configure the observers.
+                * @param observersConfiguration observers configuration
+                */
+            protected _configureObservers(observersConfiguration: IObserversConfiguration): void;
+            /**
+                * Dispose the entire viewer including the scene and the engine
+                */
+            dispose(): void;
+            /**
+                * This will prepare the container element for the viewer
+                */
+            protected abstract _prepareContainerElement(): any;
+            /**
+                * This function will execute when the HTML templates finished initializing.
+                * It should initialize the engine and continue execution.
+                *
+                * @returns {Promise<AbstractViewer>} The viewer object will be returned after the object was loaded.
+                */
+            protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+            /**
+                * This will force the creation of an engine and a scene.
+                * It will also load a model if preconfigured.
+                * But first - it will load the extendible onTemplateLoaded()!
+                */
+            protected _onTemplateLoaded(): Promise<AbstractViewer>;
+            /**
+                * Initialize the engine. Retruns a promise in case async calls are needed.
+                *
+                * @protected
+                * @returns {Promise<BABYLON.Engine>}
+                * @memberof Viewer
+                */
+            protected _initEngine(): Promise<BABYLON.Engine>;
+            /**
+                * Initialize a model loading. The returned object (a ViewerModel object) will be loaded in the background.
+                * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
+                *
+                * @param modelConfig model configuration to use when loading the model.
+                * @param clearScene should the scene be cleared before loading this model
+                * @returns a ViewerModel object that is not yet fully loaded.
+                */
+            initModel(modelConfig: string | File | IModelConfiguration, clearScene?: boolean): ViewerModel;
+            /**
+                * load a model using the provided configuration.
+                * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
+                * If you want to attach to the observables of the model, use initModle instead.
+                *
+                * @param modelConfig the model configuration or URL to load.
+                * @param clearScene Should the scene be cleared before loading the model
+                * @returns a Promise the fulfills when the model finished loading successfully.
+                */
+            loadModel(modelConfig: string | File | IModelConfiguration, clearScene?: boolean): Promise<ViewerModel>;
+            protected _initTelemetryEvents(): void;
+            /**
+                * Injects all the spectre shader in the babylon shader store
+                */
+            protected _injectCustomShaders(): void;
+    }
 }
 declare module BabylonViewer {
     /**
@@ -688,7 +924,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -976,69 +1212,26 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface IModelConfiguration {
-            id?: string;
-            url?: string;
-            root?: string;
-            file?: string | File;
-            loader?: string;
-            position?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            rotation?: {
-                    x: number;
-                    y: number;
-                    z: number;
-                    w?: number;
-            };
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            parentObjectIndex?: number;
-            castShadow?: boolean;
-            receiveShadows?: boolean;
-            normalize?: boolean | {
-                    center?: boolean;
-                    unitSize?: boolean;
-                    parentIndex?: number;
-            };
-            title?: string;
-            subtitle?: string;
-            thumbnail?: string;
-            animation?: {
-                    autoStart?: boolean | string;
-                    playOnce?: boolean;
-                    autoStartIndex?: number;
-            };
-            entryAnimation?: IModelAnimationConfiguration;
-            exitAnimation?: IModelAnimationConfiguration;
-            material?: {
-                    directEnabled?: boolean;
-                    directIntensity?: number;
-                    emissiveIntensity?: number;
-                    environmentIntensity?: number;
-                    [propName: string]: any;
-            };
+    /**
+        * The configuration loader will load the configuration object from any source and will use the defined mapper to
+        * parse the object and return a conform ViewerConfiguration.
+        * It is a private member of the scene.
+        */
+    export class ConfigurationLoader {
+            constructor(_enableCache?: boolean);
             /**
-                * Rotation offset axis definition
+                * load a configuration object that is defined in the initial configuration provided.
+                * The viewer configuration can extend different types of configuration objects and have an extra configuration defined.
+                *
+                * @param initConfig the initial configuration that has the definitions of further configuration to load.
+                * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
+                * @returns A promise that delivers the extended viewer configuration, when done.
                 */
-            rotationOffsetAxis?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
+            loadConfiguration(initConfig?: ViewerConfiguration, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration>;
             /**
-                * the offset angle
+                * Dispose the configuration loader. This will cancel file requests, if active.
                 */
-            rotationOffsetAngle?: number;
-            loaderConfiguration?: {
-                    maxLODsToLoad?: number;
-                    progressiveLoading?: boolean;
-            };
+            dispose(): void;
     }
 }
 declare module BabylonViewer {
@@ -1103,33 +1296,6 @@ declare module BabylonViewer {
             constructor();
             dispose(): void;
     }
-}
-declare module BabylonViewer {
-    /**
-        * Get a loader plugin according to its name.
-        * The plugin will be cached and will be reused if called for again.
-        *
-        * @param name the name of the plugin
-        */
-    export function getLoaderPluginByName(name: string): ILoaderPlugin;
-    /**
-        *
-        */
-    export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
-}
-declare module BabylonViewer {
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 declare module BabylonViewer {
     /**
@@ -1313,6 +1479,85 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface IModelConfiguration {
+            id?: string;
+            url?: string;
+            root?: string;
+            file?: string | File;
+            loader?: string;
+            position?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            rotation?: {
+                    x: number;
+                    y: number;
+                    z: number;
+                    w?: number;
+            };
+            scaling?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            parentObjectIndex?: number;
+            castShadow?: boolean;
+            receiveShadows?: boolean;
+            normalize?: boolean | {
+                    center?: boolean;
+                    unitSize?: boolean;
+                    parentIndex?: number;
+            };
+            title?: string;
+            subtitle?: string;
+            thumbnail?: string;
+            animation?: {
+                    autoStart?: boolean | string;
+                    playOnce?: boolean;
+                    autoStartIndex?: number;
+            };
+            entryAnimation?: IModelAnimationConfiguration;
+            exitAnimation?: IModelAnimationConfiguration;
+            material?: {
+                    directEnabled?: boolean;
+                    directIntensity?: number;
+                    emissiveIntensity?: number;
+                    environmentIntensity?: number;
+                    [propName: string]: any;
+            };
+            /**
+                * Rotation offset axis definition
+                */
+            rotationOffsetAxis?: {
+                    x: number;
+                    y: number;
+                    z: number;
+            };
+            /**
+                * the offset angle
+                */
+            rotationOffsetAngle?: number;
+            loaderConfiguration?: {
+                    maxLODsToLoad?: number;
+                    progressiveLoading?: boolean;
+            };
+    }
+}
+declare module BabylonViewer {
+    /**
+        * Get a loader plugin according to its name.
+        * The plugin will be cached and will be reused if called for again.
+        *
+        * @param name the name of the plugin
+        */
+    export function getLoaderPluginByName(name: string): ILoaderPlugin;
+    /**
+        *
+        */
+    export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
+}
+declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface IEnvironmentMapConfiguration {
@@ -1373,69 +1618,6 @@ declare module BabylonViewer {
 }
 declare module BabylonViewer {
     /**
-        * Defines an animation to be applied to a model (translation, scale or rotation).
-        */
-    export interface IModelAnimationConfiguration {
-            /**
-                * Time of animation, in seconds
-                */
-            time?: number;
-            /**
-                * Scale to apply
-                */
-            scaling?: {
-                    x: number;
-                    y: number;
-                    z: number;
-            };
-            /**
-                * Easing function to apply
-                */
-            easingFunction?: number;
-            /**
-                * An Easing mode to apply to the easing function
-                * See BABYLON.EasingFunction
-                */
-            easingMode?: number;
-    }
-}
-declare module BabylonViewer {
-    export class TelemetryLoaderPlugin implements ILoaderPlugin {
-        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
-        onLoaded(model: ViewerModel): void;
-        onError(message: string, exception: any): void;
-        onComplete(): void;
-    }
-}
-declare module BabylonViewer {
-    /**
-      * A loder plugin to use MSFT_lod extension correctly (glTF)
-      */
-    export class MSFTLodLoaderPlugin implements ILoaderPlugin {
-        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
-        onExtensionLoaded(extension: BABYLON.IGLTFLoaderExtension): void;
-    }
-}
-declare module BabylonViewer {
-    /**
-      * Force-apply material configuration right after a material was loaded.
-      */
-    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
-        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
-        onMaterialLoaded(material: BABYLON.Material): void;
-    }
-}
-declare module BabylonViewer {
-    /**
-      * A (PBR) material will be extended using this function.
-      * This function will hold extra default configuration for the viewer, if not implemented in Babylon itself.
-      */
-    export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
-        onMaterialLoaded(baseMaterial: BABYLON.Material): void;
-    }
-}
-declare module BabylonViewer {
-    /**
         * The ViewerLabs class will hold functions that are not (!) backwards compatible.
         * The APIs in all labs-related classes and configuration  might change.
         * Once stable, lab features will be moved to the publis API and configuration object.
@@ -1480,6 +1662,43 @@ declare module BabylonViewer {
                 */
             getAssetUrl(url: string): string;
             rotateShadowLight(shadowLight: BABYLON.ShadowLight, amount: number, point?: BABYLON.Vector3, axis?: BABYLON.Vector3, target?: BABYLON.Vector3): void;
+    }
+}
+declare module BabylonViewer {
+}
+declare module BabylonViewer {
+    export class TelemetryLoaderPlugin implements ILoaderPlugin {
+        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
+        onLoaded(model: ViewerModel): void;
+        onError(message: string, exception: any): void;
+        onComplete(): void;
+    }
+}
+declare module BabylonViewer {
+    /**
+      * A loder plugin to use MSFT_lod extension correctly (glTF)
+      */
+    export class MSFTLodLoaderPlugin implements ILoaderPlugin {
+        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
+        onExtensionLoaded(extension: BABYLON.IGLTFLoaderExtension): void;
+    }
+}
+declare module BabylonViewer {
+    /**
+      * Force-apply material configuration right after a material was loaded.
+      */
+    export class ApplyMaterialConfigPlugin implements ILoaderPlugin {
+        onInit(loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel): void;
+        onMaterialLoaded(material: BABYLON.Material): void;
+    }
+}
+declare module BabylonViewer {
+    /**
+      * A (PBR) material will be extended using this function.
+      * This function will hold extra default configuration for the viewer, if not implemented in Babylon itself.
+      */
+    export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
+        onMaterialLoaded(baseMaterial: BABYLON.Material): void;
     }
 }
 declare module BabylonViewer {
