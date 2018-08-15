@@ -220,6 +220,20 @@
                 // Source mesh
                 this._source = source;
 
+                // Construction Params
+                // Clone parameters allowing mesh to be updated in case of parametric shapes.
+                this._originalBuilderSideOrientation = source._originalBuilderSideOrientation;
+                const myAnyThis = this as any;
+                const myAnySource = source as any;
+                myAnyThis._closePath = myAnySource._closePath;
+                myAnyThis._idx = myAnySource._idx;
+                myAnyThis.dashSize = myAnySource.dashSize;
+                myAnyThis.gapSize = myAnySource.gapSize;
+                myAnyThis.path3D = myAnySource.path3D;
+                myAnyThis.pathArray = myAnySource.pathArray;
+                myAnyThis.arc = myAnySource.arc;
+                myAnyThis.radius = myAnySource.radius;
+
                 // Animation ranges
                 if (this._source._ranges) {
                     const ranges = this._source._ranges;
