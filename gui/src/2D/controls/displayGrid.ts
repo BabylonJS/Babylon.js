@@ -152,7 +152,7 @@ export class DisplayGrid extends Control {
         
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
+        if (this._isEnabled && this._processMeasures(parentMeasure, context)) {
 
             if (this._background) {
                 context.fillStyle = this._background;
