@@ -107,7 +107,7 @@ export class Checkbox extends Control {
                 context.shadowOffsetY = this.shadowOffsetY;
             }
 
-            context.fillStyle = this._background;
+            context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
             context.fillRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
 
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -117,7 +117,7 @@ export class Checkbox extends Control {
             }
 
             if (this._isChecked) {
-                context.fillStyle = this.color;
+                context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
                 let offsetWidth = actualWidth * this._checkSizeRatio;
                 let offseHeight = actualHeight * this._checkSizeRatio;
 
