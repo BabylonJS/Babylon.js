@@ -833,6 +833,8 @@ declare module BABYLON.GUI {
             protected _transformedPosition: BABYLON.Vector2;
             /** @hidden */
             _linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+            protected _isEnabled: boolean;
+            protected _disabledColor: string;
             /** @hidden */
             _tag: any;
             /** Gets or sets a boolean indicating if the control can be hit with pointer events */
@@ -1058,6 +1060,10 @@ declare module BABYLON.GUI {
             readonly centerX: number;
             /** Gets the center coordinate on Y axis */
             readonly centerY: number;
+            /** Gets or sets if control is Enabled*/
+            isEnabled: boolean;
+            /** Gets or sets background color of control if it's disabled*/
+            disabledColor: string;
             /**
                 * Creates a new control
                 * @param name defines the name of the control
