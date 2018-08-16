@@ -122,6 +122,9 @@
 - New `serialize` and `Parse` functions for SSAO2 Rendering Pipeline ([julien-moreau](https://github.com/julien-moreau))
 - Added `furOcclusion` property to FurMaterial to control the occlusion strength ([julien-moreau](https://github.com/julien-moreau))
 - Added `isEnabled` property to InputText to control if input can be focused ([barteq100](https://github.com/barteq100)) 
+- Moved `isEnabled` property to Control ([barteq100](https://github.com/barteq100))
+- Added `isEnabled` property handling to Checkbox, DisplayGrid, InputText and RadioButton ([barteq100](https://github.com/barteq100))
+- Added `disabledColor` property to Control to set color of disabled controls ([barteq100](https://github.com/barteq100))
 ## Bug fixes
 
 - `setPivotMatrix` was not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
