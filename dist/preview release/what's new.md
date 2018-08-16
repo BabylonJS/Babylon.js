@@ -50,15 +50,12 @@
 - Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
 - Moved to gulp 4, updated dependencies to latest ([RaananW](https://github.com/RaananW))
 - Added EdgesLineRenderer to address [#4919](https://github.com/BabylonJS/Babylon.js/pull/4919) ([barteq100](https://github.com/barteq100))
-- Added `isEnabled` property to InputText to control if input can be focused ([barteq100](https://github.com/barteq100)) 
-- Moved `isEnabled` property to Control ([barteq100](https://github.com/barteq100))
-- Added `isEnabled` property handling to Checkbox, DisplayGrid, InputText and RadioButton ([barteq100](https://github.com/barteq100))
-- Added `disabledColor` property to Control to set color of disabled controls ([barteq100](https://github.com/barteq100))
 
 ### GUI
 - Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks)([theom](https://github.com/theom))
 - Added `TextBlock.computeExpectedHeight`, added `TextWrapping.Ellipsis` as `TextBlock.wordWrapping` possible value ([adrientetar](https://github.com/adrientetar))
 - New vertical mode for sliders in 2D GUI. [Demo](https://www.babylonjs-playground.com/#U9AC0N#53) ([Saket Saurabh](https://github.com/ssaket))
+- Added `isEnabled` and `disabledColor` property to Gui Control ([barteq100](https://github.com/barteq100))
 
 ### Core Engine
 
