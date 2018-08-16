@@ -121,6 +121,7 @@
 - Added `alphaCutOff` support for StandardMaterial ([deltakosh](https://github.com/deltakosh))
 - New `serialize` and `Parse` functions for SSAO2 Rendering Pipeline ([julien-moreau](https://github.com/julien-moreau))
 - Added `furOcclusion` property to FurMaterial to control the occlusion strength ([julien-moreau](https://github.com/julien-moreau))
+
 ## Bug fixes
 
 - `setPivotMatrix` was not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
