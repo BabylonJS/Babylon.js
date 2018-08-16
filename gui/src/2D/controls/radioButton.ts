@@ -128,7 +128,7 @@ export class RadioButton extends Control {
             Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
                 this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
 
-            context.fillStyle = this._background;
+            context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
             context.fill();
 
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -144,7 +144,7 @@ export class RadioButton extends Control {
 
             // Inner
             if (this._isChecked) {
-                context.fillStyle = this.color;
+                context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
                 let offsetWidth = actualWidth * this._checkSizeRatio;
                 let offseHeight = actualHeight * this._checkSizeRatio;
 

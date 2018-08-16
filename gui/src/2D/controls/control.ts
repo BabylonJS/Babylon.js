@@ -76,7 +76,8 @@ export class Control {
     private _enterCount = -1;
     private _doNotRender = false;
     private _downPointerIds: { [id: number]: boolean } = {};
-
+    protected _isEnabled = true;
+    protected _disabledColor = "#9a9a9a";
     /** @hidden */
     public _tag: any;
 
@@ -696,6 +697,32 @@ export class Control {
         return this._currentMeasure.top + this._currentMeasure.height / 2;
     }
 
+    /** Gets or sets if control is Enabled*/
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
+
+    public set isEnabled(value: boolean) {
+        if(this._isEnabled === value){
+            return;
+        }
+
+        this._isEnabled = value;
+        this._markAsDirty();
+    }
+    /** Gets or sets background color of control if it's disabled*/
+    public get disabledColor(): string {
+        return this._disabledColor;
+    }
+
+    public set disabledColor(value: string) {
+        if(this._disabledColor === value){
+            return;
+        }
+
+        this._disabledColor = value;
+        this._markAsDirty();
+    }
     // Functions
 
     /**
@@ -1153,6 +1180,9 @@ export class Control {
 
     /** @hidden */
     public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+        if(!this._isEnabled){
+            return false;
+        }
         if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
             return false;
         }
@@ -1175,6 +1205,9 @@ export class Control {
 
     /** @hidden */
     public _onPointerEnter(target: Control): boolean {
+        if(!this._isEnabled){
+            return false;
+        }
         if (this._enterCount > 0) {
             return false;
         }
@@ -1193,6 +1226,9 @@ export class Control {
 
     /** @hidden */
     public _onPointerOut(target: Control): void {
+        if(!this._isEnabled){
+            return;
+        }
         this._enterCount = 0;
 
         var canNotify: boolean = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
@@ -1223,6 +1259,9 @@ export class Control {
 
     /** @hidden */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+        if(!this._isEnabled){
+            return;
+        }
         this._downCount = 0;
 
         delete this._downPointerIds[pointerId];
@@ -1249,6 +1288,9 @@ export class Control {
 
     /** @hidden */
     public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean {
+        if(!this._isEnabled){
+            return false;
+        }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === PointerEventTypes.POINTERMOVE) {
             this._onPointerMove(this, this._dummyVector2);

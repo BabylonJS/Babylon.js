@@ -246,6 +246,9 @@ export class InputText extends Control implements IFocusableControl {
 
     /** @hidden */
     public onFocus(): void {
+        if(!this._isEnabled) {
+            return;
+        }
         this._scrollLeft = null;
         this._isFocused = true;
         this._blinkIsEven = false;
@@ -374,12 +377,12 @@ export class InputText extends Control implements IFocusableControl {
             // Background
             if (this._isFocused) {
                 if (this._focusedBackground) {
-                    context.fillStyle = this._focusedBackground;
+                    context.fillStyle = this._isEnabled ?  this._focusedBackground : this._disabledColor;
 
                     context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                 }
             } else if (this._background) {
-                context.fillStyle = this._background;
+                context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
 
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
@@ -514,6 +517,9 @@ export class InputText extends Control implements IFocusableControl {
             clearTimeout(this._blinkTimeout);
             this._markAsDirty();
             return true;
+        }
+        if(!this._isEnabled) {
+            return false;
         }
         this._host.focusedControl = this;
 
