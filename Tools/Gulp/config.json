@@ -306,6 +306,10 @@
             "shaders": [
                 "particles.vertex",
                 "particles.fragment"
+            ],
+            "shaderIncludes": [
+                "clipPlaneVertexDeclaration2",
+                "clipPlaneFragmentDeclaration2"
             ]
         },
         "gpuParticles": {
