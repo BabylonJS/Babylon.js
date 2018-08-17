@@ -161,6 +161,7 @@
 - Fix File Loading if hosted from `file:`-Protocol ([ltetzlaff](https://github.com/ltetzlaff))
 - Do not throw error when updating a controller with no left stick ([TrevorDev](https://github.com/TrevorDev))
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
+- Dispose existing gazeTrackers when setting a new one, remove pivot matrix of meshes using boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

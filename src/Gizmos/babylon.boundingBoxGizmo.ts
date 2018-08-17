@@ -123,6 +123,8 @@ module BABYLON {
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
+                        this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
+
                         var worldDragDirection = startingTurnDirection;
 
                         // Project the world right on to the drag plane
@@ -194,6 +196,7 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
+                                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
@@ -286,7 +289,9 @@ module BABYLON {
          */
         public updateBoundingBox(){
             this._update();
-            if(this.attachedMesh){             
+            if(this.attachedMesh){  
+                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);  
+                         
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
