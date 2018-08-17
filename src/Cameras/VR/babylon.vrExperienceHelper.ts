@@ -405,7 +405,7 @@ module BABYLON {
         }
 
         /**
-         * The mesh used to display where the user is selecting, 
+         * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
          * when set bakeCurrentTransformIntoVertices will be called on the mesh.
          * See http://doc.babylonjs.com/resources/baking_transformations 
          */
@@ -415,6 +415,18 @@ module BABYLON {
 
         public set gazeTrackerMesh(value: Mesh) {
             if (value) {
+                // Dispose of existing meshes
+                if( this._cameraGazer._gazeTracker){
+                    this._cameraGazer._gazeTracker.dispose();
+                }
+                if (this._leftController && this._leftController._gazeTracker) {
+                    this._leftController._gazeTracker.dispose();
+                }
+                if (this._rightController && this._rightController._gazeTracker) {
+                    this._rightController._gazeTracker.dispose();
+                }
+
+                // Set and create gaze trackers on head and controllers
                 this._cameraGazer._gazeTracker = value;
                 this._cameraGazer._gazeTracker.bakeCurrentTransformIntoVertices();
                 this._cameraGazer._gazeTracker.isPickable = false;
@@ -428,6 +440,31 @@ module BABYLON {
                     this._rightController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker");
                 }
             }
+        }
+
+        /**
+         * If the gaze trackers scale should be updated to be constant size when pointing at near/far meshes
+         */
+        public updateGazeTrackerScale = true;
+
+        /**
+         * The gaze tracking mesh corresponding to the left controller
+         */
+        public get leftControllerGazeTrackerMesh():Nullable<Mesh>{
+            if (this._leftController) {
+                return this._leftController._gazeTracker;
+            }
+            return null;
+        }
+
+        /**
+         * The gaze tracking mesh corresponding to the right controller
+         */
+        public get rightControllerGazeTrackerMesh():Nullable<Mesh>{
+            if (this._rightController) {
+                return this._rightController._gazeTracker;
+            }
+            return null;
         }
 
         /**
@@ -1653,9 +1690,11 @@ module BABYLON {
                     if (gazer._isActionableMesh) {
                         multiplier = 3;
                     }
-                    gazer._gazeTracker.scaling.x = hit.distance * multiplier;
-                    gazer._gazeTracker.scaling.y = hit.distance * multiplier;
-                    gazer._gazeTracker.scaling.z = hit.distance * multiplier;
+                    if(this.updateGazeTrackerScale){
+                        gazer._gazeTracker.scaling.x = hit.distance * multiplier;
+                        gazer._gazeTracker.scaling.y = hit.distance * multiplier;
+                        gazer._gazeTracker.scaling.z = hit.distance * multiplier;
+                    }
 
                     var pickNormal = this._convertNormalToDirectionOfRay(hit.getNormal(), ray);
                     // To avoid z-fighting
