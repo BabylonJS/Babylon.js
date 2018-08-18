@@ -3,7 +3,7 @@ layout(std140, column_major) uniform;
 uniform Material
 {
 	uniform vec2 vAlbedoInfos;
-	uniform vec3 vAmbientInfos;
+	uniform vec4 vAmbientInfos;
 	uniform vec2 vOpacityInfos;
 	uniform vec2 vEmissiveInfos;
 	uniform vec2 vLightmapInfos;
