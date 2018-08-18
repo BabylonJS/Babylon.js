@@ -215,7 +215,7 @@ module BABYLON {
 
         private _startDragRay = new BABYLON.Ray(new BABYLON.Vector3(), new BABYLON.Vector3());
         /**
-         * 
+         * Simulates the start of a pointer drag event on the behavior
          * @param pointerId pointerID of the pointer that should be simulated (Default: 1 for mouse pointer)
          * @param fromRay initial ray of the pointer to be simulated (Default: Ray from camera to attached mesh)
          * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
