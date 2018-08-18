@@ -29,6 +29,12 @@
         public static readonly PBRMATERIAL_ALPHATESTANDBLEND = 3;
 
         /**
+         * Defines the default value of how much AO map is occluding the analytical lights
+         * (point spot...).
+         */
+        public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
+
+        /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
          * This impacts both the direct diffuse and specular highlights.
          */
@@ -87,6 +93,15 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientTextureStrength: number = 1.0;
+
+        /**
+         * Defines how much the AO map is occluding the analytical lights (point spot...).
+         * 1 means it completely occludes it 
+         * 0 mean it has no impact
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
         /**
          * Stores the alpha values in a texture.
