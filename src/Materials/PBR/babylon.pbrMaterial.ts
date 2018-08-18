@@ -32,7 +32,7 @@
          * Defines the default value of how much AO map is occluding the analytical lights
          * (point spot...).
          */
-        public static readonly DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
+        public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
 
         /**
          * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -101,7 +101,7 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        protected ambientTextureImpactOnAnalyticalLights: number = 1.0;
+        public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
         /**
          * Stores the alpha values in a texture.
