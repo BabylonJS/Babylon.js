@@ -236,6 +236,13 @@
         protected _ambientTextureStrength: number = 1.0;
 
         /**
+         * Defines how much the AO map is occluding the analytical lights (point spot...).
+         * 1 means it completely occludes it 
+         * 0 mean it has no impact
+         */
+        protected _ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+
+        /**
          * Stores the alpha values in a texture.
          */
         protected _opacityTexture: BaseTexture;
@@ -1320,7 +1327,7 @@
         public buildUniformLayout(): void {
             // Order is important !
             this._uniformBuffer.addUniform("vAlbedoInfos", 2);
-            this._uniformBuffer.addUniform("vAmbientInfos", 3);
+            this._uniformBuffer.addUniform("vAmbientInfos", 4);
             this._uniformBuffer.addUniform("vOpacityInfos", 2);
             this._uniformBuffer.addUniform("vEmissiveInfos", 2);
             this._uniformBuffer.addUniform("vLightmapInfos", 2);
@@ -1426,7 +1433,7 @@
                         }
 
                         if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                            this._uniformBuffer.updateFloat3("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level, this._ambientTextureStrength);
+                            this._uniformBuffer.updateFloat4("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level, this._ambientTextureStrength, this._ambientTextureImpactOnAnalyticalLights);
                             MaterialHelper.BindTextureMatrix(this._ambientTexture, this._uniformBuffer, "ambient");
                         }
 

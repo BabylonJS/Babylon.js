@@ -788,11 +788,18 @@ void main(void) {
     finalEmissive *=  vEmissiveInfos.y;
 #endif
 
+// ______________________________ Ambient ________________________________________
+#ifdef AMBIENT
+    vec3 ambientOcclusionForDirectDiffuse = mix(vec3(1.), ambientOcclusionColor, vAmbientInfos.w);
+#else
+    vec3 ambientOcclusionForDirectDiffuse = ambientOcclusionColor;
+#endif
+
 // _______________________________________________________________________________
 // _____________________________ Composition _____________________________________
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(
-        finalDiffuse			* ambientOcclusionColor * vLightingIntensity.x +
+        finalDiffuse			* ambientOcclusionForDirectDiffuse * vLightingIntensity.x +
 #ifndef UNLIT
     #ifdef REFLECTION
         finalIrradiance			* ambientOcclusionColor * vLightingIntensity.z +
