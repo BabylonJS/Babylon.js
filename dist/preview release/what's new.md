@@ -104,6 +104,7 @@
 - Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
 - Added support for main WebGL2 texture formats ([PeapBoy](https://github.com/NicolasBuecher))
 - Added fadeInOutBehavior and tooltipText for holographic buttons ([TrevorDev](https://github.com/TrevorDev))
+- StartDrag method added to pointerDragBehavior to simulate the start of a drag ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
