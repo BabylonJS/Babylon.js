@@ -230,14 +230,13 @@ gulp.task("buildWorker", gulp.series(gulp.parallel("workers", "shaders"), functi
 gulp.task("build", gulp.series("shaders", function build() {
     var filesToProcess = determineFilesToProcess("files");
     var directFilesToProcess = determineFilesToProcess("directFiles");
-    let merged = [gulp.src(filesToProcess).
-        pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
+    let mergedStreams = merge2(gulp.src(filesToProcess)
+        .pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
-        includeShadersStream];
+        includeShadersStream);
     if (directFilesToProcess.length) {
-        merged.push(gulp.src(directFilesToProcess));
+      mergedStreams.add(gulp.src(directFilesToProcess));
     }
-    let mergedStreams = merge2(merged);
     return merge2(
         mergedStreams
             .pipe(concat(config.build.noModuleFilename))
