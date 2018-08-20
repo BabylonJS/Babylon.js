@@ -13,6 +13,7 @@ module BABYLON {
 
         private _tmpQuaternion = new Quaternion();
         private _tmpVector = new Vector3(0, 0, 0);
+        private _tmpRotationMatrix = new Matrix();
         /**
          * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
          */
@@ -55,6 +56,10 @@ module BABYLON {
          * Fired when a rotation sphere drag is ended
          */
         public onRotationSphereDragEndObservable = new Observable<{}>();
+        /**
+         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+         */
+        public scalePivot:Nullable<Vector3> = null;
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
         /**
@@ -123,6 +128,8 @@ module BABYLON {
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
+                        this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
+
                         var worldDragDirection = startingTurnDirection;
 
                         // Project the world right on to the drag plane
@@ -194,14 +201,27 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
+                                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 this.updateBoundingBox();
 
-                                // Scale from the position of the opposite corner                   
-                                box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
-                                this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                if(this.scalePivot){
+                                    this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
+                                    // Move anchor to desired pivot point (Bottom left corner + dimension/2)
+                                    this._boundingDimensions.scaleToRef(0.5, this._tmpVector);
+                                    Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
+                                    this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                    this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
+                                    Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
+                                    this._anchorMesh.position.addInPlace(this._tmpVector);
+                                }else{
+                                    // Scale from the position of the opposite corner                   
+                                    box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
+                                    this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                }
+
                                 this._anchorMesh.addChild(this.attachedMesh);
                                 this._anchorMesh.scaling.addInPlace(deltaScale);
                                 if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
@@ -285,8 +305,9 @@ module BABYLON {
          * Updates the bounding box information for the Gizmo
          */
         public updateBoundingBox(){
-            this._update();
-            if(this.attachedMesh){             
+            if(this.attachedMesh){
+                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);  
+                this._update();
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
@@ -379,7 +400,7 @@ module BABYLON {
                 }
             }
             if (this.attachedMesh) {
-                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
+                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);                
             }
         }
 

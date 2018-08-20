@@ -106,6 +106,7 @@
 - StartDrag method added to pointerDragBehavior to simulate the start of a drag ([TrevorDev](https://github.com/TrevorDev))
 - Added EdgesLineRenderer to address [#4919](https://github.com/BabylonJS/Babylon.js/pull/4919) ([barteq100](https://github.com/barteq100))
 - Added ```ambientTextureImpactOnAnalyticalLights``` in PBRMaterial to allow fine grained control of the AmbientTexture on the analytical diffuse light ([sebavan](http://www.github.com/sebavan))
+- BoundingBoxGizmo scalePivot field that can be used to always scale objects from the bottom ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
