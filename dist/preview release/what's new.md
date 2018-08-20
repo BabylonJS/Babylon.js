@@ -103,6 +103,7 @@
 - Added Video Recorder [Issue 4708](https://github.com/BabylonJS/Babylon.js/issues/4708) ([sebavan](http://www.github.com/sebavan))
 - Added support for main WebGL2 texture formats ([PeapBoy](https://github.com/NicolasBuecher))
 - Added fadeInOutBehavior and tooltipText for holographic buttons ([TrevorDev](https://github.com/TrevorDev))
+- StartDrag method added to pointerDragBehavior to simulate the start of a drag ([TrevorDev](https://github.com/TrevorDev))
 - Added EdgesLineRenderer to address [#4919](https://github.com/BabylonJS/Babylon.js/pull/4919) ([barteq100](https://github.com/barteq100))
 - Added ```ambientTextureImpactOnAnalyticalLights``` in PBRMaterial to allow fine grained control of the AmbientTexture on the analytical diffuse light ([sebavan](http://www.github.com/sebavan))
 
@@ -133,6 +134,10 @@
 - viewer.updateConfiguration also accepts a URL to download configuration remotely ([RaananW](https://github.com/RaananW))
 - Viewer supports 3D printing on windows 10 ([RaananW](https://github.com/RaananW))
 - The viewer's environment map is using the new .env feature ([RaananW](https://github.com/RaananW))
+
+### Materials Library
+
+- Added ```unlit``` mode to lava material ([sebavan](http://www.github.com/sebavan))
 
 ### Documentation
 

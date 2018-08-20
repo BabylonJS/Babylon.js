@@ -96,6 +96,8 @@ declare module BABYLON {
         diffuseColor: Color3;
         private _disableLighting;
         disableLighting: boolean;
+        private _unlit;
+        unlit: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         private _scaledDiffuse;
