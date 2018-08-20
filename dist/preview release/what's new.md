@@ -168,6 +168,7 @@
 - Do not throw error when updating a controller with no left stick ([TrevorDev](https://github.com/TrevorDev))
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
 - Dispose existing gazeTrackers when setting a new one, remove pivot matrix of meshes using boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
+- Set missing parentId in Mesh.serialize() for instances ([julien-moreau](https://github.com/julien-moreau))
 
 ### Core Engine
 

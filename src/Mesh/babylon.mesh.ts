@@ -2361,6 +2361,11 @@
                     position: instance.position.asArray(),
                     scaling: instance.scaling.asArray()
                 };
+
+                if (instance.parent) {
+                    serializationInstance.parentId = instance.parent.id;
+                }
+                
                 if (instance.rotationQuaternion) {
                     serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
                 } else if (instance.rotation) {
