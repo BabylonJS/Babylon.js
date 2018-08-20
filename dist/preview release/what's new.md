@@ -135,6 +135,10 @@
 - Viewer supports 3D printing on windows 10 ([RaananW](https://github.com/RaananW))
 - The viewer's environment map is using the new .env feature ([RaananW](https://github.com/RaananW))
 
+### Materials Library
+
+- Added ```unlit``` mode to lava material ([sebavan](http://www.github.com/sebavan))
+
 ### Documentation
 
 - Added all code comments for GUI
