@@ -106,6 +106,7 @@
 - StartDrag method added to pointerDragBehavior to simulate the start of a drag ([TrevorDev](https://github.com/TrevorDev))
 - Added EdgesLineRenderer to address [#4919](https://github.com/BabylonJS/Babylon.js/pull/4919) ([barteq100](https://github.com/barteq100))
 - Added ```ambientTextureImpactOnAnalyticalLights``` in PBRMaterial to allow fine grained control of the AmbientTexture on the analytical diffuse light ([sebavan](http://www.github.com/sebavan))
+- BoundingBoxGizmo scalePivot field that can be used to always scale objects from the bottom ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
@@ -168,6 +169,7 @@
 - Do not throw error when updating a controller with no left stick ([TrevorDev](https://github.com/TrevorDev))
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
 - Dispose existing gazeTrackers when setting a new one, remove pivot matrix of meshes using boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
+- Set missing parentId in Mesh.serialize() for instances ([julien-moreau](https://github.com/julien-moreau))
 
 ### Core Engine
 
