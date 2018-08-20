@@ -60,6 +60,7 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public UNLIT = false;
 
         constructor() {
             super();
@@ -100,6 +101,11 @@ module BABYLON {
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
+
+        @serialize("unlit")
+        private _unlit = false;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public unlit: boolean;
 
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
@@ -167,7 +173,9 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+            defines._needNormals = true;
+            
+            MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
@@ -277,6 +285,8 @@ module BABYLON {
                 return;
             }
             this._activeEffect = effect;
+
+            defines.UNLIT = this._unlit;
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
