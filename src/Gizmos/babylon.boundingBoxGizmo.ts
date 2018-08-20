@@ -62,6 +62,35 @@ module BABYLON {
         public scalePivot:Nullable<Vector3> = null;
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
+
+        private _oldPivotPoint = new Vector3();
+        private _pivotTranslation = new Vector3();
+        private removeAndStorePivotPoint(){
+            if(this.attachedMesh){
+                // Save old pivot and set pivot to 0,0,0
+                this.attachedMesh.getPivotPointToRef(this._oldPivotPoint);
+                if(this._oldPivotPoint.equalsToFloats(0,0,0)){
+                    return;
+                }
+                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
+                this._oldPivotPoint.subtractToRef(this.attachedMesh.getPivotPoint(), this._pivotTranslation);
+                this._tmpVector.copyFromFloats(1,1,1);
+                this._tmpVector.subtractInPlace(this.attachedMesh.scaling);
+                this._tmpVector.multiplyInPlace(this._pivotTranslation);
+                this.attachedMesh.position.addInPlace(this._tmpVector);
+            }
+        }
+        private restorePivotPoint(){
+            if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0)){
+                this.attachedMesh.setPivotPoint(this._oldPivotPoint);    
+                this._oldPivotPoint.subtractToRef(this.attachedMesh.getPivotPoint(), this._pivotTranslation);
+                this._tmpVector.copyFromFloats(1,1,1);
+                this._tmpVector.subtractInPlace(this.attachedMesh.scaling);
+                this._tmpVector.multiplyInPlace(this._pivotTranslation);
+                this.attachedMesh.position.subtractInPlace(this._tmpVector);
+            }
+        }
+
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -128,7 +157,7 @@ module BABYLON {
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
-                        this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
+                        this.removeAndStorePivotPoint();
 
                         var worldDragDirection = startingTurnDirection;
 
@@ -167,6 +196,8 @@ module BABYLON {
                             this._anchorMesh.removeChild(this.attachedMesh);
                         }
                         this.updateBoundingBox();
+
+                        this.restorePivotPoint();
                     }
                 });
 
@@ -201,7 +232,8 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
-                                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);
+                                this.removeAndStorePivotPoint();
+                                
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
@@ -228,6 +260,8 @@ module BABYLON {
                                     this._anchorMesh.scaling.subtractInPlace(deltaScale);
                                 }
                                 this._anchorMesh.removeChild(this.attachedMesh);
+
+                                this.restorePivotPoint();
                             }
                         })
 
@@ -306,7 +340,7 @@ module BABYLON {
          */
         public updateBoundingBox(){
             if(this.attachedMesh){
-                this.attachedMesh.setPivotMatrix(Matrix.IdentityReadOnly);  
+                this.removeAndStorePivotPoint();
                 this._update();
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
@@ -400,7 +434,8 @@ module BABYLON {
                 }
             }
             if (this.attachedMesh) {
-                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);                
+                this._existingMeshScale.copyFrom(this.attachedMesh.scaling);   
+                this.restorePivotPoint();
             }
         }
 
