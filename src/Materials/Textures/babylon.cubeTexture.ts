@@ -30,12 +30,12 @@
             return this._boundingBoxSize;
         }
 
-
-        @serialize("rotationY")
         protected _rotationY: number = 0;
+
         /**
          * Sets texture matrix rotation angle around Y axis in radians.
          */
+        @serialize("rotationY")
         public set rotationY(value: number) {
             this._rotationY = value;
             this.setReflectionTextureMatrix(BABYLON.Matrix.RotationY(this._rotationY));
