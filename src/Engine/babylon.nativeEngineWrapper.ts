@@ -11,6 +11,7 @@
 
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
+        getAttributes(shaderProgram: WebGLProgram, attributeNames: string[]): number[];
         setProgram(program: WebGLProgram): void;
         setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
 
@@ -220,25 +221,7 @@
         }
         
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
-            var results = [];
-
-            for (var index = 0; index < attributesNames.length; index++) {
-                switch(attributesNames[index]) {
-                    case VertexBuffer.PositionKind:
-                    results.push(0);
-                    break;
-                    case VertexBuffer.NormalKind:
-                    results.push(1);
-                    break;
-                    // case VertexBuffer.ColorKind:
-                    // results.push(2);
-                    // break;
-                    default:
-                    results.push(-1);
-                }
-            }
-
-            return results;
+            return this._interop.getAttributes(shaderProgram, attributesNames);
         }
 
         /**
