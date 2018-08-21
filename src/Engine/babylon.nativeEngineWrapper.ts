@@ -3,7 +3,7 @@
     export interface INativeEngineInterop {
         requestAnimationFrame(callback: () => void): void;
 
-        createIndexBuffer(indices: Uint16Array): WebGLBuffer;
+        createIndexBuffer(indices: ArrayBuffer, is32Bits: boolean): WebGLBuffer;
         bindIndexBuffer(buffer: WebGLBuffer) : void;
         
         createVertexBuffer(vertices: Float32Array): WebGLBuffer;
@@ -156,33 +156,38 @@
         }
 
         public createIndexBuffer(indices: IndicesArray): WebGLBuffer {
-            var arrayBuffer: Uint16Array;
+            var arrayBuffer: ArrayBuffer;
+            var is32Bits;
             if (indices instanceof Uint16Array) {
-                arrayBuffer = indices;
+                arrayBuffer = indices.buffer;
+                is32Bits = false;
+            } else if (indices instanceof Uint32Array) {
+                arrayBuffer = indices.buffer;
+                is32Bits = true;
+            } else {
+                arrayBuffer = new Uint32Array(indices).buffer;
+                is32Bits = true;
             }
-            else {
-                arrayBuffer = new Uint16Array(indices);
-            }
-            
-            const buffer = this._interop.createIndexBuffer(arrayBuffer);
+
+            const buffer = this._interop.createIndexBuffer(arrayBuffer, is32Bits);
             buffer.capacity = indices.length;
             buffer.references = 1;
-            buffer.is32Bits = false;
+            buffer.is32Bits = is32Bits;
 
             return buffer;
         }
 
-        public createVertexBuffer(vertices: FloatArray): WebGLBuffer {
-            var arrayBuffer: Float32Array;
-            if (vertices instanceof Float32Array) {
-                arrayBuffer = vertices;
-            }
-            else {
-                arrayBuffer = new Float32Array(vertices);
+        public createVertexBuffer(data: DataArray): WebGLBuffer {
+            var floatArray: Float32Array;
+            if (data instanceof Array ||
+                data instanceof ArrayBuffer) {
+                floatArray = new Float32Array(data);
+            } else {
+                floatArray = new Float32Array((<ArrayBufferView>data).buffer);
             }
 
-            const buffer = this._interop.createVertexBuffer(arrayBuffer);
-            buffer.capacity = vertices.length;
+            const buffer = this._interop.createVertexBuffer(floatArray);
+            buffer.capacity = floatArray.length;
             buffer.references = 1;
             buffer.is32Bits = true;
 
