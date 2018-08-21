@@ -471,7 +471,7 @@
 
         /** @hidden */
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-            if (Tools.IsWindowObjectExist()) {
+            if (Tools.IsWindowObjectExist() && typeof(HTMLElement) !== "undefined") {
                 // DOM element ?
                 if (vertex instanceof HTMLElement) {
                     var vertexCode = Tools.GetDOMTextContent(vertex);
@@ -507,7 +507,7 @@
 
         /** @hidden */
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-            if (Tools.IsWindowObjectExist()) {
+            if (Tools.IsWindowObjectExist() && typeof(HTMLElement) !== "undefined") {
                 // DOM element ?
                 if (fragment instanceof HTMLElement) {
                     var fragmentCode = Tools.GetDOMTextContent(fragment);
