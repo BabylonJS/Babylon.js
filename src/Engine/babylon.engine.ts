@@ -3349,7 +3349,7 @@
         }
 
         /**
-         * Gets the lsit of active attributes for a given webGL program
+         * Gets the list of active attributes for a given webGL program
          * @param shaderProgram defines the webGL program to use
          * @param attributesNames defines the list of attribute names to get
          * @returns an array of indices indicating the offset of each attribute
