@@ -1,68 +1,7 @@
 {
-  "errors": 4002,
+  "errors": 3962,
   "babylon.typedoc.json": {
-    "errors": 4002,
-    "AbstractScene": {
-      "Property": {
-        "effectLayers": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "layers": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "lensFlareSystems": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      },
-      "Method": {
-        "addEffectLayer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "addLensFlareSystem": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "getGlowLayerByName": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "getHighlightLayerByName": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "getLensFlareSystemByID": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "getLensFlareSystemByName": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "removeEffectLayer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "removeLensFlareSystem": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      }
-    },
+    "errors": 3962,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -570,6 +509,11 @@
         }
       },
       "Method": {
+        "addGamepad": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
         "addKeyboard": {
           "Comments": {
             "MissingText": true
@@ -586,14 +530,6 @@
           }
         },
         "addVRDeviceOrientation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "addGamepad": {
-          "Naming": {
-            "NotPascalCase": true
-          },
           "Comments": {
             "MissingText": true
           }
@@ -4749,90 +4685,6 @@
         }
       }
     },
-    "Engine": {
-      "Method": {
-        "beginOcclusionQuery": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "beginTransformFeedback": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "bindTransformFeedback": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "bindTransformFeedbackBuffer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "createEffectForParticles": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "createQuery": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "createTransformFeedback": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "deleteQuery": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "deleteTransformFeedback": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "endOcclusionQuery": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "endTimeQuery": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "endTransformFeedback": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "getQueryResult": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "isQueryResultAvailable": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "setTranformFeedbackVaryings": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "startTimeQuery": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      }
-    },
     "EngineInstrumentation": {
       "Constructor": {
         "new EngineInstrumentation": {
@@ -5322,6 +5174,11 @@
             "MissingText": true
           }
         },
+        "addGamepad": {
+          "Comments": {
+            "MissingText": true
+          }
+        },
         "addKeyboard": {
           "Comments": {
             "MissingText": true
@@ -5345,14 +5202,6 @@
           }
         },
         "addVirtualJoystick": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "addGamepad": {
-          "Naming": {
-            "NotPascalCase": true
-          },
           "Comments": {
             "MissingText": true
           }
@@ -7640,6 +7489,18 @@
             }
           }
         },
+        "simplify": {
+          "Comments": {
+            "MissingReturn": true
+          },
+          "Parameter": {
+            "simplificationType": {
+              "Comments": {
+                "MissingText": true
+              }
+            }
+          }
+        },
         "subdivide": {
           "Comments": {
             "MissingText": true
@@ -8680,21 +8541,6 @@
           },
           "Parameter": {
             "meshes": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "simplify": {
-          "Naming": {
-            "NotPascalCase": true
-          },
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "simplificationType": {
               "Comments": {
                 "MissingText": true
               }
@@ -14127,62 +13973,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "Scene": {
-      "Property": {
-        "forceShowBoundingBoxes": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "gamepadManager": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "geometryBufferRenderer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "postProcessRenderPipelineManager": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "simplificationQueue": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      },
-      "Method": {
-        "disableDepthRenderer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "disableGeometryBufferRenderer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "enableDepthRenderer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "enableGeometryBufferRenderer": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "getBoundingBoxRenderer": {
-          "Naming": {
-            "NotPascalCase": true
           }
         }
       }
