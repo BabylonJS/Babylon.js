@@ -1,16 +1,7 @@
 {
-  "errors": 4003,
+  "errors": 4002,
   "babylon.typedoc.json": {
-    "errors": 4003,
-    "AbstractMesh": {
-      "Property": {
-        "showBoundingBox": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      }
-    },
+    "errors": 4002,
     "AbstractScene": {
       "Property": {
         "effectLayers": {
