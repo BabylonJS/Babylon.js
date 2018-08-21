@@ -42,7 +42,7 @@
         "sinon": "^6.1.4",
         "through2": "~2.0.3",
         "ts-loader": "^4.4.2",
-        "typedoc": "^0.11.0",
+        "typedoc": "^0.12.0",
         "typescript": "^3.0.1",
         "webpack": "^4.16.3",
         "webpack-stream": "5.0.0"
