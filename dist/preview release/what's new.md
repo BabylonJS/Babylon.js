@@ -170,6 +170,7 @@
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
 - Dispose existing gazeTrackers when setting a new one, remove pivot matrix of meshes using boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
 - Set missing parentId in Mesh.serialize() for instances ([julien-moreau](https://github.com/julien-moreau))
+- Particle system unexpectedly creates a particle with an invalid lifetime ratio  ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
