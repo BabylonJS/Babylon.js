@@ -60,6 +60,7 @@ module BABYLON {
         public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
+        public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -631,7 +632,8 @@ module BABYLON {
                                     break;
                                 case Texture.SKYBOX_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_SKYBOX");
-                                    break;
+                                    defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !this._reflectionTexture.getReflectionTextureMatrix().isIdentity();
+                                break;
                                 case Texture.SPHERICAL_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_SPHERICAL");
                                     break;
