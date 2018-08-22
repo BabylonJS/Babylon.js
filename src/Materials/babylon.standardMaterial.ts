@@ -633,7 +633,7 @@ module BABYLON {
                                 case Texture.SKYBOX_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_SKYBOX");
                                     defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !this._reflectionTexture.getReflectionTextureMatrix().isIdentity();
-                                break;
+                                    break;
                                 case Texture.SPHERICAL_MODE:
                                     defines.setReflectionMode("REFLECTIONMAP_SPHERICAL");
                                     break;
