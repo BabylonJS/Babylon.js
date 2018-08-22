@@ -130,7 +130,8 @@ vec4 getRandomVec4(float offset) {
 }
 
 void main() {
-  if (age >= life) {
+  float newAge = age + timeDelta;
+  if (newAge >= life) {
     if (stopFactor == 0.) {
       outPosition = position;
       outAge = life;
@@ -284,14 +285,14 @@ void main() {
 
   } else {   
     float directionScale = timeDelta;
-    float ageGradient = age / life;
+    outAge = newAge;
+    float ageGradient = newAge / life;
 
 #ifdef VELOCITYGRADIENTS
     directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
 #endif
-
     outPosition = position + direction * directionScale;
-    outAge = age + timeDelta;
+    
     outLife = life;
     outSeed = seed;
 #ifndef COLORGRADIENTS    
