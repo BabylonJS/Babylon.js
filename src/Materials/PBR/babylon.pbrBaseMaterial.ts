@@ -76,6 +76,7 @@
         public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
+        public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -1134,6 +1135,9 @@
                                 }
                             }
                         }
+                        else {
+                            defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !reflectionTexture.getReflectionTextureMatrix().isIdentity();
+                        }
                     } else {
                         defines.REFLECTION = false;
                         defines.REFLECTIONMAP_3D = false;
@@ -1143,6 +1147,7 @@
                         defines.USE_LOCAL_REFLECTIONMAP_CUBIC = false;
                         defines.REFLECTIONMAP_PROJECTION = false;
                         defines.REFLECTIONMAP_SKYBOX = false;
+                        defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
                         defines.REFLECTIONMAP_EXPLICIT = false;
                         defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
                         defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
