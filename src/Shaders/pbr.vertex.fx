@@ -98,9 +98,9 @@ varying vec3 vDirectionW;
 #include<logDepthDeclaration>
 
 void main(void) {
-	vec3 positionUpdated = position;
+    vec3 positionUpdated = position;
 #ifdef NORMAL
-	vec3 normalUpdated = normal;
+    vec3 normalUpdated = normal;
 #endif
 #ifdef TANGENT
     vec4 tangentUpdated = tangent;
@@ -110,10 +110,10 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_SKYBOX
     #ifdef REFLECTIONMAP_SKYBOX_TRANSFORMED
-		vPositionUVW = (reflectionMatrix * vec4(positionUpdated, 1.0)).xyz;
-	#else
-		vPositionUVW = positionUpdated;
-	#endif
+        vPositionUVW = (reflectionMatrix * vec4(positionUpdated, 1.0)).xyz;
+    #else
+        vPositionUVW = positionUpdated;
+    #endif
 #endif 
 
 #include<instancesVertex>
@@ -125,13 +125,13 @@ void main(void) {
     vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
-	mat3 normalWorld = mat3(finalWorld);
+    mat3 normalWorld = mat3(finalWorld);
 
-	#ifdef NONUNIFORMSCALING
-		normalWorld = transposeMat3(inverseMat3(normalWorld));
-	#endif
+    #ifdef NONUNIFORMSCALING
+        normalWorld = transposeMat3(inverseMat3(normalWorld));
+    #endif
 
-	vNormalW = normalize(normalWorld * normalUpdated);
+    vNormalW = normalize(normalWorld * normalUpdated);
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
@@ -155,11 +155,11 @@ void main(void) {
 #endif
 
 #ifdef MAINUV1
-	vMainUV1 = uv;
+    vMainUV1 = uv;
 #endif 
 
 #ifdef MAINUV2
-	vMainUV2 = uv2;
+    vMainUV2 = uv2;
 #endif 
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0 
