@@ -440,9 +440,10 @@
         protected _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
             if (this._boundTexturesCache[this._activeChannel] !== texture) {
                 this._boundTexturesCache[this._activeChannel] = texture;
+                return false;
+            } else {
                 return true;
             }
-            return false;
         }
 
         /** @hidden */
