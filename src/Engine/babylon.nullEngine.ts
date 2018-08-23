@@ -455,15 +455,7 @@
             this._bindTextureDirectly(0, texture);
         }
 
-        /** @hidden */
-        public _releaseBuffer(buffer: WebGLBuffer): boolean {
-            buffer.references--;
-
-            if (buffer.references === 0) {
-                return true;
-            }
-
-            return false;
+        protected _deleteBuffer(buffer: WebGLBuffer): void {
         }
 
         public releaseEffects() {
