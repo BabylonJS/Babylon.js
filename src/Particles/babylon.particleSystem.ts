@@ -235,6 +235,21 @@
                             });
                         }   
 
+                        /// Drag
+                        if (this._dragGradients && this._dragGradients.length > 0) {                  
+                            Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
+                                if (currentGradient !== particle._currentDragGradient) {
+                                    particle._currentDrag1 = particle._currentDrag2;
+                                    particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentDragGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                
+                                let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+
+                                this._scaledDirection.scaleInPlace(drag);
+                            });
+                        }                           
+
                         particle.position.addInPlace(this._scaledDirection);
 
                         // Noise
@@ -260,24 +275,7 @@
 
                         // Gravity
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
-                        particle.direction.addInPlace(this._scaledGravity);
-
-                        /// Drag
-                        if (this._dragGradients && this._dragGradients.length > 0) {                  
-                            Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
-                                if (currentGradient !== particle._currentDragGradient) {
-                                    particle._currentDrag1 = particle._currentDrag2;
-                                    particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();    
-                                    particle._currentDragGradient = (<FactorGradient>currentGradient);
-                                }                                
-                                
-                                let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
-
-                                let dragValue = Tmp.Vector3[0];
-                                particle.direction.scaleToRef(1.0 - drag, dragValue);
-                                particle.direction.subtractInPlace(dragValue);
-                            });
-                        }                          
+                        particle.direction.addInPlace(this._scaledGravity);                       
 
                         // Size
                         if (this._sizeGradients && this._sizeGradients.length > 0) {                  
