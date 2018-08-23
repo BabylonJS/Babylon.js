@@ -130,12 +130,11 @@ export class SliderBar{
 }
 
 /** Class used to create a SelectorGroup 
- * which contains groups of checkboxex, radio buttons and sliders
+ * which contains groups of checkboxes, radio buttons and sliders
 */
 export class SelectorGroup {
     private _selectors: any[] = new Array();
     private _selectNb = 0;
-    private _type = "";
 
     /**
      * Creates a new SelectorGroup
@@ -175,7 +174,7 @@ export class SelectorGroup {
         if (checked === void 0) { checked = false; }
         let selector = new Selector(text, func, checked, this._selectNb);
         this.selectors.push(selector);
-        if(this.type == "R") {
+        if(this.type === "R") {
             this._selectNb++;					
         }
     };
@@ -239,12 +238,12 @@ export class SelectionPanel extends Rectangle {
      * @param group, the SelectionGroup to be added
     */
     protected _addGroup(group: SelectorGroup) {
-        if(group.type == "R") {
+        if(group.type === "R") {
             for(var i = 0; i < group.selectors.length; i++) {
                 this._addRadio(group.selectors[i].text, group.selectors[i].nb, group.name, group.selectors[i].func, group.selectors[i].checked);
             }
         }
-        else if(group.type == "S") {
+        else if(group.type === "S") {
             this._panel.width = 1;
             for(var i = 0; i < group.selectors.length; i++) {
                 this._addSldr(group.selectors[i].text, group.selectors[i].func, group.selectors[i].unit, group.selectors[i].min, group.selectors[i].max, group.selectors[i].value, group.selectors[i].onVal);
