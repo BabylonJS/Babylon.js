@@ -200,16 +200,11 @@ module BABYLON {
         getCapacity(): number;
 
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         isStarted(): boolean;
 
-        /**
-         * Gets if the particle system has been started.
-         * @return true if the system has been started, otherwise false.
-         */
-        isStarted(): boolean;
         /**
          * Animates the particle system for this frame.
          */
