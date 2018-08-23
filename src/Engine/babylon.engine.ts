@@ -2963,6 +2963,10 @@
             return false;
         }
 
+        protected _deleteBuffer(buffer: WebGLBuffer): void {
+            this._gl.deleteBuffer(buffer);
+        }
+
         /**
          * Creates a webGL buffer to use with instanciation
          * @param capacity defines the size of the buffer
