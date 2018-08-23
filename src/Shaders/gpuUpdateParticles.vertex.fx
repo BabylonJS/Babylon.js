@@ -138,26 +138,11 @@ vec4 getRandomVec4(float offset) {
 
 void main() {
   float newAge = age + timeDelta;
-  if (newAge >= life) {
-    if (stopFactor == 0.) {
-      outPosition = position;
-      outAge = life;
-      outLife = life;
-      outSeed = seed;
-#ifndef COLORGRADIENTS      
-      outColor = vec4(0.,0.,0.,0.);
-#endif
-      outSize = vec3(0., 0., 0.);
-#ifndef BILLBOARD        
-      outInitialDirection = initialDirection;
-#endif      
-      outDirection = direction;
-      outAngle = angle;
-#ifdef ANIMATESHEET      
-      outCellIndex = cellIndex;
-#endif
-      return;
-    }
+
+    
+
+  // If particle is dead and system is not stopped, spawn as new particle
+  if (newAge >= life && stopFactor != 0.) {
     vec3 position;
     vec3 direction;
 
@@ -165,8 +150,8 @@ void main() {
     vec4 randoms = getRandomVec4(seed.x);
 
     // Age and life
-    outAge = 0.0;
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+    outAge = mod(newAge, outLife);
 
     // Seed
     outSeed = seed;
@@ -307,7 +292,7 @@ void main() {
     outCellIndex = cellInfos.x;
 #endif
 
-  } else {   
+  } else {
     float directionScale = timeDelta;
     outAge = newAge;
     float ageGradient = newAge / life;

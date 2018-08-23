@@ -108,7 +108,7 @@
         }        
 
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         public isStarted(): boolean {
