@@ -34,6 +34,9 @@
 
         createTexture(): WebGLTexture;
         loadTexture(texture: WebGLTexture, buffer: ArrayBuffer, mipMap: boolean): void;
+        getTexureWidth(texture: WebGLTexture): number;
+        getTexureHeight(texture: WebGLTexture): number;
+        setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
         deleteTexture(texture: Nullable<WebGLTexture>): void;
 
         drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
@@ -45,23 +48,23 @@
         getRenderHeight(): number;
     }
 
-    class NativeSamplingMode {
+    class NativeFilter {
         // Must match Filter enum in SpectreEngine.h.
         public static readonly POINT = 0;
-        public static readonly MINPOINT_MAGPOINT_MIPPOINT = 1;
-        public static readonly BILINEAR = 2;
-        public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = 3;
-        public static readonly TRILINEAR = 4;
-        public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = 5;
-        public static readonly ANISOTROPIC = 6;
-        public static readonly POINT_COMPARE = 7;
-        public static readonly TRILINEAR_COMPARE = 8;
-        public static readonly MINBILINEAR_MAGPOINT = 9;
-        public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = 10;
-        public static readonly MINPOINT_MAGPOINT_MIPLINEAR = 11;
-        public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 12;
-        public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 13;
-        public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 14;
+        public static readonly MINPOINT_MAGPOINT_MIPPOINT = 0;
+        public static readonly BILINEAR = 1;
+        public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = 1;
+        public static readonly TRILINEAR = 2;
+        public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = 2;
+        public static readonly ANISOTROPIC = 3;
+        public static readonly POINT_COMPARE = 4;
+        public static readonly TRILINEAR_COMPARE = 5;
+        public static readonly MINBILINEAR_MAGPOINT = 6;
+        public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = 6;
+        public static readonly MINPOINT_MAGPOINT_MIPLINEAR = 7;
+        public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 8;
+        public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 9;
+        public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
     }
 
     /** @hidden */
@@ -686,7 +689,7 @@
 
             // processing for non-image formats
             if (loader) {
-                throw new Error("Loading textures from loader not yet implemented.");
+                throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
                 // var callback = (data: string | ArrayBuffer) => {
                 //     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
                 //         this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
@@ -714,7 +717,9 @@
                         texture._buffer = data;
                     }
 
-                    if (!texture._webGLTexture) {
+                    let webGLTexture = texture._webGLTexture;
+
+                    if (!webGLTexture) {
                         //  this.resetTextureCache();
                         if (scene) {
                             scene._removePendingData(texture);
@@ -723,20 +728,19 @@
                         return;
                     }
 
-                    this._interop.loadTexture(texture._webGLTexture, arrayBuffer, !noMipmap);
+                    this._interop.loadTexture(webGLTexture, arrayBuffer, !noMipmap);
 
                     this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
-                    texture.baseWidth = width;
-                    texture.baseHeight = height;
-                    texture.width = width;
-                    texture.height = height;
+                    texture.baseWidth = this._interop.getTexureWidth(webGLTexture);
+                    texture.baseHeight = this._interop.getTexureHeight(webGLTexture);
+                    texture.width = texture.baseWidth;
+                    texture.height = texture.baseHeight;
                     texture.isReady = true;
         
-                    var filters = this._getSamplingParameters(samplingMode, !noMipmap);
+                    var filter = this._getSamplingFilter(samplingMode, !noMipmap);
 
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+                    this._interop.setTextureSampling(webGLTexture, filter);
 
                     // this.resetTextureCache();
                     if (scene) {
@@ -765,7 +769,36 @@
             return texture;
         }
 
-        private _get(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+        // Returns a NativeFilter.XXXX value.
+        private _getSamplingFilter(samplingMode: number, generateMipMaps: boolean): number {
+            switch (samplingMode) {
+                case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+                    return NativeFilter.MINLINEAR_MAGLINEAR_MIPPOINT;
+                case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                    return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
+                case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+                    return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+                case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                    return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                    return NativeFilter.MINLINEAR_MAGPOINT_MIPPOINT;
+                case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                    return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
+                case Engine.TEXTURE_NEAREST_LINEAR:
+                    return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
+                case Engine.TEXTURE_NEAREST_NEAREST:
+                    return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                    return NativeFilter.MINPOINT_MAGLINEAR_MIPPOINT;
+                case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                    return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+                case Engine.TEXTURE_LINEAR_LINEAR:
+                    return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
+                case Engine.TEXTURE_LINEAR_NEAREST:
+                    return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+                default:
+                    throw new Error("Unexpected sampling mode: " + samplingMode + ".");
+            }
         }
 
         public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
