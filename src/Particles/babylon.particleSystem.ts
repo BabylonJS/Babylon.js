@@ -262,6 +262,23 @@
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
 
+                        /// Drag
+                        if (this._dragGradients && this._dragGradients.length > 0) {                  
+                            Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
+                                if (currentGradient !== particle._currentDragGradient) {
+                                    particle._currentDrag1 = particle._currentDrag2;
+                                    particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();    
+                                    particle._currentDragGradient = (<FactorGradient>currentGradient);
+                                }                                
+                                
+                                let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+
+                                let dragValue = Tmp.Vector3[0];
+                                particle.direction.scaleToRef(1.0 - drag, dragValue);
+                                particle.direction.subtractInPlace(dragValue);
+                            });
+                        }                          
+
                         // Size
                         if (this._sizeGradients && this._sizeGradients.length > 0) {                  
                             Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
@@ -454,7 +471,35 @@
             this._removeFactorGradient(this._limitVelocityGradients, gradient);
 
             return this;
-        }            
+        }       
+        
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._dragGradients) {
+                this._dragGradients = [];
+            }
+
+            this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
+
+            return this;
+        }
+
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeDragGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._dragGradients, gradient);
+
+            return this;
+        }           
 
         /**
          * Adds a new color gradient
@@ -923,6 +968,18 @@
                         particle._currentLimitVelocity2 = particle._currentLimitVelocity1;
                     }
                 }                   
+
+                // Drag
+                if (this._dragGradients && this._dragGradients.length > 0) {
+                    particle._currentDragGradient = this._dragGradients[0];
+                    particle._currentDrag1 = particle._currentDragGradient.getFactor();
+
+                    if (this._dragGradients.length > 1) {
+                        particle._currentDrag2 = this._dragGradients[1].getFactor();
+                    } else {
+                        particle._currentDrag2 = particle._currentDrag1;
+                    }
+                }          
 
                 // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
