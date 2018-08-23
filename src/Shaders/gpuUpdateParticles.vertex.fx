@@ -48,6 +48,13 @@ uniform float radiusRange;
 #endif
 #endif
 
+#ifdef CYLINDEREMITTER
+uniform float radius;
+uniform float height;
+uniform float radiusRange;
+uniform float directionRandomizer;
+#endif
+
 #ifdef CONEEMITTER
 uniform vec2 radius;
 uniform float coneAngle;
@@ -233,6 +240,23 @@ void main() {
       // Direction
       direction = position + directionRandomizer * randoms3;
     #endif
+#elif defined(CYLINDEREMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Position on the cylinder
+    float yPos = (randoms2.x - 0.5)*height;
+    float angle = randoms2.y * PI * 2.;
+    float inverseRadiusRangeSquared = ((1.-radiusRange) * (1.-radiusRange));
+    float positionRadius = radius*sqrt(inverseRadiusRangeSquared + (randoms2.z * (1.-inverseRadiusRangeSquared)));
+    float xPos = positionRadius * cos(angle);
+    float zPos = positionRadius * sin(angle);
+    position = vec3(xPos, yPos, zPos);
+
+    // Direction
+    angle = angle + ((randoms3.x-0.5) * PI);
+    direction = vec3(cos(angle), randoms3.y-0.5, sin(angle));
+    direction = normalize(direction);
 #elif defined(CONEEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
 
