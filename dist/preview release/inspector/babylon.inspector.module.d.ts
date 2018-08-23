@@ -756,12 +756,12 @@ declare module 'babylonjs-inspector/helpers/Helpers' {
             /**
                 * Useful function used to create a div
                 */
-            static CreateDiv(className?: Nullable<string>, parent?: HTMLElement): HTMLDivElement;
+            static CreateDiv(className?: Nullable<string>, parent?: HTMLElement, tooltip?: string): HTMLDivElement;
             /**
                 * Useful function used to create a input
                 */
-            static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement;
-            static CreateElement(element: string, className?: Nullable<string>, parent?: HTMLElement): HTMLElement;
+            static CreateInput(className?: string, parent?: HTMLElement, tooltip?: string): HTMLInputElement;
+            static CreateElement(element: string, className?: Nullable<string>, parent?: HTMLElement, tooltip?: string): HTMLElement;
             /**
                 * Removes all children of the given div.
                 */
@@ -1921,12 +1921,12 @@ declare module INSPECTOR {
             /**
                 * Useful function used to create a div
                 */
-            static CreateDiv(className?: BABYLON.Nullable<string>, parent?: HTMLElement): HTMLDivElement;
+            static CreateDiv(className?: BABYLON.Nullable<string>, parent?: HTMLElement, tooltip?: string): HTMLDivElement;
             /**
                 * Useful function used to create a input
                 */
-            static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement;
-            static CreateElement(element: string, className?: BABYLON.Nullable<string>, parent?: HTMLElement): HTMLElement;
+            static CreateInput(className?: string, parent?: HTMLElement, tooltip?: string): HTMLInputElement;
+            static CreateElement(element: string, className?: BABYLON.Nullable<string>, parent?: HTMLElement, tooltip?: string): HTMLElement;
             /**
                 * Removes all children of the given div.
                 */
