@@ -2813,7 +2813,7 @@
 
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
-                    let finalValue: any = target[path]
+                    let finalValue: any = target[path];
                     if (matrixDecomposeMode) {
                         finalValue = this._processLateAnimationBindingsForMatrices(holder);
                     } else {
