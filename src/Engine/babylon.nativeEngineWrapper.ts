@@ -4,7 +4,7 @@
         requestAnimationFrame(callback: () => void): void;
 
         createIndexBuffer(indices: ArrayBuffer, is32Bits: boolean): WebGLBuffer;
-        bindIndexBuffer(buffer: WebGLBuffer) : void;
+        bindIndexBuffer(buffer: WebGLBuffer): void;
         
         createVertexBuffer(vertices: Float32Array): WebGLBuffer;
         bindVertexBuffer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void;
@@ -32,10 +32,33 @@
         setBool(uniform: WebGLUniformLocation, bool: number): void;
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
+        createTexture(): WebGLTexture;
+        loadTexture(texture: WebGLTexture, buffer: ArrayBuffer, mipMap: boolean): void;
+        deleteTexture(texture: Nullable<WebGLTexture>): void;
+
         drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
         draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
         clear(r: number, g: number, b: number, a: number, backBuffer: boolean, depth: boolean, stencil: boolean): void;
+    }
+
+    class NativeSamplingMode {
+        // Must match Filter enum in SpectreEngine.h.
+        public static readonly POINT = 0;
+        public static readonly MINPOINT_MAGPOINT_MIPPOINT = 1;
+        public static readonly BILINEAR = 2;
+        public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = 3;
+        public static readonly TRILINEAR = 4;
+        public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = 5;
+        public static readonly ANISOTROPIC = 6;
+        public static readonly POINT_COMPARE = 7;
+        public static readonly TRILINEAR_COMPARE = 8;
+        public static readonly MINBILINEAR_MAGPOINT = 9;
+        public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = 10;
+        public static readonly MINPOINT_MAGPOINT_MIPLINEAR = 11;
+        public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 12;
+        public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 13;
+        public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 14;
     }
 
     /** @hidden */
@@ -83,6 +106,7 @@
 
             this._options = options;
 
+            // TODO: Initialize this more correctly based on the hardware capabilities reported by Spectre.
             // Init caps
             // We consider we are on a webgl1 capable device
 
@@ -237,6 +261,8 @@
 
             this._drawCalls.addCount(1, false);
 
+            // TODO: Make this implementation more robust like core Engine version.
+
             // Render
             //var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             
@@ -259,6 +285,8 @@
             // Apply states
             // this.applyStates();
             this._drawCalls.addCount(1, false);
+
+            // TODO: Make this implementation more robust like core Engine version.
 
             // if (instancesCount) {
             //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
@@ -550,37 +578,194 @@
         }
 
         public _createTexture(): WebGLTexture {
-            return {};
+            return this._interop.createTexture();
         }
 
-        public _releaseTexture(texture: InternalTexture): void {
+        protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
+            this._interop.deleteTexture(texture);
         }
 
-        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
-            var url = String(urlArg);
+        // TODO: Refactor to share more logic with babylon.engine.ts version.
+        /**
+         * Usually called from BABYLON.Texture.ts.
+         * Passed information to create a WebGLTexture
+         * @param urlArg defines a value which contains one of the following:
+         * * A conventional http URL, e.g. 'http://...' or 'file://...'
+         * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param scene needed for loading to the correct scene
+         * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param onLoad optional callback to be called upon successful completion
+         * @param onError optional callback to be called upon failure
+         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), or a Blob
+         * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+         * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @returns a InternalTexture for assignment back into BABYLON.Texture
+         */
+        public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
+            buffer: Nullable<string | ArrayBuffer | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+            forcedExtension: Nullable<string> = null): InternalTexture {
+            var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
+            var fromData = url.substr(0, 5) === "data:";
+            var fromBlob = url.substr(0, 5) === "blob:";
+            var isBase64 = fromData && url.indexOf("base64") !== -1;
 
+            let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+
+            // establish the file extension, if possible
+            var lastDot = url.lastIndexOf('.');
+            var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+
+            // TODO: Add support for compressed texture formats.
+            var textureFormatInUse: Nullable<string> = null;
+
+            let loader: Nullable<IInternalTextureLoader> = null;
+            for (let availableLoader of Engine._TextureLoaders) {
+                if (availableLoader.canLoad(extension, textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+                    loader = availableLoader;
+                    break;
+                }
+            }
+
+            if (loader) {
+                url = loader.transformUrl(url, textureFormatInUse);
+            }
+
+            if (scene) {
+                scene._addPendingData(texture);
+            }
             texture.url = url;
             texture.generateMipMaps = !noMipmap;
             texture.samplingMode = samplingMode;
             texture.invertY = invertY;
-            texture.baseWidth = this._options.textureSize;
-            texture.baseHeight = this._options.textureSize;
-            texture.width = this._options.textureSize;
-            texture.height = this._options.textureSize;
-            if (format) {
-                texture.format = format;
+
+            if (!this.doNotHandleContextLost) {
+                // Keep a link to the buffer only if we plan to handle context lost
+                texture._buffer = buffer;
             }
 
-            texture.isReady = true;
-
-            if (onLoad) {
-                onLoad();
+            let onLoadObserver: Nullable<Observer<InternalTexture>> = null;
+            if (onLoad && !fallback) {
+                onLoadObserver = texture.onLoadedObservable.add(onLoad);
             }
 
-            this._internalTexturesCache.push(texture);
+            if (!fallback) this._internalTexturesCache.push(texture);
+
+            let onInternalError = (message?: string, exception?: any) => {
+                if (scene) {
+                    scene._removePendingData(texture);
+                }
+
+                let customFallback = false;
+                if (loader) {
+                    const fallbackUrl = loader.getFallbackTextureUrl(url, textureFormatInUse);
+                    if (fallbackUrl) {
+                        // Add Back
+                        customFallback = true;
+                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
+                }
+
+                if (!customFallback) {
+                    if (onLoadObserver) {
+                        texture.onLoadedObservable.remove(onLoadObserver);
+                    }
+                    if (Tools.UseFallbackTexture) {
+                        this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                    }
+                }
+
+                if (onError) {
+                    onError(message || "Unknown error", exception);
+                }
+            }
+
+            // processing for non-image formats
+            if (loader) {
+                throw new Error("Loading textures from loader not yet implemented.");
+                // var callback = (data: string | ArrayBuffer) => {
+                //     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
+                //         this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                //                 done();
+                //                 return false;
+                //             }, 
+                //             samplingMode);
+                //     });
+                // }
+
+                // if (!buffer) {
+                //     this._loadFile(url, callback, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                //         onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
+                //     });
+                // } else {
+                //     callback(buffer as ArrayBuffer);
+                // }
+            } else {
+                var onload = (data: string | ArrayBuffer, responseURL?: string) => {
+                    let arrayBuffer = data as ArrayBuffer;
+
+                    if (fromBlob && !this.doNotHandleContextLost) {
+                        // We need to store the image if we need to rebuild the texture
+                        // in case of a webgl context lost
+                        texture._buffer = data;
+                    }
+
+                    if (!texture._webGLTexture) {
+                        //  this.resetTextureCache();
+                        if (scene) {
+                            scene._removePendingData(texture);
+                        }
+
+                        return;
+                    }
+
+                    this._interop.loadTexture(texture._webGLTexture, arrayBuffer, !noMipmap);
+
+                    this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
+
+                    texture.baseWidth = width;
+                    texture.baseHeight = height;
+                    texture.width = width;
+                    texture.height = height;
+                    texture.isReady = true;
+        
+                    var filters = this._getSamplingParameters(samplingMode, !noMipmap);
+
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+
+                    // this.resetTextureCache();
+                    if (scene) {
+                        scene._removePendingData(texture);
+                    }
+        
+                    texture.onLoadedObservable.notifyObservers(texture);
+                    texture.onLoadedObservable.clear();
+                };
+
+                if (!fromData || isBase64) {
+                    let onLoadFileError = (request?: XMLHttpRequest, exception?: any) => {
+                        onInternalError("Failed to retrieve " + url + ".", exception);
+                    }
+                    Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
+                } else if (buffer instanceof ArrayBuffer) {
+                    onload(buffer);
+                } else if (typeof buffer === "string" || buffer instanceof Blob) {
+                    throw new Error("Loading texture from string/Blob not yet implemented.");
+                    //Tools.LoadImage(buffer, onload, onInternalError, null);
+                } else {
+                    throw new Error("Unexpected texture source type.");
+                }
+            }
 
             return texture;
+        }
+
+        private _get(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
         }
 
         public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
@@ -661,6 +846,7 @@
         }
 
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+            throw new Error("updateDynamicIndexBuffer not yet implemented.")
         }
 
         /**
@@ -671,6 +857,7 @@
          * @param byteLength the byte length of the data (optional)
          */
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
+            throw new Error("updateDynamicVertexBuffer not yet implemented.")
         }
 
         protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
@@ -682,18 +869,11 @@
             }
         }
 
-        public _bindTexture(channel: number, texture: InternalTexture): void {
-            if (channel < 0) {
-                return;
-            }
-
-            this._bindTextureDirectly(0, texture);
-        }
-
         public _releaseBuffer(buffer: WebGLBuffer): boolean {
             buffer.references--;
 
             if (buffer.references === 0) {
+                // TODO: Proactively delete the underlying buffer here in Spectre.
                 return true;
             }
 
@@ -701,6 +881,26 @@
         }
 
         public releaseEffects() {
+        }
+
+        /** @hidden */
+        public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+            throw new Error("_uploadCompressedDataToTextureDirectly not implemented.");
+        }
+
+        /** @hidden */
+        public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            throw new Error("_uploadDataToTextureDirectly not implemented.");
+        }
+
+        /** @hidden */
+        public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+            throw new Error("_uploadArrayBufferViewToTexture not implemented.");
+        }
+
+        /** @hidden */
+        public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
+            throw new Error("_uploadArrayBufferViewToTexture not implemented.");
         }
     }
 }

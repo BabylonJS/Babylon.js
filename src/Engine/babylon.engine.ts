@@ -5998,7 +5998,7 @@
             return texture;
         }
 
-        private _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<Scene>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
+        protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<Scene>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
             var gl = this._gl;
             if (!gl) {
                 return;
@@ -6026,7 +6026,7 @@
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
             processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
-            var maxTextureSize = this.getCaps().maxTextureSize;    
+            var maxTextureSize = this.getCaps().maxTextureSize;
             var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
             var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
 
@@ -6119,11 +6119,9 @@
 
         /** @hidden */
         public _releaseTexture(texture: InternalTexture): void {
-            var gl = this._gl;
-
             this._releaseFramebufferObjects(texture);
 
-            gl.deleteTexture(texture._webGLTexture);
+            this._deleteTexture(texture._webGLTexture);
 
             // Unbind channels
             this.unbindAllTextures();
@@ -6161,6 +6159,10 @@
                     });
                 });
             })
+        }
+
+        protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
+            this._gl.deleteTexture(texture);
         }
 
         private setProgram(program: WebGLProgram): void {
