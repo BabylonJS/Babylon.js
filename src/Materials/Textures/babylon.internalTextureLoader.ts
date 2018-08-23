@@ -11,7 +11,7 @@ module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param textureFormatInUse defines the current compressed format in use in the engine
          * @param fallback defines the fallback internal texture if any
          * @param isBase64 defines whether the texture is encoded as a base64
          * @param isBuffer defines whether the texture data are stored as a buffer
