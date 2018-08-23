@@ -40,6 +40,9 @@
         draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
         clear(r: number, g: number, b: number, a: number, backBuffer: boolean, depth: boolean, stencil: boolean): void;
+
+        getRenderWidth(): number;
+        getRenderHeight(): number;
     }
 
     class NativeSamplingMode {
@@ -66,9 +69,6 @@
 
     /** @hidden */
     export class NativeEngineWrapperOptions {
-        public renderWidth = 1024;
-        public renderHeight = 768;
-
         public textureSize = 512;
 
         public deterministicLockstep = false;
@@ -371,7 +371,7 @@
                 return this._currentRenderTarget.width;
             }
 
-            return this._options.renderWidth;
+            return this._interop.getRenderWidth();
         }
 
         public getRenderHeight(useScreen = false): number {
@@ -379,7 +379,7 @@
                 return this._currentRenderTarget.height;
             }
 
-            return this._options.renderHeight;
+            return this._interop.getRenderHeight();
         }
 
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
