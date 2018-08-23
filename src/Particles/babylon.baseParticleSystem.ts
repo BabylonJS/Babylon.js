@@ -240,10 +240,20 @@ module BABYLON {
         protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
         protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
         protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+        protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        public getDragGradients(): Nullable<Array<FactorGradient>> {
+            return this._dragGradients;
+        }   
 
         /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
         public limitVelocityDamping = 0.4;
-
+        
         /**
          * Gets the current list of limit velocity gradients.
          * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
