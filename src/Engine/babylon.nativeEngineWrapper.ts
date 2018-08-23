@@ -5,9 +5,9 @@
 
         createIndexBuffer(indices: ArrayBuffer, is32Bits: boolean): WebGLBuffer;
         bindIndexBuffer(buffer: WebGLBuffer): void;
-        
         createVertexBuffer(vertices: Float32Array): WebGLBuffer;
         bindVertexBuffer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void;
+        deleteBuffer(buffer: WebGLBuffer): void;
 
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
@@ -902,15 +902,16 @@
             }
         }
 
-        public _releaseBuffer(buffer: WebGLBuffer): boolean {
-            buffer.references--;
-
-            if (buffer.references === 0) {
-                // TODO: Proactively delete the underlying buffer here in Spectre.
-                return true;
+        public _bindTexture(channel: number, texture: InternalTexture): void {
+            if (channel < 0) {
+                return;
             }
 
-            return false;
+            this._bindTextureDirectly(0, texture);
+        }
+
+        protected _deleteBuffer(buffer: WebGLBuffer): void {
+            this._interop.deleteBuffer(buffer);
         }
 
         public releaseEffects() {
