@@ -107,6 +107,7 @@
 - Added EdgesLineRenderer to address [#4919](https://github.com/BabylonJS/Babylon.js/pull/4919) ([barteq100](https://github.com/barteq100))
 - Added ```ambientTextureImpactOnAnalyticalLights``` in PBRMaterial to allow fine grained control of the AmbientTexture on the analytical diffuse light ([sebavan](http://www.github.com/sebavan))
 - BoundingBoxGizmo scalePivot field that can be used to always scale objects from the bottom ([TrevorDev](https://github.com/TrevorDev))
+- Improved _isSyncronized performance and reduced GC in TransformNode.computeWorldMatrix by directly reading property. ([Bolloxim](https://github.com/Bolloxim))
 
 ### glTF Loader
 
