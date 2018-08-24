@@ -63,10 +63,13 @@ module BABYLON {
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
 
+        // Stores the state of the pivot cache (_oldPivotPoint, _pivotTranslation)
+        // store/remove pivot point should only be applied during their outermost calls
+        private _pivotCached = 0;
         private _oldPivotPoint = new Vector3();
         private _pivotTranslation = new Vector3();
         private removeAndStorePivotPoint(){
-            if(this.attachedMesh){
+            if(this.attachedMesh && this._pivotCached === 0){
                 // Save old pivot and set pivot to 0,0,0
                 this.attachedMesh.getPivotPointToRef(this._oldPivotPoint);
                 if(this._oldPivotPoint.equalsToFloats(0,0,0)){
@@ -79,16 +82,17 @@ module BABYLON {
                 this._tmpVector.multiplyInPlace(this._pivotTranslation);
                 this.attachedMesh.position.addInPlace(this._tmpVector);
             }
+            this._pivotCached++;
         }
         private restorePivotPoint(){
-            if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0)){
-                this.attachedMesh.setPivotPoint(this._oldPivotPoint);    
-                this._oldPivotPoint.subtractToRef(this.attachedMesh.getPivotPoint(), this._pivotTranslation);
+            if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0) && this._pivotCached === 1){
+                this.attachedMesh.setPivotPoint(this._oldPivotPoint);
                 this._tmpVector.copyFromFloats(1,1,1);
                 this._tmpVector.subtractInPlace(this.attachedMesh.scaling);
                 this._tmpVector.multiplyInPlace(this._pivotTranslation);
                 this.attachedMesh.position.subtractInPlace(this._tmpVector);
             }
+            this._pivotCached--;
         }
 
         /**
@@ -233,12 +237,10 @@ module BABYLON {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
                                 this.removeAndStorePivotPoint();
-                                
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
                                 this.updateBoundingBox();
-
                                 if(this.scalePivot){
                                     this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
                                     // Move anchor to desired pivot point (Bottom left corner + dimension/2)
