@@ -1718,7 +1718,7 @@
         /**
          * Modifies the mesh geometry according to the passed transformation matrix.  
          * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable. 
-         * The mesh normals are modified accordingly the same transformation.  
+         * The mesh normals are modified using the same transformation.  
          * tuto : http://doc.babylonjs.com/resources/baking_transformations  
          * Note that, under the hood, this method sets a new VertexBuffer each call.  
          * Returns the Mesh.  
@@ -1744,15 +1744,14 @@
             this.setVerticesData(VertexBuffer.PositionKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.PositionKind)).isUpdatable());
 
             // Normals
-            if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                return this;
+            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                data = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
+                temp = [];
+                for (index = 0; index < data.length; index += 3) {
+                    Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
+                }
+                this.setVerticesData(VertexBuffer.NormalKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
             }
-            data = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
-            temp = [];
-            for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
-            }
-            this.setVerticesData(VertexBuffer.NormalKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
 
             // flip faces?
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }

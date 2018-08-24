@@ -234,6 +234,7 @@
         private _sizeGradientsTexture: RawTexture;             
         private _velocityGradientsTexture: RawTexture;    
         private _limitVelocityGradientsTexture: RawTexture;    
+        private _dragGradientsTexture: RawTexture;  
 
         private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
             let valueGradient = new FactorGradient();
@@ -393,6 +394,41 @@
 
             return this;
         }
+
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient    
+         * @returns the current particle system     
+         */
+        public addDragGradient(gradient: number, factor: number): GPUParticleSystem {
+            if (!this._dragGradients) {
+                this._dragGradients = [];
+            }
+
+            this._addFactorGradient(this._dragGradients, gradient, factor);
+
+            if (this._dragGradientsTexture) {
+                this._dragGradientsTexture.dispose();
+                (<any>this._dragGradientsTexture) = null;
+            }
+
+            this._releaseBuffers();   
+
+            return this;
+        }
+
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeDragGradient(gradient: number): GPUParticleSystem {
+            this._removeGradient(gradient, this._dragGradients, this._dragGradientsTexture);
+            (<any>this._dragGradientsTexture) = null;
+
+            return this;
+        }        
 
         /**
          * Instantiates a GPU particle system.
