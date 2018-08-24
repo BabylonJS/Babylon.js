@@ -100,7 +100,14 @@
         /** @hidden */
         public _currentLimitVelocity1 = 0;
         /** @hidden */
-        public _currentLimitVelocity2 = 0;            
+        public _currentLimitVelocity2 = 0;       
+        
+        /** @hidden */
+        public _currentDragGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentDrag1 = 0;
+        /** @hidden */
+        public _currentDrag2 = 0;  
 
         /**
          * Creates a new instance Particle
@@ -182,7 +189,12 @@
                 other._currentLimitVelocityGradient = this._currentLimitVelocityGradient;
                 other._currentLimitVelocity1 = this._currentLimitVelocity1;
                 other._currentLimitVelocity2 = this._currentLimitVelocity2;
-            }                           
+            }     
+            if (this._currentDragGradient) {
+                other._currentDragGradient = this._currentDragGradient;
+                other._currentDrag1 = this._currentDrag1;
+                other._currentDrag2 = this._currentDrag2;
+            }                                   
             if (this.particleSystem.isAnimationSheetEnabled) {
                 other._initialStartSpriteCellID = this._initialStartSpriteCellID;
                 other._initialEndSpriteCellID = this._initialEndSpriteCellID;
