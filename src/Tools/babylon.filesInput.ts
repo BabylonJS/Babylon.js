@@ -10,7 +10,7 @@
         private _progressCallback: (progress: SceneLoaderProgressEvent) => void;
         private _additionalRenderLoopLogicCallback: () => void;
         private _textureLoadingCallback: (remaining: number) => void;
-        private _startingProcessingFilesCallback: () => void;
+        private _startingProcessingFilesCallback: (files?: File[]) => void;
         private _onReloadCallback: (sceneFile: File) => void;
         private _errorCallback: (sceneFile: File, scene: Scene, message: string) => void;
         private _elementToMonitor: HTMLElement;
@@ -136,8 +136,6 @@
         }
 
         public loadFiles(event: any): void {
-            if (this._startingProcessingFilesCallback) this._startingProcessingFilesCallback();
-
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
                 this._filesToLoad = event.dataTransfer.files;
@@ -146,6 +144,14 @@
             // Handling files from input files
             if (event && event.target && event.target.files) {
                 this._filesToLoad = event.target.files;
+            }
+
+            if (!this._filesToLoad || this._filesToLoad.length === 0) {
+                return;
+            }
+
+            if (this._startingProcessingFilesCallback) {
+                this._startingProcessingFilesCallback(this._filesToLoad);
             }
 
             if (this._filesToLoad && this._filesToLoad.length > 0) {
