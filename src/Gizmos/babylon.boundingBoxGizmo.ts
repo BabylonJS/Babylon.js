@@ -69,7 +69,7 @@ module BABYLON {
         private _oldPivotPoint = new Vector3();
         private _pivotTranslation = new Vector3();
         private removeAndStorePivotPoint(){
-            if(this.attachedMesh && this._pivotCached == 0){
+            if(this.attachedMesh && this._pivotCached === 0){
                 // Save old pivot and set pivot to 0,0,0
                 this.attachedMesh.getPivotPointToRef(this._oldPivotPoint);
                 if(this._oldPivotPoint.equalsToFloats(0,0,0)){
@@ -85,7 +85,7 @@ module BABYLON {
             this._pivotCached++;
         }
         private restorePivotPoint(){
-            if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0) && this._pivotCached == 1){
+            if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0) && this._pivotCached === 1){
                 this.attachedMesh.setPivotPoint(this._oldPivotPoint);
                 this._tmpVector.copyFromFloats(1,1,1);
                 this._tmpVector.subtractInPlace(this.attachedMesh.scaling);
