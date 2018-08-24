@@ -315,8 +315,10 @@ module BABYLON {
             if (value) {
                 // Reset anchor mesh to match attached mesh's scale
                 // This is needed to avoid invalid box/sphere position on first drag
+                this.removeAndStorePivotPoint();
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
+                this.restorePivotPoint();
                 this.updateBoundingBox();
             }
         }
