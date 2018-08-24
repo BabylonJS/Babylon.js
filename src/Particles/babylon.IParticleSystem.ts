@@ -200,16 +200,11 @@ module BABYLON {
         getCapacity(): number;
 
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         isStarted(): boolean;
 
-        /**
-         * Gets if the particle system has been started.
-         * @return true if the system has been started, otherwise false.
-         */
-        isStarted(): boolean;
         /**
          * Animates the particle system for this frame.
          */
@@ -362,5 +357,19 @@ module BABYLON {
          * @returns the current particle system
          */
         removeLimitVelocityGradient(gradient: number): IParticleSystem;        
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): IParticleSystem;               
     }  
 }

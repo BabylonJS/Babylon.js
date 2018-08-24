@@ -207,18 +207,18 @@
          * Gets or sets the active clipplane 2
          */
         public clipPlane2: Nullable<Plane>;
-        
+
 
         /**
          * Gets or sets the active clipplane 3
          */
         public clipPlane3: Nullable<Plane>;
-        
+
 
         /**
          * Gets or sets the active clipplane 4
          */
-        public clipPlane4: Nullable<Plane>;        
+        public clipPlane4: Nullable<Plane>;
 
         /**
          * Gets or sets a boolean indicating if animations are enabled
@@ -2742,12 +2742,13 @@
             totalWeight: number,
             animations: RuntimeAnimation[],
             originalValue: Quaternion
-        }): Quaternion {
+        }, refQuaternion: Quaternion): Quaternion {
             let originalAnimation = holder.animations[0];
             let originalValue = holder.originalValue;
 
             if (holder.animations.length === 1) {
-                return Quaternion.Slerp(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight));
+                Quaternion.SlerpToRef(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight), refQuaternion);
+                return refQuaternion;
             }
 
             let normalizer = 1.0;
@@ -2764,7 +2765,8 @@
                 weights.push(scale);
             } else {
                 if (holder.animations.length === 2) { // Slerp as soon as we can
-                    return Quaternion.Slerp(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight);
+                    Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
+                    return refQuaternion;
                 }
                 quaternions = [];
                 weights = [];
@@ -2783,7 +2785,8 @@
             let cumulativeQuaternion: Nullable<Quaternion> = null;
             for (var index = 0; index < quaternions.length;) {
                 if (!cumulativeQuaternion) {
-                    cumulativeQuaternion = Quaternion.Slerp(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]));
+                    Quaternion.SlerpToRef(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]), refQuaternion);
+                    cumulativeQuaternion = refQuaternion;
                     cumulativeAmount = weights[index] + weights[index + 1];
                     index += 2;
                     continue;
@@ -2810,13 +2813,13 @@
 
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
-                    let finalValue: any;
+                    let finalValue: any = target[path];
                     if (matrixDecomposeMode) {
                         finalValue = this._processLateAnimationBindingsForMatrices(holder);
                     } else {
                         let quaternionMode = originalValue.w !== undefined;
                         if (quaternionMode) {
-                            finalValue = this._processLateAnimationBindingsForQuaternions(holder);
+                            finalValue = this._processLateAnimationBindingsForQuaternions(holder, finalValue || Quaternion.Identity());
                         } else {
 
                             let startIndex = 0;
@@ -4186,7 +4189,7 @@
                 mesh.computeWorldMatrix();
 
                 // Intersections
-                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger)) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
