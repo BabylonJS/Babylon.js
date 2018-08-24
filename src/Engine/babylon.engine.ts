@@ -193,10 +193,6 @@
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
          */
         doNotHandleContextLost?: boolean;
-        /**
-         * Defines if the telemetry tracker should be ignored
-         */
-        disableTracker?: boolean;
     }
 
     /**
@@ -1111,19 +1107,6 @@
                 }
 
                 options.stencil = this._gl.getContextAttributes().stencil;
-            }
-
-            // Telemetry
-            if (!options.disableTracker || (Tools.IsWindowObjectExist() && location.hostname !== "localhost")) {
-                Tools.LoadScript("https://www.googletagmanager.com/gtag/js?id=UA-41767310-4", () => {
-                    let uncheckedWindow = (<any>window);
-                    uncheckedWindow.dataLayer = uncheckedWindow.dataLayer || [];
-                    function gtag(property: string, value: any) {
-                        uncheckedWindow.dataLayer.push(arguments);
-                    }
-                    gtag('js', new Date());                  
-                    gtag('config', 'UA-41767310-4'); 
-                });
             }
 
             // Viewport
