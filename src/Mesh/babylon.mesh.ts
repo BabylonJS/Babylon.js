@@ -2354,6 +2354,10 @@
             serializationObject.instances = [];
             for (var index = 0; index < this.instances.length; index++) {
                 var instance = this.instances[index];
+                if (instance.doNotSerialize) {
+                    continue;
+                }
+                
                 var serializationInstance: any = {
                     name: instance.name,
                     id: instance.id,
