@@ -173,7 +173,7 @@
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
 - Dispose existing gazeTrackers when setting a new one ([TrevorDev](https://github.com/TrevorDev))
 - Set missing parentId in Mesh.serialize() for instances ([julien-moreau](https://github.com/julien-moreau))
-- Do not modify pivot when using bounding box gizmo ([TrevorDev](https://github.com/TrevorDev))
+- Do not modify pivot point when using bounding box gizmo ([TrevorDev](https://github.com/TrevorDev))
 - GPUParticleSystem does not get stuck in burst loop when stopped and started ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
