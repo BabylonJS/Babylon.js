@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    // This matrix is used as a value to reset the bounding box.
+    const _identityMatrix = Matrix.Identity();
+    const _tempRadiusVector = new Vector3(0, 0, 0);
+
     export class BoundingSphere {
         public center: Vector3;
         public radius: number;
@@ -7,14 +11,14 @@
         public minimum: Vector3;
         public maximum: Vector3;
 
-        private _tempRadiusVector = Vector3.Zero();
-
         /**
          * Creates a new bounding sphere
          * @param min defines the minimum vector (in local space)
          * @param max defines the maximum vector (in local space)
          */
         constructor(min: Vector3, max: Vector3) {
+            this.center = Vector3.Zero();
+            this.centerWorld = Vector3.Zero();
             this.reConstruct(min, max);
         }
 
@@ -29,11 +33,11 @@
 
             var distance = Vector3.Distance(min, max);
 
-            this.center = Vector3.Lerp(min, max, 0.5);
+            Vector3.LerpToRef(min, max, 0.5, this.center);
             this.radius = distance * 0.5;
 
-            this.centerWorld = Vector3.Zero();
-            this._update(Matrix.Identity());
+            this.centerWorld.set(0, 0, 0);
+            this._update(_identityMatrix);
         }
 
         /**
@@ -43,10 +47,10 @@
          */
         public scale(factor: number): BoundingSphere {
             let newRadius = this.radius * factor;
-            let newRadiusVector = new Vector3(newRadius, newRadius, newRadius);
+            _tempRadiusVector.set(newRadius, newRadius, newRadius)
 
-            let min = this.center.subtract(newRadiusVector);
-            let max = this.center.add(newRadiusVector);
+            let min = this.center.subtract(_tempRadiusVector);
+            let max = this.center.add(_tempRadiusVector);
 
             this.reConstruct(min, max);
 
@@ -57,8 +61,8 @@
         /** @hidden */
         public _update(world: Matrix): void {
             Vector3.TransformCoordinatesToRef(this.center, world, this.centerWorld);
-            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, this._tempRadiusVector);
-            this.radiusWorld = Math.max(Math.abs(this._tempRadiusVector.x), Math.abs(this._tempRadiusVector.y), Math.abs(this._tempRadiusVector.z)) * this.radius;
+            Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, world, _tempRadiusVector);
+            this.radiusWorld = Math.max(Math.abs(_tempRadiusVector.x), Math.abs(_tempRadiusVector.y), Math.abs(_tempRadiusVector.z)) * this.radius;
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {

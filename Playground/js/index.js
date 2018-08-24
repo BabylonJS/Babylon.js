@@ -83,7 +83,7 @@ function showError(errorMessage, errorEvent) {
 
         if (examplesButton && examplesButton.length > 0) {
             var isExamplesDisplayed = false;
-            for(var i = 0; i < examplesButton.length; i++) {
+            for (var i = 0; i < examplesButton.length; i++) {
                 examplesButton[i].parentElement.onclick = function () {
                     isExamplesDisplayed = !isExamplesDisplayed;
                     if (isExamplesDisplayed) {
@@ -94,10 +94,10 @@ function showError(errorMessage, errorEvent) {
                         document.getElementById("exampleList").style.display = "none";
                         document.getElementsByClassName("wrapper")[0].style.width = "100%";
                     }
-                } 
+                }
             }
         }
-        
+
 
         var filterBar = document.getElementById("filterBar");
         if (filterBar) {
@@ -151,7 +151,7 @@ function showError(errorMessage, errorEvent) {
 
             // setToMultipleID("currentScript", "innerHTML", "Custom");
             setToMultipleID("safemodeToggle", "addClass", "checked");
-            setToMultipleID("minimapToggle", "addClass", "checked");
+            // setToMultipleID("minimapToggle", "addClass", "checked"); // Why ?!
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
 
@@ -176,10 +176,10 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
         }
 
-        var checkTypescriptSupport = function(xhr) {
+        var checkTypescriptSupport = function (xhr) {
             var filename = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
             if (xhr.responseText.indexOf("class Playground") !== -1) {// Typescript content
-                if(!filename) {
+                if (!filename) {
                     window.location.href = location.protocol + "//" + location.host + "/ts.html" + window.location.hash;
                     return false;
                 }
@@ -191,7 +191,7 @@ function showError(errorMessage, errorEvent) {
                 if (filename === "ts.html") {
                     window.location.href = location.protocol + "//" + location.host + location.pathname.replace(filename, "index.html") + window.location.hash;
                     return false;
-                }  
+                }
             }
 
             return true;
@@ -243,10 +243,10 @@ function showError(errorMessage, errorEvent) {
         var loadScriptsList = function () {
 
             var exampleList = document.getElementById("exampleList");
-           
+
             var xhr = new XMLHttpRequest();
             //Open Typescript or Javascript examples
-            if(exampleList.className != 'typescript') {
+            if (exampleList.className != 'typescript') {
                 xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
             }
             else {
@@ -265,7 +265,7 @@ function showError(errorMessage, errorEvent) {
                         }
                         scripts.sort(sortScriptsList);
 
-                                                
+
 
                         if (exampleList) {
                             for (var i = 0; i < scripts.length; i++) {
@@ -347,41 +347,41 @@ function showError(errorMessage, errorEvent) {
                                     // Old examples
                                     //loadScriptFromIndex(index);
                                     var newPG = "";
-                                    switch(index) {
-                                        case 1 : newPG = "#TAZ2CB#0"; break; // Basic scene
-                                        case 2 : newPG = "#A1210C#0"; break; // Basic elements
-                                        case 3 : newPG = "#CURCZC#0"; break; // Rotation and scaling
-                                        case 4 : newPG = "#DXARSP#0"; break; // Materials
-                                        case 5 : newPG = "#1A3M5C#0"; break; // Cameras
-                                        case 6 : newPG = "#AQRDKW#0"; break; // Lights
-                                        case 7 : newPG = "#QYFDDP#1"; break; // Animations
-                                        case 8 : newPG = "#9RI8CG#0"; break; // Sprites
-                                        case 9 : newPG = "#U8MEB0#0"; break; // Collisions
-                                        case 10 : newPG = "#KQV9SA#0"; break; // Intersections
-                                        case 11 : newPG = "#NU4F6Y#0"; break; // Picking
-                                        case 12 : newPG = "#EF9X5R#0"; break; // Particles
-                                        case 13 : newPG = "#7G0IQW#0"; break; // Environment
-                                        case 14 : newPG = "#95PXRY#0"; break; // Height map
-                                        case 15 : newPG = "#IFYDRS#0"; break; // Shadows
-                                        case 16 : newPG = "#AQZJ4C#0"; break; // Import meshes
-                                        case 17 : newPG = "#J19GYK#0"; break; // Actions
-                                        case 18 : newPG = "#UZ23UH#0"; break; // Drag and drop
-                                        case 19 : newPG = "#AQZJ4C#0"; break; // Fresnel
-                                        case 20 : newPG = "#8ZNVGR#0"; break; // Easing functions
-                                        case 21 : newPG = "#B2ZXG6#0"; break; // Procedural texture
-                                        case 22 : newPG = "#DXAEUY#0"; break; // Basic sounds
-                                        case 23 : newPG = "#EDVU95#0"; break; // Sound on mesh
-                                        case 24 : newPG = "#N96NXC#0"; break; // SSAO rendering pipeline
-                                        case 25 : newPG = "#7D2QDD#0"; break; // SSAO 2
-                                        case 26 : newPG = "#V2DAKC#0"; break; // Volumetric light scattering
-                                        case 27 : newPG = "#XH85A9#0"; break; // Refraction and reflection
-                                        case 28 : newPG = "#8MGKWK#0"; break; // PBR
-                                        case 29 : newPG = "#0K8EYN#0"; break; // Instanced bones
-                                        case 30 : newPG = "#C245A1#0"; break; // Pointer events handling
-                                        case 31 : newPG = "#TAFSN0#2"; break; // WebVR
-                                        case 32 : newPG = "#3VMTI9#0"; break; // GUI
-                                        case 33 : newPG = "#7149G4#0"; break; // Physics
-                                        
+                                    switch (index) {
+                                        case 1: newPG = "#TAZ2CB#0"; break; // Basic scene
+                                        case 2: newPG = "#A1210C#0"; break; // Basic elements
+                                        case 3: newPG = "#CURCZC#0"; break; // Rotation and scaling
+                                        case 4: newPG = "#DXARSP#0"; break; // Materials
+                                        case 5: newPG = "#1A3M5C#0"; break; // Cameras
+                                        case 6: newPG = "#AQRDKW#0"; break; // Lights
+                                        case 7: newPG = "#QYFDDP#1"; break; // Animations
+                                        case 8: newPG = "#9RI8CG#0"; break; // Sprites
+                                        case 9: newPG = "#U8MEB0#0"; break; // Collisions
+                                        case 10: newPG = "#KQV9SA#0"; break; // Intersections
+                                        case 11: newPG = "#NU4F6Y#0"; break; // Picking
+                                        case 12: newPG = "#EF9X5R#0"; break; // Particles
+                                        case 13: newPG = "#7G0IQW#0"; break; // Environment
+                                        case 14: newPG = "#95PXRY#0"; break; // Height map
+                                        case 15: newPG = "#IFYDRS#0"; break; // Shadows
+                                        case 16: newPG = "#AQZJ4C#0"; break; // Import meshes
+                                        case 17: newPG = "#J19GYK#0"; break; // Actions
+                                        case 18: newPG = "#UZ23UH#0"; break; // Drag and drop
+                                        case 19: newPG = "#AQZJ4C#0"; break; // Fresnel
+                                        case 20: newPG = "#8ZNVGR#0"; break; // Easing functions
+                                        case 21: newPG = "#B2ZXG6#0"; break; // Procedural texture
+                                        case 22: newPG = "#DXAEUY#0"; break; // Basic sounds
+                                        case 23: newPG = "#EDVU95#0"; break; // Sound on mesh
+                                        case 24: newPG = "#N96NXC#0"; break; // SSAO rendering pipeline
+                                        case 25: newPG = "#7D2QDD#0"; break; // SSAO 2
+                                        case 26: newPG = "#V2DAKC#0"; break; // Volumetric light scattering
+                                        case 27: newPG = "#XH85A9#0"; break; // Refraction and reflection
+                                        case 28: newPG = "#8MGKWK#0"; break; // PBR
+                                        case 29: newPG = "#0K8EYN#0"; break; // Instanced bones
+                                        case 30: newPG = "#C245A1#0"; break; // Pointer events handling
+                                        case 31: newPG = "#TAFSN0#2"; break; // WebVR
+                                        case 32: newPG = "#3VMTI9#0"; break; // GUI
+                                        case 33: newPG = "#7149G4#0"; break; // Physics
+
                                         default: newPG = ""; break;
                                     }
                                     window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
@@ -552,18 +552,18 @@ function showError(errorMessage, errorEvent) {
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
-                getRunCode(jsEditor, function(code) {
+                getRunCode(jsEditor, function (code) {
                     var createDefaultEngine = function () {
                         return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                     }
-    
+
                     var scene;
                     var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
 
                     if (code.indexOf("createEngine") !== -1) {
                         createEngineFunction = "createEngine";
                     }
-    
+
                     if (code.indexOf("delayCreateScene") !== -1) { // createScene
                         createSceneFunction = "delayCreateScene";
                         checkCamera = false;
@@ -574,14 +574,14 @@ function showError(errorMessage, errorEvent) {
                     } else if (code.indexOf("createscene") !== -1) { // createscene
                         createSceneFunction = "createscene";
                     }
-    
+
                     if (!createSceneFunction) {
                         // just pasted code.
                         engine = createDefaultEngine();
                         scene = new BABYLON.Scene(engine);
                         eval("runScript = function(scene, canvas) {" + code + "}");
                         runScript(scene, canvas);
-    
+
                         zipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
                     } else {
                         //execute the code
@@ -592,59 +592,59 @@ function showError(errorMessage, errorEvent) {
                             showError("createEngine function must return an engine.", null);
                             return;
                         }
-    
+
                         //create scene
                         eval("scene = " + createSceneFunction + "()");
-    
+
                         if (!scene) {
                             showError(createSceneFunction + " function must return a scene.", null);
                             return;
                         }
-    
+
                         var createEngineZip = (createEngineFunction === "createEngine")
                             ? "createEngine()"
                             : defaultEngineZip
 
-                        zipCode = 
+                        zipCode =
                             code + "\r\n\r\n" +
                             "var engine = " + createEngineZip + ";\r\n" +
                             "var scene = " + createSceneFunction + "();"
 
                     }
-    
+
                     engine.runRenderLoop(function () {
                         if (engine.scenes.length === 0) {
                             return;
                         }
-    
+
                         if (canvas.width !== canvas.clientWidth) {
                             engine.resize();
                         }
-    
+
                         var scene = engine.scenes[0];
-    
+
                         if (scene.activeCamera || scene.activeCameras.length > 0) {
                             scene.render();
                         }
-    
+
                         fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                         fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                     });
-    
+
                     if (engine.scenes.length === 0) {
                         showError("You must at least create a scene.", null);
                         return;
                     }
-    
+
                     if (checkCamera && engine.scenes[0].activeCamera == null) {
                         showError("You must at least create a camera.", null);
                         return;
                     }
-    
+
                     engine.scenes[0].executeWhenReady(function () {
                         document.getElementById("statusBar").innerHTML = "";
                     });
-    
+
                     if (scene) {
                         if (showInspector) {
                             scene.debugLayer.show({ initialTab: initialTabIndex });
@@ -655,7 +655,7 @@ function showError(errorMessage, errorEvent) {
                             scene.debugLayer.show();
                         }
                     }
-                });              
+                });
 
             } catch (e) {
                 showError(e.message, e);
@@ -899,7 +899,7 @@ function showError(errorMessage, errorEvent) {
             if (editorButton.classList.contains('checked')) {
                 setToMultipleID("editorButton", "removeClass", 'checked');
                 splitInstance.collapse(0);
-                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="far fa-square" aria-hidden="true"></i>');
             } else {
                 setToMultipleID("editorButton", "addClass", 'checked');
                 splitInstance.setSizes([50, 50]);  // Reset
@@ -908,7 +908,7 @@ function showError(errorMessage, errorEvent) {
             engine.resize();
 
             if (scene.debugLayer.isVisible()) {
-                scene.debugLayer.hide();
+                scene.debugLayer.hide();  // Because when you close it with the cross, it doesn't call hide(), so you have to do it in code
                 scene.debugLayer.show();
             }
         }
@@ -941,8 +941,12 @@ function showError(errorMessage, errorEvent) {
                 contextmenu: false,
                 folding: true,
                 showFoldingControls: "always",
-                renderIndentGuides: true
-            };            
+                renderIndentGuides: true,
+                minimap: {
+                    enabled: true
+                }
+            };
+            editorOptions.minimap.enabled = document.getElementById("minimapToggle1600").classList.contains('checked');
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
@@ -963,21 +967,17 @@ function showError(errorMessage, errorEvent) {
             }
 
             localStorage.setItem("bjs-playground-theme", theme);
-
         }
 
         var toggleDebug = function () {
-            var debugButton = document.getElementById("debugButton1600");
+            // Always showing the debug layer, because you can close it by itself
             var scene = engine.scenes[0];
-
-            if (debugButton.classList.contains('uncheck')) {
-                setToMultipleID("debugButton", "removeClass", 'uncheck');
-                setToMultipleID("debugButton", "innerHTML", 'Inspector<i class="fa fa-check-square" aria-hidden="true"></i>');
-                scene.debugLayer.show();
-            } else {
-                setToMultipleID("debugButton", "addClass", 'uncheck');
-                setToMultipleID("debugButton", "innerHTML", 'Inspector<i class="fa fa-square-o" aria-hidden="true"></i>');
+            if (document.getElementsByClassName("insp-right-panel")[0]) {
                 scene.debugLayer.hide();
+            }
+            else {
+                scene.debugLayer.hide(); // Because when you close it with the cross, it doesn't call hide(), so you have to do it in code
+                scene.debugLayer.show();
             }
         }
 
@@ -994,7 +994,7 @@ function showError(errorMessage, errorEvent) {
             var minimapToggle = document.getElementById("minimapToggle1600");
             if (minimapToggle.classList.contains('checked')) {
                 jsEditor.updateOptions({ minimap: { enabled: false } });
-                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="far fa-square" aria-hidden="true"></i>');
             } else {
                 jsEditor.updateOptions({ minimap: { enabled: true } });
                 setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
@@ -1202,7 +1202,7 @@ function showError(errorMessage, errorEvent) {
             if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
                 setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
             } else {
-                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="far fa-square" aria-hidden="true"></i>');
             }
         });
         // Editor
@@ -1224,6 +1224,7 @@ function showError(errorMessage, errorEvent) {
         // Restore theme
         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
         toggleTheme(theme);
+        toggleMinimap();
     }
 
     // Monaco
