@@ -68,7 +68,7 @@ module BABYLON {
         private _pivotCached = 0;
         private _oldPivotPoint = new Vector3();
         private _pivotTranslation = new Vector3();
-        private removeAndStorePivotPoint(){
+        private _removeAndStorePivotPoint(){
             if(this.attachedMesh && this._pivotCached === 0){
                 // Save old pivot and set pivot to 0,0,0
                 this.attachedMesh.getPivotPointToRef(this._oldPivotPoint);
@@ -84,7 +84,7 @@ module BABYLON {
             }
             this._pivotCached++;
         }
-        private restorePivotPoint(){
+        private _restorePivotPoint(){
             if(this.attachedMesh && !this._oldPivotPoint.equalsToFloats(0,0,0) && this._pivotCached === 1){
                 this.attachedMesh.setPivotPoint(this._oldPivotPoint);
                 this._tmpVector.copyFromFloats(1,1,1);
@@ -161,7 +161,7 @@ module BABYLON {
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
-                        this.removeAndStorePivotPoint();
+                        this._removeAndStorePivotPoint();
 
                         var worldDragDirection = startingTurnDirection;
 
@@ -201,7 +201,7 @@ module BABYLON {
                         }
                         this.updateBoundingBox();
 
-                        this.restorePivotPoint();
+                        this._restorePivotPoint();
                     }
                 });
 
@@ -236,7 +236,7 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if(this.attachedMesh){
-                                this.removeAndStorePivotPoint();
+                                this._removeAndStorePivotPoint();
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length())*this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance,relativeDragDistance,relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
@@ -263,7 +263,7 @@ module BABYLON {
                                 }
                                 this._anchorMesh.removeChild(this.attachedMesh);
 
-                                this.restorePivotPoint();
+                                this._restorePivotPoint();
                             }
                         })
 
@@ -315,8 +315,10 @@ module BABYLON {
             if (value) {
                 // Reset anchor mesh to match attached mesh's scale
                 // This is needed to avoid invalid box/sphere position on first drag
+                this._removeAndStorePivotPoint();
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
+                this._restorePivotPoint();
                 this.updateBoundingBox();
             }
         }
@@ -342,7 +344,7 @@ module BABYLON {
          */
         public updateBoundingBox(){
             if(this.attachedMesh){
-                this.removeAndStorePivotPoint();
+                this._removeAndStorePivotPoint();
                 this._update();
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
@@ -437,7 +439,7 @@ module BABYLON {
             }
             if (this.attachedMesh) {
                 this._existingMeshScale.copyFrom(this.attachedMesh.scaling);   
-                this.restorePivotPoint();
+                this._restorePivotPoint();
             }
         }
 
