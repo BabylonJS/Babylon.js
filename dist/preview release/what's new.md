@@ -175,6 +175,7 @@
 - Set missing parentId in Mesh.serialize() for instances ([julien-moreau](https://github.com/julien-moreau))
 - Do not modify pivot point when using bounding box gizmo ([TrevorDev](https://github.com/TrevorDev))
 - GPUParticleSystem does not get stuck in burst loop when stopped and started ([TrevorDev](https://github.com/TrevorDev))
+- trackPosition not working in webVRCamera ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 

@@ -596,6 +596,7 @@ module BABYLON {
             return Matrix.Identity();
         }
 
+        private _tmpMatrix = new BABYLON.Matrix();
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
@@ -635,8 +636,14 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
-
+             
             parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
+
+            // Remove translation from 6dof headset if trackposition is set to false
+            if(parentCamera.rawPose && parentCamera.rawPose.position && !parentCamera.webVROptions.trackPosition){
+                Matrix.TranslationToRef(parentCamera.rawPose.position[0], parentCamera.rawPose.position[1], -parentCamera.rawPose.position[2], parentCamera._tmpMatrix);
+                parentCamera._tmpMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
+            }
 
             // Compute global position
             this._workingMatrix = this._workingMatrix || Matrix.Identity();
