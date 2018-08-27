@@ -2687,7 +2687,11 @@
                     }
 
                     if (Tags) {
-                        Tags.AddTagsTo(instance, parsedInstance.tags);
+                        if (parsedInstance.tags) {
+                            Tags.AddTagsTo(instance, parsedInstance.tags);
+                        } else {
+                            Tags.AddTagsTo(instance, parsedMesh.tags);
+                        }
                     }
 
                     instance.position = Vector3.FromArray(parsedInstance.position);
