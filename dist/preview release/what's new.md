@@ -35,6 +35,7 @@
   - Added support for velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#velocity-over-time)
   - Added support for limit velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time)
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
+  - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))

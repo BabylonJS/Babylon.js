@@ -3455,331 +3455,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Analyser {
-        /**
-         * Gets or sets the smoothing
-         * @ignorenaming
-         */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
-         */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
-         */
-        getFrequencyBinCount(): number;
-        /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
-         */
-        getByteFrequencyData(): Uint8Array;
-        /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
-         */
-        getByteTimeDomainData(): Uint8Array;
-        /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
-         */
-        getFloatFrequencyData(): Float32Array;
-        /**
-         * Renders the debug canvas
-         */
-        drawDebugCanvas(): void;
-        /**
-         * Stops rendering the debug canvas and removes it
-         */
-        stopDebugCanvas(): void;
-        /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
-         */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: Nullable<AudioContext>;
-        constructor();
-        private _unlockiOSaudio;
-        private _initializeAudioContext;
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        /**
-         * Observable event when the current playing sound finishes.
-         */
-        onEndedObservable: Observable<Sound>;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _outputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded;
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters;
-        private _updateSpatialParameters;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel;
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        /**
-         * Gets or sets the inner angle for the directional cone.
-         */
-        /**
-        * Gets or sets the inner angle for the directional cone.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Gets or sets the outer angle for the directional cone.
-         */
-        /**
-        * Gets or sets the outer angle for the directional cone.
-        */
-        directionalConeOuterAngle: number;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection;
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended;
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate;
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph;
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Wraps one or more Sound objects and selects one with random weight for playback.
-     */
-    class WeightedSound {
-        /** When true a Sound will be selected and played when the current playing Sound completes. */
-        loop: boolean;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _volume;
-        /** A Sound is currently playing. */
-        isPlaying: boolean;
-        /** A Sound is currently paused. */
-        isPaused: boolean;
-        private _sounds;
-        private _weights;
-        private _currentIndex?;
-        /**
-         * Creates a new WeightedSound from the list of sounds given.
-         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
-         * @param sounds Array of Sounds that will be selected from.
-         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
-         */
-        constructor(loop: boolean, sounds: Sound[], weights: number[]);
-        /**
-         * The size of cone in degrees for a directional sound in which there will be no attenuation.
-         */
-        /**
-        * The size of cone in degress for a directional sound in which there will be no attenuation.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Size of cone in degrees for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        /**
-        * Size of cone in degrees for a directional sound outside of which there will be no sound.
-        * Listener angles between innerAngle and outerAngle will falloff linearly.
-        */
-        directionalConeOuterAngle: number;
-        /**
-         * Playback volume.
-         */
-        /**
-        * Playback volume.
-        */
-        volume: number;
-        private _onended;
-        /**
-         * Suspend playback
-         */
-        pause(): void;
-        /**
-         * Stop playback
-         */
-        stop(): void;
-        /**
-         * Start playback.
-         * @param startOffset Position the clip head at a specific time in seconds.
-         */
-        play(startOffset?: number): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to store an actual running animation
      */
     class Animatable {
@@ -4912,6 +4587,331 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: Nullable<AudioContext>;
+        constructor();
+        private _unlockiOSaudio;
+        private _initializeAudioContext;
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        onEndedObservable: Observable<Sound>;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        /** @hidden */
+        _positionInEmitterSpace: boolean;
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _outputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded;
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters;
+        private _updateSpatialParameters;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel;
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        /**
+        * Gets or sets the inner angle for the directional cone.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        /**
+        * Gets or sets the outer angle for the directional cone.
+        */
+        directionalConeOuterAngle: number;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection;
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended;
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate;
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph;
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Wraps one or more Sound objects and selects one with random weight for playback.
+     */
+    class WeightedSound {
+        /** When true a Sound will be selected and played when the current playing Sound completes. */
+        loop: boolean;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _volume;
+        /** A Sound is currently playing. */
+        isPlaying: boolean;
+        /** A Sound is currently paused. */
+        isPaused: boolean;
+        private _sounds;
+        private _weights;
+        private _currentIndex?;
+        /**
+         * Creates a new WeightedSound from the list of sounds given.
+         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
+         * @param sounds Array of Sounds that will be selected from.
+         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
+         */
+        constructor(loop: boolean, sounds: Sound[], weights: number[]);
+        /**
+         * The size of cone in degrees for a directional sound in which there will be no attenuation.
+         */
+        /**
+        * The size of cone in degress for a directional sound in which there will be no attenuation.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Size of cone in degrees for a directional sound outside of which there will be no sound.
+         * Listener angles between innerAngle and outerAngle will falloff linearly.
+         */
+        /**
+        * Size of cone in degrees for a directional sound outside of which there will be no sound.
+        * Listener angles between innerAngle and outerAngle will falloff linearly.
+        */
+        directionalConeOuterAngle: number;
+        /**
+         * Playback volume.
+         */
+        /**
+        * Playback volume.
+        */
+        volume: number;
+        private _onended;
+        /**
+         * Suspend playback
+         */
+        pause(): void;
+        /**
+         * Stop playback
+         */
+        stop(): void;
+        /**
+         * Start playback.
+         * @param startOffset Position the clip head at a specific time in seconds.
+         */
+        play(startOffset?: number): void;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Interface used to define a behavior
      */
     interface Behavior<T> {
@@ -5710,6 +5710,437 @@ declare module BABYLON {
          */
         sortBones(): void;
         private _sortBones;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        minimum: Vector3;
+        maximum: Vector3;
+        private _worldMatrix;
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding box from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        /**
+         * Scale the current bounding box by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingBox;
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        /** @hidden */
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        /**
+         * Scale the current bounding info by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding info
+         */
+        scale(factor: number): BoundingInfo;
+        /**
+         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
+         * @param frustumPlanes defines the frustum to test
+         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
+         * @returns true if the bounding info is in the frustum planes
+         */
+        isInFrustum(frustumPlanes: Plane[], strategy?: number): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        /** @hidden */
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        minimum: Vector3;
+        maximum: Vector3;
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         */
+        constructor(min: Vector3, max: Vector3);
+        /**
+         * Recreates the entire bounding sphere from scratch
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         */
+        reConstruct(min: Vector3, max: Vector3): void;
+        /**
+         * Scale the current bounding sphere by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingSphere;
+        /** @hidden */
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        /**
+         * Gets the hosting scene
+         */
+        scene: Nullable<Scene>;
+        /**
+         * Gets or sets a number used to scale line length
+         */
+        scaleLines: number;
+        /**
+         * Creates a new AxesViewer
+         * @param scene defines the hosting scene
+         * @param scaleLines defines a number used to scale line length (1 by default)
+         */
+        constructor(scene: Scene, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         * @param position defines the position of the viewer
+         * @param xaxis defines the x axis of the viewer
+         * @param yaxis defines the y axis of the viewer
+         * @param zaxis defines the z axis of the viewer
+         */
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
+     */
+    class BoneAxesViewer extends AxesViewer {
+        /**
+         * Gets or sets the target mesh where to display the axes viewer
+         */
+        mesh: Nullable<Mesh>;
+        /**
+         * Gets or sets the target bone where to display the axes viewer
+         */
+        bone: Nullable<Bone>;
+        /** Gets current position */
+        pos: Vector3;
+        /** Gets direction of X axis */
+        xaxis: Vector3;
+        /** Gets direction of Y axis */
+        yaxis: Vector3;
+        /** Gets direction of Z axis */
+        zaxis: Vector3;
+        /**
+         * Creates a new BoneAxesViewer
+         * @param scene defines the hosting scene
+         * @param bone defines the target bone
+         * @param mesh defines the target mesh
+         * @param scaleLines defines a scaling factor for line length (1 by default)
+         */
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         */
+        update(): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        onPropertyChangedObservable: Observable<{
+            object: any;
+            property: string;
+            value: any;
+            initialValue: any;
+        }>;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector;
+        isVisible(): boolean;
+        hide(): void;
+        /**
+        *
+        * Launch the debugLayer.
+        *
+        * initialTab:
+        * | Value | Tab Name |
+        * | --- | --- |
+        * | 0 | Scene |
+        * | 1 | Console |
+        * | 2 | Stats |
+        * | 3 | Textures |
+        * | 4 | Mesh |
+        * | 5 | Light |
+        * | 6 | Material |
+        * | 7 | GLTF |
+        * | 8 | GUI |
+        * | 9 | Physics |
+        * | 10 | Camera |
+        * | 11 | Audio |
+        *
+        */
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+        /**
+         * Gets the active tab
+         * @return the index of the active tab or -1 if the inspector is hidden
+         */
+        getActiveTab(): number;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh
+     */
+    class PhysicsViewer {
+        /** @hidden */
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        /** @hidden */
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        /** @hidden */
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        protected _numMeshes: number;
+        /** @hidden */
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        /**
+         * Creates a new PhysicsViewer
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /** @hidden */
+        protected _updateDebugMeshes(): void;
+        /**
+         * Renders a specified physic impostor
+         * @param impostor defines the impostor to render
+         */
+        showImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Hides a specified physic impostor
+         * @param impostor defines the impostor to hide
+         */
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial;
+        private _getDebugBoxMesh;
+        private _getDebugSphereMesh;
+        private _getDebugMesh;
+        /** Releases all resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color?: Color3): void;
+        hide(): void;
+        private _render;
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Class used to render a debug view of a given skeleton
+     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+     */
+    class SkeletonViewer {
+        /** defines the skeleton to render */
+        skeleton: Skeleton;
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh;
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices: boolean;
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId: number;
+        /** Gets or sets the color used to render the skeleton */
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        /**
+         * Creates a new SkeletonViewer
+         * @param skeleton defines the skeleton to render
+         * @param mesh defines the mesh attached to the skeleton
+         * @param scene defines the hosting scene
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
+         * @param renderingGroupId defines the rendering group id to use with the viewer
+         */
+        constructor(
+        /** defines the skeleton to render */
+        skeleton: Skeleton, 
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh, scene: Scene, 
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices?: boolean, 
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId?: number);
+        /** Gets or sets a boolean indicating if the viewer is enabled */
+        isEnabled: boolean;
+        private _getBonePosition;
+        private _getLinesForBonesWithLength;
+        private _getLinesForBonesNoLength;
+        /** Update the viewer to sync with current skeleton state */
+        update(): void;
+        /** Release associated resources */
+        dispose(): void;
     }
 }
 
@@ -6847,437 +7278,6 @@ declare module BABYLON {
          * @returns the vector containing the coordnates of the texture
          */
         getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        minimum: Vector3;
-        maximum: Vector3;
-        private _worldMatrix;
-        /**
-         * Creates a new bounding box
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding box from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        /**
-         * Scale the current bounding box by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingBox;
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        /** @hidden */
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        /**
-         * Scale the current bounding info by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding info
-         */
-        scale(factor: number): BoundingInfo;
-        /**
-         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
-         * @param frustumPlanes defines the frustum to test
-         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
-         * @returns true if the bounding info is in the frustum planes
-         */
-        isInFrustum(frustumPlanes: Plane[], strategy?: number): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        /** @hidden */
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        minimum: Vector3;
-        maximum: Vector3;
-        /**
-         * Creates a new bounding sphere
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         */
-        constructor(min: Vector3, max: Vector3);
-        /**
-         * Recreates the entire bounding sphere from scratch
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         */
-        reConstruct(min: Vector3, max: Vector3): void;
-        /**
-         * Scale the current bounding sphere by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingSphere;
-        /** @hidden */
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo;
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        /**
-         * Gets the hosting scene
-         */
-        scene: Nullable<Scene>;
-        /**
-         * Gets or sets a number used to scale line length
-         */
-        scaleLines: number;
-        /**
-         * Creates a new AxesViewer
-         * @param scene defines the hosting scene
-         * @param scaleLines defines a number used to scale line length (1 by default)
-         */
-        constructor(scene: Scene, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         * @param position defines the position of the viewer
-         * @param xaxis defines the x axis of the viewer
-         * @param yaxis defines the y axis of the viewer
-         * @param zaxis defines the z axis of the viewer
-         */
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
-     */
-    class BoneAxesViewer extends AxesViewer {
-        /**
-         * Gets or sets the target mesh where to display the axes viewer
-         */
-        mesh: Nullable<Mesh>;
-        /**
-         * Gets or sets the target bone where to display the axes viewer
-         */
-        bone: Nullable<Bone>;
-        /** Gets current position */
-        pos: Vector3;
-        /** Gets direction of X axis */
-        xaxis: Vector3;
-        /** Gets direction of Y axis */
-        yaxis: Vector3;
-        /** Gets direction of Z axis */
-        zaxis: Vector3;
-        /**
-         * Creates a new BoneAxesViewer
-         * @param scene defines the hosting scene
-         * @param bone defines the target bone
-         * @param mesh defines the target mesh
-         * @param scaleLines defines a scaling factor for line length (1 by default)
-         */
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         */
-        update(): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        onPropertyChangedObservable: Observable<{
-            object: any;
-            property: string;
-            value: any;
-            initialValue: any;
-        }>;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector;
-        isVisible(): boolean;
-        hide(): void;
-        /**
-        *
-        * Launch the debugLayer.
-        *
-        * initialTab:
-        * | Value | Tab Name |
-        * | --- | --- |
-        * | 0 | Scene |
-        * | 1 | Console |
-        * | 2 | Stats |
-        * | 3 | Textures |
-        * | 4 | Mesh |
-        * | 5 | Light |
-        * | 6 | Material |
-        * | 7 | GLTF |
-        * | 8 | GUI |
-        * | 9 | Physics |
-        * | 10 | Camera |
-        * | 11 | Audio |
-        *
-        */
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-        /**
-         * Gets the active tab
-         * @return the index of the active tab or -1 if the inspector is hidden
-         */
-        getActiveTab(): number;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh
-     */
-    class PhysicsViewer {
-        /** @hidden */
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        /** @hidden */
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        /** @hidden */
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        protected _numMeshes: number;
-        /** @hidden */
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        /**
-         * Creates a new PhysicsViewer
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /** @hidden */
-        protected _updateDebugMeshes(): void;
-        /**
-         * Renders a specified physic impostor
-         * @param impostor defines the impostor to render
-         */
-        showImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Hides a specified physic impostor
-         * @param impostor defines the impostor to hide
-         */
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial;
-        private _getDebugBoxMesh;
-        private _getDebugSphereMesh;
-        private _getDebugMesh;
-        /** Releases all resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color?: Color3): void;
-        hide(): void;
-        private _render;
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Class used to render a debug view of a given skeleton
-     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
-     */
-    class SkeletonViewer {
-        /** defines the skeleton to render */
-        skeleton: Skeleton;
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh;
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices: boolean;
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId: number;
-        /** Gets or sets the color used to render the skeleton */
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        /**
-         * Creates a new SkeletonViewer
-         * @param skeleton defines the skeleton to render
-         * @param mesh defines the mesh attached to the skeleton
-         * @param scene defines the hosting scene
-         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
-         * @param renderingGroupId defines the rendering group id to use with the viewer
-         */
-        constructor(
-        /** defines the skeleton to render */
-        skeleton: Skeleton, 
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh, scene: Scene, 
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices?: boolean, 
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId?: number);
-        /** Gets or sets a boolean indicating if the viewer is enabled */
-        isEnabled: boolean;
-        private _getBonePosition;
-        private _getLinesForBonesWithLength;
-        private _getLinesForBonesNoLength;
-        /** Update the viewer to sync with current skeleton state */
-        update(): void;
-        /** Release associated resources */
-        dispose(): void;
     }
 }
 
@@ -9581,73 +9581,6 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        /**
-         * Ray from a pointer if availible (eg. 6dof controller)
-         */
-        ray: Nullable<Ray>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
     class StickValues {
         x: number;
         y: number;
@@ -9932,6 +9865,486 @@ declare module BABYLON {
          */
         update(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        /**
+         * Ray from a pointer if availible (eg. 6dof controller)
+         */
+        ray: Nullable<Ray>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents the different options available during the creation of
+     * a Environment helper.
+     *
+     * This can control the default ground, skybox and image processing setup of your scene.
+     */
+    interface IEnvironmentHelperOptions {
+        /**
+         * Specifies wether or not to create a ground.
+         * True by default.
+         */
+        createGround: boolean;
+        /**
+         * Specifies the ground size.
+         * 15 by default.
+         */
+        groundSize: number;
+        /**
+         * The texture used on the ground for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        groundTexture: string | BaseTexture;
+        /**
+         * The color mixed in the ground texture by default.
+         * BabylonJS clearColor by default.
+         */
+        groundColor: Color3;
+        /**
+         * Specifies the ground opacity.
+         * 1 by default.
+         */
+        groundOpacity: number;
+        /**
+         * Enables the ground to receive shadows.
+         * True by default.
+         */
+        enableGroundShadow: boolean;
+        /**
+         * Helps preventing the shadow to be fully black on the ground.
+         * 0.5 by default.
+         */
+        groundShadowLevel: number;
+        /**
+         * Creates a mirror texture attach to the ground.
+         * false by default.
+         */
+        enableGroundMirror: boolean;
+        /**
+         * Specifies the ground mirror size ratio.
+         * 0.3 by default as the default kernel is 64.
+         */
+        groundMirrorSizeRatio: number;
+        /**
+         * Specifies the ground mirror blur kernel size.
+         * 64 by default.
+         */
+        groundMirrorBlurKernel: number;
+        /**
+         * Specifies the ground mirror visibility amount.
+         * 1 by default
+         */
+        groundMirrorAmount: number;
+        /**
+         * Specifies the ground mirror reflectance weight.
+         * This uses the standard weight of the background material to setup the fresnel effect
+         * of the mirror.
+         * 1 by default.
+         */
+        groundMirrorFresnelWeight: number;
+        /**
+         * Specifies the ground mirror Falloff distance.
+         * This can helps reducing the size of the reflection.
+         * 0 by Default.
+         */
+        groundMirrorFallOffDistance: number;
+        /**
+         * Specifies the ground mirror texture type.
+         * Unsigned Int by Default.
+         */
+        groundMirrorTextureType: number;
+        /**
+         * Specifies a bias applied to the ground vertical position to prevent z-fighting with
+         * the shown objects.
+         */
+        groundYBias: number;
+        /**
+         * Specifies wether or not to create a skybox.
+         * True by default.
+         */
+        createSkybox: boolean;
+        /**
+         * Specifies the skybox size.
+         * 20 by default.
+         */
+        skyboxSize: number;
+        /**
+         * The texture used on the skybox for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        skyboxTexture: string | BaseTexture;
+        /**
+         * The color mixed in the skybox texture by default.
+         * BabylonJS clearColor by default.
+         */
+        skyboxColor: Color3;
+        /**
+         * The background rotation around the Y axis of the scene.
+         * This helps aligning the key lights of your scene with the background.
+         * 0 by default.
+         */
+        backgroundYRotation: number;
+        /**
+         * Compute automatically the size of the elements to best fit with the scene.
+         */
+        sizeAuto: boolean;
+        /**
+         * Default position of the rootMesh if autoSize is not true.
+         */
+        rootPosition: Vector3;
+        /**
+         * Sets up the image processing in the scene.
+         * true by default.
+         */
+        setupImageProcessing: boolean;
+        /**
+         * The texture used as your environment texture in the scene.
+         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        environmentTexture: string | BaseTexture;
+        /**
+         * The value of the exposure to apply to the scene.
+         * 0.6 by default if setupImageProcessing is true.
+         */
+        cameraExposure: number;
+        /**
+         * The value of the contrast to apply to the scene.
+         * 1.6 by default if setupImageProcessing is true.
+         */
+        cameraContrast: number;
+        /**
+         * Specifies wether or not tonemapping should be enabled in the scene.
+         * true by default if setupImageProcessing is true.
+         */
+        toneMappingEnabled: boolean;
+    }
+    /**
+     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
+     * It also helps with the default setup of your imageProcessing configuration.
+     */
+    class EnvironmentHelper {
+        /**
+         * Default ground texture URL.
+         */
+        private static _groundTextureCDNUrl;
+        /**
+         * Default skybox texture URL.
+         */
+        private static _skyboxTextureCDNUrl;
+        /**
+         * Default environment texture URL.
+         */
+        private static _environmentTextureCDNUrl;
+        /**
+         * Creates the default options for the helper.
+         */
+        private static _getDefaultOptions;
+        private _rootMesh;
+        /**
+         * Gets the root mesh created by the helper.
+         */
+        readonly rootMesh: Mesh;
+        private _skybox;
+        /**
+         * Gets the skybox created by the helper.
+         */
+        readonly skybox: Nullable<Mesh>;
+        private _skyboxTexture;
+        /**
+         * Gets the skybox texture created by the helper.
+         */
+        readonly skyboxTexture: Nullable<BaseTexture>;
+        private _skyboxMaterial;
+        /**
+         * Gets the skybox material created by the helper.
+         */
+        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
+        private _ground;
+        /**
+         * Gets the ground mesh created by the helper.
+         */
+        readonly ground: Nullable<Mesh>;
+        private _groundTexture;
+        /**
+         * Gets the ground texture created by the helper.
+         */
+        readonly groundTexture: Nullable<BaseTexture>;
+        private _groundMirror;
+        /**
+         * Gets the ground mirror created by the helper.
+         */
+        readonly groundMirror: Nullable<MirrorTexture>;
+        /**
+         * Gets the ground mirror render list to helps pushing the meshes
+         * you wish in the ground reflection.
+         */
+        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
+        private _groundMaterial;
+        /**
+         * Gets the ground material created by the helper.
+         */
+        readonly groundMaterial: Nullable<BackgroundMaterial>;
+        /**
+         * Stores the creation options.
+         */
+        private readonly _scene;
+        private _options;
+        /**
+         * This observable will be notified with any error during the creation of the environment,
+         * mainly texture creation errors.
+         */
+        onErrorObservable: Observable<{
+            message?: string;
+            exception?: any;
+        }>;
+        /**
+         * constructor
+         * @param options
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
+        /**
+         * Sets the primary color of all the available elements.
+         * @param color the main color to affect to the ground and the background
+         */
+        setMainColor(color: Color3): void;
+        /**
+         * Setup the image processing according to the specified options.
+         */
+        private _setupImageProcessing;
+        /**
+         * Setup the environment texture according to the specified options.
+         */
+        private _setupEnvironmentTexture;
+        /**
+         * Setup the background according to the specified options.
+         */
+        private _setupBackground;
+        /**
+         * Get the scene sizes according to the setup.
+         */
+        private _getSceneSize;
+        /**
+         * Setup the ground according to the specified options.
+         */
+        private _setupGround;
+        /**
+         * Setup the ground material according to the specified options.
+         */
+        private _setupGroundMaterial;
+        /**
+         * Setup the ground diffuse texture according to the specified options.
+         */
+        private _setupGroundDiffuseTexture;
+        /**
+         * Setup the ground mirror texture according to the specified options.
+         */
+        private _setupGroundMirrorTexture;
+        /**
+         * Setup the ground to receive the mirror texture.
+         */
+        private _setupMirrorInGroundMaterial;
+        /**
+         * Setup the skybox according to the specified options.
+         */
+        private _setupSkybox;
+        /**
+         * Setup the skybox material according to the specified options.
+         */
+        private _setupSkyboxMaterial;
+        /**
+         * Setup the skybox reflection texture according to the specified options.
+         */
+        private _setupSkyboxReflectionTexture;
+        private _errorHandler;
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
+     * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
+     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     */
+    class PhotoDome extends TransformNode {
+        private _useDirectMapping;
+        /**
+         * The texture being displayed on the sphere
+         */
+        protected _photoTexture: Texture;
+        /**
+         * Gets or sets the texture being displayed on the sphere
+         */
+        photoTexture: Texture;
+        /**
+         * Observable raised when an error occured while loading the 360 image
+         */
+        onLoadErrorObservable: Observable<string>;
+        /**
+         * The skybox material
+         */
+        protected _material: BackgroundMaterial;
+        /**
+         * The surface used for the skybox
+         */
+        protected _mesh: Mesh;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        fovMultiplier: number;
+        /**
+         * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
+         * @param name Element's name, child elements will append suffixes for their own names.
+         * @param urlsOfPhoto defines the url of the photo to display
+         * @param options defines an object containing optional or exposed sub element properties
+         * @param onError defines a callback called when an error occured while loading the texture
+         */
+        constructor(name: string, urlOfPhoto: string, options: {
+            resolution?: number;
+            size?: number;
+            useDirectMapping?: boolean;
+        }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of TransformNode, this allow parenting to the camera or multiple videos with different locations in the scene.
+     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
+     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     */
+    class VideoDome extends TransformNode {
+        private _useDirectMapping;
+        /**
+         * The video texture being displayed on the sphere
+         */
+        protected _videoTexture: VideoTexture;
+        /**
+         * Gets the video texture being displayed on the sphere
+         */
+        readonly videoTexture: VideoTexture;
+        /**
+         * The skybox material
+         */
+        protected _material: BackgroundMaterial;
+        /**
+         * The surface used for the skybox
+         */
+        protected _mesh: Mesh;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        fovMultiplier: number;
+        /**
+         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
+         * @param name Element's name, child elements will append suffixes for their own names.
+         * @param urlsOrVideo defines the url(s) or the video element to use
+         * @param options An object containing optional or exposed sub element properties
+         */
+        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
+            resolution?: number;
+            clickToPlay?: boolean;
+            autoPlay?: boolean;
+            loop?: boolean;
+            size?: number;
+            poster?: string;
+            useDirectMapping?: boolean;
+        }, scene: Scene);
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 
@@ -10412,419 +10825,6 @@ declare module BABYLON {
          * Disposes of the gizmo
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents the different options available during the creation of
-     * a Environment helper.
-     *
-     * This can control the default ground, skybox and image processing setup of your scene.
-     */
-    interface IEnvironmentHelperOptions {
-        /**
-         * Specifies wether or not to create a ground.
-         * True by default.
-         */
-        createGround: boolean;
-        /**
-         * Specifies the ground size.
-         * 15 by default.
-         */
-        groundSize: number;
-        /**
-         * The texture used on the ground for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        groundTexture: string | BaseTexture;
-        /**
-         * The color mixed in the ground texture by default.
-         * BabylonJS clearColor by default.
-         */
-        groundColor: Color3;
-        /**
-         * Specifies the ground opacity.
-         * 1 by default.
-         */
-        groundOpacity: number;
-        /**
-         * Enables the ground to receive shadows.
-         * True by default.
-         */
-        enableGroundShadow: boolean;
-        /**
-         * Helps preventing the shadow to be fully black on the ground.
-         * 0.5 by default.
-         */
-        groundShadowLevel: number;
-        /**
-         * Creates a mirror texture attach to the ground.
-         * false by default.
-         */
-        enableGroundMirror: boolean;
-        /**
-         * Specifies the ground mirror size ratio.
-         * 0.3 by default as the default kernel is 64.
-         */
-        groundMirrorSizeRatio: number;
-        /**
-         * Specifies the ground mirror blur kernel size.
-         * 64 by default.
-         */
-        groundMirrorBlurKernel: number;
-        /**
-         * Specifies the ground mirror visibility amount.
-         * 1 by default
-         */
-        groundMirrorAmount: number;
-        /**
-         * Specifies the ground mirror reflectance weight.
-         * This uses the standard weight of the background material to setup the fresnel effect
-         * of the mirror.
-         * 1 by default.
-         */
-        groundMirrorFresnelWeight: number;
-        /**
-         * Specifies the ground mirror Falloff distance.
-         * This can helps reducing the size of the reflection.
-         * 0 by Default.
-         */
-        groundMirrorFallOffDistance: number;
-        /**
-         * Specifies the ground mirror texture type.
-         * Unsigned Int by Default.
-         */
-        groundMirrorTextureType: number;
-        /**
-         * Specifies a bias applied to the ground vertical position to prevent z-fighting with
-         * the shown objects.
-         */
-        groundYBias: number;
-        /**
-         * Specifies wether or not to create a skybox.
-         * True by default.
-         */
-        createSkybox: boolean;
-        /**
-         * Specifies the skybox size.
-         * 20 by default.
-         */
-        skyboxSize: number;
-        /**
-         * The texture used on the skybox for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        skyboxTexture: string | BaseTexture;
-        /**
-         * The color mixed in the skybox texture by default.
-         * BabylonJS clearColor by default.
-         */
-        skyboxColor: Color3;
-        /**
-         * The background rotation around the Y axis of the scene.
-         * This helps aligning the key lights of your scene with the background.
-         * 0 by default.
-         */
-        backgroundYRotation: number;
-        /**
-         * Compute automatically the size of the elements to best fit with the scene.
-         */
-        sizeAuto: boolean;
-        /**
-         * Default position of the rootMesh if autoSize is not true.
-         */
-        rootPosition: Vector3;
-        /**
-         * Sets up the image processing in the scene.
-         * true by default.
-         */
-        setupImageProcessing: boolean;
-        /**
-         * The texture used as your environment texture in the scene.
-         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        environmentTexture: string | BaseTexture;
-        /**
-         * The value of the exposure to apply to the scene.
-         * 0.6 by default if setupImageProcessing is true.
-         */
-        cameraExposure: number;
-        /**
-         * The value of the contrast to apply to the scene.
-         * 1.6 by default if setupImageProcessing is true.
-         */
-        cameraContrast: number;
-        /**
-         * Specifies wether or not tonemapping should be enabled in the scene.
-         * true by default if setupImageProcessing is true.
-         */
-        toneMappingEnabled: boolean;
-    }
-    /**
-     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
-     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
-     * It also helps with the default setup of your imageProcessing configuration.
-     */
-    class EnvironmentHelper {
-        /**
-         * Default ground texture URL.
-         */
-        private static _groundTextureCDNUrl;
-        /**
-         * Default skybox texture URL.
-         */
-        private static _skyboxTextureCDNUrl;
-        /**
-         * Default environment texture URL.
-         */
-        private static _environmentTextureCDNUrl;
-        /**
-         * Creates the default options for the helper.
-         */
-        private static _getDefaultOptions;
-        private _rootMesh;
-        /**
-         * Gets the root mesh created by the helper.
-         */
-        readonly rootMesh: Mesh;
-        private _skybox;
-        /**
-         * Gets the skybox created by the helper.
-         */
-        readonly skybox: Nullable<Mesh>;
-        private _skyboxTexture;
-        /**
-         * Gets the skybox texture created by the helper.
-         */
-        readonly skyboxTexture: Nullable<BaseTexture>;
-        private _skyboxMaterial;
-        /**
-         * Gets the skybox material created by the helper.
-         */
-        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
-        private _ground;
-        /**
-         * Gets the ground mesh created by the helper.
-         */
-        readonly ground: Nullable<Mesh>;
-        private _groundTexture;
-        /**
-         * Gets the ground texture created by the helper.
-         */
-        readonly groundTexture: Nullable<BaseTexture>;
-        private _groundMirror;
-        /**
-         * Gets the ground mirror created by the helper.
-         */
-        readonly groundMirror: Nullable<MirrorTexture>;
-        /**
-         * Gets the ground mirror render list to helps pushing the meshes
-         * you wish in the ground reflection.
-         */
-        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
-        private _groundMaterial;
-        /**
-         * Gets the ground material created by the helper.
-         */
-        readonly groundMaterial: Nullable<BackgroundMaterial>;
-        /**
-         * Stores the creation options.
-         */
-        private readonly _scene;
-        private _options;
-        /**
-         * This observable will be notified with any error during the creation of the environment,
-         * mainly texture creation errors.
-         */
-        onErrorObservable: Observable<{
-            message?: string;
-            exception?: any;
-        }>;
-        /**
-         * constructor
-         * @param options
-         * @param scene The scene to add the material to
-         */
-        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
-        /**
-         * Updates the background according to the new options
-         * @param options
-         */
-        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
-        /**
-         * Sets the primary color of all the available elements.
-         * @param color the main color to affect to the ground and the background
-         */
-        setMainColor(color: Color3): void;
-        /**
-         * Setup the image processing according to the specified options.
-         */
-        private _setupImageProcessing;
-        /**
-         * Setup the environment texture according to the specified options.
-         */
-        private _setupEnvironmentTexture;
-        /**
-         * Setup the background according to the specified options.
-         */
-        private _setupBackground;
-        /**
-         * Get the scene sizes according to the setup.
-         */
-        private _getSceneSize;
-        /**
-         * Setup the ground according to the specified options.
-         */
-        private _setupGround;
-        /**
-         * Setup the ground material according to the specified options.
-         */
-        private _setupGroundMaterial;
-        /**
-         * Setup the ground diffuse texture according to the specified options.
-         */
-        private _setupGroundDiffuseTexture;
-        /**
-         * Setup the ground mirror texture according to the specified options.
-         */
-        private _setupGroundMirrorTexture;
-        /**
-         * Setup the ground to receive the mirror texture.
-         */
-        private _setupMirrorInGroundMaterial;
-        /**
-         * Setup the skybox according to the specified options.
-         */
-        private _setupSkybox;
-        /**
-         * Setup the skybox material according to the specified options.
-         */
-        private _setupSkyboxMaterial;
-        /**
-         * Setup the skybox reflection texture according to the specified options.
-         */
-        private _setupSkyboxReflectionTexture;
-        private _errorHandler;
-        /**
-         * Dispose all the elements created by the Helper.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
-     * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
-     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
-     */
-    class PhotoDome extends TransformNode {
-        private _useDirectMapping;
-        /**
-         * The texture being displayed on the sphere
-         */
-        protected _photoTexture: Texture;
-        /**
-         * Gets or sets the texture being displayed on the sphere
-         */
-        photoTexture: Texture;
-        /**
-         * Observable raised when an error occured while loading the 360 image
-         */
-        onLoadErrorObservable: Observable<string>;
-        /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the skybox
-         */
-        protected _mesh: Mesh;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        fovMultiplier: number;
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOfPhoto defines the url of the photo to display
-         * @param options defines an object containing optional or exposed sub element properties
-         * @param onError defines a callback called when an error occured while loading the texture
-         */
-        constructor(name: string, urlOfPhoto: string, options: {
-            resolution?: number;
-            size?: number;
-            useDirectMapping?: boolean;
-        }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of TransformNode, this allow parenting to the camera or multiple videos with different locations in the scene.
-     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
-     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
-     */
-    class VideoDome extends TransformNode {
-        private _useDirectMapping;
-        /**
-         * The video texture being displayed on the sphere
-         */
-        protected _videoTexture: VideoTexture;
-        /**
-         * Gets the video texture being displayed on the sphere
-         */
-        readonly videoTexture: VideoTexture;
-        /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the skybox
-         */
-        protected _mesh: Mesh;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        fovMultiplier: number;
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOrVideo defines the url(s) or the video element to use
-         * @param options An object containing optional or exposed sub element properties
-         */
-        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
-            resolution?: number;
-            clickToPlay?: boolean;
-            autoPlay?: boolean;
-            loop?: boolean;
-            size?: number;
-            poster?: string;
-            useDirectMapping?: boolean;
-        }, scene: Scene);
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 
@@ -15876,199 +15876,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /**
-     * Defines a target to use with MorphTargetManager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        influence: number;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         */
-        constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        readonly hasPositions: boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        readonly hasNormals: boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        readonly hasTangents: boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        readonly uniqueId: number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        readonly vertexCount: number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        readonly supportsNormals: boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        readonly supportsTangents: boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        readonly numTargets: number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        readonly numInfluencers: number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        readonly influences: Float32Array;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
     class Scalar {
         /**
          * Two pi constants convenient for computation.
@@ -19618,2127 +19425,194 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-   * This represents the base class for particle system in Babylon.
-   * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-   * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
-   * @example https://doc.babylonjs.com/babylon101/particles
-   */
-    class BaseParticleSystem {
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
         /**
-         * Source color is added to the destination color without alpha affecting the result.
-         */
-        static BLENDMODE_ONEONE: number;
-        /**
-         * Blend current color and particle color using particle’s alpha.
-         */
-        static BLENDMODE_STANDARD: number;
-        /**
-         * Add current color and particle color multiplied by particle’s alpha.
-         */
-        static BLENDMODE_ADD: number;
-        /**
-         * Multiply current color with particle color
-         */
-        static BLENDMODE_MULTIPLY: number;
-        /**
-         * List of animations used by the particle system.
+         * Gets or sets the list of animations
          */
         animations: Animation[];
-        /**
-         * The id of the Particle system.
-         */
-        id: string;
-        /**
-         * The friendly name of the Particle system.
-         */
-        name: string;
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
-        renderingGroupId: number;
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        emitter: Nullable<AbstractMesh | Vector3>;
-        /**
-         * The maximum number of particles to emit per frame
-         */
-        emitRate: number;
-        /**
-         * If you want to launch only a few particles at once, that can be done, as well.
-         */
-        manualEmitCount: number;
-        /**
-         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-         */
-        updateSpeed: number;
-        /**
-         * The amount of time the particle system is running (depends of the overall update speed).
-         */
-        targetStopDuration: number;
-        /**
-         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
-         */
-        disposeOnStop: boolean;
-        /**
-         * Minimum power of emitting particles.
-         */
-        minEmitPower: number;
-        /**
-         * Maximum power of emitting particles.
-         */
-        maxEmitPower: number;
-        /**
-         * Minimum life time of emitting particles.
-         */
-        minLifeTime: number;
-        /**
-         * Maximum life time of emitting particles.
-         */
-        maxLifeTime: number;
-        /**
-         * Minimum Size of emitting particles.
-         */
-        minSize: number;
-        /**
-         * Maximum Size of emitting particles.
-         */
-        maxSize: number;
-        /**
-         * Minimum scale of emitting particles on X axis.
-         */
-        minScaleX: number;
-        /**
-         * Maximum scale of emitting particles on X axis.
-         */
-        maxScaleX: number;
-        /**
-         * Minimum scale of emitting particles on Y axis.
-         */
-        minScaleY: number;
-        /**
-         * Maximum scale of emitting particles on Y axis.
-         */
-        maxScaleY: number;
-        /**
-         * Gets or sets the minimal initial rotation in radians.
-         */
-        minInitialRotation: number;
-        /**
-         * Gets or sets the maximal initial rotation in radians.
-         */
-        maxInitialRotation: number;
-        /**
-         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        minAngularSpeed: number;
-        /**
-         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        maxAngularSpeed: number;
-        /**
-         * The texture used to render each particle. (this can be a spritesheet)
-         */
-        particleTexture: Nullable<Texture>;
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        layerMask: number;
-        /**
-         * This can help using your own shader to render the particle system.
-         * The according effect will be created
-         */
-        customShader: any;
-        /**
-         * By default particle system starts as soon as they are created. This prevents the
-         * automatic start to happen and let you decide when to start emitting particles.
-         */
-        preventAutoStart: boolean;
-        /**
-         * Gets or sets a texture used to add random noise to particle positions
-         */
-        noiseTexture: Nullable<BaseTexture>;
-        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
-        noiseStrength: Vector3;
-        /**
-         * Callback triggered when the particle animation is ending.
-         */
-        onAnimationEnd: Nullable<() => void>;
-        /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
-         */
-        blendMode: number;
-        /**
-         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
-         * to override the particles.
-         */
-        forceDepthWrite: boolean;
-        /** Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
-        preWarmCycles: number;
-        /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
-        preWarmStepOffset: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
-         */
-        spriteCellChangeSpeed: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
-         */
-        startSpriteCellID: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
-         */
-        endSpriteCellID: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
-         */
-        spriteCellWidth: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
-         */
-        spriteCellHeight: number;
-        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
-        translationPivot: Vector2;
-        /** @hidden */
-        protected _isAnimationSheetEnabled: boolean;
-        /**
-         * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
-         */
-        isAnimationSheetEnabled: boolean;
-        /**
-         * You can use gravity if you want to give an orientation to your particles.
-         */
-        gravity: Vector3;
-        protected _colorGradients: Nullable<Array<ColorGradient>>;
-        protected _sizeGradients: Nullable<Array<FactorGradient>>;
-        protected _lifeTimeGradients: Nullable<Array<FactorGradient>>;
-        protected _angularSpeedGradients: Nullable<Array<FactorGradient>>;
-        protected _velocityGradients: Nullable<Array<FactorGradient>>;
-        protected _limitVelocityGradients: Nullable<Array<FactorGradient>>;
-        protected _dragGradients: Nullable<Array<FactorGradient>>;
-        protected _emitRateGradients: Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of drag gradients.
-         * You must use addDragGradient and removeDragGradient to udpate this list
-         * @returns the list of drag gradients
-         */
-        getDragGradients(): Nullable<Array<FactorGradient>>;
-        /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
-        limitVelocityDamping: number;
-        /**
-         * Gets the current list of limit velocity gradients.
-         * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
-         * @returns the list of limit velocity gradients
-         */
-        getLimitVelocityGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of color gradients.
-         * You must use addColorGradient and removeColorGradient to udpate this list
-         * @returns the list of color gradients
-         */
-        getColorGradients(): Nullable<Array<ColorGradient>>;
-        /**
-         * Gets the current list of size gradients.
-         * You must use addSizeGradient and removeSizeGradient to udpate this list
-         * @returns the list of size gradients
-         */
-        getSizeGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of life time gradients.
-         * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
-         * @returns the list of life time gradients
-         */
-        getLifeTimeGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of angular speed gradients.
-         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
-         * @returns the list of angular speed gradients
-         */
-        getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of velocity gradients.
-         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
-         * @returns the list of velocity gradients
-         */
-        getVelocityGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of emit rate gradients.
-         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
-         * @returns the list of emit rate gradients
-         */
-        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        direction1: Vector3;
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        direction2: Vector3;
-        /**
-         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        minEmitBox: Vector3;
-        /**
-         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        maxEmitBox: Vector3;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors
-         */
-        color1: Color4;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors
-         */
-        color2: Color4;
-        /**
-         * Color the particle will have at the end of its lifetime
-         */
-        colorDead: Color4;
-        /**
-         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel
-         */
-        textureMask: Color4;
-        /**
-         * The particle emitter type defines the emitter used by the particle system.
-         * It can be for example box, sphere, or cone...
-         */
-        particleEmitterType: IParticleEmitterType;
-        /**
-         * Gets or sets the billboard mode to use when isBillboardBased = true.
-         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
-         */
-        billboardMode: number;
-        protected _isBillboardBased: boolean;
-        /**
-         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
-         */
-        isBillboardBased: boolean;
-        /**
-         * The scene the particle system belongs to.
-         */
-        protected _scene: Scene;
-        /**
-         * Local cache of defines for image processing.
-         */
-        protected _imageProcessingConfigurationDefines: ImageProcessingConfigurationDefines;
-        /**
-         * Default configuration related to image processing available in the standard Material.
-         */
-        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        /**
-        * Sets the Default image processing configuration used either in the this material.
-        *
-        * If sets to null, the scene one is in use.
-        */
-        imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Attaches a new image processing configuration to the Standard Material.
-         * @param configuration
-         */
-        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
-        /** @hidden */
-        protected _reset(): void;
-        /**
-         * Instantiates a particle system.
-         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-         * @param name The name of the particle system
-         */
-        constructor(name: string);
-        /**
-         * Creates a Point Emitter for the particle system (emits directly from the emitter position)
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-         * @returns the emitter
-         */
-        createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter;
-        /**
-         * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
-         * @param radius The radius of the hemisphere to emit from
-         * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-         * @returns the emitter
-         */
-        createHemisphericEmitter(radius?: number, radiusRange?: number): HemisphericParticleEmitter;
-        /**
-         * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
-         * @param radius The radius of the sphere to emit from
-         * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-         * @returns the emitter
-         */
-        createSphereEmitter(radius?: number, radiusRange?: number): SphereParticleEmitter;
-        /**
-         * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
-         * @param radius The radius of the sphere to emit from
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
-         * @returns the emitter
-         */
-        createDirectedSphereEmitter(radius?: number, direction1?: Vector3, direction2?: Vector3): SphereDirectedParticleEmitter;
-        /**
-         * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
-         * @param radius The radius of the emission cylinder
-         * @param height The height of the emission cylinder
-         * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
-         * @param directionRandomizer How much to randomize the particle direction [0-1]
-         * @returns the emitter
-         */
-        createCylinderEmitter(radius?: number, height?: number, radiusRange?: number, directionRandomizer?: number): CylinderParticleEmitter;
-        /**
-         * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
-         * @param radius The radius of the cone to emit from
-         * @param angle The base angle of the cone
-         * @returns the emitter
-         */
-        createConeEmitter(radius?: number, angle?: number): ConeParticleEmitter;
-        /**
-         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
-         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
-         * @returns the emitter
-         */
-        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a GPU particle system in Babylon
-     * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
-     * @see https://www.babylonjs-playground.com/#PU4WYI#4
-     */
-    class GPUParticleSystem extends BaseParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        layerMask: number;
-        private _capacity;
-        private _activeCount;
-        private _currentActiveCount;
-        private _accumulatedCount;
-        private _renderEffect;
-        private _updateEffect;
-        private _buffer0;
-        private _buffer1;
-        private _spriteBuffer;
-        private _updateVAO;
-        private _renderVAO;
-        private _targetIndex;
-        private _sourceBuffer;
-        private _targetBuffer;
-        private _engine;
-        private _currentRenderId;
-        private _started;
-        private _stopped;
-        private _timeDelta;
-        private _randomTexture;
-        private _randomTexture2;
-        private _attributesStrideSize;
-        private _updateEffectOptions;
-        private _randomTextureSize;
-        private _actualFrame;
-        private readonly _rawTextureWidth;
-        /**
-         * Gets a boolean indicating if the GPU particles can be rendered on current browser
-         */
-        static readonly IsSupported: boolean;
-        /**
-        * An event triggered when the system is disposed.
-        */
-        onDisposeObservable: Observable<GPUParticleSystem>;
-        /**
-         * Gets the maximum number of particles active at the same time.
-         * @returns The max number of active particles.
-         */
-        getCapacity(): number;
-        /**
-         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
-         * to override the particles.
-         */
-        forceDepthWrite: boolean;
-        /**
-         * Gets or set the number of active particles
-         */
-        activeParticleCount: number;
-        private _preWarmDone;
-        /**
-         * Is this system ready to be used/rendered
-         * @return true if the system is ready
-         */
-        isReady(): boolean;
-        /**
-         * Gets if the system has been started. (Note: this will still be true after stop is called)
-         * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
-         */
-        start(delay?: number): void;
-        /**
-         * Stops the particle system.
-         */
-        stop(): void;
-        /**
-         * Remove all active particles
-         */
-        reset(): void;
-        /**
-         * Returns the string "GPUParticleSystem"
-         * @returns a string containing the class name
-         */
-        getClassName(): string;
-        private _colorGradientsTexture;
-        private _removeGradient;
-        /**
-         * Adds a new color gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
-         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
-         * @returns the current particle system
-         */
-        addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
-        /**
-         * Remove a specific color gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeColorGradient(gradient: number): GPUParticleSystem;
-        private _angularSpeedGradientsTexture;
-        private _sizeGradientsTexture;
-        private _velocityGradientsTexture;
-        private _limitVelocityGradientsTexture;
-        private _dragGradientsTexture;
-        private _addFactorGradient;
-        /**
-         * Adds a new size gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient
-         * @returns the current particle system
-         */
-        addSizeGradient(gradient: number, factor: number): GPUParticleSystem;
-        /**
-         * Remove a specific size gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeSizeGradient(gradient: number): GPUParticleSystem;
-        /**
-         * Adds a new angular speed gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the angular speed to affect to the specified gradient
-         * @returns the current particle system
-         */
-        addAngularSpeedGradient(gradient: number, factor: number): GPUParticleSystem;
-        /**
-         * Remove a specific angular speed gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeAngularSpeedGradient(gradient: number): GPUParticleSystem;
-        /**
-         * Adds a new velocity gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the velocity to affect to the specified gradient
-         * @returns the current particle system
-         */
-        addVelocityGradient(gradient: number, factor: number): GPUParticleSystem;
-        /**
-         * Remove a specific velocity gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeVelocityGradient(gradient: number): GPUParticleSystem;
-        /**
-         * Adds a new limit velocity gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the limit velocity value to affect to the specified gradient
-         * @returns the current particle system
-         */
-        addLimitVelocityGradient(gradient: number, factor: number): GPUParticleSystem;
-        /**
-         * Remove a specific limit velocity gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeLimitVelocityGradient(gradient: number): GPUParticleSystem;
-        /**
-         * Adds a new drag gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the drag value to affect to the specified gradient
-         * @returns the current particle system
-         */
-        addDragGradient(gradient: number, factor: number): GPUParticleSystem;
-        /**
-         * Remove a specific drag gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeDragGradient(gradient: number): GPUParticleSystem;
-        /**
-         * Not supported by GPUParticleSystem
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the emit rate value to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Not supported by GPUParticleSystem
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeEmitRateGradient(gradient: number): IParticleSystem;
-        /**
-         * Instantiates a GPU particle system.
-         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-         * @param name The name of the particle system
-         * @param options The options used to create the system
-         * @param scene The scene the particle system belongs to
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
-         */
-        constructor(name: string, options: Partial<{
-            capacity: number;
-            randomTextureSize: number;
-        }>, scene: Scene, isAnimationSheetEnabled?: boolean);
-        protected _reset(): void;
-        private _createUpdateVAO;
-        private _createRenderVAO;
-        private _initialize;
-        /** @hidden */
-        _recreateUpdateEffect(): void;
-        /** @hidden */
-        _recreateRenderEffect(): void;
-        /**
-         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
-         * @param preWarm defines if we are in the pre-warmimg phase
-         */
-        animate(preWarm?: boolean): void;
-        private _createFactorGradientTexture;
-        private _createSizeGradientTexture;
-        private _createAngularSpeedGradientTexture;
-        private _createVelocityGradientTexture;
-        private _createColorGradientTexture;
-        /**
-         * Renders the particle system in its current state
-         * @param preWarm defines if the system should only update the particles but not render them
-         * @returns the current number of particles
-         */
-        render(preWarm?: boolean): number;
-        /**
-         * Rebuilds the particle system
-         */
-        rebuild(): void;
-        private _releaseBuffers;
-        private _releaseVAOs;
-        /**
-         * Disposes the particle system and free the associated resources
-         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
-         */
-        dispose(disposeTexture?: boolean): void;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): GPUParticleSystem;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /**
-         * Parses a JSON object to create a GPU particle system.
-         * @param parsedParticleSystem The JSON object to parse
-         * @param scene The scene to create the particle system in
-         * @param rootUrl The root url to use to load external dependencies like texture
-         * @returns the parsed GPU particle system
-         */
-        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface representing a particle system in Babylon.js.
-     * This groups the common functionalities that needs to be implemented in order to create a particle system.
-     * A particle system represents a way to manage particles from their emission to their animation and rendering.
-     */
-    interface IParticleSystem {
-        /**
-         * List of animations used by the particle system.
-         */
-        animations: Animation[];
-        /**
-         * The id of the Particle system.
-         */
-        id: string;
-        /**
-         * The name of the Particle system.
-         */
-        name: string;
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        emitter: Nullable<AbstractMesh | Vector3>;
-        /**
-         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
-         */
-        isBillboardBased: boolean;
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
-        renderingGroupId: number;
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        layerMask: number;
-        /**
-        * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-        */
-        updateSpeed: number;
-        /**
-         * The amount of time the particle system is running (depends of the overall update speed).
-         */
-        targetStopDuration: number;
-        /**
-         * The texture used to render each particle. (this can be a spritesheet)
-         */
-        particleTexture: Nullable<Texture>;
-        /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
-         */
-        blendMode: number;
-        /**
-         * Minimum life time of emitting particles.
-         */
-        minLifeTime: number;
-        /**
-         * Maximum life time of emitting particles.
-         */
-        maxLifeTime: number;
-        /**
-         * Minimum Size of emitting particles.
-         */
-        minSize: number;
-        /**
-         * Maximum Size of emitting particles.
-         */
-        maxSize: number;
-        /**
-         * Minimum scale of emitting particles on X axis.
-         */
-        minScaleX: number;
-        /**
-         * Maximum scale of emitting particles on X axis.
-         */
-        maxScaleX: number;
-        /**
-         * Minimum scale of emitting particles on Y axis.
-         */
-        minScaleY: number;
-        /**
-         * Maximum scale of emitting particles on Y axis.
-         */
-        maxScaleY: number;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color1: Color4;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color2: Color4;
-        /**
-         * Color the particle will have at the end of its lifetime.
-         */
-        colorDead: Color4;
-        /**
-         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
-         */
-        emitRate: number;
-        /**
-         * You can use gravity if you want to give an orientation to your particles.
-         */
-        gravity: Vector3;
-        /**
-         * Minimum power of emitting particles.
-         */
-        minEmitPower: number;
-        /**
-         * Maximum power of emitting particles.
-         */
-        maxEmitPower: number;
-        /**
-         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        minAngularSpeed: number;
-        /**
-         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        maxAngularSpeed: number;
-        /**
-         * Gets or sets the minimal initial rotation in radians.
-         */
-        minInitialRotation: number;
-        /**
-         * Gets or sets the maximal initial rotation in radians.
-         */
-        maxInitialRotation: number;
-        /**
-         * The particle emitter type defines the emitter used by the particle system.
-         * It can be for example box, sphere, or cone...
-         */
-        particleEmitterType: Nullable<IParticleEmitterType>;
-        /**
-         * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0
-         */
-        preWarmCycles: number;
-        /**
-         * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1)
-         */
-        preWarmStepOffset: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
-         */
-        spriteCellChangeSpeed: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
-         */
-        startSpriteCellID: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
-         */
-        endSpriteCellID: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
-         */
-        spriteCellWidth: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
-         */
-        spriteCellHeight: number;
-        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
-        translationPivot: Vector2;
-        /**
-         * Gets or sets a texture used to add random noise to particle positions
-         */
-        noiseTexture: Nullable<BaseTexture>;
-        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
-        noiseStrength: Vector3;
-        /**
-         * Gets or sets the billboard mode to use when isBillboardBased = true.
-         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
-         */
-        billboardMode: number;
-        /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
-        limitVelocityDamping: number;
-        /**
-         * Gets the maximum number of particles active at the same time.
-         * @returns The max number of active particles.
-         */
-        getCapacity(): number;
-        /**
-         * Gets if the system has been started. (Note: this will still be true after stop is called)
-         * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Animates the particle system for this frame.
-         */
-        animate(): void;
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        render(): number;
-        /**
-         * Dispose the particle system and frees its associated resources.
-         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
-         */
-        dispose(disposeTexture?: boolean): void;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /**
-         * Rebuild the particle system
-         */
-        rebuild(): void;
-        /**
-         * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
-         */
-        start(delay?: number): void;
-        /**
-         * Stops the particle system.
-         */
-        stop(): void;
-        /**
-         * Remove all active particles
-         */
-        reset(): void;
-        /**
-         * Is this system ready to be used/rendered
-         * @return true if the system is ready
-         */
-        isReady(): boolean;
-        /**
-         * Adds a new color gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
-         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
-         * @returns the current particle system
-         */
-        addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem;
-        /**
-         * Remove a specific color gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeColorGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new size gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific size gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeSizeGradient(gradient: number): IParticleSystem;
-        /**
-         * Gets the current list of color gradients.
-         * You must use addColorGradient and removeColorGradient to udpate this list
-         * @returns the list of color gradients
-         */
-        getColorGradients(): Nullable<Array<ColorGradient>>;
-        /**
-         * Gets the current list of size gradients.
-         * You must use addSizeGradient and removeSizeGradient to udpate this list
-         * @returns the list of size gradients
-         */
-        getSizeGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Gets the current list of angular speed gradients.
-         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
-         * @returns the list of angular speed gradients
-         */
-        getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Adds a new angular speed gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the angular speed to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific angular speed gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeAngularSpeedGradient(gradient: number): IParticleSystem;
-        /**
-         * Gets the current list of velocity gradients.
-         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
-         * @returns the list of velocity gradients
-         */
-        getVelocityGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Adds a new velocity gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the velocity to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific velocity gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeVelocityGradient(gradient: number): IParticleSystem;
-        /**
-         * Gets the current list of limit velocity gradients.
-         * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
-         * @returns the list of limit velocity gradients
-         */
-        getLimitVelocityGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Adds a new limit velocity gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the limit velocity to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific limit velocity gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeLimitVelocityGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new drag gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the drag to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific drag gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeDragGradient(gradient: number): IParticleSystem;
-        /**
-         * Gets the current list of drag gradients.
-         * You must use addDragGradient and removeDragGradient to udpate this list
-         * @returns the list of drag gradients
-         */
-        getDragGradients(): Nullable<Array<FactorGradient>>;
-        /**
-         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the emit rate to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific emit rate gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeEmitRateGradient(gradient: number): IParticleSystem;
-        /**
-         * Gets the current list of emit rate gradients.
-         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
-         * @returns the list of emit rate gradients
-         */
-        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A particle represents one of the element emitted by a particle system.
-     * This is mainly define by its coordinates, direction, velocity and age.
-     */
-    class Particle {
-        /**
-         * particleSystem the particle system the particle belongs to.
-         */
-        particleSystem: ParticleSystem;
-        /**
-         * The world position of the particle in the scene.
-         */
-        position: Vector3;
-        /**
-         * The world direction of the particle in the scene.
-         */
-        direction: Vector3;
-        /**
-         * The color of the particle.
-         */
-        color: Color4;
-        /**
-         * The color change of the particle per step.
-         */
-        colorStep: Color4;
-        /**
-         * Defines how long will the life of the particle be.
-         */
-        lifeTime: number;
-        /**
-         * The current age of the particle.
-         */
-        age: number;
-        /**
-         * The current size of the particle.
-         */
-        size: number;
-        /**
-         * The current scale of the particle.
-         */
-        scale: Vector2;
-        /**
-         * The current angle of the particle.
-         */
-        angle: number;
-        /**
-         * Defines how fast is the angle changing.
-         */
-        angularSpeed: number;
-        /**
-         * Defines the cell index used by the particle to be rendered from a sprite.
-         */
-        cellIndex: number;
-        /** @hidden */
-        _initialDirection: Nullable<Vector3>;
-        /** @hidden */
-        _initialStartSpriteCellID: number;
-        _initialEndSpriteCellID: number;
-        /** @hidden */
-        _currentColorGradient: Nullable<ColorGradient>;
-        /** @hidden */
-        _currentColor1: Color4;
-        /** @hidden */
-        _currentColor2: Color4;
-        /** @hidden */
-        _currentSizeGradient: Nullable<FactorGradient>;
-        /** @hidden */
-        _currentSize1: number;
-        /** @hidden */
-        _currentSize2: number;
-        /** @hidden */
-        _currentAngularSpeedGradient: Nullable<FactorGradient>;
-        /** @hidden */
-        _currentAngularSpeed1: number;
-        /** @hidden */
-        _currentAngularSpeed2: number;
-        /** @hidden */
-        _currentVelocityGradient: Nullable<FactorGradient>;
-        /** @hidden */
-        _currentVelocity1: number;
-        /** @hidden */
-        _currentVelocity2: number;
-        /** @hidden */
-        _currentLimitVelocityGradient: Nullable<FactorGradient>;
-        /** @hidden */
-        _currentLimitVelocity1: number;
-        /** @hidden */
-        _currentLimitVelocity2: number;
-        /** @hidden */
-        _currentDragGradient: Nullable<FactorGradient>;
-        /** @hidden */
-        _currentDrag1: number;
-        /** @hidden */
-        _currentDrag2: number;
-        /**
-         * Creates a new instance Particle
-         * @param particleSystem the particle system the particle belongs to
-         */
-        constructor(
-        /**
-         * particleSystem the particle system the particle belongs to.
-         */
-        particleSystem: ParticleSystem);
-        private updateCellInfoFromSystem;
-        /**
-         * Defines how the sprite cell index is updated for the particle
-         */
-        updateCellIndex(): void;
-        /**
-         * Copy the properties of particle to another one.
-         * @param other the particle to copy the information to.
-         */
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is made for on one-liner static method to help creating particle system set.
-     */
-    class ParticleHelper {
-        /**
-         * Gets or sets base Assets URL
-         */
-        static BaseAssetsUrl: string;
-        /**
-         * Create a default particle system that you can tweak
-         * @param emitter defines the emitter to use
-         * @param capacity defines the system capacity (default is 500 particles)
-         * @param scene defines the hosting scene
-         * @returns the new Particle system
-         */
-        static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity?: number, scene?: Scene): ParticleSystem;
-        /**
-         * This is the main static method (one-liner) of this helper to create different particle systems
-         * @param type This string represents the type to the particle system to create
-         * @param scene The scene where the particle system should live
-         * @param gpu If the system will use gpu
-         * @returns the ParticleSystemSet created
-         */
-        static CreateAsync(type: string, scene: Nullable<Scene>, gpu?: boolean): Promise<ParticleSystemSet>;
-        /**
-         * Static function used to export a particle system to a ParticleSystemSet variable.
-         * Please note that the emitter shape is not exported
-         * @param system defines the particle systems to export
-         */
-        static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a particle system in Babylon.
-     * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-     * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
-     * @example https://doc.babylonjs.com/babylon101/particles
-     */
-    class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
-        /**
-         * This function can be defined to provide custom update for active particles.
-         * This function will be called instead of regular update (age, position, color, etc.).
-         * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
-         */
-        updateFunction: (particles: Particle[]) => void;
-        private _emitterWorldMatrix;
-        /**
-         * This function can be defined to specify initial direction for every new particle.
-         * It by default use the emitterType defined function
-         */
-        startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
-        /**
-         * This function can be defined to specify initial position for every new particle.
-         * It by default use the emitterType defined function
-         */
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
-        /**
-        * An event triggered when the system is disposed
-        */
-        onDisposeObservable: Observable<ParticleSystem>;
-        private _onDisposeObserver;
-        /**
-         * Sets a callback that will be triggered when the system is disposed
-         */
-        onDispose: () => void;
-        /**
-         * Get hosting scene
-         * @returns the scene
-         */
-        getScene(): Scene;
-        private _particles;
-        private _epsilon;
-        private _capacity;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexData;
-        private _vertexBuffer;
-        private _vertexBuffers;
-        private _spriteBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _useInstancing;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        private _vertexBufferSize;
-        /** @hidden */
-        _currentEmitRateGradient: Nullable<FactorGradient>;
-        /** @hidden */
-        _currentEmitRate1: number;
-        /** @hidden */
-        _currentEmitRate2: number;
-        /**
-         * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
-         */
-        subEmitters: ParticleSystem[];
-        /**
-        * The current active Sub-systems, this property is used by the root particle system only.
-        */
-        activeSubSystems: Array<ParticleSystem>;
-        private _rootParticleSystem;
-        /**
-         * Gets the current list of active particles
-         */
-        readonly particles: Particle[];
-        /**
-         * Returns the string "ParticleSystem"
-         * @returns a string containing the class name
-         */
-        getClassName(): string;
-        /**
-         * Instantiates a particle system.
-         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-         * @param name The name of the particle system
-         * @param capacity The max number of particles alive at the same time
-         * @param scene The scene the particle system belongs to
-         * @param customEffect a custom effect used to change the way particles are rendered by default
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
-         * @param epsilon Offset used to render the particles
-         */
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean, epsilon?: number);
-        private _addFactorGradient;
-        private _removeFactorGradient;
-        /**
-         * Adds a new life time gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the life time factor to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addLifeTimeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific life time gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeLifeTimeGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new size gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the size factor to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific size gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeSizeGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new angular speed gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the angular speed  to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific angular speed gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeAngularSpeedGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new velocity gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the velocity to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific velocity gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeVelocityGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new limit velocity gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the limit velocity value to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific limit velocity gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeLimitVelocityGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new drag gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the drag value to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific drag gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeDragGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param factor defines the emit rate value to affect to the specified gradient
-         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-         * @returns the current particle system
-         */
-        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
-        /**
-         * Remove a specific emit rate gradient
-         * @param gradient defines the gradient to remove
-         * @returns the current particle system
-         */
-        removeEmitRateGradient(gradient: number): IParticleSystem;
-        /**
-         * Adds a new color gradient
-         * @param gradient defines the gradient to use (between 0 and 1)
-         * @param color defines the color to affect to the specified gradient
-         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
-         */
-        addColorGradient(gradient: number, color: Color4, color2?: Color4): IParticleSystem;
-        /**
-         * Remove a specific color gradient
-         * @param gradient defines the gradient to remove
-         */
-        removeColorGradient(gradient: number): IParticleSystem;
-        private _fetchR;
-        protected _reset(): void;
-        private _resetEffect;
-        private _createVertexBuffers;
-        private _createIndexBuffer;
-        /**
-         * Gets the maximum number of particles active at the same time.
-         * @returns The max number of active particles.
-         */
-        getCapacity(): number;
-        /**
-         * Gets whether there are still active particles in the system.
-         * @returns True if it is alive, otherwise false.
-         */
-        isAlive(): boolean;
-        /**
-         * Gets if the system has been started. (Note: this will still be true after stop is called)
-         * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Starts the particle system and begins to emit
-         * @param delay defines the delay in milliseconds before starting the system (0 by default)
-         */
-        start(delay?: number): void;
-        /**
-         * Stops the particle system.
-         * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. the default value is true.
-         */
-        stop(stopSubEmitters?: boolean): void;
-        /**
-         * Remove all active particles
-         */
-        reset(): void;
-        /**
-         * @hidden (for internal use only)
-         */
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        /**
-         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
-         * Its lifetime will start back at 0.
-         */
-        recycleParticle: (particle: Particle) => void;
-        private _stopSubEmitters;
-        private _createParticle;
-        private _removeFromRoot;
-        private _emitFromParticle;
-        private _update;
-        /** @hidden */
-        static _GetAttributeNamesOrOptions(isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean): string[];
-        static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
-        private _getEffect;
-        /**
-         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
-         * @param preWarmOnly will prevent the system from updating the vertex buffer (default is false)
-         */
-        animate(preWarmOnly?: boolean): void;
-        private _appendParticleVertices;
-        /**
-         * Rebuilds the particle system.
-         */
-        rebuild(): void;
-        /**
-         * Is this system ready to be used/rendered
-         * @return true if the system is ready
-         */
-        isReady(): boolean;
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        render(): number;
-        /**
-         * Disposes the particle system and free the associated resources
-         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
-         */
-        dispose(disposeTexture?: boolean): void;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): ParticleSystem;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /** @hidden */
-        static _Serialize(serializationObject: any, particleSystem: IParticleSystem): void;
-        /** @hidden */
-        static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string): void;
-        /**
-         * Parses a JSON object to create a particle system.
-         * @param parsedParticleSystem The JSON object to parse
-         * @param scene The scene to create the particle system in
-         * @param rootUrl The root url to use to load external dependencies like texture
-         * @returns the Parsed particle system
-         */
-        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    interface Engine {
-        /**
-         * Create an effect to use with particle systems.
-         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
-         * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
-         * @param uniformsNames defines a list of attribute names
-         * @param samplers defines an array of string used to represent textures
-         * @param defines defines the string containing the defines to use to compile the shaders
-         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
-         * @param onCompiled defines a function to call when the effect creation is successful
-         * @param onError defines a function to call when the effect creation has failed
-         * @returns the new Effect
-         */
-        createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents a set of particle systems working together to create a specific effect
-     */
-    class ParticleSystemSet implements IDisposable {
-        private _emitterCreationOptions;
-        private _emitterNode;
-        /**
-         * Gets the particle system list
-         */
-        systems: IParticleSystem[];
-        /**
-         * Gets the emitter node used with this set
-         */
-        readonly emitterNode: Nullable<TransformNode>;
-        /**
-         * Creates a new emitter mesh as a sphere
-         * @param options defines the options used to create the sphere
-         * @param renderingGroupId defines the renderingGroupId to use for the sphere
-         * @param scene defines the hosting scene
-         */
-        setEmitterAsSphere(options: {
-            diameter: number;
-            segments: number;
-            color: Color3;
-        }, renderingGroupId: number, scene: Scene): void;
-        /**
-         * Starts all particle systems of the set
-         * @param emitter defines an optional mesh to use as emitter for the particle systems
-         */
-        start(emitter?: AbstractMesh): void;
-        /**
-         * Release all associated resources
-         */
-        dispose(): void;
-        /**
-         * Serialize the set into a JSON compatible object
-         * @returns a JSON compatible representation of the set
-         */
-        serialize(): any;
-        /**
-         * Parse a new ParticleSystemSet from a serialized source
-         * @param data defines a JSON compatible representation of the set
-         * @param scene defines the hosting scene
-         * @param gpu defines if we want GPU particles or CPU particles
-         * @returns a new ParticleSystemSet
-         */
-        static Parse(data: any, scene: Scene, gpu?: boolean): ParticleSystemSet;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents one particle of a solid particle system.
-     */
-    class SolidParticle {
-        /**
-         * particle global index
-         */
-        idx: number;
-        /**
-         * The color of the particle
-         */
-        color: Nullable<Color4>;
-        /**
-         * The world space position of the particle.
-         */
-        position: Vector3;
-        /**
-         * The world space rotation of the particle. (Not use if rotationQuaternion is set)
-         */
-        rotation: Vector3;
-        /**
-         * The world space rotation quaternion of the particle.
-         */
-        rotationQuaternion: Nullable<Quaternion>;
-        /**
-         * The scaling of the particle.
-         */
-        scaling: Vector3;
-        /**
-         * The uvs of the particle.
-         */
-        uvs: Vector4;
-        /**
-         * The current speed of the particle.
-         */
-        velocity: Vector3;
-        /**
-         * The pivot point in the particle local space.
-         */
-        pivot: Vector3;
-        /**
-         * Must the particle be translated from its pivot point in its local space ?
-         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
-         * Default : false
-         */
-        translateFromPivot: boolean;
-        /**
-         * Is the particle active or not ?
-         */
-        alive: boolean;
-        /**
-         * Is the particle visible or not ?
-         */
-        isVisible: boolean;
-        /**
-         * Index of this particle in the global "positions" array (Internal use)
-         * @hidden
-         */
-        _pos: number;
-        /**
-         * @hidden Index of this particle in the global "indices" array (Internal use)
-         */
-        _ind: number;
-        /**
-         * @hidden ModelShape of this particle (Internal use)
-         */
-        _model: ModelShape;
-        /**
-         * ModelShape id of this particle
-         */
-        shapeId: number;
-        /**
-         * Index of the particle in its shape id (Internal use)
-         */
-        idxInShape: number;
-        /**
-         * @hidden Reference to the shape model BoundingInfo object (Internal use)
-         */
-        _modelBoundingInfo: BoundingInfo;
-        /**
-         * @hidden Particle BoundingInfo object (Internal use)
-         */
-        _boundingInfo: BoundingInfo;
-        /**
-         * @hidden Reference to the SPS what the particle belongs to (Internal use)
-         */
-        _sps: SolidParticleSystem;
-        /**
-         * @hidden Still set as invisible in order to skip useless computations (Internal use)
-         */
-        _stillInvisible: boolean;
-        /**
-         * @hidden Last computed particle rotation matrix
-         */
-        _rotationMatrix: number[];
-        /**
-         * Parent particle Id, if any.
-         * Default null.
-         */
-        parentId: Nullable<number>;
-        /**
-         * @hidden Internal global position in the SPS.
-         */
-        _globalPosition: Vector3;
-        /**
-         * Creates a Solid Particle object.
-         * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
-         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
-         * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
-         * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
-         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
-         * @param shapeId (integer) is the model shape identifier in the SPS.
-         * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
-         * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
-         */
-        constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
-        /**
-         * Legacy support, changed scale to scaling
-         */
-        /**
-        * Legacy support, changed scale to scaling
-        */
-        scale: Vector3;
-        /**
-         * Legacy support, changed quaternion to rotationQuaternion
-         */
-        /**
-        * Legacy support, changed quaternion to rotationQuaternion
-        */
-        quaternion: Nullable<Quaternion>;
-        /**
-         * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
-         * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
-         * @param target is the object (solid particle or mesh) what the intersection is computed against.
-         * @returns true if it intersects
-         */
-        intersectsMesh(target: Mesh | SolidParticle): boolean;
-    }
-    /**
-     * Represents the shape of the model used by one particle of a solid particle system.
-     * SPS internal tool, don't use it manually.
-     */
-    class ModelShape {
-        /**
-         * The shape id
-         * @hidden
-         */
-        shapeID: number;
-        /**
-         * flat array of model positions (internal use)
-         * @hidden
-         */
-        _shape: Vector3[];
-        /**
-         * flat array of model UVs (internal use)
-         * @hidden
-         */
-        _shapeUV: number[];
-        /**
-         * length of the shape in the model indices array (internal use)
-         * @hidden
-         */
-        _indicesLength: number;
-        /**
-         * Custom position function (internal use)
-         * @hidden
-         */
-        _positionFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>;
-        /**
-         * Custom vertex function (internal use)
-         * @hidden
-         */
-        _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
-        /**
-         * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
-         * SPS internal tool, don't use it manually.
-         * @hidden
-         */
-        constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
-    }
-    /**
-     * Represents a Depth Sorted Particle in the solid particle system.
-     */
-    class DepthSortedParticle {
-        /**
-         * Index of the particle in the "indices" array
-         */
-        ind: number;
-        /**
-         * Length of the particle shape in the "indices" array
-         */
-        indicesLength: number;
-        /**
-         * Squared distance from the particle to the camera
-         */
-        sqDistance: number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
-     *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
-
-     * The SPS is also a particle system. It provides some methods to manage the particles.
-     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
-     *
-     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
-     */
-    class SolidParticleSystem implements IDisposable {
-        /**
-         *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
-         *  Example : var p = SPS.particles[i];
-         */
-        particles: SolidParticle[];
-        /**
-         * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
-         */
-        nbParticles: number;
-        /**
-         * If the particles must ever face the camera (default false). Useful for planar particles.
-         */
-        billboard: boolean;
-        /**
-         * Recompute normals when adding a shape
-         */
-        recomputeNormals: boolean;
-        /**
-         * This a counter ofr your own usage. It's not set by any SPS functions.
-         */
-        counter: number;
-        /**
-         * The SPS name. This name is also given to the underlying mesh.
-         */
-        name: string;
-        /**
-         * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
-         */
-        mesh: Mesh;
-        /**
-         * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
-         */
-        vars: any;
-        /**
-         * This array is populated when the SPS is set as 'pickable'.
-         * Each key of this array is a `faceId` value that you can get from a pickResult object.
-         * Each element of this array is an object `{idx: int, faceId: int}`.
-         * `idx` is the picked particle index in the `SPS.particles` array
-         * `faceId` is the picked face index counted within this particle.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
-         */
-        pickedParticles: {
-            idx: number;
-            faceId: number;
-        }[];
-        /**
-         * This array is populated when `enableDepthSort` is set to true.
-         * Each element of this array is an instance of the class DepthSortedParticle.
-         */
-        depthSortedParticles: DepthSortedParticle[];
-        /**
-         * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
-         * @hidden
-         */
-        _bSphereOnly: boolean;
-        /**
-         * A number to multiply the boundind sphere radius by in order to reduce it for instance. (Internal use only)
-         * @hidden
-         */
-        _bSphereRadiusFactor: number;
         private _scene;
         private _positions;
-        private _indices;
         private _normals;
-        private _colors;
-        private _uvs;
-        private _indices32;
-        private _positions32;
-        private _normals32;
-        private _fixedNormal32;
-        private _colors32;
-        private _uvs32;
-        private _index;
-        private _updatable;
-        private _pickable;
-        private _isVisibilityBoxLocked;
-        private _alwaysVisible;
-        private _depthSort;
-        private _shapeCounter;
-        private _copy;
-        private _shape;
-        private _shapeUV;
-        private _color;
-        private _computeParticleColor;
-        private _computeParticleTexture;
-        private _computeParticleRotation;
-        private _computeParticleVertex;
-        private _computeBoundingBox;
-        private _depthSortParticles;
-        private _cam_axisZ;
-        private _cam_axisY;
-        private _cam_axisX;
-        private _axisZ;
-        private _camera;
-        private _particle;
-        private _camDir;
-        private _camInvertedPosition;
-        private _rotMatrix;
-        private _invertMatrix;
-        private _rotated;
-        private _quaternion;
-        private _vertex;
-        private _normal;
-        private _yaw;
-        private _pitch;
-        private _roll;
-        private _halfroll;
-        private _halfpitch;
-        private _halfyaw;
-        private _sinRoll;
-        private _cosRoll;
-        private _sinPitch;
-        private _cosPitch;
-        private _sinYaw;
-        private _cosYaw;
-        private _mustUnrotateFixedNormals;
-        private _minimum;
-        private _maximum;
-        private _minBbox;
-        private _maxBbox;
-        private _particlesIntersect;
-        private _depthSortFunction;
-        private _needs32Bits;
-        private _pivotBackTranslation;
-        private _scaledPivot;
-        private _particleHasParent;
-        private _parent;
+        private _tangents;
+        private _influence;
         /**
-         * Creates a SPS (Solid Particle System) object.
-         * @param name (String) is the SPS name, this will be the underlying mesh name.
-         * @param scene (Scene) is the scene in which the SPS is added.
-         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
-         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
-         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
-         * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
-         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
+         * Observable raised when the influence changes
          */
-        constructor(name: string, scene: Scene, options?: {
-            updatable?: boolean;
-            isPickable?: boolean;
-            enableDepthSort?: boolean;
-            particleIntersection?: boolean;
-            boundingSphereOnly?: boolean;
-            bSphereRadiusFactor?: number;
-        });
+        onInfluenceChanged: Observable<boolean>;
         /**
-         * Builds the SPS underlying mesh. Returns a standard Mesh.
-         * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
-         * @returns the created mesh
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
          */
-        buildMesh(): Mesh;
+        influence: number;
+        private _animationPropertiesOverride;
         /**
-         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
-         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
-         * Thus the particles generated from `digest()` have their property `position` set yet.
-         * @param mesh ( Mesh ) is the mesh to be digested
-         * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
-         * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
-         * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
-         * @returns the current SPS
+         * Gets or sets the animation properties override
          */
-        digest(mesh: Mesh, options?: {
-            facetNb?: number;
-            number?: number;
-            delta?: number;
-        }): SolidParticleSystem;
-        private _unrotateFixedNormals;
-        private _resetCopy;
-        private _meshBuilder;
-        private _posToShape;
-        private _uvsToShapeUV;
-        private _addParticle;
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
         /**
-         * Adds some particles to the SPS from the model shape. Returns the shape id.
-         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
-         * @param mesh is any Mesh object that will be used as a model for the solid particles.
-         * @param nb (positive integer) the number of particles to be created from this model
-         * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
-         * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
-         * @returns the number of shapes in the system
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
          */
-        addShape(mesh: Mesh, nb: number, options?: {
-            positionFunction?: any;
-            vertexFunction?: any;
-        }): number;
-        private _rebuildParticle;
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
         /**
-         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
-         * @returns the SPS.
+         * Gets a boolean defining if the target contains position data
          */
-        rebuildMesh(): SolidParticleSystem;
+        readonly hasPositions: boolean;
         /**
-         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
-         *  This method calls `updateParticle()` for each particle of the SPS.
-         *  For an animated SPS, it is usually called within the render loop.
-         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
-         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
-         * @returns the SPS.
+         * Gets a boolean defining if the target contains normal data
          */
-        setParticles(start?: number, end?: number, update?: boolean): SolidParticleSystem;
-        private _quaternionRotationYPR;
-        private _quaternionToRotationMatrix;
+        readonly hasNormals: boolean;
         /**
-        * Disposes the SPS.
-        */
-        dispose(): void;
-        /**
-         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         * @returns the SPS.
+         * Gets a boolean defining if the target contains tangent data
          */
-        refreshVisibleSize(): SolidParticleSystem;
+        readonly hasTangents: boolean;
         /**
-         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
-         * @param size the size (float) of the visibility box
-         * note : this doesn't lock the SPS mesh bounding box.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * Affects position data to this target
+         * @param data defines the position data to use
          */
-        setVisibilityBox(size: number): void;
+        setPositions(data: Nullable<FloatArray>): void;
         /**
-         * Gets whether the SPS as always visible or not
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
          */
+        getPositions(): Nullable<FloatArray>;
         /**
-        * Sets the SPS as always visible or not
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
-        isAlwaysVisible: boolean;
-        /**
-         * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * Affects normal data to this target
+         * @param data defines the normal data to use
          */
+        setNormals(data: Nullable<FloatArray>): void;
         /**
-        * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
-        isVisibilityBoxLocked: boolean;
-        /**
-         * Tells to `setParticles()` to compute the particle rotations or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
          */
+        getNormals(): Nullable<FloatArray>;
         /**
-        * Gets if `setParticles()` computes the particle rotations or not.
-        * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
-        */
-        computeParticleRotation: boolean;
-        /**
-         * Tells to `setParticles()` to compute the particle colors or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
          */
+        setTangents(data: Nullable<FloatArray>): void;
         /**
-        * Gets if `setParticles()` computes the particle colors or not.
-        * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
-        */
-        computeParticleColor: boolean;
-        /**
-        * Gets if `setParticles()` computes the particle textures or not.
-        * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
-        */
-        computeParticleTexture: boolean;
-        /**
-         * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
-         * Default value : false. The SPS is faster when it's set to false.
-         * Note : the particle custom vertex positions aren't stored values.
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
          */
+        getTangents(): Nullable<FloatArray>;
         /**
-        * Gets if `setParticles()` calls the vertex function for each vertex of each particle, or not.
-        * Default value : false. The SPS is faster when it's set to false.
-        * Note : the particle custom vertex positions aren't stored values.
-        */
-        computeParticleVertex: boolean;
-        /**
-         * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
          */
+        serialize(): any;
         /**
-        * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
-        */
-        computeBoundingBox: boolean;
-        /**
-         * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
-         * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-         * Default : `true`
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
          */
+        static Parse(serializationObject: any): MorphTarget;
         /**
-        * Gets if `setParticles()` sorts or not the distance between each particle and the camera.
-        * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-        * Default : `true`
-        */
-        depthSortParticles: boolean;
-        /**
-         * This function does nothing. It may be overwritten to set all the particle first values.
-         * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
          */
-        initParticles(): void;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
         /**
-         * This function does nothing. It may be overwritten to recycle a particle.
-         * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-         * @param particle The particle to recycle
-         * @returns the recycled particle
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
          */
-        recycleParticle(particle: SolidParticle): SolidParticle;
+        constructor(scene?: Nullable<Scene>);
         /**
-         * Updates a particle : this function should  be overwritten by the user.
-         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-         * @example : just set a particle position or velocity and recycle conditions
-         * @param particle The particle to update
-         * @returns the updated particle
+         * Gets the unique ID of this manager
          */
-        updateParticle(particle: SolidParticle): SolidParticle;
+        readonly uniqueId: number;
         /**
-         * Updates a vertex of a particle : it can be overwritten by the user.
-         * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
-         * @param particle the current particle
-         * @param vertex the current index of the current particle
-         * @param pt the index of the current vertex in the particle shape
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
-         * @example : just set a vertex particle position
-         * @returns the updated vertex
+         * Gets the number of vertices handled by this manager
          */
-        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
+        readonly vertexCount: number;
         /**
-         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
-         * This does nothing and may be overwritten by the user.
-         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param update the boolean update value actually passed to setParticles()
+         * Gets a boolean indicating if this manager supports morphing of normals
          */
-        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        readonly supportsNormals: boolean;
         /**
-         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
-         * This will be passed three parameters.
-         * This does nothing and may be overwritten by the user.
-         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param update the boolean update value actually passed to setParticles()
+         * Gets a boolean indicating if this manager supports morphing of tangents
          */
-        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -26799,6 +24673,2192 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+   * This represents the base class for particle system in Babylon.
+   * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+   * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
+   * @example https://doc.babylonjs.com/babylon101/particles
+   */
+    class BaseParticleSystem {
+        /**
+         * Source color is added to the destination color without alpha affecting the result.
+         */
+        static BLENDMODE_ONEONE: number;
+        /**
+         * Blend current color and particle color using particle’s alpha.
+         */
+        static BLENDMODE_STANDARD: number;
+        /**
+         * Add current color and particle color multiplied by particle’s alpha.
+         */
+        static BLENDMODE_ADD: number;
+        /**
+         * Multiply current color with particle color
+         */
+        static BLENDMODE_MULTIPLY: number;
+        /**
+         * List of animations used by the particle system.
+         */
+        animations: Animation[];
+        /**
+         * The id of the Particle system.
+         */
+        id: string;
+        /**
+         * The friendly name of the Particle system.
+         */
+        name: string;
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
+        renderingGroupId: number;
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        emitter: Nullable<AbstractMesh | Vector3>;
+        /**
+         * The maximum number of particles to emit per frame
+         */
+        emitRate: number;
+        /**
+         * If you want to launch only a few particles at once, that can be done, as well.
+         */
+        manualEmitCount: number;
+        /**
+         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+         */
+        updateSpeed: number;
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
+        targetStopDuration: number;
+        /**
+         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
+         */
+        disposeOnStop: boolean;
+        /**
+         * Minimum power of emitting particles.
+         */
+        minEmitPower: number;
+        /**
+         * Maximum power of emitting particles.
+         */
+        maxEmitPower: number;
+        /**
+         * Minimum life time of emitting particles.
+         */
+        minLifeTime: number;
+        /**
+         * Maximum life time of emitting particles.
+         */
+        maxLifeTime: number;
+        /**
+         * Minimum Size of emitting particles.
+         */
+        minSize: number;
+        /**
+         * Maximum Size of emitting particles.
+         */
+        maxSize: number;
+        /**
+         * Minimum scale of emitting particles on X axis.
+         */
+        minScaleX: number;
+        /**
+         * Maximum scale of emitting particles on X axis.
+         */
+        maxScaleX: number;
+        /**
+         * Minimum scale of emitting particles on Y axis.
+         */
+        minScaleY: number;
+        /**
+         * Maximum scale of emitting particles on Y axis.
+         */
+        maxScaleY: number;
+        /**
+         * Gets or sets the minimal initial rotation in radians.
+         */
+        minInitialRotation: number;
+        /**
+         * Gets or sets the maximal initial rotation in radians.
+         */
+        maxInitialRotation: number;
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        minAngularSpeed: number;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        maxAngularSpeed: number;
+        /**
+         * The texture used to render each particle. (this can be a spritesheet)
+         */
+        particleTexture: Nullable<Texture>;
+        /**
+         * The layer mask we are rendering the particles through.
+         */
+        layerMask: number;
+        /**
+         * This can help using your own shader to render the particle system.
+         * The according effect will be created
+         */
+        customShader: any;
+        /**
+         * By default particle system starts as soon as they are created. This prevents the
+         * automatic start to happen and let you decide when to start emitting particles.
+         */
+        preventAutoStart: boolean;
+        /**
+         * Gets or sets a texture used to add random noise to particle positions
+         */
+        noiseTexture: Nullable<BaseTexture>;
+        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+        noiseStrength: Vector3;
+        /**
+         * Callback triggered when the particle animation is ending.
+         */
+        onAnimationEnd: Nullable<() => void>;
+        /**
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         */
+        blendMode: number;
+        /**
+         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+         * to override the particles.
+         */
+        forceDepthWrite: boolean;
+        /** Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
+        preWarmCycles: number;
+        /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
+        preWarmStepOffset: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
+         */
+        spriteCellChangeSpeed: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
+         */
+        startSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
+         */
+        endSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
+         */
+        spriteCellWidth: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
+         */
+        spriteCellHeight: number;
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        translationPivot: Vector2;
+        /** @hidden */
+        protected _isAnimationSheetEnabled: boolean;
+        /**
+         * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
+         */
+        isAnimationSheetEnabled: boolean;
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        gravity: Vector3;
+        protected _colorGradients: Nullable<Array<ColorGradient>>;
+        protected _sizeGradients: Nullable<Array<FactorGradient>>;
+        protected _lifeTimeGradients: Nullable<Array<FactorGradient>>;
+        protected _angularSpeedGradients: Nullable<Array<FactorGradient>>;
+        protected _velocityGradients: Nullable<Array<FactorGradient>>;
+        protected _limitVelocityGradients: Nullable<Array<FactorGradient>>;
+        protected _dragGradients: Nullable<Array<FactorGradient>>;
+        protected _emitRateGradients: Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        getDragGradients(): Nullable<Array<FactorGradient>>;
+        /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
+        limitVelocityDamping: number;
+        /**
+         * Gets the current list of limit velocity gradients.
+         * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
+         * @returns the list of limit velocity gradients
+         */
+        getLimitVelocityGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of color gradients.
+         * You must use addColorGradient and removeColorGradient to udpate this list
+         * @returns the list of color gradients
+         */
+        getColorGradients(): Nullable<Array<ColorGradient>>;
+        /**
+         * Gets the current list of size gradients.
+         * You must use addSizeGradient and removeSizeGradient to udpate this list
+         * @returns the list of size gradients
+         */
+        getSizeGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of life time gradients.
+         * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
+         * @returns the list of life time gradients
+         */
+        getLifeTimeGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of angular speed gradients.
+         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
+         * @returns the list of angular speed gradients
+         */
+        getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of velocity gradients.
+         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+         * @returns the list of velocity gradients
+         */
+        getVelocityGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        direction1: Vector3;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        direction2: Vector3;
+        /**
+         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        minEmitBox: Vector3;
+        /**
+         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        maxEmitBox: Vector3;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors
+         */
+        color1: Color4;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors
+         */
+        color2: Color4;
+        /**
+         * Color the particle will have at the end of its lifetime
+         */
+        colorDead: Color4;
+        /**
+         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel
+         */
+        textureMask: Color4;
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        particleEmitterType: IParticleEmitterType;
+        /**
+         * Gets or sets the billboard mode to use when isBillboardBased = true.
+         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         */
+        billboardMode: number;
+        protected _isBillboardBased: boolean;
+        /**
+         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+         */
+        isBillboardBased: boolean;
+        /**
+         * The scene the particle system belongs to.
+         */
+        protected _scene: Scene;
+        /**
+         * Local cache of defines for image processing.
+         */
+        protected _imageProcessingConfigurationDefines: ImageProcessingConfigurationDefines;
+        /**
+         * Default configuration related to image processing available in the standard Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        /**
+        * Sets the Default image processing configuration used either in the this material.
+        *
+        * If sets to null, the scene one is in use.
+        */
+        imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Attaches a new image processing configuration to the Standard Material.
+         * @param configuration
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
+        /** @hidden */
+        protected _reset(): void;
+        /**
+         * Instantiates a particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         */
+        constructor(name: string);
+        /**
+         * Creates a Point Emitter for the particle system (emits directly from the emitter position)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @returns the emitter
+         */
+        createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter;
+        /**
+         * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
+         * @param radius The radius of the hemisphere to emit from
+         * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+         * @returns the emitter
+         */
+        createHemisphericEmitter(radius?: number, radiusRange?: number): HemisphericParticleEmitter;
+        /**
+         * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
+         * @param radius The radius of the sphere to emit from
+         * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+         * @returns the emitter
+         */
+        createSphereEmitter(radius?: number, radiusRange?: number): SphereParticleEmitter;
+        /**
+         * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
+         * @param radius The radius of the sphere to emit from
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @returns the emitter
+         */
+        createDirectedSphereEmitter(radius?: number, direction1?: Vector3, direction2?: Vector3): SphereDirectedParticleEmitter;
+        /**
+         * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
+         * @param radius The radius of the emission cylinder
+         * @param height The height of the emission cylinder
+         * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
+         * @param directionRandomizer How much to randomize the particle direction [0-1]
+         * @returns the emitter
+         */
+        createCylinderEmitter(radius?: number, height?: number, radiusRange?: number, directionRandomizer?: number): CylinderParticleEmitter;
+        /**
+         * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+         * @param radius The radius of the cone to emit from
+         * @param angle The base angle of the cone
+         * @returns the emitter
+         */
+        createConeEmitter(radius?: number, angle?: number): ConeParticleEmitter;
+        /**
+         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @returns the emitter
+         */
+        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a GPU particle system in Babylon
+     * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
+     * @see https://www.babylonjs-playground.com/#PU4WYI#4
+     */
+    class GPUParticleSystem extends BaseParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
+        /**
+         * The layer mask we are rendering the particles through.
+         */
+        layerMask: number;
+        private _capacity;
+        private _activeCount;
+        private _currentActiveCount;
+        private _accumulatedCount;
+        private _renderEffect;
+        private _updateEffect;
+        private _buffer0;
+        private _buffer1;
+        private _spriteBuffer;
+        private _updateVAO;
+        private _renderVAO;
+        private _targetIndex;
+        private _sourceBuffer;
+        private _targetBuffer;
+        private _engine;
+        private _currentRenderId;
+        private _started;
+        private _stopped;
+        private _timeDelta;
+        private _randomTexture;
+        private _randomTexture2;
+        private _attributesStrideSize;
+        private _updateEffectOptions;
+        private _randomTextureSize;
+        private _actualFrame;
+        private readonly _rawTextureWidth;
+        /**
+         * Gets a boolean indicating if the GPU particles can be rendered on current browser
+         */
+        static readonly IsSupported: boolean;
+        /**
+        * An event triggered when the system is disposed.
+        */
+        onDisposeObservable: Observable<GPUParticleSystem>;
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
+        getCapacity(): number;
+        /**
+         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+         * to override the particles.
+         */
+        forceDepthWrite: boolean;
+        /**
+         * Gets or set the number of active particles
+         */
+        activeParticleCount: number;
+        private _preWarmDone;
+        /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        isReady(): boolean;
+        /**
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
+         * @returns True if it has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         */
+        start(delay?: number): void;
+        /**
+         * Stops the particle system.
+         */
+        stop(): void;
+        /**
+         * Remove all active particles
+         */
+        reset(): void;
+        /**
+         * Returns the string "GPUParticleSystem"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        private _colorGradientsTexture;
+        private _removeGradient;
+        /**
+         * Adds a new color gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
+         * @returns the current particle system
+         */
+        addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
+        /**
+         * Remove a specific color gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeColorGradient(gradient: number): GPUParticleSystem;
+        private _angularSpeedGradientsTexture;
+        private _sizeGradientsTexture;
+        private _velocityGradientsTexture;
+        private _limitVelocityGradientsTexture;
+        private _dragGradientsTexture;
+        private _addFactorGradient;
+        /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addSizeGradient(gradient: number, factor: number): GPUParticleSystem;
+        /**
+         * Remove a specific size gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeSizeGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Adds a new angular speed gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the angular speed to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addAngularSpeedGradient(gradient: number, factor: number): GPUParticleSystem;
+        /**
+         * Remove a specific angular speed gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeAngularSpeedGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Adds a new velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the velocity to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addVelocityGradient(gradient: number, factor: number): GPUParticleSystem;
+        /**
+         * Remove a specific velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeVelocityGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Adds a new limit velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the limit velocity value to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addLimitVelocityGradient(gradient: number, factor: number): GPUParticleSystem;
+        /**
+         * Remove a specific limit velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeLimitVelocityGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number): GPUParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeEmitRateGradient(gradient: number): IParticleSystem;
+        /**
+         * Instantiates a GPU particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param options The options used to create the system
+         * @param scene The scene the particle system belongs to
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+         */
+        constructor(name: string, options: Partial<{
+            capacity: number;
+            randomTextureSize: number;
+        }>, scene: Scene, isAnimationSheetEnabled?: boolean);
+        protected _reset(): void;
+        private _createUpdateVAO;
+        private _createRenderVAO;
+        private _initialize;
+        /** @hidden */
+        _recreateUpdateEffect(): void;
+        /** @hidden */
+        _recreateRenderEffect(): void;
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         * @param preWarm defines if we are in the pre-warmimg phase
+         */
+        animate(preWarm?: boolean): void;
+        private _createFactorGradientTexture;
+        private _createSizeGradientTexture;
+        private _createAngularSpeedGradientTexture;
+        private _createVelocityGradientTexture;
+        private _createColorGradientTexture;
+        /**
+         * Renders the particle system in its current state
+         * @param preWarm defines if the system should only update the particles but not render them
+         * @returns the current number of particles
+         */
+        render(preWarm?: boolean): number;
+        /**
+         * Rebuilds the particle system
+         */
+        rebuild(): void;
+        private _releaseBuffers;
+        private _releaseVAOs;
+        /**
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        dispose(disposeTexture?: boolean): void;
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
+        clone(name: string, newEmitter: any): GPUParticleSystem;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object to create a GPU particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the parsed GPU particle system
+         */
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface representing a particle system in Babylon.js.
+     * This groups the common functionalities that needs to be implemented in order to create a particle system.
+     * A particle system represents a way to manage particles from their emission to their animation and rendering.
+     */
+    interface IParticleSystem {
+        /**
+         * List of animations used by the particle system.
+         */
+        animations: Animation[];
+        /**
+         * The id of the Particle system.
+         */
+        id: string;
+        /**
+         * The name of the Particle system.
+         */
+        name: string;
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        emitter: Nullable<AbstractMesh | Vector3>;
+        /**
+         * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+         */
+        isBillboardBased: boolean;
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
+        renderingGroupId: number;
+        /**
+         * The layer mask we are rendering the particles through.
+         */
+        layerMask: number;
+        /**
+        * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+        */
+        updateSpeed: number;
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
+        targetStopDuration: number;
+        /**
+         * The texture used to render each particle. (this can be a spritesheet)
+         */
+        particleTexture: Nullable<Texture>;
+        /**
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
+         */
+        blendMode: number;
+        /**
+         * Minimum life time of emitting particles.
+         */
+        minLifeTime: number;
+        /**
+         * Maximum life time of emitting particles.
+         */
+        maxLifeTime: number;
+        /**
+         * Minimum Size of emitting particles.
+         */
+        minSize: number;
+        /**
+         * Maximum Size of emitting particles.
+         */
+        maxSize: number;
+        /**
+         * Minimum scale of emitting particles on X axis.
+         */
+        minScaleX: number;
+        /**
+         * Maximum scale of emitting particles on X axis.
+         */
+        maxScaleX: number;
+        /**
+         * Minimum scale of emitting particles on Y axis.
+         */
+        minScaleY: number;
+        /**
+         * Maximum scale of emitting particles on Y axis.
+         */
+        maxScaleY: number;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color1: Color4;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color2: Color4;
+        /**
+         * Color the particle will have at the end of its lifetime.
+         */
+        colorDead: Color4;
+        /**
+         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
+         */
+        emitRate: number;
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        gravity: Vector3;
+        /**
+         * Minimum power of emitting particles.
+         */
+        minEmitPower: number;
+        /**
+         * Maximum power of emitting particles.
+         */
+        maxEmitPower: number;
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        minAngularSpeed: number;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        maxAngularSpeed: number;
+        /**
+         * Gets or sets the minimal initial rotation in radians.
+         */
+        minInitialRotation: number;
+        /**
+         * Gets or sets the maximal initial rotation in radians.
+         */
+        maxInitialRotation: number;
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        particleEmitterType: Nullable<IParticleEmitterType>;
+        /**
+         * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0
+         */
+        preWarmCycles: number;
+        /**
+         * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1)
+         */
+        preWarmStepOffset: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the speed of the sprite loop (default is 1 meaning the animation will play once during the entire particle lifetime)
+         */
+        spriteCellChangeSpeed: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
+         */
+        startSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
+         */
+        endSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
+         */
+        spriteCellWidth: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use
+         */
+        spriteCellHeight: number;
+        /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+        translationPivot: Vector2;
+        /**
+         * Gets or sets a texture used to add random noise to particle positions
+         */
+        noiseTexture: Nullable<BaseTexture>;
+        /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+        noiseStrength: Vector3;
+        /**
+         * Gets or sets the billboard mode to use when isBillboardBased = true.
+         * Only BABYLON.AbstractMesh.BILLBOARDMODE_ALL and AbstractMesh.BILLBOARDMODE_Y are supported so far
+         */
+        billboardMode: number;
+        /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
+        limitVelocityDamping: number;
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
+        getCapacity(): number;
+        /**
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
+         * @returns True if it has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Animates the particle system for this frame.
+         */
+        animate(): void;
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        render(): number;
+        /**
+         * Dispose the particle system and frees its associated resources.
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        dispose(disposeTexture?: boolean): void;
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
+        clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Rebuild the particle system
+         */
+        rebuild(): void;
+        /**
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         */
+        start(delay?: number): void;
+        /**
+         * Stops the particle system.
+         */
+        stop(): void;
+        /**
+         * Remove all active particles
+         */
+        reset(): void;
+        /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        isReady(): boolean;
+        /**
+         * Adds a new color gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
+         * @returns the current particle system
+         */
+        addColorGradient(gradient: number, color1: Color4, color2?: Color4): IParticleSystem;
+        /**
+         * Remove a specific color gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeColorGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific size gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeSizeGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of color gradients.
+         * You must use addColorGradient and removeColorGradient to udpate this list
+         * @returns the list of color gradients
+         */
+        getColorGradients(): Nullable<Array<ColorGradient>>;
+        /**
+         * Gets the current list of size gradients.
+         * You must use addSizeGradient and removeSizeGradient to udpate this list
+         * @returns the list of size gradients
+         */
+        getSizeGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of angular speed gradients.
+         * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
+         * @returns the list of angular speed gradients
+         */
+        getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Adds a new angular speed gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the angular speed to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific angular speed gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeAngularSpeedGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of velocity gradients.
+         * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+         * @returns the list of velocity gradients
+         */
+        getVelocityGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Adds a new velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the velocity to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeVelocityGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of limit velocity gradients.
+         * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
+         * @returns the list of limit velocity gradients
+         */
+        getLimitVelocityGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Adds a new limit velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the limit velocity to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific limit velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeLimitVelocityGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        getDragGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific emit rate gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeEmitRateGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A particle represents one of the element emitted by a particle system.
+     * This is mainly define by its coordinates, direction, velocity and age.
+     */
+    class Particle {
+        /**
+         * particleSystem the particle system the particle belongs to.
+         */
+        particleSystem: ParticleSystem;
+        /**
+         * The world position of the particle in the scene.
+         */
+        position: Vector3;
+        /**
+         * The world direction of the particle in the scene.
+         */
+        direction: Vector3;
+        /**
+         * The color of the particle.
+         */
+        color: Color4;
+        /**
+         * The color change of the particle per step.
+         */
+        colorStep: Color4;
+        /**
+         * Defines how long will the life of the particle be.
+         */
+        lifeTime: number;
+        /**
+         * The current age of the particle.
+         */
+        age: number;
+        /**
+         * The current size of the particle.
+         */
+        size: number;
+        /**
+         * The current scale of the particle.
+         */
+        scale: Vector2;
+        /**
+         * The current angle of the particle.
+         */
+        angle: number;
+        /**
+         * Defines how fast is the angle changing.
+         */
+        angularSpeed: number;
+        /**
+         * Defines the cell index used by the particle to be rendered from a sprite.
+         */
+        cellIndex: number;
+        /** @hidden */
+        _initialDirection: Nullable<Vector3>;
+        /** @hidden */
+        _initialStartSpriteCellID: number;
+        _initialEndSpriteCellID: number;
+        /** @hidden */
+        _currentColorGradient: Nullable<ColorGradient>;
+        /** @hidden */
+        _currentColor1: Color4;
+        /** @hidden */
+        _currentColor2: Color4;
+        /** @hidden */
+        _currentSizeGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentSize1: number;
+        /** @hidden */
+        _currentSize2: number;
+        /** @hidden */
+        _currentAngularSpeedGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentAngularSpeed1: number;
+        /** @hidden */
+        _currentAngularSpeed2: number;
+        /** @hidden */
+        _currentVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentVelocity1: number;
+        /** @hidden */
+        _currentVelocity2: number;
+        /** @hidden */
+        _currentLimitVelocityGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentLimitVelocity1: number;
+        /** @hidden */
+        _currentLimitVelocity2: number;
+        /** @hidden */
+        _currentDragGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentDrag1: number;
+        /** @hidden */
+        _currentDrag2: number;
+        /**
+         * Creates a new instance Particle
+         * @param particleSystem the particle system the particle belongs to
+         */
+        constructor(
+        /**
+         * particleSystem the particle system the particle belongs to.
+         */
+        particleSystem: ParticleSystem);
+        private updateCellInfoFromSystem;
+        /**
+         * Defines how the sprite cell index is updated for the particle
+         */
+        updateCellIndex(): void;
+        /**
+         * Copy the properties of particle to another one.
+         * @param other the particle to copy the information to.
+         */
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is made for on one-liner static method to help creating particle system set.
+     */
+    class ParticleHelper {
+        /**
+         * Gets or sets base Assets URL
+         */
+        static BaseAssetsUrl: string;
+        /**
+         * Create a default particle system that you can tweak
+         * @param emitter defines the emitter to use
+         * @param capacity defines the system capacity (default is 500 particles)
+         * @param scene defines the hosting scene
+         * @returns the new Particle system
+         */
+        static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity?: number, scene?: Scene): ParticleSystem;
+        /**
+         * This is the main static method (one-liner) of this helper to create different particle systems
+         * @param type This string represents the type to the particle system to create
+         * @param scene The scene where the particle system should live
+         * @param gpu If the system will use gpu
+         * @returns the ParticleSystemSet created
+         */
+        static CreateAsync(type: string, scene: Nullable<Scene>, gpu?: boolean): Promise<ParticleSystemSet>;
+        /**
+         * Static function used to export a particle system to a ParticleSystemSet variable.
+         * Please note that the emitter shape is not exported
+         * @param system defines the particle systems to export
+         */
+        static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a particle system in Babylon.
+     * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+     * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
+     * @example https://doc.babylonjs.com/babylon101/particles
+     */
+    class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
+        /**
+         * This function can be defined to provide custom update for active particles.
+         * This function will be called instead of regular update (age, position, color, etc.).
+         * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
+         */
+        updateFunction: (particles: Particle[]) => void;
+        private _emitterWorldMatrix;
+        /**
+         * This function can be defined to specify initial direction for every new particle.
+         * It by default use the emitterType defined function
+         */
+        startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        /**
+         * This function can be defined to specify initial position for every new particle.
+         * It by default use the emitterType defined function
+         */
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+        /**
+        * An event triggered when the system is disposed
+        */
+        onDisposeObservable: Observable<ParticleSystem>;
+        private _onDisposeObserver;
+        /**
+         * Sets a callback that will be triggered when the system is disposed
+         */
+        onDispose: () => void;
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        getScene(): Scene;
+        private _particles;
+        private _epsilon;
+        private _capacity;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexData;
+        private _vertexBuffer;
+        private _vertexBuffers;
+        private _spriteBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _useInstancing;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        private _vertexBufferSize;
+        /** @hidden */
+        _currentEmitRateGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentEmitRate1: number;
+        /** @hidden */
+        _currentEmitRate2: number;
+        /**
+         * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
+         */
+        subEmitters: ParticleSystem[];
+        /**
+        * The current active Sub-systems, this property is used by the root particle system only.
+        */
+        activeSubSystems: Array<ParticleSystem>;
+        private _rootParticleSystem;
+        /**
+         * Gets the current list of active particles
+         */
+        readonly particles: Particle[];
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Instantiates a particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+         * @param epsilon Offset used to render the particles
+         */
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean, epsilon?: number);
+        private _addFactorGradient;
+        private _removeFactorGradient;
+        /**
+         * Adds a new life time gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the life time factor to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addLifeTimeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific life time gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeLifeTimeGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new size gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the size factor to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific size gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeSizeGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new angular speed gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the angular speed  to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific angular speed gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeAngularSpeedGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the velocity to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeVelocityGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new limit velocity gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the limit velocity value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific limit velocity gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeLimitVelocityGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific emit rate gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeEmitRateGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new color gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param color defines the color to affect to the specified gradient
+         * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
+         */
+        addColorGradient(gradient: number, color: Color4, color2?: Color4): IParticleSystem;
+        /**
+         * Remove a specific color gradient
+         * @param gradient defines the gradient to remove
+         */
+        removeColorGradient(gradient: number): IParticleSystem;
+        private _fetchR;
+        protected _reset(): void;
+        private _resetEffect;
+        private _createVertexBuffers;
+        private _createIndexBuffer;
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
+        getCapacity(): number;
+        /**
+         * Gets whether there are still active particles in the system.
+         * @returns True if it is alive, otherwise false.
+         */
+        isAlive(): boolean;
+        /**
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
+         * @returns True if it has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Starts the particle system and begins to emit
+         * @param delay defines the delay in milliseconds before starting the system (0 by default)
+         */
+        start(delay?: number): void;
+        /**
+         * Stops the particle system.
+         * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. the default value is true.
+         */
+        stop(stopSubEmitters?: boolean): void;
+        /**
+         * Remove all active particles
+         */
+        reset(): void;
+        /**
+         * @hidden (for internal use only)
+         */
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         */
+        recycleParticle: (particle: Particle) => void;
+        private _stopSubEmitters;
+        private _createParticle;
+        private _removeFromRoot;
+        private _emitFromParticle;
+        private _update;
+        /** @hidden */
+        static _GetAttributeNamesOrOptions(isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean): string[];
+        static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
+        private _getEffect;
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         * @param preWarmOnly will prevent the system from updating the vertex buffer (default is false)
+         */
+        animate(preWarmOnly?: boolean): void;
+        private _appendParticleVertices;
+        /**
+         * Rebuilds the particle system.
+         */
+        rebuild(): void;
+        /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        isReady(): boolean;
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        render(): number;
+        /**
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        dispose(disposeTexture?: boolean): void;
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
+        clone(name: string, newEmitter: any): ParticleSystem;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /** @hidden */
+        static _Serialize(serializationObject: any, particleSystem: IParticleSystem): void;
+        /** @hidden */
+        static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string): void;
+        /**
+         * Parses a JSON object to create a particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the Parsed particle system
+         */
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    interface Engine {
+        /**
+         * Create an effect to use with particle systems.
+         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
+         * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
+         * @param uniformsNames defines a list of attribute names
+         * @param samplers defines an array of string used to represent textures
+         * @param defines defines the string containing the defines to use to compile the shaders
+         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+         * @param onCompiled defines a function to call when the effect creation is successful
+         * @param onError defines a function to call when the effect creation has failed
+         * @returns the new Effect
+         */
+        createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents a set of particle systems working together to create a specific effect
+     */
+    class ParticleSystemSet implements IDisposable {
+        private _emitterCreationOptions;
+        private _emitterNode;
+        /**
+         * Gets the particle system list
+         */
+        systems: IParticleSystem[];
+        /**
+         * Gets the emitter node used with this set
+         */
+        readonly emitterNode: Nullable<TransformNode>;
+        /**
+         * Creates a new emitter mesh as a sphere
+         * @param options defines the options used to create the sphere
+         * @param renderingGroupId defines the renderingGroupId to use for the sphere
+         * @param scene defines the hosting scene
+         */
+        setEmitterAsSphere(options: {
+            diameter: number;
+            segments: number;
+            color: Color3;
+        }, renderingGroupId: number, scene: Scene): void;
+        /**
+         * Starts all particle systems of the set
+         * @param emitter defines an optional mesh to use as emitter for the particle systems
+         */
+        start(emitter?: AbstractMesh): void;
+        /**
+         * Release all associated resources
+         */
+        dispose(): void;
+        /**
+         * Serialize the set into a JSON compatible object
+         * @returns a JSON compatible representation of the set
+         */
+        serialize(): any;
+        /**
+         * Parse a new ParticleSystemSet from a serialized source
+         * @param data defines a JSON compatible representation of the set
+         * @param scene defines the hosting scene
+         * @param gpu defines if we want GPU particles or CPU particles
+         * @returns a new ParticleSystemSet
+         */
+        static Parse(data: any, scene: Scene, gpu?: boolean): ParticleSystemSet;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents one particle of a solid particle system.
+     */
+    class SolidParticle {
+        /**
+         * particle global index
+         */
+        idx: number;
+        /**
+         * The color of the particle
+         */
+        color: Nullable<Color4>;
+        /**
+         * The world space position of the particle.
+         */
+        position: Vector3;
+        /**
+         * The world space rotation of the particle. (Not use if rotationQuaternion is set)
+         */
+        rotation: Vector3;
+        /**
+         * The world space rotation quaternion of the particle.
+         */
+        rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * The scaling of the particle.
+         */
+        scaling: Vector3;
+        /**
+         * The uvs of the particle.
+         */
+        uvs: Vector4;
+        /**
+         * The current speed of the particle.
+         */
+        velocity: Vector3;
+        /**
+         * The pivot point in the particle local space.
+         */
+        pivot: Vector3;
+        /**
+         * Must the particle be translated from its pivot point in its local space ?
+         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
+         * Default : false
+         */
+        translateFromPivot: boolean;
+        /**
+         * Is the particle active or not ?
+         */
+        alive: boolean;
+        /**
+         * Is the particle visible or not ?
+         */
+        isVisible: boolean;
+        /**
+         * Index of this particle in the global "positions" array (Internal use)
+         * @hidden
+         */
+        _pos: number;
+        /**
+         * @hidden Index of this particle in the global "indices" array (Internal use)
+         */
+        _ind: number;
+        /**
+         * @hidden ModelShape of this particle (Internal use)
+         */
+        _model: ModelShape;
+        /**
+         * ModelShape id of this particle
+         */
+        shapeId: number;
+        /**
+         * Index of the particle in its shape id (Internal use)
+         */
+        idxInShape: number;
+        /**
+         * @hidden Reference to the shape model BoundingInfo object (Internal use)
+         */
+        _modelBoundingInfo: BoundingInfo;
+        /**
+         * @hidden Particle BoundingInfo object (Internal use)
+         */
+        _boundingInfo: BoundingInfo;
+        /**
+         * @hidden Reference to the SPS what the particle belongs to (Internal use)
+         */
+        _sps: SolidParticleSystem;
+        /**
+         * @hidden Still set as invisible in order to skip useless computations (Internal use)
+         */
+        _stillInvisible: boolean;
+        /**
+         * @hidden Last computed particle rotation matrix
+         */
+        _rotationMatrix: number[];
+        /**
+         * Parent particle Id, if any.
+         * Default null.
+         */
+        parentId: Nullable<number>;
+        /**
+         * @hidden Internal global position in the SPS.
+         */
+        _globalPosition: Vector3;
+        /**
+         * Creates a Solid Particle object.
+         * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
+         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
+         * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
+         * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
+         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
+         * @param shapeId (integer) is the model shape identifier in the SPS.
+         * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
+         * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+         */
+        constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
+        /**
+         * Legacy support, changed scale to scaling
+         */
+        /**
+        * Legacy support, changed scale to scaling
+        */
+        scale: Vector3;
+        /**
+         * Legacy support, changed quaternion to rotationQuaternion
+         */
+        /**
+        * Legacy support, changed quaternion to rotationQuaternion
+        */
+        quaternion: Nullable<Quaternion>;
+        /**
+         * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
+         * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
+         * @param target is the object (solid particle or mesh) what the intersection is computed against.
+         * @returns true if it intersects
+         */
+        intersectsMesh(target: Mesh | SolidParticle): boolean;
+    }
+    /**
+     * Represents the shape of the model used by one particle of a solid particle system.
+     * SPS internal tool, don't use it manually.
+     */
+    class ModelShape {
+        /**
+         * The shape id
+         * @hidden
+         */
+        shapeID: number;
+        /**
+         * flat array of model positions (internal use)
+         * @hidden
+         */
+        _shape: Vector3[];
+        /**
+         * flat array of model UVs (internal use)
+         * @hidden
+         */
+        _shapeUV: number[];
+        /**
+         * length of the shape in the model indices array (internal use)
+         * @hidden
+         */
+        _indicesLength: number;
+        /**
+         * Custom position function (internal use)
+         * @hidden
+         */
+        _positionFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>;
+        /**
+         * Custom vertex function (internal use)
+         * @hidden
+         */
+        _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
+        /**
+         * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
+         * SPS internal tool, don't use it manually.
+         * @hidden
+         */
+        constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
+    }
+    /**
+     * Represents a Depth Sorted Particle in the solid particle system.
+     */
+    class DepthSortedParticle {
+        /**
+         * Index of the particle in the "indices" array
+         */
+        ind: number;
+        /**
+         * Length of the particle shape in the "indices" array
+         */
+        indicesLength: number;
+        /**
+         * Squared distance from the particle to the camera
+         */
+        sqDistance: number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
+     *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
+
+     * The SPS is also a particle system. It provides some methods to manage the particles.
+     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
+     *
+     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+     */
+    class SolidParticleSystem implements IDisposable {
+        /**
+         *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
+         *  Example : var p = SPS.particles[i];
+         */
+        particles: SolidParticle[];
+        /**
+         * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
+         */
+        nbParticles: number;
+        /**
+         * If the particles must ever face the camera (default false). Useful for planar particles.
+         */
+        billboard: boolean;
+        /**
+         * Recompute normals when adding a shape
+         */
+        recomputeNormals: boolean;
+        /**
+         * This a counter ofr your own usage. It's not set by any SPS functions.
+         */
+        counter: number;
+        /**
+         * The SPS name. This name is also given to the underlying mesh.
+         */
+        name: string;
+        /**
+         * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+         */
+        mesh: Mesh;
+        /**
+         * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
+         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+         */
+        vars: any;
+        /**
+         * This array is populated when the SPS is set as 'pickable'.
+         * Each key of this array is a `faceId` value that you can get from a pickResult object.
+         * Each element of this array is an object `{idx: int, faceId: int}`.
+         * `idx` is the picked particle index in the `SPS.particles` array
+         * `faceId` is the picked face index counted within this particle.
+         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
+         */
+        pickedParticles: {
+            idx: number;
+            faceId: number;
+        }[];
+        /**
+         * This array is populated when `enableDepthSort` is set to true.
+         * Each element of this array is an instance of the class DepthSortedParticle.
+         */
+        depthSortedParticles: DepthSortedParticle[];
+        /**
+         * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
+         * @hidden
+         */
+        _bSphereOnly: boolean;
+        /**
+         * A number to multiply the boundind sphere radius by in order to reduce it for instance. (Internal use only)
+         * @hidden
+         */
+        _bSphereRadiusFactor: number;
+        private _scene;
+        private _positions;
+        private _indices;
+        private _normals;
+        private _colors;
+        private _uvs;
+        private _indices32;
+        private _positions32;
+        private _normals32;
+        private _fixedNormal32;
+        private _colors32;
+        private _uvs32;
+        private _index;
+        private _updatable;
+        private _pickable;
+        private _isVisibilityBoxLocked;
+        private _alwaysVisible;
+        private _depthSort;
+        private _shapeCounter;
+        private _copy;
+        private _shape;
+        private _shapeUV;
+        private _color;
+        private _computeParticleColor;
+        private _computeParticleTexture;
+        private _computeParticleRotation;
+        private _computeParticleVertex;
+        private _computeBoundingBox;
+        private _depthSortParticles;
+        private _cam_axisZ;
+        private _cam_axisY;
+        private _cam_axisX;
+        private _axisZ;
+        private _camera;
+        private _particle;
+        private _camDir;
+        private _camInvertedPosition;
+        private _rotMatrix;
+        private _invertMatrix;
+        private _rotated;
+        private _quaternion;
+        private _vertex;
+        private _normal;
+        private _yaw;
+        private _pitch;
+        private _roll;
+        private _halfroll;
+        private _halfpitch;
+        private _halfyaw;
+        private _sinRoll;
+        private _cosRoll;
+        private _sinPitch;
+        private _cosPitch;
+        private _sinYaw;
+        private _cosYaw;
+        private _mustUnrotateFixedNormals;
+        private _minimum;
+        private _maximum;
+        private _minBbox;
+        private _maxBbox;
+        private _particlesIntersect;
+        private _depthSortFunction;
+        private _needs32Bits;
+        private _pivotBackTranslation;
+        private _scaledPivot;
+        private _particleHasParent;
+        private _parent;
+        /**
+         * Creates a SPS (Solid Particle System) object.
+         * @param name (String) is the SPS name, this will be the underlying mesh name.
+         * @param scene (Scene) is the scene in which the SPS is added.
+         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
+         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
+         * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
+         */
+        constructor(name: string, scene: Scene, options?: {
+            updatable?: boolean;
+            isPickable?: boolean;
+            enableDepthSort?: boolean;
+            particleIntersection?: boolean;
+            boundingSphereOnly?: boolean;
+            bSphereRadiusFactor?: number;
+        });
+        /**
+         * Builds the SPS underlying mesh. Returns a standard Mesh.
+         * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
+         * @returns the created mesh
+         */
+        buildMesh(): Mesh;
+        /**
+         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
+         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
+         * Thus the particles generated from `digest()` have their property `position` set yet.
+         * @param mesh ( Mesh ) is the mesh to be digested
+         * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
+         * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
+         * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
+         * @returns the current SPS
+         */
+        digest(mesh: Mesh, options?: {
+            facetNb?: number;
+            number?: number;
+            delta?: number;
+        }): SolidParticleSystem;
+        private _unrotateFixedNormals;
+        private _resetCopy;
+        private _meshBuilder;
+        private _posToShape;
+        private _uvsToShapeUV;
+        private _addParticle;
+        /**
+         * Adds some particles to the SPS from the model shape. Returns the shape id.
+         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+         * @param mesh is any Mesh object that will be used as a model for the solid particles.
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
+         * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
+         * @returns the number of shapes in the system
+         */
+        addShape(mesh: Mesh, nb: number, options?: {
+            positionFunction?: any;
+            vertexFunction?: any;
+        }): number;
+        private _rebuildParticle;
+        /**
+         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+         * @returns the SPS.
+         */
+        rebuildMesh(): SolidParticleSystem;
+        /**
+         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+         *  This method calls `updateParticle()` for each particle of the SPS.
+         *  For an animated SPS, it is usually called within the render loop.
+         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+         * @returns the SPS.
+         */
+        setParticles(start?: number, end?: number, update?: boolean): SolidParticleSystem;
+        private _quaternionRotationYPR;
+        private _quaternionToRotationMatrix;
+        /**
+        * Disposes the SPS.
+        */
+        dispose(): void;
+        /**
+         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * @returns the SPS.
+         */
+        refreshVisibleSize(): SolidParticleSystem;
+        /**
+         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+         * @param size the size (float) of the visibility box
+         * note : this doesn't lock the SPS mesh bounding box.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        setVisibilityBox(size: number): void;
+        /**
+         * Gets whether the SPS as always visible or not
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        /**
+        * Sets the SPS as always visible or not
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        */
+        isAlwaysVisible: boolean;
+        /**
+         * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        /**
+        * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        */
+        isVisibilityBoxLocked: boolean;
+        /**
+         * Tells to `setParticles()` to compute the particle rotations or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+         */
+        /**
+        * Gets if `setParticles()` computes the particle rotations or not.
+        * Default value : true. The SPS is faster when it's set to false.
+        * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+        */
+        computeParticleRotation: boolean;
+        /**
+         * Tells to `setParticles()` to compute the particle colors or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+         */
+        /**
+        * Gets if `setParticles()` computes the particle colors or not.
+        * Default value : true. The SPS is faster when it's set to false.
+        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+        */
+        computeParticleColor: boolean;
+        /**
+        * Gets if `setParticles()` computes the particle textures or not.
+        * Default value : true. The SPS is faster when it's set to false.
+        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
+        */
+        computeParticleTexture: boolean;
+        /**
+         * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
+         * Default value : false. The SPS is faster when it's set to false.
+         * Note : the particle custom vertex positions aren't stored values.
+         */
+        /**
+        * Gets if `setParticles()` calls the vertex function for each vertex of each particle, or not.
+        * Default value : false. The SPS is faster when it's set to false.
+        * Note : the particle custom vertex positions aren't stored values.
+        */
+        computeParticleVertex: boolean;
+        /**
+         * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+         */
+        /**
+        * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
+        */
+        computeBoundingBox: boolean;
+        /**
+         * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
+         * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+         * Default : `true`
+         */
+        /**
+        * Gets if `setParticles()` sorts or not the distance between each particle and the camera.
+        * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+        * Default : `true`
+        */
+        depthSortParticles: boolean;
+        /**
+         * This function does nothing. It may be overwritten to set all the particle first values.
+         * The SPS doesn't call this function, you may have to call it by your own.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         */
+        initParticles(): void;
+        /**
+         * This function does nothing. It may be overwritten to recycle a particle.
+         * The SPS doesn't call this function, you may have to call it by your own.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * @param particle The particle to recycle
+         * @returns the recycled particle
+         */
+        recycleParticle(particle: SolidParticle): SolidParticle;
+        /**
+         * Updates a particle : this function should  be overwritten by the user.
+         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * @example : just set a particle position or velocity and recycle conditions
+         * @param particle The particle to update
+         * @returns the updated particle
+         */
+        updateParticle(particle: SolidParticle): SolidParticle;
+        /**
+         * Updates a vertex of a particle : it can be overwritten by the user.
+         * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
+         * @param particle the current particle
+         * @param vertex the current index of the current particle
+         * @param pt the index of the current vertex in the particle shape
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+         * @example : just set a vertex particle position
+         * @returns the updated vertex
+         */
+        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
+        /**
+         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        /**
+         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
+         * This will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     interface PhysicsImpostorJoint {
         mainImpostor: PhysicsImpostor;
         connectedImpostor: PhysicsImpostor;
@@ -27435,714 +27495,6 @@ declare module BABYLON {
         length: number;
         stiffness: number;
         damping: number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden (Backing field) */
-        _boundingBoxRenderer: BoundingBoxRenderer;
-        /** @hidden (Backing field) */
-        _forceShowBoundingBoxes: boolean;
-        /**
-         * Gets or sets a boolean indicating if all bounding boxes must be rendered
-         */
-        forceShowBoundingBoxes: boolean;
-        /**
-         * Gets the bounding box renderer associated with the scene
-         * @returns a BoundingBoxRenderer
-         */
-        getBoundingBoxRenderer(): BoundingBoxRenderer;
-    }
-    interface AbstractMesh {
-        /** @hidden (Backing field) */
-        _showBoundingBox: boolean;
-        /**
-         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
-         */
-        showBoundingBox: boolean;
-    }
-    class BoundingBoxRenderer implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        frontColor: Color3;
-        backColor: Color3;
-        showBackLines: boolean;
-        renderList: SmartArray<BoundingBox>;
-        private _colorShader;
-        private _vertexBuffers;
-        private _indexBuffer;
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        private _evaluateSubMesh;
-        private _activeMesh;
-        private _prepareRessources;
-        private _createIndexBuffer;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        reset(): void;
-        render(): void;
-        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a depth renderer in Babylon.
-     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
-     */
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _cachedDefines;
-        private _camera;
-        /**
-         * Instantiates a depth renderer
-         * @param scene The scene the renderer belongs to
-         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
-         * @param camera The camera to be used to render the depth map (default: scene's active camera)
-         */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
-        /**
-         * Creates the depth rendering effect and checks if the effect is ready.
-         * @param subMesh The submesh to be used to render the depth map of
-         * @param useInstances If multiple world instances should be used
-         * @returns if the depth renderer is ready to render the depth map
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the texture which the depth map will be written to.
-         * @returns The depth map texture
-         */
-        getDepthMap(): RenderTargetTexture;
-        /**
-         * Disposes of the depth renderer.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden (Backing field) */
-        _depthRenderer: {
-            [id: string]: DepthRenderer;
-        };
-        /**
-         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
-         * @param camera The camera to create the depth renderer on (default: scene's active camera)
-         * @returns the created depth renderer
-         */
-        enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
-        /**
-         * Disables a depth renderer for a given camera
-         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
-         */
-        disableDepthRenderer(camera?: Nullable<Camera>): void;
-    }
-    /**
-     * Defines the Depth Renderer scene component responsible to manage a depth buffer usefull
-     * in several rendering techniques.
-     */
-    class DepthRendererSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _gatherRenderTargets;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
-     */
-    class EdgesRenderer {
-        edgesWidthScalerForOrthographic: number;
-        edgesWidthScalerForPerspective: number;
-        protected _source: AbstractMesh;
-        protected _linesPositions: number[];
-        protected _linesNormals: number[];
-        protected _linesIndices: number[];
-        protected _epsilon: number;
-        protected _indicesCount: number;
-        protected _lineShader: ShaderMaterial;
-        protected _ib: WebGLBuffer;
-        protected _buffers: {
-            [key: string]: Nullable<VertexBuffer>;
-        };
-        protected _checkVerticesInsteadOfIndices: boolean;
-        /** Gets or sets a boolean indicating if the edgesRenderer is active */
-        isEnabled: boolean;
-        /**
-         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
-         * Beware when you use this class with complex objects as the adjacencies computation can be really long
-         * @param  source Mesh used to create edges
-         * @param  epsilon sum of angles in adjacency to check for edge
-         * @param  checkVerticesInsteadOfIndices
-         * @param  generateEdgesLines - should generate Lines or only prepare resources.
-         */
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
-        protected _prepareRessources(): void;
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Releases the required resources for the edges renderer
-         */
-        dispose(): void;
-        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number;
-        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number;
-        /**
-         * Checks if the pair of p0 and p1 is en edge
-         * @param faceIndex
-         * @param edge
-         * @param faceNormals
-         * @param  p0
-         * @param  p1
-         * @private
-         */
-        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void;
-        /**
-         * Generates lines edges from adjacencjes
-         * @private
-         */
-        _generateEdgesLines(): void;
-        render(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This renderer is helpfull to fill one of the render target with a geometry buffer.
-     */
-    class GeometryBufferRenderer {
-        private _scene;
-        private _multiRenderTarget;
-        private _ratio;
-        private _enablePosition;
-        protected _effect: Effect;
-        protected _cachedDefines: string;
-        /**
-         * Set the render list (meshes to be rendered) used in the G buffer.
-         */
-        renderList: Mesh[];
-        /**
-         * Gets wether or not G buffer are supported by the running hardware.
-         * This requires draw buffer supports
-         */
-        readonly isSupported: boolean;
-        /**
-         * Gets wether or not position are enabled for the G buffer.
-         */
-        /**
-        * Sets wether or not position are enabled for the G buffer.
-        */
-        enablePosition: boolean;
-        /**
-         * Gets the scene associated with the buffer.
-         */
-        readonly scene: Scene;
-        /**
-         * Gets the ratio used by the buffer during its creation.
-         * How big is the buffer related to the main canvas.
-         */
-        readonly ratio: number;
-        /**
-         * Creates a new G Buffer for the scene
-         * @param scene The scene the buffer belongs to
-         * @param ratio How big is the buffer related to the main canvas.
-         */
-        constructor(scene: Scene, ratio?: number);
-        /**
-         * Checks wether everything is ready to render a submesh to the G buffer.
-         * @param subMesh the submesh to check readiness for
-         * @param useInstances is the mesh drawn using instance or not
-         * @returns true if ready otherwise false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the current underlying G Buffer.
-         * @returns the buffer
-         */
-        getGBuffer(): MultiRenderTarget;
-        /**
-         * Gets the number of samples used to render the buffer (anti aliasing).
-         */
-        /**
-        * Sets the number of samples used to render the buffer (anti aliasing).
-        */
-        samples: number;
-        /**
-         * Disposes the renderer and frees up associated resources.
-         */
-        dispose(): void;
-        protected _createRenderTargets(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden (Backing field) */
-        _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-        /**
-         * Gets or Sets the current geometry buffer associated to the scene.
-         */
-        geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-        /**
-         * Enables a GeometryBufferRender and associates it with the scene
-         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
-         * @returns the GeometryBufferRenderer
-         */
-        enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
-        /**
-         * Disables the GeometryBufferRender associated with the scene
-         */
-        disableGeometryBufferRenderer(): void;
-    }
-    /**
-     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer usefull
-     * in several rendering techniques.
-     */
-    class GeometryBufferRendererSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _gatherRenderTargets;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
-     */
-    class LineEdgesRenderer extends EdgesRenderer {
-        /**
-         * This constructor turns off auto generating edges line in Edges Renderer to make it here.
-         * @param  source LineMesh used to generate edges
-         * @param  epsilon not important (specified angle for edge detection)
-         * @param  checkVerticesInsteadOfIndices not important for LineMesh
-         */
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        /**
-         * Always create the edge since its a line so only important things are p0 and p1
-         * @param  faceIndex not important for LineMesh
-         * @param  edge not important for LineMesh
-         * @param  faceNormals not important for LineMesh
-         * @param  p0 beginnig of line
-         * @param  p1 end of line
-         */
-        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void;
-        /**
-         * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
-         */
-        _generateEdgesLines(): void;
-    }
-}
-
-declare module BABYLON {
-    class OutlineRenderer {
-        private _scene;
-        private _effect;
-        private _cachedDefines;
-        zOffset: number;
-        constructor(scene: Scene);
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _depthOnlySubMeshes;
-        private _particleSystems;
-        private _spriteManagers;
-        private _opaqueSortCompareFn;
-        private _alphaTestSortCompareFn;
-        private _transparentSortCompareFn;
-        private _renderOpaque;
-        private _renderAlphaTest;
-        private _renderTransparent;
-        private _edgesRenderers;
-        onBeforeTransparentRendering: () => void;
-        /**
-         * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Creates a new rendering group.
-         * @param index The rendering group index
-         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
-         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
-         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
-         */
-        constructor(index: number, scene: Scene, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>);
-        /**
-         * Render all the sub meshes contained in the group.
-         * @param customRenderFunction Used to override the default render behaviour of the group.
-         * @returns true if rendered some submeshes.
-         */
-        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void;
-        /**
-         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderOpaqueSorted;
-        /**
-         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderAlphaTestSorted;
-        /**
-         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderTransparentSorted;
-        /**
-         * Renders the submeshes in a specified order.
-         * @param subMeshes The submeshes to sort before render
-         * @param sortCompareFn The comparison function use to sort
-         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
-         * @param transparent Specifies to activate blending if true
-         */
-        private static renderSorted;
-        /**
-         * Renders the submeshes in the order they were dispatched (no sort applied).
-         * @param subMeshes The submeshes to render
-         */
-        private static renderUnsorted;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front if in the same alpha index.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered front to back (prevent overdraw).
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Resets the different lists of submeshes to prepare a new frame.
-         */
-        prepare(): void;
-        dispose(): void;
-        /**
-         * Inserts the submesh in its correct queue depending on its material.
-         * @param subMesh The submesh to dispatch
-         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
-         */
-        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        private _renderParticles;
-        private _renderSprites;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface describing the different options available in the rendering manager
-     * regarding Auto Clear between groups.
-     */
-    interface IRenderingManagerAutoClearSetup {
-        /**
-         * Defines whether or not autoclear is enable.
-         */
-        autoClear: boolean;
-        /**
-         * Defines whether or not to autoclear the depth buffer.
-         */
-        depth: boolean;
-        /**
-         * Defines whether or not to autoclear the stencil buffer.
-         */
-        stencil: boolean;
-    }
-    class RenderingManager {
-        /**
-         * The max id used for rendering groups (not included)
-         */
-        static MAX_RENDERINGGROUPS: number;
-        /**
-         * The min id used for rendering groups (included)
-         */
-        static MIN_RENDERINGGROUPS: number;
-        /**
-         * Used to globally prevent autoclearing scenes.
-         */
-        static AUTOCLEAR: boolean;
-        /**
-         * @hidden
-         */
-        _useSceneAutoClearSetup: boolean;
-        private _scene;
-        private _renderingGroups;
-        private _depthStencilBufferAlreadyCleaned;
-        private _autoClearDepthStencil;
-        private _customOpaqueSortCompareFn;
-        private _customAlphaTestSortCompareFn;
-        private _customTransparentSortCompareFn;
-        private _renderingGroupInfo;
-        constructor(scene: Scene);
-        private _clearDepthStencilBuffer;
-        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
-        reset(): void;
-        dispose(): void;
-        /**
-         * Clear the info related to rendering groups preventing retention points during dispose.
-         */
-        freeRenderingGroups(): void;
-        private _prepareRenderingGroup;
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        /**
-         * @param subMesh The submesh to dispatch
-         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
-         */
-        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
-         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
-         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
-         */
-        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         * @param depth Automatically clears depth between groups if true and autoClear is true.
-         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
-        /**
-         * Gets the current auto clear configuration for one rendering group of the rendering
-         * manager.
-         * @param index the rendering group index to get the information for
-         * @returns The auto clear setup for the requested rendering group
-         */
-        getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Renders a layer on top of an existing scene
-     */
-    class UtilityLayerRenderer implements IDisposable {
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene;
-        private _pointerCaptures;
-        private _lastPointerEvents;
-        private static _DefaultUtilityLayer;
-        private static _DefaultKeepDepthUtilityLayer;
-        /**
-         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
-         */
-        static readonly DefaultUtilityLayer: UtilityLayerRenderer;
-        /**
-         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
-         */
-        static readonly DefaultKeepDepthUtilityLayer: UtilityLayerRenderer;
-        /**
-         * The scene that is rendered on top of the original scene
-         */
-        utilityLayerScene: Scene;
-        /**
-         *  If the utility layer should automatically be rendered on top of existing scene
-        */
-        shouldRender: boolean;
-        /**
-         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
-         */
-        onlyCheckPointerDownEvents: boolean;
-        /**
-         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
-         */
-        processAllEvents: boolean;
-        /**
-         * Observable raised when the pointer move from the utility layer scene to the main scene
-         */
-        onPointerOutObservable: Observable<number>;
-        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
-        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
-        private _afterRenderObserver;
-        private _sceneDisposeObserver;
-        private _originalPointerObserver;
-        /**
-         * Instantiates a UtilityLayerRenderer
-         * @param originalScene the original scene that will be rendered on top of
-         */
-        constructor(
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene);
-        private _notifyObservers;
-        /**
-         * Renders the utility layers scene on top of the original scene
-         */
-        render(): void;
-        /**
-         * Disposes of the renderer
-         */
-        dispose(): void;
-        private _updateCamera;
     }
 }
 
@@ -29389,75 +28741,650 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
+    interface Scene {
+        /** @hidden (Backing field) */
+        _boundingBoxRenderer: BoundingBoxRenderer;
+        /** @hidden (Backing field) */
+        _forceShowBoundingBoxes: boolean;
         /**
-         * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
+         * Gets or sets a boolean indicating if all bounding boxes must be rendered
          */
-        isVisible: boolean;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        /** @hidden */
-        _animate(deltaTime: number): void;
+        forceShowBoundingBoxes: boolean;
+        /**
+         * Gets the bounding box renderer associated with the scene
+         * @returns a BoundingBoxRenderer
+         */
+        getBoundingBoxRenderer(): BoundingBoxRenderer;
+    }
+    interface AbstractMesh {
+        /** @hidden (Backing field) */
+        _showBoundingBox: boolean;
+        /**
+         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
+         */
+        showBoundingBox: boolean;
+    }
+    class BoundingBoxRenderer implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        frontColor: Color3;
+        backColor: Color3;
+        showBackLines: boolean;
+        renderList: SmartArray<BoundingBox>;
+        private _colorShader;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        private _evaluateSubMesh;
+        private _activeMesh;
+        private _prepareRessources;
+        private _createIndexBuffer;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        reset(): void;
+        render(): void;
+        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
         dispose(): void;
     }
 }
 
 declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
+    /**
+     * This represents a depth renderer in Babylon.
+     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
+     */
+    class DepthRenderer {
         private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex;
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
+        private _depthMap;
+        private _effect;
+        private _cachedDefines;
+        private _camera;
+        /**
+         * Instantiates a depth renderer
+         * @param scene The scene the renderer belongs to
+         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+         * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         */
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        /**
+         * Creates the depth rendering effect and checks if the effect is ready.
+         * @param subMesh The submesh to be used to render the depth map of
+         * @param useInstances If multiple world instances should be used
+         * @returns if the depth renderer is ready to render the depth map
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the texture which the depth map will be written to.
+         * @returns The depth map texture
+         */
+        getDepthMap(): RenderTargetTexture;
+        /**
+         * Disposes of the depth renderer.
+         */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden (Backing field) */
+        _depthRenderer: {
+            [id: string]: DepthRenderer;
+        };
+        /**
+         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
+         * @param camera The camera to create the depth renderer on (default: scene's active camera)
+         * @returns the created depth renderer
+         */
+        enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+        /**
+         * Disables a depth renderer for a given camera
+         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
+         */
+        disableDepthRenderer(camera?: Nullable<Camera>): void;
+    }
+    /**
+     * Defines the Depth Renderer scene component responsible to manage a depth buffer usefull
+     * in several rendering techniques.
+     */
+    class DepthRendererSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _gatherRenderTargets;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
+     */
+    class EdgesRenderer {
+        edgesWidthScalerForOrthographic: number;
+        edgesWidthScalerForPerspective: number;
+        protected _source: AbstractMesh;
+        protected _linesPositions: number[];
+        protected _linesNormals: number[];
+        protected _linesIndices: number[];
+        protected _epsilon: number;
+        protected _indicesCount: number;
+        protected _lineShader: ShaderMaterial;
+        protected _ib: WebGLBuffer;
+        protected _buffers: {
+            [key: string]: Nullable<VertexBuffer>;
+        };
+        protected _checkVerticesInsteadOfIndices: boolean;
+        /** Gets or sets a boolean indicating if the edgesRenderer is active */
+        isEnabled: boolean;
+        /**
+         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
+         * Beware when you use this class with complex objects as the adjacencies computation can be really long
+         * @param  source Mesh used to create edges
+         * @param  epsilon sum of angles in adjacency to check for edge
+         * @param  checkVerticesInsteadOfIndices
+         * @param  generateEdgesLines - should generate Lines or only prepare resources.
+         */
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
+        protected _prepareRessources(): void;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Releases the required resources for the edges renderer
+         */
+        dispose(): void;
+        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number;
+        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number;
+        /**
+         * Checks if the pair of p0 and p1 is en edge
+         * @param faceIndex
+         * @param edge
+         * @param faceNormals
+         * @param  p0
+         * @param  p1
+         * @private
+         */
+        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void;
+        /**
+         * Generates lines edges from adjacencjes
+         * @private
+         */
+        _generateEdgesLines(): void;
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This renderer is helpfull to fill one of the render target with a geometry buffer.
+     */
+    class GeometryBufferRenderer {
+        private _scene;
+        private _multiRenderTarget;
+        private _ratio;
+        private _enablePosition;
+        protected _effect: Effect;
+        protected _cachedDefines: string;
+        /**
+         * Set the render list (meshes to be rendered) used in the G buffer.
+         */
+        renderList: Mesh[];
+        /**
+         * Gets wether or not G buffer are supported by the running hardware.
+         * This requires draw buffer supports
+         */
+        readonly isSupported: boolean;
+        /**
+         * Gets wether or not position are enabled for the G buffer.
+         */
+        /**
+        * Sets wether or not position are enabled for the G buffer.
+        */
+        enablePosition: boolean;
+        /**
+         * Gets the scene associated with the buffer.
+         */
+        readonly scene: Scene;
+        /**
+         * Gets the ratio used by the buffer during its creation.
+         * How big is the buffer related to the main canvas.
+         */
+        readonly ratio: number;
+        /**
+         * Creates a new G Buffer for the scene
+         * @param scene The scene the buffer belongs to
+         * @param ratio How big is the buffer related to the main canvas.
+         */
+        constructor(scene: Scene, ratio?: number);
+        /**
+         * Checks wether everything is ready to render a submesh to the G buffer.
+         * @param subMesh the submesh to check readiness for
+         * @param useInstances is the mesh drawn using instance or not
+         * @returns true if ready otherwise false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the current underlying G Buffer.
+         * @returns the buffer
+         */
+        getGBuffer(): MultiRenderTarget;
+        /**
+         * Gets the number of samples used to render the buffer (anti aliasing).
+         */
+        /**
+        * Sets the number of samples used to render the buffer (anti aliasing).
+        */
+        samples: number;
+        /**
+         * Disposes the renderer and frees up associated resources.
+         */
+        dispose(): void;
+        protected _createRenderTargets(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden (Backing field) */
+        _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        /**
+         * Gets or Sets the current geometry buffer associated to the scene.
+         */
+        geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        /**
+         * Enables a GeometryBufferRender and associates it with the scene
+         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
+         * @returns the GeometryBufferRenderer
+         */
+        enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
+        /**
+         * Disables the GeometryBufferRender associated with the scene
+         */
+        disableGeometryBufferRenderer(): void;
+    }
+    /**
+     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer usefull
+     * in several rendering techniques.
+     */
+    class GeometryBufferRendererSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _gatherRenderTargets;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
+     */
+    class LineEdgesRenderer extends EdgesRenderer {
+        /**
+         * This constructor turns off auto generating edges line in Edges Renderer to make it here.
+         * @param  source LineMesh used to generate edges
+         * @param  epsilon not important (specified angle for edge detection)
+         * @param  checkVerticesInsteadOfIndices not important for LineMesh
+         */
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        /**
+         * Always create the edge since its a line so only important things are p0 and p1
+         * @param  faceIndex not important for LineMesh
+         * @param  edge not important for LineMesh
+         * @param  faceNormals not important for LineMesh
+         * @param  p0 beginnig of line
+         * @param  p1 end of line
+         */
+        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void;
+        /**
+         * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
+         */
+        _generateEdgesLines(): void;
+    }
+}
+
+declare module BABYLON {
+    class OutlineRenderer {
+        private _scene;
+        private _effect;
+        private _cachedDefines;
+        zOffset: number;
+        constructor(scene: Scene);
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _depthOnlySubMeshes;
+        private _particleSystems;
+        private _spriteManagers;
+        private _opaqueSortCompareFn;
+        private _alphaTestSortCompareFn;
+        private _transparentSortCompareFn;
+        private _renderOpaque;
+        private _renderAlphaTest;
+        private _renderTransparent;
+        private _edgesRenderers;
+        onBeforeTransparentRendering: () => void;
+        /**
+         * Set the opaque sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Set the alpha test sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Set the transparent sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Creates a new rendering group.
+         * @param index The rendering group index
+         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
+         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
+         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
+         */
+        constructor(index: number, scene: Scene, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>);
+        /**
+         * Render all the sub meshes contained in the group.
+         * @param customRenderFunction Used to override the default render behaviour of the group.
+         * @returns true if rendered some submeshes.
+         */
+        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void;
+        /**
+         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderOpaqueSorted;
+        /**
+         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderAlphaTestSorted;
+        /**
+         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderTransparentSorted;
+        /**
+         * Renders the submeshes in a specified order.
+         * @param subMeshes The submeshes to sort before render
+         * @param sortCompareFn The comparison function use to sort
+         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+         * @param transparent Specifies to activate blending if true
+         */
+        private static renderSorted;
+        /**
+         * Renders the submeshes in the order they were dispatched (no sort applied).
+         * @param subMeshes The submeshes to render
+         */
+        private static renderUnsorted;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front if in the same alpha index.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered front to back (prevent overdraw).
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Resets the different lists of submeshes to prepare a new frame.
+         */
+        prepare(): void;
+        dispose(): void;
+        /**
+         * Inserts the submesh in its correct queue depending on its material.
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        private _renderParticles;
+        private _renderSprites;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface describing the different options available in the rendering manager
+     * regarding Auto Clear between groups.
+     */
+    interface IRenderingManagerAutoClearSetup {
+        /**
+         * Defines whether or not autoclear is enable.
+         */
+        autoClear: boolean;
+        /**
+         * Defines whether or not to autoclear the depth buffer.
+         */
+        depth: boolean;
+        /**
+         * Defines whether or not to autoclear the stencil buffer.
+         */
+        stencil: boolean;
+    }
+    class RenderingManager {
+        /**
+         * The max id used for rendering groups (not included)
+         */
+        static MAX_RENDERINGGROUPS: number;
+        /**
+         * The min id used for rendering groups (included)
+         */
+        static MIN_RENDERINGGROUPS: number;
+        /**
+         * Used to globally prevent autoclearing scenes.
+         */
+        static AUTOCLEAR: boolean;
+        /**
+         * @hidden
+         */
+        _useSceneAutoClearSetup: boolean;
+        private _scene;
+        private _renderingGroups;
+        private _depthStencilBufferAlreadyCleaned;
+        private _autoClearDepthStencil;
+        private _customOpaqueSortCompareFn;
+        private _customAlphaTestSortCompareFn;
+        private _customTransparentSortCompareFn;
+        private _renderingGroupInfo;
+        constructor(scene: Scene);
+        private _clearDepthStencilBuffer;
+        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
+        reset(): void;
+        dispose(): void;
+        /**
+         * Clear the info related to rendering groups preventing retention points during dispose.
+         */
+        freeRenderingGroups(): void;
+        private _prepareRenderingGroup;
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        /**
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
+        /**
+         * Gets the current auto clear configuration for one rendering group of the rendering
+         * manager.
+         * @param index the rendering group index to get the information for
+         * @returns The auto clear setup for the requested rendering group
+         */
+        getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Renders a layer on top of an existing scene
+     */
+    class UtilityLayerRenderer implements IDisposable {
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene;
+        private _pointerCaptures;
+        private _lastPointerEvents;
+        private static _DefaultUtilityLayer;
+        private static _DefaultKeepDepthUtilityLayer;
+        /**
+         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+         */
+        static readonly DefaultUtilityLayer: UtilityLayerRenderer;
+        /**
+         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
+         */
+        static readonly DefaultKeepDepthUtilityLayer: UtilityLayerRenderer;
+        /**
+         * The scene that is rendered on top of the original scene
+         */
+        utilityLayerScene: Scene;
+        /**
+         *  If the utility layer should automatically be rendered on top of existing scene
+        */
+        shouldRender: boolean;
+        /**
+         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
+         */
+        onlyCheckPointerDownEvents: boolean;
+        /**
+         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
+         */
+        processAllEvents: boolean;
+        /**
+         * Observable raised when the pointer move from the utility layer scene to the main scene
+         */
+        onPointerOutObservable: Observable<number>;
+        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
+        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
+        private _afterRenderObserver;
+        private _sceneDisposeObserver;
+        private _originalPointerObserver;
+        /**
+         * Instantiates a UtilityLayerRenderer
+         * @param originalScene the original scene that will be rendered on top of
+         */
+        constructor(
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene);
+        private _notifyObservers;
+        /**
+         * Renders the utility layers scene on top of the original scene
+         */
+        render(): void;
+        /**
+         * Disposes of the renderer
+         */
+        dispose(): void;
+        private _updateCamera;
     }
 }
 
@@ -29553,6 +29480,79 @@ declare module BABYLON {
         constructor();
         reset(): void;
         apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        /**
+         * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
+         */
+        isVisible: boolean;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        /** @hidden */
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex;
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -32910,6 +32910,53 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Nullable<Gamepad>;
@@ -33964,53 +34011,6 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
-    }
-}
-
-declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
     }
 }
 
@@ -35242,325 +35242,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Background material used to create an efficient environement around your scene.
-     */
-    class BackgroundMaterial extends PushMaterial {
-        /**
-         * Standard reflectance value at parallel view angle.
-         */
-        static StandardReflectance0: number;
-        /**
-         * Standard reflectance value at grazing angle.
-         */
-        static StandardReflectance90: number;
-        protected _primaryColor: Color3;
-        /**
-         * Key light Color (multiply against the environement texture)
-         */
-        primaryColor: Color3;
-        protected __perceptualColor: Nullable<Color3>;
-        /**
-         * Experimental Internal Use Only.
-         *
-         * Key light Color in "perceptual value" meaning the color you would like to see on screen.
-         * This acts as a helper to set the primary color to a more "human friendly" value.
-         * Conversion to linear space as well as exposure and tone mapping correction will be applied to keep the
-         * output color as close as possible from the chosen value.
-         * (This does not account for contrast color grading and color curves as they are considered post effect and not directly
-         * part of lighting setup.)
-         */
-        _perceptualColor: Nullable<Color3>;
-        protected _primaryColorShadowLevel: float;
-        /**
-         * Defines the level of the shadows (dark area of the reflection map) in order to help scaling the colors.
-         * The color opposite to the primary color is used at the level chosen to define what the black area would look.
-         */
-        primaryColorShadowLevel: float;
-        protected _primaryColorHighlightLevel: float;
-        /**
-         * Defines the level of the highliights (highlight area of the reflection map) in order to help scaling the colors.
-         * The primary color is used at the level chosen to define what the white area would look.
-         */
-        primaryColorHighlightLevel: float;
-        protected _reflectionTexture: Nullable<BaseTexture>;
-        /**
-         * Reflection Texture used in the material.
-         * Should be author in a specific way for the best result (refer to the documentation).
-         */
-        reflectionTexture: Nullable<BaseTexture>;
-        protected _reflectionBlur: float;
-        /**
-         * Reflection Texture level of blur.
-         *
-         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
-         * texture twice.
-         */
-        reflectionBlur: float;
-        protected _diffuseTexture: Nullable<BaseTexture>;
-        /**
-         * Diffuse Texture used in the material.
-         * Should be author in a specific way for the best result (refer to the documentation).
-         */
-        diffuseTexture: Nullable<BaseTexture>;
-        protected _shadowLights: Nullable<IShadowLight[]>;
-        /**
-         * Specify the list of lights casting shadow on the material.
-         * All scene shadow lights will be included if null.
-         */
-        shadowLights: Nullable<IShadowLight[]>;
-        protected _shadowLevel: float;
-        /**
-         * Helps adjusting the shadow to a softer level if required.
-         * 0 means black shadows and 1 means no shadows.
-         */
-        shadowLevel: float;
-        protected _sceneCenter: Vector3;
-        /**
-         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
-         * It is usually zero but might be interesting to modify according to your setup.
-         */
-        sceneCenter: Vector3;
-        protected _opacityFresnel: boolean;
-        /**
-         * This helps specifying that the material is falling off to the sky box at grazing angle.
-         * This helps ensuring a nice transition when the camera goes under the ground.
-         */
-        opacityFresnel: boolean;
-        protected _reflectionFresnel: boolean;
-        /**
-         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
-         * This helps adding a mirror texture on the ground.
-         */
-        reflectionFresnel: boolean;
-        protected _reflectionFalloffDistance: number;
-        /**
-         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
-         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
-         */
-        reflectionFalloffDistance: number;
-        protected _reflectionAmount: number;
-        /**
-         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
-         */
-        reflectionAmount: number;
-        protected _reflectionReflectance0: number;
-        /**
-         * This specifies the weight of the reflection at grazing angle.
-         */
-        reflectionReflectance0: number;
-        protected _reflectionReflectance90: number;
-        /**
-         * This specifies the weight of the reflection at a perpendicular point of view.
-         */
-        reflectionReflectance90: number;
-        /**
-         * Sets the reflection reflectance fresnel values according to the default standard
-         * empirically know to work well :-)
-         */
-        reflectionStandardFresnelWeight: number;
-        protected _useRGBColor: boolean;
-        /**
-         * Helps to directly use the maps channels instead of their level.
-         */
-        useRGBColor: boolean;
-        protected _enableNoise: boolean;
-        /**
-         * This helps reducing the banding effect that could occur on the background.
-         */
-        enableNoise: boolean;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Best used when trying to implement visual zoom effects like fish-eye or binoculars while not adjusting camera fov.
-         * Recommended to be keep at 1.0 except for special cases.
-         */
-        fovMultiplier: number;
-        private _fovMultiplier;
-        /**
-         * Enable the FOV adjustment feature controlled by fovMultiplier.
-         */
-        useEquirectangularFOV: boolean;
-        private _maxSimultaneousLights;
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        maxSimultaneousLights: int;
-        /**
-         * Default configuration related to image processing available in the Background Material.
-         */
-        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Keep track of the image processing observer to allow dispose and replace.
-         */
-        private _imageProcessingObserver;
-        /**
-         * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration (if null the scene configuration will be use)
-         */
-        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        /**
-        * Sets the Default image processing configuration used either in the this material.
-        *
-        * If sets to null, the scene one is in use.
-        */
-        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
-        /**
-         * Gets wether the color curves effect is enabled.
-         */
-        /**
-        * Sets wether the color curves effect is enabled.
-        */
-        cameraColorCurvesEnabled: boolean;
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        /**
-        * Gets wether the color grading effect is enabled.
-        */
-        cameraColorGradingEnabled: boolean;
-        /**
-         * Gets wether tonemapping is enabled or not.
-         */
-        /**
-        * Sets wether tonemapping is enabled or not
-        */
-        cameraToneMappingEnabled: boolean;
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        /**
-        * The camera exposure used on this material.
-        * This property is here and not in the camera to allow controlling exposure without full screen post process.
-        * This corresponds to a photographic exposure.
-        */
-        cameraExposure: float;
-        /**
-         * Gets The camera contrast used on this material.
-         */
-        /**
-        * Sets The camera contrast used on this material.
-        */
-        cameraContrast: float;
-        /**
-         * Gets the Color Grading 2D Lookup Texture.
-         */
-        /**
-        * Sets the Color Grading 2D Lookup Texture.
-        */
-        cameraColorGradingTexture: Nullable<BaseTexture>;
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        /**
-        * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-        * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-        * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-        * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-        */
-        cameraColorCurves: Nullable<ColorCurves>;
-        /**
-         * Due to a bug in iOS10, video tags (which are using the background material) are in BGR and not RGB.
-         * Setting this flag to true (not done automatically!) will convert it back to RGB.
-         */
-        switchToBGR: boolean;
-        private _renderTargets;
-        private _reflectionControls;
-        private _white;
-        private _primaryShadowColor;
-        private _primaryHighlightColor;
-        /**
-         * Instantiates a Background Material in the given scene
-         * @param name The friendly name of the material
-         * @param scene The scene to add the material to
-         */
-        constructor(name: string, scene: Scene);
-        /**
-         * The entire material has been created in order to prevent overdraw.
-         * @returns false
-         */
-        needAlphaTesting(): boolean;
-        /**
-         * The entire material has been created in order to prevent overdraw.
-         * @returns true if blending is enable
-         */
-        needAlphaBlending(): boolean;
-        /**
-         * Checks wether the material is ready to be rendered for a given mesh.
-         * @param mesh The mesh to render
-         * @param subMesh The submesh to check against
-         * @param useInstances Specify wether or not the material is used with instances
-         * @returns true if all the dependencies are ready (Textures, Effects...)
-         */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
-        /**
-         * Compute the primary color according to the chosen perceptual color.
-         */
-        private _computePrimaryColorFromPerceptualColor;
-        /**
-         * Compute the highlights and shadow colors according to their chosen levels.
-         */
-        private _computePrimaryColors;
-        /**
-         * Build the uniform buffer used in the material.
-         */
-        buildUniformLayout(): void;
-        /**
-         * Unbind the material.
-         */
-        unbind(): void;
-        /**
-         * Bind only the world matrix to the material.
-         * @param world The world matrix to bind.
-         */
-        bindOnlyWorldMatrix(world: Matrix): void;
-        /**
-         * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
-         * @param world The world matrix to bind.
-         * @param subMesh The submesh to bind for.
-         */
-        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
-        /**
-         * Dispose the material.
-         * @param forceDisposeEffect Force disposal of the associated effect.
-         * @param forceDisposeTextures Force disposal of the associated textures.
-         */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        /**
-         * Clones the material.
-         * @param name The cloned name.
-         * @returns The cloned material.
-         */
-        clone(name: string): BackgroundMaterial;
-        /**
-         * Serializes the current material to its JSON representation.
-         * @returns The JSON representation.
-         */
-        serialize(): any;
-        /**
-         * Gets the class name of the material
-         * @returns "BackgroundMaterial"
-         */
-        getClassName(): string;
-        /**
-         * Parse a JSON input to create back a background material.
-         * @param source The JSON data to parse
-         * @param scene The scene to create the parsed material in
-         * @param rootUrl The root url of the assets the material depends upon
-         * @returns the instantiated BackgroundMaterial.
-         */
-        static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial;
-    }
-}
-
-declare module BABYLON {
-    /**
      * The Physically based material base class of BJS.
      *
      * This offers the main features of a standard PBR material.
@@ -36635,6 +36316,325 @@ declare module BABYLON {
          * Parses a JSON object correponding to the serialize function.
          */
         static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Background material used to create an efficient environement around your scene.
+     */
+    class BackgroundMaterial extends PushMaterial {
+        /**
+         * Standard reflectance value at parallel view angle.
+         */
+        static StandardReflectance0: number;
+        /**
+         * Standard reflectance value at grazing angle.
+         */
+        static StandardReflectance90: number;
+        protected _primaryColor: Color3;
+        /**
+         * Key light Color (multiply against the environement texture)
+         */
+        primaryColor: Color3;
+        protected __perceptualColor: Nullable<Color3>;
+        /**
+         * Experimental Internal Use Only.
+         *
+         * Key light Color in "perceptual value" meaning the color you would like to see on screen.
+         * This acts as a helper to set the primary color to a more "human friendly" value.
+         * Conversion to linear space as well as exposure and tone mapping correction will be applied to keep the
+         * output color as close as possible from the chosen value.
+         * (This does not account for contrast color grading and color curves as they are considered post effect and not directly
+         * part of lighting setup.)
+         */
+        _perceptualColor: Nullable<Color3>;
+        protected _primaryColorShadowLevel: float;
+        /**
+         * Defines the level of the shadows (dark area of the reflection map) in order to help scaling the colors.
+         * The color opposite to the primary color is used at the level chosen to define what the black area would look.
+         */
+        primaryColorShadowLevel: float;
+        protected _primaryColorHighlightLevel: float;
+        /**
+         * Defines the level of the highliights (highlight area of the reflection map) in order to help scaling the colors.
+         * The primary color is used at the level chosen to define what the white area would look.
+         */
+        primaryColorHighlightLevel: float;
+        protected _reflectionTexture: Nullable<BaseTexture>;
+        /**
+         * Reflection Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
+         */
+        reflectionTexture: Nullable<BaseTexture>;
+        protected _reflectionBlur: float;
+        /**
+         * Reflection Texture level of blur.
+         *
+         * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the
+         * texture twice.
+         */
+        reflectionBlur: float;
+        protected _diffuseTexture: Nullable<BaseTexture>;
+        /**
+         * Diffuse Texture used in the material.
+         * Should be author in a specific way for the best result (refer to the documentation).
+         */
+        diffuseTexture: Nullable<BaseTexture>;
+        protected _shadowLights: Nullable<IShadowLight[]>;
+        /**
+         * Specify the list of lights casting shadow on the material.
+         * All scene shadow lights will be included if null.
+         */
+        shadowLights: Nullable<IShadowLight[]>;
+        protected _shadowLevel: float;
+        /**
+         * Helps adjusting the shadow to a softer level if required.
+         * 0 means black shadows and 1 means no shadows.
+         */
+        shadowLevel: float;
+        protected _sceneCenter: Vector3;
+        /**
+         * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
+         * It is usually zero but might be interesting to modify according to your setup.
+         */
+        sceneCenter: Vector3;
+        protected _opacityFresnel: boolean;
+        /**
+         * This helps specifying that the material is falling off to the sky box at grazing angle.
+         * This helps ensuring a nice transition when the camera goes under the ground.
+         */
+        opacityFresnel: boolean;
+        protected _reflectionFresnel: boolean;
+        /**
+         * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle.
+         * This helps adding a mirror texture on the ground.
+         */
+        reflectionFresnel: boolean;
+        protected _reflectionFalloffDistance: number;
+        /**
+         * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
+         * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
+         */
+        reflectionFalloffDistance: number;
+        protected _reflectionAmount: number;
+        /**
+         * This specifies the weight of the reflection against the background in case of reflection Fresnel.
+         */
+        reflectionAmount: number;
+        protected _reflectionReflectance0: number;
+        /**
+         * This specifies the weight of the reflection at grazing angle.
+         */
+        reflectionReflectance0: number;
+        protected _reflectionReflectance90: number;
+        /**
+         * This specifies the weight of the reflection at a perpendicular point of view.
+         */
+        reflectionReflectance90: number;
+        /**
+         * Sets the reflection reflectance fresnel values according to the default standard
+         * empirically know to work well :-)
+         */
+        reflectionStandardFresnelWeight: number;
+        protected _useRGBColor: boolean;
+        /**
+         * Helps to directly use the maps channels instead of their level.
+         */
+        useRGBColor: boolean;
+        protected _enableNoise: boolean;
+        /**
+         * This helps reducing the banding effect that could occur on the background.
+         */
+        enableNoise: boolean;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Best used when trying to implement visual zoom effects like fish-eye or binoculars while not adjusting camera fov.
+         * Recommended to be keep at 1.0 except for special cases.
+         */
+        fovMultiplier: number;
+        private _fovMultiplier;
+        /**
+         * Enable the FOV adjustment feature controlled by fovMultiplier.
+         */
+        useEquirectangularFOV: boolean;
+        private _maxSimultaneousLights;
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        maxSimultaneousLights: int;
+        /**
+         * Default configuration related to image processing available in the Background Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver;
+        /**
+         * Attaches a new image processing configuration to the PBR Material.
+         * @param configuration (if null the scene configuration will be use)
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        /**
+        * Sets the Default image processing configuration used either in the this material.
+        *
+        * If sets to null, the scene one is in use.
+        */
+        imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        /**
+        * Sets wether the color curves effect is enabled.
+        */
+        cameraColorCurvesEnabled: boolean;
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        /**
+        * Gets wether the color grading effect is enabled.
+        */
+        cameraColorGradingEnabled: boolean;
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        /**
+        * Sets wether tonemapping is enabled or not
+        */
+        cameraToneMappingEnabled: boolean;
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        /**
+        * The camera exposure used on this material.
+        * This property is here and not in the camera to allow controlling exposure without full screen post process.
+        * This corresponds to a photographic exposure.
+        */
+        cameraExposure: float;
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        /**
+        * Sets The camera contrast used on this material.
+        */
+        cameraContrast: float;
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        /**
+        * Sets the Color Grading 2D Lookup Texture.
+        */
+        cameraColorGradingTexture: Nullable<BaseTexture>;
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        /**
+        * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+        * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+        * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+        * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+        */
+        cameraColorCurves: Nullable<ColorCurves>;
+        /**
+         * Due to a bug in iOS10, video tags (which are using the background material) are in BGR and not RGB.
+         * Setting this flag to true (not done automatically!) will convert it back to RGB.
+         */
+        switchToBGR: boolean;
+        private _renderTargets;
+        private _reflectionControls;
+        private _white;
+        private _primaryShadowColor;
+        private _primaryHighlightColor;
+        /**
+         * Instantiates a Background Material in the given scene
+         * @param name The friendly name of the material
+         * @param scene The scene to add the material to
+         */
+        constructor(name: string, scene: Scene);
+        /**
+         * The entire material has been created in order to prevent overdraw.
+         * @returns false
+         */
+        needAlphaTesting(): boolean;
+        /**
+         * The entire material has been created in order to prevent overdraw.
+         * @returns true if blending is enable
+         */
+        needAlphaBlending(): boolean;
+        /**
+         * Checks wether the material is ready to be rendered for a given mesh.
+         * @param mesh The mesh to render
+         * @param subMesh The submesh to check against
+         * @param useInstances Specify wether or not the material is used with instances
+         * @returns true if all the dependencies are ready (Textures, Effects...)
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        /**
+         * Compute the primary color according to the chosen perceptual color.
+         */
+        private _computePrimaryColorFromPerceptualColor;
+        /**
+         * Compute the highlights and shadow colors according to their chosen levels.
+         */
+        private _computePrimaryColors;
+        /**
+         * Build the uniform buffer used in the material.
+         */
+        buildUniformLayout(): void;
+        /**
+         * Unbind the material.
+         */
+        unbind(): void;
+        /**
+         * Bind only the world matrix to the material.
+         * @param world The world matrix to bind.
+         */
+        bindOnlyWorldMatrix(world: Matrix): void;
+        /**
+         * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
+         * @param world The world matrix to bind.
+         * @param subMesh The submesh to bind for.
+         */
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Dispose the material.
+         * @param forceDisposeEffect Force disposal of the associated effect.
+         * @param forceDisposeTextures Force disposal of the associated textures.
+         */
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        /**
+         * Clones the material.
+         * @param name The cloned name.
+         * @returns The cloned material.
+         */
+        clone(name: string): BackgroundMaterial;
+        /**
+         * Serializes the current material to its JSON representation.
+         * @returns The JSON representation.
+         */
+        serialize(): any;
+        /**
+         * Gets the class name of the material
+         * @returns "BackgroundMaterial"
+         */
+        getClassName(): string;
+        /**
+         * Parse a JSON input to create back a background material.
+         * @param source The JSON data to parse
+         * @param scene The scene to create the parsed material in
+         * @param rootUrl The root url of the assets the material depends upon
+         * @returns the instantiated BackgroundMaterial.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial;
     }
 }
 
@@ -37954,6 +37954,105 @@ declare module BABYLON {
     }
 }
 
+declare var DracoDecoderModule: any;
+declare var WebAssembly: any;
+declare module BABYLON {
+    /**
+     * Configuration for Draco compression
+     */
+    interface IDracoCompressionConfiguration {
+        /**
+         * Configuration for the decoder.
+         */
+        decoder?: {
+            /**
+             * The url to the WebAssembly module.
+             */
+            wasmUrl?: string;
+            /**
+             * The url to the WebAssembly binary.
+             */
+            wasmBinaryUrl?: string;
+            /**
+             * The url to the fallback JavaScript module.
+             */
+            fallbackUrl?: string;
+        };
+    }
+    /**
+     * Draco compression (https://google.github.io/draco/)
+     *
+     * This class wraps the Draco module.
+     *
+     * **Encoder**
+     *
+     * The encoder is not currently implemented.
+     *
+     * **Decoder**
+     *
+     * By default, the configuration points to a copy of the Draco decoder files for glTF from https://preview.babylonjs.com.
+     *
+     * To update the configuration, use the following code:
+     * ```javascript
+     *     BABYLON.DracoCompression.Configuration = {
+     *         decoder: {
+     *             wasmUrl: "<url to the WebAssembly library>",
+     *             wasmBinaryUrl: "<url to the WebAssembly binary>",
+     *             fallbackUrl: "<url to the fallback JavaScript library>",
+     *         }
+     *     };
+     * ```
+     *
+     * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
+     * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
+     * Use `BABYLON.DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+     *
+     * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
+     * ```javascript
+     *     var dracoCompression = new BABYLON.DracoCompression();
+     *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
+     *         [BABYLON.VertexBuffer.PositionKind]: 0
+     *     });
+     * ```
+     *
+     * @see https://www.babylonjs-playground.com/#N3EK4B#0
+     */
+    class DracoCompression implements IDisposable {
+        private static _DecoderModulePromise;
+        /**
+         * The configuration. Defaults to the following urls:
+         * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
+         * - wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm"
+         * - fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js"
+         */
+        static Configuration: IDracoCompressionConfiguration;
+        /**
+         * Returns true if the decoder is available.
+         */
+        static readonly DecoderAvailable: boolean;
+        /**
+         * Constructor
+         */
+        constructor();
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        /**
+         * Decode Draco compressed mesh data to vertex data.
+         * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+         * @returns A promise that resolves with the decoded vertex data
+         */
+        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
+            [kind: string]: number;
+        }): Promise<VertexData>;
+        private static _GetDecoderModule;
+        private static _LoadScriptAsync;
+        private static _LoadFileAsync;
+    }
+}
+
 declare module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a box.
@@ -38558,105 +38657,6 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
-    }
-}
-
-declare var DracoDecoderModule: any;
-declare var WebAssembly: any;
-declare module BABYLON {
-    /**
-     * Configuration for Draco compression
-     */
-    interface IDracoCompressionConfiguration {
-        /**
-         * Configuration for the decoder.
-         */
-        decoder?: {
-            /**
-             * The url to the WebAssembly module.
-             */
-            wasmUrl?: string;
-            /**
-             * The url to the WebAssembly binary.
-             */
-            wasmBinaryUrl?: string;
-            /**
-             * The url to the fallback JavaScript module.
-             */
-            fallbackUrl?: string;
-        };
-    }
-    /**
-     * Draco compression (https://google.github.io/draco/)
-     *
-     * This class wraps the Draco module.
-     *
-     * **Encoder**
-     *
-     * The encoder is not currently implemented.
-     *
-     * **Decoder**
-     *
-     * By default, the configuration points to a copy of the Draco decoder files for glTF from https://preview.babylonjs.com.
-     *
-     * To update the configuration, use the following code:
-     * ```javascript
-     *     BABYLON.DracoCompression.Configuration = {
-     *         decoder: {
-     *             wasmUrl: "<url to the WebAssembly library>",
-     *             wasmBinaryUrl: "<url to the WebAssembly binary>",
-     *             fallbackUrl: "<url to the fallback JavaScript library>",
-     *         }
-     *     };
-     * ```
-     *
-     * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
-     * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
-     * Use `BABYLON.DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
-     *
-     * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
-     * ```javascript
-     *     var dracoCompression = new BABYLON.DracoCompression();
-     *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
-     *         [BABYLON.VertexBuffer.PositionKind]: 0
-     *     });
-     * ```
-     *
-     * @see https://www.babylonjs-playground.com/#N3EK4B#0
-     */
-    class DracoCompression implements IDisposable {
-        private static _DecoderModulePromise;
-        /**
-         * The configuration. Defaults to the following urls:
-         * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
-         * - wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm"
-         * - fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js"
-         */
-        static Configuration: IDracoCompressionConfiguration;
-        /**
-         * Returns true if the decoder is available.
-         */
-        static readonly DecoderAvailable: boolean;
-        /**
-         * Constructor
-         */
-        constructor();
-        /**
-         * Stop all async operations and release resources.
-         */
-        dispose(): void;
-        /**
-         * Decode Draco compressed mesh data to vertex data.
-         * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
-         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
-         * @returns A promise that resolves with the decoded vertex data
-         */
-        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
-            [kind: string]: number;
-        }): Promise<VertexData>;
-        private static _GetDecoderModule;
-        private static _LoadScriptAsync;
-        private static _LoadFileAsync;
     }
 }
 
