@@ -14,11 +14,14 @@ module BABYLON {
          * Blend current color and particle color using particle’s alpha.
          */
         public static BLENDMODE_STANDARD = 1;
-
         /**
          * Add current color and particle color multiplied by particle’s alpha.
          */
         public static BLENDMODE_ADD = 2;
+        /**
+         * Multiply current color with particle color 
+         */
+        public static BLENDMODE_MULTIPLY = 3;        
 
         /**
          * List of animations used by the particle system.

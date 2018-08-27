@@ -1064,6 +1064,9 @@
                     case ParticleSystem.BLENDMODE_STANDARD:
                         this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
                         break;
+                    case ParticleSystem.BLENDMODE_MULTIPLY:
+                        this._engine.setAlphaMode(Engine.ALPHA_MULTIPLY);
+                        break; 
                 }      
 
                 if (this.forceDepthWrite) {
