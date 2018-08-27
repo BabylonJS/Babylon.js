@@ -5409,6 +5409,30 @@
 
         private _cachedRayForTransform: Ray;
 
+        /** Use the given ray to pick a sprite in the scene
+         * @param ray The ray (in world space) to use to pick meshes
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo
+         */
+        public pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
+            if (!this._cachedRayForTransform) {
+                this._cachedRayForTransform = Ray.Zero();
+            }
+
+            if (!camera) {
+                if (!this.activeCamera) {
+                    return null;
+                }
+                camera = this.activeCamera;
+            }
+
+            Ray.TransformToRef(ray, camera.getViewMatrix(), this._cachedRayForTransform);
+
+            return this._internalPickSprites(this._cachedRayForTransform, predicate, fastCheck, camera);
+        }       
+
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
