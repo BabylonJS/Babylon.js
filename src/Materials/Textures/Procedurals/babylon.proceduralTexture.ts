@@ -38,6 +38,8 @@
         private _fallbackTextureUsed = false;
         private _engine: Engine;
 
+        private _cachedDefines = "";
+
         constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
@@ -133,6 +135,11 @@
                 return true;
             }
 
+            let defines = this._getDefines();
+            if (defines === this._cachedDefines && this._effect.isReady()) {
+                return true;
+            }
+
             if (this._fragment.fragmentElement !== undefined) {
                 shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
             }
@@ -140,7 +147,7 @@
                 shaders = { vertex: "procedural", fragment: this._fragment };
             }
 
-            let defines = this._getDefines();
+            this._cachedDefines = defines;
 
             this._effect = engine.createEffect(shaders,
                 [VertexBuffer.PositionKind],
