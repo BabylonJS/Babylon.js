@@ -136,7 +136,7 @@
             }
 
             let defines = this._getDefines();
-            if (defines === this._cachedDefines && this._effect.isReady()) {
+            if (this._effect && defines === this._cachedDefines && this._effect.isReady()) {
                 return true;
             }
 
