@@ -116,6 +116,10 @@
             engine._releaseEffect(this._effect);
         }
 
+        protected _getDefines(): string {
+            return "";
+        }
+
 
         public isReady(): boolean {
             var engine = this._engine;
@@ -136,11 +140,13 @@
                 shaders = { vertex: "procedural", fragment: this._fragment };
             }
 
+            let defines = this._getDefines();
+
             this._effect = engine.createEffect(shaders,
                 [VertexBuffer.PositionKind],
                 this._uniforms,
                 this._samplers,
-                "", undefined, undefined, () => {
+                defines, undefined, undefined, () => {
                     this.releaseInternalTexture();
 
                     if (this._fallbackTexture) {
