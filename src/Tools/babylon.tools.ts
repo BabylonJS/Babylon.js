@@ -1744,11 +1744,6 @@
          * @param updateFunc defines the callback function used to get the final value from the selected gradients
          */
         public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
-            if (gradients.length === 1) {
-                updateFunc(gradients[0], gradients[0], 0);
-                return;
-            }
-
             for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
                 let currentGradient = gradients[gradientIndex];
                 let nextGradient = gradients[gradientIndex + 1];
@@ -1756,8 +1751,13 @@
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
                     let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
+                    return;
                }
             }
+
+            // Use last index if over
+            const lastIndex = gradients.length - 1;
+            updateFunc(gradients[lastIndex], gradients[lastIndex], 1.0);
         }
     }
 
