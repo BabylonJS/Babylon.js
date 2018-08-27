@@ -428,7 +428,29 @@
             (<any>this._dragGradientsTexture) = null;
 
             return this;
-        }        
+        }   
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            // Do nothing as emit rate is not supported by GPUParticleSystem
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeEmitRateGradient(gradient: number): IParticleSystem {
+            // Do nothing as emit rate is not supported by GPUParticleSystem
+            return this;
+        } 
 
         /**
          * Instantiates a GPU particle system.
