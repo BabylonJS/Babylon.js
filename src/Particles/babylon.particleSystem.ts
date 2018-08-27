@@ -80,6 +80,13 @@
         private _scaledUpdateSpeed: number;
         private _vertexBufferSize: number;
 
+        /** @hidden */
+        public _currentEmitRateGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentEmitRate1 = 0;
+        /** @hidden */
+        public _currentEmitRate2 = 0;              
+
         // end of sheet animation
 
         // Sub-emitters
@@ -413,8 +420,8 @@
             this._removeFactorGradient(this._angularSpeedGradients, gradient);
 
             return this;
-        }          
-        
+        }     
+                   
         /**
          * Adds a new velocity gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -495,6 +502,44 @@
          */
         public removeDragGradient(gradient: number): IParticleSystem {
             this._removeFactorGradient(this._dragGradients, gradient);
+
+            return this;
+        }         
+        
+        /**
+         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._emitRateGradients) {
+                this._emitRateGradients = [];
+            }
+
+            this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
+
+            if (!this._currentEmitRateGradient) {
+                this._currentEmitRateGradient = this._emitRateGradients[0];
+                this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
+                this._currentEmitRate2 = this._currentEmitRate1;
+            }
+
+            if (this._emitRateGradients.length === 2) {
+                this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+            }
+
+            return this;
+        }
+
+        /**
+         * Remove a specific emit rate gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeEmitRateGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._emitRateGradients, gradient);
 
             return this;
         }           
@@ -977,7 +1022,7 @@
                     } else {
                         particle._currentDrag2 = particle._currentDrag1;
                     }
-                }          
+                }            
 
                 // Color
                 if (!this._colorGradients || this._colorGradients.length === 0) {
@@ -1125,7 +1170,7 @@
 
             this._scaledUpdateSpeed = this.updateSpeed * (preWarmOnly ? this.preWarmStepOffset : this._scene.getAnimationRatio());
 
-            // determine the number of particles we need to create
+            // Determine the number of particles we need to create
             var newParticles;
 
             if (this.manualEmitCount > -1) {
@@ -1133,8 +1178,23 @@
                 this._newPartsExcess = 0;
                 this.manualEmitCount = 0;
             } else {
-                newParticles = ((this.emitRate * this._scaledUpdateSpeed) >> 0);
-                this._newPartsExcess += this.emitRate * this._scaledUpdateSpeed - newParticles;
+                let rate = this.emitRate;
+
+                if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {   
+                    const ratio = this._actualFrame / this.targetStopDuration;               
+                    Tools.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
+                        if (currentGradient !== this._currentEmitRateGradient) {
+                            this._currentEmitRate1 = this._currentEmitRate2;
+                            this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();    
+                            this._currentEmitRateGradient = (<FactorGradient>currentGradient);
+                        }                                
+                        
+                        rate = Scalar.Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
+                    });
+                }                   
+
+                newParticles = ((rate * this._scaledUpdateSpeed) >> 0);
+                this._newPartsExcess += rate * this._scaledUpdateSpeed - newParticles;
             }
 
             if (this._newPartsExcess > 1.0) {
@@ -1533,6 +1593,42 @@
                 }
             }    
 
+            let dragGradients = particleSystem.getDragGradients();
+            if (dragGradients) {
+                serializationObject.dragyGradients = [];
+                for (var dragGradient of dragGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: dragGradient.gradient,
+                        factor1: dragGradient.factor1
+                    };
+
+                    if (dragGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = dragGradient.factor2;
+                    }
+
+                    serializationObject.dragGradients.push(serializedGradient);
+                }
+            }    
+            
+            let emitRateGradients = particleSystem.getEmitRateGradients();
+            if (emitRateGradients) {
+                serializationObject.emitRateGradients = [];
+                for (var emitRateGradient of emitRateGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: emitRateGradient.gradient,
+                        factor1: emitRateGradient.factor1
+                    };
+
+                    if (emitRateGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = emitRateGradient.factor2;
+                    }
+
+                    serializationObject.emitRateGradients.push(serializedGradient);
+                }
+            }                
+
             let limitVelocityGradients = particleSystem.getLimitVelocityGradients();
             if (limitVelocityGradients) {
                 serializationObject.limitVelocityGradients = [];
@@ -1661,6 +1757,18 @@
                     particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ?  velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
                 }
             }     
+
+            if (parsedParticleSystem.dragGradients) {
+                for (var dragGradient of parsedParticleSystem.dragGradients) {
+                    particleSystem.addDragGradient(dragGradient.gradient, dragGradient.factor1 !== undefined ?  dragGradient.factor1 : dragGradient.factor, dragGradient.factor2);
+                }
+            }        
+            
+            if (parsedParticleSystem.emitRateGradients) {
+                for (var emitRateGradient of parsedParticleSystem.emitRateGradients) {
+                    particleSystem.addEmitRateGradient(emitRateGradient.gradient, emitRateGradient.factor1 !== undefined ?  emitRateGradient.factor1 : emitRateGradient.factor, emitRateGradient.factor2);
+                }
+            }               
 
             if (parsedParticleSystem.limitVelocityGradients) {
                 for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
