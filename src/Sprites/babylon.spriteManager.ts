@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     /**
-     * Defines the minimum interface to full fill in order to be a sprite manager.
+     * Defines the minimum interface to fullfil in order to be a sprite manager.
      */
     export interface ISpriteManager extends IDisposable {
         /**
