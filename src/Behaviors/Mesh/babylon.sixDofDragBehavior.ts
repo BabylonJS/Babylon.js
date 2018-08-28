@@ -83,7 +83,7 @@ module BABYLON {
                         }
                         
                         pickedMesh = this._ownerNode;
-                        BoundingBoxGizmo._removeAndStorePivotPoint(pickedMesh);
+                        BoundingBoxGizmo._RemoveAndStorePivotPoint(pickedMesh);
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
                         // Set position and orientation of the controller
@@ -116,7 +116,7 @@ module BABYLON {
                                 attachedElement = null;
                             }
                         }
-                        BoundingBoxGizmo._restorePivotPoint(pickedMesh);
+                        BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                     }
                 }else if(pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP){
                     if(this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId){
@@ -174,7 +174,7 @@ module BABYLON {
             // On every frame move towards target scaling to avoid jitter caused by vr controllers
             this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(()=>{
                 if(this.dragging && this._moving && pickedMesh){
-                    BoundingBoxGizmo._removeAndStorePivotPoint(pickedMesh);
+                    BoundingBoxGizmo._RemoveAndStorePivotPoint(pickedMesh);
                     // Slowly move mesh to avoid jitter
                     pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
                     
@@ -192,7 +192,7 @@ module BABYLON {
                     pickedMesh.setParent(null);
                     Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
                     pickedMesh.setParent(oldParent);
-                    BoundingBoxGizmo._restorePivotPoint(pickedMesh);
+                    BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                 }
             });
         }
