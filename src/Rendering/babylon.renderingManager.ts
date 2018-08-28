@@ -158,7 +158,7 @@
             }
         }
 
-        public dispatchSprites(spriteManager: SpriteManager) {
+        public dispatchSprites(spriteManager: ISpriteManager) {
             var renderingGroupId = spriteManager.renderingGroupId || 0;
 
             this._prepareRenderingGroup(renderingGroupId);
