@@ -177,13 +177,13 @@ module BABYLON {
 
             this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(()=>{
                 if(this._moving && this.moveAttached){
-                    BoundingBoxGizmo._removeAndStorePivotPoint(this._attachedNode);
+                    BoundingBoxGizmo._RemoveAndStorePivotPoint(this._attachedNode);
                     // Slowly move mesh to avoid jitter
                     this._targetPosition.subtractToRef((this._attachedNode).absolutePosition, this._tmpVector);
                     this._tmpVector.scaleInPlace(this.dragDeltaRatio);
                     (this._attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
                     (this._attachedNode).setAbsolutePosition(this._tmpVector);
-                    BoundingBoxGizmo._restorePivotPoint(this._attachedNode);
+                    BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
                 }
             });
         }
@@ -221,7 +221,7 @@ module BABYLON {
                 return;
             }
             
-            BoundingBoxGizmo._removeAndStorePivotPoint(this._attachedNode);
+            BoundingBoxGizmo._RemoveAndStorePivotPoint(this._attachedNode);
             // Create start ray from the camera to the object
             if(fromRay){
                 this._startDragRay.direction.copyFrom(fromRay.direction)
@@ -252,7 +252,7 @@ module BABYLON {
                     }
                 }
             }
-            BoundingBoxGizmo._restorePivotPoint(this._attachedNode);
+            BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
         }
 
         private _dragDelta = new BABYLON.Vector3();
