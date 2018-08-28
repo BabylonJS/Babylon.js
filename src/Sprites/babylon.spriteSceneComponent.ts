@@ -1,8 +1,4 @@
 ﻿module BABYLON {
-    export interface ActionManager {
-
-    }
-
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;
@@ -129,10 +125,6 @@
         return this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
     }
 
-    /**
-     * Force the sprite under the pointer
-     * @param sprite defines the sprite to use
-     */
     Scene.prototype.setPointerOverSprite = function(sprite: Nullable<Sprite>): void {
         if (this._pointerOverSprite === sprite) {
             return;
@@ -148,16 +140,12 @@
         }
     }
 
-    /** 
-     * Gets the sprite under the pointer
-     * @returns a Sprite or null if no sprite is under the pointer
-     */
     Scene.prototype.getPointerOverSprite = function(): Nullable<Sprite> {
         return this._pointerOverSprite;
     }
 
     /**
-     * Defines the layer scene component responsible to manage sprites
+     * Defines the sprite scene component responsible to manage sprites
      * in a given scene.
      */
     export class SpriteSceneComponent implements ISceneComponent {
