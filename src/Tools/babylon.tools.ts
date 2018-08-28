@@ -1751,8 +1751,13 @@
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
                     let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
+                    return;
                }
             }
+
+            // Use last index if over
+            const lastIndex = gradients.length - 1;
+            updateFunc(gradients[lastIndex], gradients[lastIndex], 1.0);
         }
     }
 

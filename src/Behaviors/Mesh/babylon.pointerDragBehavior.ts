@@ -3,7 +3,7 @@ module BABYLON {
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
      */
     export class PointerDragBehavior implements Behavior<Mesh> {
-        private _attachedNode: Node; 
+        private _attachedNode: Mesh; 
         private _dragPlane: Mesh;
         private _scene:Scene;
         private _pointerObserver:Nullable<Observer<PointerInfo>>;
@@ -177,11 +177,13 @@ module BABYLON {
 
             this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(()=>{
                 if(this._moving && this.moveAttached){
+                    BoundingBoxGizmo._RemoveAndStorePivotPoint(this._attachedNode);
                     // Slowly move mesh to avoid jitter
-                    this._targetPosition.subtractToRef((<Mesh>this._attachedNode).absolutePosition, this._tmpVector);
+                    this._targetPosition.subtractToRef((this._attachedNode).absolutePosition, this._tmpVector);
                     this._tmpVector.scaleInPlace(this.dragDeltaRatio);
-                    (<Mesh>this._attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
-                    (<Mesh>this._attachedNode).setAbsolutePosition(this._tmpVector);
+                    (this._attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
+                    (this._attachedNode).setAbsolutePosition(this._tmpVector);
+                    BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
                 }
             });
         }
@@ -219,6 +221,7 @@ module BABYLON {
                 return;
             }
             
+            BoundingBoxGizmo._RemoveAndStorePivotPoint(this._attachedNode);
             // Create start ray from the camera to the object
             if(fromRay){
                 this._startDragRay.direction.copyFrom(fromRay.direction)
@@ -237,7 +240,7 @@ module BABYLON {
                 this.currentDraggingPointerID = 1;
                 this.lastDragPosition.copyFrom(pickedPoint);
                 this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID});
-                this._targetPosition.copyFrom((<Mesh>this._attachedNode).absolutePosition)
+                this._targetPosition.copyFrom((this._attachedNode).absolutePosition)
 
                 // Detatch camera controls
                 if(this.detachCameraControls && this._scene.activeCamera && !this._scene.activeCamera.leftCamera){
@@ -249,6 +252,7 @@ module BABYLON {
                     }
                 }
             }
+            BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
         }
 
         private _dragDelta = new BABYLON.Vector3();
@@ -298,7 +302,7 @@ module BABYLON {
                 if(this._useAlternatePickedPointAboveMaxDragAngle){
                     // Invert ray direction along the towards object axis
                     this._tmpVector.copyFrom(ray.direction);
-                    (<Mesh>this._attachedNode).absolutePosition.subtractToRef(ray.origin, this._alternatePickedPoint);
+                    (this._attachedNode).absolutePosition.subtractToRef(ray.origin, this._alternatePickedPoint);
                     this._alternatePickedPoint.normalize();
                     this._alternatePickedPoint.scaleInPlace(-2*Vector3.Dot(this._alternatePickedPoint, this._tmpVector));
                     this._tmpVector.addInPlace(this._alternatePickedPoint);
@@ -307,7 +311,7 @@ module BABYLON {
                     var dot = Vector3.Dot(this._dragPlane.forward, this._tmpVector);
                     this._dragPlane.forward.scaleToRef(-dot, this._alternatePickedPoint);
                     this._alternatePickedPoint.addInPlace(this._tmpVector);
-                    this._alternatePickedPoint.addInPlace((<Mesh>this._attachedNode).absolutePosition);
+                    this._alternatePickedPoint.addInPlace((this._attachedNode).absolutePosition);
                     return this._alternatePickedPoint
                 }else{
                     return null;
