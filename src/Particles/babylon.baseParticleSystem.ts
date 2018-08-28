@@ -231,6 +231,14 @@ module BABYLON {
 
             this._reset();
         }
+        
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        public getScene(): Scene {
+            return this._scene;
+        }    
 
         /**
          * You can use gravity if you want to give an orientation to your particles.
