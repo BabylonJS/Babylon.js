@@ -2,7 +2,7 @@
     export interface ActionManager {
 
     }
-    
+
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;
@@ -227,7 +227,7 @@
             return result;
         }
 
-        private _pointerMove(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement): void {
+        private _pointerMove(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement): Nullable<PickingInfo> {
             var scene = this.scene;
             if (isMeshPicked) {
                 scene.setPointerOverSprite(null);
@@ -247,9 +247,11 @@
                     canvas.style.cursor = scene.defaultCursor;
                 }
             }
+
+            return pickResult;
         }
 
-        private _pointerDown(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent): void {
+        private _pointerDown(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent): Nullable<PickingInfo> {
             var scene = this.scene;
             scene._pickedDownSprite = null;
             if (scene.spriteManagers.length > 0) {
@@ -275,9 +277,11 @@
                     }
                 }
             }
+
+            return pickResult;
         }
 
-        private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent): void {
+        private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent): Nullable<PickingInfo> {
             var scene = this.scene;
             if (scene.spriteManagers.length > 0) {
                 let spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
@@ -298,6 +302,8 @@
                     }
                 }
             }
+
+            return pickResult;
         }
     }
 }

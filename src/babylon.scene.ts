@@ -1571,7 +1571,7 @@
             }
 
             for (let step of this._pointerMoveStage) {
-                step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
+                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
             }
 
             if (pickResult) {
@@ -1659,6 +1659,11 @@
                     }
                 }
             }
+            else {
+                for (let step of this._pointerDownStage) {
+                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                }
+            }
 
             if (pickResult) {
                 let type = PointerEventTypes.POINTERDOWN;
@@ -1723,6 +1728,14 @@
                     }
                 }
             }
+            else {
+                if (!clickInfo.ignore) {
+                    for (let step of this._pointerUpStage) {
+                        pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                    }
+                }
+            }
+
             if (this._pickedDownMesh &&
                 this._pickedDownMesh.actionManager &&
                 this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
@@ -1975,10 +1988,6 @@
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 this._processPointerDown(pickResult, evt);
-
-                for (let step of this._pointerDownStage) {
-                    step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
-                }
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
@@ -2036,12 +2045,6 @@
                     }
 
                     this._processPointerUp(pickResult, evt, clickInfo);
-
-                    if (!clickInfo.ignore) {
-                        for (let step of this._pointerUpStage) {
-                            step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
-                        }
-                    }
 
                     this._previousPickResult = this._currentPickResult;
                 });
