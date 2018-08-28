@@ -803,6 +803,10 @@
                 defines = "\n#define CLIPPLANE4";
             }
 
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
+                defines = "\n#define BLENDMULTIPLYMODE";
+            }
+
             if (this._isBillboardBased) {
                 defines += "\n#define BILLBOARD";
 
