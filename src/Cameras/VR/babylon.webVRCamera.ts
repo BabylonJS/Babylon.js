@@ -525,6 +525,17 @@ module BABYLON {
 
         private updateCacheCalled: boolean;
 
+        // Remove translation from 6dof headset if trackposition is set to false
+        private _correctPositionIfNotTrackPosition(matrix:Matrix, isViewMatrix = false){
+            if(this.rawPose && this.rawPose.position && !this.webVROptions.trackPosition){
+                Matrix.TranslationToRef(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2], this._tmpMatrix);
+                if(!isViewMatrix){
+                    this._tmpMatrix.invert();
+                }
+                this._tmpMatrix.multiplyToRef(matrix, matrix);
+            }
+        }
+
         /**
          * @hidden
          * Updates the cached values of the camera
@@ -559,6 +570,7 @@ module BABYLON {
                 // Update the gamepad to ensure the mesh is updated on the same frame as camera
                 this.controllers.forEach((controller) => {
                     controller._deviceToWorld.copyFrom(this._deviceToWorld);
+                    this._correctPositionIfNotTrackPosition(controller._deviceToWorld);
                     controller.update();
                 });
             }
@@ -637,13 +649,10 @@ module BABYLON {
                 this._webvrViewMatrix.invert();
             }
              
-            parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
-
             // Remove translation from 6dof headset if trackposition is set to false
-            if(parentCamera.rawPose && parentCamera.rawPose.position && !parentCamera.webVROptions.trackPosition){
-                Matrix.TranslationToRef(parentCamera.rawPose.position[0], parentCamera.rawPose.position[1], -parentCamera.rawPose.position[2], parentCamera._tmpMatrix);
-                parentCamera._tmpMatrix.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
-            }
+            parentCamera._correctPositionIfNotTrackPosition(this._webvrViewMatrix, true);
+
+            parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
 
             // Compute global position
             this._workingMatrix = this._workingMatrix || Matrix.Identity();
@@ -711,6 +720,8 @@ module BABYLON {
                     let webVrController: WebVRController = <WebVRController>gamepad;
                     webVrController.deviceScaleFactor = this.deviceScaleFactor;
                     webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
+                    this._correctPositionIfNotTrackPosition(webVrController._deviceToWorld);
+
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);
