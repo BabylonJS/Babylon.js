@@ -21,7 +21,8 @@ void main() {
   	outFragColor = textureColor * vColor;
 
 	#ifdef BLENDMULTIPLYMODE
-	outFragColor.rgb += vec3(1.0 - textureColor.a);
+	float alpha = vColor.a * textureColor.a;
+	outFragColor.rgb = outFragColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);	
 	#endif	  
 
 // Apply image processing if relevant. As this applies in linear space, 
