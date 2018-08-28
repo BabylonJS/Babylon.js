@@ -1194,7 +1194,12 @@
             if (this._limitVelocityGradientsTexture) {
                 this._limitVelocityGradientsTexture.dispose();
                 (<any>this._limitVelocityGradientsTexture) = null;
-            }         
+            }                   
+
+            if (this._dragGradientsTexture) {
+                this._dragGradientsTexture.dispose();
+                (<any>this._dragGradientsTexture) = null;
+            }               
          
             if (this._randomTexture) {
                 this._randomTexture.dispose();
