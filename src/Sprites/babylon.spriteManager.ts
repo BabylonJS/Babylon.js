@@ -57,6 +57,9 @@
         }
 
         constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+            if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
+                scene._addComponent(new SpriteSceneComponent(scene));
+            }
             this._capacity = capacity;
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;

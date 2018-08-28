@@ -14,6 +14,7 @@
         public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
         public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
         public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
+        public static readonly NAME_SPRITE = "Sprite";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -44,6 +45,10 @@
         public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 2;
 
         public static readonly STEP_REBUILDGEOMETRY_POSTPROCESSRENDERPIPELINEMANAGER = 0;
+
+        public static readonly STEP_POINTERMOVE_SPRITE = 0;
+        public static readonly STEP_POINTERDOWN_SPRITE = 0;
+        public static readonly STEP_POINTERUP_SPRITE = 0;
     }
 
     /**
@@ -139,6 +144,16 @@
      * Strong typing of a render target action.
      */
     export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>) => void;
+
+    /** 
+     * Strong typing of a pointer move action.
+     */
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => void;
+
+    /** 
+     * Strong typing of a pointer up/down action.
+     */
+    export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => void;
 
     /** 
      * Repressentation of a stage in the scene (Basically a list of ordered steps) 
