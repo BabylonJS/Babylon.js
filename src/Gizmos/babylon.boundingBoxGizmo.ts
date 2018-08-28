@@ -69,6 +69,7 @@ module BABYLON {
         private static _oldPivotPoint = new Vector3();
         private static _pivotTranslation = new Vector3();
         private static _pivotTmpVector = new Vector3();
+        /** @hidden */
         public static _removeAndStorePivotPoint(mesh:AbstractMesh){
             if(mesh && BoundingBoxGizmo._pivotCached === 0){
                 // Save old pivot and set pivot to 0,0,0
@@ -84,6 +85,7 @@ module BABYLON {
             }
             BoundingBoxGizmo._pivotCached++;
         }
+        /** @hidden */
         public static _restorePivotPoint(mesh:AbstractMesh){
             if(mesh && !BoundingBoxGizmo._oldPivotPoint.equalsToFloats(0,0,0) && BoundingBoxGizmo._pivotCached === 1){
                 mesh.setPivotPoint(BoundingBoxGizmo._oldPivotPoint);
