@@ -43,16 +43,6 @@
             this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
 
-
-
-        /**
-         * Get hosting scene
-         * @returns the scene
-         */
-        public getScene(): Scene {
-            return this._scene;
-        }    
-
         private _particles = new Array<Particle>();
         private _epsilon: number;
         private _capacity: number;
@@ -1102,6 +1092,10 @@
 
             if (this._isAnimationSheetEnabled) {
                 defines.push("#define ANIMATESHEET");
+            }
+
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
+                defines.push("#define BLENDMULTIPLYMODE");
             }
 
             if (this._isBillboardBased) {

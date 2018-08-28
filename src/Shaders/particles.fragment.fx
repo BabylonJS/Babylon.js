@@ -16,7 +16,12 @@ void main(void) {
 	#include<clipPlaneFragment>
 
 	vec4 baseColor = texture2D(diffuseSampler, vUV);
+	float alpha = baseColor.a;
 	baseColor = (baseColor * textureMask + (vec4(1., 1., 1., 1.) - textureMask)) * vColor;
+
+	#ifdef BLENDMULTIPLYMODE
+	baseColor.rgb += vec3(1.0 - alpha);
+	#endif
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.
