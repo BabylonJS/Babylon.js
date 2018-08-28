@@ -809,7 +809,7 @@
         * All of the sprite managers added to this scene
         * @see http://doc.babylonjs.com/babylon101/sprites
         */
-        public spriteManagers = new Array<SpriteManager>();
+        public spriteManagers = new Array<ISpriteManager>();
 
         // Skeletons
         private _skeletonsEnabled = true;

@@ -1,5 +1,19 @@
 ﻿module BABYLON {
-    export class SpriteManager {
+    export interface ISpriteManager extends IDisposable {
+        layerMask: number;
+
+        isPickable: boolean;
+
+        renderingGroupId: number;
+
+        sprites: Array<Sprite>;
+
+        intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+
+        render(): void;
+    }
+
+    export class SpriteManager implements ISpriteManager {
         public sprites = new Array<Sprite>();
         public renderingGroupId = 0;
         public layerMask: number = 0x0FFFFFFF;
