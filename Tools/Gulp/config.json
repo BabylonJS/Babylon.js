@@ -411,7 +411,8 @@
         "sprites": {
             "files": [
                 "../../src/Sprites/babylon.spriteManager.js",
-                "../../src/Sprites/babylon.sprite.js"
+                "../../src/Sprites/babylon.sprite.js",
+                "../../src/Sprites/babylon.spriteSceneComponent.js"
             ],
             "dependUpon": [
                 "core"

@@ -19,7 +19,7 @@
         private _toIndex = 0;
         private _delay = 0;
         private _direction = 1;
-        private _manager: SpriteManager;
+        private _manager: ISpriteManager;
         private _time = 0;
         private _onAnimationEnd: () => void;
         /**
@@ -36,7 +36,7 @@
             this.height = value;
         }
 
-        constructor(public name: string, manager: SpriteManager) {
+        constructor(public name: string, manager: ISpriteManager) {
             this._manager = manager;
 
             this._manager.sprites.push(this);

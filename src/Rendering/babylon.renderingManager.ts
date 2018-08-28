@@ -76,7 +76,7 @@
             info.camera = this._scene.activeCamera;
 
             // Dispatch sprites
-            if (renderSprites) {
+            if (this._scene.spriteManagers && renderSprites) {
                 for (let index = 0; index < this._scene.spriteManagers.length; index++) {
                     var manager = this._scene.spriteManagers[index];
                     this.dispatchSprites(manager);
@@ -158,7 +158,7 @@
             }
         }
 
-        public dispatchSprites(spriteManager: SpriteManager) {
+        public dispatchSprites(spriteManager: ISpriteManager) {
             var renderingGroupId = spriteManager.renderingGroupId || 0;
 
             this._prepareRenderingGroup(renderingGroupId);
