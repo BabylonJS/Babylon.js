@@ -35,6 +35,7 @@
   - Added support for velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#velocity-over-time)
   - Added support for limit velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time)
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
+  - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))
@@ -174,9 +175,9 @@
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
 - Dispose existing gazeTrackers when setting a new one ([TrevorDev](https://github.com/TrevorDev))
 - Set missing parentId in Mesh.serialize() for instances ([julien-moreau](https://github.com/julien-moreau))
-- Do not modify pivot point when using bounding box gizmo ([TrevorDev](https://github.com/TrevorDev))
+- Do not modify pivot point when using bounding box gizmo or behaviors ([TrevorDev](https://github.com/TrevorDev))
 - GPUParticleSystem does not get stuck in burst loop when stopped and started ([TrevorDev](https://github.com/TrevorDev))
-- trackPosition not working in webVRCamera ([TrevorDev](https://github.com/TrevorDev))
+- trackPosition:false not working in webVRCamera ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
