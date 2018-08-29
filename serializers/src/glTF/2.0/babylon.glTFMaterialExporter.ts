@@ -1135,12 +1135,23 @@ module BABYLON.GLTF2 {
          * Extracts a texture from a Babylon texture into file data and glTF data
          * @param babylonTexture Babylon texture to extract
          * @param mimeType Mime Type of the babylonTexture
-         * @param images Array of glTF images
-         * @param textures Array of glTF textures
-         * @param imageData map of image file name and data
          * @return glTF texture info, or null if the texture format is not supported
          */
-        private _exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
+        public _exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
+            const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);
+            if (!extensionPromise) {
+                return this._exportTextureInfoAsync(babylonTexture, mimeType);
+            }
+
+            return extensionPromise.then(texture => {
+                if (!texture) {
+                    return this._exportTextureInfoAsync(babylonTexture, mimeType);
+                }
+                return this._exportTextureInfoAsync(texture, mimeType);
+            });
+        }
+
+        public _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
             return Promise.resolve().then(() => {
                 const textureUid = babylonTexture.uid;
                 if (textureUid in this._textureMap) {
@@ -1172,7 +1183,7 @@ module BABYLON.GLTF2 {
                     const size = babylonTexture.getSize();
 
                     return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(base64Data => {
-                        const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g , "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex);
+                        const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex);
                         if (textureInfo) {
                             this._textureMap[textureUid] = textureInfo;
                         }
