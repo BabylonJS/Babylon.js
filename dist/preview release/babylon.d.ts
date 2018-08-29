@@ -780,7 +780,6 @@ declare module BABYLON {
          * Use this array to add regular expressions used to disable offline support for specific urls
          */
         disableOfflineSupportExceptionRules: RegExp[];
-        private _spritePredicate;
         /**
         * An event triggered when the scene is disposed.
         */
@@ -862,16 +861,6 @@ declare module BABYLON {
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
         */
         onAfterParticlesRenderingObservable: Observable<Scene>;
-        /**
-        * An event triggered when sprites rendering is about to start
-        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        */
-        onBeforeSpritesRenderingObservable: Observable<Scene>;
-        /**
-        * An event triggered when sprites rendering is done
-        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        */
-        onAfterSpritesRenderingObservable: Observable<Scene>;
         /**
         * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
         */
@@ -1117,11 +1106,6 @@ declare module BABYLON {
         * Gets or sets a boolean indicating if sprites are enabled on this scene
         */
         spritesEnabled: boolean;
-        /**
-        * All of the sprite managers added to this scene
-        * @see http://doc.babylonjs.com/babylon101/sprites
-        */
-        spriteManagers: SpriteManager[];
         private _skeletonsEnabled;
         /**
         * Gets or sets a boolean indicating if skeletons are enabled on this scene
@@ -1302,11 +1286,9 @@ declare module BABYLON {
         requireLightSorting: boolean;
         private _selectionOctree;
         private _pointerOverMesh;
-        private _pointerOverSprite;
         private _debugLayer;
         private _pickedDownMesh;
         private _pickedUpMesh;
-        private _pickedDownSprite;
         private _externalData;
         private _uid;
         /**
@@ -1401,6 +1383,21 @@ declare module BABYLON {
          * Defines the actions happening when Geometries are rebuilding.
          */
         _rebuildGeometryStage: Stage<SimpleStageAction>;
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer move event happens.
+         */
+        _pointerMoveStage: Stage<PointerMoveStageAction>;
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer down event happens.
+         */
+        _pointerDownStage: Stage<PointerUpDownStageAction>;
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer up event happens.
+         */
+        _pointerUpStage: Stage<PointerUpDownStageAction>;
         /**
          * Creates a new Scene
          * @param engine defines the engine to use to render this scene
@@ -1552,7 +1549,6 @@ declare module BABYLON {
         private _updatePointerPosition;
         private _createUbo;
         private _createAlternateUbo;
-        private _pickSpriteButKeepRay;
         private _setRayOnPointerInfo;
         /**
          * Use this method to simulate a pointer move on a mesh
@@ -1588,6 +1584,8 @@ declare module BABYLON {
          * @returns true if the pointer was captured
          */
         isPointerCaptured(pointerId?: number): boolean;
+        /** @hidden */
+        _isPointerSwiping(): boolean;
         /**
         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
         * @param attachUp defines if you want to attach events to pointerup
@@ -2232,7 +2230,7 @@ declare module BABYLON {
          */
         updateAlternateTransformMatrix(alternateCamera: Camera): void;
         /** @hidden */
-        _allowPostProcessClear: boolean;
+        _allowPostProcessClearColor: boolean;
         private _renderForCamera;
         private _processSubCameras;
         private _checkIntersections;
@@ -2346,7 +2344,6 @@ declare module BABYLON {
         createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene;
         private _internalPick;
         private _internalMultiPick;
-        private _internalPickSprites;
         private _tempPickingRay;
         /** Launch a ray to try to pick a mesh in the scene
          * @param x position on screen
@@ -2357,19 +2354,10 @@ declare module BABYLON {
          * @returns a PickingInfo
          */
         pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo>;
-        /** Launch a ray to try to pick a sprite in the scene
-         * @param x position on screen
-         * @param y position on screen
-         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
-         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
-         * @returns a PickingInfo
-         */
-        pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
         private _cachedRayForTransform;
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
-         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
          * @returns a PickingInfo
          */
@@ -2400,16 +2388,6 @@ declare module BABYLON {
          * @returns a Mesh or null if no mesh is under the pointer
          */
         getPointerOverMesh(): Nullable<AbstractMesh>;
-        /**
-         * Force the sprite under the pointer
-         * @param sprite defines the sprite to use
-         */
-        setPointerOverSprite(sprite: Nullable<Sprite>): void;
-        /**
-         * Gets the sprite under the pointer
-         * @returns a Sprite or null if no sprite is under the pointer
-         */
-        getPointerOverSprite(): Nullable<Sprite>;
         /**
          * Gets the current physics engine
          * @returns a PhysicsEngine or null if none attached
@@ -2573,6 +2551,7 @@ declare module BABYLON {
         static readonly NAME_GEOMETRYBUFFERRENDERER: string;
         static readonly NAME_DEPTHRENDERER: string;
         static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER: string;
+        static readonly NAME_SPRITE: string;
         static readonly STEP_ISREADYFORMESH_EFFECTLAYER: number;
         static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER: number;
@@ -2592,6 +2571,9 @@ declare module BABYLON {
         static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER: number;
         static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER: number;
         static readonly STEP_REBUILDGEOMETRY_POSTPROCESSRENDERPIPELINEMANAGER: number;
+        static readonly STEP_POINTERMOVE_SPRITE: number;
+        static readonly STEP_POINTERDOWN_SPRITE: number;
+        static readonly STEP_POINTERUP_SPRITE: number;
     }
     /**
      * This represents a scene component.
@@ -2672,6 +2654,14 @@ declare module BABYLON {
      * Strong typing of a render target action.
      */
     type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>) => void;
+    /**
+     * Strong typing of a pointer move action.
+     */
+    type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
+    /**
+     * Strong typing of a pointer up/down action.
+     */
+    type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
     /**
      * Repressentation of a stage in the scene (Basically a list of ordered steps)
      * @hidden
@@ -3031,6 +3021,14 @@ declare module BABYLON {
          * @return a boolean indicating whether one (or more) of the triggers is handled
          */
         hasSpecificTriggers(triggers: number[]): boolean;
+        /**
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
+         * speed.
+         * @param triggerA defines the trigger to be tested
+         * @param triggerB defines the trigger to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
+         */
+        hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
         /**
          * Does this action manager handles actions of a given trigger
          * @param trigger defines the trigger to be tested
@@ -4896,6 +4894,52 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Interface used to define a behavior
+     */
+    interface Behavior<T> {
+        /** gets or sets behavior's name */
+        name: string;
+        /**
+         * Function called when the behavior needs to be initialized (after attaching it to a target)
+         */
+        init(): void;
+        /**
+         * Called when the behavior is attached to a target
+         * @param target defines the target where the behavior is attached to
+         */
+        attach(target: T): void;
+        /**
+         * Called when the behavior is detached from its target
+         */
+        detach(): void;
+    }
+    /**
+     * Interface implemented by classes supporting behaviors
+     */
+    interface IBehaviorAware<T> {
+        /**
+         * Attach a behavior
+         * @param behavior defines the behavior to attach
+         * @returns the current host
+         */
+        addBehavior(behavior: Behavior<T>): T;
+        /**
+         * Remove a behavior from the current object
+         * @param behavior defines the behavior to detach
+         * @returns the current host
+         */
+        removeBehavior(behavior: Behavior<T>): T;
+        /**
+         * Gets a behavior using its name to search
+         * @param name defines the name to search
+         * @returns the behavior or null if not found
+         */
+        getBehaviorByName(name: string): Nullable<Behavior<T>>;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Class used to store bone information
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
@@ -5648,52 +5692,6 @@ declare module BABYLON {
          */
         sortBones(): void;
         private _sortBones;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface used to define a behavior
-     */
-    interface Behavior<T> {
-        /** gets or sets behavior's name */
-        name: string;
-        /**
-         * Function called when the behavior needs to be initialized (after attaching it to a target)
-         */
-        init(): void;
-        /**
-         * Called when the behavior is attached to a target
-         * @param target defines the target where the behavior is attached to
-         */
-        attach(target: T): void;
-        /**
-         * Called when the behavior is detached from its target
-         */
-        detach(): void;
-    }
-    /**
-     * Interface implemented by classes supporting behaviors
-     */
-    interface IBehaviorAware<T> {
-        /**
-         * Attach a behavior
-         * @param behavior defines the behavior to attach
-         * @returns the current host
-         */
-        addBehavior(behavior: Behavior<T>): T;
-        /**
-         * Remove a behavior from the current object
-         * @param behavior defines the behavior to detach
-         * @returns the current host
-         */
-        removeBehavior(behavior: Behavior<T>): T;
-        /**
-         * Gets a behavior using its name to search
-         * @param name defines the name to search
-         * @returns the behavior or null if not found
-         */
-        getBehaviorByName(name: string): Nullable<Behavior<T>>;
     }
 }
 
@@ -6935,7 +6933,6 @@ declare module BABYLON {
         radiusWorld: number;
         minimum: Vector3;
         maximum: Vector3;
-        private _tempRadiusVector;
         /**
          * Creates a new bounding sphere
          * @param min defines the minimum vector (in local space)
@@ -10064,10 +10061,14 @@ declare module BABYLON {
         scalePivot: Nullable<Vector3>;
         private _anchorMesh;
         private _existingMeshScale;
-        private _oldPivotPoint;
-        private _pivotTranslation;
-        private removeAndStorePivotPoint;
-        private restorePivotPoint;
+        private static _PivotCached;
+        private static _OldPivotPoint;
+        private static _PivotTranslation;
+        private static _PivotTmpVector;
+        /** @hidden */
+        static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
+        /** @hidden */
+        static _RestorePivotPoint(mesh: AbstractMesh): void;
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -15336,6 +15337,7 @@ declare module BABYLON {
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
+        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
@@ -21890,7 +21892,7 @@ declare module BABYLON {
         /**
          * Modifies the mesh geometry according to the passed transformation matrix.
          * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable.
-         * The mesh normals are modified accordingly the same transformation.
+         * The mesh normals are modified using the same transformation.
          * tuto : http://doc.babylonjs.com/resources/baking_transformations
          * Note that, under the hood, this method sets a new VertexBuffer each call.
          * Returns the Mesh.
@@ -24676,6 +24678,10 @@ declare module BABYLON {
          */
         static BLENDMODE_ADD: number;
         /**
+         * Multiply current color with particle color
+         */
+        static BLENDMODE_MULTIPLY: number;
+        /**
          * List of animations used by the particle system.
          */
         animations: Animation[];
@@ -24841,6 +24847,11 @@ declare module BABYLON {
          */
         isAnimationSheetEnabled: boolean;
         /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        getScene(): Scene;
+        /**
          * You can use gravity if you want to give an orientation to your particles.
          */
         gravity: Vector3;
@@ -24850,6 +24861,14 @@ declare module BABYLON {
         protected _angularSpeedGradients: Nullable<Array<FactorGradient>>;
         protected _velocityGradients: Nullable<Array<FactorGradient>>;
         protected _limitVelocityGradients: Nullable<Array<FactorGradient>>;
+        protected _dragGradients: Nullable<Array<FactorGradient>>;
+        protected _emitRateGradients: Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        getDragGradients(): Nullable<Array<FactorGradient>>;
         /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
         limitVelocityDamping: number;
         /**
@@ -24888,6 +24907,12 @@ declare module BABYLON {
          * @returns the list of velocity gradients
          */
         getVelocityGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          * This only works when particleEmitterTyps is a BoxParticleEmitter
@@ -25003,6 +25028,15 @@ declare module BABYLON {
          */
         createDirectedSphereEmitter(radius?: number, direction1?: Vector3, direction2?: Vector3): SphereDirectedParticleEmitter;
         /**
+         * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
+         * @param radius The radius of the emission cylinder
+         * @param height The height of the emission cylinder
+         * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
+         * @param directionRandomizer How much to randomize the particle direction [0-1]
+         * @returns the emitter
+         */
+        createCylinderEmitter(radius?: number, height?: number, radiusRange?: number, directionRandomizer?: number): CylinderParticleEmitter;
+        /**
          * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
          * @param radius The radius of the cone to emit from
          * @param angle The base angle of the cone
@@ -25087,7 +25121,7 @@ declare module BABYLON {
          */
         isReady(): boolean;
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         isStarted(): boolean;
@@ -25129,6 +25163,7 @@ declare module BABYLON {
         private _sizeGradientsTexture;
         private _velocityGradientsTexture;
         private _limitVelocityGradientsTexture;
+        private _dragGradientsTexture;
         private _addFactorGradient;
         /**
          * Adds a new size gradient
@@ -25182,6 +25217,33 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeLimitVelocityGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number): GPUParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): GPUParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeEmitRateGradient(gradient: number): IParticleSystem;
         /**
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -25433,13 +25495,8 @@ declare module BABYLON {
          */
         getCapacity(): number;
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Gets if the particle system has been started.
-         * @return true if the system has been started, otherwise false.
          */
         isStarted(): boolean;
         /**
@@ -25590,6 +25647,105 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeLimitVelocityGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        getDragGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific emit rate gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeEmitRateGradient(gradient: number): IParticleSystem;
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        getEmitRateGradients(): Nullable<Array<FactorGradient>>;
+        /**
+         * Creates a Point Emitter for the particle system (emits directly from the emitter position)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @returns the emitter
+         */
+        createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter;
+        /**
+         * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
+         * @param radius The radius of the hemisphere to emit from
+         * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+         * @returns the emitter
+         */
+        createHemisphericEmitter(radius: number, radiusRange: number): HemisphericParticleEmitter;
+        /**
+         * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
+         * @param radius The radius of the sphere to emit from
+         * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+         * @returns the emitter
+         */
+        createSphereEmitter(radius: number, radiusRange: number): SphereParticleEmitter;
+        /**
+         * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
+         * @param radius The radius of the sphere to emit from
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @returns the emitter
+         */
+        createDirectedSphereEmitter(radius: number, direction1: Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
+        /**
+         * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
+         * @param radius The radius of the emission cylinder
+         * @param height The height of the emission cylinder
+         * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
+         * @param directionRandomizer How much to randomize the particle direction [0-1]
+         * @returns the emitter
+         */
+        createCylinderEmitter(radius: number, height: number, radiusRange: number, directionRandomizer: number): CylinderParticleEmitter;
+        /**
+         * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+         * @param radius The radius of the cone to emit from
+         * @param angle The base angle of the cone
+         * @returns the emitter
+         */
+        createConeEmitter(radius: number, angle: number): ConeParticleEmitter;
+        /**
+         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @returns the emitter
+         */
+        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        getScene(): Scene;
     }
 }
 
@@ -25682,6 +25838,12 @@ declare module BABYLON {
         _currentLimitVelocity1: number;
         /** @hidden */
         _currentLimitVelocity2: number;
+        /** @hidden */
+        _currentDragGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentDrag1: number;
+        /** @hidden */
+        _currentDrag2: number;
         /**
          * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to
@@ -25718,9 +25880,10 @@ declare module BABYLON {
          * @param emitter defines the emitter to use
          * @param capacity defines the system capacity (default is 500 particles)
          * @param scene defines the hosting scene
+         * @param useGPU defines if a GPUParticleSystem must be created (default is false)
          * @returns the new Particle system
          */
-        static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity?: number, scene?: Scene): ParticleSystem;
+        static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity?: number, scene?: Scene, useGPU?: boolean): IParticleSystem;
         /**
          * This is the main static method (one-liner) of this helper to create different particle systems
          * @param type This string represents the type to the particle system to create
@@ -25772,11 +25935,6 @@ declare module BABYLON {
          * Sets a callback that will be triggered when the system is disposed
          */
         onDispose: () => void;
-        /**
-         * Get hosting scene
-         * @returns the scene
-         */
-        getScene(): Scene;
         private _particles;
         private _epsilon;
         private _capacity;
@@ -25802,6 +25960,12 @@ declare module BABYLON {
         private _actualFrame;
         private _scaledUpdateSpeed;
         private _vertexBufferSize;
+        /** @hidden */
+        _currentEmitRateGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        _currentEmitRate1: number;
+        /** @hidden */
+        _currentEmitRate2: number;
         /**
          * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
          */
@@ -25904,6 +26068,34 @@ declare module BABYLON {
          */
         removeLimitVelocityGradient(gradient: number): IParticleSystem;
         /**
+         * Adds a new drag gradient
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the drag value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addDragGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific drag gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeDragGradient(gradient: number): IParticleSystem;
+        /**
+         * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific emit rate gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeEmitRateGradient(gradient: number): IParticleSystem;
+        /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
          * @param color defines the color to affect to the specified gradient
@@ -25931,7 +26123,7 @@ declare module BABYLON {
          */
         isAlive(): boolean;
         /**
-         * Gets whether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         isStarted(): boolean;
@@ -27293,66 +27485,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Postprocess used to generate anaglyphic rendering
      */
     class AnaglyphPostProcess extends PostProcess {
@@ -28594,6 +28726,66 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     interface Scene {
         /** @hidden (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -29079,7 +29271,7 @@ declare module BABYLON {
          * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
          */
         dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchSprites(spriteManager: ISpriteManager): void;
         dispatchParticles(particleSystem: IParticleSystem): void;
         private _renderParticles;
         private _renderSprites;
@@ -29140,7 +29332,7 @@ declare module BABYLON {
          */
         freeRenderingGroups(): void;
         private _prepareRenderingGroup;
-        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchSprites(spriteManager: ISpriteManager): void;
         dispatchParticles(particleSystem: IParticleSystem): void;
         /**
          * @param subMesh The submesh to dispatch
@@ -29270,7 +29462,7 @@ declare module BABYLON {
          */
         isVisible: boolean;
         size: number;
-        constructor(name: string, manager: SpriteManager);
+        constructor(name: string, manager: ISpriteManager);
         playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
         stopAnimation(): void;
         /** @hidden */
@@ -29280,7 +29472,43 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class SpriteManager {
+    /**
+     * Defines the minimum interface to fullfil in order to be a sprite manager.
+     */
+    interface ISpriteManager extends IDisposable {
+        /**
+         * Restricts the camera to viewing objects with the same layerMask.
+         * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
+         */
+        layerMask: number;
+        /**
+         * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
+         */
+        isPickable: boolean;
+        /**
+         * Specifies the rendering group id for this mesh (0 by default)
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+         */
+        renderingGroupId: number;
+        /**
+         * Defines the list of sprites managed by the manager.
+         */
+        sprites: Array<Sprite>;
+        /**
+         * Tests the intersection of a sprite with a specific ray.
+         * @param ray The ray we are sending to test the collision
+         * @param camera The camera space we are sending rays in
+         * @param predicate A predicate allowing excluding sprites from the list of object to test
+         * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+         * @returns picking info or null.
+         */
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        /**
+         * Renders the list of sprites on screen.
+         */
+        render(): void;
+    }
+    class SpriteManager implements ISpriteManager {
         name: string;
         sprites: Sprite[];
         renderingGroupId: number;
@@ -29311,6 +29539,99 @@ declare module BABYLON {
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden */
+        _pointerOverSprite: Nullable<Sprite>;
+        /** @hidden */
+        _pickedDownSprite: Nullable<Sprite>;
+        /** @hidden */
+        _tempSpritePickingRay: Nullable<Ray>;
+        /**
+         * All of the sprite managers added to this scene
+         * @see http://doc.babylonjs.com/babylon101/sprites
+         */
+        spriteManagers: Array<ISpriteManager>;
+        /**
+         * An event triggered when sprites rendering is about to start
+         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
+         */
+        onBeforeSpritesRenderingObservable: Observable<Scene>;
+        /**
+         * An event triggered when sprites rendering is done
+         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
+         */
+        onAfterSpritesRenderingObservable: Observable<Scene>;
+        /** @hidden */
+        _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
+        /** Launch a ray to try to pick a sprite in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo
+         */
+        pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
+        /** Use the given ray to pick a sprite in the scene
+         * @param ray The ray (in world space) to use to pick meshes
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo
+         */
+        pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
+        /**
+         * Force the sprite under the pointer
+         * @param sprite defines the sprite to use
+         */
+        setPointerOverSprite(sprite: Nullable<Sprite>): void;
+        /**
+         * Gets the sprite under the pointer
+         * @returns a Sprite or null if no sprite is under the pointer
+         */
+        getPointerOverSprite(): Nullable<Sprite>;
+    }
+    /**
+     * Defines the sprite scene component responsible to manage sprites
+     * in a given scene.
+     */
+    class SpriteSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /** @hidden */
+        private _spritePredicate;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
+        private _pickSpriteButKeepRay;
+        private _pointerMove;
+        private _pointerDown;
+        private _pointerUp;
     }
 }
 
@@ -30400,7 +30721,7 @@ declare module BABYLON {
         private _elementToMonitor;
         private _sceneFileToLoad;
         private _filesToLoad;
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void);
+        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void);
         private _dragEnterHandler;
         private _dragOverHandler;
         private _dropHandler;
@@ -33788,6 +34109,7 @@ declare module BABYLON {
         private _oneVector;
         private _workingMatrix;
         private updateCacheCalled;
+        private _correctPositionIfNotTrackPosition;
         /**
          * @hidden
          * Updates the cached values of the camera
@@ -33804,6 +34126,7 @@ declare module BABYLON {
          * @returns an identity matrix
          */
         _getViewMatrix(): Matrix;
+        private _tmpMatrix;
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
@@ -38069,6 +38392,99 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Particle emitter emitting particles from the inside of a cylinder.
+     * It emits the particles alongside the cylinder radius. The emission direction might be randomized.
+     */
+    class CylinderParticleEmitter implements IParticleEmitterType {
+        /**
+         * The radius of the emission cylinder.
+         */
+        radius: number;
+        /**
+         * The height of the emission cylinder.
+         */
+        height: number;
+        /**
+         * The range of emission [0-1] 0 Surface only, 1 Entire Radius.
+         */
+        radiusRange: number;
+        /**
+         * How much to randomize the particle direction [0-1].
+         */
+        directionRandomizer: number;
+        /**
+        * Creates a new instance CylinderParticleEmitter
+        * @param radius the radius of the emission cylinder (1 by default)
+        * @param height the height of the emission cylinder (1 by default)
+        * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+        * @param directionRandomizer defines how much to randomize the particle direction [0-1]
+        */
+        constructor(
+        /**
+         * The radius of the emission cylinder.
+         */
+        radius?: number, 
+        /**
+         * The height of the emission cylinder.
+         */
+        height?: number, 
+        /**
+         * The range of emission [0-1] 0 Surface only, 1 Entire Radius.
+         */
+        radiusRange?: number, 
+        /**
+         * How much to randomize the particle direction [0-1].
+         */
+        directionRandomizer?: number);
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): CylinderParticleEmitter;
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        getEffectDefines(): string;
+        /**
+         * Returns the string "CylinderParticleEmitter"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        parse(serializationObject: any): void;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Particle emitter emitting particles from the inside of a hemisphere.
      * It emits the particles alongside the hemisphere radius. The emission direction might be randomized.
      */
@@ -38936,6 +39352,7 @@ declare module BABYLON {
          */
         constructor(name: string, size?: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         private _updateShaderUniforms;
+        protected _getDefines(): string;
         /** Generate the current state of the procedural texture */
         render(useCameraPostProcess?: boolean): void;
         /**
@@ -38985,11 +39402,13 @@ declare module BABYLON {
         private _fallbackTexture;
         private _fallbackTextureUsed;
         private _engine;
+        private _cachedDefines;
         constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
         private _createIndexBuffer;
         /** @hidden */
         _rebuild(): void;
         reset(): void;
+        protected _getDefines(): string;
         isReady(): boolean;
         resetRefreshCounter(): void;
         setFragment(fragment: any): void;

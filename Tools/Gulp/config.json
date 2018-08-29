@@ -294,6 +294,7 @@
                 "../../src/Particles/babylon.baseParticleSystem.js",
                 "../../src/Particles/babylon.particleSystem.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.cylinderParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.hemisphericParticleEmitter.js",
@@ -410,7 +411,8 @@
         "sprites": {
             "files": [
                 "../../src/Sprites/babylon.spriteManager.js",
-                "../../src/Sprites/babylon.sprite.js"
+                "../../src/Sprites/babylon.sprite.js",
+                "../../src/Sprites/babylon.spriteSceneComponent.js"
             ],
             "dependUpon": [
                 "core"

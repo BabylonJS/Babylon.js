@@ -229,8 +229,8 @@ module BABYLON {
             if (!this._cache.position.equals(this.position))
                 return false;
 
-            if (this.rotationQuaternion) {
-                if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
+            if (this._rotationQuaternion) {
+                if (!this._cache.rotationQuaternion.equals(this._rotationQuaternion))
                     return false;
             }
 

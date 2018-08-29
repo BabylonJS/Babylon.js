@@ -13,10 +13,17 @@ module BABYLON {
          * @param emitter defines the emitter to use
          * @param capacity defines the system capacity (default is 500 particles)
          * @param scene defines the hosting scene
+         * @param useGPU defines if a GPUParticleSystem must be created (default is false)
          * @returns the new Particle system
          */
-        public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity = 500, scene?: Scene): ParticleSystem {
-            var system = new ParticleSystem("default system", capacity, scene!);
+        public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity = 500, scene?: Scene, useGPU = false): IParticleSystem {
+            var system: IParticleSystem;
+            
+            if (useGPU) {
+                system= new GPUParticleSystem("default system", {capacity: capacity}, scene!);
+            } else {
+                system= new ParticleSystem("default system", capacity, scene!);
+            }
         
             system.emitter = emitter;
             system.particleTexture = new Texture("https://www.babylonjs.com/assets/Flare.png", system.getScene());
