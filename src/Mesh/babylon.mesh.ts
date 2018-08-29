@@ -1415,12 +1415,8 @@
                 engine.setAlphaMode(this._effectiveMaterial.alphaMode);
             }
 
-            // Outline - step 1
-            var savedDepthWrite = engine.getDepthWrite();
-            if (this.renderOutline) {
-                engine.setDepthWrite(false);
-                scene.getOutlineRenderer().render(subMesh, batch);
-                engine.setDepthWrite(savedDepthWrite);
+            for (let step of scene._beforeRenderingMeshStage) {
+                step.action(this, subMesh, batch);
             }
 
             var effect: Nullable<Effect>;
@@ -1475,20 +1471,8 @@
             // Unbind
             this._effectiveMaterial.unbind();
 
-            // Outline - step 2
-            if (this.renderOutline && savedDepthWrite) {
-                engine.setDepthWrite(true);
-                engine.setColorWrite(false);
-                scene.getOutlineRenderer().render(subMesh, batch);
-                engine.setColorWrite(true);
-            }
-
-            // Overlay
-            if (this.renderOverlay) {
-                var currentMode = engine.getAlphaMode();
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
-                scene.getOutlineRenderer().render(subMesh, batch, true);
-                engine.setAlphaMode(currentMode);
+            for (let step of scene._afterRenderingMeshStage) {
+                step.action(this, subMesh, batch);
             }
 
             if (this._onAfterRenderObservable) {
