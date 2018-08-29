@@ -207,18 +207,18 @@
          * Gets or sets the active clipplane 2
          */
         public clipPlane2: Nullable<Plane>;
-        
+
 
         /**
          * Gets or sets the active clipplane 3
          */
         public clipPlane3: Nullable<Plane>;
-        
+
 
         /**
          * Gets or sets the active clipplane 4
          */
-        public clipPlane4: Nullable<Plane>;        
+        public clipPlane4: Nullable<Plane>;
 
         /**
          * Gets or sets a boolean indicating if animations are enabled
@@ -277,10 +277,6 @@
          * Use this array to add regular expressions used to disable offline support for specific urls
          */
         public disableOfflineSupportExceptionRules = new Array<RegExp>();
-
-        // Events
-
-        private _spritePredicate: (sprite: Sprite) => boolean;
 
         /**
         * An event triggered when the scene is disposed.
@@ -414,18 +410,6 @@
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
         */
         public onAfterParticlesRenderingObservable = new Observable<Scene>();
-
-        /**
-        * An event triggered when sprites rendering is about to start
-        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        */
-        public onBeforeSpritesRenderingObservable = new Observable<Scene>();
-
-        /**
-        * An event triggered when sprites rendering is done
-        * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        */
-        public onAfterSpritesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
@@ -805,11 +789,6 @@
         * Gets or sets a boolean indicating if sprites are enabled on this scene
         */
         public spritesEnabled = true;
-        /**
-        * All of the sprite managers added to this scene
-        * @see http://doc.babylonjs.com/babylon101/sprites
-        */
-        public spriteManagers = new Array<SpriteManager>();
 
         // Skeletons
         private _skeletonsEnabled = true;
@@ -1021,7 +1000,6 @@
         private _alternateSceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-        private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
@@ -1055,13 +1033,11 @@
         private _selectionOctree: Octree<AbstractMesh>;
 
         private _pointerOverMesh: Nullable<AbstractMesh>;
-        private _pointerOverSprite: Nullable<Sprite>;
 
         private _debugLayer: DebugLayer;
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
-        private _pickedDownSprite: Nullable<Sprite>;
         private _externalData: StringDictionary<Object>;
         private _uid: Nullable<string>;
 
@@ -1169,9 +1145,20 @@
          */
         public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
+         * @hidden
          * Defines the actions happening just before a rendering group is drawing.
          */
         public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just before a mesh is drawing.
+         */
+        public _beforeRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just after a mesh has been drawn.
+         */
+        public _afterRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
         /**
          * @hidden
          * Defines the actions happening just after a rendering group has been drawn.
@@ -1187,6 +1174,21 @@
          * Defines the actions happening when Geometries are rebuilding.
          */
         public _rebuildGeometryStage = Stage.Create<SimpleStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer move event happens.
+         */
+        public _pointerMoveStage = Stage.Create<PointerMoveStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer down event happens.
+         */
+        public _pointerDownStage = Stage.Create<PointerUpDownStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening when a pointer up event happens.
+         */
+        public _pointerUpStage = Stage.Create<PointerUpDownStageAction>();
 
         /**
          * Creates a new Scene
@@ -1203,10 +1205,6 @@
 
             if (PostProcessManager) {
                 this.postProcessManager = new PostProcessManager(this);
-            }
-
-            if (OutlineRenderer) {
-                this._outlineRenderer = new OutlineRenderer(this);
             }
 
             if (Tools.IsWindowObjectExist()) {
@@ -1323,14 +1321,6 @@
          */
         public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
-        }
-
-        /** 
-         * Gets the outline renderer associated with the scene
-         * @returns a OutlineRenderer
-         */
-        public getOutlineRenderer(): OutlineRenderer {
-            return this._outlineRenderer;
         }
 
         /** 
@@ -1539,14 +1529,6 @@
         }
 
         // Pointers handling
-        private _pickSpriteButKeepRay(originalPointerInfo: Nullable<PickingInfo>, x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            var result = this.pickSprite(x, y, predicate, fastCheck, camera);
-            if (result) {
-                result.ray = originalPointerInfo ? originalPointerInfo.ray : null;
-            }
-            return result;
-        }
-
         private _setRayOnPointerInfo(pointerInfo: PointerInfo) {
             if (pointerInfo.pickInfo) {
                 if (!pointerInfo.pickInfo.ray) {
@@ -1579,37 +1561,15 @@
                 return this;
             }
 
-            if (pickResult && pickResult.hit && pickResult.pickedMesh) {
-                this.setPointerOverSprite(null);
-
-                this.setPointerOverMesh(pickResult.pickedMesh);
-
-                if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                    if (this._pointerOverMesh.actionManager.hoverCursor) {
-                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
-                    } else {
-                        canvas.style.cursor = this.hoverCursor;
-                    }
-                } else {
-                    canvas.style.cursor = this.defaultCursor;
-                }
+            var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
+            if (isMeshPicked) {
+                this.setPointerOverMesh(pickResult!.pickedMesh);
             } else {
                 this.setPointerOverMesh(null);
-                // Sprites
-                pickResult = this._pickSpriteButKeepRay(pickResult, this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
+            }
 
-                if (pickResult && pickResult.hit && pickResult.pickedSprite) {
-                    this.setPointerOverSprite(pickResult.pickedSprite);
-                    if (this._pointerOverSprite && this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
-                        canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
-                    } else {
-                        canvas.style.cursor = this.hoverCursor;
-                    }
-                } else {
-                    this.setPointerOverSprite(null);
-                    // Restore pointer
-                    canvas.style.cursor = this.defaultCursor;
-                }
+            for (let step of this._pointerMoveStage) {
+                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
             }
 
             if (pickResult) {
@@ -1688,14 +1648,18 @@
                             if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
                                 if (this._totalPointersPressed !== 0 &&
                                     ((Date.now() - this._startingPointerTime) > Scene.LongPressDelay) &&
-                                    (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold &&
-                                        Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold)) {
+                                    !this._isPointerSwiping()) {
                                     this._startingPointerTime = 0;
                                     actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 }
                             }
                         }, Scene.LongPressDelay);
                     }
+                }
+            }
+            else {
+                for (let step of this._pointerDownStage) {
+                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
                 }
             }
 
@@ -1762,6 +1726,14 @@
                     }
                 }
             }
+            else {
+                if (!clickInfo.ignore) {
+                    for (let step of this._pointerUpStage) {
+                        pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                    }
+                }
+            }
+
             if (this._pickedDownMesh &&
                 this._pickedDownMesh.actionManager &&
                 this._pickedDownMesh.actionManager.hasSpecificTrigger(ActionManager.OnPickOutTrigger) &&
@@ -1810,6 +1782,12 @@
             return this._pointerCaptures[pointerId];
         }
 
+        /** @hidden */
+        public _isPointerSwiping(): boolean {
+            return Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
+                   Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+        }
+
         /**
         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
         * @param attachUp defines if you want to attach events to pointerup
@@ -1855,8 +1833,7 @@
                 }
                 if (checkPicking) {
                     let btn = evt.button;
-                    clickInfo.hasSwiped = Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
-                        Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+                    clickInfo.hasSwiped = this._isPointerSwiping();
 
                     if (!clickInfo.hasSwiped) {
                         let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
@@ -1903,8 +1880,7 @@
                             ) {
                                 // pointer has not moved for 2 clicks, it's a double click
                                 if (!clickInfo.hasSwiped &&
-                                    Math.abs(this._previousStartingPointerPosition.x - this._startingPointerPosition.x) < Scene.DragMovementThreshold &&
-                                    Math.abs(this._previousStartingPointerPosition.y - this._startingPointerPosition.y) < Scene.DragMovementThreshold) {
+                                    !this._isPointerSwiping()) {
                                     this._previousStartingPointerTime = 0;
                                     this._doubleClickOccured = true;
                                     clickInfo.doubleClick = true;
@@ -1948,10 +1924,6 @@
                 }
                 clickInfo.ignore = true;
                 cb(clickInfo, this._currentPickResult);
-            };
-
-            this._spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -2014,32 +1986,6 @@
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 this._processPointerDown(pickResult, evt);
-
-                // Sprites
-                this._pickedDownSprite = null;
-                if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
-                    if (pickResult && pickResult.hit && pickResult.pickedSprite) {
-                        if (pickResult.pickedSprite.actionManager) {
-                            this._pickedDownSprite = pickResult.pickedSprite;
-                            switch (evt.button) {
-                                case 0:
-                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                                    break;
-                                case 1:
-                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                                    break;
-                                case 2:
-                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                                    break;
-                            }
-                            if (pickResult.pickedSprite.actionManager) {
-                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                            }
-                        }
-                    }
-                }
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
@@ -2097,29 +2043,6 @@
                     }
 
                     this._processPointerUp(pickResult, evt, clickInfo);
-
-                    // Sprites
-                    if (!clickInfo.ignore) {
-                        if (this.spriteManagers.length > 0) {
-                            let spritePickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, this._spritePredicate, false, this.cameraToUseForPointers || undefined);
-
-                            if (spritePickResult) {
-                                if (spritePickResult.hit && spritePickResult.pickedSprite) {
-                                    if (spritePickResult.pickedSprite.actionManager) {
-                                        spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
-                                        if (spritePickResult.pickedSprite.actionManager) {
-                                            if (Math.abs(this._startingPointerPosition.x - this._pointerX) < Scene.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < Scene.DragMovementThreshold) {
-                                                spritePickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, this, evt));
-                                            }
-                                        }
-                                    }
-                                }
-                                if (this._pickedDownSprite && this._pickedDownSprite.actionManager && this._pickedDownSprite !== spritePickResult.pickedSprite) {
-                                    this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
-                                }
-                            }
-                        }
-                    }
 
                     this._previousPickResult = this._currentPickResult;
                 });
@@ -2742,12 +2665,13 @@
             totalWeight: number,
             animations: RuntimeAnimation[],
             originalValue: Quaternion
-        }): Quaternion {
+        }, refQuaternion: Quaternion): Quaternion {
             let originalAnimation = holder.animations[0];
             let originalValue = holder.originalValue;
 
             if (holder.animations.length === 1) {
-                return Quaternion.Slerp(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight));
+                Quaternion.SlerpToRef(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight), refQuaternion);
+                return refQuaternion;
             }
 
             let normalizer = 1.0;
@@ -2764,7 +2688,8 @@
                 weights.push(scale);
             } else {
                 if (holder.animations.length === 2) { // Slerp as soon as we can
-                    return Quaternion.Slerp(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight);
+                    Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
+                    return refQuaternion;
                 }
                 quaternions = [];
                 weights = [];
@@ -2783,7 +2708,8 @@
             let cumulativeQuaternion: Nullable<Quaternion> = null;
             for (var index = 0; index < quaternions.length;) {
                 if (!cumulativeQuaternion) {
-                    cumulativeQuaternion = Quaternion.Slerp(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]));
+                    Quaternion.SlerpToRef(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]), refQuaternion);
+                    cumulativeQuaternion = refQuaternion;
                     cumulativeAmount = weights[index] + weights[index + 1];
                     index += 2;
                     continue;
@@ -2810,13 +2736,13 @@
 
                     let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
-                    let finalValue: any;
+                    let finalValue: any = target[path];
                     if (matrixDecomposeMode) {
                         finalValue = this._processLateAnimationBindingsForMatrices(holder);
                     } else {
                         let quaternionMode = originalValue.w !== undefined;
                         if (quaternionMode) {
-                            finalValue = this._processLateAnimationBindingsForQuaternions(holder);
+                            finalValue = this._processLateAnimationBindingsForQuaternions(holder, finalValue || Quaternion.Identity());
                         } else {
 
                             let startIndex = 0;
@@ -4186,7 +4112,7 @@
                 mesh.computeWorldMatrix();
 
                 // Intersections
-                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers([ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger])) {
+                if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionManager.OnIntersectionEnterTrigger, ActionManager.OnIntersectionExitTrigger)) {
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
 
@@ -4295,7 +4221,7 @@
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
         /** @hidden */
-        public _allowPostProcessClear = true;
+        public _allowPostProcessClearColor = true;
         private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
@@ -4878,11 +4804,17 @@
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
             this._beforeRenderingGroupDrawStage.clear();
+            this._beforeRenderingMeshStage.clear();
+            this._afterRenderingMeshStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
             this._gatherRenderTargetsStage.clear();
             this._rebuildGeometryStage.clear();
+            this._pointerMoveStage.clear();
+            this._pointerDownStage.clear();
+            this._pointerUpStage.clear();
+
             for (let component of this._components) {
                 component.dispose();
             }
@@ -4933,8 +4865,6 @@
             this.onAfterActiveMeshesEvaluationObservable.clear();
             this.onBeforeParticlesRenderingObservable.clear();
             this.onAfterParticlesRenderingObservable.clear();
-            this.onBeforeSpritesRenderingObservable.clear();
-            this.onAfterSpritesRenderingObservable.clear();
             this.onBeforeDrawPhaseObservable.clear();
             this.onAfterDrawPhaseObservable.clear();
             this.onBeforePhysicsObservable.clear();
@@ -5004,11 +4934,6 @@
             // Release particles
             while (this.particleSystems.length) {
                 this.particleSystems[0].dispose();
-            }
-
-            // Release sprites
-            while (this.spriteManagers.length) {
-                this.spriteManagers[0].dispose();
             }
 
             // Release postProcesses
@@ -5326,46 +5251,6 @@
             return pickingInfos;
         }
 
-        private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            if (!PickingInfo) {
-                return null;
-            }
-
-            var pickingInfo = null;
-
-            if (!camera) {
-                if (!this.activeCamera) {
-                    return null;
-                }
-                camera = this.activeCamera;
-            }
-
-            if (this.spriteManagers.length > 0) {
-                for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
-                    var spriteManager = this.spriteManagers[spriteIndex];
-
-                    if (!spriteManager.isPickable) {
-                        continue;
-                    }
-
-                    var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
-                    if (!result || !result.hit)
-                        continue;
-
-                    if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
-                        continue;
-
-                    pickingInfo = result;
-
-                    if (fastCheck) {
-                        break;
-                    }
-                }
-            }
-
-            return pickingInfo || new PickingInfo();
-        }
-
         private _tempPickingRay: Nullable<Ray> = Ray ? Ray.Zero() : null;
 
         /** Launch a ray to try to pick a mesh in the scene
@@ -5390,25 +5275,11 @@
             return result;
         }
 
-        /** Launch a ray to try to pick a sprite in the scene
-         * @param x position on screen
-         * @param y position on screen
-         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
-         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
-         * @returns a PickingInfo
-         */
-        public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay!, camera);
-
-            return this._internalPickSprites(this._tempPickingRay!, predicate, fastCheck, camera);
-        }
-
         private _cachedRayForTransform: Ray;
 
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
-         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
          * @returns a PickingInfo
          */
@@ -5491,33 +5362,6 @@
          */
         public getPointerOverMesh(): Nullable<AbstractMesh> {
             return this._pointerOverMesh;
-        }
-
-        /** 
-         * Force the sprite under the pointer
-         * @param sprite defines the sprite to use
-         */
-        public setPointerOverSprite(sprite: Nullable<Sprite>): void {
-            if (this._pointerOverSprite === sprite) {
-                return;
-            }
-
-            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
-                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
-            }
-
-            this._pointerOverSprite = sprite;
-            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
-                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
-            }
-        }
-
-        /** 
-         * Gets the sprite under the pointer
-         * @returns a Sprite or null if no sprite is under the pointer
-         */
-        public getPointerOverSprite(): Nullable<Sprite> {
-            return this._pointerOverSprite;
         }
 
         // Physics

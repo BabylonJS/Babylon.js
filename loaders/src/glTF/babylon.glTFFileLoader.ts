@@ -89,8 +89,8 @@ module BABYLON {
     /** @hidden */
     export interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string) => Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string) => Promise<void>;
     }
 
     /**
@@ -445,13 +445,14 @@ module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
+         * @param fullName Defines the FQDN of the file to load
          * @returns a promise containg the loaded meshes, particles, skeletons and animations
          */
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress);
+                return this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress, fullName);
             });
         }
 
@@ -461,13 +462,14 @@ module BABYLON {
          * @param data the glTF data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
+         * @param fullName Defines the FQDN of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<void> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.loadAsync(scene, loaderData, rootUrl, onProgress);
+                return this._loader.loadAsync(scene, loaderData, rootUrl, onProgress, fullName);
             });
         }
 
@@ -477,13 +479,14 @@ module BABYLON {
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
+         * @param fullName Defines the FQDN of the file to load
          * @returns The loaded asset container
          */
-        public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer> {
+        public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<AssetContainer> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
-                return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress).then(result => {
+                return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fullName).then(result => {
                     const container = new AssetContainer(scene);
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);

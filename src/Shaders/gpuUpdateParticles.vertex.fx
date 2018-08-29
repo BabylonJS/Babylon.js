@@ -48,6 +48,13 @@ uniform float radiusRange;
 #endif
 #endif
 
+#ifdef CYLINDEREMITTER
+uniform float radius;
+uniform float height;
+uniform float radiusRange;
+uniform float directionRandomizer;
+#endif
+
 #ifdef CONEEMITTER
 uniform vec2 radius;
 uniform float coneAngle;
@@ -130,26 +137,12 @@ vec4 getRandomVec4(float offset) {
 }
 
 void main() {
-  if (age >= life) {
-    if (stopFactor == 0.) {
-      outPosition = position;
-      outAge = life;
-      outLife = life;
-      outSeed = seed;
-#ifndef COLORGRADIENTS      
-      outColor = vec4(0.,0.,0.,0.);
-#endif
-      outSize = vec3(0., 0., 0.);
-#ifndef BILLBOARD        
-      outInitialDirection = initialDirection;
-#endif      
-      outDirection = direction;
-      outAngle = angle;
-#ifdef ANIMATESHEET      
-      outCellIndex = cellIndex;
-#endif
-      return;
-    }
+  float newAge = age + timeDelta;
+
+    
+
+  // If particle is dead and system is not stopped, spawn as new particle
+  if (newAge >= life && stopFactor != 0.) {
     vec3 position;
     vec3 direction;
 
@@ -157,8 +150,8 @@ void main() {
     vec4 randoms = getRandomVec4(seed.x);
 
     // Age and life
-    outAge = 0.0;
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+    outAge = mod(newAge, outLife);
 
     // Seed
     outSeed = seed;
@@ -232,6 +225,23 @@ void main() {
       // Direction
       direction = position + directionRandomizer * randoms3;
     #endif
+#elif defined(CYLINDEREMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Position on the cylinder
+    float yPos = (randoms2.x - 0.5)*height;
+    float angle = randoms2.y * PI * 2.;
+    float inverseRadiusRangeSquared = ((1.-radiusRange) * (1.-radiusRange));
+    float positionRadius = radius*sqrt(inverseRadiusRangeSquared + (randoms2.z * (1.-inverseRadiusRangeSquared)));
+    float xPos = positionRadius * cos(angle);
+    float zPos = positionRadius * sin(angle);
+    position = vec3(xPos, yPos, zPos);
+
+    // Direction
+    angle = angle + ((randoms3.x-0.5) * PI);
+    direction = vec3(cos(angle), randoms3.y-0.5, sin(angle));
+    direction = normalize(direction);
 #elif defined(CONEEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
 
@@ -282,16 +292,16 @@ void main() {
     outCellIndex = cellInfos.x;
 #endif
 
-  } else {   
+  } else {
     float directionScale = timeDelta;
-    float ageGradient = age / life;
+    outAge = newAge;
+    float ageGradient = newAge / life;
 
 #ifdef VELOCITYGRADIENTS
     directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
 #endif
-
     outPosition = position + direction * directionScale;
-    outAge = age + timeDelta;
+    
     outLife = life;
     outSeed = seed;
 #ifndef COLORGRADIENTS    

@@ -120,7 +120,7 @@ export class DefaultViewer extends AbstractViewer {
         let navbar = this.templateManager.getTemplate('navBar');
         if (navbar) {
             this.onFrameRenderedObservable.add(this._updateProgressBar);
-            this.templateManager.eventManager.registerCallback('navBar', this._handlePointerDown, 'pointerdown');
+            this.templateManager.eventManager.registerCallback('navBar', this._handlePointerClick, 'click');
             // an example how to trigger the help button. publiclly available
             this.templateManager.eventManager.registerCallback("navBar", () => {
                 // do your thing
@@ -158,7 +158,7 @@ export class DefaultViewer extends AbstractViewer {
     private _isAnimationPaused: boolean;
     private _resumePlay: boolean;
 
-    private _handlePointerDown = (event: EventCallback) => {
+    private _handlePointerClick = (event: EventCallback) => {
 
         let pointerDown = <PointerEvent>event.event;
         if (pointerDown.button !== 0) return;

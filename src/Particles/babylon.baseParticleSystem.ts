@@ -14,11 +14,14 @@ module BABYLON {
          * Blend current color and particle color using particle’s alpha.
          */
         public static BLENDMODE_STANDARD = 1;
-
         /**
          * Add current color and particle color multiplied by particle’s alpha.
          */
         public static BLENDMODE_ADD = 2;
+        /**
+         * Multiply current color with particle color 
+         */
+        public static BLENDMODE_MULTIPLY = 3;        
 
         /**
          * List of animations used by the particle system.
@@ -228,6 +231,14 @@ module BABYLON {
 
             this._reset();
         }
+        
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        public getScene(): Scene {
+            return this._scene;
+        }    
 
         /**
          * You can use gravity if you want to give an orientation to your particles.
@@ -240,10 +251,22 @@ module BABYLON {
         protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
         protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
         protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+        protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+        protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
+        protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
+
+        /**
+         * Gets the current list of drag gradients.
+         * You must use addDragGradient and removeDragGradient to udpate this list
+         * @returns the list of drag gradients
+         */
+        public getDragGradients(): Nullable<Array<FactorGradient>> {
+            return this._dragGradients;
+        }   
 
         /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
         public limitVelocityDamping = 0.4;
-
+        
         /**
          * Gets the current list of limit velocity gradients.
          * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
@@ -297,6 +320,24 @@ module BABYLON {
         public getVelocityGradients(): Nullable<Array<FactorGradient>> {
             return this._velocityGradients;
         }         
+
+        /**
+         * Gets the current list of start size gradients.
+         * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+         * @returns the list of start size gradients
+         */
+        public getStartSizeGradients(): Nullable<Array<FactorGradient>> {
+            return this._startSizeGradients;
+        }
+        
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        public getEmitRateGradients(): Nullable<Array<FactorGradient>> {
+            return this._emitRateGradients;
+        }      
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -528,6 +569,20 @@ module BABYLON {
          */
         public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
             var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
+         * @param radius The radius of the emission cylinder
+         * @param height The height of the emission cylinder
+         * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
+         * @param directionRandomizer How much to randomize the particle direction [0-1]
+         * @returns the emitter
+         */
+        public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
+            var particleEmitter = new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
