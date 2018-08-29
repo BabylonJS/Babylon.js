@@ -1061,8 +1061,10 @@ declare module 'babylonjs-inspector/tabs/TextureTab' {
         activateNode(item: TreeItem): void;
     }
     class DDSPreview {
+        canvas: HTMLCanvasElement | null;
         constructor(AdapterItem: TextureAdapter);
         insertPreview(AdapterItem: TextureAdapter): void;
+        dispose(): void;
     }
     export {};
 }
@@ -2157,8 +2159,10 @@ declare module INSPECTOR {
         activateNode(item: TreeItem): void;
     }
     class DDSPreview {
+        canvas: HTMLCanvasElement | null;
         constructor(AdapterItem: TextureAdapter);
         insertPreview(AdapterItem: TextureAdapter): void;
+        dispose(): void;
     }
 }
 declare module INSPECTOR {
