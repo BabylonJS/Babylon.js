@@ -75,7 +75,14 @@
         /** @hidden */
         public _currentEmitRate1 = 0;
         /** @hidden */
-        public _currentEmitRate2 = 0;              
+        public _currentEmitRate2 = 0;   
+        
+        /** @hidden */
+        public _currentStartSizeGradient: Nullable<FactorGradient>;
+        /** @hidden */
+        public _currentStartSize1 = 0;
+        /** @hidden */
+        public _currentStartSize2 = 0;   
 
         // end of sheet animation
 
@@ -532,7 +539,45 @@
             this._removeFactorGradient(this._emitRateGradients, gradient);
 
             return this;
-        }           
+        }    
+        
+        /**
+         * Adds a new start size gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the start size value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            if (!this._startSizeGradients) {
+                this._startSizeGradients = [];
+            }
+
+            this._addFactorGradient(this._startSizeGradients, gradient, factor, factor2);
+
+            if (!this._currentStartSizeGradient) {
+                this._currentStartSizeGradient = this._startSizeGradients[0];
+                this._currentStartSize1 = this._currentStartSizeGradient.getFactor();
+                this._currentStartSize2 = this._currentStartSize1;
+            }
+
+            if (this._startSizeGradients.length === 2) {
+                this._currentStartSize2 = this._startSizeGradients[1].getFactor();
+            }
+
+            return this;
+        }
+
+        /**
+         * Remove a specific start size gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeStartSizeGradient(gradient: number): IParticleSystem {
+            this._removeFactorGradient(this._emitRateGradients, gradient);
+
+            return this;
+        } 
 
         /**
          * Adds a new color gradient
@@ -961,6 +1006,21 @@
                 }
                 // Size and scale
                 particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
+                
+                // Adjust scale by start size
+                if(this._startSizeGradients && this._startSizeGradients[0]){
+                    const ratio = this._actualFrame / this.targetStopDuration;            
+                    Tools.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
+                        if (currentGradient !== this._currentStartSizeGradient) {
+                            this._currentStartSize1 = this._currentStartSize2;
+                            this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();    
+                            this._currentStartSizeGradient = (<FactorGradient>currentGradient);
+                        }                                
+                        
+                        var value = Scalar.Lerp(this._currentStartSize1, this._currentStartSize2, scale);
+                        particle.scale.scaleInPlace(value);
+                    });
+                }
 
                 // Angle
                 if (!this._angularSpeedGradients || this._angularSpeedGradients.length === 0) {
@@ -1621,7 +1681,25 @@
 
                     serializationObject.emitRateGradients.push(serializedGradient);
                 }
-            }                
+            } 
+            
+            let startSizeGradients = particleSystem.getStartSizeGradients();
+            if (startSizeGradients) {
+                serializationObject.startSizeGradients = [];
+                for (var startSizeGradient of startSizeGradients) {
+
+                    var serializedGradient: any = {
+                        gradient: startSizeGradient.gradient,
+                        factor1: startSizeGradient.factor1
+                    };
+
+                    if (startSizeGradient.factor2 !== undefined) {
+                        serializedGradient.factor2 = startSizeGradient.factor2;
+                    }
+
+                    serializationObject.startSizeGradients.push(serializedGradient);
+                }
+            } 
 
             let limitVelocityGradients = particleSystem.getLimitVelocityGradients();
             if (limitVelocityGradients) {
@@ -1762,7 +1840,13 @@
                 for (var emitRateGradient of parsedParticleSystem.emitRateGradients) {
                     particleSystem.addEmitRateGradient(emitRateGradient.gradient, emitRateGradient.factor1 !== undefined ?  emitRateGradient.factor1 : emitRateGradient.factor, emitRateGradient.factor2);
                 }
-            }               
+            } 
+            
+            if (parsedParticleSystem.startSizeGradients) {
+                for (var startSizeGradient of parsedParticleSystem.startSizeGradients) {
+                    particleSystem.addStartSizeGradient(startSizeGradient.gradient, startSizeGradient.factor1 !== undefined ?  startSizeGradient.factor1 : startSizeGradient.factor, startSizeGradient.factor2);
+                }
+            }
 
             if (parsedParticleSystem.limitVelocityGradients) {
                 for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
