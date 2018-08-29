@@ -15,6 +15,7 @@
         public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
         public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
         public static readonly NAME_SPRITE = "Sprite";
+        public static readonly NAME_OUTLINERENDERER = "Outline";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -28,6 +29,10 @@
         
         public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
+
+        public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 0;
+
+        public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
 
         public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
 
@@ -134,6 +139,11 @@
      * Strong typing of a RenderingGroup related stage step action 
      */
     export type RenderingGroupStageAction = (renderingGroupId: number) => void;
+
+    /** 
+     * Strong typing of a Mesh Render related stage step action 
+     */
+    export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
 
     /** 
      * Strong typing of a simple stage step action 
