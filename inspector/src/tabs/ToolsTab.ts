@@ -141,7 +141,7 @@ export class ToolsTab extends Tab {
             };
             elemValue.appendChild(inputElement);
 
-            if (VideoRecorder.IsSupported(this._scene.getEngine())) {
+            if (VideoRecorder && VideoRecorder.IsSupported(this._scene.getEngine())) {
                 let videoRecorderElement = Inspector.DOCUMENT.createElement('input');
                 videoRecorderElement.value = "Start Recording Video";
                 videoRecorderElement.type = "button";
