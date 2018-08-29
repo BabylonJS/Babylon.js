@@ -16,7 +16,7 @@
         private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
         private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
-        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
+        private _edgesRenderers = new SmartArray<IEdgesRenderer>(16);
 
         public onBeforeTransparentRendering: () => void;
 
@@ -345,7 +345,7 @@
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 
-            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined && mesh._edgesRenderer.isEnabled) {
+            if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }

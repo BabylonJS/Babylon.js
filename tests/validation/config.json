@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Edges",
+      "playgroundId": "#TYAHX#113",
+      "referenceImage": "edges.png"
+    },
+    {
       "title": "Outline",
       "playgroundId": "#10WJ5S#6",
       "referenceImage": "outline.png"
