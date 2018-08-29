@@ -15,8 +15,13 @@ uniform sampler2D diffuseSampler;
 void main(void) {
 	#include<clipPlaneFragment>
 
-	vec4 baseColor = texture2D(diffuseSampler, vUV);
-	baseColor = (baseColor * textureMask + (vec4(1., 1., 1., 1.) - textureMask)) * vColor;
+	vec4 textureColor = texture2D(diffuseSampler, vUV);
+	vec4 baseColor = (textureColor * textureMask + (vec4(1., 1., 1., 1.) - textureMask)) * vColor;
+
+	#ifdef BLENDMULTIPLYMODE
+	float alpha = vColor.a * textureColor.a;
+	baseColor.rgb = baseColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);
+	#endif
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.

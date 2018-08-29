@@ -836,6 +836,9 @@
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
         public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
+            if (!Tools.IsWindowObjectExist()) {
+                return;
+            }
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
             script.type = 'text/javascript';
@@ -1748,8 +1751,13 @@
                 if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
                     let scale =  (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                     updateFunc(currentGradient, nextGradient, scale);
+                    return;
                }
             }
+
+            // Use last index if over
+            const lastIndex = gradients.length - 1;
+            updateFunc(gradients[lastIndex], gradients[lastIndex], 1.0);
         }
     }
 
