@@ -14,6 +14,8 @@
         public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
         public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
         public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
+        public static readonly NAME_SPRITE = "Sprite";
+        public static readonly NAME_OUTLINERENDERER = "Outline";
 
         public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -27,6 +29,10 @@
         
         public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
         public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
+
+        public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 0;
+
+        public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
 
         public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
 
@@ -44,6 +50,10 @@
         public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 2;
 
         public static readonly STEP_REBUILDGEOMETRY_POSTPROCESSRENDERPIPELINEMANAGER = 0;
+
+        public static readonly STEP_POINTERMOVE_SPRITE = 0;
+        public static readonly STEP_POINTERDOWN_SPRITE = 0;
+        public static readonly STEP_POINTERUP_SPRITE = 0;
     }
 
     /**
@@ -131,6 +141,11 @@
     export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 
     /** 
+     * Strong typing of a Mesh Render related stage step action 
+     */
+    export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+
+    /** 
      * Strong typing of a simple stage step action 
      */
     export type SimpleStageAction = () => void;
@@ -139,6 +154,16 @@
      * Strong typing of a render target action.
      */
     export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>) => void;
+
+    /** 
+     * Strong typing of a pointer move action.
+     */
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
+
+    /** 
+     * Strong typing of a pointer up/down action.
+     */
+    export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
 
     /** 
      * Repressentation of a stage in the scene (Basically a list of ordered steps) 

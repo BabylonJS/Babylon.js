@@ -1040,11 +1040,13 @@ declare module 'babylonjs-inspector/tabs/TabBar' {
 }
 
 declare module 'babylonjs-inspector/tabs/TextureTab' {
+    import { TextureAdapter } from "babylonjs-inspector/adapters/TextureAdapter";
     import { Inspector } from "babylonjs-inspector/Inspector";
     import { TreeItem } from "babylonjs-inspector/tree/TreeItem";
     import { Tab } from "babylonjs-inspector/tabs/Tab";
     import { TabBar } from "babylonjs-inspector/tabs/TabBar";
     export class TextureTab extends Tab {
+        static DDSPreview: DDSPreview;
         /** The panel containing a list of items */
         protected _treePanel: HTMLElement;
         protected _treeItems: Array<TreeItem>;
@@ -1058,6 +1060,13 @@ declare module 'babylonjs-inspector/tabs/TextureTab' {
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
     }
+    class DDSPreview {
+        canvas: HTMLCanvasElement | null;
+        constructor(AdapterItem: TextureAdapter);
+        insertPreview(AdapterItem: TextureAdapter): void;
+        dispose(): void;
+    }
+    export {};
 }
 
 declare module 'babylonjs-inspector/tabs/ToolsTab' {
@@ -2135,6 +2144,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class TextureTab extends Tab {
+        static DDSPreview: DDSPreview;
         /** The panel containing a list of items */
         protected _treePanel: HTMLElement;
         protected _treeItems: Array<TreeItem>;
@@ -2147,6 +2157,12 @@ declare module INSPECTOR {
         select(item: TreeItem): void;
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
+    }
+    class DDSPreview {
+        canvas: HTMLCanvasElement | null;
+        constructor(AdapterItem: TextureAdapter);
+        insertPreview(AdapterItem: TextureAdapter): void;
+        dispose(): void;
     }
 }
 declare module INSPECTOR {

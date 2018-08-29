@@ -6,7 +6,7 @@
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
         private _particleSystems = new SmartArray<IParticleSystem>(256);
-        private _spriteManagers = new SmartArray<SpriteManager>(256);
+        private _spriteManagers = new SmartArray<ISpriteManager>(256);
 
         private _opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
         private _alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
@@ -350,7 +350,7 @@
             }
         }
 
-        public dispatchSprites(spriteManager: SpriteManager) {
+        public dispatchSprites(spriteManager: ISpriteManager) {
             this._spriteManagers.push(spriteManager);
         }
 

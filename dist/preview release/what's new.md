@@ -36,6 +36,8 @@
   - Added support for limit velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time)
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
   - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
+  - Start size gradient support for particles [Doc](http://doc.babylonjs.com/babylon101/particles#start-size-over-time) ([TrevorDev](https://github.com/TrevorDev))
+  - Cylinder particle emitter and constructor in baseParticle [Doc](https://doc.babylonjs.com/babylon101/particles#cylinder-emitter) ([TrevorDev](https://github.com/TrevorDev))
 - Added SceneComponent to help decoupling Scene from its components. ([sebavan](http://www.github.com/sebavan))
 - Added [Environment Texture Tools](https://doc.babylonjs.com/how_to/physically_based_rendering#creating-a-compressed-environment-texture) to reduce the size of the usual .DDS file ([sebavan](http://www.github.com/sebavan))
 - Playground can now be used with TypeScript directly!. [Demo](https://www.babylonjs-playground.com/ts.html) ([Deltakosh](https://github.com/deltakosh), [NasimiAsl](https://github.com/NasimiAsl))
@@ -109,7 +111,6 @@
 - Added EdgesLineRenderer to address [#4919](https://github.com/BabylonJS/Babylon.js/pull/4919) ([barteq100](https://github.com/barteq100))
 - Added ```ambientTextureImpactOnAnalyticalLights``` in PBRMaterial to allow fine grained control of the AmbientTexture on the analytical diffuse light ([sebavan](http://www.github.com/sebavan))
 - BoundingBoxGizmo scalePivot field that can be used to always scale objects from the bottom ([TrevorDev](https://github.com/TrevorDev))
-- Cylinder particle emitter and constructor in baseParticle ([TrevorDev](https://github.com/TrevorDev))
 - Improved _isSyncronized performance and reduced GC in TransformNode.computeWorldMatrix by directly reading property. ([Bolloxim](https://github.com/Bolloxim))
 - Added supports for reflectionMatrix in Skybox Mode Cube Texture allowing offsetting the world center or rotating the matrix ([sebavan](http://www.github.com/sebavan))
 
@@ -178,6 +179,7 @@
 - Do not modify pivot point when using bounding box gizmo or behaviors ([TrevorDev](https://github.com/TrevorDev))
 - GPUParticleSystem does not get stuck in burst loop when stopped and started ([TrevorDev](https://github.com/TrevorDev))
 - trackPosition:false not working in webVRCamera ([TrevorDev](https://github.com/TrevorDev))
+- Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
@@ -219,6 +221,7 @@
 
 - STL Loader only supported binary downloads and no data: urls [#4473](https://github.com/BabylonJS/Babylon.js/issues/4473) ([RaananW](https://github.com/RaananW))
 - OBJ Loader is now an async loader [#4571](https://github.com/BabylonJS/Babylon.js/issues/4571) ([RaananW](https://github.com/RaananW))
+- GLTF Loader does not have texture conflicts on subsequent loads anymore [#5030](https://github.com/BabylonJS/Babylon.js/issues/5030) ([sebavan](http://www.github.com/sebavan))
 
 ## Breaking changes
 
