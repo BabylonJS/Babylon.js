@@ -2354,6 +2354,10 @@
             serializationObject.instances = [];
             for (var index = 0; index < this.instances.length; index++) {
                 var instance = this.instances[index];
+                if (instance.doNotSerialize) {
+                    continue;
+                }
+                
                 var serializationInstance: any = {
                     name: instance.name,
                     id: instance.id,
@@ -2683,7 +2687,11 @@
                     }
 
                     if (Tags) {
-                        Tags.AddTagsTo(instance, parsedInstance.tags);
+                        if (parsedInstance.tags) {
+                            Tags.AddTagsTo(instance, parsedInstance.tags);
+                        } else {
+                            Tags.AddTagsTo(instance, parsedMesh.tags);
+                        }
                     }
 
                     instance.position = Vector3.FromArray(parsedInstance.position);

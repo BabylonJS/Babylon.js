@@ -108,7 +108,7 @@
         }        
 
         /**
-         * Gets Wether the system has been started.
+         * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
         public isStarted(): boolean {
@@ -428,7 +428,29 @@
             (<any>this._dragGradientsTexture) = null;
 
             return this;
-        }        
+        }   
+        
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the emit rate value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            // Do nothing as emit rate is not supported by GPUParticleSystem
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeEmitRateGradient(gradient: number): IParticleSystem {
+            // Do nothing as emit rate is not supported by GPUParticleSystem
+            return this;
+        } 
 
         /**
          * Instantiates a GPU particle system.
@@ -781,6 +803,10 @@
                 defines = "\n#define CLIPPLANE4";
             }
 
+            if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
+                defines = "\n#define BLENDMULTIPLYMODE";
+            }
+
             if (this._isBillboardBased) {
                 defines += "\n#define BILLBOARD";
 
@@ -1064,6 +1090,9 @@
                     case ParticleSystem.BLENDMODE_STANDARD:
                         this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
                         break;
+                    case ParticleSystem.BLENDMODE_MULTIPLY:
+                        this._engine.setAlphaMode(Engine.ALPHA_MULTIPLY);
+                        break; 
                 }      
 
                 if (this.forceDepthWrite) {
@@ -1165,7 +1194,12 @@
             if (this._limitVelocityGradientsTexture) {
                 this._limitVelocityGradientsTexture.dispose();
                 (<any>this._limitVelocityGradientsTexture) = null;
-            }         
+            }                   
+
+            if (this._dragGradientsTexture) {
+                this._dragGradientsTexture.dispose();
+                (<any>this._dragGradientsTexture) = null;
+            }               
          
             if (this._randomTexture) {
                 this._randomTexture.dispose();

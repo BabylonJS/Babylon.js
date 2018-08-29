@@ -14,11 +14,14 @@ module BABYLON {
          * Blend current color and particle color using particle’s alpha.
          */
         public static BLENDMODE_STANDARD = 1;
-
         /**
          * Add current color and particle color multiplied by particle’s alpha.
          */
         public static BLENDMODE_ADD = 2;
+        /**
+         * Multiply current color with particle color 
+         */
+        public static BLENDMODE_MULTIPLY = 3;        
 
         /**
          * List of animations used by the particle system.
@@ -228,6 +231,14 @@ module BABYLON {
 
             this._reset();
         }
+        
+        /**
+         * Get hosting scene
+         * @returns the scene
+         */
+        public getScene(): Scene {
+            return this._scene;
+        }    
 
         /**
          * You can use gravity if you want to give an orientation to your particles.
@@ -241,6 +252,7 @@ module BABYLON {
         protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
         protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
         protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+        protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
 
         /**
          * Gets the current list of drag gradients.
@@ -307,6 +319,15 @@ module BABYLON {
         public getVelocityGradients(): Nullable<Array<FactorGradient>> {
             return this._velocityGradients;
         }         
+
+        /**
+         * Gets the current list of emit rate gradients.
+         * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+         * @returns the list of emit rate gradients
+         */
+        public getEmitRateGradients(): Nullable<Array<FactorGradient>> {
+            return this._emitRateGradients;
+        }             
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
