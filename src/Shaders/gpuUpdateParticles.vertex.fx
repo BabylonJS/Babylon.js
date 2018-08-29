@@ -52,7 +52,12 @@ uniform float radiusRange;
 uniform float radius;
 uniform float height;
 uniform float radiusRange;
-uniform float directionRandomizer;
+#ifdef DIRECTEDCYLINDEREMITTER
+  uniform vec3 direction1;
+  uniform vec3 direction2;
+#else
+  uniform float directionRandomizer;
+#endif
 #endif
 
 #ifdef CONEEMITTER
@@ -247,10 +252,14 @@ void main() {
     float zPos = positionRadius * sin(angle);
     position = vec3(xPos, yPos, zPos);
 
-    // Direction
-    angle = angle + ((randoms3.x-0.5) * PI);
-    direction = vec3(cos(angle), randoms3.y-0.5, sin(angle));
-    direction = normalize(direction);
+    #ifdef DIRECTEDCYLINDEREMITTER
+      direction = direction1 + (direction2 - direction1) * randoms3;
+    #else
+      // Direction
+      angle = angle + ((randoms3.x-0.5) * PI);
+      direction = vec3(cos(angle), randoms3.y-0.5, sin(angle));
+      direction = normalize(direction);
+    #endif
 #elif defined(CONEEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
 
