@@ -49,7 +49,7 @@
 ## Updates
 
 - Updated TypeScript version to new major 3.0.1 ([christopherstock](https://github.com/christopherstock))
-- All NPM packages have `latest`and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
+- All NPM packages have `latest` and `preview` streams [#3055](https://github.com/BabylonJS/Babylon.js/issues/3055) ([RaananW](https://github.com/RaananW))
 - Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
 - Moved to gulp 4, updated dependencies to latest ([RaananW](https://github.com/RaananW))
 
@@ -62,7 +62,7 @@
 ### Core Engine
 
 - Added `scene.pickSpriteWithRay` function ([Deltakosh](https://github.com/deltakosh))
-- Added support for muyltiple clip planes. [Demo](https://www.babylonjs-playground.com/#Y6W087) ([Deltakosh](https://github.com/deltakosh))
+- Added support for multiple clip planes. [Demo](https://www.babylonjs-playground.com/#Y6W087) ([Deltakosh](https://github.com/deltakosh))
 - Added new `MixMaterial` to the Materials Library allowing to mix up to 8 textures ([julien-moreau](https://github.com/julien-moreau))
 - Added new `BoundingInfo.scale()` function to let users control the size of the bounding info ([Deltakosh](https://github.com/deltakosh))
 - Added new `Animatable.waitAsync` function to use Promises with animations. Demo [Here](https://www.babylonjs-playground.com/#HZBCXR) ([Deltakosh](https://github.com/deltakosh))
