@@ -453,6 +453,28 @@
         } 
 
         /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the start size value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeStartSizeGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+            return this;
+        } 
+
+        /**
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system

@@ -1000,7 +1000,6 @@
         private _alternateSceneUbo: UniformBuffer;
 
         private _pickWithRayInverseMatrix: Matrix;
-        private _outlineRenderer: OutlineRenderer;
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
@@ -1146,9 +1145,20 @@
          */
         public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
         /**
+         * @hidden
          * Defines the actions happening just before a rendering group is drawing.
          */
         public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just before a mesh is drawing.
+         */
+        public _beforeRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening just after a mesh has been drawn.
+         */
+        public _afterRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
         /**
          * @hidden
          * Defines the actions happening just after a rendering group has been drawn.
@@ -1195,10 +1205,6 @@
 
             if (PostProcessManager) {
                 this.postProcessManager = new PostProcessManager(this);
-            }
-
-            if (OutlineRenderer) {
-                this._outlineRenderer = new OutlineRenderer(this);
             }
 
             if (Tools.IsWindowObjectExist()) {
@@ -1315,14 +1321,6 @@
          */
         public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
-        }
-
-        /** 
-         * Gets the outline renderer associated with the scene
-         * @returns a OutlineRenderer
-         */
-        public getOutlineRenderer(): OutlineRenderer {
-            return this._outlineRenderer;
         }
 
         /** 
@@ -4806,6 +4804,8 @@
             this._cameraDrawRenderTargetStage.clear();
             this._beforeCameraDrawStage.clear();
             this._beforeRenderingGroupDrawStage.clear();
+            this._beforeRenderingMeshStage.clear();
+            this._afterRenderingMeshStage.clear();
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
