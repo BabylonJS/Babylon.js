@@ -804,6 +804,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class TextureTab extends Tab {
+        static DDSPreview: DDSPreview;
         /** The panel containing a list of items */
         protected _treePanel: HTMLElement;
         protected _treeItems: Array<TreeItem>;
@@ -816,6 +817,12 @@ declare module INSPECTOR {
         select(item: TreeItem): void;
         /** Set the given item as active in the tree */
         activateNode(item: TreeItem): void;
+    }
+    class DDSPreview {
+        canvas: HTMLCanvasElement | null;
+        constructor(AdapterItem: TextureAdapter);
+        insertPreview(AdapterItem: TextureAdapter): void;
+        dispose(): void;
     }
 }
 declare module INSPECTOR {
