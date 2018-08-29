@@ -220,6 +220,7 @@
 
 - STL Loader only supported binary downloads and no data: urls [#4473](https://github.com/BabylonJS/Babylon.js/issues/4473) ([RaananW](https://github.com/RaananW))
 - OBJ Loader is now an async loader [#4571](https://github.com/BabylonJS/Babylon.js/issues/4571) ([RaananW](https://github.com/RaananW))
+- GLTF Loader does not have texture conflicts on subsequent loads anymore [#5030](https://github.com/BabylonJS/Babylon.js/issues/5030) ([sebavan](http://www.github.com/sebavan))
 
 ## Breaking changes
 
