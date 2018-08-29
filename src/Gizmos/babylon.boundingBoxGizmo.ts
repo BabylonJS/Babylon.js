@@ -19,7 +19,7 @@ module BABYLON {
          */
         public ignoreChildren = false;
         /**
-         * Returns true if a descendant should be included when computing the bouding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
          */
         public includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
 
