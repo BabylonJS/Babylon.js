@@ -56,6 +56,9 @@ var Test = (function () {
 
         var tn = new BABYLON.TransformNode("transform node");
 
+        let DDSTexture = new BABYLON.CubeTexture("test/environment.dds", scene);
+        let DDSTexture2 = new BABYLON.Texture("test/test_1.dds", scene);
+
         // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
         var ground = BABYLON.Mesh.CreateGround("node_damagedHelmet_-6514", 6, 6, 2, scene);
         ground.parent = tn;
