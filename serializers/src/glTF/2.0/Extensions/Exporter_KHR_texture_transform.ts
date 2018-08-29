@@ -17,7 +17,7 @@ module BABYLON.GLTF2.Extensions {
     /**
      * @hidden
      */
-    export class KHR_texture_transform implements IGLTFExporterExtension {
+    export class Exporter_KHR_texture_transform implements IGLTFExporterExtension {
         /** Name of this extension */
         public readonly name = NAME;
 
@@ -100,5 +100,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    _Exporter.RegisterExtension(NAME, exporter => new KHR_texture_transform(exporter));
+    _Exporter.RegisterExtension(NAME, exporter => new Exporter_KHR_texture_transform(exporter));
 }
