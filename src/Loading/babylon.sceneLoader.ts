@@ -94,9 +94,10 @@
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
+         * @param fullName Defines the FQDN of the file to load
          * @returns The loaded meshes, particle systems, skeletons, and animation groups
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
 
         /**
          * Load into a scene.
@@ -104,9 +105,10 @@
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
+         * @param fullName Defines the FQDN of the file to load
          * @returns Nothing
          */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<void>;
 
         /**
          * The callback that returns true if the data can be directly loaded.
@@ -124,9 +126,10 @@
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onProgress The callback when the load progresses
+         * @param fullName Defines the FQDN of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fullName?: string): Promise<AssetContainer>;
     }
 
     interface IRegisteredPlugin {
@@ -473,7 +476,7 @@
                 }
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                    asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, progressHandler).then(result => {
+                    asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, progressHandler, rootUrl + sceneFilename).then(result => {
                         scene.loadingPluginName = plugin.name;
                         successHandler(result.meshes, result.particleSystems, result.skeletons, result.animationGroups);
                     }).catch(error => {
@@ -631,7 +634,7 @@
                     successHandler();
                 } else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                    asyncedPlugin.loadAsync(scene, data, rootUrl, progressHandler).then(() => {
+                    asyncedPlugin.loadAsync(scene, data, rootUrl, progressHandler, rootUrl + sceneFilename).then(() => {
                         scene.loadingPluginName = plugin.name;
                         successHandler();
                     }).catch(error => {
@@ -755,7 +758,7 @@
                     successHandler(assetContainer);
                 } else if ((<any>plugin).loadAssetContainerAsync) {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                    asyncedPlugin.loadAssetContainerAsync(scene, data, rootUrl, progressHandler).then(assetContainer => {
+                    asyncedPlugin.loadAssetContainerAsync(scene, data, rootUrl, progressHandler, rootUrl + sceneFilename).then(assetContainer => {
                         scene.loadingPluginName = plugin.name;
                         successHandler(assetContainer);
                     }).catch(error => {

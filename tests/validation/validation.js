@@ -48,6 +48,9 @@ function compare(renderData, referenceCanvas) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
+    if (differencesCount) {
+        console.log("Pixel difference: " + differencesCount + " pixels.")
+    }
     return (differencesCount * 100) / (width * height) > errorRatio;
 }
 

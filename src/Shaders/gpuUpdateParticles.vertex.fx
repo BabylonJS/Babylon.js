@@ -123,6 +123,15 @@ uniform sampler2D angularSpeedGradientSampler;
 uniform sampler2D velocityGradientSampler;
 #endif
 
+#ifdef LIMITVELOCITYGRADIENTS
+uniform sampler2D limitVelocityGradientSampler;
+uniform float limitVelocityDamping;
+#endif
+
+#ifdef DRAGGRADIENTS
+uniform sampler2D dragGradientSampler;
+#endif
+
 #ifdef NOISE
 uniform vec3 noiseStrength;
 uniform sampler2D noiseSampler;
@@ -309,6 +318,11 @@ void main() {
 #ifdef VELOCITYGRADIENTS
     directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
 #endif
+
+#ifdef DRAGGRADIENTS
+    directionScale *= texture(dragGradientSampler, vec2(ageGradient, 0)).r;
+#endif
+
     outPosition = position + direction * directionScale;
     
     outLife = life;
@@ -327,7 +341,20 @@ void main() {
 #ifndef BILLBOARD    
     outInitialDirection = initialDirection;
 #endif
-    outDirection = direction + gravity * timeDelta;
+
+    vec3 updatedDirection = direction + gravity * timeDelta;
+
+#ifdef LIMITVELOCITYGRADIENTS
+    float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).r;
+
+    float currentVelocity = length(updatedDirection);
+
+    if (currentVelocity > limitVelocity) {
+        updatedDirection = updatedDirection * limitVelocityDamping;
+    }
+#endif
+
+    outDirection = updatedDirection;
 
 #ifdef NOISE
     vec3 localPosition = outPosition - emitterWM[3].xyz;

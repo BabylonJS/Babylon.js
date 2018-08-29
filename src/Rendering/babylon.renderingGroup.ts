@@ -6,7 +6,7 @@
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
         private _particleSystems = new SmartArray<IParticleSystem>(256);
-        private _spriteManagers = new SmartArray<SpriteManager>(256);
+        private _spriteManagers = new SmartArray<ISpriteManager>(256);
 
         private _opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
         private _alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
@@ -16,7 +16,7 @@
         private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
         private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
-        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
+        private _edgesRenderers = new SmartArray<IEdgesRenderer>(16);
 
         public onBeforeTransparentRendering: () => void;
 
@@ -345,12 +345,12 @@
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 
-            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined && mesh._edgesRenderer.isEnabled) {
+            if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }
 
-        public dispatchSprites(spriteManager: SpriteManager) {
+        public dispatchSprites(spriteManager: ISpriteManager) {
             this._spriteManagers.push(spriteManager);
         }
 

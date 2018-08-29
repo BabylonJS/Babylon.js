@@ -453,6 +453,28 @@
         } 
 
         /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the start size value to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+            return this;
+        }
+
+        /**
+         * Not supported by GPUParticleSystem
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        public removeStartSizeGradient(gradient: number): IParticleSystem {
+            // Do nothing as start size is not supported by GPUParticleSystem
+            return this;
+        } 
+
+        /**
          * Instantiates a GPU particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
@@ -497,9 +519,9 @@
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex"],
                 uniformsNames: ["currentCount", "timeDelta", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "scaleRange","gravity", "emitPower",
                                 "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "coneAngle", "stopFactor", 
-                                "angleRange", "radiusRange", "cellInfos", "noiseStrength"],
+                                "angleRange", "radiusRange", "cellInfos", "noiseStrength", "limitVelocityDamping"],
                 uniformBuffersNames: [],
-                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "noiseSampler"],
+                samplers:["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "limitVelocityGradientSampler", "noiseSampler", "dragGradientSampler"],
                 defines: "",
                 fallbacks: null,  
                 onCompiled: null,
@@ -751,7 +773,15 @@
             
             if (this._velocityGradientsTexture) {
                 defines += "\n#define VELOCITYGRADIENTS";
-            }                    
+            }        
+
+            if (this._limitVelocityGradientsTexture) {
+                defines += "\n#define LIMITVELOCITYGRADIENTS";
+            }                
+            
+            if (this._dragGradientsTexture) {
+                defines += "\n#define DRAGGRADIENTS";
+            }              
             
             if (this.isAnimationSheetEnabled) {
                 defines += "\n#define ANIMATESHEET";
@@ -897,6 +927,14 @@
         private _createVelocityGradientTexture() {
             this._createFactorGradientTexture(this._velocityGradients, "_velocityGradientsTexture");
         }          
+
+        private _createLimitVelocityGradientTexture() {
+            this._createFactorGradientTexture(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
+        }          
+
+        private _createDragGradientTexture() {
+            this._createFactorGradientTexture(this._dragGradients, "_dragGradientsTexture");
+        }            
             
         private _createColorGradientTexture() {
             if (!this._colorGradients || !this._colorGradients.length || this._colorGradientsTexture) {
@@ -937,6 +975,8 @@
             this._createSizeGradientTexture();
             this._createAngularSpeedGradientTexture();
             this._createVelocityGradientTexture();
+            this._createLimitVelocityGradientTexture();
+            this._createDragGradientTexture();
 
             this._recreateUpdateEffect();
             this._recreateRenderEffect();
@@ -1006,6 +1046,15 @@
 
             if (this._velocityGradientsTexture) {      
                 this._updateEffect.setTexture("velocityGradientSampler", this._velocityGradientsTexture);      
+            }
+
+            if (this._limitVelocityGradientsTexture) {      
+                this._updateEffect.setTexture("limitVelocityGradientSampler", this._limitVelocityGradientsTexture);  
+                this._updateEffect.setFloat("limitVelocityDamping", this.limitVelocityDamping);    
+            }            
+
+            if (this._dragGradientsTexture) {      
+                this._updateEffect.setTexture("dragGradientSampler", this._dragGradientsTexture);      
             }
 
             if (this.particleEmitterType) {
@@ -1194,7 +1243,12 @@
             if (this._limitVelocityGradientsTexture) {
                 this._limitVelocityGradientsTexture.dispose();
                 (<any>this._limitVelocityGradientsTexture) = null;
-            }         
+            }                   
+
+            if (this._dragGradientsTexture) {
+                this._dragGradientsTexture.dispose();
+                (<any>this._dragGradientsTexture) = null;
+            }               
          
             if (this._randomTexture) {
                 this._randomTexture.dispose();

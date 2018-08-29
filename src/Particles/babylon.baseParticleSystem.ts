@@ -253,6 +253,7 @@ module BABYLON {
         protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
         protected _dragGradients: Nullable<Array<FactorGradient>> = null;
         protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
+        protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
 
         /**
          * Gets the current list of drag gradients.
@@ -321,13 +322,22 @@ module BABYLON {
         }         
 
         /**
+         * Gets the current list of start size gradients.
+         * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+         * @returns the list of start size gradients
+         */
+        public getStartSizeGradients(): Nullable<Array<FactorGradient>> {
+            return this._startSizeGradients;
+        }
+        
+        /**
          * Gets the current list of emit rate gradients.
          * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
          * @returns the list of emit rate gradients
          */
         public getEmitRateGradients(): Nullable<Array<FactorGradient>> {
             return this._emitRateGradients;
-        }             
+        }      
 
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
