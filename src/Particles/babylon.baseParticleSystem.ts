@@ -588,6 +588,21 @@ module BABYLON {
         }
 
         /**
+         * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
+         * @param radius The radius of the cylinder to emit from
+         * @param height The height of the emission cylinder
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @returns the emitter
+         */
+        public createDirectedCylinderEmitter(radius = 1, height = 1, radiusRange = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): CylinderDirectedParticleEmitter {
+            var particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2)
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
          * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
          * @param radius The radius of the cone to emit from
          * @param angle The base angle of the cone
