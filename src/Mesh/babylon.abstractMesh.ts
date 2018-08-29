@@ -524,7 +524,7 @@
          */
         public edgesColor = new Color4(1, 0, 0, 1);
         /** @hidden */
-        public _edgesRenderer: Nullable<EdgesRenderer>;
+        public _edgesRenderer: Nullable<IEdgesRenderer>;
 
         // Cache
         private _collisionsTransformMatrix = Matrix.Zero();
@@ -594,6 +594,11 @@
             return this._skeleton;
         }
 
+        /**
+         * An event triggered when the mesh is rebuilt.
+         */
+        public onRebuildObservable = new Observable<AbstractMesh>();
+
         // Constructor
 
         /**
@@ -637,12 +642,10 @@
 
         /** @hidden */
         public _rebuild(): void {
+            this.onRebuildObservable.notifyObservers(this);
+
             if (this._occlusionQuery) {
                 this._occlusionQuery = null;
-            }
-
-            if (this._edgesRenderer) {
-                this._edgesRenderer._rebuild();
             }
 
             if (!this.subMeshes) {
@@ -762,40 +765,6 @@
         }
 
         // Methods
-
-        /**
-         * Disables the mesh edge rendering mode
-         * @returns the currentAbstractMesh
-         */
-        public disableEdgesRendering(): AbstractMesh {
-            if (this._edgesRenderer) {
-                this._edgesRenderer.dispose();
-                this._edgesRenderer = null;
-            }
-            return this;
-        }
-
-        /**
-         * Enables the edge rendering mode on the mesh.  
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh 
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
-            this.disableEdgesRendering();
-            this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
-            return this;
-        }
-
-        /**
-         * Gets the edgesRenderer associated with the mesh
-         */
-        public get edgesRenderer(): Nullable<EdgesRenderer> {
-            return this._edgesRenderer;
-        }
-
         /**
          * Returns true if the mesh is blocked. Implemented by child classes
          */
@@ -1615,12 +1584,6 @@
                 }
             });
 
-            // Edges
-            if (this._edgesRenderer) {
-                this._edgesRenderer.dispose();
-                this._edgesRenderer = null;
-            }
-
             // SubMeshes
             if (this.getClassName() !== "InstancedMesh") {
                 this.releaseSubMeshes();
@@ -1674,6 +1637,7 @@
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
+            this.onRebuildObservable.clear();
 
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
