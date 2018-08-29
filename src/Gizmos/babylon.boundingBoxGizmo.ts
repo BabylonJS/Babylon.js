@@ -18,6 +18,10 @@ module BABYLON {
          * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
          */
         public ignoreChildren = false;
+        /**
+         * Returns true if a descendant should be included when computing the bouding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         */
+        public includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
 
         /**
          * The size of the rotation spheres attached to the bounding box (Default: 0.1)
@@ -332,15 +336,6 @@ module BABYLON {
                 })
         }
 
-        private _recurseComputeWorld(node: Node) {
-            node.computeWorldMatrix(true);
-            if(!this.ignoreChildren){
-                node.getDescendants().forEach((n) => {
-                    this._recurseComputeWorld(n);
-                });
-            }
-        }
-
         /**
          * Updates the bounding box information for the Gizmo
          */
@@ -364,7 +359,7 @@ module BABYLON {
                 this.attachedMesh.position.set(0, 0, 0);
 
                 // Update bounding dimensions/positions   
-                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren);
+                var boundingMinMax = this.attachedMesh.getHierarchyBoundingVectors(!this.ignoreChildren, this.includeChildPredicate);
                 boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
                 // Update gizmo to match bounding box scaling and rotation
@@ -378,7 +373,6 @@ module BABYLON {
                 // restore position/rotation values
                 this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
                 this.attachedMesh.position.copyFrom(this._tmpVector);
-                this._recurseComputeWorld(this.attachedMesh);
             }
             
             // Update rotation sphere locations
