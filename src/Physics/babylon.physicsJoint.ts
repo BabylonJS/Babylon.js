@@ -189,6 +189,7 @@ module BABYLON {
         length: number;
         stiffness: number;
         damping: number;
+        /* this callback will be called when applying the force to the impostors. */
         forceApplicationCallback: () => void;
     }
 }
