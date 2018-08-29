@@ -178,6 +178,7 @@
 - Do not modify pivot point when using bounding box gizmo or behaviors ([TrevorDev](https://github.com/TrevorDev))
 - GPUParticleSystem does not get stuck in burst loop when stopped and started ([TrevorDev](https://github.com/TrevorDev))
 - trackPosition:false not working in webVRCamera ([TrevorDev](https://github.com/TrevorDev))
+- Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 
