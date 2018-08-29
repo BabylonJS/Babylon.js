@@ -107,7 +107,7 @@ module BABYLON {
         /**
          * The maximum number of particles to emit per frame until we reach the activeParticleCount value
          */
-        emitRate: number; 
+        emitRate: number;
         
         /**
          * You can use gravity if you want to give an orientation to your particles.
@@ -396,7 +396,28 @@ module BABYLON {
          * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
          * @returns the list of emit rate gradients
          */
-        getEmitRateGradients(): Nullable<Array<FactorGradient>>;                    
+        getEmitRateGradients(): Nullable<Array<FactorGradient>>;   
+        
+        /**
+         * Adds a new start size gradient (please note that this will only work if you set the targetStopDuration property)
+         * @param gradient defines the gradient to use (between 0 and 1)
+         * @param factor defines the start size to affect to the specified gradient         
+         * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+         * @returns the current particle system
+         */
+        addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem;
+        /**
+         * Remove a specific start size gradient
+         * @param gradient defines the gradient to remove
+         * @returns the current particle system
+         */
+        removeStartSizeGradient(gradient: number): IParticleSystem;    
+        /**
+         * Gets the current list of start size gradients.
+         * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+         * @returns the list of start size gradients
+         */
+        getStartSizeGradients(): Nullable<Array<FactorGradient>>;  
         
 
         /**
