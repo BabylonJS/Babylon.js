@@ -341,21 +341,11 @@
             this._markSubMeshesAsLightDirty();
         }
 
-        /**
-         * Gets or sets a boolean indicating if the outline must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#3
-         */
-        public renderOutline = false;
         /** Defines color to use when rendering outline */
         public outlineColor = Color3.Red();
         /** Define width to use when rendering outline */
         public outlineWidth = 0.02;
 
-        /**
-         * Gets or sets a boolean indicating if the overlay must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#2
-         */        
-        public renderOverlay = false;
         /** Defines color to use when rendering overlay */
         public overlayColor = Color3.Red();
         /** Defines alpha to use when rendering overlay */
