@@ -112,6 +112,7 @@
 - Cylinder particle emitter and constructor in baseParticle ([TrevorDev](https://github.com/TrevorDev))
 - Improved _isSyncronized performance and reduced GC in TransformNode.computeWorldMatrix by directly reading property. ([Bolloxim](https://github.com/Bolloxim))
 - Added supports for reflectionMatrix in Skybox Mode Cube Texture allowing offsetting the world center or rotating the matrix ([sebavan](http://www.github.com/sebavan))
+- Start size gradient support for particles ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
