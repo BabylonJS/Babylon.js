@@ -34,6 +34,7 @@
   - Added support for angular speed gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#rotation)
   - Added support for velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#velocity-over-time)
   - Added support for limit velocty gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time)
+  - Added support for drag gradients. [Doc](https://doc.babylonjs.com/babylon101/particles#drag)
   - Added support for noise textures. [Doc](http://doc.babylonjs.com/babylon101/particles#noise-texture)
   - Added support for emit rate gradients. [Doc](http://doc.babylonjs.com/babylon101/particles#emit-rate-over-time)
   - Start size gradient support for particles. [Doc](http://doc.babylonjs.com/babylon101/particles#start-size-over-time) ([TrevorDev](https://github.com/TrevorDev))
