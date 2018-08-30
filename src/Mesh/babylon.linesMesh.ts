@@ -139,19 +139,5 @@
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
-
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
-            this.disableEdgesRendering();
-            this._edgesRenderer = new LineEdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
-            return this;
-        }
     }
 } 
