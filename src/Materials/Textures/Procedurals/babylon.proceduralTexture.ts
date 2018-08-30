@@ -44,7 +44,11 @@
             super(null, scene, !generateMipMaps);
 
             scene = this.getScene()!;
-
+            let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
+            if (!component) {
+                component = new ProceduralTextureSceneComponent(scene);
+                scene._addComponent(component);
+            }
             scene.proceduralTextures.push(this);
 
             this._engine = scene.getEngine();
