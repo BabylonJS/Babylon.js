@@ -3875,7 +3875,6 @@
                 return;
             }
             this._currentEffect = null;
-            this._unpackFlipYCached = null;
             this._viewportCached.x = 0;
             this._viewportCached.y = 0;
             this._viewportCached.z = 0;
@@ -3889,6 +3888,8 @@
                 this._depthCullingState.reset();
                 this.setDepthFunctionToLessOrEqual();
                 this._alphaState.reset();
+
+                this._unpackFlipYCached = null;
             }
 
             this._resetVertexBufferBinding();
