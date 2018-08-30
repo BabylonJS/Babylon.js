@@ -2,16 +2,6 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
-      "title": "Edges",
-      "playgroundId": "#TYAHX#113",
-      "referenceImage": "edges.png"
-    },
-    {
-      "title": "Outline",
-      "playgroundId": "#10WJ5S#6",
-      "referenceImage": "outline.png"
-    },
-    {
       "title": "Clip planes",
       "playgroundId": "#Y6W087#0",
       "referenceImage": "clipplanes.png"
@@ -433,7 +423,7 @@
     },
     {
       "title": "Texture cache",
-      "playgroundId": "#20OAV9#133",
+      "playgroundId": "#20OAV9#237",
       "referenceImage": "texture cache.png"
     },
     {
@@ -545,6 +535,16 @@
       "playgroundId": "#3HPMAA#0",
       "renderCount": 50,
       "referenceImage": "depthRenderer.png"
+    },
+    {
+      "title": "Edges",
+      "playgroundId": "#TYAHX#114",
+      "referenceImage": "edges.png"
+    },
+    {
+      "title": "Outline",
+      "playgroundId": "#10WJ5S#6",
+      "referenceImage": "outline.png"
     }
   ]
 }
