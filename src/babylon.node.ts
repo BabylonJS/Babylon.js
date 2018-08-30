@@ -351,7 +351,7 @@
 
         /** @hidden */
         public isSynchronized(updateCache?: boolean): boolean {
-            var check = this.hasNewParent();
+            var check = this.hasNewParent(true);
 
             check = check || !this.isSynchronizedWithParent();
 
