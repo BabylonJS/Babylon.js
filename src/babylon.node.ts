@@ -351,7 +351,7 @@
 
         /** @hidden */
         public isSynchronized(updateCache?: boolean): boolean {
-            var check = this.hasNewParent(true);
+            var check = this.hasNewParent();
 
             check = check || !this.isSynchronizedWithParent();
 
@@ -364,12 +364,11 @@
         }
 
         /** @hidden */
-        public hasNewParent(update?: boolean): boolean {
+        public hasNewParent(): boolean {
             if (this._cache.parent === this.parent)
                 return false;
 
-            if (update)
-                this._cache.parent = this.parent;
+            this._cache.parent = this.parent;
 
             return true;
         }
