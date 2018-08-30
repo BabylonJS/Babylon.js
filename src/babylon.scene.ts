@@ -4556,21 +4556,6 @@
                 this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
             }
 
-            // Shadows
-            if (this.shadowsEnabled) {
-                for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                    var light = this.lights[lightIndex];
-                    var shadowGenerator = light.getShadowGenerator();
-
-                    if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                        var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
-                        if (this.textures.indexOf(shadowMap) !== -1) {
-                            this._renderTargets.push(shadowMap);
-                        }
-                    }
-                }
-            }
-
             // Collects render targets from external components.
             for (let step of this._gatherRenderTargetsStage) {
                 step.action(this._renderTargets);

@@ -70,7 +70,7 @@
          * Returns the shadow generator associated to the light.
          * @returns Always null for hemispheric lights because it does not support shadows.
          */
-        public getShadowGenerator(): Nullable<ShadowGenerator> {
+        public getShadowGenerator(): Nullable<IShadowGenerator> {
             return null;
         }
 

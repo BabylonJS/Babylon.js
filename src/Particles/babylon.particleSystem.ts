@@ -250,7 +250,7 @@
                                 
                                 let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
 
-                                this._scaledDirection.scaleInPlace(drag);
+                                this._scaledDirection.scaleInPlace(1.0 - drag);
                             });
                         }                           
 
