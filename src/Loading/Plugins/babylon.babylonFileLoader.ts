@@ -343,7 +343,7 @@
                 container.removeAllFromScene();
             }
         } catch (err) {
-            let msg = logOperation("loadAssts", parsedData ? parsedData.producer : "Unknown") + log;
+            let msg = logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + log;
             if (onError) {
                 onError(msg, err);
             } else {
@@ -352,7 +352,7 @@
             }
         } finally {
             if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                Tools.Log(logOperation("loadAssts", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                Tools.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
             }
         }
 
