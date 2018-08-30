@@ -320,7 +320,7 @@ void main() {
 #endif
 
 #ifdef DRAGGRADIENTS
-    directionScale *= texture(dragGradientSampler, vec2(ageGradient, 0)).r;
+    directionScale *= 1.0 - texture(dragGradientSampler, vec2(ageGradient, 0)).r;
 #endif
 
     outPosition = position + direction * directionScale;
