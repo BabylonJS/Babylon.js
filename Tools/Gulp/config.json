@@ -609,7 +609,8 @@
         },
         "shadows": {
             "files": [
-                "../../src/Lights/Shadows/babylon.shadowGenerator.js"
+                "../../src/Lights/Shadows/babylon.shadowGenerator.js",
+                "../../src/Lights/Shadows/babylon.shadowGeneratorSceneComponent.js"
             ],
             "dependUpon": [
                 "postProcesses"
