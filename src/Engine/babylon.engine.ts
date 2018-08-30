@@ -4412,11 +4412,22 @@
         }
 
         private _unpackFlipYCached: Nullable<boolean> = null;
+
+        /**
+         * In case you are sharing the context with other applications, it might 
+         * be interested to not cache the unpack flip y state to ensure a consistent 
+         * value would be set.
+         */
+        public enableUnpackFlipYCached = true;
+
         /** @hidden */
-        public _unpackFlipY(value: boolean) {
+        public _unpackFlipY(value: boolean): void {
             if (this._unpackFlipYCached !== value) {
-                this._unpackFlipYCached = value;
                 this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
+
+                if (this.enableUnpackFlipYCached) {
+                    this._unpackFlipYCached = value;
+                }
             }
         }
 
