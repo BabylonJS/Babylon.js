@@ -133,8 +133,8 @@ export class SelectorGroup {
 
         if(this._groupPanel.parent) {
             if(this._groupPanel.parent.parent) {
-                button.color = this._groupPanel.parent.parent.buttonColor;
-                button.background  = this._groupPanel.parent.parent.buttonBackground;
+                button.color = (<SelectionPanel>this._groupPanel.parent.parent).buttonColor;
+                button.background  = (<SelectionPanel>this._groupPanel.parent.parent).buttonBackground;
             }
         } 
     }
@@ -171,8 +171,8 @@ export class SelectorGroup {
         
         if(this._groupPanel.parent) {
             if(this._groupPanel.parent.parent) {
-                button.color = this._groupPanel.parent.parent.buttonColor;
-                button.background  = this._groupPanel.parent.parent.buttonBackground;
+                button.color = (<SelectionPanel>this._groupPanel.parent.parent).buttonColor;
+                button.background  = (<SelectionPanel>this._groupPanel.parent.parent).buttonBackground;
             }
         } 
     }
@@ -203,7 +203,7 @@ export class SelectorGroup {
         button.paddingBottom = "4px";
 
         button.onValueChangedObservable.add(function(value) {
-            button.parent.children[0].text = button.parent.children[0].name + ": " + onValueChange(value) + " " + button.name;
+            (<TextBlock>button.parent!.children[0]).text = button.parent!.children[0].name + ": " + onValueChange(value) + " " + button.name;
             func(value);
         });
         
@@ -217,8 +217,8 @@ export class SelectorGroup {
         
         if(this._groupPanel.parent) {
             if(this._groupPanel.parent.parent) {
-                button.color = this._groupPanel.parent.parent.buttonColor;
-                button.background  = this._groupPanel.parent.parent.buttonBackground;
+                button.color = (<SelectionPanel>this._groupPanel.parent.parent).buttonColor;
+                button.background  = (<SelectionPanel>this._groupPanel.parent.parent).buttonBackground;
             }
         }
     }
@@ -381,7 +381,7 @@ export class SelectionPanel extends Rectangle {
                 child = 1;
             }
             for(var j = 0; j < this._groups[i].selectors.length; j++) {
-                this._groups[i].selectors[j].children[child].background = this._buttonBackground;
+                (<Checkbox|RadioButton|Slider>this._groups[i].selectors[j].children[child]).background = this._buttonBackground;
             }         
         }
     }
@@ -433,7 +433,7 @@ export class SelectionPanel extends Rectangle {
         }
         for(var j = 0; j < group.selectors.length; j++) {
             group.selectors[j].children[child].color = this._buttonColor;
-            group.selectors[j].children[child].background = this._buttonBackground;
+            (<Checkbox|RadioButton|Slider>group.selectors[j].children[child]).background = this._buttonBackground;
         }
     }
 
@@ -464,18 +464,18 @@ export class SelectionPanel extends Rectangle {
         }
         var group = this._groups[groupNb];
         if (selectorNb === void 0) {
-            group.group.children[0].text = label;
+            (<TextBlock>group.group.children[0]).text = label;
         }
         else {
             if(selectorNb < 0) {
                 return
             }
             if(group.type === "C" || group.type === "R") {
-                group.selectors[selectorNb].children[1].text = label;
+                (<TextBlock>group.selectors[selectorNb].children[1]).text = label;
             }
             if(group.type === "S") {
                 group.selectors[selectorNb].children[0].name = label;
-                group.selectors[selectorNb].children[0].text = label + ": " + group.selectors[selectorNb].children[1].value + " " + group.selectors[selectorNb].children[1].name;
+                (<TextBlock>group.selectors[selectorNb].children[0]).text = label + ": " + (<Slider>group.selectors[selectorNb].children[1]).value + " " + group.selectors[selectorNb].children[1].name;
             }
         }
     }
