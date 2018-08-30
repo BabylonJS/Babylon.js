@@ -1185,11 +1185,6 @@ declare module BABYLON {
         * Gets or sets a boolean indicating if procedural textures are enabled on this scene
         */
         proceduralTexturesEnabled: boolean;
-        /**
-         * The list of procedural textures added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
-         */
-        proceduralTextures: ProceduralTexture[];
         private _mainSoundTrack;
         /**
          * The list of sound tracks added to the scene
@@ -1328,6 +1323,11 @@ declare module BABYLON {
          * Defines the actions happening before camera updates.
          */
         _beforeCameraUpdateStage: Stage<SimpleStageAction>;
+        /**
+         * @hidden
+         * Defines the actions happening before clear the canvas.
+         */
+        _beforeClearStage: Stage<SimpleStageAction>;
         /**
          * @hidden
          * Defines the actions happening before camera updates.
@@ -2558,6 +2558,7 @@ declare module BABYLON {
         static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER: string;
         static readonly NAME_SPRITE: string;
         static readonly NAME_OUTLINERENDERER: string;
+        static readonly NAME_PROCEDURALTEXTURE: string;
         static readonly STEP_ISREADYFORMESH_EFFECTLAYER: number;
         static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER: number;
@@ -2570,6 +2571,7 @@ declare module BABYLON {
         static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW: number;
         static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE: number;
         static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD: number;
+        static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE: number;
         static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER: number;
         static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM: number;
         static readonly STEP_AFTERCAMERADRAW_BOUNDINGBOXRENDERER: number;
@@ -3444,331 +3446,6 @@ declare module BABYLON {
         _prepare(): void;
         execute(): void;
         serialize(parent: any): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to work with sound analyzer using fast fourier transform (FFT)
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
-     */
-    class Analyser {
-        /**
-         * Gets or sets the smoothing
-         * @ignorenaming
-         */
-        SMOOTHING: number;
-        /**
-         * Gets or sets the FFT table size
-         * @ignorenaming
-         */
-        FFT_SIZE: number;
-        /**
-         * Gets or sets the bar graph amplitude
-         * @ignorenaming
-         */
-        BARGRAPHAMPLITUDE: number;
-        /**
-         * Gets or sets the position of the debug canvas
-         * @ignorenaming
-         */
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        /**
-         * Gets or sets the debug canvas size
-         * @ignorenaming
-         */
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        /**
-         * Creates a new analyser
-         * @param scene defines hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Get the number of data values you will have to play with for the visualization
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
-         * @returns a number
-         */
-        getFrequencyBinCount(): number;
-        /**
-         * Gets the current frequency data as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Uint8Array
-         */
-        getByteFrequencyData(): Uint8Array;
-        /**
-         * Gets the current waveform as a byte array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
-         * @returns a Uint8Array
-         */
-        getByteTimeDomainData(): Uint8Array;
-        /**
-         * Gets the current frequency data as a float array
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
-         * @returns a Float32Array
-         */
-        getFloatFrequencyData(): Float32Array;
-        /**
-         * Renders the debug canvas
-         */
-        drawDebugCanvas(): void;
-        /**
-         * Stops rendering the debug canvas and removes it
-         */
-        stopDebugCanvas(): void;
-        /**
-         * Connects two audio nodes
-         * @param inputAudioNode defines first node to connect
-         * @param outputAudioNode defines second node to connect
-         */
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        isMP3supported: boolean;
-        isOGGsupported: boolean;
-        readonly audioContext: Nullable<AudioContext>;
-        constructor();
-        private _unlockiOSaudio;
-        private _initializeAudioContext;
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        /**
-         * Observable event when the current playing sound finishes.
-         */
-        onEndedObservable: Observable<Sound>;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        /** @hidden */
-        _positionInEmitterSpace: boolean;
-        private _localDirection;
-        private _volume;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _outputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        private _urlType;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
-        dispose(): void;
-        isReady(): boolean;
-        private _soundLoaded;
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters;
-        private _updateSpatialParameters;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel;
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        /**
-         * Gets or sets the inner angle for the directional cone.
-         */
-        /**
-        * Gets or sets the inner angle for the directional cone.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Gets or sets the outer angle for the directional cone.
-         */
-        /**
-        * Gets or sets the outer angle for the directional cone.
-        */
-        directionalConeOuterAngle: number;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection;
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
-        */
-        play(time?: number, offset?: number): void;
-        private _onended;
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        detachFromMesh(): void;
-        private _onRegisterAfterWorldMatrixUpdate;
-        clone(): Nullable<Sound>;
-        getAudioBuffer(): AudioBuffer | null;
-        serialize(): any;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph;
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Wraps one or more Sound objects and selects one with random weight for playback.
-     */
-    class WeightedSound {
-        /** When true a Sound will be selected and played when the current playing Sound completes. */
-        loop: boolean;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _volume;
-        /** A Sound is currently playing. */
-        isPlaying: boolean;
-        /** A Sound is currently paused. */
-        isPaused: boolean;
-        private _sounds;
-        private _weights;
-        private _currentIndex?;
-        /**
-         * Creates a new WeightedSound from the list of sounds given.
-         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
-         * @param sounds Array of Sounds that will be selected from.
-         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
-         */
-        constructor(loop: boolean, sounds: Sound[], weights: number[]);
-        /**
-         * The size of cone in degrees for a directional sound in which there will be no attenuation.
-         */
-        /**
-        * The size of cone in degress for a directional sound in which there will be no attenuation.
-        */
-        directionalConeInnerAngle: number;
-        /**
-         * Size of cone in degrees for a directional sound outside of which there will be no sound.
-         * Listener angles between innerAngle and outerAngle will falloff linearly.
-         */
-        /**
-        * Size of cone in degrees for a directional sound outside of which there will be no sound.
-        * Listener angles between innerAngle and outerAngle will falloff linearly.
-        */
-        directionalConeOuterAngle: number;
-        /**
-         * Playback volume.
-         */
-        /**
-        * Playback volume.
-        */
-        volume: number;
-        private _onended;
-        /**
-         * Suspend playback
-         */
-        pause(): void;
-        /**
-         * Stop playback
-         */
-        stop(): void;
-        /**
-         * Start playback.
-         * @param startOffset Position the clip head at a specific time in seconds.
-         */
-        play(startOffset?: number): void;
     }
 }
 
@@ -4906,6 +4583,331 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * Class used to work with sound analyzer using fast fourier transform (FFT)
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    class Analyser {
+        /**
+         * Gets or sets the smoothing
+         * @ignorenaming
+         */
+        SMOOTHING: number;
+        /**
+         * Gets or sets the FFT table size
+         * @ignorenaming
+         */
+        FFT_SIZE: number;
+        /**
+         * Gets or sets the bar graph amplitude
+         * @ignorenaming
+         */
+        BARGRAPHAMPLITUDE: number;
+        /**
+         * Gets or sets the position of the debug canvas
+         * @ignorenaming
+         */
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Gets or sets the debug canvas size
+         * @ignorenaming
+         */
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        /**
+         * Creates a new analyser
+         * @param scene defines hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Get the number of data values you will have to play with for the visualization
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
+         * @returns a number
+         */
+        getFrequencyBinCount(): number;
+        /**
+         * Gets the current frequency data as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Uint8Array
+         */
+        getByteFrequencyData(): Uint8Array;
+        /**
+         * Gets the current waveform as a byte array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
+         * @returns a Uint8Array
+         */
+        getByteTimeDomainData(): Uint8Array;
+        /**
+         * Gets the current frequency data as a float array
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
+         * @returns a Float32Array
+         */
+        getFloatFrequencyData(): Float32Array;
+        /**
+         * Renders the debug canvas
+         */
+        drawDebugCanvas(): void;
+        /**
+         * Stops rendering the debug canvas and removes it
+         */
+        stopDebugCanvas(): void;
+        /**
+         * Connects two audio nodes
+         * @param inputAudioNode defines first node to connect
+         * @param outputAudioNode defines second node to connect
+         */
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        isMP3supported: boolean;
+        isOGGsupported: boolean;
+        readonly audioContext: Nullable<AudioContext>;
+        constructor();
+        private _unlockiOSaudio;
+        private _initializeAudioContext;
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        /**
+         * Observable event when the current playing sound finishes.
+         */
+        onEndedObservable: Observable<Sound>;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        /** @hidden */
+        _positionInEmitterSpace: boolean;
+        private _localDirection;
+        private _volume;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _outputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        private _urlType;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        dispose(): void;
+        isReady(): boolean;
+        private _soundLoaded;
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters;
+        private _updateSpatialParameters;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel;
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        /**
+         * Gets or sets the inner angle for the directional cone.
+         */
+        /**
+        * Gets or sets the inner angle for the directional cone.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Gets or sets the outer angle for the directional cone.
+         */
+        /**
+        * Gets or sets the outer angle for the directional cone.
+        */
+        directionalConeOuterAngle: number;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection;
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
+        */
+        play(time?: number, offset?: number): void;
+        private _onended;
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate;
+        clone(): Nullable<Sound>;
+        getAudioBuffer(): AudioBuffer | null;
+        serialize(): any;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph;
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Wraps one or more Sound objects and selects one with random weight for playback.
+     */
+    class WeightedSound {
+        /** When true a Sound will be selected and played when the current playing Sound completes. */
+        loop: boolean;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _volume;
+        /** A Sound is currently playing. */
+        isPlaying: boolean;
+        /** A Sound is currently paused. */
+        isPaused: boolean;
+        private _sounds;
+        private _weights;
+        private _currentIndex?;
+        /**
+         * Creates a new WeightedSound from the list of sounds given.
+         * @param loop When true a Sound will be selected and played when the current playing Sound completes.
+         * @param sounds Array of Sounds that will be selected from.
+         * @param weights Array of number values for selection weights; length must equal sounds, values will be normalized to 1
+         */
+        constructor(loop: boolean, sounds: Sound[], weights: number[]);
+        /**
+         * The size of cone in degrees for a directional sound in which there will be no attenuation.
+         */
+        /**
+        * The size of cone in degress for a directional sound in which there will be no attenuation.
+        */
+        directionalConeInnerAngle: number;
+        /**
+         * Size of cone in degrees for a directional sound outside of which there will be no sound.
+         * Listener angles between innerAngle and outerAngle will falloff linearly.
+         */
+        /**
+        * Size of cone in degrees for a directional sound outside of which there will be no sound.
+        * Listener angles between innerAngle and outerAngle will falloff linearly.
+        */
+        directionalConeOuterAngle: number;
+        /**
+         * Playback volume.
+         */
+        /**
+        * Playback volume.
+        */
+        volume: number;
+        private _onended;
+        /**
+         * Suspend playback
+         */
+        pause(): void;
+        /**
+         * Stop playback
+         */
+        stop(): void;
+        /**
+         * Start playback.
+         * @param startOffset Position the clip head at a specific time in seconds.
+         */
+        play(startOffset?: number): void;
+    }
+}
+
+declare module BABYLON {
+    /**
      * Interface used to define a behavior
      */
     interface Behavior<T> {
@@ -4947,6 +4949,763 @@ declare module BABYLON {
          * @returns the behavior or null if not found
          */
         getBehaviorByName(name: string): Nullable<Behavior<T>>;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to store bone information
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     */
+    class Bone extends Node {
+        /**
+         * defines the bone name
+         */
+        name: string;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        /**
+         * Gets the list of child bones
+         */
+        children: Bone[];
+        /** Gets the animations associated with this bone */
+        animations: Animation[];
+        /**
+         * Gets or sets bone length
+         */
+        length: number;
+        /**
+         * @hidden Internal only
+         * Set this value to map this bone to a different index in the transform matrices
+         * Set this value to -1 to exclude the bone from the transform matrices
+         */
+        _index: Nullable<number>;
+        private _skeleton;
+        private _localMatrix;
+        private _restPose;
+        private _baseMatrix;
+        private _absoluteTransform;
+        private _invertedAbsoluteTransform;
+        private _parent;
+        private _scalingDeterminant;
+        private _worldTransform;
+        private _localScaling;
+        private _localRotation;
+        private _localPosition;
+        private _needToDecompose;
+        private _needToCompose;
+        /** @hidden */
+        /** @hidden */
+        _matrix: Matrix;
+        /**
+         * Create a new bone
+         * @param name defines the bone name
+         * @param skeleton defines the parent skeleton
+         * @param parentBone defines the parent (can be null if the bone is the root)
+         * @param localMatrix defines the local matrix
+         * @param restPose defines the rest pose matrix
+         * @param baseMatrix defines the base matrix
+         * @param index defines index of the bone in the hiearchy
+         */
+        constructor(
+        /**
+         * defines the bone name
+         */
+        name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
+        /**
+         * Gets the parent skeleton
+         * @returns a skeleton
+         */
+        getSkeleton(): Skeleton;
+        /**
+         * Gets parent bone
+         * @returns a bone or null if the bone is the root of the bone hierarchy
+         */
+        getParent(): Nullable<Bone>;
+        /**
+         * Sets the parent bone
+         * @param parent defines the parent (can be null if the bone is the root)
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         */
+        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
+        /**
+         * Gets the local matrix
+         * @returns a matrix
+         */
+        getLocalMatrix(): Matrix;
+        /**
+         * Gets the base matrix (initial matrix which remains unchanged)
+         * @returns a matrix
+         */
+        getBaseMatrix(): Matrix;
+        /**
+         * Gets the rest pose matrix
+         * @returns a matrix
+         */
+        getRestPose(): Matrix;
+        /**
+         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
+         */
+        getWorldMatrix(): Matrix;
+        /**
+         * Sets the local matrix to rest pose matrix
+         */
+        returnToRest(): void;
+        /**
+         * Gets the inverse of the absolute transform matrix.
+         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
+         * @returns a matrix
+         */
+        getInvertedAbsoluteTransform(): Matrix;
+        /**
+         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
+         * @returns a matrix
+         */
+        getAbsoluteTransform(): Matrix;
+        /** Gets or sets current position (in local space) */
+        position: Vector3;
+        /** Gets or sets current rotation (in local space) */
+        rotation: Vector3;
+        /** Gets or sets current rotation quaternion (in local space) */
+        rotationQuaternion: Quaternion;
+        /** Gets or sets current scaling (in local space) */
+        scaling: Vector3;
+        /**
+         * Gets the animation properties override
+         */
+        readonly animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        private _decompose;
+        private _compose;
+        /**
+         * Update the base and local matrices
+         * @param matrix defines the new base or local matrix
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         * @param updateLocalMatrix defines if the local matrix should be updated
+         */
+        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean, updateLocalMatrix?: boolean): void;
+        /** @hidden */
+        _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
+        /**
+         * Flag the bone as dirty (Forcing it to update everything)
+         */
+        markAsDirty(): void;
+        private _markAsDirtyAndCompose;
+        private _markAsDirtyAndDecompose;
+        /**
+         * Copy an animation range from another bone
+         * @param source defines the source bone
+         * @param rangeName defines the range name to copy
+         * @param frameOffset defines the frame offset
+         * @param rescaleAsRequired defines if rescaling must be applied if required
+         * @param skelDimensionsRatio defines the scaling ratio
+         * @returns true if operation was successful
+         */
+        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Nullable<Vector3>): boolean;
+        /**
+         * Translate the bone in local or world space
+         * @param vec The amount to translate the bone
+         * @param space The space that the translation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the postion of the bone in local or world space
+         * @param position The position to set the bone
+         * @param space The space that the position is in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         */
+        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the absolute position of the bone (world space)
+         * @param position The position to set the bone
+         * @param mesh The mesh that this bone is attached to
+         */
+        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
+        /**
+         * Scale the bone on the x, y and z axes (in local space)
+         * @param x The amount to scale the bone on the x axis
+         * @param y The amount to scale the bone on the y axis
+         * @param z The amount to scale the bone on the z axis
+         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
+         */
+        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        /**
+         * Set the bone scaling in local space
+         * @param scale defines the scaling vector
+         */
+        setScale(scale: Vector3): void;
+        /**
+         * Gets the current scaling in local space
+         * @returns the current scaling vector
+         */
+        getScale(): Vector3;
+        /**
+         * Gets the current scaling in local space and stores it in a target vector
+         * @param result defines the target vector
+         */
+        getScaleToRef(result: Vector3): void;
+        /**
+         * Set the yaw, pitch, and roll of the bone in local or world space
+         * @param yaw The rotation of the bone on the y axis
+         * @param pitch The rotation of the bone on the x axis
+         * @param roll The rotation of the bone on the z axis
+         * @param space The space that the axes of rotation are in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         */
+        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Add a rotation to the bone on an axis in local or world space
+         * @param axis The axis to rotate the bone on
+         * @param amount The amount to rotate the bone
+         * @param space The space that the axis is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation of the bone to a particular axis angle in local or world space
+         * @param axis The axis to rotate the bone on
+         * @param angle The angle that the bone should be rotated to
+         * @param space The space that the axis is in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         */
+        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the euler rotation of the bone in local of world space
+         * @param rotation The euler rotation that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the quaternion rotation of the bone in local of world space
+         * @param quat The quaternion rotation that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation matrix of the bone in local of world space
+         * @param rotMat The rotation matrix that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
+        private _rotateWithMatrix;
+        private _getNegativeRotationToRef;
+        /**
+         * Get the position of the bone in local or world space
+         * @param space The space that the returned position is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @returns The position of the bone
+         */
+        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the position of the bone to a vector3 in local or world space
+         * @param space The space that the returned position is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param result The vector3 to copy the position to
+         */
+        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
+        /**
+         * Get the absolute position of the bone (world space)
+         * @param mesh The mesh that this bone is attached to
+         * @returns The absolute position of the bone
+         */
+        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the absolute position of the bone (world space) to the result param
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 to copy the absolute position to
+         */
+        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
+        /**
+         * Compute the absolute transforms of this bone and its children
+         */
+        computeAbsoluteTransforms(): void;
+        /**
+         * Get the world direction from an axis that is in the local space of the bone
+         * @param localAxis The local direction that is used to compute the world direction
+         * @param mesh The mesh that this bone is attached to
+         * @returns The world direction
+         */
+        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the world direction to a vector3 from an axis that is in the local space of the bone
+         * @param localAxis The local direction that is used to compute the world direction
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the world direction will be copied to
+         */
+        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the euler rotation of the bone in local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The euler rotation
+         */
+        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The vector3 that the rotation should be copied to
+         */
+        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the quaternion rotation of the bone in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The quaternion rotation
+         */
+        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
+        /**
+         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The quaternion that the rotation should be copied to
+         */
+        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        /**
+         * Get the rotation matrix of the bone in local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The rotation matrix
+         */
+        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
+        /**
+         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The quaternion that the rotation should be copied to
+         */
+        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
+        /**
+         * Get the world position of a point that is in the local space of the bone
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to
+         * @returns The world position
+         */
+        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the world position of a point that is in the local space of the bone and copy it to the result param
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the world position should be copied to
+         */
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the local position of a point that is in world space
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to
+         * @returns The local position
+         */
+        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the local position of a point that is in world space and copy it to the result param
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the local position should be copied to
+         */
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to apply inverse kinematics to bones
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
+     */
+    class BoneIKController {
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        /**
+         * Gets or sets the target mesh
+         */
+        targetMesh: AbstractMesh;
+        /** Gets or sets the mesh used as pole */
+        poleTargetMesh: AbstractMesh;
+        /**
+         * Gets or sets the bone used as pole
+         */
+        poleTargetBone: Nullable<Bone>;
+        /**
+         * Gets or sets the target position
+         */
+        targetPosition: Vector3;
+        /**
+         * Gets or sets the pole target position
+         */
+        poleTargetPosition: Vector3;
+        /**
+         * Gets or sets the pole target local offset
+         */
+        poleTargetLocalOffset: Vector3;
+        /**
+         * Gets or sets the pole angle
+         */
+        poleAngle: number;
+        /**
+         * Gets or sets the mesh associated with the controller
+         */
+        mesh: AbstractMesh;
+        /**
+         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
+         */
+        slerpAmount: number;
+        private _bone1Quat;
+        private _bone1Mat;
+        private _bone2Ang;
+        private _bone1;
+        private _bone2;
+        private _bone1Length;
+        private _bone2Length;
+        private _maxAngle;
+        private _maxReach;
+        private _rightHandedSystem;
+        private _bendAxis;
+        private _slerping;
+        private _adjustRoll;
+        /**
+         * Gets or sets maximum allowed angle
+         */
+        maxAngle: number;
+        /**
+         * Creates a new BoneIKController
+         * @param mesh defines the mesh to control
+         * @param bone defines the bone to control
+         * @param options defines options to set up the controller
+         */
+        constructor(mesh: AbstractMesh, bone: Bone, options?: {
+            targetMesh?: AbstractMesh;
+            poleTargetMesh?: AbstractMesh;
+            poleTargetBone?: Bone;
+            poleTargetLocalOffset?: Vector3;
+            poleAngle?: number;
+            bendAxis?: Vector3;
+            maxAngle?: number;
+            slerpAmount?: number;
+        });
+        private _setMaxAngle;
+        /**
+         * Force the controller to update the bones
+         */
+        update(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to make a bone look toward a point in space
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
+     */
+    class BoneLookController {
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        /**
+         * The target Vector3 that the bone will look at
+         */
+        target: Vector3;
+        /**
+         * The mesh that the bone is attached to
+         */
+        mesh: AbstractMesh;
+        /**
+         * The bone that will be looking to the target
+         */
+        bone: Bone;
+        /**
+         * The up axis of the coordinate system that is used when the bone is rotated
+         */
+        upAxis: Vector3;
+        /**
+         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD
+         */
+        upAxisSpace: Space;
+        /**
+         * Used to make an adjustment to the yaw of the bone
+         */
+        adjustYaw: number;
+        /**
+         * Used to make an adjustment to the pitch of the bone
+         */
+        adjustPitch: number;
+        /**
+         * Used to make an adjustment to the roll of the bone
+         */
+        adjustRoll: number;
+        /**
+         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
+         */
+        slerpAmount: number;
+        private _minYaw;
+        private _maxYaw;
+        private _minPitch;
+        private _maxPitch;
+        private _minYawSin;
+        private _minYawCos;
+        private _maxYawSin;
+        private _maxYawCos;
+        private _midYawConstraint;
+        private _minPitchTan;
+        private _maxPitchTan;
+        private _boneQuat;
+        private _slerping;
+        private _transformYawPitch;
+        private _transformYawPitchInv;
+        private _firstFrameSkipped;
+        private _yawRange;
+        private _fowardAxis;
+        /**
+         * Gets or sets the minimum yaw angle that the bone can look to
+         */
+        minYaw: number;
+        /**
+         * Gets or sets the maximum yaw angle that the bone can look to
+         */
+        maxYaw: number;
+        /**
+         * Gets or sets the minimum pitch angle that the bone can look to
+         */
+        minPitch: number;
+        /**
+         * Gets or sets the maximum pitch angle that the bone can look to
+         */
+        maxPitch: number;
+        /**
+         * Create a BoneLookController
+         * @param mesh the mesh that the bone belongs to
+         * @param bone the bone that will be looking to the target
+         * @param target the target Vector3 to look at
+         * @param settings optional settings:
+         * * maxYaw: the maximum angle the bone will yaw to
+         * * minYaw: the minimum angle the bone will yaw to
+         * * maxPitch: the maximum angle the bone will pitch to
+         * * minPitch: the minimum angle the bone will yaw to
+         * * slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
+         * * upAxis: the up axis of the coordinate system
+         * * upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         * * yawAxis: set yawAxis if the bone does not yaw on the y axis
+         * * pitchAxis: set pitchAxis if the bone does not pitch on the x axis
+         * * adjustYaw: used to make an adjustment to the yaw of the bone
+         * * adjustPitch: used to make an adjustment to the pitch of the bone
+         * * adjustRoll: used to make an adjustment to the roll of the bone
+         **/
+        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
+            maxYaw?: number;
+            minYaw?: number;
+            maxPitch?: number;
+            minPitch?: number;
+            slerpAmount?: number;
+            upAxis?: Vector3;
+            upAxisSpace?: Space;
+            yawAxis?: Vector3;
+            pitchAxis?: Vector3;
+            adjustYaw?: number;
+            adjustPitch?: number;
+            adjustRoll?: number;
+        });
+        /**
+         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender())
+         */
+        update(): void;
+        private _getAngleDiff;
+        private _getAngleBetween;
+        private _isAngleBetween;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to handle skinning animations
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     */
+    class Skeleton implements IAnimatable {
+        /** defines the skeleton name */
+        name: string;
+        /** defines the skeleton Id */
+        id: string;
+        /**
+         * Gets the list of child bones
+         */
+        bones: Bone[];
+        /**
+         * Gets an estimate of the dimension of the skeleton at rest
+         */
+        dimensionsAtRest: Vector3;
+        /**
+         * Gets a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
+         */
+        needInitialSkinMatrix: boolean;
+        /**
+         * Gets the list of animations attached to this skeleton
+         */
+        animations: Array<Animation>;
+        private _scene;
+        private _isDirty;
+        private _transformMatrices;
+        private _meshesWithPoseMatrix;
+        private _animatables;
+        private _identity;
+        private _synchronizedWithMesh;
+        private _ranges;
+        private _lastAbsoluteTransformsUpdateId;
+        /**
+         * Specifies if the skeleton should be serialized
+         */
+        doNotSerialize: boolean;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * An observable triggered before computing the skeleton's matrices
+         */
+        onBeforeComputeObservable: Observable<Skeleton>;
+        /**
+         * Creates a new skeleton
+         * @param name defines the skeleton name
+         * @param id defines the skeleton Id
+         * @param scene defines the hosting scene
+         */
+        constructor(
+        /** defines the skeleton name */
+        name: string, 
+        /** defines the skeleton Id */
+        id: string, scene: Scene);
+        /**
+         * Gets the list of transform matrices to send to shaders (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+         * @returns a Float32Array containing matrices data
+         */
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        /**
+         * Gets the current hosting scene
+         * @returns a scene object
+         */
+        getScene(): Scene;
+        /**
+         * Gets a string representing the current skeleton data
+         * @param fullDetails defines a boolean indicating if we want a verbose version
+         * @returns a string representing the current skeleton data
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+        * Get bone's index searching by name
+        * @param name defines bone's name to search for
+        * @return the indice of the bone. Returns -1 if not found
+        */
+        getBoneIndexByName(name: string): number;
+        /**
+         * Creater a new animation range
+         * @param name defines the name of the range
+         * @param from defines the start key
+         * @param to defines the end key
+         */
+        createAnimationRange(name: string, from: number, to: number): void;
+        /**
+         * Delete a specific animation range
+         * @param name defines the name of the range
+         * @param deleteFrames defines if frames must be removed as well
+         */
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        /**
+         * Gets a specific animation range
+         * @param name defines the name of the range to look for
+         * @returns the requested animation range or null if not found
+         */
+        getAnimationRange(name: string): Nullable<AnimationRange>;
+        /**
+         * Gets the list of all animation ranges defined on this skeleton
+         * @returns an array
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
+        /**
+         * Copy animation range from a source skeleton.
+         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         * @param source defines the source skeleton
+         * @param name defines the name of the range to copy
+         * @param rescaleAsRequired defines if rescaling must be applied if required
+         * @returns true if operation was successful
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        /**
+         * Forces the skeleton to go to rest pose
+         */
+        returnToRest(): void;
+        private _getHighestAnimationFrame;
+        /**
+         * Begin a specific animation range
+         * @param name defines the name of the range to start
+         * @param loop defines if looping must be turned on (false by default)
+         * @param speedRatio defines the speed ratio to apply (1 by default)
+         * @param onAnimationEnd defines a callback which will be called when animation will end
+         * @returns a new animatable
+         */
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /** @hidden */
+        _markAsDirty(): void;
+        /** @hidden */
+        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        /** @hidden */
+        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        /** @hidden */
+        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void;
+        /**
+         * Build all resources required to render a skeleton
+         */
+        prepare(): void;
+        /**
+         * Gets the list of animatables currently running for this skeleton
+         * @returns an array of animatables
+         */
+        getAnimatables(): IAnimatable[];
+        /**
+         * Clone the current skeleton
+         * @param name defines the name of the new skeleton
+         * @param id defines the id of the enw skeleton
+         * @returns the new skeleton
+         */
+        clone(name: string, id: string): Skeleton;
+        /**
+         * Enable animation blending for this skeleton
+         * @param blendingSpeed defines the blending speed to apply
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
+        enableBlending(blendingSpeed?: number): void;
+        /**
+         * Releases all resources associated with the current skeleton
+         */
+        dispose(): void;
+        /**
+         * Serialize the skeleton in a JSON object
+         * @returns a JSON object
+         */
+        serialize(): any;
+        /**
+         * Creates a new skeleton from serialized data
+         * @param parsedSkeleton defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns a new skeleton
+         */
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+        /**
+         * Compute all node absolute transforms
+         * @param forceUpdate defines if computation must be done even if cache is up to date
+         */
+        computeAbsoluteTransforms(forceUpdate?: boolean): void;
+        /**
+         * Gets the root pose matrix
+         * @returns a matrix
+         */
+        getPoseMatrix(): Nullable<Matrix>;
+        /**
+         * Sorts bones per internal index
+         */
+        sortBones(): void;
+        private _sortBones;
     }
 }
 
@@ -5760,763 +6519,6 @@ interface Gamepad {
 }
 
 declare module BABYLON {
-    /**
-     * Class used to store bone information
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
-     */
-    class Bone extends Node {
-        /**
-         * defines the bone name
-         */
-        name: string;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        /**
-         * Gets the list of child bones
-         */
-        children: Bone[];
-        /** Gets the animations associated with this bone */
-        animations: Animation[];
-        /**
-         * Gets or sets bone length
-         */
-        length: number;
-        /**
-         * @hidden Internal only
-         * Set this value to map this bone to a different index in the transform matrices
-         * Set this value to -1 to exclude the bone from the transform matrices
-         */
-        _index: Nullable<number>;
-        private _skeleton;
-        private _localMatrix;
-        private _restPose;
-        private _baseMatrix;
-        private _absoluteTransform;
-        private _invertedAbsoluteTransform;
-        private _parent;
-        private _scalingDeterminant;
-        private _worldTransform;
-        private _localScaling;
-        private _localRotation;
-        private _localPosition;
-        private _needToDecompose;
-        private _needToCompose;
-        /** @hidden */
-        /** @hidden */
-        _matrix: Matrix;
-        /**
-         * Create a new bone
-         * @param name defines the bone name
-         * @param skeleton defines the parent skeleton
-         * @param parentBone defines the parent (can be null if the bone is the root)
-         * @param localMatrix defines the local matrix
-         * @param restPose defines the rest pose matrix
-         * @param baseMatrix defines the base matrix
-         * @param index defines index of the bone in the hiearchy
-         */
-        constructor(
-        /**
-         * defines the bone name
-         */
-        name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
-        /**
-         * Gets the parent skeleton
-         * @returns a skeleton
-         */
-        getSkeleton(): Skeleton;
-        /**
-         * Gets parent bone
-         * @returns a bone or null if the bone is the root of the bone hierarchy
-         */
-        getParent(): Nullable<Bone>;
-        /**
-         * Sets the parent bone
-         * @param parent defines the parent (can be null if the bone is the root)
-         * @param updateDifferenceMatrix defines if the difference matrix must be updated
-         */
-        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
-        /**
-         * Gets the local matrix
-         * @returns a matrix
-         */
-        getLocalMatrix(): Matrix;
-        /**
-         * Gets the base matrix (initial matrix which remains unchanged)
-         * @returns a matrix
-         */
-        getBaseMatrix(): Matrix;
-        /**
-         * Gets the rest pose matrix
-         * @returns a matrix
-         */
-        getRestPose(): Matrix;
-        /**
-         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
-         */
-        getWorldMatrix(): Matrix;
-        /**
-         * Sets the local matrix to rest pose matrix
-         */
-        returnToRest(): void;
-        /**
-         * Gets the inverse of the absolute transform matrix.
-         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
-         * @returns a matrix
-         */
-        getInvertedAbsoluteTransform(): Matrix;
-        /**
-         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
-         * @returns a matrix
-         */
-        getAbsoluteTransform(): Matrix;
-        /** Gets or sets current position (in local space) */
-        position: Vector3;
-        /** Gets or sets current rotation (in local space) */
-        rotation: Vector3;
-        /** Gets or sets current rotation quaternion (in local space) */
-        rotationQuaternion: Quaternion;
-        /** Gets or sets current scaling (in local space) */
-        scaling: Vector3;
-        /**
-         * Gets the animation properties override
-         */
-        readonly animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        private _decompose;
-        private _compose;
-        /**
-         * Update the base and local matrices
-         * @param matrix defines the new base or local matrix
-         * @param updateDifferenceMatrix defines if the difference matrix must be updated
-         * @param updateLocalMatrix defines if the local matrix should be updated
-         */
-        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean, updateLocalMatrix?: boolean): void;
-        /** @hidden */
-        _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
-        /**
-         * Flag the bone as dirty (Forcing it to update everything)
-         */
-        markAsDirty(): void;
-        private _markAsDirtyAndCompose;
-        private _markAsDirtyAndDecompose;
-        /**
-         * Copy an animation range from another bone
-         * @param source defines the source bone
-         * @param rangeName defines the range name to copy
-         * @param frameOffset defines the frame offset
-         * @param rescaleAsRequired defines if rescaling must be applied if required
-         * @param skelDimensionsRatio defines the scaling ratio
-         * @returns true if operation was successful
-         */
-        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Nullable<Vector3>): boolean;
-        /**
-         * Translate the bone in local or world space
-         * @param vec The amount to translate the bone
-         * @param space The space that the translation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the postion of the bone in local or world space
-         * @param position The position to set the bone
-         * @param space The space that the position is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the absolute position of the bone (world space)
-         * @param position The position to set the bone
-         * @param mesh The mesh that this bone is attached to
-         */
-        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
-        /**
-         * Scale the bone on the x, y and z axes (in local space)
-         * @param x The amount to scale the bone on the x axis
-         * @param y The amount to scale the bone on the y axis
-         * @param z The amount to scale the bone on the z axis
-         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
-         */
-        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Set the bone scaling in local space
-         * @param scale defines the scaling vector
-         */
-        setScale(scale: Vector3): void;
-        /**
-         * Gets the current scaling in local space
-         * @returns the current scaling vector
-         */
-        getScale(): Vector3;
-        /**
-         * Gets the current scaling in local space and stores it in a target vector
-         * @param result defines the target vector
-         */
-        getScaleToRef(result: Vector3): void;
-        /**
-         * Set the yaw, pitch, and roll of the bone in local or world space
-         * @param yaw The rotation of the bone on the y axis
-         * @param pitch The rotation of the bone on the x axis
-         * @param roll The rotation of the bone on the z axis
-         * @param space The space that the axes of rotation are in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Add a rotation to the bone on an axis in local or world space
-         * @param axis The axis to rotate the bone on
-         * @param amount The amount to rotate the bone
-         * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation of the bone to a particular axis angle in local or world space
-         * @param axis The axis to rotate the bone on
-         * @param angle The angle that the bone should be rotated to
-         * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the euler rotation of the bone in local of world space
-         * @param rotation The euler rotation that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the quaternion rotation of the bone in local of world space
-         * @param quat The quaternion rotation that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation matrix of the bone in local of world space
-         * @param rotMat The rotation matrix that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
-        private _rotateWithMatrix;
-        private _getNegativeRotationToRef;
-        /**
-         * Get the position of the bone in local or world space
-         * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         * @returns The position of the bone
-         */
-        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the position of the bone to a vector3 in local or world space
-         * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         * @param result The vector3 to copy the position to
-         */
-        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
-        /**
-         * Get the absolute position of the bone (world space)
-         * @param mesh The mesh that this bone is attached to
-         * @returns The absolute position of the bone
-         */
-        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the absolute position of the bone (world space) to the result param
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 to copy the absolute position to
-         */
-        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
-        /**
-         * Compute the absolute transforms of this bone and its children
-         */
-        computeAbsoluteTransforms(): void;
-        /**
-         * Get the world direction from an axis that is in the local space of the bone
-         * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
-         * @returns The world direction
-         */
-        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the world direction to a vector3 from an axis that is in the local space of the bone
-         * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the world direction will be copied to
-         */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the euler rotation of the bone in local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The euler rotation
-         */
-        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The vector3 that the rotation should be copied to
-         */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the quaternion rotation of the bone in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The quaternion rotation
-         */
-        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
-        /**
-         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The quaternion that the rotation should be copied to
-         */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
-        /**
-         * Get the rotation matrix of the bone in local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The rotation matrix
-         */
-        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
-        /**
-         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The quaternion that the rotation should be copied to
-         */
-        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
-        /**
-         * Get the world position of a point that is in the local space of the bone
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to
-         * @returns The world position
-         */
-        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the world position of a point that is in the local space of the bone and copy it to the result param
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the world position should be copied to
-         */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the local position of a point that is in world space
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to
-         * @returns The local position
-         */
-        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the local position of a point that is in world space and copy it to the result param
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the local position should be copied to
-         */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to apply inverse kinematics to bones
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
-     */
-    class BoneIKController {
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        /**
-         * Gets or sets the target mesh
-         */
-        targetMesh: AbstractMesh;
-        /** Gets or sets the mesh used as pole */
-        poleTargetMesh: AbstractMesh;
-        /**
-         * Gets or sets the bone used as pole
-         */
-        poleTargetBone: Nullable<Bone>;
-        /**
-         * Gets or sets the target position
-         */
-        targetPosition: Vector3;
-        /**
-         * Gets or sets the pole target position
-         */
-        poleTargetPosition: Vector3;
-        /**
-         * Gets or sets the pole target local offset
-         */
-        poleTargetLocalOffset: Vector3;
-        /**
-         * Gets or sets the pole angle
-         */
-        poleAngle: number;
-        /**
-         * Gets or sets the mesh associated with the controller
-         */
-        mesh: AbstractMesh;
-        /**
-         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
-         */
-        slerpAmount: number;
-        private _bone1Quat;
-        private _bone1Mat;
-        private _bone2Ang;
-        private _bone1;
-        private _bone2;
-        private _bone1Length;
-        private _bone2Length;
-        private _maxAngle;
-        private _maxReach;
-        private _rightHandedSystem;
-        private _bendAxis;
-        private _slerping;
-        private _adjustRoll;
-        /**
-         * Gets or sets maximum allowed angle
-         */
-        maxAngle: number;
-        /**
-         * Creates a new BoneIKController
-         * @param mesh defines the mesh to control
-         * @param bone defines the bone to control
-         * @param options defines options to set up the controller
-         */
-        constructor(mesh: AbstractMesh, bone: Bone, options?: {
-            targetMesh?: AbstractMesh;
-            poleTargetMesh?: AbstractMesh;
-            poleTargetBone?: Bone;
-            poleTargetLocalOffset?: Vector3;
-            poleAngle?: number;
-            bendAxis?: Vector3;
-            maxAngle?: number;
-            slerpAmount?: number;
-        });
-        private _setMaxAngle;
-        /**
-         * Force the controller to update the bones
-         */
-        update(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to make a bone look toward a point in space
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
-     */
-    class BoneLookController {
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        /**
-         * The target Vector3 that the bone will look at
-         */
-        target: Vector3;
-        /**
-         * The mesh that the bone is attached to
-         */
-        mesh: AbstractMesh;
-        /**
-         * The bone that will be looking to the target
-         */
-        bone: Bone;
-        /**
-         * The up axis of the coordinate system that is used when the bone is rotated
-         */
-        upAxis: Vector3;
-        /**
-         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD
-         */
-        upAxisSpace: Space;
-        /**
-         * Used to make an adjustment to the yaw of the bone
-         */
-        adjustYaw: number;
-        /**
-         * Used to make an adjustment to the pitch of the bone
-         */
-        adjustPitch: number;
-        /**
-         * Used to make an adjustment to the roll of the bone
-         */
-        adjustRoll: number;
-        /**
-         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
-         */
-        slerpAmount: number;
-        private _minYaw;
-        private _maxYaw;
-        private _minPitch;
-        private _maxPitch;
-        private _minYawSin;
-        private _minYawCos;
-        private _maxYawSin;
-        private _maxYawCos;
-        private _midYawConstraint;
-        private _minPitchTan;
-        private _maxPitchTan;
-        private _boneQuat;
-        private _slerping;
-        private _transformYawPitch;
-        private _transformYawPitchInv;
-        private _firstFrameSkipped;
-        private _yawRange;
-        private _fowardAxis;
-        /**
-         * Gets or sets the minimum yaw angle that the bone can look to
-         */
-        minYaw: number;
-        /**
-         * Gets or sets the maximum yaw angle that the bone can look to
-         */
-        maxYaw: number;
-        /**
-         * Gets or sets the minimum pitch angle that the bone can look to
-         */
-        minPitch: number;
-        /**
-         * Gets or sets the maximum pitch angle that the bone can look to
-         */
-        maxPitch: number;
-        /**
-         * Create a BoneLookController
-         * @param mesh the mesh that the bone belongs to
-         * @param bone the bone that will be looking to the target
-         * @param target the target Vector3 to look at
-         * @param settings optional settings:
-         * * maxYaw: the maximum angle the bone will yaw to
-         * * minYaw: the minimum angle the bone will yaw to
-         * * maxPitch: the maximum angle the bone will pitch to
-         * * minPitch: the minimum angle the bone will yaw to
-         * * slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
-         * * upAxis: the up axis of the coordinate system
-         * * upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
-         * * yawAxis: set yawAxis if the bone does not yaw on the y axis
-         * * pitchAxis: set pitchAxis if the bone does not pitch on the x axis
-         * * adjustYaw: used to make an adjustment to the yaw of the bone
-         * * adjustPitch: used to make an adjustment to the pitch of the bone
-         * * adjustRoll: used to make an adjustment to the roll of the bone
-         **/
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
-            maxYaw?: number;
-            minYaw?: number;
-            maxPitch?: number;
-            minPitch?: number;
-            slerpAmount?: number;
-            upAxis?: Vector3;
-            upAxisSpace?: Space;
-            yawAxis?: Vector3;
-            pitchAxis?: Vector3;
-            adjustYaw?: number;
-            adjustPitch?: number;
-            adjustRoll?: number;
-        });
-        /**
-         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender())
-         */
-        update(): void;
-        private _getAngleDiff;
-        private _getAngleBetween;
-        private _isAngleBetween;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to handle skinning animations
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
-     */
-    class Skeleton implements IAnimatable {
-        /** defines the skeleton name */
-        name: string;
-        /** defines the skeleton Id */
-        id: string;
-        /**
-         * Gets the list of child bones
-         */
-        bones: Bone[];
-        /**
-         * Gets an estimate of the dimension of the skeleton at rest
-         */
-        dimensionsAtRest: Vector3;
-        /**
-         * Gets a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
-         */
-        needInitialSkinMatrix: boolean;
-        /**
-         * Gets the list of animations attached to this skeleton
-         */
-        animations: Array<Animation>;
-        private _scene;
-        private _isDirty;
-        private _transformMatrices;
-        private _meshesWithPoseMatrix;
-        private _animatables;
-        private _identity;
-        private _synchronizedWithMesh;
-        private _ranges;
-        private _lastAbsoluteTransformsUpdateId;
-        /**
-         * Specifies if the skeleton should be serialized
-         */
-        doNotSerialize: boolean;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * An observable triggered before computing the skeleton's matrices
-         */
-        onBeforeComputeObservable: Observable<Skeleton>;
-        /**
-         * Creates a new skeleton
-         * @param name defines the skeleton name
-         * @param id defines the skeleton Id
-         * @param scene defines the hosting scene
-         */
-        constructor(
-        /** defines the skeleton name */
-        name: string, 
-        /** defines the skeleton Id */
-        id: string, scene: Scene);
-        /**
-         * Gets the list of transform matrices to send to shaders (one matrix per bone)
-         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
-         * @returns a Float32Array containing matrices data
-         */
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
-        /**
-         * Gets the current hosting scene
-         * @returns a scene object
-         */
-        getScene(): Scene;
-        /**
-         * Gets a string representing the current skeleton data
-         * @param fullDetails defines a boolean indicating if we want a verbose version
-         * @returns a string representing the current skeleton data
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-        * Get bone's index searching by name
-        * @param name defines bone's name to search for
-        * @return the indice of the bone. Returns -1 if not found
-        */
-        getBoneIndexByName(name: string): number;
-        /**
-         * Creater a new animation range
-         * @param name defines the name of the range
-         * @param from defines the start key
-         * @param to defines the end key
-         */
-        createAnimationRange(name: string, from: number, to: number): void;
-        /**
-         * Delete a specific animation range
-         * @param name defines the name of the range
-         * @param deleteFrames defines if frames must be removed as well
-         */
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        /**
-         * Gets a specific animation range
-         * @param name defines the name of the range to look for
-         * @returns the requested animation range or null if not found
-         */
-        getAnimationRange(name: string): Nullable<AnimationRange>;
-        /**
-         * Gets the list of all animation ranges defined on this skeleton
-         * @returns an array
-         */
-        getAnimationRanges(): Nullable<AnimationRange>[];
-        /**
-         * Copy animation range from a source skeleton.
-         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         * @param source defines the source skeleton
-         * @param name defines the name of the range to copy
-         * @param rescaleAsRequired defines if rescaling must be applied if required
-         * @returns true if operation was successful
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        /**
-         * Forces the skeleton to go to rest pose
-         */
-        returnToRest(): void;
-        private _getHighestAnimationFrame;
-        /**
-         * Begin a specific animation range
-         * @param name defines the name of the range to start
-         * @param loop defines if looping must be turned on (false by default)
-         * @param speedRatio defines the speed ratio to apply (1 by default)
-         * @param onAnimationEnd defines a callback which will be called when animation will end
-         * @returns a new animatable
-         */
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /** @hidden */
-        _markAsDirty(): void;
-        /** @hidden */
-        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        /** @hidden */
-        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        /** @hidden */
-        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void;
-        /**
-         * Build all resources required to render a skeleton
-         */
-        prepare(): void;
-        /**
-         * Gets the list of animatables currently running for this skeleton
-         * @returns an array of animatables
-         */
-        getAnimatables(): IAnimatable[];
-        /**
-         * Clone the current skeleton
-         * @param name defines the name of the new skeleton
-         * @param id defines the id of the enw skeleton
-         * @returns the new skeleton
-         */
-        clone(name: string, id: string): Skeleton;
-        /**
-         * Enable animation blending for this skeleton
-         * @param blendingSpeed defines the blending speed to apply
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         */
-        enableBlending(blendingSpeed?: number): void;
-        /**
-         * Releases all resources associated with the current skeleton
-         */
-        dispose(): void;
-        /**
-         * Serialize the skeleton in a JSON object
-         * @returns a JSON object
-         */
-        serialize(): any;
-        /**
-         * Creates a new skeleton from serialized data
-         * @param parsedSkeleton defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns a new skeleton
-         */
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-        /**
-         * Compute all node absolute transforms
-         * @param forceUpdate defines if computation must be done even if cache is up to date
-         */
-        computeAbsoluteTransforms(forceUpdate?: boolean): void;
-        /**
-         * Gets the root pose matrix
-         * @returns a matrix
-         */
-        getPoseMatrix(): Nullable<Matrix>;
-        /**
-         * Sorts bones per internal index
-         */
-        sortBones(): void;
-        private _sortBones;
-    }
-}
-
-declare module BABYLON {
     class Collider {
         /** Define if a collision was found */
         collisionFound: boolean;
@@ -7272,73 +7274,6 @@ declare module BABYLON.Debug {
         update(): void;
         /** Release associated resources */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        /**
-         * Ray from a pointer if availible (eg. 6dof controller)
-         */
-        ray: Nullable<Ray>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -8987,6 +8922,12 @@ declare module BABYLON {
          */
         createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
         private _unpackFlipYCached;
+        /**
+         * In case you are sharing the context with other applications, it might
+         * be interested to not cache the unpack flip y state to ensure a consistent
+         * value would be set.
+         */
+        enableUnpackFlipYCached: boolean;
         /** @hidden */
         _unpackFlipY(value: boolean): void;
         /** @hidden */
@@ -9642,290 +9583,69 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
     }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
+    class KeyboardInfo {
         type: number;
-        private _leftStick;
-        private _rightStick;
-        /** @hidden */
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue;
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
-        private _scene?;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        /** @hidden */
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad;
-        private _startMonitoringGamepads;
-        private _stopMonitoringGamepads;
-        /** @hidden */
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden */
-        _gamepadManager: Nullable<GamepadManager>;
-        /**
-         * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
-         */
-        gamepadManager: GamepadManager;
-    }
-    interface FreeCameraInputsManager {
-        addGamepad(): FreeCameraInputsManager;
-    }
-    interface ArcRotateCameraInputsManager {
-        addGamepad(): ArcRotateCameraInputsManager;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
     }
     /**
-      * Defines the gamepad scene component responsible to manage gamepads in a given scene
-      */
-    class GamepadSystemSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _beforeCameraUpdate;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Defines supported buttons for XBox360 compatible gamepads
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
      */
-    enum Xbox360Button {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** Start */
-        Start = 4,
-        /** Back */
-        Back = 5,
-        /** Left button */
-        LB = 6,
-        /** Right button */
-        RB = 7,
-        /** Left stick */
-        LeftStick = 8,
-        /** Right stick */
-        RightStick = 9
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
     }
-    /** Defines values for XBox360 DPad  */
-    enum Xbox360Dpad {
-        /** Up */
-        Up = 0,
-        /** Down */
-        Down = 1,
-        /** Left */
-        Left = 2,
-        /** Right */
-        Right = 3
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
     }
     /**
-     * Defines a XBox360 gamepad
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        /** Observable raised when a button is pressed */
-        onButtonDownObservable: Observable<Xbox360Button>;
-        /** Observable raised when a button is released */
-        onButtonUpObservable: Observable<Xbox360Button>;
-        /** Observable raised when a pad is pressed */
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        /** Observable raised when a pad is released */
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
+    class PointerInfoPre extends PointerInfoBase {
         /**
-         * Creates a new XBox360 gamepad object
-         * @param id defines the id of this gamepad
-         * @param index defines its index
-         * @param gamepad defines the internal HTML gamepad object
-         * @param xboxOne defines if it is a XBox One gamepad
+         * Ray from a pointer if availible (eg. 6dof controller)
          */
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        /**
-         * Defines the callback to call when left trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Defines the callback to call when right trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Gets or sets left trigger value
-         */
-        leftTrigger: number;
-        /**
-         * Gets or sets right trigger value
-         */
-        rightTrigger: number;
-        /**
-         * Defines the callback to call when a button is pressed
-         * @param callback defines the callback to use
-         */
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a button is released
-         * @param callback defines the callback to use
-         */
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a pad is pressed
-         * @param callback defines the callback to use
-         */
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        /**
-         * Defines the callback to call when a pad is released
-         * @param callback defines the callback to use
-         */
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue;
-        private _setDPadValue;
-        /** Gets or sets value of A button */
-        buttonA: number;
-        /** Gets or sets value of B button */
-        buttonB: number;
-        /** Gets or sets value of X button */
-        buttonX: number;
-        /** Gets or sets value of Y button */
-        buttonY: number;
-        /** Gets or sets value of Start button  */
-        buttonStart: number;
-        /** Gets or sets value of Back button  */
-        buttonBack: number;
-        /** Gets or sets value of Left button  */
-        buttonLB: number;
-        /** Gets or sets value of Right button  */
-        buttonRB: number;
-        /** Gets or sets value of left stick */
-        buttonLeftStick: number;
-        /** Gets or sets value of right stick */
-        buttonRightStick: number;
-        /** Gets or sets value of DPad up */
-        dPadUp: number;
-        /** Gets or sets value of DPad down */
-        dPadDown: number;
-        /** Gets or sets value of DPad left */
-        dPadLeft: number;
-        /** Gets or sets value of DPad right */
-        dPadRight: number;
-        /**
-         * Force the gamepad to synchronize with device values
-         */
-        update(): void;
-        dispose(): void;
+        ray: Nullable<Ray>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -10032,6 +9752,10 @@ declare module BABYLON {
          */
         ignoreChildren: boolean;
         /**
+         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         */
+        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
+        /**
          * The size of the rotation spheres attached to the bounding box (Default: 0.1)
          */
         rotationSphereSize: number;
@@ -10089,7 +9813,6 @@ declare module BABYLON {
         constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
         protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
         private _selectNode;
-        private _recurseComputeWorld;
         /**
          * Updates the bounding box information for the Gizmo
          */
@@ -10408,6 +10131,294 @@ declare module BABYLON {
         /**
          * Disposes of the gizmo
          */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        /** @hidden */
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue;
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene?;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        /** @hidden */
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad;
+        private _startMonitoringGamepads;
+        private _stopMonitoringGamepads;
+        /** @hidden */
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden */
+        _gamepadManager: Nullable<GamepadManager>;
+        /**
+         * Gets the gamepad manager associated with the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
+         */
+        gamepadManager: GamepadManager;
+    }
+    interface FreeCameraInputsManager {
+        addGamepad(): FreeCameraInputsManager;
+    }
+    interface ArcRotateCameraInputsManager {
+        addGamepad(): ArcRotateCameraInputsManager;
+    }
+    /**
+      * Defines the gamepad scene component responsible to manage gamepads in a given scene
+      */
+    class GamepadSystemSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _beforeCameraUpdate;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines supported buttons for XBox360 compatible gamepads
+     */
+    enum Xbox360Button {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** Start */
+        Start = 4,
+        /** Back */
+        Back = 5,
+        /** Left button */
+        LB = 6,
+        /** Right button */
+        RB = 7,
+        /** Left stick */
+        LeftStick = 8,
+        /** Right stick */
+        RightStick = 9
+    }
+    /** Defines values for XBox360 DPad  */
+    enum Xbox360Dpad {
+        /** Up */
+        Up = 0,
+        /** Down */
+        Down = 1,
+        /** Left */
+        Left = 2,
+        /** Right */
+        Right = 3
+    }
+    /**
+     * Defines a XBox360 gamepad
+     */
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        /** Observable raised when a button is pressed */
+        onButtonDownObservable: Observable<Xbox360Button>;
+        /** Observable raised when a button is released */
+        onButtonUpObservable: Observable<Xbox360Button>;
+        /** Observable raised when a pad is pressed */
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        /** Observable raised when a pad is released */
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        /**
+         * Creates a new XBox360 gamepad object
+         * @param id defines the id of this gamepad
+         * @param index defines its index
+         * @param gamepad defines the internal HTML gamepad object
+         * @param xboxOne defines if it is a XBox One gamepad
+         */
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        /**
+         * Defines the callback to call when left trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Defines the callback to call when right trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Gets or sets left trigger value
+         */
+        leftTrigger: number;
+        /**
+         * Gets or sets right trigger value
+         */
+        rightTrigger: number;
+        /**
+         * Defines the callback to call when a button is pressed
+         * @param callback defines the callback to use
+         */
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a button is released
+         * @param callback defines the callback to use
+         */
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a pad is pressed
+         * @param callback defines the callback to use
+         */
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        /**
+         * Defines the callback to call when a pad is released
+         * @param callback defines the callback to use
+         */
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue;
+        private _setDPadValue;
+        /** Gets or sets value of A button */
+        buttonA: number;
+        /** Gets or sets value of B button */
+        buttonB: number;
+        /** Gets or sets value of X button */
+        buttonX: number;
+        /** Gets or sets value of Y button */
+        buttonY: number;
+        /** Gets or sets value of Start button  */
+        buttonStart: number;
+        /** Gets or sets value of Back button  */
+        buttonBack: number;
+        /** Gets or sets value of Left button  */
+        buttonLB: number;
+        /** Gets or sets value of Right button  */
+        buttonRB: number;
+        /** Gets or sets value of left stick */
+        buttonLeftStick: number;
+        /** Gets or sets value of right stick */
+        buttonRightStick: number;
+        /** Gets or sets value of DPad up */
+        dPadUp: number;
+        /** Gets or sets value of DPad down */
+        dPadDown: number;
+        /** Gets or sets value of DPad left */
+        dPadLeft: number;
+        /** Gets or sets value of DPad right */
+        dPadRight: number;
+        /**
+         * Force the gamepad to synchronize with device values
+         */
+        update(): void;
         dispose(): void;
     }
 }
@@ -24640,648 +24651,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity: Nullable<Vector3>, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        /**
-         * Get the time step of the physics engine.
-         */
-        getTimeStep(): number;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         * @hidden
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostors(): Array<PhysicsImpostor>;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-        getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(joint: PhysicsImpostorJoint): void;
-        removeJoint(joint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class PhysicsHelper {
-        private _scene;
-        private _physicsEngine;
-        constructor(scene: Scene);
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
-        /**
-         * @param {Vector3} origin the origin of the updraft
-         * @param {number} radius the radius of the updraft
-         * @param {number} strength the strength of the updraft
-         * @param {number} height the height of the updraft
-         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
-         */
-        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
-        /**
-         * @param {Vector3} origin the of the vortex
-         * @param {number} radius the radius of the vortex
-         * @param {number} strength the strength of the vortex
-         * @param {number} height   the height of the vortex
-         */
-        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
-    }
-    /***** Radial explosion *****/
-    class PhysicsRadialExplosionEvent {
-        private _scene;
-        private _sphere;
-        private _sphereOptions;
-        private _rays;
-        private _dataFetched;
-        constructor(scene: Scene);
-        /**
-         * Returns the data related to the radial explosion event (sphere & rays).
-         * @returns {PhysicsRadialExplosionEventData}
-         */
-        getData(): PhysicsRadialExplosionEventData;
-        /**
-         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
-         * @param impostor
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
-         * @returns {Nullable<PhysicsForceAndContactPoint>}
-         */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        /*** Helpers ***/
-        private _prepareSphere;
-        private _intersectsWithSphere;
-    }
-    /***** Gravitational Field *****/
-    class PhysicsGravitationalFieldEvent {
-        private _physicsHelper;
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _falloff;
-        private _tickCallback;
-        private _sphere;
-        private _dataFetched;
-        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
-        /**
-         * Returns the data related to the gravitational field event (sphere).
-         * @returns {PhysicsGravitationalFieldEventData}
-         */
-        getData(): PhysicsGravitationalFieldEventData;
-        /**
-         * Enables the gravitational field.
-         */
-        enable(): void;
-        /**
-         * Disables the gravitational field.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private _tick;
-    }
-    /***** Updraft *****/
-    class PhysicsUpdraftEvent {
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _updraftMode;
-        private _physicsEngine;
-        private _originTop;
-        private _originDirection;
-        private _tickCallback;
-        private _cylinder;
-        private _cylinderPosition;
-        private _dataFetched;
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
-        /**
-         * Returns the data related to the updraft event (cylinder).
-         * @returns {PhysicsUpdraftEventData}
-         */
-        getData(): PhysicsUpdraftEventData;
-        /**
-         * Enables the updraft.
-         */
-        enable(): void;
-        /**
-         * Disables the cortex.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint;
-        private _tick;
-        /*** Helpers ***/
-        private _prepareCylinder;
-        private _intersectsWithCylinder;
-    }
-    /***** Vortex *****/
-    class PhysicsVortexEvent {
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _physicsEngine;
-        private _originTop;
-        private _centripetalForceThreshold;
-        private _updraftMultiplier;
-        private _tickCallback;
-        private _cylinder;
-        private _cylinderPosition;
-        private _dataFetched;
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
-        /**
-         * Returns the data related to the vortex event (cylinder).
-         * @returns {PhysicsVortexEventData}
-         */
-        getData(): PhysicsVortexEventData;
-        /**
-         * Enables the vortex.
-         */
-        enable(): void;
-        /**
-         * Disables the cortex.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint;
-        private _tick;
-        /*** Helpers ***/
-        private _prepareCylinder;
-        private _intersectsWithCylinder;
-    }
-    /***** Enums *****/
-    /**
-    * The strenght of the force in correspondence to the distance of the affected object
-    */
-    enum PhysicsRadialImpulseFalloff {
-        /** Defines that impulse is constant in strength across it's whole radius */
-        Constant = 0,
-        /** DEfines that impulse gets weaker if it's further from the origin */
-        Linear = 1
-    }
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    enum PhysicsUpdraftMode {
-        /** Defines that the upstream forces will pull towards the top center of the cylinder */
-        Center = 0,
-        /** Defines that once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder */
-        Perpendicular = 1
-    }
-    /***** Data interfaces *****/
-    interface PhysicsForceAndContactPoint {
-        force: Vector3;
-        contactPoint: Vector3;
-    }
-    interface PhysicsRadialExplosionEventData {
-        sphere: Mesh;
-        rays: Array<Ray>;
-    }
-    interface PhysicsGravitationalFieldEventData {
-        sphere: Mesh;
-    }
-    interface PhysicsUpdraftEventData {
-        cylinder: Mesh;
-    }
-    interface PhysicsVortexEventData {
-        cylinder: Mesh;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-        ignoreParent?: boolean;
-        disableBidirectionalTransformation?: boolean;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Nullable<Quaternion>;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo(): BoundingInfo;
-        computeWorldMatrix(force: boolean): Matrix;
-        getWorldMatrix?(): Matrix;
-        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
-        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
-        getIndices?(): Nullable<IndicesArray>;
-        getScene?(): Scene;
-        getAbsolutePosition(): Vector3;
-        getAbsolutePivotPoint(): Vector3;
-        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
-        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
-        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
-        getClassName(): string;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene?;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        static IDENTITY_QUATERNION: Quaternion;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        private _isDisposed;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        readonly isDisposed: boolean;
-        mass: number;
-        friction: number;
-        restitution: number;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene | undefined);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         * @hidden
-         */
-        _init(): void;
-        private _getPhysicsParent;
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-        * Set the physics body. Used mainly by the physics engine/plugin
-        */
-        physicsBody: any;
-        parent: Nullable<PhysicsImpostor>;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Nullable<Vector3>;
-        setLinearVelocity(velocity: Nullable<Vector3>): void;
-        getAngularVelocity(): Nullable<Vector3>;
-        setAngularVelocity(velocity: Nullable<Vector3>): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpQuat;
-        private _tmpQuat2;
-        getParentsRotation(): Quaternion;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        /**
-         * Legacy collision detection event support
-         */
-        onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void>;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): PhysicsImpostor;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): PhysicsImpostor;
-        clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        getBoxSizeToRef(result: Vector3): PhysicsImpostor;
-        getRadius(): number;
-        /**
-         * Sync a bone with this impostor
-         * @param bone The bone to sync to the impostor.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         */
-        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
-        /**
-         * Sync impostor to a bone
-         * @param bone The bone that the impostor will be synced to.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         * @param boneAxis Optional vector3 axis the bone is aligned with
-         */
-        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-        static LockJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
-        /** this callback will be called when applying the force to the impostors. */
-        forceApplicationCallback: () => void;
-    }
-}
-
-declare module BABYLON {
     /**
    * This represents the base class for particle system in Babylon.
    * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -25668,6 +25037,16 @@ declare module BABYLON {
          */
         createCylinderEmitter(radius?: number, height?: number, radiusRange?: number, directionRandomizer?: number): CylinderParticleEmitter;
         /**
+         * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
+         * @param radius The radius of the cylinder to emit from
+         * @param height The height of the emission cylinder
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @returns the emitter
+         */
+        createDirectedCylinderEmitter(radius?: number, height?: number, radiusRange?: number, direction1?: Vector3, direction2?: Vector3): CylinderDirectedParticleEmitter;
+        /**
          * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
          * @param radius The radius of the cone to emit from
          * @param angle The base angle of the cone
@@ -25918,6 +25297,8 @@ declare module BABYLON {
         private _createSizeGradientTexture;
         private _createAngularSpeedGradientTexture;
         private _createVelocityGradientTexture;
+        private _createLimitVelocityGradientTexture;
+        private _createDragGradientTexture;
         private _createColorGradientTexture;
         /**
          * Renders the particle system in its current state
@@ -26390,6 +25771,16 @@ declare module BABYLON {
          * @returns the emitter
          */
         createCylinderEmitter(radius: number, height: number, radiusRange: number, directionRandomizer: number): CylinderParticleEmitter;
+        /**
+         * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
+         * @param radius The radius of the cylinder to emit from
+         * @param height The height of the emission cylinder
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
+         * @returns the emitter
+         */
+        createDirectedCylinderEmitter(radius: number, height: number, radiusRange: number, direction1: Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
         /**
          * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
          * @param radius The radius of the cone to emit from
@@ -27525,6 +26916,648 @@ declare module BABYLON {
          * @param update the boolean update value actually passed to setParticles()
          */
         afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity: Nullable<Vector3>, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        /**
+         * Get the time step of the physics engine.
+         */
+        getTimeStep(): number;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         * @hidden
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostors(): Array<PhysicsImpostor>;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
+        getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(joint: PhysicsImpostorJoint): void;
+        removeJoint(joint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class PhysicsHelper {
+        private _scene;
+        private _physicsEngine;
+        constructor(scene: Scene);
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
+        /**
+         * @param {Vector3} origin the origin of the updraft
+         * @param {number} radius the radius of the updraft
+         * @param {number} strength the strength of the updraft
+         * @param {number} height the height of the updraft
+         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
+         */
+        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
+        /**
+         * @param {Vector3} origin the of the vortex
+         * @param {number} radius the radius of the vortex
+         * @param {number} strength the strength of the vortex
+         * @param {number} height   the height of the vortex
+         */
+        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
+    }
+    /***** Radial explosion *****/
+    class PhysicsRadialExplosionEvent {
+        private _scene;
+        private _sphere;
+        private _sphereOptions;
+        private _rays;
+        private _dataFetched;
+        constructor(scene: Scene);
+        /**
+         * Returns the data related to the radial explosion event (sphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
+        getData(): PhysicsRadialExplosionEventData;
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        /*** Helpers ***/
+        private _prepareSphere;
+        private _intersectsWithSphere;
+    }
+    /***** Gravitational Field *****/
+    class PhysicsGravitationalFieldEvent {
+        private _physicsHelper;
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _falloff;
+        private _tickCallback;
+        private _sphere;
+        private _dataFetched;
+        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
+        /**
+         * Returns the data related to the gravitational field event (sphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        getData(): PhysicsGravitationalFieldEventData;
+        /**
+         * Enables the gravitational field.
+         */
+        enable(): void;
+        /**
+         * Disables the gravitational field.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private _tick;
+    }
+    /***** Updraft *****/
+    class PhysicsUpdraftEvent {
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _height;
+        private _updraftMode;
+        private _physicsEngine;
+        private _originTop;
+        private _originDirection;
+        private _tickCallback;
+        private _cylinder;
+        private _cylinderPosition;
+        private _dataFetched;
+        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
+        /**
+         * Returns the data related to the updraft event (cylinder).
+         * @returns {PhysicsUpdraftEventData}
+         */
+        getData(): PhysicsUpdraftEventData;
+        /**
+         * Enables the updraft.
+         */
+        enable(): void;
+        /**
+         * Disables the cortex.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private getImpostorForceAndContactPoint;
+        private _tick;
+        /*** Helpers ***/
+        private _prepareCylinder;
+        private _intersectsWithCylinder;
+    }
+    /***** Vortex *****/
+    class PhysicsVortexEvent {
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _height;
+        private _physicsEngine;
+        private _originTop;
+        private _centripetalForceThreshold;
+        private _updraftMultiplier;
+        private _tickCallback;
+        private _cylinder;
+        private _cylinderPosition;
+        private _dataFetched;
+        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
+        /**
+         * Returns the data related to the vortex event (cylinder).
+         * @returns {PhysicsVortexEventData}
+         */
+        getData(): PhysicsVortexEventData;
+        /**
+         * Enables the vortex.
+         */
+        enable(): void;
+        /**
+         * Disables the cortex.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private getImpostorForceAndContactPoint;
+        private _tick;
+        /*** Helpers ***/
+        private _prepareCylinder;
+        private _intersectsWithCylinder;
+    }
+    /***** Enums *****/
+    /**
+    * The strenght of the force in correspondence to the distance of the affected object
+    */
+    enum PhysicsRadialImpulseFalloff {
+        /** Defines that impulse is constant in strength across it's whole radius */
+        Constant = 0,
+        /** DEfines that impulse gets weaker if it's further from the origin */
+        Linear = 1
+    }
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    enum PhysicsUpdraftMode {
+        /** Defines that the upstream forces will pull towards the top center of the cylinder */
+        Center = 0,
+        /** Defines that once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder */
+        Perpendicular = 1
+    }
+    /***** Data interfaces *****/
+    interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
+    interface PhysicsRadialExplosionEventData {
+        sphere: Mesh;
+        rays: Array<Ray>;
+    }
+    interface PhysicsGravitationalFieldEventData {
+        sphere: Mesh;
+    }
+    interface PhysicsUpdraftEventData {
+        cylinder: Mesh;
+    }
+    interface PhysicsVortexEventData {
+        cylinder: Mesh;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+        ignoreParent?: boolean;
+        disableBidirectionalTransformation?: boolean;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Nullable<Quaternion>;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo(): BoundingInfo;
+        computeWorldMatrix(force: boolean): Matrix;
+        getWorldMatrix?(): Matrix;
+        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
+        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+        getIndices?(): Nullable<IndicesArray>;
+        getScene?(): Scene;
+        getAbsolutePosition(): Vector3;
+        getAbsolutePivotPoint(): Vector3;
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        getClassName(): string;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene?;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        static IDENTITY_QUATERNION: Quaternion;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        private _isDisposed;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        readonly isDisposed: boolean;
+        mass: number;
+        friction: number;
+        restitution: number;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene | undefined);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         * @hidden
+         */
+        _init(): void;
+        private _getPhysicsParent;
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+        * Set the physics body. Used mainly by the physics engine/plugin
+        */
+        physicsBody: any;
+        parent: Nullable<PhysicsImpostor>;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Nullable<Vector3>;
+        setLinearVelocity(velocity: Nullable<Vector3>): void;
+        getAngularVelocity(): Nullable<Vector3>;
+        setAngularVelocity(velocity: Nullable<Vector3>): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpQuat;
+        private _tmpQuat2;
+        getParentsRotation(): Quaternion;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        /**
+         * Legacy collision detection event support
+         */
+        onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void>;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): PhysicsImpostor;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): PhysicsImpostor;
+        clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        getBoxSizeToRef(result: Vector3): PhysicsImpostor;
+        getRadius(): number;
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         */
+        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
+        /** this callback will be called when applying the force to the impostors. */
+        forceApplicationCallback: () => void;
     }
 }
 
@@ -38406,105 +38439,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _useDeltaForWorldStep;
-        world: any;
-        name: string;
-        private _physicsMaterials;
-        private _fixedTimeStep;
-        BJSCANNON: any;
-        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _processChildMeshes;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        private _addMaterial;
-        private _checkWithEpsilon;
-        private _createShape;
-        private _createHeightmap;
-        private _minus90X;
-        private _plus90X;
-        private _tmpPosition;
-        private _tmpDeltaPosition;
-        private _tmpUnityRotation;
-        private _updatePhysicsBodyTransformation;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        isSupported(): boolean;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-        private _extendNamespace;
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        BJSOIMO: any;
-        constructor(iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        private _tmpImpostorsArray;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _tmpPositionVector;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a box.
      * It emits the particles randomly between 2 given directions.
@@ -38743,6 +38677,74 @@ declare module BABYLON {
         getEffectDefines(): string;
         /**
          * Returns the string "CylinderParticleEmitter"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        parse(serializationObject: any): void;
+    }
+    /**
+     * Particle emitter emitting particles from the inside of a cylinder.
+     * It emits the particles randomly between two vectors.
+     */
+    class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
+        /**
+         * The min limit of the emission direction.
+         */
+        direction1: Vector3;
+        /**
+         * The max limit of the emission direction.
+         */
+        direction2: Vector3;
+        /**
+         * Creates a new instance CylinderDirectedParticleEmitter
+         * @param radius the radius of the emission cylinder (1 by default)
+         * @param height the height of the emission cylinder (1 by default)
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+         * @param direction1 the min limit of the emission direction (up vector by default)
+         * @param direction2 the max limit of the emission direction (up vector by default)
+         */
+        constructor(radius?: number, height?: number, radiusRange?: number, 
+        /**
+         * The min limit of the emission direction.
+         */
+        direction1?: Vector3, 
+        /**
+         * The max limit of the emission direction.
+         */
+        direction2?: Vector3);
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): CylinderDirectedParticleEmitter;
+        /**
+         * Called by the GPUParticleSystem to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        getEffectDefines(): string;
+        /**
+         * Returns the string "CylinderDirectedParticleEmitter"
          * @returns a string containing the class name
          */
         getClassName(): string;
@@ -39108,6 +39110,105 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
+    }
+}
+
+declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        world: any;
+        name: string;
+        private _physicsMaterials;
+        private _fixedTimeStep;
+        BJSCANNON: any;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _processChildMeshes;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMaterial;
+        private _checkWithEpsilon;
+        private _createShape;
+        private _createHeightmap;
+        private _minus90X;
+        private _plus90X;
+        private _tmpPosition;
+        private _tmpDeltaPosition;
+        private _tmpUnityRotation;
+        private _updatePhysicsBodyTransformation;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        isSupported(): boolean;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+        private _extendNamespace;
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        BJSOIMO: any;
+        constructor(iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        private _tmpImpostorsArray;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _tmpPositionVector;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
     }
 }
 
@@ -39613,6 +39714,49 @@ declare module BABYLON {
         render(useCameraPostProcess?: boolean): void;
         clone(): ProceduralTexture;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface AbstractScene {
+        /**
+         * The list of procedural textures added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+         */
+        proceduralTextures: Array<ProceduralTexture>;
+    }
+    /**
+     * Defines the Procedural Texture scene component responsible to manage any Procedural Texture
+     * in a given scene.
+     */
+    class ProceduralTextureSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
+        private _beforeClear;
     }
 }
 

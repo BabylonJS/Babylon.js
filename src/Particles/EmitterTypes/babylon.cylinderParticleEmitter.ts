@@ -135,4 +135,110 @@ module BABYLON {
             this.directionRandomizer = serializationObject.directionRandomizer;
         }          
     }
+
+    /**
+     * Particle emitter emitting particles from the inside of a cylinder.
+     * It emits the particles randomly between two vectors.
+     */
+    export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
+
+        /**
+         * Creates a new instance CylinderDirectedParticleEmitter
+         * @param radius the radius of the emission cylinder (1 by default)
+         * @param height the height of the emission cylinder (1 by default)
+         * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default) 
+         * @param direction1 the min limit of the emission direction (up vector by default)
+         * @param direction2 the max limit of the emission direction (up vector by default)
+         */
+        constructor(
+            radius = 1, 
+            height = 1,
+            radiusRange = 1,
+            /**
+             * The min limit of the emission direction.
+             */
+            public direction1 = new Vector3(0, 1, 0), 
+            /**
+             * The max limit of the emission direction.
+             */
+            public direction2 = new Vector3(0, 1, 0)) {
+            super(radius, height, radiusRange);
+        }
+
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+            var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
+            var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
+            var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+            Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
+        }
+
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        public clone(): CylinderDirectedParticleEmitter {
+            let newOne = new CylinderDirectedParticleEmitter(this.radius, this.height, this.radiusRange, this.direction1, this.direction2);
+
+            Tools.DeepCopy(this, newOne);
+
+            return newOne;
+        }     
+        
+        /**
+         * Called by the GPUParticleSystem to setup the update shader
+         * @param effect defines the update shader
+         */        
+        public applyToShader(effect: Effect): void {
+            effect.setFloat("radius", this.radius);
+            effect.setFloat("height", this.height);
+            effect.setFloat("radiusRange", this.radiusRange);
+            effect.setVector3("direction1", this.direction1);
+            effect.setVector3("direction2", this.direction2);
+        }       
+        
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        public getEffectDefines(): string {
+            return "#define CYLINDEREMITTER\n#define DIRECTEDCYLINDEREMITTER"
+        }    
+        
+        /**
+         * Returns the string "CylinderDirectedParticleEmitter"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "CylinderDirectedParticleEmitter";
+        }       
+        
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */        
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.direction1 = this.direction1.asArray();
+            serializationObject.direction2 = this.direction2.asArray();
+
+            return serializationObject;
+        }    
+        
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        public parse(serializationObject: any): void {
+            super.parse(serializationObject);
+            this.direction1.copyFrom(serializationObject.direction1);
+            this.direction2.copyFrom(serializationObject.direction2);
+        }           
+    }
 }
