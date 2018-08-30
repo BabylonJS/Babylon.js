@@ -1721,7 +1721,7 @@
                 serializationObject.limitVelocityDamping = particleSystem.limitVelocityDamping;
             }   
             
-            if (particleSystem.noiseTexture && particleSystem.noiseTexture instanceof ProceduralTexture) {
+            if (ProceduralTexture && particleSystem.noiseTexture && particleSystem.noiseTexture instanceof ProceduralTexture) {
                 const noiseTexture = particleSystem.noiseTexture as ProceduralTexture;
                 serializationObject.noiseTexture = noiseTexture.serialize();
             }
