@@ -293,15 +293,6 @@
                 }
             }
 
-            // Shadows
-            if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
-                for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
-                    var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                    ShadowGenerator.Parse(parsedShadowGenerator, scene);
-                    // SG would be available on their associated lights
-                }
-            }
-
             // Lights exclusions / inclusions
             for (index = 0, cache = scene.lights.length; index < cache; index++) {
                 let light = scene.lights[index];

@@ -279,17 +279,6 @@
                 serializationObject.particleSystems.push(scene.particleSystems[index].serialize());
             }
 
-            // Shadows
-            serializationObject.shadowGenerators = [];
-            for (index = 0; index < scene.lights.length; index++) {
-                light = scene.lights[index];
-
-                let shadowGenerator = light.getShadowGenerator();
-                if (shadowGenerator) {
-                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
-                }
-            }
-
             // Action Manager
             if (scene.actionManager) {
                 serializationObject.actions = scene.actionManager.serialize("scene");

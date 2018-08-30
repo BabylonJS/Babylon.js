@@ -457,7 +457,7 @@
 
             this.volumetricLightPostProcess.onApply = (effect: Effect) => {
                 if (this.sourceLight && this.sourceLight.getShadowGenerator() && this._scene.activeCamera) {
-                    var generator = <ShadowGenerator>this.sourceLight.getShadowGenerator();
+                    var generator = this.sourceLight.getShadowGenerator()!;
 
                     effect.setTexture("shadowMapSampler", generator.getShadowMap());
                     effect.setTexture("positionSampler", geometry.textures[2]);
@@ -471,8 +471,8 @@
                     effect.setFloat("scatteringCoefficient", this.volumetricLightCoefficient);
                     effect.setFloat("scatteringPower", this.volumetricLightPower);
 
-                    depthValues.x = generator.getLight().getDepthMinZ(this._scene.activeCamera);
-                    depthValues.y = generator.getLight().getDepthMaxZ(this._scene.activeCamera);
+                    depthValues.x = this.sourceLight.getDepthMinZ(this._scene.activeCamera);
+                    depthValues.y = this.sourceLight.getDepthMaxZ(this._scene.activeCamera);
                     effect.setVector2("depthValues", depthValues);
                 }
             };
