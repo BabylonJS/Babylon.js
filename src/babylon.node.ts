@@ -364,12 +364,11 @@
         }
 
         /** @hidden */
-        public hasNewParent(update?: boolean): boolean {
+        public hasNewParent(): boolean {
             if (this._cache.parent === this.parent)
                 return false;
 
-            if (update)
-                this._cache.parent = this.parent;
+            this._cache.parent = this.parent;
 
             return true;
         }
