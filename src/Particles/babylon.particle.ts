@@ -60,6 +60,7 @@
          */
         public cellIndex: number = 0;  
 
+        /** @hidden */
         public _randomCellOffset?: number;
 
         /** @hidden */

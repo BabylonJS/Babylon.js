@@ -87,6 +87,9 @@ in vec2 angle;
 #endif
 #ifdef ANIMATESHEET
 in float cellIndex;
+#ifdef ANIMATESHEETRANDOMSTART
+in float cellStartOffset;
+#endif
 #endif
 
 // Output
@@ -109,6 +112,9 @@ out vec2 outAngle;
 #endif
 #ifdef ANIMATESHEET
 out float outCellIndex;
+#ifdef ANIMATESHEETRANDOMSTART
+out float outCellStartOffset;
+#endif
 #endif
 
 #ifdef SIZEGRADIENTS
@@ -308,6 +314,10 @@ void main() {
 #endif
 #ifdef ANIMATESHEET      
     outCellIndex = cellInfos.x;
+
+#ifdef ANIMATESHEETRANDOMSTART
+    outCellStartOffset = randoms.a * outLife;
+#endif    
 #endif
 
   } else {
@@ -376,8 +386,15 @@ void main() {
 #endif
 
 #ifdef ANIMATESHEET      
+    float offsetAge = outAge;
     float dist = cellInfos.y - cellInfos.x;
-    float ratio = clamp(mod(outAge * cellInfos.z, life) / life, 0., 1.0);
+
+#ifdef ANIMATESHEETRANDOMSTART
+    outCellStartOffset = cellStartOffset;
+    offsetAge += cellStartOffset;
+#endif    
+
+    float ratio = clamp(mod(offsetAge * cellInfos.z, life) / life, 0., 1.0);
 
     outCellIndex = float(int(cellInfos.x + ratio * dist));
 #endif
