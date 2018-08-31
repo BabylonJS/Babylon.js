@@ -32,6 +32,8 @@
 
         public depthOfFieldPostProcess: Nullable<PostProcess> = null;
 
+        public fxaaPostProcess: Nullable<FxaaPostProcess> = null;
+
         // Values
         @serialize()
         public brightThreshold: number = 1.0;
@@ -104,15 +106,17 @@
         private _ratio: number;
 
         // Getters and setters
-        private _bloomEnabled: boolean = true;
+        private _bloomEnabled: boolean = false;
         private _depthOfFieldEnabled: boolean = false;
         private _vlsEnabled: boolean = false;
         private _lensFlareEnabled: boolean = false;
         private _hdrEnabled: boolean = false;
         private _motionBlurEnabled: boolean = false;
+        private _fxaaEnabled: boolean = false;
 
         private _motionBlurSamples: number = 64.0;
         private _volumetricLightStepsCount: number = 50.0;
+        private _samples: number = 1;
 
         @serialize()
         public get BloomEnabled(): boolean {
@@ -207,6 +211,20 @@
         }
 
         @serialize()
+        public get fxaaEnabled(): boolean {
+            return this._fxaaEnabled;
+        }
+
+        public set fxaaEnabled(enabled: boolean) {
+            if (this._fxaaEnabled === enabled) {
+                return;
+            }
+
+            this._fxaaEnabled = enabled;
+            this._buildPipeline();
+        }
+
+        @serialize()
         public get volumetricLightStepsCount(): number {
             return this._volumetricLightStepsCount;
         }
@@ -230,6 +248,20 @@
             }
 
             this._motionBlurSamples = samples;
+        }
+
+        @serialize()
+        public get samples(): number {
+            return this._samples;
+        }
+
+        public set samples(sampleCount: number) {
+            if (this._samples === sampleCount) {
+                return;
+            }
+
+            this._samples = sampleCount;
+            this._buildPipeline();
         }
 
         /**
@@ -340,8 +372,18 @@
                 this._createMotionBlurPostProcess(scene, ratio);
             }
 
+            if (this._fxaaEnabled) {
+                // Create fxaa post-process
+                this.fxaaPostProcess = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRFxaa", () => { return this.fxaaPostProcess; }, true));
+            }
+
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+            }
+
+            if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1){
+                BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
 
@@ -780,6 +822,8 @@
 
                 if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); }
 
+                if (this.fxaaPostProcess) { this.fxaaPostProcess.dispose(camera); }
+
                 for (var j = 0; j < this.blurHPostProcesses.length; j++) {
                     this.blurHPostProcesses[j].dispose(camera);
                 }
@@ -806,6 +850,7 @@
             this.hdrFinalPostProcess = null;
             this.depthOfFieldPostProcess = null;
             this.motionBlurPostProcess = null;
+            this.fxaaPostProcess = null;
 
             this.luminanceDownSamplePostProcesses = [];
             this.blurHPostProcesses = [];
