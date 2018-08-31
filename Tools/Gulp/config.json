@@ -609,7 +609,8 @@
         },
         "shadows": {
             "files": [
-                "../../src/Lights/Shadows/babylon.shadowGenerator.js"
+                "../../src/Lights/Shadows/babylon.shadowGenerator.js",
+                "../../src/Lights/Shadows/babylon.shadowGeneratorSceneComponent.js"
             ],
             "dependUpon": [
                 "postProcesses"
@@ -684,6 +685,7 @@
         "procedural": {
             "files": [
                 "../../src/Materials/Textures/Procedurals/babylon.proceduralTexture.js",
+                "../../src/Materials/Textures/Procedurals/babylon.proceduralTextureSceneComponent.js",
                 "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js"
             ],
             "dependUpon": [

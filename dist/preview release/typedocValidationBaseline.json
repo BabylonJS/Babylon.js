@@ -1,7 +1,7 @@
 {
-  "errors": 3962,
+  "errors": 3950,
   "babylon.typedoc.json": {
-    "errors": 3962,
+    "errors": 3950,
     "AnimationGroup": {
       "Constructor": {
         "new AnimationGroup": {
@@ -4634,13 +4634,6 @@
           }
         },
         "edgesWidthScalerForPerspective": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "render": {
           "Comments": {
             "MissingText": true
           }
@@ -9621,75 +9614,6 @@
           },
           "Parameter": {
             "impostor": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "OutlineRenderer": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new OutlineRenderer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "zOffset": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "isReady": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useInstances": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "render": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "batch": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useOverlay": {
               "Comments": {
                 "MissingText": true
               }

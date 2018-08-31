@@ -898,11 +898,6 @@
         * Gets or sets a boolean indicating if procedural textures are enabled on this scene
         */
         public proceduralTexturesEnabled = true;
-        /**
-         * The list of procedural textures added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
-         */
-        public proceduralTextures = new Array<ProceduralTexture>();
 
         // Sound Tracks
         private _mainSoundTrack: SoundTrack;
@@ -1103,12 +1098,16 @@
             return null;
         }
 
-
         /**
          * @hidden
          * Defines the actions happening before camera updates.
          */
         public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
+        /**
+         * @hidden
+         * Defines the actions happening before clear the canvas.
+         */
+        public _beforeClearStage = Stage.Create<SimpleStageAction>();
         /**
          * @hidden
          * Defines the actions happening before camera updates.
@@ -4548,36 +4547,13 @@
             this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
             this.activeCamera = currentActiveCamera;
 
-            // Procedural textures
-            if (this.proceduralTexturesEnabled) {
-                Tools.StartPerformanceCounter("Procedural textures", this.proceduralTextures.length > 0);
-                for (var proceduralIndex = 0; proceduralIndex < this.proceduralTextures.length; proceduralIndex++) {
-                    var proceduralTexture = this.proceduralTextures[proceduralIndex];
-                    if (proceduralTexture._shouldRender()) {
-                        proceduralTexture.render();
-                    }
-                }
-                Tools.EndPerformanceCounter("Procedural textures", this.proceduralTextures.length > 0);
+            for (let step of this._beforeClearStage) {
+                step.action();
             }
 
             // Clear
             if (this.autoClearDepthAndStencil || this.autoClear) {
                 this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
-            }
-
-            // Shadows
-            if (this.shadowsEnabled) {
-                for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
-                    var light = this.lights[lightIndex];
-                    var shadowGenerator = light.getShadowGenerator();
-
-                    if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                        var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
-                        if (this.textures.indexOf(shadowMap) !== -1) {
-                            this._renderTargets.push(shadowMap);
-                        }
-                    }
-                }
             }
 
             // Collects render targets from external components.
@@ -4809,6 +4785,7 @@
             this._afterRenderingGroupDrawStage.clear();
             this._afterCameraDrawStage.clear();
             this._beforeCameraUpdateStage.clear();
+            this._beforeClearStage.clear();
             this._gatherRenderTargetsStage.clear();
             this._rebuildGeometryStage.clear();
             this._pointerMoveStage.clear();

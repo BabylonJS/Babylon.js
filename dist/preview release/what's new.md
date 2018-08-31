@@ -116,6 +116,7 @@
 - BoundingBoxGizmo scalePivot field that can be used to always scale objects from the bottom ([TrevorDev](https://github.com/TrevorDev))
 - Improved _isSyncronized performance and reduced GC in TransformNode.computeWorldMatrix by directly reading property. ([Bolloxim](https://github.com/Bolloxim))
 - Added supports for reflectionMatrix in Skybox Mode Cube Texture allowing offsetting the world center or rotating the matrix ([sebavan](http://www.github.com/sebavan))
+- Improved performance of cached nodes but ensuring parent always updates cache. This removes failed isSynchronized test that meant computeWorldMatrix would always have to rebuild. On large scenes this could double framerate. ([Bolloxim](https://github.com/Bolloxim))
 
 ### glTF Loader
 
