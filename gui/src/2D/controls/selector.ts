@@ -47,7 +47,7 @@ export class SelectorGroup {
      */
     public addSelector(label: string, func = () => {} , checked = false): void {
         if(this.type === "S") {
-            return
+            return;
         }
         switch(this.type) {
             case "C":
@@ -71,7 +71,7 @@ export class SelectorGroup {
      */
     public addSlider(label: string, func = () => {}, unit: string = "Units", min: number = 0, max: number = 0, value: number = 0, onVal = (v:number)=>{return v | 0}): void {
         if(this.type !== "S") {
-            return
+            return;
         }
         this._addSldr(label, func, unit, min, max, value, onVal)
     };
@@ -79,7 +79,7 @@ export class SelectorGroup {
     /** removes the selector/slider at the given position */
     public removeSelector(selectorNb: number) {
         if(selectorNb < 0) {
-            return
+            return;
         }
         this._groupPanel.removeControl(this._selectors[selectorNb]);
         this._selectors.splice(selectorNb, 1);
@@ -190,7 +190,7 @@ export class SelectorGroup {
         _selector.left = "4px";
         _selector.children[0].name = text;
         this._groupPanel.addControl(_selector);
-        this._selectors.push(_selector) 
+        this._selectors.push(_selector);
         
         if(this._groupPanel.parent && this._groupPanel.parent.parent) {
             button.color = (<SelectionPanel>this._groupPanel.parent.parent).buttonColor;
@@ -232,9 +232,8 @@ export class SelectionPanel extends Rectangle {
     * @param name of SelectionPanel
     * @param groups is an array of SelectionGroups
     */
-    constructor(public name: string, public groups?: SelectorGroup[]) {
+    constructor(public name: string, public groups: SelectorGroup[] = []) {
         super(name);
-        if (groups === void 0) { groups = new Array() };
         this._groups = groups;
         this.thickness = 4;
         this._panel = new StackPanel();
@@ -375,7 +374,7 @@ export class SelectionPanel extends Rectangle {
     /** Sets color of separator bar */
     public set barColor(color: string) {
        if(this._barColor === color) {
-           return
+           return;
        }
        
        this._barColor = color;
@@ -423,7 +422,7 @@ export class SelectionPanel extends Rectangle {
      */
     public removeGroup(groupNb: number): void {
         if(groupNb < 0 || groupNb >= this._groups.length) {
-            return
+            return;
         }
         var group = this._groups[groupNb];
         this._panel.removeControl(group.group);
@@ -441,7 +440,7 @@ export class SelectionPanel extends Rectangle {
      * */ 
     public relabel(label: string, groupNb: number, selectorNb?: number): void {
         if(groupNb < 0 || groupNb >= this._groups.length) {
-            return
+            return;
         }
         var group = this._groups[groupNb];
         if (selectorNb === void 0) {
@@ -449,7 +448,7 @@ export class SelectionPanel extends Rectangle {
         }
         else {
             if(selectorNb < 0 || selectorNb >= group.selectors.length) {
-                return
+                return;
             }
             if(group.type === "C" || group.type === "R") {
                 (<TextBlock>group.selectors[selectorNb].children[1]).text = label;
@@ -467,11 +466,11 @@ export class SelectionPanel extends Rectangle {
      */
     public removeFromGroupSelector(groupNb: number, selectorNb: number): void {
         if(groupNb < 0 || groupNb >= this._groups.length) {
-            return
+            return;
         }
         var group = this._groups[groupNb];
         if(selectorNb < 0 || selectorNb >= group.selectors.length) {
-            return
+            return;
         }
         group.removeSelector(selectorNb);
     }
@@ -484,7 +483,7 @@ export class SelectionPanel extends Rectangle {
      */
     public addToGroupSelector(groupNb: number, label: string, func = () => {} , checked: boolean = false): void {
         if(groupNb < 0 || groupNb >= this._groups.length) {
-            return
+            return;
         }
         var group = this._groups[groupNb];
         group.addSelector(label, func, checked);
@@ -503,7 +502,7 @@ export class SelectionPanel extends Rectangle {
      */
     public addToGroupSlider(groupNb: number, label: string, func = () => {}, unit: string = "Units", min: number = 0, max: number = 0, value: number = 0, onVal = (v:number)=>{return v | 0}): void {
         if(groupNb < 0 || groupNb >= this._groups.length) {
-            return
+            return;
         }
         var group = this._groups[groupNb];
         group.addSlider(label, func, unit, min, max, value, onVal);
