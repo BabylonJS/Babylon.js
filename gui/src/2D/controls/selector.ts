@@ -19,23 +19,26 @@ export class SelectorGroup {
      * @param name of group, used as a group heading
      * @param type specifies a check box, radio button or slider grouping
      */
-    constructor(public name: string, public type: string) {
-        if (type === void 0) { type = "C"; }
-        type = type.substr(0,1).toUpperCase();
-        if(type !=="R" && type !== "S" && type !== "C") {
+    constructor(
+        /** name of SelectorGroup */
+        public name: string, 
+        /**  type of SelectorGroup*/
+        public type: string = "C") {
+        type = type.substr(0,1).toUpperCase();      
+        if(type !=="R" && type !== "S") {
             type = "C";
         }
+        this.type = type;
         this._groupPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._groupPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._addGroupHeader(name);
     }
 
-    /** Gets group stackPanel */
+    /** Gets or sets group stackPanel */
     public get group(): StackPanel {
         return this._groupPanel;
     }
 
-    /** Gets selectors */
     public get selectors(): StackPanel[] {
         return this._selectors;
     }
@@ -48,7 +51,7 @@ export class SelectorGroup {
     public addSelector(label: string, func = () => {} , checked = false): void {
         if(this.type === "S") {
             return;
-        }
+        }       
         switch(this.type) {
             case "C":
                 this._addCheckbox(label, func, checked)
@@ -232,7 +235,11 @@ export class SelectionPanel extends Rectangle {
     * @param name of SelectionPanel
     * @param groups is an array of SelectionGroups
     */
-    constructor(public name: string, public groups: SelectorGroup[] = []) {
+    constructor(
+        /** name of SelectionPanel */
+        public name: string, 
+        /** an array of SelectionGroups */
+        public groups: SelectorGroup[] = []) {
         super(name);
         this._groups = groups;
         this.thickness = 4;
@@ -251,15 +258,16 @@ export class SelectionPanel extends Rectangle {
         }				
         this.addControl(this._panel);
     }
+
+    protected _getTypeName(): string {
+        return "SelectionPanel";
+    }
     
-    /** get the headerColor */
+    /** Gets or sets the headerColor */
     public get headerColor(): string {
         return this._headerColor;
     }
 
-    /** set the header color 
-     * @param color to set header to
-    */
     public set headerColor(color: string) {
         if(this._headerColor === color) {
             return;
@@ -275,14 +283,11 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** get the button color */
+    /** Gets or sets the button color */
     public get buttonColor(): string {
         return this._buttonColor;
     }
 
-    /** set the button color 
-     * @param color to set button to
-    */
     public set buttonColor(color: string) {
         if(this._buttonColor === color) {
             return;
@@ -306,14 +311,11 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** get the label color */
+    /** Gets or sets the label color */
     public get labelColor(): string {
         return this._labelColor;
     }
 
-    /** set the label color 
-     * @param color to set label to
-    */
     public set labelColor(color: string) {
         if(this._labelColor === color) {
             return;
@@ -335,14 +337,11 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** get the button background */
+    /** Gets or sets the button background */
     public get buttonBackground(): string {
         return this._buttonBackground;
     }
 
-    /** set the button background
-     * @param color to set background to 
-    */
     public set buttonBackground(color: string) {
         if(this._buttonBackground === color) {
             return;
@@ -366,12 +365,11 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** gets color of separator bar */
+    /** Gets or sets the color of separator bar */
     public get barColor(): string {
         return this._barColor;
     }
 
-    /** Sets color of separator bar */
     public set barColor(color: string) {
        if(this._barColor === color) {
            return;
@@ -403,7 +401,9 @@ export class SelectionPanel extends Rectangle {
      * @param group is the selector group to add
      */
     public addGroup(group: SelectorGroup): void {
-        this._addSpacer();
+        if(this._groups.length > 0) {
+            this._addSpacer();
+        }
         this._panel.addControl(group.group);
         this._groups.push(group);
         group.group.children[0].color = this._headerColor;
@@ -462,7 +462,7 @@ export class SelectionPanel extends Rectangle {
 
     /** For a given group position remove the selector at the given position
      * @param groupNb is the number of the group to remove the selector from
-     * @param selectorNB is the number of the selector within the group
+     * @param selectorNb is the number of the selector within the group
      */
     public removeFromGroupSelector(groupNb: number, selectorNb: number): void {
         if(groupNb < 0 || groupNb >= this._groups.length) {
