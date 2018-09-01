@@ -34,11 +34,12 @@ export class SelectorGroup {
         this._addGroupHeader(name);
     }
 
-    /** Gets or sets group stackPanel */
+    /** Gets the groupPanel of the SelectorGroup  */
     public get group(): StackPanel {
         return this._groupPanel;
     }
 
+    /** Gets the selectors array */
     public get selectors(): StackPanel[] {
         return this._selectors;
     }
@@ -79,7 +80,9 @@ export class SelectorGroup {
         this._addSldr(label, func, unit, min, max, value, onVal)
     };
 
-    /** removes the selector/slider at the given position */
+    /** removes the selector/slider at the given position 
+     * @param selectorNb the position of the selector within the group
+    */
     public removeSelector(selectorNb: number) {
         if(selectorNb < 0) {
             return;
