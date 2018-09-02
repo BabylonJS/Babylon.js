@@ -4,91 +4,228 @@
         * Public members
         */
         // Post-processes
+        /**
+         * Post-process which contains the original scene color before the pipeline applies all the effects
+         */
         public originalPostProcess: Nullable<PostProcess>;
+        /**
+         * Post-process used to down scale an image x4
+         */
         public downSampleX4PostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-process used to calculate the illuminated surfaces controlled by a threshold
+         */
         public brightPassPostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-process array storing all the horizontal blur post-processes used by the pipeline
+         */
         public blurHPostProcesses: PostProcess[] = [];
+        /**
+         * Post-process array storing all the vertical blur post-processes used by the pipeline
+         */
         public blurVPostProcesses: PostProcess[] = [];
+        /**
+         * Post-process used to add colors of 2 textures (typically brightness + real scene color)
+         */
         public textureAdderPostProcess: Nullable<PostProcess> = null;
 
+        /**
+         * Post-process used to create volumetric lighting effect
+         */
         public volumetricLightPostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-process used to smooth the previous volumetric light post-process on the X axis
+         */
         public volumetricLightSmoothXPostProcess: Nullable<BlurPostProcess> = null;
+        /**
+         * Post-process used to smooth the previous volumetric light post-process on the Y axis
+         */
         public volumetricLightSmoothYPostProcess: Nullable<BlurPostProcess> = null;
+        /**
+         * Post-process used to merge the volumetric light effect and the real scene color
+         */
         public volumetricLightMergePostProces: Nullable<PostProcess> = null;
+        /**
+         * Post-process used to store the final volumetric light post-process (attach/detach for debug purpose)
+         */
         public volumetricLightFinalPostProcess: Nullable<PostProcess> = null;
 
+        /**
+         * Base post-process used to calculate the average luminance of the final image for HDR
+         */
         public luminancePostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-processes used to create down sample post-processes in order to get
+         * the average luminance of the final image for HDR
+         * Array of length "StandardRenderingPipeline.LuminanceSteps"
+         */
         public luminanceDownSamplePostProcesses: PostProcess[] = [];
+        /**
+         * Post-process used to create a HDR effect (light adaptation)
+         */
         public hdrPostProcess: Nullable<PostProcess> = null;
-
+        /**
+         * Post-process used to store the final texture adder post-process (attach/detach for debug purpose)
+         */
         public textureAdderFinalPostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-process used to store the final lens flare post-process (attach/detach for debug purpose)
+         */
         public lensFlareFinalPostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-process used to merge the final HDR post-process and the real scene color
+         */
         public hdrFinalPostProcess: Nullable<PostProcess> = null;
-
+        /**
+         * Post-process used to create a lens flare effect
+         */
         public lensFlarePostProcess: Nullable<PostProcess> = null;
+        /**
+         * Post-process that merges the result of the lens flare post-process and the real scene color
+         */
         public lensFlareComposePostProcess: Nullable<PostProcess> = null;
-
+        /**
+         * Post-process used to create a motion blur effect
+         */
         public motionBlurPostProcess: Nullable<PostProcess> = null;
-
+        /**
+         * Post-process used to create a depth of field effect
+         */
         public depthOfFieldPostProcess: Nullable<PostProcess> = null;
-
+        /**
+         * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+         */
         public fxaaPostProcess: Nullable<FxaaPostProcess> = null;
 
         // Values
+
+        /**
+         * Represents the brightness threshold in order to configure the illuminated surfaces
+         */
         @serialize()
         public brightThreshold: number = 1.0;
 
+        /**
+         * Configures the blur intensity used for surexposed surfaces are highlighted surfaces (light halo)
+         */
         @serialize()
         public blurWidth: number = 512.0;
+        /**
+         * Sets if the blur for surexposed surfaces are highlighted surfaces (light halo) must be only horizontal
+         */
         @serialize()
         public horizontalBlur: boolean = false;
 
+        /**
+         * Sets the overall exposure used by the pipeline
+         */
         @serialize()
         public exposure: number = 1.0;
+
+        /**
+         * Texture used typically to simulate "dirty" on camera lens
+         */
         @serializeAsTexture("lensTexture")
         public lensTexture: Nullable<Texture> = null;
 
+        /**
+         * Represents the offset coefficient based on Rayleigh principle. Typically in interval [-0.2, 0.2]
+         */
         @serialize()
         public volumetricLightCoefficient: number = 0.2;
+        /**
+         * The overall power of volumetric lights, typically in interval [0, 10] maximum
+         */
         @serialize()
         public volumetricLightPower: number = 4.0;
+        /**
+         * Used the set the blur intensity to smooth the volumetric lights
+         */
         @serialize()
         public volumetricLightBlurScale: number = 64.0;
-
+        /**
+         * Light (spot or directional) used to generate the volumetric lights rays
+         * The source light must have a shadow generate so the pipeline can get its 
+         * depth map
+         */
         public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
 
+        /**
+         * For eye adaption, represents the minimum lumance the eye can see
+         */
         @serialize()
         public hdrMinimumLuminance: number = 1.0;
+        /**
+         * For eye adaptation, represents the decrease luminance speed
+         */
         @serialize()
         public hdrDecreaseRate: number = 0.5;
+        /**
+         * For eye adaptation, represents the increase luminance speed
+         */
         @serialize()
         public hdrIncreaseRate: number = 0.5;
 
+        /**
+         * Lens color texture used by the lens flare effect. Must be set and available in
+         * the documentation
+         */
         @serializeAsTexture("lensColorTexture")
         public lensColorTexture: Nullable<Texture> = null;
+        /**
+         * The overall strengh for the lens flare effect
+         */
         @serialize()
         public lensFlareStrength: number = 20.0;
+        /**
+         * Dispersion coefficient for lens flare ghosts
+         */
         @serialize()
         public lensFlareGhostDispersal: number = 1.4;
+        /**
+         * Main lens flare halo width
+         */
         @serialize()
         public lensFlareHaloWidth: number = 0.7;
+        /**
+         * Based on the lens distortion effect, defines how much the lens flare result
+         * is distorted
+         */
         @serialize()
         public lensFlareDistortionStrength: number = 16.0;
+        /**
+         * Lens star texture must be used to simulate rays on the flares and is available
+         * in the documentation
+         */
         @serializeAsTexture("lensStarTexture")
         public lensStarTexture: Nullable<Texture> = null;
+        /**
+         * As the "lensTexture" (can be the same texture or different), it is used to apply the lens
+         * flare effect by taking account of the dirt texture
+         */
         @serializeAsTexture("lensFlareDirtTexture")
         public lensFlareDirtTexture: Nullable<Texture> = null;
 
+        /**
+         * Represents the focal length for the depth of field effect
+         */
         @serialize()
         public depthOfFieldDistance: number = 10.0;
-
+        /**
+         * Represents the blur intensity for the blurred part of the depth of field effect
+         */
         @serialize()
         public depthOfFieldBlurWidth: number = 64.0;
 
+        /**
+         * For motion blur, defines how much the image is blurred by the movement
+         */
         @serialize()
         public motionStrength: number = 1.0;
 
-        // IAnimatable
+        /**
+         * List of animations for the pipeline (IAnimatable implementation)
+         */
         public animations: Animation[] = [];
 
         /**
@@ -118,6 +255,9 @@
         private _volumetricLightStepsCount: number = 50.0;
         private _samples: number = 1;
 
+        /**
+		 * Specifies if the bloom pipeline is enabled
+		 */
         @serialize()
         public get BloomEnabled(): boolean {
             return this._bloomEnabled;
@@ -132,6 +272,9 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies if the depth of field pipeline is enabed
+		 */
         @serialize()
         public get DepthOfFieldEnabled(): boolean {
             return this._depthOfFieldEnabled;
@@ -146,6 +289,9 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies if the lens flare pipeline is enabed
+		 */
         @serialize()
         public get LensFlareEnabled(): boolean {
             return this._lensFlareEnabled;
@@ -160,6 +306,9 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies if the HDR pipeline is enabled
+		 */
         @serialize()
         public get HDREnabled(): boolean {
             return this._hdrEnabled;
@@ -174,6 +323,9 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies if the volumetric lights scattering effect is enabled
+		 */
         @serialize()
         public get VLSEnabled(): boolean {
             return this._vlsEnabled;
@@ -196,6 +348,9 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies if the motion blur effect is enabled
+		 */
         @serialize()
         public get MotionBlurEnabled(): boolean {
             return this._motionBlurEnabled;
@@ -210,6 +365,9 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies if anti-aliasing is enabled
+		 */
         @serialize()
         public get fxaaEnabled(): boolean {
             return this._fxaaEnabled;
@@ -224,6 +382,10 @@
             this._buildPipeline();
         }
 
+        /**
+		 * Specifies the number of steps used to calculate the volumetric lights
+         * Typically in interval [50, 200]
+		 */
         @serialize()
         public get volumetricLightStepsCount(): number {
             return this._volumetricLightStepsCount;
@@ -237,6 +399,10 @@
             this._volumetricLightStepsCount = count;
         }
 
+        /**
+		 * Specifies the number of samples used for the motion blur effect
+         * Typically in interval [16, 64]
+		 */
         @serialize()
         public get motionBlurSamples(): number {
             return this._motionBlurSamples;
@@ -250,6 +416,9 @@
             this._motionBlurSamples = samples;
         }
 
+        /**
+         * Specifies MSAA sample count, setting this to 4 will provide 4x anti aliasing. (default: 1)
+         */
         @serialize()
         public get samples(): number {
             return this._samples;
