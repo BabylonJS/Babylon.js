@@ -255,8 +255,8 @@
         private _samples: number = 1;
 
         /**
-		 * Specifies if the bloom pipeline is enabled
-		 */
+         * Specifies if the bloom pipeline is enabled
+         */
         @serialize()
         public get BloomEnabled(): boolean {
             return this._bloomEnabled;
@@ -272,8 +272,8 @@
         }
 
         /**
-		 * Specifies if the depth of field pipeline is enabed
-		 */
+         * Specifies if the depth of field pipeline is enabed
+         */
         @serialize()
         public get DepthOfFieldEnabled(): boolean {
             return this._depthOfFieldEnabled;
@@ -289,8 +289,8 @@
         }
 
         /**
-		 * Specifies if the lens flare pipeline is enabed
-		 */
+         * Specifies if the lens flare pipeline is enabed
+         */
         @serialize()
         public get LensFlareEnabled(): boolean {
             return this._lensFlareEnabled;
@@ -306,8 +306,8 @@
         }
 
         /**
-		 * Specifies if the HDR pipeline is enabled
-		 */
+         * Specifies if the HDR pipeline is enabled
+         */
         @serialize()
         public get HDREnabled(): boolean {
             return this._hdrEnabled;
@@ -323,8 +323,8 @@
         }
 
         /**
-		 * Specifies if the volumetric lights scattering effect is enabled
-		 */
+         * Specifies if the volumetric lights scattering effect is enabled
+         */
         @serialize()
         public get VLSEnabled(): boolean {
             return this._vlsEnabled;
@@ -348,8 +348,8 @@
         }
 
         /**
-		 * Specifies if the motion blur effect is enabled
-		 */
+         * Specifies if the motion blur effect is enabled
+         */
         @serialize()
         public get MotionBlurEnabled(): boolean {
             return this._motionBlurEnabled;
@@ -365,8 +365,8 @@
         }
 
         /**
-		 * Specifies if anti-aliasing is enabled
-		 */
+         * Specifies if anti-aliasing is enabled
+         */
         @serialize()
         public get fxaaEnabled(): boolean {
             return this._fxaaEnabled;
@@ -382,9 +382,9 @@
         }
 
         /**
-		 * Specifies the number of steps used to calculate the volumetric lights
+         * Specifies the number of steps used to calculate the volumetric lights
          * Typically in interval [50, 200]
-		 */
+         */
         @serialize()
         public get volumetricLightStepsCount(): number {
             return this._volumetricLightStepsCount;
@@ -399,9 +399,9 @@
         }
 
         /**
-		 * Specifies the number of samples used for the motion blur effect
+         * Specifies the number of samples used for the motion blur effect
          * Typically in interval [16, 64]
-		 */
+         */
         @serialize()
         public get motionBlurSamples(): number {
             return this._motionBlurSamples;
