@@ -111,7 +111,7 @@
         @serialize()
         public blurWidth: number = 512.0;
         /**
-         * Sets if the blur for surexposed surfaces are highlighted surfaces (light halo) must be only horizontal
+         * Sets if the blur for highlighted surfaces must be only horizontal
          */
         @serialize()
         public horizontalBlur: boolean = false;
@@ -151,7 +151,7 @@
         public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
 
         /**
-         * For eye adaption, represents the minimum lumance the eye can see
+         * For eye adaptation, represents the minimum luminance the eye can see
          */
         @serialize()
         public hdrMinimumLuminance: number = 1.0;
@@ -167,8 +167,7 @@
         public hdrIncreaseRate: number = 0.5;
 
         /**
-         * Lens color texture used by the lens flare effect. Must be set and available in
-         * the documentation
+         * Lens color texture used by the lens flare effect. Mandatory if lens flare effect enabled
          */
         @serializeAsTexture("lensColorTexture")
         public lensColorTexture: Nullable<Texture> = null;
